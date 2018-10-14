@@ -1,4 +1,4 @@
-package org.luatix.Basic;
+package org.luatix.api.generic;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 

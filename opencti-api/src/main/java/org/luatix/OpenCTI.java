@@ -2,14 +2,27 @@ package org.luatix;
 
 import com.coxautodev.graphql.tools.SchemaParser;
 import graphql.schema.GraphQLSchema;
+import org.cfg4j.provider.ConfigurationProvider;
+import org.cfg4j.provider.ConfigurationProviderBuilder;
+import org.cfg4j.source.ConfigurationSource;
+import org.cfg4j.source.context.filesprovider.ConfigFilesProvider;
+import org.cfg4j.source.files.FilesConfigurationSource;
+import org.cfg4j.source.reload.ReloadStrategy;
+import org.cfg4j.source.reload.strategy.PeriodicalReloadStrategy;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
-import org.luatix.Basic.About;
-import org.luatix.Servlet.GraphQLEndpoint;
-import org.luatix.User.UserQuery;
+import org.luatix.base.Database;
+import org.luatix.api.generic.About;
+import org.luatix.servlet.GraphQLEndpoint;
+import org.luatix.api.user.UserQuery;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.Arrays.asList;
 
 public class OpenCTI {
 
@@ -17,11 +30,25 @@ public class OpenCTI {
      * @return GraphQLSchema
      */
     public static GraphQLSchema buildSchema() {
+        ConfigurationProvider cp = configurationProvider();
+        Database conn = new Database(cp);
         SchemaParser schemaParser = SchemaParser.newParser()
                 .file("opencti.graphqls")
-                .resolvers(new About(), new UserQuery())
+                .resolvers(new About(), new UserQuery(conn))
                 .build();
         return schemaParser.makeExecutableSchema();
+    }
+
+    @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
+    private static ConfigurationProvider configurationProvider() {
+        Path applicationConfig = Paths.get("config/application.properties").toAbsolutePath();
+        ConfigFilesProvider configFilesProvider = () -> asList(applicationConfig);
+        ConfigurationSource source = new FilesConfigurationSource(configFilesProvider);
+        ReloadStrategy reloadStrategy = new PeriodicalReloadStrategy(5, TimeUnit.SECONDS);
+        return new ConfigurationProviderBuilder()
+                .withConfigurationSource(source)
+                .withReloadStrategy(reloadStrategy)
+                .build();
     }
 
     public static void main(String[] args) throws Exception {
