@@ -1,0 +1,19 @@
+### Scalar
+#scalar DateTime
+
+type User {
+    id: ID!
+    email: String
+    #created_at: DateTime
+    #updated_at: DateTime
+    roles: [String]
+}
+
+type Query {
+    # Genericv
+    about: String
+    # User
+    users: [User]
+    user(id: String!): User
+    login(user: String!, password: String): User
+}
