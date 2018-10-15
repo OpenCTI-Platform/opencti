@@ -1,0 +1,21 @@
+{
+  "name": "opencti-graphql",
+  "version": "1.0.0",
+  "main": "server.js",
+  "author": "Luatix",
+  "license": "MIT",
+  "scripts": {
+    "start": "babel-node ./server.js"
+  },
+  "dependencies": {
+    "@babel/core": "^7.1.2",
+    "express": "^4.16.4",
+    "express-graphql": "^0.6.12",
+    "graphql": "^14.0.2",
+    "graphql-relay": "^0.5.5"
+  },
+  "devDependencies": {
+    "@babel/node": "^7.0.0",
+    "@babel/preset-env": "^7.1.0"
+  }
+}
