@@ -1,6 +1,9 @@
 package org.luatix;
 
 import com.coxautodev.graphql.tools.SchemaParser;
+import graphql.ExecutionInput;
+import graphql.GraphQL;
+import graphql.execution.instrumentation.tracing.TracingInstrumentation;
 import graphql.schema.GraphQLSchema;
 import org.cfg4j.provider.ConfigurationProvider;
 import org.cfg4j.provider.ConfigurationProviderBuilder;
@@ -15,6 +18,8 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.luatix.base.Database;
 import org.luatix.api.generic.About;
+import org.luatix.servlet.AuthenticationServlet;
+import org.luatix.servlet.GraphQLSecurityFilter;
 import org.luatix.servlet.GraphQLEndpoint;
 import org.luatix.api.user.UserQuery;
 
@@ -30,11 +35,13 @@ public class OpenCTI {
      * @return GraphQLSchema
      */
     public static GraphQLSchema buildSchema() {
-        ConfigurationProvider cp = configurationProvider();
-        Database conn = new Database(cp);
+        AppContext context = AppContext.context();
+        context.config(configurationProvider());
+        context.database(new Database());
+
         SchemaParser schemaParser = SchemaParser.newParser()
                 .file("opencti.graphqls")
-                .resolvers(new About(), new UserQuery(conn))
+                .resolvers(new About(), new UserQuery())
                 .build();
         return schemaParser.makeExecutableSchema();
     }
@@ -63,6 +70,10 @@ public class OpenCTI {
         //Register the graphQL servlet
         ServletHandler servletHandler = new ServletHandler();
         server.setHandler(servletHandler);
+        //Security of /graphQL endpoint through servlet filter.
+        servletHandler.addFilterWithMapping(GraphQLSecurityFilter.class, "/graphql", 0);
+        //Register the graphQL endpoint
+        servletHandler.addServletWithMapping(AuthenticationServlet.class, "/auth");
         servletHandler.addServletWithMapping(GraphQLEndpoint.class, "/graphql");
         //Start the server
         server.start();

@@ -1,5 +1,9 @@
 package org.luatix.servlet;
 
+import graphql.execution.instrumentation.tracing.TracingInstrumentation;
+import graphql.servlet.GraphQLInvocationInputFactory;
+import graphql.servlet.GraphQLQueryInvoker;
+import graphql.servlet.GraphQLServletListener;
 import graphql.servlet.SimpleGraphQLHttpServlet;
 
 import javax.servlet.ServletException;
@@ -25,7 +29,21 @@ public class GraphQLEndpoint extends HttpServlet {
     public void init() throws ServletException {
         httpServlet = SimpleGraphQLHttpServlet
                 .newBuilder(buildSchema())
-                .build(); //Add TracingInstrumentation();
+                .withQueryInvoker(GraphQLQueryInvoker.newBuilder()
+                        .withInstrumentation(new TracingInstrumentation())
+                        .build())
+                .build();
+        httpServlet.addListener(new GraphQLServletListener() {
+            @Override
+            public RequestCallback onRequest(HttpServletRequest request, HttpServletResponse response) {
+                return new RequestCallback() {
+                    @Override
+                    public void onSuccess(HttpServletRequest request, HttpServletResponse response) {
+
+                    }
+                };
+            }
+        });
     }
 /*
     @Override
