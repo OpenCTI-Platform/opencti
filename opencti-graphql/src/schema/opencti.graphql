@@ -4,10 +4,16 @@ scalar DateTime
 ### User
 type User {
     id: ID!
-    email: String
+    username: String
+    email: String!
     created_at: DateTime
     updated_at: DateTime
     roles: [String]
+}
+
+input AddUserInput {
+    username: String!
+    email: String!
 }
 
 ### QUERIES & MUTATIONS
@@ -18,6 +24,7 @@ type Query {
     me: User
 }
 
-#type Mutation {
-#
-#}
+type Mutation {
+    # User
+    addUser(input: AddUserInput): User
+}

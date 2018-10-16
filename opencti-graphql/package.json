@@ -22,8 +22,10 @@
     "graphql-tools": "^4.0.1",
     "jsonwebtoken": "^8.3.0",
     "merge-graphql-schemas": "^1.5.7",
+    "moment": "^2.22.2",
     "neo4j-driver": "^1.6.3",
-    "ramda": "^0.25.0"
+    "ramda": "^0.25.0",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@babel/node": "^7.0.0",

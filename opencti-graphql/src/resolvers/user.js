@@ -1,4 +1,4 @@
-import {assertAdmin, findAll, findById} from "../domain/user";
+import {addUser, assertAdmin, findAll, findById} from "../domain/user";
 
 // noinspection JSUnusedGlobalSymbols
 export const userResolvers = {
@@ -15,4 +15,10 @@ export const userResolvers = {
             return findById(context.user.id);
         },
     },
+    Mutation: {
+        addUser: (_, {input}, context) => {
+            assertAdmin(context.user);
+            return addUser(input);
+        }
+    }
 };
