@@ -1,7 +1,7 @@
 import {driver} from '../database/index';
 import {isEmpty, head, contains, map} from 'ramda';
 import {sign} from 'jsonwebtoken';
-import {applicationSecret} from "../server";
+import conf from "../conf";
 import {UnauthorizedError} from "express-jwt";
 import uuid from 'uuid/v4';
 import moment from 'moment';
@@ -28,7 +28,7 @@ export const login = (username, password) => {
         if (password !== dbPassword) {
             throw {message: 'login failed', status: 400}
         }
-        let token = sign(dbUser.properties, applicationSecret);
+        let token = sign(dbUser.properties, conf.get("jwt:secret"));
         session.close();
         return {jwt: token};
     });

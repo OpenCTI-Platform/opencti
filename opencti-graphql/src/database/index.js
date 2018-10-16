@@ -1,7 +1,7 @@
 import {v1} from 'neo4j-driver';
+import conf from '../conf';
 
-const uri = 'bolt://neo4j-community.opencti.io:7687';
-const user = 'neo4j';
-const password = 'opencti2018';
-
-export const driver = v1.driver(uri, v1.auth.basic(user, password));
+export const driver = v1.driver(
+    conf.get('db:uri'),
+    v1.auth.basic(conf.get('db:user'), conf.get('db:password'))
+);

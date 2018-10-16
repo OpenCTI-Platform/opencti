@@ -1,0 +1,14 @@
+{
+  "app": {
+    "port": 4000
+  },
+  "db": {
+    "uri": "bolt://",
+    "user": "setup your user",
+    "password": "setup your password"
+  },
+  "jwt": {
+    "secret": "define your secret",
+    "dev_token": "Bypass security in dev mode, for graphiQL"
+  }
+}
