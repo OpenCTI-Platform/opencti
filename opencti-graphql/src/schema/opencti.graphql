@@ -11,8 +11,15 @@ type User {
     roles: [String]
 }
 
+enum UserRole {
+    ROLE_ADMIN
+    ROLE_USER
+}
+
 input AddUserInput {
     username: String!
+    password: String!
+    roles: [UserRole]!
     email: String!
 }
 
@@ -27,4 +34,5 @@ type Query {
 type Mutation {
     # User
     addUser(input: AddUserInput): User
+    deleteUser(id: ID!): ID
 }

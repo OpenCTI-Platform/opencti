@@ -5,11 +5,14 @@
   "author": "Luatix",
   "license": "MIT",
   "scripts": {
-    "start": "NODE_ENV=development babel-node ./src/server.js"
+    "start": "NODE_ENV=development babel-node ./src/server.js",
+    "migrate": "babel-node ./src/database/migration.js"
   },
   "dependencies": {
     "@babel/core": "^7.1.2",
     "@godaddy/terminus": "^4.1.0",
+    "await": "^0.2.6",
+    "bcrypt": "^3.0.1",
     "body-parser": "^1.18.3",
     "cors": "^2.8.4",
     "express": "^4.16.4",
@@ -22,6 +25,7 @@
     "graphql-tools": "^4.0.1",
     "jsonwebtoken": "^8.3.0",
     "merge-graphql-schemas": "^1.5.7",
+    "migrate": "^1.6.1",
     "moment": "^2.22.2",
     "nconf": "^0.10.0",
     "neo4j-driver": "^1.6.3",

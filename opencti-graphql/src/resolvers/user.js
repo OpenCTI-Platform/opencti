@@ -1,4 +1,6 @@
-import {addUser, assertAdmin, findAll, findById} from "../domain/user";
+import {addUser, assertAdmin, deleteUser, findAll, findById} from "../domain/user";
+import uuid from "uuid/v4";
+import {assoc} from "ramda";
 
 // noinspection JSUnusedGlobalSymbols
 export const userResolvers = {
@@ -18,7 +20,11 @@ export const userResolvers = {
     Mutation: {
         addUser: (_, {input}, context) => {
             assertAdmin(context.user);
-            return addUser(input);
+            let user = assoc('id', uuid(), input);
+            return addUser(user);
+        },
+        deleteUser: (_, {id}) => {
+            return deleteUser(id);
         }
     }
 };
