@@ -1,0 +1,23 @@
+### Scalar
+scalar DateTime
+
+### User
+type User {
+    id: ID!
+    email: String
+    created_at: DateTime
+    updated_at: DateTime
+    roles: [String]
+}
+
+### QUERIES & MUTATIONS
+type Query {
+    # User
+    users(first: Int, offset: Int): [User]
+    user(id: String!): User
+    me: User
+}
+
+#type Mutation {
+#
+#}
