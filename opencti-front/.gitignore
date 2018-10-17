@@ -21,3 +21,6 @@ config/development.json# See https://help.github.com/articles/ignoring-files/ fo
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# relay
+src/__generated__/

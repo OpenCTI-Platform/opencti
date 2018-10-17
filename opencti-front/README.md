@@ -1,2 +1,2 @@
-npm install -g @storybook/cli
-getstorybook
+# Introduction
+Welcome to openCTI frontend

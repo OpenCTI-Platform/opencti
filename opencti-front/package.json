@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "graphql": "^14.0.2",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
     "react-relay": "^1.6.2",
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.0.5",
+    "relay-compiler": "^1.6.2",
     "relay-runtime": "^1.6.2"
   },
   "scripts": {
@@ -16,7 +18,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 9009 -s public",
-    "build-storybook": "build-storybook -s public"
+    "build-storybook": "build-storybook -s public",
+    "relay": "relay-compiler --src ./src --schema ../opencti-graphql/src/schema/opencti.graphql --extensions js jsx"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -28,12 +31,12 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "babel-plugin-relay": "^1.7.0-rc.1",
-    "@storybook/react": "^3.4.11",
     "@storybook/addon-actions": "^3.4.11",
     "@storybook/addon-links": "^3.4.11",
     "@storybook/addons": "^3.4.11",
+    "@storybook/react": "^3.4.11",
     "babel-core": "^6.26.3",
+    "babel-plugin-relay": "^1.7.0-rc.1",
     "babel-runtime": "^6.26.0"
   }
 }

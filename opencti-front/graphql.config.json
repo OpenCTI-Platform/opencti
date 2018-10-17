@@ -1,0 +1,16 @@
+{
+  "schema": {
+    "file": "../opencti-graphql/src/schema/opencti.graphql"
+  },
+  "endpoints": [
+    {
+      "name": "Default (http://localhost:4000/graphql)",
+      "url": "http://localhost:4000/graphql",
+      "options": {
+        "headers": {
+          "user-agent": "JS GraphQL"
+        }
+      }
+    }
+  ]
+}
