@@ -28,9 +28,9 @@ const neo4jStateStorage = {
             set.migrations
         );
         let session = driver.session();
-        await session.run('MERGE (c:Configuration { name: "migration", lastRun: {lastRun} })', {lastRun: set.lastRun});
+        await session.run('MERGE (c:Configuration { name: "migration" }) ON MATCH SET c.lastRun = {lastRun}', {lastRun: set.lastRun});
         for(const migration of migrations) {
-            await session.run('MERGE (migration:Migration { title: {title}, timestamp: {timestamp} })',
+            await session.run('MERGE (migration:Migration { title: {title} }) ON MATCH SET migration.timestamp = {timestamp}',
                 {title: migration.title, timestamp: migration.timestamp});
             await session.run('MATCH (c:Configuration {name:"migration"}), (m:Migration {title: {title}}) MERGE (m)-[r:PART_OF]-(c)',
                 {title: migration.title, timestamp: migration.timestamp});

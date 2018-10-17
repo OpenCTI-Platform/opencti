@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "start": "NODE_ENV=development babel-node ./src/server.js",
-    "migrate": "babel-node ./src/database/migration.js"
+    "migrate": "babel-node ./src/database/migration.js",
+    "addMigration": "migrate create"
   },
   "dependencies": {
     "@babel/core": "^7.1.2",

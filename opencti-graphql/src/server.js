@@ -8,17 +8,17 @@ import {login} from "./domain/user";
 import jwtMiddleware from 'express-jwt';
 import conf from './config/conf';
 
-// Global variable
-//CREATE (user:User {id:'456-456421', username:"jri", password: 'niania', roles: ['ROLE_ADMIN', 'ROLE_USER']})
-//CREATE CONSTRAINT ON (user:User) ASSERT user.id IS UNIQUE
+// noinspection JSUnresolvedVariable
 const devMode = process.env.NODE_ENV === 'development';
-function devMiddleware(req, res, next) {
-    req.headers.authorization = 'Bearer ' + conf.get('jwt:dev_token');
-    next();
-}
 
 let app = express();
-if (devMode) app.use(devMiddleware);
+if (devMode) {
+    let devMiddleware = (req, res, next) => {
+        req.headers.authorization = 'Bearer ' + conf.get('jwt:dev_token');
+        next();
+    };
+    app.use(devMiddleware);
+}
 app.use('/graphql',
     jwtMiddleware({secret: conf.get('jwt:secret')}),
     graphqlHTTP({
