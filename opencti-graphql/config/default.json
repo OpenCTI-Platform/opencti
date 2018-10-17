@@ -10,5 +10,12 @@
   "jwt": {
     "secret": "define your secret",
     "dev_token": "Bypass security in dev mode, for graphiQL"
+  },
+  "providers": {
+    "facebook": {
+      "client_id": "FACEBOOK_APP_ID",
+      "client_secret": "FACEBOOK_APP_SECRET",
+      "callback_uri": "http://www.example.com/auth/facebook/callback"
+    }
   }
 }

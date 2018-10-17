@@ -30,6 +30,9 @@
     "moment": "^2.22.2",
     "nconf": "^0.10.0",
     "neo4j-driver": "^1.6.3",
+    "passport": "^0.4.0",
+    "passport-facebook": "^2.1.1",
+    "passport-local": "^1.0.0",
     "ramda": "^0.25.0",
     "uuid": "^3.3.2"
   },

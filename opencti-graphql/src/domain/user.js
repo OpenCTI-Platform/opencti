@@ -6,7 +6,9 @@ import moment from 'moment';
 import bcrypt from 'bcrypt';
 import {pubsub} from "../config/bus";
 import {USER_ADDED_TOPIC} from "../resolvers/user";
+import uuid from "uuid/v4";
 
+const ROLE_USER = 'ROLE_USER';
 const ROLE_ADMIN = 'ROLE_ADMIN';
 
 export const assertUserRole = (user, role) => {
@@ -17,9 +19,29 @@ export const assertAdmin = (user) => {
     assertUserRole(user, ROLE_ADMIN)
 };
 
-export const login = (username, password) => {
+export const loginFromProvider = (email, username) => {
     let session = driver.session();
-    let promise = session.run('MATCH (user:User {username: {username}}) RETURN user', {username: username});
+    const user = {
+        id: uuid(),
+        username: username,
+        email: email,
+        roles: [ROLE_USER],
+        created_at: moment().toISOString(),
+        password: 'oauth'
+    };
+    let promise = session.run('MERGE (user:User {email: {email}}) ON CREATE SET user = {user} RETURN user',
+        {email: email, user: user});
+    return promise.then(async (data) => {
+        let dbUser = head(data.records).get('user');
+        let token = sign(dbUser.properties, conf.get("jwt:secret"));
+        session.close();
+        return {jwt: token};
+    });
+};
+
+export const login = (email, password) => {
+    let session = driver.session();
+    let promise = session.run('MATCH (user:User {email: {email}}) RETURN user', {email: email});
     return promise.then(async (data) => {
         if (isEmpty(data.records)) {
             throw {message: 'login failed', status: 400}

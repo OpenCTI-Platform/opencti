@@ -12,7 +12,7 @@ function fetchQuery(operation, variables) {
         }),
     }).then(response => {
         return response.json();
-    }).catch(error => console.log(error));
+    });
 }
 
 const environment = new Environment({

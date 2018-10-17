@@ -1,17 +1,19 @@
 import React, {Component} from 'react';
+import {Route, Link, Redirect} from "react-router-dom";
+import {Home} from './components/Home';
+import {About} from './components/About';
+import {Login} from './components/Login';
 import logo from './logo.svg';
 import './App.css';
-import {QueryRenderer} from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import environment from './relay/environment';
 
-const testQuery = graphql`
-    query AppUserQuery {
-        me {
-            id
-        }
-    }
-`;
+const PrivateRoute = ({component: Component, ...rest}) => (
+    <Route {...rest} render={props =>
+        props.isAuthenticated ? (
+            <Component {...props} />) : (
+            <Redirect to={{pathname: "/login", state: {from: props.location}}}/>
+        )
+    }/>
+);
 
 class App extends Component {
     render() {
@@ -28,21 +30,18 @@ class App extends Component {
                        rel="noopener noreferrer">
                         Learn React
                     </a>
+                    <ul>
+                        <li>
+                            <Link to="/">Home</Link>
+                        </li>
+                        <li>
+                            <Link to="/about">About</Link>
+                        </li>
+                    </ul>
+                    <Route exact path="/" component={Home}/>
+                    <Route exact path="/login" component={Login}/>
+                    <PrivateRoute path="/about" component={About}/>
                 </header>
-                <QueryRenderer
-                    environment={environment}
-                    query={testQuery}
-                    variables={{}}
-                    render={({error, props}) => {
-                        if (error) {
-                            return <div>Error! {error}</div>;
-                        }
-                        if (!props) {
-                            return <div>Loading...</div>;
-                        }
-                        return <div>User ID: {props.me.id}</div>;
-                    }}
-                />
             </div>
         );
     }

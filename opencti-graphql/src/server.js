@@ -6,9 +6,10 @@ import schema from './schema/schema';
 import bodyParser from 'body-parser';
 import {driver} from './database/index';
 import {createTerminus} from '@godaddy/terminus';
-import {login} from "./domain/user";
 import {verify} from 'jsonwebtoken';
 import conf from './config/conf';
+import passport from './config/security';
+
 
 // noinspection JSUnresolvedVariable
 const devMode = process.env.NODE_ENV === 'development';
@@ -20,14 +21,24 @@ app.get('/about', function (req, res) {
     res.send('Welcome to openCTI graphQL API');
 });
 
-// Login is not part of graphQL API
+// #### Login
 let urlencodedParser = bodyParser.urlencoded({extended: true});
-app.post('/login', urlencodedParser, function (req, res) {
-    let username = req.body.username;
-    let password = req.body.password;
-    login(username, password)
-        .then((token) => res.send(token))
-        .catch((err) => res.status(400).send(err));
+// ## Local strategy
+app.post('/opencti-login', urlencodedParser, passport.initialize(), function (req, res, next) {
+    passport.authenticate('local', function (err, user, info) {
+        if (err)  res.status(400).send(err);
+        if (!user) res.status(400).send(err);
+        res.send(user);
+    })(req, res, next);
+});
+// ## Facebook strategy
+app.get('/auth/facebook', passport.authenticate('facebook', {scope: ['email']}));
+app.get('/auth/facebook/callback', urlencodedParser, passport.initialize(), function (req, res, next) {
+    passport.authenticate('facebook', function (err, user, info) {
+        if (err)  res.status(400).send(err);
+        if (!user) res.status(400).send(err);
+        res.send(user);
+    })(req, res, next);
 });
 
 function onSignal() {
