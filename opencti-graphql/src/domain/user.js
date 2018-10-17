@@ -2,14 +2,15 @@ import {driver} from '../database/index';
 import {isEmpty, head, contains, map, assoc, compose} from 'ramda';
 import {sign} from 'jsonwebtoken';
 import conf from '../config/conf';
-import {UnauthorizedError} from 'express-jwt';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
+import {pubsub} from "../config/bus";
+import {USER_ADDED_TOPIC} from "../resolvers/user";
 
 const ROLE_ADMIN = 'ROLE_ADMIN';
 
 export const assertUserRole = (user, role) => {
-    if (!contains(role, user.roles)) throw new UnauthorizedError(401, new Error("Insufficient privilege"));
+    if (!contains(role, user.roles)) throw new Error("Insufficient privilege");
 };
 
 export const assertAdmin = (user) => {
@@ -64,7 +65,9 @@ export const addUser = async (user) => {
     let promise = session.run('CREATE (user:User {user}) RETURN user', {user: completeUser});
     return promise.then((data) => {
         session.close();
-        return head(data.records).get('user').properties;
+        let userAdded = head(data.records).get('user').properties;
+        pubsub.publish(USER_ADDED_TOPIC, {userAdded: userAdded});
+        return userAdded;
     });
 };
 

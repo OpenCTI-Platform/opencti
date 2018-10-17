@@ -23,7 +23,7 @@ input AddUserInput {
     email: String!
 }
 
-### QUERIES & MUTATIONS
+### QUERIES
 type Query {
     # User
     users(first: Int, offset: Int): [User]
@@ -31,8 +31,15 @@ type Query {
     me: User
 }
 
+### SUBSCRIPTIONS
+type Subscription {
+    userAdded: User
+}
+
+### MUTATIONS
 type Mutation {
     # User
     addUser(input: AddUserInput): User
     deleteUser(id: ID!): ID
 }
+

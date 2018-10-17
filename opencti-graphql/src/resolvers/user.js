@@ -1,6 +1,9 @@
 import {addUser, assertAdmin, deleteUser, findAll, findById} from "../domain/user";
 import uuid from "uuid/v4";
 import {assoc} from "ramda";
+import {pubsub} from "../config/bus";
+
+export const USER_ADDED_TOPIC = 'USER_ADDED_TOPIC';
 
 // noinspection JSUnusedGlobalSymbols
 export const userResolvers = {
@@ -16,6 +19,11 @@ export const userResolvers = {
         me: (_, args, context) => {
             return findById(context.user.id);
         },
+    },
+    Subscription: {
+        userAdded: {
+            subscribe: () => pubsub.asyncIterator(USER_ADDED_TOPIC)
+        }
     },
     Mutation: {
         addUser: (_, {input}, context) => {

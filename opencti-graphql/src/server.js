@@ -1,38 +1,19 @@
 import express from 'express';
-import graphqlHTTP from 'express-graphql';
-import schema from './schema/schema';
+import {ApolloServer} from 'apollo-server-express';
+// noinspection NodeJsCodingAssistanceForCoreModules
+import http from 'http';
+import {resolvers, typeDefs} from './schema/schema';
 import bodyParser from 'body-parser';
 import {driver} from './database/index';
 import {createTerminus} from '@godaddy/terminus';
 import {login} from "./domain/user";
-import jwtMiddleware from 'express-jwt';
+import {verify} from 'jsonwebtoken';
 import conf from './config/conf';
 
 // noinspection JSUnresolvedVariable
 const devMode = process.env.NODE_ENV === 'development';
 
 let app = express();
-if (devMode) {
-    let devMiddleware = (req, res, next) => {
-        req.headers.authorization = 'Bearer ' + conf.get('jwt:dev_token');
-        next();
-    };
-    app.use(devMiddleware);
-}
-app.use('/graphql',
-    jwtMiddleware({secret: conf.get('jwt:secret')}),
-    graphqlHTTP({
-        schema: schema,
-        graphiql: devMode,
-    })
-);
-
-// Handling authorization error smoothly
-app.use(function (err, req, res, next) {
-    if (err.name === 'UnauthorizedError') {
-        res.status(401).send('invalid token...');
-    }
-});
 
 // Publish some public information
 app.get('/about', function (req, res) {
@@ -65,6 +46,41 @@ const options = {
     onSignal, // [optional] cleanup function, returning a promise (used to be onSigterm)
     onShutdown
 };
-let server = app.listen(conf.get('app:port'));
-createTerminus(server, options);
-console.log('Running openCTI GraphQL API server at localhost:4000/graphql');
+
+const authentication = (token) => {
+    let user;
+    try {
+        user = verify(token, conf.get("jwt:secret"));
+    } catch (err) {
+        if (devMode) {     // In dev mode, inject a JWT token to be automatically 'logged'
+            user = verify(conf.get('jwt:dev_token'), conf.get("jwt:secret"));
+        } else {
+            throw new Error("You need to be authenticated to access this schema!");
+        }
+    }
+    return {user}
+};
+
+const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: function ({req}) {
+        return req !== undefined ? authentication(req.headers.authorization) : null;
+    },
+    subscriptions: { //https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
+        onConnect: (connectionParams) => {
+            return authentication(connectionParams.authorization)
+        },
+    },
+});
+
+server.applyMiddleware({app});
+const httpServer = http.createServer(app);
+server.installSubscriptionHandlers(httpServer);
+
+let PORT = conf.get('app:port');
+httpServer.listen(PORT, () => {
+    createTerminus(httpServer, options);
+    console.log(`🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`);
+    console.log(`🚀 Subscriptions ready at ws://localhost:${PORT}${server.subscriptionsPath}`);
+});
