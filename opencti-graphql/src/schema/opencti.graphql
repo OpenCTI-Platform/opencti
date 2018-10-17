@@ -23,12 +23,18 @@ input AddUserInput {
     email: String!
 }
 
+type TestDefer {
+    me: User,
+    users: [User]
+}
+
 ### QUERIES
 type Query {
     # User
     users(first: Int, offset: Int): [User]
     user(id: String!): User
-    me: User
+    me: User,
+    testDefer: TestDefer
 }
 
 ### SUBSCRIPTIONS

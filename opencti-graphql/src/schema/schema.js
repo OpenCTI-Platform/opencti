@@ -2,14 +2,22 @@ import {GraphQLDateTime} from 'graphql-iso-date';
 import {importSchema} from 'graphql-import'
 import {mergeResolvers} from 'merge-graphql-schemas';
 import {userResolvers} from '../resolvers/user';
+import {makeExecutableSchema} from 'graphql-tools';
 
 const globalResolvers = {
     DateTime: GraphQLDateTime,
 };
 
-export const typeDefs = importSchema('./src/schema/opencti.graphql');
+const typeDefs = importSchema('./src/schema/opencti.graphql');
 
-export const resolvers = mergeResolvers([
+const resolvers = mergeResolvers([
     globalResolvers,
     userResolvers
 ]);
+
+const schema = makeExecutableSchema({
+    typeDefs,
+    resolvers
+});
+
+export default schema;

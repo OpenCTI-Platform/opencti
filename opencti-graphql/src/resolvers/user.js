@@ -5,6 +5,13 @@ import {pubsub} from "../config/bus";
 
 export const USER_ADDED_TOPIC = 'USER_ADDED_TOPIC';
 
+const delay = (result, delayMs) =>
+    new Promise(resolve => {
+        setTimeout(() => {
+            resolve(result);
+        }, delayMs);
+    });
+
 // noinspection JSUnusedGlobalSymbols
 export const userResolvers = {
     Query: {
@@ -19,6 +26,13 @@ export const userResolvers = {
         me: (_, args, context) => {
             return findById(context.user.id);
         },
+        //Waiting for https://github.com/apollographql/apollo-server/pull/1287
+        testDefer: (_, args, context) => {
+            return {
+                me: findById(context.user.id),
+                users: delay(findAll(25, 0), 5000),
+            };
+        }
     },
     Subscription: {
         userAdded: {

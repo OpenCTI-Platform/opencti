@@ -2,7 +2,7 @@ import express from 'express';
 import {ApolloServer} from 'apollo-server-express';
 // noinspection NodeJsCodingAssistanceForCoreModules
 import http from 'http';
-import {resolvers, typeDefs} from './schema/schema';
+import schema from './schema/schema';
 import bodyParser from 'body-parser';
 import {driver} from './database/index';
 import {createTerminus} from '@godaddy/terminus';
@@ -62,8 +62,7 @@ const authentication = (token) => {
 };
 
 const server = new ApolloServer({
-    typeDefs,
-    resolvers,
+    schema: schema,
     context: function ({req}) {
         return req !== undefined ? authentication(req.headers.authorization) : null;
     },
