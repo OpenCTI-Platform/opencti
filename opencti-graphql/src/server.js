@@ -6,12 +6,13 @@ import schema from './schema/schema';
 import bodyParser from 'body-parser';
 import {driver} from './database/index';
 import {createTerminus} from '@godaddy/terminus';
-import {verify} from 'jsonwebtoken';
+import {sign, verify} from 'jsonwebtoken';
 import conf from './config/conf';
 import passport from './config/security';
 import cookieParser from 'cookie-parser';
 import {AuthenticationError} from 'apollo-server-express';
 import {findByTokenId} from "./domain/user";
+import moment from "moment";
 
 // noinspection JSUnresolvedVariable
 const devMode = process.env.NODE_ENV === 'development';
@@ -26,7 +27,7 @@ app.post('/auth/api', urlencodedParser, passport.initialize(), function (req, re
     passport.authenticate('local', function (err, token) {
         if (err) res.status(400).send(err);
         if (!token) res.status(400).send(err);
-        res.send(token);
+        res.send(sign(token, conf.get("jwt:secret")));
     })(req, res, next);
 });
 app.get('/auth/:provider', function (req, res, next) {
@@ -38,7 +39,13 @@ app.get('/auth/:provider/callback', urlencodedParser, passport.initialize(), fun
     passport.authenticate(provider, function (err, token) {
         if (err) return res.status(400).send(err);
         if (!token) return res.status(400).send(err);
-        res.cookie('opencti_token', token, {httpOnly: false, secure: !devMode});
+        let creation = moment(token.created_at);
+        let maxDuration = moment.duration(token.duration);
+        let expires = creation.add(maxDuration).toDate();
+        //Create and setup the auth token
+        res.cookie('opencti_token', sign(token, conf.get("jwt:secret")), {
+            httpOnly: false, expires: expires, secure: !devMode
+        });
         res.redirect('/private');
     })(req, res, next);
 });

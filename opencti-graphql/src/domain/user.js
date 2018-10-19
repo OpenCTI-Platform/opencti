@@ -1,7 +1,5 @@
 import {driver} from '../database/index';
 import {assoc, compose, contains, head, isEmpty, map} from 'ramda';
-import {sign} from 'jsonwebtoken';
-import conf from '../config/conf';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
 import {pubsub} from "../config/bus";
@@ -39,13 +37,11 @@ export const loginFromProvider = (email, username) => {
         'MERGE (user)<-[:WEB_ACCESS]-(token:Token {name: {token}.name}) ON CREATE SET token = {token} ' +
         'RETURN token', {user: user, token: token});
     return promise.then(async (data) => {
+        session.close();
         if (isEmpty(data.records)) {
             throw {message: 'login failed', status: 400}
         }
-        let dbToken = head(data.records).get('token');
-        let token = sign(dbToken.properties, conf.get("jwt:secret"));
-        session.close();
-        return token;
+        return head(data.records).get('token').properties;
     });
 };
 
@@ -53,6 +49,7 @@ export const login = (email, password) => {
     let session = driver.session();
     let promise = session.run('MATCH (user:User {email: {email}})<-[:WEB_ACCESS]-(token:Token) RETURN user, token', {email: email});
     return promise.then(async (data) => {
+        session.close();
         if (isEmpty(data.records)) {
             throw {message: 'login failed', status: 400}
         }
@@ -63,10 +60,7 @@ export const login = (email, password) => {
         if (!match) {
             throw {message: 'login failed', status: 400}
         }
-        let tokenRecord = firstRecord.get('token').properties;
-        let token = sign(tokenRecord, conf.get("jwt:secret"));
-        session.close();
-        return token;
+        return firstRecord.get('token').properties;
     });
 };
 
