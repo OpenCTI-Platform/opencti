@@ -21,6 +21,11 @@
       "client_id": "GOOGLE_CONSUMER_KEY",
       "client_secret": "GOOGLE_CONSUMER_SECRET",
       "callback_uri": "http://www.example.com/auth/google/callback"
+    },
+    "github" : {
+      "client_id": "GITHUB_CONSUMER_KEY",
+      "client_secret": "GITHUB_CONSUMER_SECRET",
+      "callback_uri": "http://www.example.com/github/google/callback"
     }
   }
 }
