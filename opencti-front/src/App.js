@@ -1,18 +1,18 @@
 import React, {Component} from 'react';
-import {Route, Link, Redirect} from "react-router-dom";
+import {Link, Redirect, Route} from "react-router-dom";
 import {Home} from './components/Home';
-import {About} from './components/About';
+import Private from './components/Private';
 import {Login} from './components/Login';
 import logo from './logo.svg';
 import './App.css';
+import {identity} from "./index";
 
 const PrivateRoute = ({component: Component, ...rest}) => (
-    <Route {...rest} render={props =>
-        props.isAuthenticated ? (
-            <Component {...props} />) : (
-            <Redirect to={{pathname: "/login", state: {from: props.location}}}/>
-        )
-    }/>
+    <Route {...rest} render={(props) => (
+        identity() !== null
+            ? <Component {...props} />
+            : <Redirect to='/login'/>
+    )}/>
 );
 
 class App extends Component {
@@ -35,12 +35,15 @@ class App extends Component {
                             <Link to="/">Home</Link>
                         </li>
                         <li>
-                            <Link to="/about">About</Link>
+                            <Link to="/private">Private</Link>
+                        </li>
+                        <li>
+                            <a href="/auth/facebook">Facebook</a>
                         </li>
                     </ul>
                     <Route exact path="/" component={Home}/>
                     <Route exact path="/login" component={Login}/>
-                    <PrivateRoute path="/about" component={About}/>
+                    <PrivateRoute exact path="/private" component={Private}/>
                 </header>
             </div>
         );

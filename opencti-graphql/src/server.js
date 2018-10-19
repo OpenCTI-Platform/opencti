@@ -9,12 +9,15 @@ import {createTerminus} from '@godaddy/terminus';
 import {verify} from 'jsonwebtoken';
 import conf from './config/conf';
 import passport from './config/security';
-
+import cookieParser from 'cookie-parser';
+import {AuthenticationError} from 'apollo-server-express';
+import {findByTokenId} from "./domain/user";
 
 // noinspection JSUnresolvedVariable
 const devMode = process.env.NODE_ENV === 'development';
 
 let app = express();
+app.use(cookieParser());
 
 // Publish some public information
 app.get('/about', function (req, res) {
@@ -24,18 +27,29 @@ app.get('/about', function (req, res) {
 // #### Login
 let urlencodedParser = bodyParser.urlencoded({extended: true});
 // ## Local strategy
-app.post('/opencti-login', urlencodedParser, passport.initialize(), function (req, res, next) {
-    passport.authenticate('local', function (err, user, info) {
-        if (err)  res.status(400).send(err);
+app.post('/auth/opencti', urlencodedParser, passport.initialize(), function (req, res, next) {
+    passport.authenticate('local', function (err, user) {
+        if (err) res.status(400).send(err);
         if (!user) res.status(400).send(err);
-        res.send(user);
+        res.cookie('opencti_token', user, {httpOnly: false, secure: true});
+        res.redirect('/');
     })(req, res, next);
 });
 // ## Facebook strategy
 app.get('/auth/facebook', passport.authenticate('facebook', {scope: ['email']}));
 app.get('/auth/facebook/callback', urlencodedParser, passport.initialize(), function (req, res, next) {
-    passport.authenticate('facebook', function (err, user, info) {
-        if (err)  res.status(400).send(err);
+    passport.authenticate('facebook', function (err, user) {
+        if (err) res.status(400).send(err);
+        if (!user) res.status(400).send(err);
+        res.cookie('opencti_token', user, {httpOnly: false, secure: true});
+        res.redirect('/');
+    })(req, res, next);
+});
+// ## Google strategy
+app.get('/auth/google', passport.authenticate('google'));
+app.get('/auth/google/callback', urlencodedParser, passport.initialize(), function (req, res, next) {
+    passport.authenticate('google', function (err, user) {
+        if (err) res.status(400).send(err);
         if (!user) res.status(400).send(err);
         res.send(user);
     })(req, res, next);
@@ -58,24 +72,32 @@ const options = {
     onShutdown
 };
 
-const authentication = (token) => {
+const authentication = async (token) => {
     let user;
     try {
-        user = verify(token, conf.get("jwt:secret"));
+        let tokenValidated = verify(token, conf.get("jwt:secret"));
+        user = await findByTokenId(tokenValidated);
     } catch (err) {
-        if (devMode) {     // In dev mode, inject a JWT token to be automatically 'logged'
-            user = verify(conf.get('jwt:dev_token'), conf.get("jwt:secret"));
-        } else {
-            throw new Error("You need to be authenticated to access this schema!");
-        }
+        //if (devMode) {     // In dev mode, inject a JWT token to be automatically 'logged'
+        //    user = verify(conf.get('jwt:dev_token'), conf.get("jwt:secret"));
+        //} else {
+        console.log(err)
+        throw new AuthenticationError('must authenticate');
+        //}
     }
+    console.log('user', user);
     return {user}
 };
 
 const server = new ApolloServer({
     schema: schema,
     context: function ({req}) {
-        return req !== undefined ? authentication(req.headers.authorization) : null;
+        let token = req && req.cookies ? req.cookies.opencti_token : null;
+        return authentication(token);
+    },
+    formatError: error => {
+        delete error.extensions.exception;
+        return error;
     },
     subscriptions: { //https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
         onConnect: (connectionParams) => {

@@ -4,16 +4,21 @@
   "private": true,
   "dependencies": {
     "graphql": "^14.0.2",
+    "http-proxy-middleware": "^0.19.0",
+    "jsonwebtoken": "^8.3.0",
     "react": "^16.5.2",
+    "react-cookie": "^3.0.4",
     "react-dom": "^16.5.2",
     "react-relay": "^1.6.2",
+    "react-relay-network-modern": "^2.4.0",
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.0.5",
     "relay-compiler": "^1.6.2",
-    "relay-runtime": "^1.6.2"
+    "relay-runtime": "^1.6.2",
+    "universal-cookie": "^3.0.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "HTTPS=true react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -37,6 +42,7 @@
     "@storybook/react": "^3.4.11",
     "babel-core": "^6.26.3",
     "babel-plugin-relay": "^1.7.0-rc.1",
-    "babel-runtime": "^6.26.0"
+    "babel-runtime": "^6.26.0",
+    "relay-devtools": "^1.4.0"
   }
 }

@@ -11,6 +11,11 @@ module.exports.up = async function (next) {
         username: 'user', password: 'user',
         email: 'user@opencti.org', roles: ['ROLE_USER']
     });
+    await addUser({
+        id: 'ebb7bbfa-fee4-4540-9993-5d98aca7fc02',
+        username: 'Julien', password: 'julien',
+        email: 'richard.julien@gmail.com', roles: ['ROLE_ADMIN']
+    });
     next();
 };
 

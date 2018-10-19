@@ -1,6 +1,7 @@
 import passport from "passport/lib";
 import LocalStrategy from "passport-local";
 import FacebookStrategy from "passport-facebook";
+import {OAuthStrategy as GoogleStrategy} from "passport-google-oauth";
 import {login, loginFromProvider} from "../domain/user";
 import conf from '../config/conf';
 
@@ -30,5 +31,16 @@ passport.use(
             });
         }
     ));
+
+passport.use(
+    new GoogleStrategy({
+        consumerKey: conf.get("providers:google:consumer_key"),
+        consumerSecret: conf.get("providers:google:consumer_secret"),
+        callbackURL: conf.get("providers:google:callback_uri")
+    },
+    function(token, tokenSecret, profile, done) {
+        console.log(profile);
+    }
+));
 
 export default passport;

@@ -16,6 +16,7 @@
     "await": "^0.2.6",
     "bcrypt": "^3.0.1",
     "body-parser": "^1.18.3",
+    "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
     "express": "^4.16.4",
     "graphql": "^14.0.2",
@@ -32,6 +33,7 @@
     "neo4j-driver": "^1.6.3",
     "passport": "^0.4.0",
     "passport-facebook": "^2.1.1",
+    "passport-google-oauth": "^1.0.0",
     "passport-local": "^1.0.0",
     "ramda": "^0.25.0",
     "uuid": "^3.3.2"

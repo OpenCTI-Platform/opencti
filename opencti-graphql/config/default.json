@@ -16,6 +16,11 @@
       "client_id": "FACEBOOK_APP_ID",
       "client_secret": "FACEBOOK_APP_SECRET",
       "callback_uri": "http://www.example.com/auth/facebook/callback"
+    },
+    "google" : {
+      "consumer_key": "GOOGLE_CONSUMER_KEY",
+      "consumer_secret": "GOOGLE_CONSUMER_SECRET",
+      "callback_uri": "http://www.example.com/auth/google/callback"
     }
   }
 }
