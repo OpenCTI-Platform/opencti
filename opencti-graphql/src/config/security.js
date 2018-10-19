@@ -1,9 +1,10 @@
 import passport from "passport/lib";
 import LocalStrategy from "passport-local";
 import FacebookStrategy from "passport-facebook";
-import {OAuthStrategy as GoogleStrategy} from "passport-google-oauth";
+import {OAuth2Strategy as GoogleStrategy} from "passport-google-oauth";
 import {login, loginFromProvider} from "../domain/user";
 import conf from '../config/conf';
+import {head} from "ramda";
 
 passport.use(
     new LocalStrategy(
@@ -34,13 +35,20 @@ passport.use(
 
 passport.use(
     new GoogleStrategy({
-        consumerKey: conf.get("providers:google:consumer_key"),
-        consumerSecret: conf.get("providers:google:consumer_secret"),
-        callbackURL: conf.get("providers:google:callback_uri")
-    },
-    function(token, tokenSecret, profile, done) {
-        console.log(profile);
-    }
-));
+            clientID: conf.get("providers:google:client_id"),
+            clientSecret: conf.get("providers:google:client_secret"),
+            callbackURL: conf.get("providers:google:callback_uri")
+        },
+        function (token, tokenSecret, profile, done) {
+            let username = profile.displayName;
+            let email = head(profile.emails).value;
+            //let picture = head(profile.photos).value;
+            loginFromProvider(email, username).then((token) => {
+                done(null, token);
+            }).catch((err) => {
+                done(err);
+            });
+        }
+    ));
 
 export default passport;

@@ -6,5 +6,8 @@ export const Login = () => (
         <div>
             <a href="/auth/facebook">Facebook login</a>
         </div>
+        <div>
+            <a href="/auth/google">Google login</a>
+        </div>
     </div>
 );

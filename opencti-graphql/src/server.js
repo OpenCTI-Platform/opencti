@@ -35,29 +35,30 @@ app.post('/auth/api', urlencodedParser, passport.initialize(), function (req, re
     })(req, res, next);
 });
 app.post('/auth/opencti', urlencodedParser, passport.initialize(), function (req, res, next) {
-    passport.authenticate('local', function (err, user) {
+    passport.authenticate('local', function (err, token) {
         if (err) res.status(400).send(err);
-        if (!user) res.status(400).send(err);
-        res.cookie('opencti_token', user, {httpOnly: false, secure: true});
+        if (!token) res.status(400).send(err);
+        res.cookie('opencti_token', token, {httpOnly: false, secure: true});
         res.redirect('/private');
     })(req, res, next);
 });
 // ## Facebook strategy
 app.get('/auth/facebook', passport.authenticate('facebook', {scope: ['email']}));
 app.get('/auth/facebook/callback', urlencodedParser, passport.initialize(), function (req, res, next) {
-    passport.authenticate('facebook', function (err, user) {
+    passport.authenticate('facebook', function (err, token) {
         if (err) return res.status(400).send(err);
-        if (!user) return res.status(400).send(err);
-        res.cookie('opencti_token', user, {httpOnly: false, secure: true});
+        if (!token) return res.status(400).send(err);
+        res.cookie('opencti_token', token, {httpOnly: false, secure: true});
         res.redirect('/private');
     })(req, res, next);
 });
 // ## Google strategy
-app.get('/auth/google', passport.authenticate('google'));
+app.get('/auth/google', passport.authenticate('google', {scope: ['email']}));
 app.get('/auth/google/callback', urlencodedParser, passport.initialize(), function (req, res, next) {
-    passport.authenticate('google', function (err, user) {
+    passport.authenticate('google', function (err, token) {
         if (err) return res.status(400).send(err);
-        res.cookie('opencti_token', user, {httpOnly: false, secure: true});
+        if (!token) return res.status(400).send(err);
+        res.cookie('opencti_token', token, {httpOnly: false, secure: true});
         res.redirect('/private');
     })(req, res, next);
 });

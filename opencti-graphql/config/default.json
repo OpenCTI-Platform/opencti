@@ -18,8 +18,8 @@
       "callback_uri": "http://www.example.com/auth/facebook/callback"
     },
     "google" : {
-      "consumer_key": "GOOGLE_CONSUMER_KEY",
-      "consumer_secret": "GOOGLE_CONSUMER_SECRET",
+      "client_id": "GOOGLE_CONSUMER_KEY",
+      "client_secret": "GOOGLE_CONSUMER_SECRET",
       "callback_uri": "http://www.example.com/auth/google/callback"
     }
   }
