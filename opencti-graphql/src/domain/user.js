@@ -43,7 +43,7 @@ export const loginFromProvider = (email, username) => {
             throw {message: 'login failed', status: 400}
         }
         let dbToken = head(data.records).get('token');
-        let token = sign(dbToken.properties.id, conf.get("jwt:secret"));
+        let token = sign(dbToken.properties, conf.get("jwt:secret"));
         session.close();
         return token;
     });

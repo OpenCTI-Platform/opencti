@@ -27,6 +27,13 @@ app.get('/about', function (req, res) {
 // #### Login
 let urlencodedParser = bodyParser.urlencoded({extended: true});
 // ## Local strategy
+app.post('/auth/api', urlencodedParser, passport.initialize(), function (req, res, next) {
+    passport.authenticate('local', function (err, token) {
+        if (err) res.status(400).send(err);
+        if (!token) res.status(400).send(err);
+        res.send(token);
+    })(req, res, next);
+});
 app.post('/auth/opencti', urlencodedParser, passport.initialize(), function (req, res, next) {
     passport.authenticate('local', function (err, user) {
         if (err) res.status(400).send(err);
@@ -59,9 +66,11 @@ function onSignal() {
     console.log('OpenCTI is starting cleanup');
     driver.close();
 }
+
 function onShutdown() {
     console.log('Cleanup finished, openCTI shutdown');
 }
+
 // noinspection JSUnusedGlobalSymbols
 const options = {
     signal: 'SIGINT',
@@ -73,22 +82,29 @@ const options = {
 const authentication = async (token) => {
     let user;
     try {
-        let token_id = verify(token, conf.get("jwt:secret"));
-        user = await findByTokenId(token_id);
+        let decodedToken = verify(token, conf.get("jwt:secret"));
+        user = await findByTokenId(decodedToken.id);
     } catch (err) {
-        if (devMode) { // In dev mode, inject a JWT token to be automatically 'logged'
-            user = await findByTokenId(conf.get('jwt:dev_token'));
-        } else {
+        //if (devMode) { // In dev mode, inject a JWT token to be automatically 'logged'
+        //    user = await findByTokenId(conf.get('jwt:dev_token'));
+        //} else {
             throw new AuthenticationError('Authentication required');
-        }
+        //}
     }
     return {user}
+};
+
+const extractTokenFromBearer = (bearer) => {
+    return bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
 };
 
 const server = new ApolloServer({
     schema: schema,
     context: function ({req}) {
-        let token = req && req.cookies ? req.cookies.opencti_token : null;
+        if (!req) return undefined; //Req can be null only for websocket subscription.
+        //Authentication token can come from 'opencti cookie' or 'Authorization header'
+        let token = req.cookies ? req.cookies.opencti_token : null;
+        token = token ? token : extractTokenFromBearer(req.headers.authorization);
         return authentication(token);
     },
     formatError: error => {
@@ -97,7 +113,7 @@ const server = new ApolloServer({
     },
     subscriptions: { //https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
         onConnect: (connectionParams) => {
-            return authentication(connectionParams.authorization)
+            return authentication(extractTokenFromBearer(connectionParams.authorization));
         },
     },
 });
