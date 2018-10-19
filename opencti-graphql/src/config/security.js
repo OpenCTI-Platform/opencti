@@ -18,7 +18,8 @@ let facebookOptions = {
     clientID: conf.get("providers:facebook:client_id"),
     clientSecret: conf.get("providers:facebook:client_secret"),
     callbackURL: conf.get("providers:facebook:callback_uri"),
-    profileFields: ['id', 'emails', 'name']
+    profileFields: ['id', 'emails', 'name'],
+    scope: 'email'
 };
 let facebookStrategy = new FacebookStrategy(facebookOptions, function (accessToken, refreshToken, profile, done) {
     let data = profile._json;
@@ -34,7 +35,8 @@ let facebookStrategy = new FacebookStrategy(facebookOptions, function (accessTok
 let googleOptions = {
     clientID: conf.get("providers:google:client_id"),
     clientSecret: conf.get("providers:google:client_secret"),
-    callbackURL: conf.get("providers:google:callback_uri")
+    callbackURL: conf.get("providers:google:callback_uri"),
+    scope: 'email'
 };
 let googleStrategy = new GoogleStrategy(googleOptions, function (token, tokenSecret, profile, done) {
     let username = profile.displayName;
