@@ -25,9 +25,6 @@ class AppPublic extends Component {
                         <li>
                             <Link to="/private">Private</Link>
                         </li>
-                        <li>
-                            <a href="/auth/facebook">Facebook login</a>
-                        </li>
                     </ul>
                 </header>
                 <div>
