@@ -38,7 +38,7 @@ app.get('/auth/:provider/callback', urlencodedParser, passport.initialize(), fun
     passport.authenticate(provider, function (err, token) {
         if (err) return res.status(400).send(err);
         if (!token) return res.status(400).send(err);
-        res.cookie('opencti_token', token, {httpOnly: false, secure: true});
+        res.cookie('opencti_token', token, {httpOnly: false, secure: !devMode});
         res.redirect('/private');
     })(req, res, next);
 });

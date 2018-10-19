@@ -9,5 +9,8 @@ export const Login = () => (
         <div>
             <a href="/auth/google">Google login</a>
         </div>
+        <div>
+            <a href="/auth/github">Github login</a>
+        </div>
     </div>
 );

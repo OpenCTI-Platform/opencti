@@ -67,8 +67,6 @@ class AppPrivate extends Component {
                         </div>
                     }}
                 />
-
-
             </div>
         )
     }
