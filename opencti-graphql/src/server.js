@@ -85,11 +85,11 @@ const authentication = async (token) => {
         let decodedToken = verify(token, conf.get("jwt:secret"));
         user = await findByTokenId(decodedToken.id);
     } catch (err) {
-        //if (devMode) { // In dev mode, inject a JWT token to be automatically 'logged'
-        //    user = await findByTokenId(conf.get('jwt:dev_token'));
-        //} else {
+        if (devMode) { // In dev mode, inject a JWT token to be automatically 'logged'
+            user = await findByTokenId(conf.get('jwt:dev_token'));
+        } else {
             throw new AuthenticationError('Authentication required');
-        //}
+        }
     }
     return {user}
 };

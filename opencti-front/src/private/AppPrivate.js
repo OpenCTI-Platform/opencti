@@ -52,7 +52,7 @@ class AppPrivate extends Component {
                                         <Link to="/">Home</Link>
                                     </li>
                                     <li>
-                                        <Link to="/private">Private zone</Link>
+                                        <Link to="/private">Private</Link>
                                     </li>
                                     <li>
                                         <Link to="/private/users">Users</Link>
