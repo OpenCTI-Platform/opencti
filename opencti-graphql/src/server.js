@@ -19,11 +19,6 @@ const devMode = process.env.NODE_ENV === 'development';
 let app = express();
 app.use(cookieParser());
 
-// Publish some public information
-app.get('/about', function (req, res) {
-    res.send('Welcome to openCTI graphQL API');
-});
-
 // #### Login
 let urlencodedParser = bodyParser.urlencoded({extended: true});
 // ## Local strategy
