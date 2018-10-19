@@ -6,24 +6,13 @@ import moment from 'moment';
 import bcrypt from 'bcrypt';
 import {pubsub} from "../config/bus";
 import {USER_ADDED_TOPIC} from "../resolvers/user";
-import uuid from "uuid/v4";
+import uuid from "uuid/v5";
 
-const OPENCTI_WEB_TOKEN = 'OpenCTI Web Token';
+const OPENCTI_WEB_TOKEN = 'Default';
 const ROLE_USER = 'ROLE_USER';
 const ROLE_ADMIN = 'ROLE_ADMIN';
 
-const generateOpenCTIWebToken = () => {
-    let id = uuid();
-    let created_at = moment().toISOString();
-    return {
-        id,
-        name: OPENCTI_WEB_TOKEN,
-        created_at,
-        issuer: 'openCTI',
-        revoked: false,
-    };
-};
-
+//Security related
 export const assertUserRole = (user, role) => {
     if (!contains(role, user.roles)) throw new Error("Insufficient privilege");
 };
@@ -32,6 +21,7 @@ export const assertAdmin = (user) => {
     assertUserRole(user, ROLE_ADMIN)
 };
 
+//User related
 export const loginFromProvider = (email, username) => {
     let session = driver.session();
     const user = {
@@ -50,7 +40,7 @@ export const loginFromProvider = (email, username) => {
         name: OPENCTI_WEB_TOKEN,
         username: username,
         user: user,
-        token: generateOpenCTIWebToken()
+        token: generateOpenCTIWebToken(email)
     });
     return promise.then(async (data) => {
         let dbToken = head(data.records).get('token');
@@ -101,16 +91,6 @@ export const findById = (userId) => {
     });
 };
 
-export const findByTokenId = (tokenId) => {
-    let session = driver.session();
-    let promise = session.run('MATCH (token:Token {id: {tokenId}, revoked: false})-->(user) RETURN user', {tokenId: tokenId});
-    return promise.then((data) => {
-        session.close();
-        if (isEmpty(data.records)) throw {message: 'Cant find the user with this token: ' + tokenId, status: 400};
-        return head(data.records).get('user').properties;
-    });
-};
-
 export const addUser = async (user) => {
     let completeUser = compose(
         assoc('created_at', moment().toISOString()),
@@ -118,7 +98,7 @@ export const addUser = async (user) => {
     )(user);
     let session = driver.session();
     let promise = session.run('CREATE (user:User {user})<-[:WEB_ACCESS]-(token:Token {token}) RETURN user',
-        {user: completeUser, token: generateOpenCTIWebToken()});
+        {user: completeUser, token: generateOpenCTIWebToken(user.email)});
     return promise.then((data) => {
         session.close();
         let userAdded = head(data.records).get('user').properties;
@@ -142,4 +122,35 @@ export const deleteUser = (userId) => {
 
 export const hashPassword = (password) => {
     return bcrypt.hash(password, 10);
+};
+
+//Token related
+const generateOpenCTIWebToken = (email) => {
+    return {
+        id: uuid(email, uuid.URL),
+        name: OPENCTI_WEB_TOKEN,
+        created_at: moment().toISOString(),
+        issuer: 'openCTI',
+        revoked: false,
+        duration: 'P99Y' //99 years per default
+    };
+};
+
+export const findByTokenId = (tokenId) => {
+    let session = driver.session();
+    //Fetch user by token relation if the token is not revoked
+    let promise = session.run('MATCH (token:Token {id: {tokenId}, revoked: false})-->(user) RETURN user, token', {tokenId: tokenId});
+    return promise.then((data) => {
+        session.close();
+        if (isEmpty(data.records)) throw {message: 'User token invalid: ' + tokenId, status: 400};
+        //Token duration validation
+        let record = head(data.records);
+        let token = record.get('token').properties;
+        let creation = moment(token.created_at);
+        let maxDuration = moment.duration(token.duration);
+        let now = moment();
+        let currentDuration = moment.duration(now.diff(creation));
+        if (currentDuration > maxDuration) throw {message: 'User token invalid: ' + tokenId, status: 400};
+        return record.get('user').properties;
+    });
 };

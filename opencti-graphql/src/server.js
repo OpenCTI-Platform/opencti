@@ -75,17 +75,15 @@ const options = {
 const authentication = async (token) => {
     let user;
     try {
-        let tokenValidated = verify(token, conf.get("jwt:secret"));
-        user = await findByTokenId(tokenValidated);
+        let token_id = verify(token, conf.get("jwt:secret"));
+        user = await findByTokenId(token_id);
     } catch (err) {
-        //if (devMode) {     // In dev mode, inject a JWT token to be automatically 'logged'
-        //    user = verify(conf.get('jwt:dev_token'), conf.get("jwt:secret"));
-        //} else {
-        console.log(err)
-        throw new AuthenticationError('must authenticate');
-        //}
+        if (devMode) { // In dev mode, inject a JWT token to be automatically 'logged'
+            user = await findByTokenId(conf.get('jwt:dev_token'));
+        } else {
+            throw new AuthenticationError('Authentication required');
+        }
     }
-    console.log('user', user);
     return {user}
 };
 
