@@ -7,7 +7,6 @@
     "http-proxy-middleware": "^0.19.0",
     "jsonwebtoken": "^8.3.0",
     "react": "^16.5.2",
-    "react-cookie": "^3.0.4",
     "react-dom": "^16.5.2",
     "react-relay": "^1.6.2",
     "react-relay-network-modern": "^2.4.0",

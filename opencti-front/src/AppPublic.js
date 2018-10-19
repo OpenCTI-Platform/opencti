@@ -1,21 +1,11 @@
 import React, {Component} from 'react';
-import {Link, Redirect, Route} from "react-router-dom";
-import {Home} from './components/Home';
-import Private from './components/Private';
-import {Login} from './components/Login';
+import {Link, Route} from "react-router-dom";
 import logo from './logo.svg';
 import './App.css';
-import {identity} from "./index";
+import {Login} from "./components/Login";
+import {Home} from "./components/Home";
 
-const PrivateRoute = ({component: Component, ...rest}) => (
-    <Route {...rest} render={(props) => (
-        identity() !== null
-            ? <Component {...props} />
-            : <Redirect to='/login'/>
-    )}/>
-);
-
-class App extends Component {
+class AppPublic extends Component {
     render() {
         return (
             <div className="App">
@@ -41,13 +31,14 @@ class App extends Component {
                             <a href="/auth/facebook">Facebook</a>
                         </li>
                     </ul>
-                    <Route exact path="/" component={Home}/>
-                    <Route exact path="/login" component={Login}/>
-                    <PrivateRoute exact path="/private" component={Private}/>
                 </header>
+                <div>
+                    <Route path="/login" component={Login}/>
+                    <Route exact path="/" component={Home}/>
+                </div>
             </div>
         );
     }
 }
 
-export default App;
+export default AppPublic;

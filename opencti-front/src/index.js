@@ -1,30 +1,36 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
+import AppPublic from './AppPublic';
 import * as serviceWorker from './serviceWorker';
-import {BrowserRouter} from "react-router-dom";
-import {CookiesProvider} from 'react-cookie';
+import {BrowserRouter, Redirect, Route} from "react-router-dom";
 import Cookies from 'universal-cookie';
 import jwt from "jsonwebtoken";
+import AppPrivate from "./components/Private";
 
-const cookies = new Cookies();
-export const identity = () => {
+const isLogged = () => {
+    const cookies = new Cookies();
     let openctiToken = cookies.get('opencti_token');
     if (openctiToken) {
         let decode = jwt.decode(openctiToken);
-        console.log(decode);
-        return decode;
+        return decode !== undefined;
     } else {
-        return null;
+        return false;
     }
 };
 
+const PrivateRoute = ({component: Component, ...rest}) => (
+    <Route {...rest} render={(props) => (
+        isLogged() ? <Component {...props} /> : <Redirect to='/login'/>
+    )}/>
+);
+
 ReactDOM.render(
     <BrowserRouter>
-        <CookiesProvider>
-            <App/>
-        </CookiesProvider>
+        <div>
+            <Route path='/' component={AppPublic}/>
+            <PrivateRoute path="/private" component={AppPrivate}/>
+        </div>
     </BrowserRouter>,
     document.getElementById('root'));
 
