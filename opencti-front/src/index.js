@@ -1,12 +1,33 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import AppPublic from './AppPublic';
-import * as serviceWorker from './serviceWorker';
+import './resources/index.css';
+import AppPublic from './public/AppPublic';
+import * as serviceWorker from './config/serviceWorker';
 import {BrowserRouter, Redirect, Route} from "react-router-dom";
 import Cookies from 'universal-cookie';
 import jwt from "jsonwebtoken";
-import AppPrivate from "./components/Private";
+import AppPrivate from "./private/AppPrivate";
+
+//Loading application
+/*
+commitLocalUpdate(environment, (store) => {
+    let openctiToken = cookies.get('opencti_token');
+    const id = 'user_auth_id';
+    let authentication = store.create(id, 'User');
+    authentication.setValue(id, 'id');
+    if(openctiToken) {
+        let record = jwt.decode(openctiToken);
+        const keys = Object.keys(record);
+        for (let ii = 0; ii < keys.length; ii++) {
+            const key = keys[ii];
+            const val = record[key];
+            authentication.setValue(val, key);
+        }
+    } else {
+        store.delete(id);
+    }
+});
+*/
 
 const isLogged = () => {
     const cookies = new Cookies();
@@ -21,14 +42,15 @@ const isLogged = () => {
 
 const PrivateRoute = ({component: Component, ...rest}) => (
     <Route {...rest} render={(props) => (
-        isLogged() ? <Component {...props} /> : <Redirect to='/login'/>
+        isLogged() ? <Component {...props} /> : <Redirect to='/public/login'/>
     )}/>
 );
 
 ReactDOM.render(
     <BrowserRouter>
         <div>
-            <Route path='/' component={AppPublic}/>
+            <Route exact path='/' component={AppPublic}/>
+            <Route path='/public' component={AppPublic}/>
             <PrivateRoute path="/private" component={AppPrivate}/>
         </div>
     </BrowserRouter>,

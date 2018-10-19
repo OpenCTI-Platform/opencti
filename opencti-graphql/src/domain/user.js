@@ -6,7 +6,8 @@ import moment from 'moment';
 import bcrypt from 'bcrypt';
 import {pubsub} from "../config/bus";
 import {USER_ADDED_TOPIC} from "../resolvers/user";
-import uuid from "uuid/v5";
+import uuid from "uuid/v4";
+import uuidv5 from "uuid/v5";
 
 const OPENCTI_WEB_TOKEN = 'Default';
 const ROLE_USER = 'ROLE_USER';
@@ -32,22 +33,20 @@ export const loginFromProvider = (email, username) => {
         created_at: moment().toISOString(),
         password: null
     };
+    let token = generateOpenCTIWebToken(email);
     let promise = session.run(
-        'MERGE (user:User {email: {email}}) ON CREATE SET user = {user} ' +
-        'MERGE (user)<-[:WEB_ACCESS]-(token:Token {name: {name}}) ON CREATE SET token = {token} ' +
-        'RETURN token', {
-        email: email,
-        name: OPENCTI_WEB_TOKEN,
-        username: username,
-        user: user,
-        token: generateOpenCTIWebToken(email)
-    });
+        'MERGE (user:User {email: {user}.email}) ON CREATE SET user = {user} ' +
+        'MERGE (user)<-[:WEB_ACCESS]-(token:Token {name: {token}.name}) ON CREATE SET token = {token} ' +
+        'RETURN token', {user: user, token: token});
     return promise.then(async (data) => {
+        if (isEmpty(data.records)) {
+            throw {message: 'login failed', status: 400}
+        }
         let dbToken = head(data.records).get('token');
         let token = sign(dbToken.properties.id, conf.get("jwt:secret"));
         session.close();
         return token;
-    }).catch((err) => console.log(err));
+    });
 };
 
 export const login = (email, password) => {
@@ -127,7 +126,7 @@ export const hashPassword = (password) => {
 //Token related
 const generateOpenCTIWebToken = (email) => {
     return {
-        id: uuid(email, uuid.URL),
+        id: uuidv5(email, uuidv5.URL),
         name: OPENCTI_WEB_TOKEN,
         created_at: moment().toISOString(),
         issuer: 'openCTI',

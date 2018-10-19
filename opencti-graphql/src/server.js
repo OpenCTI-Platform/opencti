@@ -32,26 +32,26 @@ app.post('/auth/opencti', urlencodedParser, passport.initialize(), function (req
         if (err) res.status(400).send(err);
         if (!user) res.status(400).send(err);
         res.cookie('opencti_token', user, {httpOnly: false, secure: true});
-        res.redirect('/');
+        res.redirect('/private');
     })(req, res, next);
 });
 // ## Facebook strategy
 app.get('/auth/facebook', passport.authenticate('facebook', {scope: ['email']}));
 app.get('/auth/facebook/callback', urlencodedParser, passport.initialize(), function (req, res, next) {
     passport.authenticate('facebook', function (err, user) {
-        if (err) res.status(400).send(err);
-        if (!user) res.status(400).send(err);
+        if (err) return res.status(400).send(err);
+        if (!user) return res.status(400).send(err);
         res.cookie('opencti_token', user, {httpOnly: false, secure: true});
-        res.redirect('/');
+        res.redirect('/private');
     })(req, res, next);
 });
 // ## Google strategy
 app.get('/auth/google', passport.authenticate('google'));
 app.get('/auth/google/callback', urlencodedParser, passport.initialize(), function (req, res, next) {
     passport.authenticate('google', function (err, user) {
-        if (err) res.status(400).send(err);
-        if (!user) res.status(400).send(err);
-        res.send(user);
+        if (err) return res.status(400).send(err);
+        res.cookie('opencti_token', user, {httpOnly: false, secure: true});
+        res.redirect('/private');
     })(req, res, next);
 });
 
@@ -59,11 +59,9 @@ function onSignal() {
     console.log('OpenCTI is starting cleanup');
     driver.close();
 }
-
 function onShutdown() {
     console.log('Cleanup finished, openCTI shutdown');
 }
-
 // noinspection JSUnusedGlobalSymbols
 const options = {
     signal: 'SIGINT',
