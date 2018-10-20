@@ -1,12 +1,18 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './resources/index.css';
-import AppPublic from './public/AppPublic';
-import * as serviceWorker from './config/serviceWorker';
-import {BrowserRouter, Redirect, Route} from "react-router-dom";
-import Cookies from 'universal-cookie';
-import jwt from "jsonwebtoken";
-import AppPrivate from "./private/AppPrivate";
+import 'typeface-roboto'
+import React from 'react'
+import ReactDOM from 'react-dom'
+import './resources/css/index.css'
+import * as serviceWorker from './config/serviceWorker'
+import {BrowserRouter, Redirect, Route} from 'react-router-dom'
+import Cookies from 'universal-cookie'
+import jwt from 'jsonwebtoken'
+import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider'
+import CssBaseline from '@material-ui/core/CssBaseline'
+import {createMuiTheme} from '@material-ui/core/styles'
+import theme from './components/Theme'
+import Root from './Root'
+import Login from './public/components/Login'
+import RootPrivate from './private/Root'
 
 //Loading application
 /*
@@ -31,32 +37,35 @@ commitLocalUpdate(environment, (store) => {
 
 const isLogged = () => {
     const cookies = new Cookies();
-    let openctiToken = cookies.get('opencti_token');
+    let openctiToken = cookies.get('opencti_token')
     if (openctiToken) {
-        let decode = jwt.decode(openctiToken);
-        return decode !== undefined;
+        let decode = jwt.decode(openctiToken)
+        return decode !== undefined
     } else {
-        return false;
+        return false
     }
-};
+}
 
 const PrivateRoute = ({component: Component, ...rest}) => (
     <Route {...rest} render={(props) => (
-        isLogged() ? <Component {...props} /> : <Redirect to='/public/login'/>
+        isLogged() ? <Component {...props} /> : <Redirect to='/login'/>
     )}/>
-);
+)
 
 ReactDOM.render(
-    <BrowserRouter>
-        <div>
-            <Route exact path='/' component={AppPublic}/>
-            <Route path='/public' component={AppPublic}/>
-            <PrivateRoute path="/private" component={AppPrivate}/>
-        </div>
-    </BrowserRouter>,
-    document.getElementById('root'));
+    <MuiThemeProvider theme={createMuiTheme(theme)}>
+        <BrowserRouter>
+            <div>
+                <CssBaseline/>
+                <Route exact path='/' component={Root}/>
+                <Route path='/login' component={Login}/>
+                <PrivateRoute path='/dashboard' component={RootPrivate}/>
+            </div>
+        </BrowserRouter>
+    </MuiThemeProvider>,
+    document.getElementById('root'))
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: http://bit.ly/CRA-PWA
-serviceWorker.unregister();
+serviceWorker.unregister()

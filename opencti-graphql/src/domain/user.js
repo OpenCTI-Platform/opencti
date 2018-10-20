@@ -123,7 +123,7 @@ const generateOpenCTIWebToken = (email) => {
         id: uuidv5(email, uuidv5.URL),
         name: OPENCTI_WEB_TOKEN,
         created_at: moment().toISOString(),
-        issuer: 'openCTI',
+        issuer: 'OpenCTI',
         revoked: false,
         duration: 'P99Y' //99 years per default
     };

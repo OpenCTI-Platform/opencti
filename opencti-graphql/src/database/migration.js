@@ -22,7 +22,7 @@ const neo4jStateStorage = {
         });
     },
     save: async function (set, fn) {
-        console.log('openCTI Migration: Saving current configuration');
+        console.log('OpenCTI Migration: Saving current configuration');
         const migrations = map(
             migration => compose(dissoc('up'), dissoc('down'), dissoc('description'))(migration),
             set.migrations
