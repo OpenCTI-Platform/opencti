@@ -1,72 +1,90 @@
-import React, {Component} from "react";
-import graphql from "babel-plugin-relay/macro";
-import Cookies from "universal-cookie";
-import {Link, Route} from "react-router-dom";
-import Home from "../private/components/Home";
-import {Users} from "./components/user/Users";
-import {withRouter} from 'react-router-dom'
-import environment from "../relay/environment";
-import {QueryRenderer} from 'react-relay';
-import UserInformation from "./components/user/UserInformation";
+import React, {Component} from 'react'
+import ReactDocumentTitle from 'react-document-title'
+import {Route} from 'react-router-dom'
+import {withStyles} from '@material-ui/core/styles'
+import Snackbar from '@material-ui/core/Snackbar'
+import SnackbarContent from '@material-ui/core/SnackbarContent'
+import IconButton from '@material-ui/core/IconButton'
+import CheckCircle from '@material-ui/icons/CheckCircle'
+import Close from '@material-ui/icons/Close'
+import TopBar from './components/nav/TopBar'
+import LeftBar from './components/nav/LeftBar'
+import Dashboard from './components/Dashboard'
 
-const testQuery = graphql`
-    query AppPrivateUserQuery {
-        me {
-            ...UserInformation_me
-        }
-    }
-`;
+const styles = theme => ({
+    container: {
+        flexGrow: 1,
+        zIndex: 1,
+        overflow: 'hidden',
+        position: 'relative',
+        display: 'flex',
+    },
+    content: {
+        flexGrow: 1,
+        backgroundColor: theme.palette.background.default,
+        padding: '24px 24px 24px 84px',
+        minWidth: 0
+    },
+    message: {
+        display: 'flex',
+        alignItems: 'center',
+    },
+    messageIcon: {
+        marginRight: theme.spacing.unit,
+    },
+    toolbar: theme.mixins.toolbar
+})
 
 class Root extends Component {
-    callLogout() {
-        //Call graphQL mutation logout to remove the token
-        new Cookies().remove('opencti_token');
-        this.props.history.push('/');
+    constructor(props) {
+        super(props)
+        this.state = {snackbarOpen: false}
+    }
+
+    snackbarDismiss() {
+        this.setState({snackbarOpen: false})
     }
 
     render() {
+        let paddingRight = 24
         return (
-            <div className="App">
-                <QueryRenderer environment={environment} query={testQuery} variables={{}}
-                    render={({error, props}) => {
-                        if (error) {
-                            return <div>Error! {error}</div>;
-                        }
-                        if (!props || !props.me) {
-                            return <div>Loading...</div>;
-                        }
-                        return <div>
-                            <header className="App-header">
-                                <p>PRIVATE ZONE</p>
-                                <a className="App-link"
-                                   href="https://reactjs.org"
-                                   target="_blank"
-                                   rel="noopener noreferrer">
-                                    Learn React
-                                </a>
-                                <ul>
-                                    <li>
-                                        <Link to="/">Home</Link>
-                                    </li>
-                                    <li>
-                                        <Link to="/private">Private</Link>
-                                    </li>
-                                    <li>
-                                        <Link to="/private/users">Users</Link>
-                                    </li>
-                                </ul>
-                            </header>
-                            <div>
-                                <div>Yop <UserInformation me={props.me}/> <button onClick={this.callLogout.bind(this)}>Logout</button></div>
-                                <Route exact path="/private" component={Home} />
-                                <Route exact path="/private/users" component={Users}/>
-                            </div>
-                        </div>
-                    }}
-                />
-            </div>
+            <ReactDocumentTitle title='OpenCTI platform - Dashboard'>
+                <div className={this.props.classes.root}>
+                    <TopBar/>
+                    <LeftBar/>
+                    <main className={this.props.classes.content} style={{paddingRight: paddingRight}}>
+                        <div className={this.props.classes.toolbar}/>
+                        <Route exact path='/dashboard' component={Dashboard}/>
+                    </main>
+                    <Snackbar
+                        anchorOrigin={{vertical: 'top', horizontal: 'right'}}
+                        open={this.state.snackbarOpen}
+                        onClose={this.snackbarDismiss.bind(this)}
+                        autoHideDuration={1500}
+                    >
+                        <SnackbarContent
+                            message={
+                                <span className={this.props.classes.message}>
+                                    <CheckCircle className={this.props.classes.messageIcon}/>
+                                    Action done
+                                </span>
+                            }
+                            action={[
+                                <IconButton
+                                    key='close'
+                                    aria-label='Close'
+                                    color='inherit'
+                                    onClick={this.snackbarDismiss.bind(this)}
+                                >
+                                    <Close/>
+                                </IconButton>
+                            ]}
+                        />
+                    </Snackbar>
+                </div>
+            </ReactDocumentTitle>
         )
     }
 }
 
-export default withRouter(Root)
+export default withStyles(styles)(Root)

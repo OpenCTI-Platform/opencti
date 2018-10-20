@@ -1,6 +1,6 @@
-import React, {Component} from "react";
-import {createFragmentContainer} from "react-relay";
-import graphql from "babel-plugin-relay/macro";
+import React, {Component} from 'react';
+import {createFragmentContainer} from 'react-relay';
+import graphql from 'babel-plugin-relay/macro';
 
 class UserInformation extends Component {
     render() {

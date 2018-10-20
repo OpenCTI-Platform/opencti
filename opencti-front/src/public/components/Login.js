@@ -7,7 +7,7 @@ import logo from '../../resources/images/logo_opencti.png'
 
 const loginHeight = 400
 
-const styles = (theme) => ({
+const styles = theme => ({
     container: {
         textAlign: 'center',
         margin: '0 auto',
