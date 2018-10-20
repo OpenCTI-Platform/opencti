@@ -3,7 +3,6 @@ import graphql from "babel-plugin-relay/macro";
 import Cookies from "universal-cookie";
 import {Link, Route} from "react-router-dom";
 import Home from "../private/components/Home";
-import logo from "../resources/logo.svg";
 import {Users} from "./components/user/Users";
 import {withRouter} from 'react-router-dom'
 import environment from "../relay/environment";
@@ -18,8 +17,7 @@ const testQuery = graphql`
     }
 `;
 
-class AppPrivate extends Component {
-
+class Root extends Component {
     callLogout() {
         //Call graphQL mutation logout to remove the token
         new Cookies().remove('opencti_token');
@@ -39,7 +37,6 @@ class AppPrivate extends Component {
                         }
                         return <div>
                             <header className="App-header">
-                                <img src={logo} className="App-logo" alt="logo"/>
                                 <p>PRIVATE ZONE</p>
                                 <a className="App-link"
                                    href="https://reactjs.org"
@@ -72,4 +69,4 @@ class AppPrivate extends Component {
     }
 }
 
-export default withRouter(AppPrivate);
+export default withRouter(Root)
