@@ -7,7 +7,7 @@ import logo from "../resources/logo.svg";
 import {Users} from "./components/user/Users";
 import {withRouter} from 'react-router-dom'
 import environment from "../relay/environment";
-import {QueryRenderer} from 'react-relay';
+import {commitLocalUpdate, QueryRenderer} from 'react-relay';
 import UserInformation from "./components/user/UserInformation";
 
 const testQuery = graphql`
@@ -24,6 +24,13 @@ class AppPrivate extends Component {
         //Call graphQL mutation logout to remove the token
         new Cookies().remove('opencti_token');
         this.props.history.push('/');
+    }
+
+    test() {
+        commitLocalUpdate(environment, (store) => {
+            let user = store.get('ebb7bbfa-fee4-4540-9993-5d98aca7fc02');
+            user.setValue('test@est.com', 'email');
+        });
     }
 
     render() {
@@ -60,7 +67,10 @@ class AppPrivate extends Component {
                                 </ul>
                             </header>
                             <div>
-                                <div>Yop <UserInformation me={props.me}/> <button onClick={this.callLogout.bind(this)}>Logout</button></div>
+                                <div>Yop <UserInformation me={props.me}/>
+                                    <button onClick={this.callLogout.bind(this)}>Logout</button>
+                                    <button onClick={this.test.bind(this)}>Test</button>
+                                </div>
                                 <Route exact path="/private" component={Home} />
                                 <Route exact path="/private/users" component={Users}/>
                             </div>
