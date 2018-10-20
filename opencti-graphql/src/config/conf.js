@@ -19,5 +19,4 @@ nconf.add('argv', {
 let environment = nconf.get('env') || nconf.get('NODE_ENV') || DEFAULT_ENV;
 nconf.file(environment, './config/' + environment.toLowerCase() + '.json');
 nconf.file('default', './config/default.json');
-
 export default nconf;

@@ -31,7 +31,7 @@ app.post('/auth/api', urlencodedParser, passport.initialize(), function (req, re
 app.get('/auth/:provider', function (req, res, next) {
     let provider = req.params.provider;
     passport.authenticate(provider)(req, res, next)
-})
+});
 app.get('/auth/:provider/callback', urlencodedParser, passport.initialize(), function (req, res, next) {
     let provider = req.params.provider;
     passport.authenticate(provider, function (err, token) {
