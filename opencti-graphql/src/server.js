@@ -31,7 +31,7 @@ app.post('/auth/api', urlencodedParser, passport.initialize(), function (req, re
 app.get('/auth/:provider', function (req, res, next) {
     let provider = req.params.provider;
     passport.authenticate(provider)(req, res, next)
-})
+});
 app.get('/auth/:provider/callback', urlencodedParser, passport.initialize(), function (req, res, next) {
     let provider = req.params.provider;
     passport.authenticate(provider, function (err, token) {
@@ -40,7 +40,7 @@ app.get('/auth/:provider/callback', urlencodedParser, passport.initialize(), fun
         let creation = moment(token.created_at);
         let maxDuration = moment.duration(token.duration);
         let expires = creation.add(maxDuration).toDate();
-        //Create and setup the auth token
+        //Create and setup the auth token.
         res.cookie('opencti_token', sign(token, conf.get("jwt:secret")), {
             httpOnly: false, expires: expires, secure: !devMode
         });

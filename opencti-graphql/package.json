@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "start": "NODE_ENV=development babel-node ./src/server.js",
+    "win": "set NODE_ENV=development&babel-node ./src/server.js",
     "migrate": "babel-node ./src/database/migration.js",
     "addMigration": "migrate create"
   },
@@ -14,7 +15,7 @@
     "@godaddy/terminus": "^4.1.0",
     "apollo-server-express": "^2.1.0",
     "await": "^0.2.6",
-    "bcrypt": "^3.0.1",
+    "bcrypt": "^3.0.2",
     "body-parser": "^1.18.3",
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
