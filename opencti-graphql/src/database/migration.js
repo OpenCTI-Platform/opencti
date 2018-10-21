@@ -1,57 +1,87 @@
-import {driver} from '../database/index';
-import {head, isEmpty, dissoc, map, compose} from 'ramda';
+import { head, isEmpty, dissoc, map, flatten, compose } from 'ramda';
 import migrate from 'migrate';
+import driver from './index';
+import { logger } from '../config/conf';
 
 // noinspection JSUnusedGlobalSymbols
 const neo4jStateStorage = {
-    load: async function (fn) {
-        let session = driver.session();
-        let promise = session.run('MATCH config=(:Migration)-[r:PART_OF]->(:Configuration) RETURN config');
-        promise.then((data) => {
-            if (isEmpty(data.records)) {
-                console.log('Cannot read migrations from database. If this is the first time you run migrations, then this is normal.');
-                return fn(null, {})
-            }
-            //Extract the config (end) node
-            const migrationStatus = {
-                lastRun: head(data.records).get('config').end.properties.lastRun,
-                migrations: map((record) => record.get('config').start.properties, data.records)
-            };
-            session.close();
-            fn(null, migrationStatus);
-        });
-    },
-    save: async function (set, fn) {
-        console.log('OpenCTI Migration: Saving current configuration');
-        const migrations = map(
-            migration => compose(dissoc('up'), dissoc('down'), dissoc('description'))(migration),
-            set.migrations
+  async load(fn) {
+    const session = driver.session();
+    const promise = session.run(
+      'MATCH config=(:Migration)-[r:PART_OF]->(:Configuration) RETURN config'
+    );
+    promise.then(data => {
+      if (isEmpty(data.records)) {
+        logger.info(
+          'Cannot read migrations from database. If this is the first time you run migrations, then this is normal.'
         );
-        let session = driver.session();
-        await session.run('MERGE (c:Configuration { name: "migration" }) ON MATCH SET c.lastRun = {lastRun}', {lastRun: set.lastRun});
-        for(const migration of migrations) {
-            await session.run('MERGE (migration:Migration { title: {title} }) ON MATCH SET migration.timestamp = {timestamp}',
-                {title: migration.title, timestamp: migration.timestamp});
-            await session.run('MATCH (c:Configuration {name:"migration"}), (m:Migration {title: {title}}) MERGE (m)-[r:PART_OF]-(c)',
-                {title: migration.title, timestamp: migration.timestamp});
-        }
-        session.close();
-        return fn();
-    }
+        return fn(null, {});
+      }
+      // Extract the config (end) node
+      const migrationStatus = {
+        lastRun: head(data.records).get('config').end.properties.lastRun,
+        migrations: map(
+          record => record.get('config').start.properties,
+          data.records
+        )
+      };
+      session.close();
+      return fn(null, migrationStatus);
+    });
+  },
+  async save(set, fn) {
+    logger.info('OpenCTI Migration: Saving current configuration');
+    const migrations = map(
+      migration =>
+        compose(
+          dissoc('up'),
+          dissoc('down'),
+          dissoc('description')
+        )(migration),
+      set.migrations
+    );
+    const session = driver.session();
+    await session.run(
+      'MERGE (c:Configuration { name: "migration" }) ON MATCH SET c.lastRun = {lastRun}',
+      { lastRun: set.lastRun }
+    );
+
+    const migrationExecutions = compose(
+      map(migration => {
+        const migrationCreation = session.run(
+          'MERGE (migration:Migration { title: {title} }) ON MATCH SET migration.timestamp = {timestamp}',
+          { title: migration.title, timestamp: migration.timestamp }
+        );
+        const migrationRelation = session.run(
+          'MATCH (c:Configuration {name:"migration"}), (m:Migration {title: {title}}) MERGE (m)-[r:PART_OF]-(c)',
+          { title: migration.title, timestamp: migration.timestamp }
+        );
+        return [migrationCreation, migrationRelation];
+      }),
+      flatten
+    )(migrations);
+    Promise.all(migrationExecutions).then(() => {
+      session.close();
+      return fn();
+    });
+  }
 };
 
-migrate.load({
+migrate.load(
+  {
     stateStore: neo4jStateStorage
-}, function (err, set) {
+  },
+  (err, set) => {
     if (err) {
-        throw err
+      throw err;
     }
-    console.log('Migration state successfully updated, starting migrations');
-    set.up((err2) => {
-        if (err2) {
-            throw err2
-        }
-        driver.close();
-        console.log('Migrations successfully ran');
-    })
-});
+    logger.info('Migration state successfully updated, starting migrations');
+    set.up(err2 => {
+      if (err2) {
+        throw err2;
+      }
+      driver.close();
+      logger.info('Migrations successfully ran');
+    });
+  }
+);

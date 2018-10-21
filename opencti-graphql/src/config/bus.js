@@ -1,5 +1,6 @@
-import {PubSub} from 'graphql-subscriptions';
+import { PubSub } from 'graphql-subscriptions';
 
-//This is only valid for development
-//TODO move to redis implementation for production.
-export const pubsub = new PubSub();
+// This is only valid for development
+// TODO move to redis implementation for production.
+const pubsub = new PubSub();
+export default pubsub;

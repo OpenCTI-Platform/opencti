@@ -6,9 +6,10 @@
   "license": "MIT",
   "scripts": {
     "start": "NODE_ENV=development babel-node ./src/server.js",
-    "win": "set NODE_ENV=development&babel-node ./src/server.js",
+    "win_start": "set NODE_ENV=development&babel-node ./src/server.js",
     "migrate": "babel-node ./src/database/migration.js",
-    "addMigration": "migrate create"
+    "addMigration": "migrate create",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@babel/core": "^7.1.2",
@@ -38,10 +39,19 @@
     "passport-google-oauth": "^1.0.0",
     "passport-local": "^1.0.0",
     "ramda": "^0.25.0",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "winston": "^3.1.0",
+    "winston-daily-rotate-file": "^3.3.3"
   },
   "devDependencies": {
     "@babel/node": "^7.0.0",
-    "@babel/preset-env": "^7.1.0"
+    "@babel/preset-env": "^7.1.0",
+    "eslint": "^5.7.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-prettier": "^3.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-prettier": "^3.0.0",
+    "prettier": "^1.14.3"
   }
 }

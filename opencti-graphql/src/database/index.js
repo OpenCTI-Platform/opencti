@@ -1,8 +1,10 @@
-import {v1} from 'neo4j-driver';
+import { v1 } from 'neo4j-driver';
 import conf from '../config/conf';
 
-export const driver = v1.driver(
-    conf.get('db:uri'),
-    v1.auth.basic(conf.get('db:user'), conf.get('db:password')),
-    {maxTransactionRetryTime: 30000}
+const driver = v1.driver(
+  conf.get('db:uri'),
+  v1.auth.basic(conf.get('db:user'), conf.get('db:password')),
+  { maxTransactionRetryTime: 30000 }
 );
+
+export default driver;

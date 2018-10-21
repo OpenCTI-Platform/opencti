@@ -1,6 +1,7 @@
 {
   "app": {
-    "port": 4000
+    "port": 4000,
+    "logs_directory": "./logs"
   },
   "db": {
     "uri": "bolt://",
