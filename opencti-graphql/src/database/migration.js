@@ -47,6 +47,7 @@ const neo4jStateStorage = {
     );
 
     const migrationExecutions = compose(
+      flatten,
       map(migration => {
         const migrationCreation = session.run(
           'MERGE (migration:Migration { title: {title} }) ON MATCH SET migration.timestamp = {timestamp}',
@@ -57,8 +58,7 @@ const neo4jStateStorage = {
           { title: migration.title, timestamp: migration.timestamp }
         );
         return [migrationCreation, migrationRelation];
-      }),
-      flatten
+      })
     )(migrations);
     Promise.all(migrationExecutions).then(() => {
       session.close();
