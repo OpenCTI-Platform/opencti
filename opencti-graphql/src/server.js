@@ -97,9 +97,8 @@ const extractTokenFromBearer = bearer =>
 
 const server = new ApolloServer({
   schema,
-  context({ req }) {
-    if (!req) return undefined; // Req can be null only for websocket subscription.
-    // Authentication token can come from 'opencti cookie' or 'Authorization header'
+  context({ req, connection }) {
+    if (connection) return connection.context.user; // For websocket connection.
     let token = req.cookies ? req.cookies.opencti_token : null;
     token = token || extractTokenFromBearer(req.headers.authorization);
     return authentication(token);

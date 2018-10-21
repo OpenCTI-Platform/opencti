@@ -1,5 +1,7 @@
 import uuid from 'uuid/v4';
 import { assoc } from 'ramda';
+import { withFilter } from 'graphql-subscriptions';
+import { logger } from '../config/conf';
 import {
   addUser,
   assertAdmin,
@@ -37,7 +39,16 @@ const userResolvers = {
   },
   Subscription: {
     userAdded: {
-      subscribe: () => pubsub.asyncIterator(USER_ADDED_TOPIC)
+      subscribe(_, args, currentUser) {
+        return withFilter(
+          () => pubsub.asyncIterator(USER_ADDED_TOPIC),
+          payload => {
+            logger.debug('currentUser', currentUser);
+            logger.debug('payload', payload);
+            return true;
+          }
+        )(_, args, currentUser);
+      }
     }
   },
   Mutation: {
