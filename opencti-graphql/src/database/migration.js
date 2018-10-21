@@ -1,4 +1,4 @@
-import { head, isEmpty, dissoc, map, flatten, compose } from 'ramda';
+import { head, isEmpty, dissoc, map, flatten, pipe } from 'ramda';
 import migrate from 'migrate';
 import driver from './index';
 import { logger } from '../config/conf';
@@ -33,7 +33,7 @@ const neo4jStateStorage = {
     logger.info('OpenCTI Migration: Saving current configuration');
     const migrations = map(
       migration =>
-        compose(
+        pipe(
           dissoc('up'),
           dissoc('down'),
           dissoc('description')
@@ -46,8 +46,7 @@ const neo4jStateStorage = {
       { lastRun: set.lastRun }
     );
 
-    const migrationExecutions = compose(
-      flatten,
+    const migrationExecutions = pipe(
       map(migration => {
         const migrationCreation = session.run(
           'MERGE (migration:Migration { title: {title} }) ON MATCH SET migration.timestamp = {timestamp}',
@@ -58,7 +57,8 @@ const neo4jStateStorage = {
           { title: migration.title, timestamp: migration.timestamp }
         );
         return [migrationCreation, migrationRelation];
-      })
+      }),
+      flatten
     )(migrations);
     Promise.all(migrationExecutions).then(() => {
       session.close();

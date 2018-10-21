@@ -1,4 +1,4 @@
-import { assoc, compose, contains, head, isEmpty, map } from 'ramda';
+import { assoc, pipe, contains, head, isEmpty, map } from 'ramda';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
 import uuid from 'uuid/v4';
@@ -105,7 +105,7 @@ export const findById = userId => {
 };
 
 export const addUser = async user => {
-  const completeUser = compose(
+  const completeUser = pipe(
     assoc('created_at', moment().toISOString()),
     assoc('password', await hashPassword(user.password))
   )(user);
