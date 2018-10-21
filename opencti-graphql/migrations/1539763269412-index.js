@@ -1,4 +1,4 @@
-import driver from '../src/database';
+import driver from '../src/database/neo4j';
 
 const createUserIndex = () => {
   const session = driver.session();

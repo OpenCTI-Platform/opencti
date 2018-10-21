@@ -1,6 +1,6 @@
 import { head, isEmpty, dissoc, map, flatten, pipe } from 'ramda';
 import migrate from 'migrate';
-import driver from './index';
+import driver from './neo4j';
 import { logger } from '../config/conf';
 
 // noinspection JSUnusedGlobalSymbols

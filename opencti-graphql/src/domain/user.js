@@ -4,12 +4,12 @@ import bcrypt from 'bcrypt';
 import uuid from 'uuid/v4';
 import uuidv5 from 'uuid/v5';
 import pubsub from '../config/bus';
-import driver from '../database/index';
+import driver from '../database/neo4j';
 
 export const USER_ADDED_TOPIC = 'USER_ADDED_TOPIC';
+export const ROLE_USER = 'ROLE_USER';
+export const ROLE_ADMIN = 'ROLE_ADMIN';
 const OPENCTI_WEB_TOKEN = 'Default';
-const ROLE_USER = 'ROLE_USER';
-const ROLE_ADMIN = 'ROLE_ADMIN';
 
 // Security related
 export const assertUserRole = (user, role) => {

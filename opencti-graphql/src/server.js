@@ -10,7 +10,7 @@ import { dissocPath } from 'ramda';
 import conf, { logger } from './config/conf';
 import passport from './config/security';
 import { findByTokenId } from './domain/user';
-import driver from './database/index';
+import driver from './database/neo4j';
 import schema from './schema/schema';
 
 const devMode = process.env.NODE_ENV === 'development';

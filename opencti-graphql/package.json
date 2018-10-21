@@ -9,7 +9,8 @@
     "win_start": "set NODE_ENV=development&babel-node ./src/server.js",
     "migrate": "babel-node ./src/database/migration.js",
     "addMigration": "migrate create",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "jest --coverage"
   },
   "dependencies": {
     "@babel/core": "^7.1.2",
@@ -46,12 +47,16 @@
   "devDependencies": {
     "@babel/node": "^7.0.0",
     "@babel/preset-env": "^7.1.0",
+    "babel-core": "7.0.0-bridge.0",
+    "babel-jest": "^23.6.0",
     "eslint": "^5.7.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-config-prettier": "^3.1.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-prettier": "^3.0.0",
-    "prettier": "^1.14.3"
+    "jest": "^23.6.0",
+    "prettier": "^1.14.3",
+    "regenerator-runtime": "^0.12.1"
   }
 }

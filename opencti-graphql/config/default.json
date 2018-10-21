@@ -9,8 +9,7 @@
     "password": "setup your password"
   },
   "jwt": {
-    "secret": "define your secret",
-    "dev_token": "Bypass security in dev mode, for graphiQL"
+    "secret": "define your secret"
   },
   "providers": {
     "facebook": {
