@@ -5,6 +5,8 @@ import uuid from 'uuid/v4';
 import uuidv5 from 'uuid/v5';
 import pubsub from '../config/bus';
 import driver from '../database/neo4j';
+import AuthenticationError from '../errors/AuthenticationError';
+import ApplicationError from '../errors/ApplicationError';
 
 export const USER_ADDED_TOPIC = 'USER_ADDED_TOPIC';
 export const ROLE_USER = 'ROLE_USER';
@@ -52,7 +54,7 @@ export const loginFromProvider = (email, username) => {
   return promise.then(async data => {
     session.close();
     if (isEmpty(data.records)) {
-      throw new Error('login failed');
+      throw new AuthenticationError();
     }
     return head(data.records).get('token').properties;
   });
@@ -67,14 +69,14 @@ export const login = (email, password) => {
   return promise.then(async data => {
     session.close();
     if (isEmpty(data.records)) {
-      throw new Error('login failed');
+      throw new AuthenticationError();
     }
     const firstRecord = head(data.records);
     const dbUser = firstRecord.get('user');
     const dbPassword = dbUser.properties.password;
     const match = await bcrypt.compare(password, dbPassword);
     if (!match) {
-      throw new Error('login failed');
+      throw new AuthenticationError();
     }
     return firstRecord.get('token').properties;
   });
@@ -99,7 +101,8 @@ export const findById = userId => {
   });
   return promise.then(data => {
     session.close();
-    if (isEmpty(data.records)) throw new Error('Cant find this user');
+    if (isEmpty(data.records))
+      throw new ApplicationError('Cant find this user');
     return head(data.records).get('user').properties;
   });
 };
@@ -131,7 +134,7 @@ export const deleteUser = userId => {
   return promise.then(data => {
     session.close();
     if (isEmpty(data.records)) {
-      throw new Error("User doesn't exist");
+      throw new ApplicationError("User doesn't exist");
     } else {
       return userId;
     }
@@ -149,7 +152,7 @@ export const findByTokenId = tokenId => {
   return promise.then(data => {
     session.close();
     if (isEmpty(data.records))
-      throw new Error(`User token invalid: ${tokenId}`);
+      throw new ApplicationError(`User token invalid: ${tokenId}`);
     // Token duration validation
     const record = head(data.records);
     const token = record.get('token').properties;
@@ -158,7 +161,7 @@ export const findByTokenId = tokenId => {
     const now = moment();
     const currentDuration = moment.duration(now.diff(creation));
     if (currentDuration > maxDuration)
-      throw new Error(`User token invalid: ${tokenId}`);
+      throw new ApplicationError(`User token invalid: ${tokenId}`);
     return record.get('user').properties;
   });
 };

@@ -11,9 +11,7 @@ import conf from './conf';
 const localStrategy = new LocalStrategy((username, password, done) => {
   login(username, password)
     .then(token => done(null, token))
-    .catch(() =>
-      done(null, false, { message: 'Incorrect login or password.' })
-    );
+    .catch(err => done(err));
 });
 // Facebook
 const facebookOptions = {

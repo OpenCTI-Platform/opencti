@@ -27,9 +27,8 @@ app.post(
   passport.initialize(),
   (req, res, next) => {
     passport.authenticate('local', (err, token) => {
-      if (err) res.status(400).send(err);
-      if (!token) res.status(400).send(err);
-      res.send(sign(token, conf.get('jwt:secret')));
+      if (err || !token) return res.status(err.status).send(err);
+      return res.send(sign(token, conf.get('jwt:secret')));
     })(req, res, next);
   }
 );
@@ -44,8 +43,7 @@ app.get(
   (req, res, next) => {
     const { provider } = req.params;
     passport.authenticate(provider, (err, token) => {
-      if (err) return res.status(400).send(err);
-      if (!token) return res.status(400).send(err);
+      if (err || !token) return res.status(err.status).send(err);
       const creation = moment(token.created_at);
       const maxDuration = moment.duration(token.duration);
       const expires = creation.add(maxDuration).toDate();
