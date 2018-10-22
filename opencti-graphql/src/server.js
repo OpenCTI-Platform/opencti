@@ -101,7 +101,10 @@ const server = new ApolloServer({
     token = token || extractTokenFromBearer(req.headers.authorization);
     return authentication(token);
   },
-  formatError: error => dissocPath(['extensions', 'exception'], error),
+  formatError: error => {
+    logger.error(error);
+    return dissocPath(['extensions', 'exception'], error);
+  },
   subscriptions: {
     // https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
     onConnect: connectionParams =>
