@@ -7,6 +7,7 @@ import pubsub from '../config/bus';
 import driver from '../database/neo4j';
 import AuthenticationError from '../errors/AuthenticationError';
 import ApplicationError from '../errors/ApplicationError';
+import AuthorizationError from '../errors/AuthorizationError';
 
 export const USER_ADDED_TOPIC = 'USER_ADDED_TOPIC';
 export const ROLE_USER = 'ROLE_USER';
@@ -15,7 +16,7 @@ const OPENCTI_WEB_TOKEN = 'Default';
 
 // Security related
 export const assertUserRole = (user, role) => {
-  if (!contains(role, user.roles)) throw new Error('Insufficient privilege');
+  if (!contains(role, user.roles)) throw new AuthorizationError();
 };
 
 const generateOpenCTIWebToken = email => ({
