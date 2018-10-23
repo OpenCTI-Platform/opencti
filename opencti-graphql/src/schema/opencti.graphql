@@ -28,6 +28,28 @@ input UserLoginInput {
     password: String!
 }
 
+### Malware
+type Malware {
+    type: String
+    id: ID!
+    type: String
+    name: String
+    description: String
+    created_at: DateTime
+    updated_at: DateTime
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+}
+
+input MalwareAddInput {
+    name: String!
+    description: String!
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+}
+
 ### QUERIES
 type Query {
     # User
