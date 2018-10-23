@@ -30,6 +30,7 @@
     "graphql-relay": "^0.5.5",
     "graphql-subscriptions": "^1.0.0",
     "graphql-tools": "^4.0.1",
+    "helmet": "^3.14.0",
     "jsonwebtoken": "^8.3.0",
     "merge-graphql-schemas": "^1.5.7",
     "migrate": "^1.6.1",

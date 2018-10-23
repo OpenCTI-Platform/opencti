@@ -9,6 +9,7 @@ import moment from 'moment';
 import { formatError as apolloFormatError } from 'apollo-errors';
 import { GraphQLError } from 'graphql';
 import compression from 'compression';
+import helmet from 'helmet';
 import conf, { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/security';
 import { findByTokenId } from './domain/user';
@@ -20,6 +21,7 @@ import { UnknownError } from './config/errors';
 const app = express();
 app.use(cookieParser());
 app.use(compression()); // Compress all routes
+app.use(helmet());
 
 // #### Login
 const urlencodedParser = bodyParser.urlencoded({ extended: true });
