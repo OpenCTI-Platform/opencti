@@ -1,63 +1,51 @@
 import uuid from 'uuid/v4';
 import { assoc } from 'ramda';
 import { withFilter } from 'graphql-subscriptions';
-import { logger } from '../config/conf';
+import { sign } from 'jsonwebtoken';
+import conf, { logger } from '../config/conf';
 import {
   addUser,
-  assertAdmin,
   deleteUser,
   findAll,
   findById,
+  login,
   USER_ADDED_TOPIC
 } from '../domain/user';
 import pubsub from '../config/bus';
+import { anonymous, admin, auth } from './wrapper';
 
-const delay = (result, delayMs) =>
-  new Promise(resolve => {
-    setTimeout(() => {
-      resolve(result);
-    }, delayMs);
-  });
-
-// noinspection JSUnusedGlobalSymbols
 const userResolvers = {
   Query: {
-    users: (_, { first = 25, offset = 0 }, context) => {
-      assertAdmin(context.user);
-      return findAll(first, offset);
-    },
-    user: (_, { id }, context) => {
-      assertAdmin(context.user);
-      return findById(id);
-    },
-    me: (_, args, context) => findById(context.user.id),
-    // Waiting for https://github.com/apollographql/apollo-server/pull/1287
-    testDefer: (_, args, context) => ({
-      me: findById(context.user.id),
-      users: delay(findAll(25, 0), 5000)
-    })
+    users: admin((_, { first = 25, offset = 0 }) => findAll(first, offset)),
+    user: admin((_, { id }) => findById(id)),
+    me: auth((_, args, { user }) => findById(user.id))
   },
   Subscription: {
     userAdded: {
-      subscribe(_, args, currentUser) {
-        return withFilter(
+      subscribe: admin((_, args, { user }) =>
+        withFilter(
           () => pubsub.asyncIterator(USER_ADDED_TOPIC),
           payload => {
-            logger.debug('currentUser', currentUser);
-            logger.debug('payload', payload);
+            if (!payload) return false; // When disconnect, an empty payload is dispatched.
+            logger.debug(`${USER_ADDED_TOPIC}-user`, user);
+            logger.debug(`${USER_ADDED_TOPIC}-payload`, payload);
             return true;
           }
-        )(_, args, currentUser);
-      }
+        )(_, args, { user })
+      )
     }
   },
   Mutation: {
-    addUser: (_, { input }, context) => {
-      assertAdmin(context.user);
+    token: anonymous((_, { input }) =>
+      login(input.username, input.password).then(token =>
+        sign(token, conf.get('jwt:secret'))
+      )
+    ),
+    userAdd: admin((_, { input }) => {
       const user = assoc('id', uuid(), input);
       return addUser(user);
-    },
-    deleteUser: (_, { id }) => deleteUser(id)
+    }),
+    userDelete: admin((_, { id }) => deleteUser(id))
   }
 };
 

@@ -4,7 +4,7 @@
     "logs_directory": "./logs"
   },
   "db": {
-    "uri": "bolt://",
+    "uri": "bolt://neo4j-community.my.domain.io:7687",
     "user": "setup your user",
     "password": "setup your password"
   },

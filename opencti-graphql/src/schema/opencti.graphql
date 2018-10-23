@@ -16,16 +16,16 @@ enum UserRole {
     ROLE_USER
 }
 
-input AddUserInput {
+input UserAddInput {
     username: String!
     password: String!
     roles: [UserRole]!
     email: String!
 }
 
-type TestDefer {
-    me: User,
-    users: [User]
+input UserLoginInput {
+    username: String!
+    password: String!
 }
 
 ### QUERIES
@@ -33,8 +33,7 @@ type Query {
     # User
     users(first: Int, offset: Int): [User]
     user(id: String!): User
-    me: User,
-    testDefer: TestDefer
+    me: User
 }
 
 ### SUBSCRIPTIONS
@@ -44,8 +43,10 @@ type Subscription {
 
 ### MUTATIONS
 type Mutation {
+    # Login
+    token(input: UserLoginInput) : String
     # User
-    addUser(input: AddUserInput): User
-    deleteUser(id: ID!): ID
+    userAdd(input: UserAddInput): User
+    userDelete(id: ID!): ID
 }
 

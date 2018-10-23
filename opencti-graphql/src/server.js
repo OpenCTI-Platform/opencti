@@ -4,34 +4,25 @@ import bodyParser from 'body-parser';
 import { createTerminus } from '@godaddy/terminus';
 import { sign, verify } from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
-import { ApolloServer, AuthenticationError } from 'apollo-server-express';
+import { ApolloServer } from 'apollo-server-express';
 import moment from 'moment';
-import { dissocPath } from 'ramda';
-import conf, { logger } from './config/conf';
+import { formatError as apolloFormatError } from 'apollo-errors';
+import { GraphQLError } from 'graphql';
+import compression from 'compression';
+import conf, { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/security';
 import { findByTokenId } from './domain/user';
 import driver from './database/neo4j';
 import schema from './schema/schema';
+import { UnknownError } from './config/errors';
 
-const devMode = process.env.NODE_ENV === 'development';
-
+// Init the http server
 const app = express();
 app.use(cookieParser());
+app.use(compression()); // Compress all routes
 
 // #### Login
 const urlencodedParser = bodyParser.urlencoded({ extended: true });
-// ## Local strategy
-app.post(
-  '/auth/api',
-  urlencodedParser,
-  passport.initialize(),
-  (req, res, next) => {
-    passport.authenticate('local', (err, token) => {
-      if (err || !token) return res.status(err.status).send(err);
-      return res.send(sign(token, conf.get('jwt:secret')));
-    })(req, res, next);
-  }
-);
 app.get('/auth/:provider', (req, res, next) => {
   const { provider } = req.params;
   passport.authenticate(provider)(req, res, next);
@@ -51,7 +42,7 @@ app.get(
       res.cookie('opencti_token', sign(token, conf.get('jwt:secret')), {
         httpOnly: false,
         expires,
-        secure: !devMode
+        secure: !DEV_MODE
       });
       return res.redirect('/dashboard');
     })(req, res, next);
@@ -75,40 +66,52 @@ const options = {
 };
 
 const authentication = async token => {
-  let user;
-  try {
-    const decodedToken = verify(token, conf.get('jwt:secret'));
-    user = await findByTokenId(decodedToken.id);
-  } catch (err) {
-    if (devMode) {
-      // In dev mode, inject a JWT token to be automatically 'logged'
-      user = await findByTokenId(conf.get('jwt:dev_token'));
+  let authToken = token;
+  if (!authToken) {
+    // If no token in the request
+    if (DEV_MODE) {
+      authToken = conf.get('jwt:dev_token');
     } else {
-      throw new AuthenticationError('Authentication required');
+      // If not in dev mode, you can't authenticate
+      return undefined;
     }
   }
-  return { user };
+  try {
+    const decodedToken = verify(authToken, conf.get('jwt:secret'));
+    const user = await findByTokenId(decodedToken.id);
+    return { user };
+  } catch (err) {
+    logger.error(err);
+    return { user: undefined };
+  }
 };
 
 const extractTokenFromBearer = bearer =>
-  bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
+  bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : undefined;
 
 const server = new ApolloServer({
   schema,
   context({ req, connection }) {
     if (connection) return connection.context.user; // For websocket connection.
-    let token = req.cookies ? req.cookies.opencti_token : null;
+    let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : undefined;
     token = token || extractTokenFromBearer(req.headers.authorization);
     return authentication(token);
   },
   formatError: error => {
-    logger.error(error);
-    return dissocPath(['extensions', 'exception'], error);
+    let e = apolloFormatError(error);
+    if (e instanceof GraphQLError) {
+      logger.error(e); // Log the complete error.
+      e = apolloFormatError(new UnknownError()); // Forward only an unknown error
+    }
+    return e;
   },
   subscriptions: {
     // https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
-    onConnect: connectionParams =>
-      authentication(extractTokenFromBearer(connectionParams.authorization))
+    onConnect: connectionParams => ({
+      user: authentication(
+        extractTokenFromBearer(connectionParams.authorization)
+      )
+    })
   }
 });
 

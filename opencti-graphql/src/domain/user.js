@@ -1,38 +1,30 @@
-import { assoc, pipe, contains, head, isEmpty, map } from 'ramda';
+import { assoc, head, isEmpty, map, pipe } from 'ramda';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
 import uuid from 'uuid/v4';
 import uuidv5 from 'uuid/v5';
 import pubsub from '../config/bus';
 import driver from '../database/neo4j';
-import AuthenticationError from '../errors/AuthenticationError';
-import ApplicationError from '../errors/ApplicationError';
-import AuthorizationError from '../errors/AuthorizationError';
+import { FunctionalError, LoginError } from '../config/errors';
 
 export const USER_ADDED_TOPIC = 'USER_ADDED_TOPIC';
 export const ROLE_USER = 'ROLE_USER';
 export const ROLE_ADMIN = 'ROLE_ADMIN';
-const OPENCTI_WEB_TOKEN = 'Default';
+export const OPENCTI_WEB_TOKEN = 'Default';
+export const OPENCTI_ISSUER = 'OpenCTI';
+export const OPENCTI_DEFAULT_DURATION = 'P99Y';
 
 // Security related
-export const assertUserRole = (user, role) => {
-  if (!contains(role, user.roles)) throw new AuthorizationError();
-};
-
-const generateOpenCTIWebToken = email => ({
+export const generateOpenCTIWebToken = email => ({
   id: uuidv5(email, uuidv5.URL),
   name: OPENCTI_WEB_TOKEN,
   created_at: moment().toISOString(),
-  issuer: 'OpenCTI',
+  issuer: OPENCTI_ISSUER,
   revoked: false,
-  duration: 'P99Y' // 99 years per default
+  duration: OPENCTI_DEFAULT_DURATION // 99 years per default
 });
 
 export const hashPassword = password => bcrypt.hash(password, 10);
-
-export const assertAdmin = user => {
-  assertUserRole(user, ROLE_ADMIN);
-};
 
 // User related
 export const loginFromProvider = (email, username) => {
@@ -55,7 +47,7 @@ export const loginFromProvider = (email, username) => {
   return promise.then(async data => {
     session.close();
     if (isEmpty(data.records)) {
-      throw new AuthenticationError();
+      throw new LoginError();
     }
     return head(data.records).get('token').properties;
   });
@@ -70,14 +62,14 @@ export const login = (email, password) => {
   return promise.then(async data => {
     session.close();
     if (isEmpty(data.records)) {
-      throw new AuthenticationError();
+      throw new LoginError();
     }
     const firstRecord = head(data.records);
     const dbUser = firstRecord.get('user');
     const dbPassword = dbUser.properties.password;
     const match = await bcrypt.compare(password, dbPassword);
     if (!match) {
-      throw new AuthenticationError();
+      throw new LoginError();
     }
     return firstRecord.get('token').properties;
   });
@@ -103,7 +95,7 @@ export const findById = userId => {
   return promise.then(data => {
     session.close();
     if (isEmpty(data.records))
-      throw new ApplicationError('Cant find this user');
+      throw new FunctionalError({ message: 'Cant find this user' });
     return head(data.records).get('user').properties;
   });
 };
@@ -135,7 +127,7 @@ export const deleteUser = userId => {
   return promise.then(data => {
     session.close();
     if (isEmpty(data.records)) {
-      throw new ApplicationError("User doesn't exist");
+      throw new FunctionalError({ message: "User doesn't exist" });
     } else {
       return userId;
     }
@@ -152,8 +144,7 @@ export const findByTokenId = tokenId => {
   );
   return promise.then(data => {
     session.close();
-    if (isEmpty(data.records))
-      throw new ApplicationError(`User token invalid: ${tokenId}`);
+    if (isEmpty(data.records)) return undefined;
     // Token duration validation
     const record = head(data.records);
     const token = record.get('token').properties;
@@ -161,8 +152,7 @@ export const findByTokenId = tokenId => {
     const maxDuration = moment.duration(token.duration);
     const now = moment();
     const currentDuration = moment.duration(now.diff(creation));
-    if (currentDuration > maxDuration)
-      throw new ApplicationError(`User token invalid: ${tokenId}`);
+    if (currentDuration > maxDuration) return undefined;
     return record.get('user').properties;
   });
 };

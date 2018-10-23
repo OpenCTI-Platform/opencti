@@ -1,6 +1,8 @@
 .idea
+.env
 node_modules
 config/development.json
 config/test.json
+config/local.json
 coverage
 logs

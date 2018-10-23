@@ -1,14 +1,18 @@
 import nconf from 'nconf';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
+import dotenv from 'dotenv';
 
-const DEFAULT_ENV = 'development';
+export const ROLE_ADMIN = 'ROLE_ADMIN';
+export const OPENCTI_TOKEN = 'opencti_token';
+
+// Initialize the environment.
+dotenv.config();
 
 // Environment from NODE_ENV environment variable
 nconf.add('env', {
   whitelist: ['NODE_ENV']
 });
-
 // Environment from "-e" command line parameter
 nconf.add('argv', {
   e: {
@@ -18,7 +22,9 @@ nconf.add('argv', {
 });
 
 // Priority to command line parameter and fallback to DEFAULT_ENV
+const DEFAULT_ENV = 'production';
 const environment = nconf.get('env') || nconf.get('NODE_ENV') || DEFAULT_ENV;
+export const DEV_MODE = environment !== 'production';
 nconf.file(environment, `./config/${environment.toLowerCase()}.json`);
 nconf.file('default', './config/default.json');
 
@@ -39,7 +45,7 @@ export const logger = winston.createLogger({
   ]
 });
 
-if (process.env.NODE_ENV !== 'production') {
+if (DEV_MODE) {
   logger.add(
     new winston.transports.Console({
       format: winston.format.simple(),
@@ -48,4 +54,5 @@ if (process.env.NODE_ENV !== 'production') {
   );
 }
 
+logger.info(`🚀 OpenCTI started in ${environment} mode`);
 export default nconf;
