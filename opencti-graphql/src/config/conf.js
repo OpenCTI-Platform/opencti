@@ -4,12 +4,13 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 import dotenv from 'dotenv';
 
 export const ROLE_ADMIN = 'ROLE_ADMIN';
-export const OPENCTI_TOKEN = 'opencti_token';
-export const USER_ADDED_TOPIC = 'USER_ADDED_TOPIC';
 export const ROLE_USER = 'ROLE_USER';
+export const OPENCTI_TOKEN = 'opencti_token';
 export const OPENCTI_WEB_TOKEN = 'Default';
 export const OPENCTI_ISSUER = 'OpenCTI';
 export const OPENCTI_DEFAULT_DURATION = 'P99Y';
+export const USER_ADDED_TOPIC = 'USER_ADDED_TOPIC';
+export const MALWARE_ADDED_TOPIC = 'MALWARE_ADDED_TOPIC';
 
 // Initialize the environment.
 dotenv.config();
