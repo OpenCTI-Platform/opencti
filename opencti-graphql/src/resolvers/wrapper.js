@@ -18,7 +18,7 @@ const base = wrappedFunction => (_, args, context, error) =>
 
 export const anonymous = wrappedFunction => (_, args, { user }, error) => {
   const baseFunction = base(wrappedFunction)(_, args, { user }, error);
-  if (user) throw new AlreadyAuthError();
+  if (user) throw new AlreadyAuthError({ internalData: { user: user.email } });
   return baseFunction;
 };
 
@@ -29,6 +29,7 @@ export const auth = wrappedFunction => (_, args, { user }, error) => {
 
 export const admin = wrappedFunction => (_, args, { user }, error) => {
   const authFunction = auth(wrappedFunction)(_, args, { user }, error);
-  if (!contains(ROLE_ADMIN, user.roles)) throw new ForbiddenError();
+  if (!contains(ROLE_ADMIN, user.roles))
+    throw new ForbiddenError({ internalData: { user: user.email } });
   return authFunction;
 };

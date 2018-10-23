@@ -2,15 +2,8 @@ import uuid from 'uuid/v4';
 import { assoc } from 'ramda';
 import { withFilter } from 'graphql-subscriptions';
 import { sign } from 'jsonwebtoken';
-import conf, { logger } from '../config/conf';
-import {
-  addUser,
-  deleteUser,
-  findAll,
-  findById,
-  login,
-  USER_ADDED_TOPIC
-} from '../domain/user';
+import conf, { logger, USER_ADDED_TOPIC } from '../config/conf';
+import { addUser, deleteUser, findAll, findById, login } from '../domain/user';
 import pubsub from '../config/bus';
 import { anonymous, admin, auth } from './wrapper';
 

@@ -85,9 +85,9 @@ const server = new ApolloServer({
     return authentication(token);
   },
   formatError: error => {
+    logger.error(error); // Log the complete error.
     let e = apolloFormatError(error);
     if (e instanceof GraphQLError) {
-      logger.error(e); // Log the complete error.
       e = apolloFormatError(new UnknownError()); // Forward only an unknown error
     }
     // Remove the exception stack in production.
