@@ -61,6 +61,7 @@ type Query {
 ### SUBSCRIPTIONS
 type Subscription {
     userAdded: User
+    malwareAdded: Malware
 }
 
 ### MUTATIONS
@@ -70,5 +71,8 @@ type Mutation {
     # User
     userAdd(input: UserAddInput): User
     userDelete(id: ID!): ID
+    # Malware
+    malwareAdd(input: MalwareAddInput): Malware
+    malwareDelete(id: ID!): ID
 }
 
