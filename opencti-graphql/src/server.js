@@ -10,6 +10,7 @@ import { formatError as apolloFormatError } from 'apollo-errors';
 import { GraphQLError } from 'graphql';
 import compression from 'compression';
 import helmet from 'helmet';
+import { dissocPath } from 'ramda';
 import conf, { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/security';
 import { findByTokenId } from './domain/user';
@@ -105,7 +106,8 @@ const server = new ApolloServer({
       logger.error(e); // Log the complete error.
       e = apolloFormatError(new UnknownError()); // Forward only an unknown error
     }
-    return e;
+    // Remove the exception stack in production.
+    return DEV_MODE ? e : dissocPath(['extensions', 'exception'], e);
   },
   subscriptions: {
     // https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
