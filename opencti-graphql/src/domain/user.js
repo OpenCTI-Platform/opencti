@@ -6,13 +6,13 @@ import uuidv5 from 'uuid/v5';
 import pubsub from '../config/bus';
 import driver from '../database/neo4j';
 import { FunctionalError, LoginError } from '../config/errors';
-
-export const USER_ADDED_TOPIC = 'USER_ADDED_TOPIC';
-export const ROLE_USER = 'ROLE_USER';
-export const ROLE_ADMIN = 'ROLE_ADMIN';
-export const OPENCTI_WEB_TOKEN = 'Default';
-export const OPENCTI_ISSUER = 'OpenCTI';
-export const OPENCTI_DEFAULT_DURATION = 'P99Y';
+import {
+  OPENCTI_DEFAULT_DURATION,
+  OPENCTI_ISSUER,
+  OPENCTI_WEB_TOKEN,
+  ROLE_USER,
+  USER_ADDED_TOPIC
+} from '../config/conf';
 
 // Security related
 export const generateOpenCTIWebToken = email => ({

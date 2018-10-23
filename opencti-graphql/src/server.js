@@ -21,7 +21,7 @@ import { UnknownError } from './config/errors';
 // Init the http server
 const app = express();
 app.use(cookieParser());
-app.use(compression()); // Compress all routes
+app.use(compression());
 app.use(helmet());
 
 // #### Login
@@ -51,22 +51,6 @@ app.get(
     })(req, res, next);
   }
 );
-
-function onSignal() {
-  logger.info('OpenCTI is starting cleanup');
-  driver.close();
-}
-
-function onShutdown() {
-  logger.info('Cleanup finished, OpenCTI shutdown');
-}
-
-const options = {
-  signal: 'SIGINT',
-  timeout: 1000,
-  onSignal,
-  onShutdown
-};
 
 const authentication = async token => {
   let authToken = token;
@@ -123,9 +107,23 @@ server.applyMiddleware({ app });
 const httpServer = http.createServer(app);
 server.installSubscriptionHandlers(httpServer);
 
+function onSignal() {
+  logger.info('OpenCTI is starting cleanup');
+  driver.close();
+}
+
+function onShutdown() {
+  logger.info('Cleanup finished, OpenCTI shutdown');
+}
+
 const PORT = conf.get('app:port');
 httpServer.listen(PORT, () => {
-  createTerminus(httpServer, options);
+  createTerminus(httpServer, {
+    signal: 'SIGINT',
+    timeout: 1000,
+    onSignal,
+    onShutdown
+  });
   logger.info(
     `🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`
   );
