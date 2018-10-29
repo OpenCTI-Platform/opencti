@@ -23,6 +23,7 @@
     "compression": "^1.7.3",
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
+    "crypto": "^1.0.1",
     "dotenv": "^6.1.0",
     "express": "^4.16.4",
     "graphql": "^14.0.2",
