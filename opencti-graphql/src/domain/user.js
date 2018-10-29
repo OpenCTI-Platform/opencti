@@ -91,7 +91,7 @@ const pageInfo = (
 export const findAll = (first = 25, after = undefined, order = 'id') => {
   const skip = after ? parseInt(decrypt(after), 10) : 0;
   const session = driver.session();
-  const query = `MATCH (g:User) WITH count(g) as global MATCH (user:User) RETURN user, global ORDER BY user.${order} SKIP {skip} LIMIT {limit}`;
+  const query = `MATCH (g:User) WITH count(g) as global MATCH (user:User) RETURN user, global ORDER BY user.${order.toLowerCase()} SKIP {skip} LIMIT {limit}`;
   const promise = session.run(query, {
     skip: skip + 1,
     limit: first
