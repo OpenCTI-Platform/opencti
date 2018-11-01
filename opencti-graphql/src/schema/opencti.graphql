@@ -46,6 +46,20 @@ input UserLoginInput {
 }
 
 ### Malware
+enum MalwaresOrdering {
+    ID,
+    NAME,
+    CREATED,
+    MODIFIED
+}
+type MalwareConnection {
+    pageInfo: PageInfo!
+    edges: [MalwareEdge]
+}
+type MalwareEdge {
+    cursor: String!
+    node: Malware!
+}
 type Malware {
     id: ID!
     name: String
@@ -70,6 +84,9 @@ type Query {
     users(first: Int, after: ID, orderBy: UsersOrdering): UserConnection
     user(id: String!): User
     me: User
+    # Malware
+    malwares(first: Int, after: ID, orderBy: MalwaresOrdering): MalwareConnection
+    malware(id: String!): Malware
 }
 
 ### SUBSCRIPTIONS
