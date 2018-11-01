@@ -10,6 +10,7 @@ import Close from '@material-ui/icons/Close'
 import TopBar from './components/nav/TopBar'
 import LeftBar from './components/nav/LeftBar'
 import Dashboard from './components/Dashboard'
+import Test from "./components/vulnerabilities/Test";
 
 const styles = theme => ({
     container: {
@@ -55,6 +56,7 @@ class Root extends Component {
                     <main className={this.props.classes.content} style={{paddingRight: paddingRight}}>
                         <div className={this.props.classes.toolbar}/>
                         <Route exact path='/dashboard' component={Dashboard}/>
+                        <Route exact path='/dashboard/vulnerabilities' component={Test}/>
                     </main>
                     <Snackbar
                         anchorOrigin={{vertical: 'top', horizontal: 'right'}}

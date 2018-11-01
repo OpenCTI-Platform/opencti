@@ -88,14 +88,16 @@ const pageInfo = (
   hasPreviousPage
 });
 
-export const findAll = (first = 25, after = undefined, order = 'id') => {
+export const findAll = (first = 25, after = undefined, orderBy = 'id') => {
   const skip = after ? parseInt(decrypt(after), 10) : 0;
   const session = driver.session();
-  const query = `MATCH (g:User) WITH count(g) as global MATCH (user:User) RETURN user, global ORDER BY user.${order.toLowerCase()} SKIP {skip} LIMIT {limit}`;
+  const query = `MATCH (g:User) WITH count(g) as global MATCH (user:User) RETURN user, global ORDER BY user.${orderBy.toLowerCase()} SKIP {skip} LIMIT {limit}`;
   const promise = session.run(query, {
     skip: skip + 1,
     limit: first
   });
+  console.log('first:', first)
+  console.log('skip:', skip)
   return promise.then(data => {
     session.close();
     if (isEmpty(data.records)) {
@@ -103,6 +105,7 @@ export const findAll = (first = 25, after = undefined, order = 'id') => {
     }
     // Transform the result to be relay compliant.
     const globalCount = head(data.records).get('global');
+    console.log('globalCount:', globalCount)
     const edges = pipe(
       mapObjIndexed((record, key) => {
         const node = record.get('user').properties;
