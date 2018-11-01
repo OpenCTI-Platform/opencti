@@ -74,7 +74,7 @@ export default createPaginationContainer(
       };
     },
     query: graphql`
-        query TestPaginationQuery($count: Int!, $cursor: ID, $orderBy: UsersOrdering) {
+        query VulnerabilitiesPaginationQuery($count: Int!, $cursor: ID, $orderBy: UsersOrdering) {
             ...Vulnerabilities_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy)
         }
     `
