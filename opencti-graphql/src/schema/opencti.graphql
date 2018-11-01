@@ -10,7 +10,7 @@ type PageInfo {
 }
 
 ### User
-enum UserConnectionSort {
+enum UsersOrdering {
     ID,
     EMAIL
 }
@@ -68,7 +68,7 @@ input MalwareAddInput {
 ### QUERIES
 type Query {
     # User
-    users(first: Int, after: String, order: UserConnectionSort): UserConnection
+    users(first: Int, after: ID, orderBy: UsersOrdering): UserConnection
     user(id: String!): User
     me: User
 }

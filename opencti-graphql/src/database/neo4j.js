@@ -6,7 +6,8 @@ const driver = v1.driver(
   v1.auth.basic(conf.get('db:user'), conf.get('db:password')),
   {
     connectionAcquisitionTimeout: 10000, // 10 sec
-    maxTransactionRetryTime: 30000 // 30 sec
+    maxTransactionRetryTime: 30000, // 30 sec
+    disableLosslessIntegers: true
   }
 );
 
