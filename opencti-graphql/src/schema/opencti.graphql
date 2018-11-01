@@ -62,7 +62,7 @@ type MalwareEdge {
 }
 type Malware {
     id: ID!
-    name: String
+    name: String!
     description: String
     created_at: DateTime
     updated_at: DateTime
