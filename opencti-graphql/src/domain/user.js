@@ -93,11 +93,9 @@ export const findAll = (first = 25, after = undefined, orderBy = 'id') => {
   const session = driver.session();
   const query = `MATCH (g:User) WITH count(g) as global MATCH (user:User) RETURN user, global ORDER BY user.${orderBy.toLowerCase()} SKIP {skip} LIMIT {limit}`;
   const promise = session.run(query, {
-    skip: skip + 1,
+    skip,
     limit: first
   });
-  console.log('first:', first)
-  console.log('skip:', skip)
   return promise.then(data => {
     session.close();
     if (isEmpty(data.records)) {
@@ -105,7 +103,6 @@ export const findAll = (first = 25, after = undefined, orderBy = 'id') => {
     }
     // Transform the result to be relay compliant.
     const globalCount = head(data.records).get('global');
-    console.log('globalCount:', globalCount)
     const edges = pipe(
       mapObjIndexed((record, key) => {
         const node = record.get('user').properties;
