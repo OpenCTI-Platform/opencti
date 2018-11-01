@@ -32,7 +32,6 @@ input UserLoginInput {
 type Malware {
     type: String
     id: ID!
-    type: String
     name: String
     description: String
     created_at: DateTime
