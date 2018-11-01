@@ -84,6 +84,7 @@ const server = new ApolloServer({
     token = token || extractTokenFromBearer(req.headers.authorization);
     return authentication(token);
   },
+  tracing: DEV_MODE,
   formatError: error => {
     logger.error(error); // Log the complete error.
     let e = apolloFormatError(error);

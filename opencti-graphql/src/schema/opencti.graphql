@@ -1,7 +1,31 @@
 ### Scalar
 scalar DateTime
 
+### Relay
+type PageInfo {
+    startCursor: String!,
+    endCursor: String!,
+    hasNextPage: Boolean!,
+    hasPreviousPage: Boolean!
+}
+
 ### User
+enum UserConnectionSort {
+    ID,
+    EMAIL
+}
+enum UserRole {
+    ROLE_ADMIN
+    ROLE_USER
+}
+type UserConnection {
+    pageInfo: PageInfo!
+    edges: [UserEdge]
+}
+type UserEdge {
+    cursor: String!
+    node: User!
+}
 type User {
     id: ID!
     username: String
@@ -10,19 +34,12 @@ type User {
     updated_at: DateTime
     roles: [String]
 }
-
-enum UserRole {
-    ROLE_ADMIN
-    ROLE_USER
-}
-
 input UserAddInput {
     username: String!
     password: String!
     roles: [UserRole]!
     email: String!
 }
-
 input UserLoginInput {
     username: String!
     password: String!
@@ -30,7 +47,6 @@ input UserLoginInput {
 
 ### Malware
 type Malware {
-    type: String
     id: ID!
     name: String
     description: String
@@ -40,7 +56,6 @@ type Malware {
     modified: DateTime
     revoked: Boolean
 }
-
 input MalwareAddInput {
     name: String!
     description: String!
@@ -52,7 +67,7 @@ input MalwareAddInput {
 ### QUERIES
 type Query {
     # User
-    users(first: Int, offset: Int): [User]
+    users(first: Int, after: String, order: UserConnectionSort): UserConnection
     user(id: String!): User
     me: User
 }

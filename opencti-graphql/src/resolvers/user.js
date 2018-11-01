@@ -9,7 +9,7 @@ import { anonymous, admin, auth } from './wrapper';
 
 const userResolvers = {
   Query: {
-    users: admin((_, { first = 25, offset = 0 }) => findAll(first, offset)),
+    users: admin((_, { first, after, order }) => findAll(first, after, order)),
     user: admin((_, { id }) => findById(id)),
     me: auth((_, args, { user }) => findById(user.id))
   },
