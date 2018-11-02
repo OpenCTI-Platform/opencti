@@ -1,0 +1,9 @@
+# Copy this file and remove the model extension.
+
+# Database
+neo4j.uri=
+neo4j.username=
+neo4j.password=
+
+# Files path
+stix2.files.path=
