@@ -93,9 +93,10 @@ class TopBar extends Component {
                   color='inherit'>
                   <span>{props && props.me ? props.me.email : ''}</span>
                   <AccountCircle color='inherit' style={{fontSize: 35}}/>
-
-                  {props && props.me ? <UserInformation me={props.me}/> : ''}
-
+                  {props && props.me ?
+                    <Typography variant='h6' color='inherit' className={classes.flex}>
+                      <UserInformation me={props.me}/>
+                    </Typography> : ''}
                 </IconButton>
                 <Menu
                   id='menu-appbar'
