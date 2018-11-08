@@ -1,0 +1,111 @@
+define
+
+  stix_relation_embedded sub relationship
+    is-abstract;
+
+  stix_relation sub relationship
+    is-abstract
+    #plays sro
+    plays so
+    has relationship_type;
+
+  attributed_to sub stix_relation
+    relates origin, relates attribution
+    has event-date;
+
+  uses sub stix_relation
+    relates user, relates usage;
+
+  indicates sub stix_relation
+    relates indicator, relates fact;
+
+  targets sub stix_relation
+    relates target, relates trigger;
+
+  object_refs sub stix_relation_embedded
+    relates reporting, relates so;
+
+  object_marking_refs sub stix_relation_embedded
+    relates marking, relates so;
+
+  created_by_ref sub stix_relation_embedded
+    relates creator, relates so;
+
+  #absorbed_by sub relationship
+  #  relates absorber, relates so;
+
+  #User sub entity
+  #  has email
+  #  has name
+  #  plays absorber;
+ 
+  Stix-Domain sub entity
+    is-abstract
+    plays so
+    #plays sdo
+    has stix_id;
+
+  Identity sub Stix-Domain
+    has name,
+    plays creator
+    plays target
+    plays origin;
+
+  Indicator sub Stix-Domain
+    has name
+    plays indicator;
+
+  Vulnerability sub Stix-Domain
+    has name
+    plays target;
+
+  Intrusion-Set sub Stix-Domain
+    has name
+    plays user
+    plays attribution;
+
+  Campaign sub Stix-Domain
+    has name
+    plays user
+    plays attribution;
+
+  Malware sub Stix-Domain
+    has name
+    has description
+    plays user
+    plays usage;
+
+  Tool sub Stix-Domain
+    has name
+    has description
+    plays usage;
+  
+  Report sub Stix-Domain
+    has name
+    plays reporting;
+
+  Threat-Actor sub Stix-Domain
+    has name
+    has description
+    plays fact
+    plays origin
+    plays trigger
+    plays user;
+
+  Attack-Pattern sub Stix-Domain
+    has name
+    has description
+    plays user
+    plays usage;
+
+  Marking-Definition sub Stix-Domain
+    has name
+    plays marking;
+
+  stix_id sub attribute, datatype string;
+  name sub attribute, datatype string;
+  email sub attribute, datatype string;
+  description sub attribute, datatype string;
+  event-date sub attribute, datatype date;
+  creation-date sub attribute, datatype date;
+  relationship_type sub attribute, datatype string;
