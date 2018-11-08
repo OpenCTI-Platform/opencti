@@ -1,11 +1,40 @@
 define
 
+  so sub role # Generic STIX object
+
+  # Attribution
+  origin sub role # <Object> is origin of someshing
+  attribution sub role # <Object> is attributed to something
+
+  # Usage
+  user sub role # <Object> is the user of something
+  usage sub role #  <Object> is used by something
+
+  # Indicating
+  indicator sub role # <Object> is the indicator of something
+  characterize sub role # <Object> is indicated by something
+
+  # Targeting
+  target sub role # <Object> is targeted by something
+  source sub role # <Object> 
+
+  # Reporting
+  aggregate-knowledge sub role # <Object> is responsible to aggregate something
+
+  # Marking
+  marking sub role
+
+  # Create
+  creator sub role
+
+  # Author
+  author sub role
+
   stix_relation_embedded sub relationship
     is-abstract;
 
   stix_relation sub relationship
     is-abstract
-    #plays sro
     plays so
     has relationship_type;
 
@@ -17,13 +46,13 @@ define
     relates user, relates usage;
 
   indicates sub stix_relation
-    relates indicator, relates fact;
+    relates indicator, relates characterize;
 
   targets sub stix_relation
-    relates target, relates trigger;
+    relates target, relates source;
 
   object_refs sub stix_relation_embedded
-    relates reporting, relates so;
+    relates aggregate-knowledge, relates so;
 
   object_marking_refs sub stix_relation_embedded
     relates marking, relates so;
@@ -31,22 +60,23 @@ define
   created_by_ref sub stix_relation_embedded
     relates creator, relates so;
 
-  #absorbed_by sub relationship
-  #  relates absorber, relates so;
+  authored_by sub stix_relation_embedded
+    relates author, relates so;
 
-  #User sub entity
-  #  has email
-  #  has name
-  #  plays absorber;
+  User sub entity
+    has email
+    has name
+    plays author;
  
   Stix-Domain sub entity
     is-abstract
     plays so
     #plays sdo
-    has stix_id;
+    has stix_id
+    has creation-date;
 
   Identity sub Stix-Domain
-    has name,
+    has name
     plays creator
     plays target
     plays origin;
@@ -82,14 +112,14 @@ define
   
   Report sub Stix-Domain
     has name
-    plays reporting;
+    plays aggregate-knowledge;
 
   Threat-Actor sub Stix-Domain
     has name
     has description
-    plays fact
+    plays characterize
     plays origin
-    plays trigger
+    plays source
     plays user;
 
   Attack-Pattern sub Stix-Domain
