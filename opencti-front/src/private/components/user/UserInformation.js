@@ -5,7 +5,7 @@ import graphql from 'babel-plugin-relay/macro';
 class UserInformation extends Component {
     render() {
         const me = this.props.me;
-        return <span><b>{me.email}</b> ({me.username})</span>
+        return <span>&nbsp;{me.email} ({me.username})</span>
     }
 }
 

@@ -41,6 +41,7 @@ function fetchQuery(operation, variables, cacheConfig,) {
         if (isMutation) {
             cache.clear();
         }
+        console.log('json', json);
         return json;
     });
 }

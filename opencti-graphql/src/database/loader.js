@@ -33,7 +33,7 @@ const randomString = () =>
 // -> <green> is translated to <white><yellow><orange><green> to respect the hierarchy.
 // Considering a user with access <luatix> and <yellow>, the request to get the corresponding malwares is:
 // PROFILE MATCH (m:Malware) WHERE m.access_rights contains '<luatix>' or m.access_rights contains '<yellow>' return m LIMIT 25
-const malwareCount = 100;
+const malwareCount = 10000;
 const writeMalware = malwareId =>
   addMalware({
     id: `malware--${malwareId}`,

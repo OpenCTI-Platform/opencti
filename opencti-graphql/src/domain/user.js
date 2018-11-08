@@ -1,4 +1,4 @@
-import { assoc, head, isEmpty, map, pipe } from 'ramda';
+import { assoc, head, isEmpty, mapObjIndexed, values, pipe, last } from 'ramda';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
 import uuid from 'uuid/v4';
@@ -13,6 +13,7 @@ import {
   ROLE_USER,
   USER_ADDED_TOPIC
 } from '../config/conf';
+import { decrypt, encrypt } from '../config/crypto';
 
 // Security related
 export const generateOpenCTIWebToken = email => ({
@@ -75,15 +76,47 @@ export const login = (email, password) => {
   });
 };
 
-export const findAll = (first, offset) => {
+const pageInfo = (
+  startCursor = '',
+  endCursor = '',
+  hasNextPage = false,
+  hasPreviousPage = false
+) => ({
+  startCursor,
+  endCursor,
+  hasNextPage,
+  hasPreviousPage
+});
+
+export const findAll = (first = 25, after = undefined, orderBy = 'id') => {
+  const skip = after ? parseInt(decrypt(after), 10) : 0;
   const session = driver.session();
-  const promise = session.run(
-    'MATCH (user:User) RETURN user ORDER BY user.id SKIP {skip} LIMIT {limit}',
-    { skip: offset, limit: first }
-  );
+  const query = `MATCH (g:User) WITH count(g) as global MATCH (user:User) RETURN user, global ORDER BY user.${orderBy.toLowerCase()} SKIP {skip} LIMIT {limit}`;
+  const promise = session.run(query, {
+    skip,
+    limit: first
+  });
   return promise.then(data => {
     session.close();
-    return map(record => record.get('user').properties, data.records);
+    if (isEmpty(data.records)) {
+      return { edges: [], pageInfo: pageInfo() };
+    }
+    // Transform the result to be relay compliant.
+    const globalCount = head(data.records).get('global');
+    const edges = pipe(
+      mapObjIndexed((record, key) => {
+        const node = record.get('user').properties;
+        const cursor = encrypt(skip + parseInt(key, 10) + 1);
+        return { node, cursor };
+      }),
+      values
+    )(data.records);
+    const hasNextPage = first + skip < globalCount;
+    const hasPreviousPage = skip > 0;
+    const startCursor = head(edges).cursor;
+    const endCursor = last(edges).cursor;
+    const page = pageInfo(startCursor, endCursor, hasNextPage, hasPreviousPage);
+    return { edges, pageInfo: page };
   });
 };
 

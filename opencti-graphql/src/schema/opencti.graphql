@@ -1,7 +1,31 @@
 ### Scalar
 scalar DateTime
 
+### Relay
+type PageInfo {
+    startCursor: String!,
+    endCursor: String!,
+    hasNextPage: Boolean!,
+    hasPreviousPage: Boolean!
+}
+
 ### User
+enum UsersOrdering {
+    ID,
+    EMAIL
+}
+enum UserRole {
+    ROLE_ADMIN
+    ROLE_USER
+}
+type UserConnection {
+    pageInfo: PageInfo!
+    edges: [UserEdge]
+}
+type UserEdge {
+    cursor: String!
+    node: User!
+}
 type User {
     id: ID!
     username: String
@@ -10,30 +34,35 @@ type User {
     updated_at: DateTime
     roles: [String]
 }
-
-enum UserRole {
-    ROLE_ADMIN
-    ROLE_USER
-}
-
 input UserAddInput {
     username: String!
     password: String!
     roles: [UserRole]!
     email: String!
 }
-
 input UserLoginInput {
     username: String!
     password: String!
 }
 
 ### Malware
+enum MalwaresOrdering {
+    ID,
+    NAME,
+    CREATED,
+    MODIFIED
+}
+type MalwareConnection {
+    pageInfo: PageInfo!
+    edges: [MalwareEdge]
+}
+type MalwareEdge {
+    cursor: String!
+    node: Malware!
+}
 type Malware {
-    type: String
     id: ID!
-    type: String
-    name: String
+    name: String!
     description: String
     created_at: DateTime
     updated_at: DateTime
@@ -41,7 +70,6 @@ type Malware {
     modified: DateTime
     revoked: Boolean
 }
-
 input MalwareAddInput {
     name: String!
     description: String!
@@ -53,9 +81,12 @@ input MalwareAddInput {
 ### QUERIES
 type Query {
     # User
-    users(first: Int, offset: Int): [User]
+    users(first: Int, after: ID, orderBy: UsersOrdering): UserConnection
     user(id: String!): User
     me: User
+    # Malware
+    malwares(first: Int, after: ID, orderBy: MalwaresOrdering): MalwareConnection
+    malware(id: String!): Malware
 }
 
 ### SUBSCRIPTIONS
