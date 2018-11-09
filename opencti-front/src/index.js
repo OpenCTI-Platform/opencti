@@ -1,9 +1,6 @@
 import 'typeface-roboto'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {addLocaleData, IntlProvider} from 'react-intl'
-import enLocaleData from 'react-intl/locale-data/en'
-import frLocaleData from 'react-intl/locale-data/fr'
 import './resources/css/index.css'
 import * as serviceWorker from './config/serviceWorker'
 import {BrowserRouter, Redirect, Route} from 'react-router-dom'
@@ -13,7 +10,7 @@ import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import {createMuiTheme} from '@material-ui/core/styles'
 import theme from './components/Theme'
-import {i18n} from './utils/Localization'
+import AppIntlProvider from './components/AppIntlProvider'
 import Root from './Root'
 import Login from './public/components/Login'
 import RootPrivate from './private/Root'
@@ -56,10 +53,8 @@ const PrivateRoute = ({component: Component, ...rest}) => (
     )}/>
 )
 
-addLocaleData([...enLocaleData, ...frLocaleData])
-
 ReactDOM.render(
-    <IntlProvider locale='en' key='en' messages={i18n.messages['en']}>
+    <AppIntlProvider>
         <MuiThemeProvider theme={createMuiTheme(theme)}>
             <BrowserRouter>
                 <div>
@@ -70,7 +65,7 @@ ReactDOM.render(
                 </div>
             </BrowserRouter>
         </MuiThemeProvider>
-    </IntlProvider>,
+    </AppIntlProvider>,
     document.getElementById('root'))
 
 // If you want your app to work offline and load faster, you can change

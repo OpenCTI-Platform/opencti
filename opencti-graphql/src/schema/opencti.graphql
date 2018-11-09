@@ -30,6 +30,7 @@ type User {
     id: ID!
     username: String
     email: String!
+    language: String
     created_at: DateTime
     updated_at: DateTime
     roles: [String]
