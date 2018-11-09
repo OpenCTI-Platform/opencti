@@ -25,7 +25,7 @@ define
   # STIX SDO
   "name" sub attribute datatype string;
   "alias" sub attribute datatype string;
-  "role" sub attribute datatype string;
+  "stix_role" sub attribute datatype string;
   "objective" sub attribute datatype string;
   "goal" sub attribute datatype string;
   "sophistication" sub attribute datatype string;
@@ -68,8 +68,8 @@ define
 
   # STIX embeded roles
   "creator" sub role;
-  "external_reference" sub role;
   "marking" sub role;
+  "external_reference" sub role;
   "phase_belonging" sub role;
   "knowledge_aggregation" sub role;
 
@@ -110,7 +110,7 @@ define
   "relation_embedded" sub relationship
     is-abstract;
 
-  "authored-by" sub "relation_embedded"
+  "authored_by" sub "relation_embedded"
     relates "author", relates "so";
 
   # STIX embeded relationships
@@ -127,10 +127,10 @@ define
     relates "external_reference", relates "so";
 
   "kill_chain_phases" sub "stix_relation_embedded"
-    relates "kill_chain_phase", relates "so";
+    relates "phase_belonging", relates "kill_chain_phase";
 
   "object_refs" sub "stix_relation_embedded"
-    relates "knowledge-aggregation", relates "so";
+    relates "so", relates "knowledge_aggregation";
 
   # STIX SRO relationships
   "stix_relation" sub relationship
@@ -315,7 +315,7 @@ define
     has "name"
     has "description"
     has "alias"
-    has "role"
+    has "stix_role"
     has "goal"
     has "sophistication"
     has "resource_level"
