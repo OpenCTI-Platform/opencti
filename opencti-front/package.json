@@ -10,6 +10,7 @@
     "http-proxy-middleware": "^0.19.0",
     "jsonwebtoken": "^8.3.0",
     "mdi-material-ui": "^5.5.0",
+    "prop-types": "^15.6.2",
     "ramda": "^0.25.0",
     "react": "^16.5.2",
     "react-document-title": "^2.0.3",

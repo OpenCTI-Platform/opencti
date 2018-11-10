@@ -11,8 +11,8 @@ type PageInfo {
 
 ### User
 enum UsersOrdering {
-    ID,
-    EMAIL
+    id,
+    email
 }
 enum UserRole {
     ROLE_ADMIN
@@ -48,10 +48,10 @@ input UserLoginInput {
 
 ### Malware
 enum MalwaresOrdering {
-    ID,
-    NAME,
-    CREATED,
-    MODIFIED
+    id,
+    name,
+    created,
+    modified
 }
 type MalwareConnection {
     pageInfo: PageInfo!

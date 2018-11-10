@@ -71,7 +71,6 @@ class TopBar extends Component {
 
   render() {
     const {intl, classes} = this.props
-
     return (
       <AppBar position='fixed' className={classes.appBar}>
         <QueryRenderer environment={environment} query={testQuery} variables={{}} render={({error, props}) => {
@@ -82,7 +81,7 @@ class TopBar extends Component {
                 <img src={logo} alt='logo' className={classes.logo}/>
               </IconButton>
               <Typography variant='h6' color='inherit' className={classes.flex}>
-                OpenCTI - Cyber threat intelligence platform
+                {intl.formatMessage({id: 'OpenCTI - Cyber threat intelligence platform'})}
               </Typography>
               <div>
                 <IconButton
@@ -106,7 +105,7 @@ class TopBar extends Component {
                   onClose={this.handleCloseMenu.bind(this)}>
                   <MenuItem component={Link} to='/dashboard/profile' onClick={this.handleCloseMenu.bind(this)}>{intl.formatMessage({id: 'Profile'})}</MenuItem>
                   {pathOr(false, ['me', 'admin'], props) ? <MenuItem component={Link} to='/admin'
-                                                                       onClick={this.adminClick.bind(this)}>{intl.formatMessage({id: 'Admin'})}</MenuItem> : ''}
+                                                                     onClick={this.adminClick.bind(this)}>{intl.formatMessage({id: 'Admin'})}</MenuItem> : ''}
                   <MenuItem onClick={this.handleLogout.bind(this)}>{intl.formatMessage({id: 'Logout'})}</MenuItem>
                 </Menu>
               </div>

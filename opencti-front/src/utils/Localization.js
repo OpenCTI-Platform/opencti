@@ -1,6 +1,10 @@
 export const i18n = {
   messages: {
     fr: {
+      // Titles
+      'OpenCTI - Cyber threat intelligence platform': 'OpenCTI - Plateforme d\'analyse de la cybermenace',
+      // Interface
+      'Search': 'Rechercher',
       // Menu
       'Dashboard': 'Tableau de bord',
       'Actors': 'Acteurs',
@@ -16,7 +20,12 @@ export const i18n = {
       // User
       'Logout': 'Se déconnecter',
       'Profile': 'Profil',
-      'Admin': 'Admin'
+      'Admin': 'Admin',
+      // Properties
+      'Name': 'Nom',
+      'Description': 'Description',
+      'Creation date': 'Date de création',
+      'Modification date': 'Date de modification'
     }
   }
 }

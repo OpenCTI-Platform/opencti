@@ -74,7 +74,6 @@ class LeftBar extends Component {
 
   render() {
     const {intl, location, classes} = this.props
-
     return (
       <ClickAwayListener onClickAway={this.handleClickAway.bind(this)}>
         <Drawer
