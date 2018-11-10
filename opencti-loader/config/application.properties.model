@@ -13,3 +13,4 @@ neo4j.username=
 neo4j.password=
 ## Grakn
 grakn.uri=
+grakn.keyspace=

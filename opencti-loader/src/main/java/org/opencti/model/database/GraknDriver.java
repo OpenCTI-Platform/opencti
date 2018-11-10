@@ -33,10 +33,10 @@ public class GraknDriver extends LoaderDriver {
 
     @Override
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void execute(List<BaseQuery> queries) {
+    public void execute(BaseQuery q) {
         try (Grakn.Session session = grakn.session(keyspace)) {
             try (Grakn.Transaction transaction = session.transaction(GraknTxType.WRITE)) {
-                queries.forEach(q -> transaction.graql().parse(q.getQuery()).execute());
+                transaction.graql().parse(q.getQuery()).execute();
                 transaction.commit();
             }
         }

@@ -1,9 +1,8 @@
 package org.opencti.model.sdo;
 
 import org.opencti.model.StixBase;
-import org.opencti.model.database.BaseQuery;
+import org.opencti.model.database.LoaderDriver;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -12,8 +11,7 @@ import static org.opencti.model.database.BaseQuery.from;
 public abstract class Domain extends StixBase {
 
     @Override
-    public List<BaseQuery> neo4j() {
-        List<BaseQuery> dq = new ArrayList<>();
+    public void neo4j(LoaderDriver driver) {
         String type = this.getClass().getSimpleName();
         String name = type.toLowerCase();
         //Create a new domain
@@ -30,7 +28,7 @@ public abstract class Domain extends StixBase {
                 /**/name + ".description = $description, " +
                 /**/name + ".created = $created, " +
                 /**/name + ".modified = $modified";
-        dq.add(from(query).withParams("id", getId(),
+        driver.execute(from(query).withParams("id", getId(),
                 "name", getName(),
                 "description", getDescription(),
                 "created", getCreated(),
@@ -39,10 +37,10 @@ public abstract class Domain extends StixBase {
         //Create the created_ref
         if (getCreated_by_ref() != null) {
             String identityQuery = "MERGE (identity:Identity {id: $identityId}) ON CREATE SET identity={id: $identityId}";
-            dq.add(from(identityQuery).withParams("identityId", getCreated_by_ref()));
+            driver.execute(from(identityQuery).withParams("identityId", getCreated_by_ref()));
             String relationQuery = "MATCH (" + name + ":" + type + " {id: $nameId}), (identity:Identity {id: $identityId}) " +
                     "MERGE (" + name + ")-[:created_by]->(identity)";
-            dq.add(from(relationQuery).withParams("nameId", getId(), "identityId", getCreated_by_ref()));
+            driver.execute(from(relationQuery).withParams("nameId", getId(), "identityId", getCreated_by_ref()));
         }
 
         //Marking refs
@@ -50,24 +48,21 @@ public abstract class Domain extends StixBase {
             getObject_marking_refs().forEach(marking -> {
                 //Create entity
                 String markingQuery = "MERGE (marking:MarkingDefinition {id: $markingId}) ON CREATE SET marking={id: $markingId}";
-                dq.add(from(markingQuery).withParams("markingId", marking));
+                driver.execute(from(markingQuery).withParams("markingId", marking));
                 //Create relation
                 String markingRelationQuery = "MATCH (" + name + ":" + type + " {id: $nameId}), (marking:MarkingDefinition {id: $markingId}) " +
                         "MERGE (" + name + ")-[:object_marking]->(marking)";
-                dq.add(from(markingRelationQuery).withParams("nameId", getId(), "markingId", marking));
+                driver.execute(from(markingRelationQuery).withParams("nameId", getId(), "markingId", marking));
             });
         }
-        return dq;
     }
 
     @Override
-    public List<BaseQuery> grakn() {
-        List<BaseQuery> dq = new ArrayList<>();
+    public void grakn(LoaderDriver driver) {
         String type = this.getClass().getSimpleName().toLowerCase();
         //match $p has identifier "Mary Guthrie"; insert $p has middlename "Mathilda"; $p has birth-date 1902-01-01; $p has death-date 1952-01-01; $p has age 50;
         //insert $57472 isa person has firstname "Mary" has identifier "Mary Guthrie" has surname "Guthrie" has gender "female";
-        dq.add(from(format("insert %s isa %s has internal_id \"%s\" has created %s", getId(), type, "internal_id", getCreated())));
-        return dq;
+        driver.execute(from(format("insert $m isa %s has stix_id \"%s\" has created %s", type, getId(), getCreated())));
     }
 
     //region fields

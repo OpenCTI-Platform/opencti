@@ -1,15 +1,12 @@
 package org.opencti.model.sdo;
 
-import org.opencti.model.database.BaseQuery;
+import org.opencti.model.database.LoaderDriver;
 
-import java.util.List;
-
-import static java.util.Collections.singletonList;
 import static org.opencti.model.database.BaseQuery.from;
 
 public class Identity extends Domain {
     @Override
-    public List<BaseQuery> neo4j() {
+    public void neo4j(LoaderDriver driver) {
         String query = "MERGE (identity:Identity {id: $id}) " +
                 "ON CREATE SET identity = {" +
                 /**/"id: $id, " +
@@ -24,7 +21,7 @@ public class Identity extends Domain {
                 /**/"identity.created = $created, " +
                 /**/"identity.modified = $modified, " +
                 /**/"identity.identity_class = $identity_class";
-        return singletonList(from(query).withParams("id", getId(),
+        driver.execute(from(query).withParams("id", getId(),
                 "name", getName(),
                 "description", getDescription(),
                 "created", getCreated(),
@@ -35,7 +32,7 @@ public class Identity extends Domain {
 
     private String identity_class;
 
-    public String getIdentity_class() {
+    private String getIdentity_class() {
         return identity_class;
     }
 

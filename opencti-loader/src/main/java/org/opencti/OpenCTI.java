@@ -12,7 +12,7 @@ import org.opencti.model.database.GraknDriver;
 import org.opencti.model.database.LoaderDriver;
 import org.opencti.model.database.Neo4jDriver;
 
-import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,14 +24,12 @@ import static java.util.Arrays.asList;
 
 public class OpenCTI {
 
-    public static LoaderDriver driver;
     private static ConfigurationProvider cp;
     private static List<StixBase> filesToProcess = new ArrayList<>();
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     static {
         cp = configurationProvider();
-        driver = database();
         MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
@@ -53,7 +51,7 @@ public class OpenCTI {
             case "neo4j":
                 return new Neo4jDriver(cp);
             default:
-                throw new RuntimeException("Unsupported datbase type");
+                throw new RuntimeException("Unsupported database type");
         }
 
     }
@@ -68,7 +66,10 @@ public class OpenCTI {
         }
     }
 
-    private static void filesToProcess() throws IOException {
+    private static void filesToProcess() throws Exception {
+        String databaseType = cp.getProperty("database.type", String.class);
+        Class<?> driverClass = Class.forName(String.format("org.opencti.model.database.%sDriver", databaseType));
+        LoaderDriver driver = (LoaderDriver)driverClass.getConstructor(ConfigurationProvider.class).newInstance(cp);
         String path = cp.getProperty("stix2.files.path", String.class);
         long startFileCatch = System.currentTimeMillis();
         Files.walk(Paths.get(path)).parallel()
@@ -81,7 +82,12 @@ public class OpenCTI {
         AtomicInteger index = new AtomicInteger();
         filesToProcess.parallelStream().forEach(file -> {
             index.getAndIncrement();
-            driver.execute(file.getQueries());
+            try {
+                Method method = file.getClass().getMethod(databaseType.toLowerCase(), LoaderDriver.class);
+                method.invoke(file, driver);
+            } catch (Exception e) {
+                throw new RuntimeException(e.getCause());
+            }
             System.out.print("\rProcessing " + filesToProcess.size() + "/" + index.get());
         });
         long endNeoProcess = System.currentTimeMillis();
@@ -89,7 +95,7 @@ public class OpenCTI {
         driver.close();
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         filesToProcess();
     }
 }

@@ -28,9 +28,9 @@ public class Neo4jDriver extends LoaderDriver {
 
     @Override
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void execute(List<BaseQuery> queries) {
+    public void execute(BaseQuery q) {
         try (Session session = driver.session()) {
-            queries.forEach(q -> session.writeTransaction(tx -> tx.run(q.getQuery(), parameters(q.getParameters()))));
+            session.writeTransaction(tx -> tx.run(q.getQuery(), parameters(q.getParameters())));
         }
     }
 
