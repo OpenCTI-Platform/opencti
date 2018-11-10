@@ -7,10 +7,10 @@ import org.cfg4j.provider.ConfigurationProviderBuilder;
 import org.cfg4j.source.ConfigurationSource;
 import org.cfg4j.source.context.filesprovider.ConfigFilesProvider;
 import org.cfg4j.source.files.FilesConfigurationSource;
-import org.neo4j.driver.v1.AuthTokens;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.GraphDatabase;
 import org.opencti.model.StixBase;
+import org.opencti.model.database.GraknDriver;
+import org.opencti.model.database.LoaderDriver;
+import org.opencti.model.database.Neo4jDriver;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,9 +24,9 @@ import static java.util.Arrays.asList;
 
 public class OpenCTI {
 
-    public static Driver driver;
-    private static List<StixBase> filesToProcess = new ArrayList<>();
+    public static LoaderDriver driver;
     private static ConfigurationProvider cp;
+    private static List<StixBase> filesToProcess = new ArrayList<>();
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     static {
@@ -45,11 +45,17 @@ public class OpenCTI {
                 .build();
     }
 
-    private static Driver database() {
-        String uri = cp.getProperty("neo4j.uri", String.class);
-        String username = cp.getProperty("neo4j.username", String.class);
-        String password = cp.getProperty("neo4j.password", String.class);
-        return GraphDatabase.driver(uri, AuthTokens.basic(username, password));
+    private static LoaderDriver database() {
+        String type = cp.getProperty("database.type", String.class);
+        switch (type) {
+            case "grakn":
+                return new GraknDriver(cp);
+            case "neo4j":
+                return new Neo4jDriver(cp);
+            default:
+                throw new RuntimeException("Unsupported datbase type");
+        }
+
     }
 
     @SuppressWarnings("unchecked")
@@ -75,7 +81,7 @@ public class OpenCTI {
         AtomicInteger index = new AtomicInteger();
         filesToProcess.parallelStream().forEach(file -> {
             index.getAndIncrement();
-            file.load();
+            driver.execute(file.getQueries());
             System.out.print("\rProcessing " + filesToProcess.size() + "/" + index.get());
         });
         long endNeoProcess = System.currentTimeMillis();

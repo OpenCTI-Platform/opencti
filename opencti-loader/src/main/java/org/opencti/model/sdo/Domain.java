@@ -1,18 +1,22 @@
 package org.opencti.model.sdo;
 
 import org.opencti.model.StixBase;
+import org.opencti.model.database.BaseQuery;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import static org.opencti.OpenCTI.driver;
+import static java.lang.String.format;
+import static org.opencti.model.database.BaseQuery.from;
 
 public abstract class Domain extends StixBase {
 
     @Override
-    public void load() {
+    public List<BaseQuery> neo4j() {
+        List<BaseQuery> dq = new ArrayList<>();
         String type = this.getClass().getSimpleName();
         String name = type.toLowerCase();
-        //Create the Attach pattern
+        //Create a new domain
         String query = "MERGE (" + name + ":" + type + " { id: $id }) " +
                 "ON CREATE SET " + name + " = {" +
                 /**/"id: $id, " +
@@ -26,19 +30,19 @@ public abstract class Domain extends StixBase {
                 /**/name + ".description = $description, " +
                 /**/name + ".created = $created, " +
                 /**/name + ".modified = $modified";
-        execute(driver, query, "id", getId(),
+        dq.add(from(query).withParams("id", getId(),
                 "name", getName(),
                 "description", getDescription(),
                 "created", getCreated(),
-                "modified", getModified());
+                "modified", getModified()));
 
         //Create the created_ref
         if (getCreated_by_ref() != null) {
             String identityQuery = "MERGE (identity:Identity {id: $identityId}) ON CREATE SET identity={id: $identityId}";
-            execute(driver, identityQuery, "identityId", getCreated_by_ref());
+            dq.add(from(identityQuery).withParams("identityId", getCreated_by_ref()));
             String relationQuery = "MATCH (" + name + ":" + type + " {id: $nameId}), (identity:Identity {id: $identityId}) " +
                     "MERGE (" + name + ")-[:created_by]->(identity)";
-            execute(driver, relationQuery, "nameId", getId(), "identityId", getCreated_by_ref());
+            dq.add(from(relationQuery).withParams("nameId", getId(), "identityId", getCreated_by_ref()));
         }
 
         //Marking refs
@@ -46,15 +50,27 @@ public abstract class Domain extends StixBase {
             getObject_marking_refs().forEach(marking -> {
                 //Create entity
                 String markingQuery = "MERGE (marking:MarkingDefinition {id: $markingId}) ON CREATE SET marking={id: $markingId}";
-                execute(driver, markingQuery, "markingId", marking);
+                dq.add(from(markingQuery).withParams("markingId", marking));
                 //Create relation
                 String markingRelationQuery = "MATCH (" + name + ":" + type + " {id: $nameId}), (marking:MarkingDefinition {id: $markingId}) " +
                         "MERGE (" + name + ")-[:object_marking]->(marking)";
-                execute(driver, markingRelationQuery, "nameId", getId(), "markingId", marking);
+                dq.add(from(markingRelationQuery).withParams("nameId", getId(), "markingId", marking));
             });
         }
+        return dq;
     }
 
+    @Override
+    public List<BaseQuery> grakn() {
+        List<BaseQuery> dq = new ArrayList<>();
+        String type = this.getClass().getSimpleName().toLowerCase();
+        //match $p has identifier "Mary Guthrie"; insert $p has middlename "Mathilda"; $p has birth-date 1902-01-01; $p has death-date 1952-01-01; $p has age 50;
+        //insert $57472 isa person has firstname "Mary" has identifier "Mary Guthrie" has surname "Guthrie" has gender "female";
+        dq.add(from(format("insert %s isa %s has internal_id \"%s\" has created %s", getId(), type, "internal_id", getCreated())));
+        return dq;
+    }
+
+    //region fields
     private String name;
     private String description;
     private String created;
@@ -109,4 +125,5 @@ public abstract class Domain extends StixBase {
     public void setObject_marking_refs(List<String> object_marking_refs) {
         this.object_marking_refs = object_marking_refs;
     }
+    //endregion
 }

@@ -1,10 +1,15 @@
 package org.opencti.model.sdo;
 
-import static org.opencti.OpenCTI.driver;
+import org.opencti.model.database.BaseQuery;
+
+import java.util.List;
+
+import static java.util.Collections.singletonList;
+import static org.opencti.model.database.BaseQuery.from;
 
 public class Identity extends Domain {
     @Override
-    public void load() {
+    public List<BaseQuery> neo4j() {
         String query = "MERGE (identity:Identity {id: $id}) " +
                 "ON CREATE SET identity = {" +
                 /**/"id: $id, " +
@@ -13,19 +18,19 @@ public class Identity extends Domain {
                 /**/"created: $created, " +
                 /**/"modified: $modified, " +
                 /**/"identity_class: $identity_class " +
-                "} "+
+                "} " +
                 "ON MATCH SET identity.name = $name, " +
                 /**/"identity.description = $description, " +
                 /**/"identity.created = $created, " +
                 /**/"identity.modified = $modified, " +
                 /**/"identity.identity_class = $identity_class";
-        execute(driver, query, "id", getId(),
+        return singletonList(from(query).withParams("id", getId(),
                 "name", getName(),
                 "description", getDescription(),
                 "created", getCreated(),
                 "modified", getModified(),
                 "identity_class", getIdentity_class()
-        );
+        ));
     }
 
     private String identity_class;

@@ -2,12 +2,13 @@ package org.opencti.model;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.Session;
-import org.opencti.model.sro.Relationship;
+import org.opencti.OpenCTI;
+import org.opencti.model.database.BaseQuery;
+import org.opencti.model.database.Neo4jDriver;
 import org.opencti.model.sdo.*;
+import org.opencti.model.sro.Relationship;
 
-import static org.neo4j.driver.v1.Values.parameters;
+import java.util.List;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -34,11 +35,11 @@ public abstract class StixBase {
         this.id = id;
     }
 
-    public abstract void load();
-
-    protected void execute(Driver driver, final String query, Object... parameters) {
-        try (Session session = driver.session()) {
-            session.writeTransaction(tx -> tx.run(query, parameters(parameters)));
-        }
+    public List<BaseQuery> getQueries() {
+        return OpenCTI.driver instanceof Neo4jDriver ? neo4j() : grakn();
     }
+
+    public abstract List<BaseQuery> neo4j();
+
+    public abstract List<BaseQuery> grakn();
 }

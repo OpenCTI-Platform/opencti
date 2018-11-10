@@ -3,7 +3,6 @@ define
   ## PROPERTIES
 
   # OpenCTI properties
-  "internal_id" sub attribute datatype string;
   "creation_date" sub attribute datatype date;
   "username" sub attribute datatype string;
   "password" sub attribute datatype string;
@@ -12,7 +11,7 @@ define
   "lastname" sub attribute datatype string;
 
   # STIX common properties
-  "id" sub attribute datatype string;
+  "stix_id" sub attribute datatype string;
   "type" sub attribute datatype string;
   "created" sub attribute datatype date;
   "modified" sub attribute datatype date;
@@ -179,7 +178,6 @@ define
 
   # OpenCTI entities
   "User" sub entity
-    has "internal_id"
     has "creation_date"
     has "username"
     has "password"
@@ -190,9 +188,8 @@ define
  
   "Stix-Domain" sub entity
     is-abstract
-    has "internal_id"
     has "creation_date"
-    has "id"
+    has "stix_id"
     has "type"
     has "created"
     has "modified"

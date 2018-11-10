@@ -1,6 +1,10 @@
 package org.opencti.model;
 
+import org.opencti.model.database.BaseQuery;
+
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Bundle extends StixBase {
     private String spec_version;
@@ -23,7 +27,12 @@ public class Bundle extends StixBase {
     }
 
     @Override
-    public void load() {
-        objects.forEach(StixBase::load);
+    public List<BaseQuery> neo4j() {
+        return objects.stream().map(StixBase::neo4j).flatMap(Collection::stream).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<BaseQuery> grakn() {
+        return objects.stream().map(StixBase::grakn).flatMap(Collection::stream).collect(Collectors.toList());
     }
 }
