@@ -80,7 +80,7 @@ public class OpenCTI {
         System.out.println(filesToProcess.size() + " files to process");
         long startNeoProcess = System.currentTimeMillis();
         AtomicInteger index = new AtomicInteger();
-        filesToProcess.parallelStream().forEach(file -> {
+        filesToProcess.forEach(file -> {
             index.getAndIncrement();
             try {
                 Method method = file.getClass().getMethod(databaseType.toLowerCase(), LoaderDriver.class);
