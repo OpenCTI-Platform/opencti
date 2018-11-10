@@ -11,6 +11,7 @@ define
   "firstname" sub attribute datatype string;
   "lastname" sub attribute datatype string;
   "language" sub attribute datatype string;
+  "grant" sub attribute datatype string;
 
   # STIX common properties
   "id" sub attribute datatype string;
@@ -188,6 +189,7 @@ define
     has "firstname"
     has "lastname"
     has "language"
+    has "grant"
     plays "author";
  
   "Stix-Domain" sub entity
