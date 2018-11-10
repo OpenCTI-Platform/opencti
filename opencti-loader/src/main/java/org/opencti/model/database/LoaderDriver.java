@@ -10,6 +10,6 @@ public abstract class LoaderDriver {
         init(cp);
     }
     abstract void init(ConfigurationProvider cp);
-    public abstract void execute(BaseQuery query);
+    public abstract Object execute(BaseQuery query);
     public abstract void close();
 }

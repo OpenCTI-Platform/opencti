@@ -1,10 +1,7 @@
 package org.opencti.model.database;
 
 import org.cfg4j.provider.ConfigurationProvider;
-import org.neo4j.driver.v1.AuthTokens;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.GraphDatabase;
-import org.neo4j.driver.v1.Session;
+import org.neo4j.driver.v1.*;
 
 import java.util.List;
 
@@ -28,9 +25,10 @@ public class Neo4jDriver extends LoaderDriver {
 
     @Override
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void execute(BaseQuery q) {
+    public Object execute(BaseQuery q) {
         try (Session session = driver.session()) {
-            session.writeTransaction(tx -> tx.run(q.getQuery(), parameters(q.getParameters())));
+            StatementResult statementResult = session.writeTransaction(tx -> tx.run(q.getQuery(), parameters(q.getParameters())));
+            return statementResult.single().asMap();
         }
     }
 

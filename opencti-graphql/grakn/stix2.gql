@@ -14,13 +14,13 @@ define
 
   # STIX common properties
   "stix_id" sub attribute datatype string;
+  "stix_label" sub attribute datatype string;
   "type" sub attribute datatype string;
   "created" sub attribute datatype date;
   "modified" sub attribute datatype date;
   "revoked" sub attribute datatype boolean;
   "first_seen" sub attribute datatype date;
   "last_seen" sub attribute datatype date;
-  "label" sub attribute datatype string;
   "description" sub attribute datatype string;
 
   # STIX SDO
@@ -194,11 +194,11 @@ define
     is-abstract
     has "creation_date"
     has "stix_id"
+    has "stix_label"
     has "type"
     has "created"
     has "modified"
     has "revoked"
-    has "label"
     plays "so";
 
   "Attack-Pattern" sub "Stix-Domain"

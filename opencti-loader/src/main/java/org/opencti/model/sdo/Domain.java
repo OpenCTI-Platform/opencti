@@ -3,7 +3,10 @@ package org.opencti.model.sdo;
 import org.opencti.model.StixBase;
 import org.opencti.model.database.LoaderDriver;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static org.opencti.model.database.BaseQuery.from;
@@ -18,19 +21,13 @@ public abstract class Domain extends StixBase {
         String query = "MERGE (" + name + ":" + type + " { id: $id }) " +
                 "ON CREATE SET " + name + " = {" +
                 /**/"id: $id, " +
-                /**/"name: $name, " +
-                /**/"description: $description, " +
                 /**/"created: $created, " +
                 /**/"modified: $modified " +
                 "} " +
                 "ON MATCH SET " +
-                /**/name + ".name = $name, " +
-                /**/name + ".description = $description, " +
                 /**/name + ".created = $created, " +
                 /**/name + ".modified = $modified";
         driver.execute(from(query).withParams("id", getId(),
-                "name", getName(),
-                "description", getDescription(),
                 "created", getCreated(),
                 "modified", getModified()));
 
@@ -59,38 +56,47 @@ public abstract class Domain extends StixBase {
 
     @Override
     public void grakn(LoaderDriver driver) {
-        String type = this.getClass().getSimpleName().toLowerCase();
-        //match $p has identifier "Mary Guthrie"; insert $p has middlename "Mathilda"; $p has birth-date 1902-01-01; $p has death-date 1952-01-01; $p has age 50;
-        //insert $57472 isa person has firstname "Mary" has identifier "Mary Guthrie" has surname "Guthrie" has gender "female";
-        driver.execute(from(format("insert $m isa %s has stix_id \"%s\" has created %s", type, getId(), getCreated())));
+        //Do nothing.
+    }
+
+    private String type;
+    private String created;
+    private String modified;
+    private boolean revoked = false;
+    private String created_by_ref;
+    private List<String> labels;
+    private List<String> object_marking_refs;
+
+
+    public String getLabelChain() {
+        return getLabels().stream().map(value -> format("has stix_label \"%s\"", value))
+                .collect(Collectors.joining(" "));
+    }
+
+    public String clean(String s) {
+        return s != null ? s.replaceAll("\"", "\\\\\"") : null;
     }
 
     //region fields
-    private String name;
-    private String description;
-    private String created;
-    private String modified;
-    private String created_by_ref;
-    private List<String> object_marking_refs;
-
-    public String getName() {
-        return name;
+    public List<String> getLabels() {
+        return labels;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setLabels(List<String> labels) {
+        this.labels = labels;
     }
 
-    public String getDescription() {
-        return description;
+    public String getType() {
+        return type;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getCreated() {
-        return created;
+        ZonedDateTime zonedDateTime = ZonedDateTime.parse(created);
+        return zonedDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 
     public void setCreated(String created) {
@@ -103,6 +109,14 @@ public abstract class Domain extends StixBase {
 
     public void setModified(String modified) {
         this.modified = modified;
+    }
+
+    public boolean getRevoked() {
+        return revoked;
+    }
+
+    public void setRevoked(Boolean revoked) {
+        this.revoked = revoked;
     }
 
     public String getCreated_by_ref() {

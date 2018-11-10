@@ -16,7 +16,7 @@ import static org.neo4j.driver.v1.Values.parameters;
 
 public class GraknDriver extends LoaderDriver {
 
-    private Grakn grakn;
+    private Grakn.Session session;
     private Keyspace keyspace;
 
     public GraknDriver(ConfigurationProvider cp) {
@@ -27,18 +27,18 @@ public class GraknDriver extends LoaderDriver {
     public void init(ConfigurationProvider cp) {
         String uri = cp.getProperty("grakn.uri", String.class);
         String space = cp.getProperty("grakn.keyspace", String.class);
-        grakn = new Grakn(new SimpleURI(uri));
+        Grakn grakn = new Grakn(new SimpleURI(uri));
         keyspace = Keyspace.of(space);
+        session = grakn.session(keyspace);
     }
 
     @Override
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void execute(BaseQuery q) {
-        try (Grakn.Session session = grakn.session(keyspace)) {
-            try (Grakn.Transaction transaction = session.transaction(GraknTxType.WRITE)) {
-                transaction.graql().parse(q.getQuery()).execute();
-                transaction.commit();
-            }
+    public Object execute(BaseQuery q) {
+        try (Grakn.Transaction transaction = session.transaction(GraknTxType.WRITE)) {
+            List<?> results = transaction.graql().parse(q.getQuery()).execute();
+            transaction.commit();
+            return results.size() > 0 ? results.get(0) : null;
         }
     }
 

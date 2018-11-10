@@ -10,21 +10,15 @@ public class MarkingDefinition extends Domain {
         String query = "MERGE (markingDefinition:MarkingDefinition {id: $id}) " +
                 "ON CREATE SET markingDefinition = {" +
                 /**/"id: $id, " +
-                /**/"name: $name, " +
-                /**/"description: $description, " +
                 /**/"created: $created, " +
                 /**/"tlp: $tlp, " +
                 /**/"statement: $statement " +
                 "} " +
                 "ON MATCH SET " +
-                /**/"markingDefinition.name = $name, " +
-                /**/"markingDefinition.description = $description, " +
                 /**/"markingDefinition.created = $created, " +
                 /**/"markingDefinition.tlp = $tlp, " +
                 /**/"markingDefinition.statement = $statement";
         driver.execute(from(query).withParams("id", getId(),
-                "name", getName(),
-                "description", getDescription(),
                 "created", getCreated(),
                 "modified", getModified(),
                 "tlp", getDefinition().getTlp(),

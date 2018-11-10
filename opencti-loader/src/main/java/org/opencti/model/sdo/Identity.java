@@ -10,20 +10,15 @@ public class Identity extends Domain {
         String query = "MERGE (identity:Identity {id: $id}) " +
                 "ON CREATE SET identity = {" +
                 /**/"id: $id, " +
-                /**/"name: $name, " +
-                /**/"description: $description, " +
                 /**/"created: $created, " +
                 /**/"modified: $modified, " +
                 /**/"identity_class: $identity_class " +
                 "} " +
                 "ON MATCH SET identity.name = $name, " +
-                /**/"identity.description = $description, " +
                 /**/"identity.created = $created, " +
                 /**/"identity.modified = $modified, " +
                 /**/"identity.identity_class = $identity_class";
         driver.execute(from(query).withParams("id", getId(),
-                "name", getName(),
-                "description", getDescription(),
                 "created", getCreated(),
                 "modified", getModified(),
                 "identity_class", getIdentity_class()
