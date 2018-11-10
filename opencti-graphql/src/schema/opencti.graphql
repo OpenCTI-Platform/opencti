@@ -11,8 +11,8 @@ type PageInfo {
 
 ### User
 enum UsersOrdering {
-    ID,
-    EMAIL
+    id,
+    email
 }
 enum UserRole {
     ROLE_ADMIN
@@ -30,6 +30,7 @@ type User {
     id: ID!
     username: String
     email: String!
+    language: String
     created_at: DateTime
     updated_at: DateTime
     roles: [String]
@@ -47,10 +48,10 @@ input UserLoginInput {
 
 ### Malware
 enum MalwaresOrdering {
-    ID,
-    NAME,
-    CREATED,
-    MODIFIED
+    id,
+    name,
+    created,
+    modified
 }
 type MalwareConnection {
     pageInfo: PageInfo!
@@ -81,7 +82,7 @@ input MalwareAddInput {
 ### QUERIES
 type Query {
     # User
-    users(first: Int, after: ID, orderBy: UsersOrdering): UserConnection
+    users(first: Int, after: ID, orderBy: UsersOrdering, search: String): UserConnection
     user(id: String!): User
     me: User
     # Malware

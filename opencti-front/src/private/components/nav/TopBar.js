@@ -1,19 +1,19 @@
-import React, { Component } from 'react'
-import { withRouter, Link } from 'react-router-dom'
+import React, {Component} from 'react'
+import {withRouter, Link} from 'react-router-dom'
+import {injectIntl} from 'react-intl'
 import graphql from 'babel-plugin-relay/macro'
 import Cookies from 'universal-cookie'
-import { QueryRenderer } from 'react-relay'
-import * as R from 'ramda'
-import { withStyles } from '@material-ui/core/styles'
+import {QueryRenderer} from 'react-relay'
+import {pathOr} from 'ramda'
+import {withStyles} from '@material-ui/core/styles'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import IconButton from '@material-ui/core/IconButton'
-import { AccountCircle } from '@material-ui/icons'
+import {AccountCircle} from '@material-ui/icons'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import environment from '../../../relay/environment'
-import { T } from '../../../components/I18n'
 import logo from '../../../resources/images/logo.png'
 import UserInformation from "../user/UserInformation";
 
@@ -70,8 +70,7 @@ class TopBar extends Component {
   }
 
   render() {
-    const {classes} = this.props
-
+    const {intl, classes} = this.props
     return (
       <AppBar position='fixed' className={classes.appBar}>
         <QueryRenderer environment={environment} query={testQuery} variables={{}} render={({error, props}) => {
@@ -82,7 +81,7 @@ class TopBar extends Component {
                 <img src={logo} alt='logo' className={classes.logo}/>
               </IconButton>
               <Typography variant='h6' color='inherit' className={classes.flex}>
-                OpenCTI - Cyber threat intelligence platform
+                {intl.formatMessage({id: 'OpenCTI - Cyber threat intelligence platform'})}
               </Typography>
               <div>
                 <IconButton
@@ -104,11 +103,10 @@ class TopBar extends Component {
                   anchorEl={this.state.anchorEl}
                   open={this.state.menuOpen}
                   onClose={this.handleCloseMenu.bind(this)}>
-                  <MenuItem component={Link} to='/dashboard/profile'
-                            onClick={this.handleCloseMenu.bind(this)}><T>Profile</T></MenuItem>
-                  {R.pathOr(false, ['me', 'admin'], props) ? <MenuItem component={Link} to='/admin'
-                                                                       onClick={this.adminClick.bind(this)}><T>Admin</T></MenuItem> : ''}
-                  <MenuItem onClick={this.handleLogout.bind(this)}><T>Logout</T></MenuItem>
+                  <MenuItem component={Link} to='/dashboard/profile' onClick={this.handleCloseMenu.bind(this)}>{intl.formatMessage({id: 'Profile'})}</MenuItem>
+                  {pathOr(false, ['me', 'admin'], props) ? <MenuItem component={Link} to='/admin'
+                                                                     onClick={this.adminClick.bind(this)}>{intl.formatMessage({id: 'Admin'})}</MenuItem> : ''}
+                  <MenuItem onClick={this.handleLogout.bind(this)}>{intl.formatMessage({id: 'Logout'})}</MenuItem>
                 </Menu>
               </div>
             </Toolbar>
@@ -120,4 +118,4 @@ class TopBar extends Component {
   }
 }
 
-export default withRouter(withStyles(styles)(TopBar))
+export default injectIntl(withRouter(withStyles(styles)(TopBar)))

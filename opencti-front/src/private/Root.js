@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
 import ReactDocumentTitle from 'react-document-title'
 import {Route} from 'react-router-dom'
+import {injectIntl} from 'react-intl'
 import {withStyles} from '@material-ui/core/styles'
 import Snackbar from '@material-ui/core/Snackbar'
 import SnackbarContent from '@material-ui/core/SnackbarContent'
@@ -48,14 +49,15 @@ class Root extends Component {
   }
 
   render() {
+    const {intl, classes} = this.props
     let paddingRight = 24
     return (
-      <ReactDocumentTitle title='OpenCTI platform - Dashboard'>
-        <div className={this.props.classes.root}>
+      <ReactDocumentTitle title={intl.formatMessage({id: 'OpenCTI - Cyber threat intelligence platform'})}>
+        <div className={classes.root}>
           <TopBar/>
           <LeftBar/>
-          <main className={this.props.classes.content} style={{paddingRight: paddingRight}}>
-            <div className={this.props.classes.toolbar}/>
+          <main className={classes.content} style={{paddingRight: paddingRight}}>
+            <div className={classes.toolbar}/>
             <Route exact path='/dashboard' component={Dashboard}/>
             <Route exact path='/dashboard/malwares' component={Malwares}/>
             <Route exact path='/dashboard/vulnerabilities' component={Test}/>
@@ -68,10 +70,10 @@ class Root extends Component {
           >
             <SnackbarContent
               message={
-                <span className={this.props.classes.message}>
-                                    <CheckCircle className={this.props.classes.messageIcon}/>
-                                    Action done
-                                </span>
+                <span className={classes.message}>
+                  <CheckCircle className={classes.messageIcon}/>
+                  Action done
+                </span>
               }
               action={[
                 <IconButton
@@ -91,4 +93,4 @@ class Root extends Component {
   }
 }
 
-export default withStyles(styles)(Root)
+export default injectIntl(withStyles(styles)(Root))
