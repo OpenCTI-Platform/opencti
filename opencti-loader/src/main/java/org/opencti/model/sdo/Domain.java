@@ -7,6 +7,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -15,7 +16,8 @@ import static org.opencti.model.database.BaseQuery.from;
 public abstract class Domain extends StixBase {
 
     @Override
-    public void neo4j(LoaderDriver driver) {
+    public int neo4j(LoaderDriver driver) {
+        AtomicInteger nbRequests = new AtomicInteger();
         String type = this.getClass().getSimpleName();
         String name = type.toLowerCase();
         //Create a new domain
@@ -39,6 +41,7 @@ public abstract class Domain extends StixBase {
             String relationQuery = "MATCH (" + name + ":" + type + " {id: $nameId}), (identity:Identity {id: $identityId}) " +
                     "MERGE (" + name + ")-[:created_by]->(identity)";
             driver.execute(from(relationQuery).withParams("nameId", getId(), "identityId", getCreated_by_ref()));
+            nbRequests.getAndAdd(2);
         }
 
         //Marking refs
@@ -51,13 +54,17 @@ public abstract class Domain extends StixBase {
                 String markingRelationQuery = "MATCH (" + name + ":" + type + " {id: $nameId}), (marking:MarkingDefinition {id: $markingId}) " +
                         "MERGE (" + name + ")-[:object_marking]->(marking)";
                 driver.execute(from(markingRelationQuery).withParams("nameId", getId(), "markingId", marking));
+                nbRequests.getAndAdd(2);
             });
         }
+
+        return nbRequests.get();
     }
 
     @Override
-    public void grakn(LoaderDriver driver) {
+    public int grakn(LoaderDriver driver) {
         //Do nothing.
+        return 0;
     }
 
     private String type;

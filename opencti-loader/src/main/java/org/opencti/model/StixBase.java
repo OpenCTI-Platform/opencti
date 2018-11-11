@@ -23,7 +23,7 @@ import org.opencti.model.sro.Relationship;
 public abstract class StixBase {
     private String id;
 
-    protected String getId() {
+    public String getId() {
         return id;
     }
 
@@ -31,7 +31,7 @@ public abstract class StixBase {
         this.id = id;
     }
 
-    public abstract void neo4j(LoaderDriver driver);
+    public abstract int neo4j(LoaderDriver driver);
 
-    public abstract void grakn(LoaderDriver driver);
+    public abstract int grakn(LoaderDriver driver);
 }

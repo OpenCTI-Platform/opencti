@@ -3,6 +3,7 @@ package org.opencti.model;
 import org.opencti.model.database.LoaderDriver;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Bundle extends StixBase {
     private String spec_version;
@@ -25,12 +26,12 @@ public class Bundle extends StixBase {
     }
 
     @Override
-    public void neo4j(LoaderDriver driver) {
-        objects.forEach(o -> o.neo4j(driver));
+    public int neo4j(LoaderDriver driver) {
+        return objects.stream().map(o -> o.neo4j(driver)).mapToInt(Integer::intValue).sum();
     }
 
     @Override
-    public void grakn(LoaderDriver driver) {
-        objects.forEach(o -> o.grakn(driver));
+    public int grakn(LoaderDriver driver) {
+        return objects.stream().map(o -> o.grakn(driver)).mapToInt(Integer::intValue).sum();
     }
 }

@@ -6,7 +6,7 @@ import static org.opencti.model.database.BaseQuery.from;
 
 public class Identity extends Domain {
     @Override
-    public void neo4j(LoaderDriver driver) {
+    public int neo4j(LoaderDriver driver) {
         String query = "MERGE (identity:Identity {id: $id}) " +
                 "ON CREATE SET identity = {" +
                 /**/"id: $id, " +
@@ -23,6 +23,7 @@ public class Identity extends Domain {
                 "modified", getModified(),
                 "identity_class", getIdentity_class()
         ));
+        return 1;
     }
 
     private String identity_class;

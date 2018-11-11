@@ -7,6 +7,7 @@ import org.cfg4j.provider.ConfigurationProviderBuilder;
 import org.cfg4j.source.ConfigurationSource;
 import org.cfg4j.source.context.filesprovider.ConfigFilesProvider;
 import org.cfg4j.source.files.FilesConfigurationSource;
+import org.opencti.model.Bundle;
 import org.opencti.model.StixBase;
 import org.opencti.model.database.GraknDriver;
 import org.opencti.model.database.LoaderDriver;
@@ -17,7 +18,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Arrays.asList;
@@ -25,7 +28,7 @@ import static java.util.Arrays.asList;
 public class OpenCTI {
 
     private static ConfigurationProvider cp;
-    private static List<StixBase> filesToProcess = new ArrayList<>();
+    private static Map<String, StixBase> filesToProcess = new HashMap<>();
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     static {
@@ -60,7 +63,12 @@ public class OpenCTI {
     private static void stixFileHandler(Path pathSelected) {
         try {
             StixBase stixElement = MAPPER.readValue(pathSelected.toFile(), StixBase.class);
-            filesToProcess.add(stixElement);
+            if(stixElement instanceof Bundle) {
+                List<StixBase> objects = ((Bundle) stixElement).getObjects();
+                objects.forEach(o -> filesToProcess.put(o.getId(), o));
+            } else {
+                filesToProcess.put(stixElement.getId(), stixElement);
+            }
         } catch (Exception e) {
             //System.out.println("Type of file not implemented yet (" + pathSelected + ")");
         }
@@ -79,16 +87,24 @@ public class OpenCTI {
         System.out.println("Files walk completed in " + (endFileCatch - startFileCatch) + " millis");
         System.out.println(filesToProcess.size() + " files to process");
         long startNeoProcess = System.currentTimeMillis();
-        AtomicInteger index = new AtomicInteger();
-        filesToProcess.forEach(file -> {
-            index.getAndIncrement();
+        AtomicInteger fileIndex = new AtomicInteger();
+        AtomicInteger queriesIndex = new AtomicInteger();
+        String processFormat = "\rProcessing %d/%-" + (String.valueOf(filesToProcess.size()).length() + 1 ) + "d (#queries: %s in %s ms - avg: %s ms)";
+        filesToProcess.forEach((key, file) -> {
+            int nbQueries;
+            long startFileProcess = System.currentTimeMillis();
+            fileIndex.getAndIncrement();
             try {
                 Method method = file.getClass().getMethod(databaseType.toLowerCase(), LoaderDriver.class);
-                method.invoke(file, driver);
+                nbQueries = (int)method.invoke(file, driver);
             } catch (Exception e) {
                 throw new RuntimeException(e.getCause());
             }
-            System.out.print("\rProcessing " + filesToProcess.size() + "/" + index.get());
+            long endFileProcess = System.currentTimeMillis();
+            queriesIndex.getAndAdd(nbQueries);
+            long processingTime = endFileProcess - startFileProcess;
+            long timePerQuery = processingTime / nbQueries;
+            System.out.format(processFormat,filesToProcess.size(), fileIndex.get(), nbQueries, processingTime, timePerQuery);
         });
         long endNeoProcess = System.currentTimeMillis();
         System.out.println("\r\nNeo4j integration completed in " + ((endNeoProcess - startNeoProcess) / 1000) + " seconds");

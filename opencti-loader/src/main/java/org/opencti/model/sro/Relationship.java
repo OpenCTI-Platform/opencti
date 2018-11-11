@@ -16,7 +16,7 @@ public class Relationship extends StixBase {
     }
 
     @Override
-    public void neo4j(LoaderDriver driver) {
+    public int neo4j(LoaderDriver driver) {
         String relationName = toCamelCase(getRelationship_type(), false, '-');
         String sourceType = toCamelCase(parseId(getSource_ref()), true, '-');
         String sourceName = sourceType.toLowerCase();
@@ -40,11 +40,12 @@ public class Relationship extends StixBase {
                 "created", getCreated(),
                 "modified", getModified()
         ));
+        return 3;
     }
 
     @Override
-    public void grakn(LoaderDriver driver) {
-
+    public int grakn(LoaderDriver driver) {
+        return 0;
     }
 
     private String created_by_ref;

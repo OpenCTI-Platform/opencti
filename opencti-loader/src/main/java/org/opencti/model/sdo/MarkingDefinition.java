@@ -6,7 +6,7 @@ import static org.opencti.model.database.BaseQuery.from;
 
 public class MarkingDefinition extends Domain {
     @Override
-    public void neo4j(LoaderDriver driver) {
+    public int neo4j(LoaderDriver driver) {
         String query = "MERGE (markingDefinition:MarkingDefinition {id: $id}) " +
                 "ON CREATE SET markingDefinition = {" +
                 /**/"id: $id, " +
@@ -24,6 +24,7 @@ public class MarkingDefinition extends Domain {
                 "tlp", getDefinition().getTlp(),
                 "statement", getDefinition().getStatement()
         ));
+        return 1;
     }
 
     private StixDefinition definition;
