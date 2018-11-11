@@ -5,6 +5,7 @@ import org.opencti.model.database.LoaderDriver;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,17 +65,17 @@ public abstract class Domain extends StixBase {
     private String modified;
     private boolean revoked = false;
     private String created_by_ref;
-    private List<String> labels;
+    private List<String> labels = new ArrayList<>();
     private List<String> object_marking_refs;
 
 
     public String getLabelChain() {
-        return getLabels().stream().map(value -> format("has stix_label \"%s\"", value))
-                .collect(Collectors.joining(" "));
+        return getLabels().size() > 0 ? " " + getLabels().stream().map(value -> format("has stix_label %s", prepare(value)))
+                .collect(Collectors.joining(" ")) : null;
     }
 
-    public String clean(String s) {
-        return s != null ? s.replaceAll("\"", "\\\\\"") : null;
+    public String prepare(String s) {
+        return s != null ? "\"" + s.replaceAll("\"", "\\\\\"") + "\"" : null;
     }
 
     //region fields
