@@ -10,7 +10,6 @@ import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import {createMuiTheme} from '@material-ui/core/styles'
 import theme from './components/Theme'
-import AppIntlProvider from './components/AppIntlProvider'
 import Root from './Root'
 import Login from './public/components/Login'
 import RootPrivate from './private/Root'
@@ -37,36 +36,35 @@ commitLocalUpdate(environment, (store) => {
 */
 
 const isLogged = () => {
-    const cookies = new Cookies();
-    let openctiToken = cookies.get('opencti_token')
-    if (openctiToken) {
-        let decode = jwt.decode(openctiToken)
-        return decode !== undefined
-    } else {
-        return false
-    }
+  const cookies = new Cookies();
+  let openctiToken = cookies.get('opencti_token')
+  if (openctiToken) {
+    let decode = jwt.decode(openctiToken)
+    return decode !== undefined
+  } else {
+    return false
+  }
 }
 
 const PrivateRoute = ({component: Component, ...rest}) => (
-    <Route {...rest} render={(props) => (
-        isLogged() ? <Component {...props} /> : <Redirect to='/login'/>
-    )}/>
+  <Route {...rest} render={(props) => (
+    isLogged() ? <Component {...props} /> : <Redirect to='/login'/>
+  )}/>
 )
 
 ReactDOM.render(
-    <AppIntlProvider>
-        <MuiThemeProvider theme={createMuiTheme(theme)}>
-            <BrowserRouter>
-                <div>
-                    <CssBaseline/>
-                    <Route exact path='/' component={Root}/>
-                    <Route path='/login' component={Login}/>
-                    <PrivateRoute path='/dashboard' component={RootPrivate}/>
-                </div>
-            </BrowserRouter>
-        </MuiThemeProvider>
-    </AppIntlProvider>,
-    document.getElementById('root'))
+  <MuiThemeProvider theme={createMuiTheme(theme)}>
+    <BrowserRouter>
+      <div>
+        <CssBaseline/>
+        <Route exact path='/' component={Root}/>
+        <Route path='/login' component={Login}/>
+        <PrivateRoute path='/dashboard' component={RootPrivate}/>
+      </div>
+    </BrowserRouter>
+  </MuiThemeProvider>
+  ,
+  document.getElementById('root'))
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

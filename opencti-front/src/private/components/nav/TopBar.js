@@ -1,10 +1,9 @@
 import React, {Component} from 'react'
+import PropTypes from 'prop-types'
 import {withRouter, Link} from 'react-router-dom'
 import {injectIntl} from 'react-intl'
-import graphql from 'babel-plugin-relay/macro'
 import Cookies from 'universal-cookie'
-import {QueryRenderer} from 'react-relay'
-import {pathOr} from 'ramda'
+import {propOr, contains} from 'ramda'
 import {withStyles} from '@material-ui/core/styles'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
@@ -13,9 +12,9 @@ import IconButton from '@material-ui/core/IconButton'
 import {AccountCircle} from '@material-ui/icons'
 import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
-import environment from '../../../relay/environment'
 import logo from '../../../resources/images/logo.png'
-import UserInformation from "../user/UserInformation";
+import {createFragmentContainer} from "react-relay";
+import graphql from "babel-plugin-relay/macro";
 
 const styles = theme => ({
   appBar: {
@@ -40,14 +39,6 @@ const styles = theme => ({
   }
 })
 
-const testQuery = graphql`
-    query TopBarUserQuery {
-        me {
-            ...UserInformation_me
-        }
-    }
-`
-
 class TopBar extends Component {
   constructor(props) {
     super(props)
@@ -70,52 +61,54 @@ class TopBar extends Component {
   }
 
   render() {
-    const {intl, classes} = this.props
+    const {intl, classes, me} = this.props
     return (
       <AppBar position='fixed' className={classes.appBar}>
-        <QueryRenderer environment={environment} query={testQuery} variables={{}} render={({error, props}) => {
-          return (
-            <Toolbar>
-              <IconButton classes={{root: classes.logoButton}} color='inherit' aria-label='Menu' component={Link}
-                          to='/dashboard'>
-                <img src={logo} alt='logo' className={classes.logo}/>
-              </IconButton>
-              <Typography variant='h6' color='inherit' className={classes.flex}>
-                {intl.formatMessage({id: 'OpenCTI - Cyber threat intelligence platform'})}
-              </Typography>
-              <div>
-                <IconButton
-                  size='large'
-                  aria-owns={this.state.open ? 'menu-appbar' : null}
-                  aria-haspopup='true'
-                  onClick={this.handleOpenMenu.bind(this)}
-                  color='inherit'>
-                  <span>{props && props.me ? props.me.email : ''}</span>
-                  <AccountCircle color='inherit' style={{fontSize: 35}}/>
-                  {props && props.me ?
-                    <Typography variant='h6' color='inherit' className={classes.flex}>
-                      <UserInformation me={props.me}/>
-                    </Typography> : ''}
-                </IconButton>
-                <Menu
-                  id='menu-appbar'
-                  style={{marginTop: 40, zIndex: 2100}}
-                  anchorEl={this.state.anchorEl}
-                  open={this.state.menuOpen}
-                  onClose={this.handleCloseMenu.bind(this)}>
-                  <MenuItem component={Link} to='/dashboard/profile' onClick={this.handleCloseMenu.bind(this)}>{intl.formatMessage({id: 'Profile'})}</MenuItem>
-                  {pathOr(false, ['me', 'admin'], props) ? <MenuItem component={Link} to='/admin'
-                                                                     onClick={this.adminClick.bind(this)}>{intl.formatMessage({id: 'Admin'})}</MenuItem> : ''}
-                  <MenuItem onClick={this.handleLogout.bind(this)}>{intl.formatMessage({id: 'Logout'})}</MenuItem>
-                </Menu>
-              </div>
-            </Toolbar>
-          )
-        }}
-        />
+        <Toolbar>
+          <IconButton classes={{root: classes.logoButton}} color='inherit' aria-label='Menu' component={Link} to='/dashboard'>
+            <img src={logo} alt='logo' className={classes.logo}/>
+          </IconButton>
+          <Typography variant='h6' color='inherit' className={classes.flex}>
+            {intl.formatMessage({id: 'OpenCTI - Cyber threat intelligence platform'})}
+          </Typography>
+          <div>
+            <IconButton
+              size='large'
+              aria-owns={this.state.open ? 'menu-appbar' : null}
+              aria-haspopup='true'
+              onClick={this.handleOpenMenu.bind(this)}
+              color='inherit'
+            >
+              <AccountCircle color='inherit' style={{fontSize: 35}}/>
+            </IconButton>
+            <Menu
+              id='menu-appbar'
+              style={{marginTop: 40, zIndex: 2100}}
+              anchorEl={this.state.anchorEl}
+              open={this.state.menuOpen}
+              onClose={this.handleCloseMenu.bind(this)}>
+              <MenuItem component={Link} to='/dashboard/profile' onClick={this.handleCloseMenu.bind(this)}>{intl.formatMessage({id: 'Profile'})}</MenuItem>
+              {contains('ROLE_ADMIN', propOr(false, 'roles', me)) ?
+                <MenuItem component={Link} to='/admin' onClick={this.handleCloseMenu.bind(this)}>{intl.formatMessage({id: 'Admin'})}</MenuItem> :
+                ''
+              }
+              <MenuItem onClick={this.handleLogout.bind(this)}>{intl.formatMessage({id: 'Logout'})}</MenuItem>
+            </Menu>
+          </div>
+        </Toolbar>
       </AppBar>
     )
   }
 }
 
-export default injectIntl(withRouter(withStyles(styles)(TopBar)))
+TopBar.propTypes = {
+  me: PropTypes.object
+}
+
+export default injectIntl(withRouter(withStyles(styles)(createFragmentContainer(TopBar, {
+  me: graphql`
+      fragment TopBar_me on User {
+          roles
+      }
+  `,
+}))));
