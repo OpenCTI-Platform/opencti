@@ -1,5 +1,8 @@
 package org.opencti.model.sdo;
 
 public class AttackPattern extends Domain {
-    //Nothing
+    @Override
+    public String getEntityName() {
+        return "Attack-Pattern";
+    }
 }

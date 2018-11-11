@@ -2,9 +2,12 @@ package org.opencti.model;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.opencti.model.database.LoaderDriver;
 import org.opencti.model.sdo.*;
 import org.opencti.model.sro.Relationship;
+
+import java.util.List;
+
+import static java.util.Collections.singletonList;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -20,9 +23,11 @@ import org.opencti.model.sro.Relationship;
         @JsonSubTypes.Type(value = Tool.class, name = "tool"),
         @JsonSubTypes.Type(value = Relationship.class, name = "relationship"),
 })
-public abstract class StixBase {
+public abstract class StixBase implements StixElement {
+
     private String id;
 
+    @Override
     public String getId() {
         return id;
     }
@@ -31,7 +36,7 @@ public abstract class StixBase {
         this.id = id;
     }
 
-    public abstract int neo4j(LoaderDriver driver);
-
-    public abstract int grakn(LoaderDriver driver);
+    public List<StixElement> toStixElements() {
+        return singletonList(this);
+    }
 }

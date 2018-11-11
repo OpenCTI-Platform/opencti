@@ -4,6 +4,7 @@ import org.opencti.model.StixBase;
 import org.opencti.model.database.LoaderDriver;
 
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static org.apache.commons.text.CaseUtils.toCamelCase;
@@ -16,7 +17,7 @@ public class Relationship extends StixBase {
     }
 
     @Override
-    public int neo4j(LoaderDriver driver) {
+    public void neo4j(LoaderDriver driver, Map<String, StixBase> stixElements) {
         String relationName = toCamelCase(getRelationship_type(), false, '-');
         String sourceType = toCamelCase(parseId(getSource_ref()), true, '-');
         String sourceName = sourceType.toLowerCase();
@@ -40,14 +41,9 @@ public class Relationship extends StixBase {
                 "created", getCreated(),
                 "modified", getModified()
         ));
-        return 3;
     }
 
-    @Override
-    public int grakn(LoaderDriver driver) {
-        return 0;
-    }
-
+    private String id;
     private String created_by_ref;
     private List<String> object_marking_refs;
     private String source_ref;
@@ -55,6 +51,14 @@ public class Relationship extends StixBase {
     private String target_ref;
     private String modified;
     private String created;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getCreated_by_ref() {
         return created_by_ref;

@@ -1,5 +1,8 @@
 package org.opencti.model.sdo;
 
 public class IntrusionSet extends Domain {
-    //Nothing
+    @Override
+    public String getEntityName() {
+        return "Intrusion-Set";
+    }
 }

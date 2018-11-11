@@ -1,6 +1,7 @@
-package org.opencti.model;
+package org.opencti.model.sdo;
 
-import org.opencti.model.database.LoaderDriver;
+import org.opencti.model.StixBase;
+import org.opencti.model.StixElement;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,12 +27,7 @@ public class Bundle extends StixBase {
     }
 
     @Override
-    public int neo4j(LoaderDriver driver) {
-        return objects.stream().map(o -> o.neo4j(driver)).mapToInt(Integer::intValue).sum();
-    }
-
-    @Override
-    public int grakn(LoaderDriver driver) {
-        return objects.stream().map(o -> o.grakn(driver)).mapToInt(Integer::intValue).sum();
+    public List<StixElement> toStixElements() {
+        return objects.stream().map(StixBase::toStixElements).flatMap(List::stream).collect(Collectors.toList());
     }
 }

@@ -17,7 +17,6 @@ import static org.neo4j.driver.v1.Values.parameters;
 public class GraknDriver extends LoaderDriver {
 
     private Grakn.Session session;
-    private Keyspace keyspace;
 
     public GraknDriver(ConfigurationProvider cp) {
         super(cp);
@@ -28,7 +27,7 @@ public class GraknDriver extends LoaderDriver {
         String uri = cp.getProperty("grakn.uri", String.class);
         String space = cp.getProperty("grakn.keyspace", String.class);
         Grakn grakn = new Grakn(new SimpleURI(uri));
-        keyspace = Keyspace.of(space);
+        Keyspace keyspace = Keyspace.of(space);
         session = grakn.session(keyspace);
     }
 

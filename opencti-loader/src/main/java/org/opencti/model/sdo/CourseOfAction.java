@@ -1,5 +1,8 @@
 package org.opencti.model.sdo;
 
 public class CourseOfAction extends Domain {
-    //Nothing
+    @Override
+    public String getEntityName() {
+        return "Course-Of-Action";
+    }
 }
