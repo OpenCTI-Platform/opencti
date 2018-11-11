@@ -1,12 +1,13 @@
 package org.opencti.model.sro;
 
 import org.opencti.model.StixBase;
+import org.opencti.model.database.LoaderDriver;
 
 import java.util.List;
 
 import static java.util.Arrays.asList;
 import static org.apache.commons.text.CaseUtils.toCamelCase;
-import static org.opencti.OpenCTI.driver;
+import static org.opencti.model.database.BaseQuery.from;
 
 public class Relationship extends StixBase {
 
@@ -15,7 +16,7 @@ public class Relationship extends StixBase {
     }
 
     @Override
-    public void load() {
+    public void neo4j(LoaderDriver driver) {
         String relationName = toCamelCase(getRelationship_type(), false, '-');
         String sourceType = toCamelCase(parseId(getSource_ref()), true, '-');
         String sourceName = sourceType.toLowerCase();
@@ -24,21 +25,26 @@ public class Relationship extends StixBase {
 
         //Create entities
         String sourceQuery = "MERGE (" + sourceName + ":" + sourceType + " {id: $sourceId}) ON CREATE SET " + sourceName + " = {id: $sourceId}";
-        execute(driver, sourceQuery, "sourceId", getSource_ref());
+        driver.execute(from(sourceQuery).withParams("sourceId", getSource_ref()));
 
         String targetQuery = "MERGE (" + targetName + ":" + targetType + " {id: $targetId}) ON CREATE SET " + targetName + " = {id: $targetId}";
-        execute(driver, targetQuery, "targetId", getTarget_ref());
+        driver.execute(from(targetQuery).withParams("targetId", getTarget_ref()));
 
         //Create relation
-        String relationQuery = "MATCH (" + sourceName + ":" + sourceType + " {id: $sourceId}), (" + targetName + ":"+ targetType + " {id: $targetId}) " +
+        String relationQuery = "MATCH (" + sourceName + ":" + sourceType + " {id: $sourceId}), (" + targetName + ":" + targetType + " {id: $targetId}) " +
                 "MERGE (" + sourceName + ")-[:" + relationName + " {id: $relationId, created: $created, modified: $modified} ]->(" + targetName + ")";
-        execute(driver, relationQuery,
+        driver.execute(from(relationQuery).withParams(
                 "sourceId", getSource_ref(),
                 "targetId", getTarget_ref(),
                 "relationId", getId(),
                 "created", getCreated(),
                 "modified", getModified()
-        );
+        ));
+    }
+
+    @Override
+    public void grakn(LoaderDriver driver) {
+
     }
 
     private String created_by_ref;

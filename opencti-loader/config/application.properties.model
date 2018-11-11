@@ -1,9 +1,16 @@
 # Copy this file and remove the model extension.
 
+# Global
+## Pick target driver <Grakn> or <Neo4j>
+database=
+## Files path
+stix2.files.path=
+
 # Database
+## Neo4j
 neo4j.uri=
 neo4j.username=
 neo4j.password=
-
-# Files path
-stix2.files.path=
+## Grakn
+grakn.uri=
+grakn.keyspace=

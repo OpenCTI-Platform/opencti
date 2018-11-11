@@ -1,5 +1,7 @@
 package org.opencti.model;
 
+import org.opencti.model.database.LoaderDriver;
+
 import java.util.List;
 
 public class Bundle extends StixBase {
@@ -23,7 +25,12 @@ public class Bundle extends StixBase {
     }
 
     @Override
-    public void load() {
-        objects.forEach(StixBase::load);
+    public void neo4j(LoaderDriver driver) {
+        objects.forEach(o -> o.neo4j(driver));
+    }
+
+    @Override
+    public void grakn(LoaderDriver driver) {
+        objects.forEach(o -> o.grakn(driver));
     }
 }

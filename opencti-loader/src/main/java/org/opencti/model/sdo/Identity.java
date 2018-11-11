@@ -1,36 +1,33 @@
 package org.opencti.model.sdo;
 
-import static org.opencti.OpenCTI.driver;
+import org.opencti.model.database.LoaderDriver;
+
+import static org.opencti.model.database.BaseQuery.from;
 
 public class Identity extends Domain {
     @Override
-    public void load() {
+    public void neo4j(LoaderDriver driver) {
         String query = "MERGE (identity:Identity {id: $id}) " +
                 "ON CREATE SET identity = {" +
                 /**/"id: $id, " +
-                /**/"name: $name, " +
-                /**/"description: $description, " +
                 /**/"created: $created, " +
                 /**/"modified: $modified, " +
                 /**/"identity_class: $identity_class " +
-                "} "+
+                "} " +
                 "ON MATCH SET identity.name = $name, " +
-                /**/"identity.description = $description, " +
                 /**/"identity.created = $created, " +
                 /**/"identity.modified = $modified, " +
                 /**/"identity.identity_class = $identity_class";
-        execute(driver, query, "id", getId(),
-                "name", getName(),
-                "description", getDescription(),
+        driver.execute(from(query).withParams("id", getId(),
                 "created", getCreated(),
                 "modified", getModified(),
                 "identity_class", getIdentity_class()
-        );
+        ));
     }
 
     private String identity_class;
 
-    public String getIdentity_class() {
+    private String getIdentity_class() {
         return identity_class;
     }
 
