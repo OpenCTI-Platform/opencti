@@ -32,7 +32,7 @@ function fetchQuery(operation, variables, cacheConfig,) {
         }),
     }).then(response => {
         return response.json();
-    }).then(json => {
+    });/*.then(json => {
         // Update cache on queries
         if (isQuery && json) {
             cache.set(queryID, variables, json);
@@ -43,7 +43,7 @@ function fetchQuery(operation, variables, cacheConfig,) {
         }
         console.log('json', json);
         return json;
-    });
+    });*/
 }
 
 const environment = new Environment({
