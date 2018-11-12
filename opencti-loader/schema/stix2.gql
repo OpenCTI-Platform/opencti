@@ -104,6 +104,10 @@ define
   "genuine" sub role;
   "dummy" sub role;
 
+  # related-to
+  "relate_from" sub role;
+  "relate_to" sub role;
+
   ## RELATIONSHIPS
 
   # OpenCTI embeded relationships
@@ -169,6 +173,11 @@ define
     relates "origin"
     relates "attribution";
 
+  # related-to
+  "related-to" sub "stix_relation"
+    relates "relate_from"
+    relates "relate_to";
+
   # mitigates
   "mitigates" sub "stix_relation"
     relates "problem"
@@ -212,6 +221,8 @@ define
     has "created"
     has "modified"
     has "revoked"
+    plays "relate_from"
+    plays "relate_to"
     plays "so";
 
   "Attack-Pattern" sub "Stix-Domain"

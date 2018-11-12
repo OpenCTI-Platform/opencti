@@ -3,26 +3,17 @@ package org.opencti.model.database;
 import ai.grakn.GraknTxType;
 import ai.grakn.Keyspace;
 import ai.grakn.client.Grakn;
-import ai.grakn.graql.GetQuery;
-import ai.grakn.graql.Query;
-import ai.grakn.graql.QueryBuilder;
 import ai.grakn.util.SimpleURI;
-import javafx.util.Pair;
 import org.apache.commons.io.IOUtils;
 import org.cfg4j.provider.ConfigurationProvider;
-import org.opencti.model.base.Stix;
 import org.opencti.model.sro.RolePair;
-import org.opencti.schema.Entity;
-import org.opencti.schema.Schema;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GraknDriver {
 
@@ -44,6 +35,7 @@ public class GraknDriver {
         roles.put("Attack-Pattern|Vulnerability>targets", new RolePair("source", "target"));
         roles.put("Attack-Pattern|Malware>uses", new RolePair("user", "usage"));
         roles.put("Attack-Pattern|Tool>uses", new RolePair("user", "usage"));
+        roles.put("Attack-Pattern|Attack-Pattern>related-to", new RolePair("relate_from", "relate_to"));
 
         //Campaign
         //TODO
@@ -61,7 +53,6 @@ public class GraknDriver {
         //TODO
 
         //Intrusion-Set
-        roles.put("Intrusion-Set|Threat-Actor>threat-actor", new RolePair("origin", "attribution")); //TODO ASK Sam
         roles.put("Intrusion-Set|Identity>targets", new RolePair("source", "target"));
         roles.put("Intrusion-Set|Vulnerability>targets", new RolePair("source", "target"));
         roles.put("Intrusion-Set|Malware>uses", new RolePair("user", "usage"));
@@ -74,6 +65,7 @@ public class GraknDriver {
         roles.put("Malware|Tool>uses", new RolePair("user", "usage"));
         roles.put("Malware|Attack-Pattern>uses", new RolePair("user", "usage")); //NOT IN SPECIFICATION
         roles.put("Malware|Malware>variant-of", new RolePair("original", "variation"));
+        roles.put("Malware|Malware>related-to", new RolePair("relate_from", "relate_to"));
 
         //Report
         //TODO

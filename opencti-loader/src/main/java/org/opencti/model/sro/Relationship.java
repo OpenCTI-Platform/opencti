@@ -111,7 +111,6 @@ public class Relationship extends Domain {
         this.id = id;
     }
 
-
     public String getSource_ref() {
         return source_ref;
     }
