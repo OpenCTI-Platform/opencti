@@ -3,6 +3,9 @@
     "port": 4000,
     "logs_directory": "./logs"
   },
+  "grakn": {
+    "uri": "community.opencti.io:48555"
+  },
   "db": {
     "uri": "bolt://neo4j-community.my.domain.io:7687",
     "user": "setup your user",
