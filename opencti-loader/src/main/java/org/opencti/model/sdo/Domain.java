@@ -16,7 +16,7 @@ import static org.opencti.model.utils.StixUtils.prepare;
 
 public abstract class Domain extends StixBase {
 
-    List<GraknRelation> createMarkingRefs(Map<String, StixElement> stixElements) {
+    private List<GraknRelation> createMarkingRefs(Map<String, StixElement> stixElements) {
         return getObject_marking_refs().stream().map(marking -> {
             StixElement markingStix = stixElements.get(marking);
             if(markingStix == null) throw new RuntimeException("Cant find marking " + marking);
@@ -39,12 +39,43 @@ public abstract class Domain extends StixBase {
                 .collect(Collectors.joining(" ")) : null;
     }
 
+    @Override
+    public List<StixElement> toStixElements() {
+        List<StixElement> elements = new ArrayList<>();
+        elements.add(this);
+        List<ExternalReference> externalRefs = getExternal_references().stream()
+                .filter(f -> f.getUrl() != null && f.getSource_name() != null)
+                .collect(Collectors.toList());
+        elements.addAll(externalRefs);
+        return elements;
+    }
+
+    @Override
+    public List<GraknRelation> extraRelations(Map<String, StixElement> stixElements) {
+        List<GraknRelation> extraQueries = new ArrayList<>();
+        //External refs
+        extraQueries.addAll(createExternalRef());
+        //Create the created_ref
+        extraQueries.addAll(createCreatorRef(stixElements));
+        //object_marking_refs
+        extraQueries.addAll(createMarkingRefs(stixElements));
+        return extraQueries;
+    }
+
+    private List<GraknRelation> createExternalRef() {
+        return getExternal_references().stream()
+                .filter(r -> r.getUrl() != null && r.getSource_name() != null)
+                .map(r -> new GraknRelation(this, r, "so", "external_reference", "external_references"))
+                .collect(Collectors.toList());
+    }
+
     private String created;
     private String modified;
     private boolean revoked = false;
     private String created_by_ref;
     private List<String> labels = new ArrayList<>();
     private List<String> object_marking_refs = new ArrayList<>();
+    private List<ExternalReference> external_references = new ArrayList<>();
 
     //region fields
     public List<String> getLabels() {
@@ -95,6 +126,14 @@ public abstract class Domain extends StixBase {
 
     public void setObject_marking_refs(List<String> object_marking_refs) {
         this.object_marking_refs = object_marking_refs;
+    }
+
+    public List<ExternalReference> getExternal_references() {
+        return external_references;
+    }
+
+    public void setExternal_references(List<ExternalReference> external_references) {
+        this.external_references = external_references;
     }
     //endregion
 }

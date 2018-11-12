@@ -88,7 +88,7 @@ public class OpenCTI {
                     domainIndex.getAndIncrement();
                     try {
                         Method method = file.getClass().getMethod(databaseType.toLowerCase(), LoaderDriver.class, Map.class);
-                        method.invoke(file, driver, stixElements);
+                        //method.invoke(file, driver, stixElements);
                         System.out.format("\rProcessing domain %d/%d", domainsCount, domainIndex.get());
                     } catch (Exception e) {
                         throw new RuntimeException(e.getCause());

@@ -34,6 +34,6 @@ public class StixUtils {
     }
 
     public static String prepare(String s) {
-        return s != null ? "\"" + s.replaceAll("\"", "\\\\\"") + "\"" : null;
+        return s != null ? "\"" + s.replace("\\", "\\\\").replaceAll("\"", "\\\\\"") + "\"" : null;
     }
 }

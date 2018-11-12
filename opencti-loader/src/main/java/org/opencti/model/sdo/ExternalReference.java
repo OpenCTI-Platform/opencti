@@ -12,7 +12,7 @@ import static java.lang.String.format;
 import static org.opencti.model.database.BaseQuery.from;
 import static org.opencti.model.utils.StixUtils.prepare;
 
-public class MalwareExternalReference implements StixElement {
+public class ExternalReference implements StixElement {
 
     private String external_id;
     private String url;
@@ -31,7 +31,6 @@ public class MalwareExternalReference implements StixElement {
 
     @Override
     public void grakn(LoaderDriver driver, Map<String, StixBase> stixElements) {
-        AtomicInteger nbRequests = new AtomicInteger();
         //Must have same external_id / url  and source_name
         StringBuilder externalIdQuery = new StringBuilder("$ref isa External-Reference ");
         if (getExternal_id() != null)
@@ -40,7 +39,6 @@ public class MalwareExternalReference implements StixElement {
         externalIdQuery.append(format("has url %s ", prepare(getUrl())));
 
         Object externalRef = driver.execute(from("match " + externalIdQuery.toString() + "; get;"));
-        nbRequests.getAndIncrement();
 
         if (externalRef == null) {
             StringBuilder refBuilder = new StringBuilder();
@@ -54,7 +52,6 @@ public class MalwareExternalReference implements StixElement {
             refBuilder.append(" has url ").append(prepare(getUrl()));
             refBuilder.append(";");
             driver.execute(from(refBuilder.toString()));
-            nbRequests.getAndIncrement();
         }
     }
 
