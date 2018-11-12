@@ -70,11 +70,6 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>
         </dependency>
-        <dependency>
-            <groupId>org.neo4j.driver</groupId>
-            <artifactId>neo4j-java-driver</artifactId>
-            <version>1.7.0</version>
-        </dependency>
         <!-- test -->
         <dependency>
             <groupId>junit</groupId>

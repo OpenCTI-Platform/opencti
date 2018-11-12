@@ -2,24 +2,22 @@ package org.opencti;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import org.cfg4j.provider.ConfigurationProvider;
 import org.cfg4j.provider.ConfigurationProviderBuilder;
 import org.cfg4j.source.ConfigurationSource;
 import org.cfg4j.source.context.filesprovider.ConfigFilesProvider;
 import org.cfg4j.source.files.FilesConfigurationSource;
-import org.opencti.model.StixBase;
-import org.opencti.model.StixElement;
-import org.opencti.model.database.*;
-import org.opencti.model.sdo.Domain;
+import org.opencti.model.base.Stix;
+import org.opencti.model.base.StixBase;
+import org.opencti.model.database.GraknDriver;
 import org.opencti.model.sro.Relationship;
-import org.opencti.model.utils.StixUtils;
 
-import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,12 +29,15 @@ import static java.util.Arrays.asList;
 public class OpenCTI {
 
     private static ConfigurationProvider cp;
-    private static Map<String, StixElement> stixElements = new HashMap<>();
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static Map<String, Stix> stixElements = new HashMap<>();
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     static {
         cp = configurationProvider();
-        MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        JSON_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        //Setup the max number of concurrent integration
+        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism",
+                cp.getProperty("thread.number", String.class));
     }
 
     @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
@@ -52,24 +53,23 @@ public class OpenCTI {
     @SuppressWarnings("unchecked")
     private static void stixFileHandler(Path pathSelected) {
         try {
-            StixBase stixElement = MAPPER.readValue(pathSelected.toFile(), StixBase.class);
-            Map<String, StixElement> stixBaseMap = stixElement.toStixElements().stream()
-                    .filter(StixElement::isImplemented)
-                    .collect(Collectors.toMap(StixElement::getId, Function.identity()));
+            StixBase stixElement = JSON_MAPPER.readValue(pathSelected.toFile(), StixBase.class);
+            Map<String, Stix> stixBaseMap = stixElement.toStixElements().stream()
+                    .filter(Stix::isImplemented)
+                    .collect(Collectors.toMap(Stix::getId, Function.identity(), (stix1, stix2) -> stix1));
             stixElements.putAll(stixBaseMap);
+        } catch (InvalidTypeIdException e) {
+            //System.out.println("Ignoring " + pathSelected);
         } catch (Exception e) {
-            //System.out.println("Type of file not implemented yet (" + pathSelected + ")");
+            throw new RuntimeException("Error processing (" + pathSelected + ")", e);
         }
     }
 
-    private static void filesToProcess() throws Exception {
-        String databaseType = cp.getProperty("database.type", String.class);
-        Class<?> driverClass = Class.forName(String.format("org.opencti.model.database.%sDriver", databaseType));
-        LoaderDriver driver = (LoaderDriver) driverClass.getConstructor(ConfigurationProvider.class).newInstance(cp);
+    private static void filesToProcess(GraknDriver driver) throws Exception {
         String path = cp.getProperty("stix2.files.path", String.class);
         long startFileCatch = System.currentTimeMillis();
         //Load all JSON
-        Files.walk(Paths.get(path)).parallel()
+        Files.walk(Paths.get(path))
                 .filter(pathFilter -> pathFilter.toString().endsWith(".json"))
                 .forEach(OpenCTI::stixFileHandler);
 
@@ -86,45 +86,60 @@ public class OpenCTI {
                 .filter(s -> !(s instanceof Relationship))
                 .forEach(file -> {
                     domainIndex.getAndIncrement();
-                    try {
-                        Method method = file.getClass().getMethod(databaseType.toLowerCase(), LoaderDriver.class, Map.class);
-                        method.invoke(file, driver, stixElements);
-                        System.out.format("\rProcessing domain %d/%d", domainsCount, domainIndex.get());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e.getCause());
-                    }
+                    file.load(driver, stixElements);
+                    System.out.format("\rProcessing domain %d/%d", domainsCount, domainIndex.get());
                 });
+
         long endNeoProcess = System.currentTimeMillis();
         long domainProcessingTime = endNeoProcess - startNeoProcess;
         System.out.println("\r\nStix domain integration completed " +
                 "in " + (domainProcessingTime / 1000) + " seconds " +
                 "(Query average: " + (domainProcessingTime / (2 * domainsCount)) + " ms)");
 
-        //Process extra relations
-        List<GraknRelation> graknRelations = stixElements.values().stream()
+        //Add all stix relations
+        List<List<Relationship>> relationsToProcess = new LinkedList<>();
+        List<Relationship> extraRelations = stixElements.values()
+                .parallelStream()
+                .filter(s -> s instanceof Relationship)
+                .map(Relationship.class::cast)
+                .collect(Collectors.toList());
+        List<Relationship> stixRelations = stixElements.values().stream()
                 .map(e -> e.extraRelations(stixElements))
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
+        relationsToProcess.add(extraRelations);
+        relationsToProcess.add(stixRelations);
 
-        System.out.println("Processing #" + graknRelations.size() + " Stix extra relations");
+        int nbRelationsToProcess = extraRelations.size() + stixRelations.size();
+        System.out.println("Processing #" + nbRelationsToProcess + " Stix extra relations");
         long startExtraRelationProcess = System.currentTimeMillis();
         AtomicInteger extraRelationIndex = new AtomicInteger();
-        graknRelations.parallelStream().forEach(relation -> {
-            extraRelationIndex.getAndIncrement();
-            StixUtils.createGraknRelation(driver, relation);
-            System.out.format("\rProcessing extra relation %d/%d", graknRelations.size(), extraRelationIndex.get());
+        relationsToProcess.forEach(list -> {
+            list.parallelStream().forEach(relation -> {
+                extraRelationIndex.getAndIncrement();
+                relation.load(driver, stixElements);
+                System.out.format("\rProcessing extra relation %d/%d", nbRelationsToProcess, extraRelationIndex.get());
+            });
         });
+
         long endExtraRelationProcess = System.currentTimeMillis();
         long relationProcessingTime = endExtraRelationProcess - startExtraRelationProcess;
         System.out.println("\r\nStix extra relation integration completed " +
-                "in " + (relationProcessingTime / 1000) + " seconds " +
-                "(Query average: " + (relationProcessingTime / (2 * graknRelations.size())) + " ms)");
+                "in " + (relationProcessingTime / 60000) + " minutes " +
+                "(Query average: " + (relationProcessingTime / (2 * nbRelationsToProcess)) + " ms)");
+    }
 
-        //Close driver
-        driver.close();
+    private static void loadStixSchema(GraknDriver driver) throws Exception {
+        System.out.println("Loading stix2 schema to grakn");
+        long startLoadSchema = System.currentTimeMillis();
+        driver.loadSchema();
+        long endLoadSchema = System.currentTimeMillis();
+        System.out.println("Stix2 schema loaded in " + (endLoadSchema - startLoadSchema) / 1000 + " seconds");
     }
 
     public static void main(String[] args) throws Exception {
-        filesToProcess();
+        GraknDriver driver = new GraknDriver(cp);
+        loadStixSchema(driver);
+        filesToProcess(driver);
     }
 }

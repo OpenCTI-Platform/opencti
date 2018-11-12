@@ -1,17 +1,14 @@
-package org.opencti.model.sdo;
+package org.opencti.model.sdo.internal;
 
-import org.opencti.model.StixBase;
-import org.opencti.model.StixElement;
-import org.opencti.model.database.LoaderDriver;
+import org.opencti.model.base.Stix;
+import org.opencti.model.database.GraknDriver;
 
 import java.util.Map;
 import java.util.UUID;
 
 import static java.lang.String.format;
-import static org.opencti.model.database.BaseQuery.from;
-import static org.opencti.model.utils.StixUtils.prepare;
 
-public class KillChainPhases implements StixElement {
+public class KillChainPhases implements Stix {
 
     @Override
     public String getEntityName() {
@@ -25,12 +22,12 @@ public class KillChainPhases implements StixElement {
 
     @SuppressWarnings("StringBufferReplaceableByString")
     @Override
-    public void grakn(LoaderDriver driver, Map<String, StixBase> stixElements) {
+    public void load(GraknDriver driver, Map<String, Stix> stixElements) {
         //Must have same external_id / url  and source_name
         StringBuilder killChainIdQuery = new StringBuilder("$ref isa Kill-Chain-Phase ");
         killChainIdQuery.append(format("has phase_name %s ", prepare(getPhase_name())));
         killChainIdQuery.append(format("has kill_chain_name %s ", prepare(getKill_chain_name())));
-        Object killChainRef = driver.execute(from("match " + killChainIdQuery.toString() + "; get;"));
+        Object killChainRef = driver.read("match " + killChainIdQuery.toString() + "; get;");
         if (killChainRef == null) {
             StringBuilder refBuilder = new StringBuilder();
             refBuilder.append("insert $ref isa Kill-Chain-Phase");
@@ -38,7 +35,7 @@ public class KillChainPhases implements StixElement {
             refBuilder.append(" has phase_name ").append(prepare(getPhase_name()));
             refBuilder.append(" has kill_chain_name ").append(prepare(getKill_chain_name()));
             refBuilder.append(";");
-            driver.execute(from(refBuilder.toString()));
+            driver.write(refBuilder.toString());
         }
     }
 

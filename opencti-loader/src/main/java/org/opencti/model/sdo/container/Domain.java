@@ -1,8 +1,9 @@
-package org.opencti.model.sdo;
+package org.opencti.model.sdo.container;
 
-import org.opencti.model.StixBase;
-import org.opencti.model.StixElement;
-import org.opencti.model.database.GraknRelation;
+import org.opencti.model.base.StixBase;
+import org.opencti.model.base.Stix;
+import org.opencti.model.sdo.internal.ExternalReference;
+import org.opencti.model.sro.Relationship;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -12,36 +13,35 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static org.opencti.model.utils.StixUtils.prepare;
 
 public abstract class Domain extends StixBase {
 
-    private List<GraknRelation> createMarkingRefs(Map<String, StixElement> stixElements) {
+    private List<Relationship> createMarkingRefs(Map<String, Stix> stixElements) {
         return getObject_marking_refs().stream().map(marking -> {
-            StixElement markingStix = stixElements.get(marking);
-            if(markingStix == null) throw new RuntimeException("Cant find marking " + marking);
-            return new GraknRelation(this, markingStix, "so", "marking", "object_marking_refs");
+            Stix markingStix = stixElements.get(marking);
+            if (markingStix == null) throw new RuntimeException("Cant find marking " + marking);
+            return new Relationship(this, markingStix, "so", "marking", "object_marking_refs");
         }).collect(Collectors.toList());
     }
 
-    List<GraknRelation> createCreatorRef(Map<String, StixElement> stixElements) {
-        List<GraknRelation> relations = new ArrayList<>();
+    protected List<Relationship> createCreatorRef(Map<String, Stix> stixElements) {
+        List<Relationship> relations = new ArrayList<>();
         if (getCreated_by_ref() != null) {
-            StixElement stixCreator = stixElements.get(getCreated_by_ref());
-            if(stixCreator == null) throw new RuntimeException("Cant find identity " + getCreated_by_ref());
-            relations.add(new GraknRelation(this, stixCreator, "so", "creator", "created_by_ref"));
+            Stix stixCreator = stixElements.get(getCreated_by_ref());
+            if (stixCreator == null) throw new RuntimeException("Cant find identity " + getCreated_by_ref());
+            relations.add(new Relationship(this, stixCreator, "so", "creator", "created_by_ref"));
         }
         return relations;
     }
 
-    String getLabelChain() {
+    protected String getLabelChain() {
         return getLabels().size() > 0 ? " " + getLabels().stream().map(value -> format("has stix_label %s", prepare(value)))
                 .collect(Collectors.joining(" ")) : null;
     }
 
     @Override
-    public List<StixElement> toStixElements() {
-        List<StixElement> elements = new ArrayList<>();
+    public List<Stix> toStixElements() {
+        List<Stix> elements = new ArrayList<>();
         elements.add(this);
         List<ExternalReference> externalRefs = getExternal_references().stream()
                 .filter(f -> f.getUrl() != null && f.getSource_name() != null)
@@ -51,8 +51,8 @@ public abstract class Domain extends StixBase {
     }
 
     @Override
-    public List<GraknRelation> extraRelations(Map<String, StixElement> stixElements) {
-        List<GraknRelation> extraQueries = new ArrayList<>();
+    public List<Relationship> extraRelations(Map<String, Stix> stixElements) {
+        List<Relationship> extraQueries = new ArrayList<>();
         //External refs
         extraQueries.addAll(createExternalRef());
         //Create the created_ref
@@ -62,10 +62,10 @@ public abstract class Domain extends StixBase {
         return extraQueries;
     }
 
-    private List<GraknRelation> createExternalRef() {
+    private List<Relationship> createExternalRef() {
         return getExternal_references().stream()
                 .filter(r -> r.getUrl() != null && r.getSource_name() != null)
-                .map(r -> new GraknRelation(this, r, "so", "external_reference", "external_references"))
+                .map(r -> new Relationship(this, r, "so", "external_reference", "external_references"))
                 .collect(Collectors.toList());
     }
 

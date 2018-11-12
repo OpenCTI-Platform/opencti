@@ -1,14 +1,12 @@
 package org.opencti.model.sdo;
 
-import org.opencti.model.StixBase;
-import org.opencti.model.database.LoaderDriver;
+import org.opencti.model.base.Stix;
+import org.opencti.model.database.GraknDriver;
+import org.opencti.model.sdo.container.Domain;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.String.format;
-import static org.opencti.model.database.BaseQuery.from;
-import static org.opencti.model.utils.StixUtils.prepare;
 
 public class Identity extends Domain {
 
@@ -18,30 +16,8 @@ public class Identity extends Domain {
     }
 
     @Override
-    public void neo4j(LoaderDriver driver, Map<String, StixBase> stixElements) {
-        String query = "MERGE (identity:Identity {id: $id}) " +
-                "ON CREATE SET identity = {" +
-                /**/"id: $id, " +
-                /**/"created: $created, " +
-                /**/"modified: $modified, " +
-                /**/"identity_class: $identity_class " +
-                "} " +
-                "ON MATCH SET identity.name = $name, " +
-                /**/"identity.created = $created, " +
-                /**/"identity.modified = $modified, " +
-                /**/"identity.identity_class = $identity_class";
-        driver.execute(from(query).withParams("id", getId(),
-                "created", getCreated(),
-                "modified", getModified(),
-                "identity_class", getIdentity_class()
-        ));
-    }
-
-    @Override
-    public void grakn(LoaderDriver driver, Map<String, StixBase> stixElements) {
-        AtomicInteger nbRequests = new AtomicInteger();
-        Object identity = driver.execute(from(format("match $m isa Identity has stix_id %s; get;", prepare(getId()))));
-        nbRequests.getAndIncrement();
+    public void load(GraknDriver driver, Map<String, Stix> stixElements) {
+        Object identity = driver.read(format("match $m isa Identity has stix_id %s; get;", prepare(getId())));
         if (identity == null) {
             String identityCreation = format("insert $m isa Identity " +
                             "has stix_id %s " +
@@ -57,8 +33,7 @@ public class Identity extends Domain {
                     getModified(),
                     getCreated()
             );
-            driver.execute(from(identityCreation));
-            nbRequests.getAndIncrement();
+            driver.write(identityCreation);
         }
     }
 

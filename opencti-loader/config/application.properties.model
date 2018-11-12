@@ -1,16 +1,12 @@
 # Copy this file and remove the model extension.
 
 # Global
-## Pick target driver <Grakn> or <Neo4j>
-database=
+## Parallelism
+thread.number=5
 ## Files path
 stix2.files.path=
 
 # Database
-## Neo4j
-neo4j.uri=
-neo4j.username=
-neo4j.password=
 ## Grakn
 grakn.uri=
-grakn.keyspace=
+grakn.keyspace=grakn

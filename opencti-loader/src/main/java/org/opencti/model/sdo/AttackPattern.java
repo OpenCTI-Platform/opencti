@@ -1,9 +1,10 @@
 package org.opencti.model.sdo;
 
-import org.opencti.model.StixBase;
-import org.opencti.model.StixElement;
-import org.opencti.model.database.GraknRelation;
-import org.opencti.model.database.LoaderDriver;
+import org.opencti.model.base.Stix;
+import org.opencti.model.database.GraknDriver;
+import org.opencti.model.sdo.container.Domain;
+import org.opencti.model.sdo.internal.KillChainPhases;
+import org.opencti.model.sro.Relationship;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +12,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static org.opencti.model.database.BaseQuery.from;
-import static org.opencti.model.utils.StixUtils.prepare;
 
 public class AttackPattern extends Domain {
     @Override
@@ -26,8 +25,8 @@ public class AttackPattern extends Domain {
     }
 
     @Override
-    public void grakn(LoaderDriver driver, Map<String, StixBase> stixElements) {
-        Object attackPattern = driver.execute(from(format("match $m isa %s has stix_id %s; get;", getEntityName(), prepare(getId()))));
+    public void load(GraknDriver driver, Map<String, Stix> stixElements) {
+        Object attackPattern = driver.read(format("match $m isa %s has stix_id %s; get;", getEntityName(), prepare(getId())));
         if (attackPattern == null) { //Only create if the attackPattern doesn't exists
             StringBuilder query = new StringBuilder();
             query.append("insert $m isa Attack-Pattern has stix_id ").append(prepare(getId()));
@@ -38,7 +37,7 @@ public class AttackPattern extends Domain {
             query.append(" has revoked ").append(getRevoked());
             query.append(" has created ").append(getCreated());
             query.append(";");
-            driver.execute(from(query.toString()));
+            driver.write(query.toString());
         }
     }
 
@@ -47,17 +46,17 @@ public class AttackPattern extends Domain {
     private List<KillChainPhases> kill_chain_phases = new ArrayList<>();
 
     @Override
-    public List<StixElement> toStixElements() {
-        List<StixElement> stixElements = super.toStixElements();
+    public List<Stix> toStixElements() {
+        List<Stix> stixElements = super.toStixElements();
         stixElements.addAll(getKill_chain_phases());
         return stixElements;
     }
 
     @Override
-    public List<GraknRelation> extraRelations(Map<String, StixElement> stixElements) {
-        List<GraknRelation> graknRelations = super.extraRelations(stixElements);
+    public List<Relationship> extraRelations(Map<String, Stix> stixElements) {
+        List<Relationship> graknRelations = super.extraRelations(stixElements);
         graknRelations.addAll(getKill_chain_phases().stream()
-                .map(r -> new GraknRelation(this, r, "phase_belonging", "kill_chain_phase", "kill_chain_phases"))
+                .map(r -> new Relationship(this, r, "phase_belonging", "kill_chain_phase", "kill_chain_phases"))
                 .collect(Collectors.toList()));
         return graknRelations;
     }

@@ -1,4 +1,4 @@
-package org.opencti.model.sdo;
+package org.opencti.model.sdo.internal;
 
 public class StixDefinition {
     private String tlp;

@@ -1,17 +1,15 @@
 package org.opencti.model.sdo;
 
-import org.opencti.model.StixBase;
-import org.opencti.model.StixElement;
-import org.opencti.model.database.GraknRelation;
-import org.opencti.model.database.LoaderDriver;
+import org.opencti.model.base.Stix;
+import org.opencti.model.database.GraknDriver;
+import org.opencti.model.sdo.container.Domain;
+import org.opencti.model.sdo.internal.StixDefinition;
+import org.opencti.model.sro.Relationship;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.String.format;
-import static org.opencti.model.database.BaseQuery.from;
-import static org.opencti.model.utils.StixUtils.prepare;
 
 public class MarkingDefinition extends Domain {
 
@@ -26,31 +24,8 @@ public class MarkingDefinition extends Domain {
     }
 
     @Override
-    public void neo4j(LoaderDriver driver, Map<String, StixBase> stixElements) {
-        String query = "MERGE (markingDefinition:MarkingDefinition {id: $id}) " +
-                "ON CREATE SET markingDefinition = {" +
-                /**/"id: $id, " +
-                /**/"created: $created, " +
-                /**/"tlp: $tlp, " +
-                /**/"statement: $statement " +
-                "} " +
-                "ON MATCH SET " +
-                /**/"markingDefinition.created = $created, " +
-                /**/"markingDefinition.tlp = $tlp, " +
-                /**/"markingDefinition.statement = $statement";
-        driver.execute(from(query).withParams("id", getId(),
-                "created", getCreated(),
-                "modified", getModified(),
-                "tlp", getDefinition().getTlp(),
-                "statement", getDefinition().getStatement()
-        ));
-    }
-
-    @Override
-    public void grakn(LoaderDriver driver, Map<String, StixBase> stixElements) {
-        AtomicInteger nbRequests = new AtomicInteger();
-        Object marking = driver.execute(from(format("match $m isa Marking-Definition has stix_id %s; get;", prepare(getId()))));
-        nbRequests.getAndIncrement();
+    public void load(GraknDriver driver, Map<String, Stix> stixElements) {
+        Object marking = driver.read(format("match $m isa Marking-Definition has stix_id %s; get;", prepare(getId())));
         if (marking == null) {
             String definitionType = prepare(getDefinition_type());
             String markingCreation = format("insert $m isa Marking-Definition " +
@@ -64,13 +39,12 @@ public class MarkingDefinition extends Domain {
                     prepare("tlp".equals(definitionType) ? getDefinition().getTlp() : getDefinition().getStatement()),
                     getCreated(),
                     prepare(definitionType));
-            driver.execute(from(markingCreation));
-            nbRequests.getAndIncrement();
+            driver.write(markingCreation);
         }
     }
 
     @Override
-    public List<GraknRelation> extraRelations(Map<String, StixElement> stixElements) {
+    public List<Relationship> extraRelations(Map<String, Stix> stixElements) {
         return createCreatorRef(stixElements);
     }
 

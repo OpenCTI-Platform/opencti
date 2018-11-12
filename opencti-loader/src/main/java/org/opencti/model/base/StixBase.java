@@ -1,8 +1,9 @@
-package org.opencti.model;
+package org.opencti.model.base;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.opencti.model.sdo.*;
+import org.opencti.model.sdo.container.Bundle;
 import org.opencti.model.sro.Relationship;
 
 import java.util.List;
@@ -23,7 +24,7 @@ import static java.util.Collections.singletonList;
         @JsonSubTypes.Type(value = Tool.class, name = "tool"),
         @JsonSubTypes.Type(value = Relationship.class, name = "relationship"),
 })
-public abstract class StixBase implements StixElement {
+public abstract class StixBase implements Stix {
 
     private String id;
 
@@ -36,7 +37,7 @@ public abstract class StixBase implements StixElement {
         this.id = id;
     }
 
-    public List<StixElement> toStixElements() {
+    public List<Stix> toStixElements() {
         return singletonList(this);
     }
 }

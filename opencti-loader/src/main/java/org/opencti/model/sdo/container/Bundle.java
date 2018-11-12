@@ -1,7 +1,7 @@
-package org.opencti.model.sdo;
+package org.opencti.model.sdo.container;
 
-import org.opencti.model.StixBase;
-import org.opencti.model.StixElement;
+import org.opencti.model.base.StixBase;
+import org.opencti.model.base.Stix;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,7 +27,7 @@ public class Bundle extends StixBase {
     }
 
     @Override
-    public List<StixElement> toStixElements() {
+    public List<Stix> toStixElements() {
         return objects.stream().map(StixBase::toStixElements).flatMap(List::stream).collect(Collectors.toList());
     }
 }

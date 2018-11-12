@@ -1,0 +1,361 @@
+define
+
+  ## PROPERTIES
+
+  # OpenCTI properties
+  "creation_date" sub attribute datatype date;
+  "username" sub attribute datatype string;
+  "password" sub attribute datatype string;
+  "email" sub attribute datatype string;
+  "firstname" sub attribute datatype string;
+  "lastname" sub attribute datatype string;
+  "language" sub attribute datatype string;
+  "grant" sub attribute datatype string;
+
+  # STIX common properties
+  "stix_id" sub attribute datatype string;
+  "stix_label" sub attribute datatype string;
+  "type" sub attribute datatype string;
+  "created" sub attribute datatype date;
+  "modified" sub attribute datatype date;
+  "revoked" sub attribute datatype boolean;
+  "first_seen" sub attribute datatype date;
+  "last_seen" sub attribute datatype date;
+  "description" sub attribute datatype string;
+
+  # STIX SDO
+  "name" sub attribute datatype string;
+  "alias" sub attribute datatype string;
+  "stix_role" sub attribute datatype string;
+  "objective" sub attribute datatype string;
+  "goal" sub attribute datatype string;
+  "sophistication" sub attribute datatype string;
+  "resource_level" sub attribute datatype string;
+  "primary_motivation" sub attribute datatype string;
+  "secondary_motivation" sub attribute datatype string;
+  "personal_motivation" sub attribute datatype string;
+  "tool_version" sub attribute datatype string;
+  "kill_chain_name" sub attribute datatype string;
+  "phase_name" sub attribute datatype string;
+  "order" sub attribute datatype long;
+  "definition_type" sub attribute datatype string;
+  "definition" sub attribute datatype string;
+  "source_name" sub attribute datatype string;
+  "url" sub attribute datatype string;
+  "hash" sub attribute datatype string;
+  "external_id" sub attribute datatype string;
+  "identity_class" sub attribute datatype string;
+  "sector" sub attribute datatype string;
+  "contact_information" sub attribute datatype string;
+  "published" sub attribute datatype date;
+  "report_class" sub attribute datatype string;
+  "pattern" sub attribute datatype string;
+  "valid_from" sub attribute datatype date;
+  "valid_until" sub attribute datatype date;
+
+  # STIX SRO
+  "relationship_type" sub attribute datatype string;
+  "weight" sub attribute datatype long;
+
+
+  ## ROLES
+
+  # OpenCTI roles
+  "author" sub role;
+
+  # STIX common roles
+  "so" sub role;
+  "kill_chain_phase" sub role;
+
+  # STIX embeded roles
+  "creator" sub role;
+  "marking" sub role;
+  "external_reference" sub role;
+  "phase_belonging" sub role;
+  "knowledge_aggregation" sub role;
+
+  # STIX SRO roles
+
+  # targets
+  "target" sub role;
+  "source" sub role;
+
+  # uses
+  "usage" sub role;
+  "user" sub role;
+
+  # attributed-to
+  "origin" sub role;
+  "attribution" sub role;
+
+  # mitigates
+  "problem" sub role;
+  "mitigation" sub role;
+
+  # indicates
+  "indicator" sub role;
+  "characterize" sub role;
+
+  # variant-of
+  "original" sub role;
+  "variation" sub role;
+
+  # impersonates
+  "genuine" sub role;
+  "dummy" sub role;
+
+  ## RELATIONSHIPS
+
+  # OpenCTI embeded relationships
+  "relation_embedded" sub relationship
+    is-abstract;
+
+  "authored_by" sub "relation_embedded"
+    relates "author"
+    relates "so";
+
+  # STIX embeded relationships
+  "stix_relation_embedded" sub relationship
+    is-abstract
+    has "stix_id";
+
+  "created_by_ref" sub "stix_relation_embedded"
+    relates "creator"
+    relates "so";
+
+  "object_marking_refs" sub "stix_relation_embedded"
+    relates "marking"
+    relates "so";
+
+  "external_references" sub "stix_relation_embedded"
+    relates "external_reference"
+    relates "so";
+
+  "kill_chain_phases" sub "stix_relation_embedded"
+    relates "phase_belonging"
+    relates "kill_chain_phase";
+
+  "object_refs" sub "stix_relation_embedded"
+    relates "so"
+    relates "knowledge_aggregation";
+
+  # STIX SRO relationships
+  "stix_relation" sub relationship
+    is-abstract
+    plays "so"
+    has "stix_id"
+    has "creation_date"
+    has "created"
+    has "modified"
+    has "revoked"
+    has "relationship_type"
+    has "weight"
+    has "first_seen"
+    has "last_seen"
+    has "description";
+
+  # targets
+  "targets" sub "stix_relation"
+    relates "target"
+    relates "source";
+
+  # uses
+  "uses" sub "stix_relation"
+    relates "usage"
+    relates "user";
+
+  # attributed-to
+  "attributed-to" sub "stix_relation"
+    relates "origin"
+    relates "attribution";
+
+  # mitigates
+  "mitigates" sub "stix_relation"
+    relates "problem"
+    relates "mitigation";
+
+  # indicates
+  "indicates" sub "stix_relation"
+    relates "characterize"
+    relates "indicator";
+
+  # variant-of
+  "variant-of" sub "stix_relation"
+    relates "original"
+    relates "variation";
+
+  # impersonates
+  "impersonates" sub "stix_relation"
+    relates "genuine"
+    relates "dummy";
+
+  ## ENTITIES
+
+  # OpenCTI entities
+  "User" sub entity
+    has "creation_date"
+    has "username"
+    has "password"
+    has "email"
+    has "firstname"
+    has "lastname"
+    has "language"
+    has "grant"
+    plays "author";
+ 
+  "Stix-Domain" sub entity
+    is-abstract
+    has "creation_date"
+    has "stix_id"
+    has "stix_label"
+    has "type"
+    has "created"
+    has "modified"
+    has "revoked"
+    plays "so";
+
+  "Attack-Pattern" sub "Stix-Domain"
+    has "name"
+    has "description"
+    plays "phase_belonging"
+    plays "source"
+    plays "user"
+    plays "usage"
+    plays "problem"
+    plays "characterize";
+
+  "Campaign" sub "Stix-Domain"
+    has "name"
+    has "description"
+    has "alias"
+    has "first_seen"
+    has "last_seen"
+    has "objective"
+    plays "attribution"
+    plays "usage"
+    plays "source"
+    plays "characterize";
+
+  "Course-Of-Action" sub "Stix-Domain"
+    has "name"
+    has "description"
+    plays "mitigation";
+
+  "External-Reference" sub "Stix-Domain"
+    has "source_name"
+    has "description"
+    has "url"
+    has "hash"
+    has "external_id"
+    plays "external_reference";
+
+  "Identity" sub "Stix-Domain"
+    has "name"
+    has "description"
+    has "identity_class"
+    has "sector"
+    has "contact_information"
+    plays "creator"
+    plays "target"
+    plays "origin"
+    plays "genuine";
+
+  "Indicator" sub "Stix-Domain"
+    has "name"
+    has "description"
+    has "pattern"
+    has "valid_from"
+    has "valid_until"
+    plays "phase_belonging"
+    plays "indicator";
+
+  "X-OpenCTI-Incident" sub "Stix-Domain"
+    has "name"
+    has "description"
+    has "first_seen"
+    has "last_seen"
+    plays "attribution"
+    plays "usage"
+    plays "source"
+    plays "characterize";
+
+  "Intrusion-Set" sub "Stix-Domain"
+    has "name"
+    has "description"
+    has "alias"
+    has "first_seen"
+    has "last_seen"
+    has "goal"
+    has "resource_level"
+    has "primary_motivation"
+    has "secondary_motivation"
+    plays "attribution"
+    plays "source"
+    plays "user"
+    plays "origin"
+    plays "characterize";
+
+  "Kill-Chain-Phase" sub "Stix-Domain"
+    has "kill_chain_name"
+    has "phase_name"
+    has "order"
+    plays "kill_chain_phase";
+
+  "Malware" sub "Stix-Domain"
+    has "name"
+    has "description"
+    plays "phase_belonging"
+    plays "source"
+    plays "user"
+    plays "variation"
+    plays "usage"
+    plays "problem"
+    plays "characterize"
+    plays "original";
+
+  "Marking-Definition" sub "Stix-Domain"
+    has "definition_type"
+    has "definition"
+    plays "marking";
+
+  "Report" sub "Stix-Domain"
+    has "name"
+    has "description"
+    has "published"
+    has "report_class"
+    plays "knowledge_aggregation";
+
+  "Threat-Actor" sub "Stix-Domain"
+    has "name"
+    has "description"
+    has "alias"
+    has "stix_role"
+    has "goal"
+    has "sophistication"
+    has "resource_level"
+    has "primary_motivation"
+    has "secondary_motivation"
+    has "personal_motivation"
+    plays "attribution"
+    plays "source"
+    plays "dummy"
+    plays "user"
+    plays "origin"
+    plays "characterize";
+
+  "Tool" sub "Stix-Domain"
+    has "name"
+    has "description"
+    has "tool_version"
+    plays "phase_belonging"
+    plays "source"
+    plays "user"
+    plays "usage"
+    plays "problem"
+    plays "characterize";
+
+  "Vulnerability" sub "Stix-Domain"
+    has "name"
+    has "description"
+    plays "target"
+    plays "problem";
