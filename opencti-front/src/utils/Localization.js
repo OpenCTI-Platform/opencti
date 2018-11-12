@@ -5,6 +5,14 @@ export const i18n = {
       'OpenCTI - Cyber threat intelligence platform': 'OpenCTI - Plateforme d\'analyse de la cybermenace',
       // Interface
       'Search': 'Rechercher',
+      // Form
+      'Create': 'Créer',
+      'Update': 'Modifier',
+      'Delete': 'Supprimer',
+      'Cancel': 'Annuler',
+      'This field is required': 'Ce champ est requis',
+      'Create a malware': 'Créer un code malveillant',
+      'Update a malware': 'Modifier un code malveillant',
       // Menu
       'Dashboard': 'Tableau de bord',
       'Actors': 'Acteurs',

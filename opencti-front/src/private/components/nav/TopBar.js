@@ -88,7 +88,7 @@ class TopBar extends Component {
               open={this.state.menuOpen}
               onClose={this.handleCloseMenu.bind(this)}>
               <MenuItem component={Link} to='/dashboard/profile' onClick={this.handleCloseMenu.bind(this)}>{intl.formatMessage({id: 'Profile'})}</MenuItem>
-              {contains('ROLE_ADMIN', propOr(false, 'roles', me)) ?
+              {contains('ROLE_ADMIN', propOr([], 'roles', me)) ?
                 <MenuItem component={Link} to='/admin' onClick={this.handleCloseMenu.bind(this)}>{intl.formatMessage({id: 'Admin'})}</MenuItem> :
                 ''
               }

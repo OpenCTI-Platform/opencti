@@ -10,7 +10,7 @@ const cache = new RelayQueryResponseCache({size: 250, ttl: oneMinute});
 
 function fetchQuery(operation, variables, cacheConfig,) {
     const queryID = operation.text;
-    const isMutation = operation.operationKind === 'mutation';
+    //const isMutation = operation.operationKind === 'mutation';
     const isQuery = operation.operationKind === 'query';
     const forceFetch = cacheConfig && cacheConfig.force;
 

@@ -44,8 +44,8 @@ const styles = theme => ({
 const userQuery = graphql`
     query RootUserQuery {
         me {
-            ...TopBar_me
             ...AppIntlProvider_me
+            ...TopBar_me
         }
     }
 `
