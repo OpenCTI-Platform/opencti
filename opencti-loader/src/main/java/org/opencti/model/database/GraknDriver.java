@@ -6,19 +6,21 @@ import ai.grakn.client.Grakn;
 import ai.grakn.util.SimpleURI;
 import org.apache.commons.io.IOUtils;
 import org.cfg4j.provider.ConfigurationProvider;
-import org.opencti.model.sro.RolePair;
+import org.opencti.mapping.RelationMapping;
+import org.opencti.mapping.StixMapper;
 
 import java.io.FileReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.opencti.OpenCTI.JSON_MAPPER;
 
 public class GraknDriver {
 
     private Grakn.Session session;
-    private Map<String, RolePair> roles = new HashMap<>();
+    private Map<String, RelationMapping> roles;
 
     public GraknDriver(ConfigurationProvider cp) throws Exception {
         mapFromStixSpecification();
@@ -29,57 +31,10 @@ public class GraknDriver {
         session = grakn.session(keyspace);
     }
 
-    private void mapFromStixSpecification() {
-        //Attack-Pattern
-        roles.put("Attack-Pattern|Identity>targets", new RolePair("source", "target"));
-        roles.put("Attack-Pattern|Vulnerability>targets", new RolePair("source", "target"));
-        roles.put("Attack-Pattern|Malware>uses", new RolePair("user", "usage"));
-        roles.put("Attack-Pattern|Tool>uses", new RolePair("user", "usage"));
-        roles.put("Attack-Pattern|Attack-Pattern>related-to", new RolePair("relate_from", "relate_to"));
-
-        //Campaign
-        //TODO
-
-        //Course-Of-Action
-        roles.put("Course-Of-Action|Attack-Pattern>mitigates", new RolePair("mitigation", "problem"));
-        roles.put("Course-Of-Action|Malware>mitigates", new RolePair("mitigation", "problem"));
-        roles.put("Course-Of-Action|Tool>mitigates", new RolePair("mitigation", "problem"));
-        roles.put("Course-Of-Action|Vulnerability>mitigates", new RolePair("mitigation", "problem"));
-
-        //Identity
-        //Nothing
-
-        //Indicator
-        //TODO
-
-        //Intrusion-Set
-        roles.put("Intrusion-Set|Identity>targets", new RolePair("source", "target"));
-        roles.put("Intrusion-Set|Vulnerability>targets", new RolePair("source", "target"));
-        roles.put("Intrusion-Set|Malware>uses", new RolePair("user", "usage"));
-        roles.put("Intrusion-Set|Tool>uses", new RolePair("user", "usage"));
-        roles.put("Intrusion-Set|Attack-Pattern>uses", new RolePair("user", "usage"));
-
-        //Malware
-        roles.put("Malware|Identity>targets", new RolePair("source", "target"));
-        roles.put("Malware|Vulnerability>targets", new RolePair("source", "target"));
-        roles.put("Malware|Tool>uses", new RolePair("user", "usage"));
-        roles.put("Malware|Attack-Pattern>uses", new RolePair("user", "usage")); //NOT IN SPECIFICATION
-        roles.put("Malware|Malware>variant-of", new RolePair("original", "variation"));
-        roles.put("Malware|Malware>related-to", new RolePair("relate_from", "relate_to"));
-
-        //Report
-        //TODO
-
-        //Threat-Actor
-        //TODO
-
-        //Tool
-        roles.put("Tool|Identity>targets", new RolePair("source", "target"));
-        roles.put("Tool|Vulnerability>targets", new RolePair("source", "target"));
-        roles.put("Tool|Attack-Pattern>uses", new RolePair("user", "usage")); //NOT IN SPECIFICATION
-
-        //Vulnerability
-        //TODO
+    private void mapFromStixSpecification() throws Exception {
+        Path mappingConfig = Paths.get("config/roles_mappings.json").toAbsolutePath();
+        StixMapper stixMapper = JSON_MAPPER.readValue(mappingConfig.toFile(), StixMapper.class);
+        roles = stixMapper.mappings();
     }
 
     public void write(String query) {
@@ -101,9 +56,9 @@ public class GraknDriver {
         }
     }
 
-    public RolePair resolveRelationRoles(String relationName, String from, String to) {
+    public RelationMapping resolveRelationRoles(String relationName, String from, String to) {
         String key = from + "|" + to + ">" + relationName;
-        RolePair resolved = roles.get(key);
+        RelationMapping resolved = roles.get(key);
         if(resolved == null) {
             throw new RuntimeException(key + " not yet implemented");
         }

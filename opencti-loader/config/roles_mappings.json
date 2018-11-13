@@ -1,0 +1,54 @@
+{
+  "mappings": [
+    //Attack-Pattern
+    {"relation": "Attack-Pattern|Identity>targets", "from": "source", "to": "target"},
+    {"relation": "Attack-Pattern|Vulnerability>targets", "from": "source", "to": "target"},
+    {"relation": "Attack-Pattern|Malware>uses", "from": "user", "to": "usage"},
+    {"relation": "Attack-Pattern|Tool>uses", "from": "user", "to": "usage"},
+    {"relation": "Attack-Pattern|Attack-Pattern>related-to", "from": "relate_from", "to": "relate_to"},
+  
+    //Campaign
+    //TODO
+  
+    //Course-Of-Action
+    {"relation": "Course-Of-Action|Attack-Pattern>mitigates", "from": "mitigation", "to": "problem"},
+    {"relation": "Course-Of-Action|Malware>mitigates", "from": "mitigation", "to": "problem"},
+    {"relation": "Course-Of-Action|Tool>mitigates", "from": "mitigation", "to": "problem"},
+    {"relation": "Course-Of-Action|Vulnerability>mitigates", "from": "mitigation", "to": "problem"},
+  
+    //Identity
+    //Nothing
+  
+    //Indicator
+    //TODO
+  
+    //Intrusion-Set
+    {"relation": "Intrusion-Set|Identity>targets", "from": "source", "to": "target"},
+    {"relation": "Intrusion-Set|Vulnerability>targets", "from": "source", "to": "target"},
+    {"relation": "Intrusion-Set|Malware>uses", "from": "user", "to": "usage"},
+    {"relation": "Intrusion-Set|Tool>uses", "from": "user", "to": "usage"},
+    {"relation": "Intrusion-Set|Attack-Pattern>uses", "from": "user", "to": "usage"},
+  
+    //Malware
+    {"relation": "Malware|Identity>targets", "from": "source", "to": "target"},
+    {"relation": "Malware|Vulnerability>targets", "from": "source", "to": "target"},
+    {"relation": "Malware|Tool>uses", "from": "user", "to": "usage"},
+    {"relation": "Malware|Attack-Pattern>uses", "from": "user", "to": "usage"}, //NOT IN SPECIFICATION
+    {"relation": "Malware|Malware>variant-of", "from": "original", "to": "variation"},
+    {"relation": "Malware|Malware>related-to", "from": "relate_from", "to": "relate_to"},
+  
+    //Report
+    //TODO
+  
+    //Threat-Actor
+    //TODO
+  
+    //Tool
+    {"relation": "Tool|Identity>targets", "from": "source", "to": "target"},
+    {"relation": "Tool|Vulnerability>targets", "from": "source", "to": "target"},
+    {"relation": "Tool|Attack-Pattern>uses", "from": "user", "to": "usage"} //NOT IN SPECIFICATION
+  
+    //Vulnerability
+    //TODO
+  ]
+}

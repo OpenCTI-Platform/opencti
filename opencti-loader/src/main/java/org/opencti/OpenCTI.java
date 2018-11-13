@@ -1,7 +1,9 @@
 package org.opencti;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import org.cfg4j.provider.ConfigurationProvider;
 import org.cfg4j.provider.ConfigurationProviderBuilder;
@@ -30,11 +32,12 @@ public class OpenCTI {
 
     private static ConfigurationProvider cp;
     private static Map<String, Stix> stixElements = new HashMap<>();
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    public static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     static {
         cp = configurationProvider();
         JSON_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        JSON_MAPPER.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
         //Setup the max number of concurrent integration
         System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism",
                 cp.getProperty("thread.number", String.class));

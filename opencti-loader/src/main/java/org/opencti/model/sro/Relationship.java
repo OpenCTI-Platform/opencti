@@ -1,5 +1,6 @@
 package org.opencti.model.sro;
 
+import org.opencti.mapping.RelationMapping;
 import org.opencti.model.base.Stix;
 import org.opencti.model.database.GraknDriver;
 import org.opencti.model.sdo.container.Domain;
@@ -54,7 +55,8 @@ public class Relationship extends Domain {
         String fromRole = getFromRole();
         String toRole = getToRole();
         if (fromRole == null || toRole == null) {
-            RolePair pair = driver.resolveRelationRoles(getRelationship_type(), from.getEntityName(), to.getEntityName());
+            RelationMapping pair = driver.resolveRelationRoles(getRelationship_type(),
+                    from.getEntityName(), to.getEntityName());
             fromRole = pair.getFrom();
             toRole = pair.getTo();
         }
