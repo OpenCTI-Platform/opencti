@@ -1,6 +1,9 @@
 import Grakn from 'grakn';
 import conf from '../config/conf';
 
-const driver = new Grakn(conf.get('grakn:uri'))
-
+const session = () => {
+  const grakn = new Grakn(conf.get('grakn:uri'));
+  return grakn.session('grakn');
+};
+const driver = session();
 export default driver;

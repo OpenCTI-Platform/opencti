@@ -42,7 +42,7 @@ public class GraknDriver {
             List<?> results = transaction.graql().parse(query).execute();
             transaction.commit();
             Object data = results.size() > 0 ? results.get(0) : null;
-            if(data == null) {
+            if (data == null) {
                 throw new RuntimeException("Error will writing data to grakn, " + query);
             }
         }
@@ -59,7 +59,7 @@ public class GraknDriver {
     public RelationMapping resolveRelationRoles(String relationName, String from, String to) {
         String key = from + "|" + to + ">" + relationName;
         RelationMapping resolved = roles.get(key);
-        if(resolved == null) {
+        if (resolved == null) {
             throw new RuntimeException(key + " not yet implemented");
         }
         return resolved;

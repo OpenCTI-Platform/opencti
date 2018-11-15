@@ -1,19 +1,17 @@
-import { isInstance } from 'apollo-errors';
 import { contains } from 'ramda';
 import { ROLE_ADMIN } from '../config/conf';
 import {
   AlreadyAuthError,
   AuthRequiredError,
-  ForbiddenError,
-  UnknownError
+  ForbiddenError
 } from '../config/errors';
 
-const base = wrappedFunction => (_, args, context, error) =>
+const base = wrappedFunction => (_, args, context, info) =>
   wrappedFunction(
     _,
     args,
     context,
-    isInstance(error) ? error : new UnknownError()
+    info // isInstance(error) ? error : new UnknownError()
   );
 
 export const anonymous = wrappedFunction => (_, args, { user }, error) => {
