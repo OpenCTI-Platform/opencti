@@ -4,7 +4,8 @@
     "logs_directory": "./logs"
   },
   "grakn": {
-    "uri": "community.opencti.io:48555"
+    "uri": "http://opencti.io:4567",
+    "timeout": 20000
   },
   "db": {
     "uri": "bolt://neo4j-community.my.domain.io:7687",

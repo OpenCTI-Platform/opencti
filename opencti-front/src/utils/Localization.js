@@ -33,7 +33,8 @@ export const i18n = {
       'Name': 'Nom',
       'Description': 'Description',
       'Creation date': 'Date de création',
-      'Modification date': 'Date de modification'
+      'Modification date': 'Date de modification',
+      'Updated the': 'Mis à jour le'
     }
   }
 }
