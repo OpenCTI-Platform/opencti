@@ -26,6 +26,9 @@ export const i18n = {
       'Identities': 'Identités',
       "Reports": 'Rapports',
       // User
+      'Sign in': 'S\'identifier',
+      'Email': 'Email',
+      'Password': 'Mot de passe',
       'Logout': 'Se déconnecter',
       'Profile': 'Profil',
       'Admin': 'Admin',

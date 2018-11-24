@@ -5,6 +5,7 @@ import Button from '@material-ui/core/Button'
 import {Google, FacebookBox, GithubCircle} from 'mdi-material-ui'
 import {StandaloneIntlProvider} from '../../components/AppIntlProvider'
 import logo from '../../resources/images/logo_opencti.png'
+import LoginForm from './LoginForm'
 
 const loginHeight = 400
 
@@ -14,9 +15,6 @@ const styles = theme => ({
     margin: '0 auto',
     width: 400,
     height: loginHeight,
-  },
-  login: {
-    paddingBottom: '15px'
   },
   logo: {
     width: '250px',
@@ -73,15 +71,14 @@ class Login extends Component {
   }
 
   render() {
-    const marginTop = (this.state.height / 2) - (loginHeight / 2) - 50
+    const marginTop = (this.state.height / 2) - (loginHeight / 2) - 120 j
     return (
       <StandaloneIntlProvider>
         <ReactDocumentTitle title='OpenCTI platform - Dashboard login'>
           <div className={this.props.classes.container} style={{marginTop: marginTop}}>
             <img src={logo} alt='logo' className={this.props.classes.logo}/>
-            <div className={this.props.classes.login}>
-              Login form
-            </div>
+            <LoginForm/>
+            <div style={{marginTop: 20}}>&nbsp;</div>
             <Button className={this.props.classes.buttonGoogle} variant='contained' size='small' component='a' href='/auth/google'>
               <Google className={this.props.classes.iconSmall}/>
               Google
