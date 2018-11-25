@@ -71,7 +71,7 @@ class Login extends Component {
   }
 
   render() {
-    const marginTop = (this.state.height / 2) - (loginHeight / 2) - 120 j
+    const marginTop = (this.state.height / 2) - (loginHeight / 2) - 120
     return (
       <StandaloneIntlProvider>
         <ReactDocumentTitle title='OpenCTI platform - Dashboard login'>
