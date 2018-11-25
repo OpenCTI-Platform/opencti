@@ -3,6 +3,10 @@
   font-family: 'Roboto', sans-serif;
 }
 
+:focus {
+  outline: 0;
+}
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
