@@ -2,7 +2,15 @@ define
 
   ## PROPERTIES
 
+  # migration properties
+  "uuid" sub attribute datatype string;
+  "title" sub attribute datatype string;
+  "lastRun" sub attribute datatype string;
+  "timestamp" sub attribute datatype long;
+
   # OpenCTI properties
+  "issuer" sub attribute datatype string;
+  "duration" sub attribute datatype string;
   "creation_date" sub attribute datatype date;
   "username" sub attribute datatype string;
   "password" sub attribute datatype string;
@@ -60,8 +68,14 @@ define
 
   ## ROLES
 
+  # Migration
+  "status" sub role;
+  "state" sub role;
+
   # OpenCTI roles
   "author" sub role;
+  "authorization" sub role;
+  "client" sub role;
 
   # STIX common roles
   "so" sub role;
@@ -109,6 +123,16 @@ define
   "relate_to" sub role;
 
   ## RELATIONSHIPS
+
+  # Login relationship
+  "authorize" sub relationship
+    relates "authorization"
+    relates "client";
+
+  # Migration relationships
+  "migrate" sub relationship
+    relates "status"
+    relates "state";
 
   # OpenCTI embeded relationships
   "relation_embedded" sub relationship
@@ -199,6 +223,15 @@ define
     relates "dummy";
 
   ## ENTITIES
+  # Migration entities
+  "MigrationStatus" sub entity
+    has "lastRun"
+    plays "status";
+
+  "MigrationReference" sub entity
+    has "title"
+    has "timestamp"
+    plays "state";
 
   # OpenCTI entities
   "User" sub entity
@@ -209,9 +242,19 @@ define
     has "firstname"
     has "lastname"
     has "language"
-    has "grant"
+    has "grant" # roles is a reserved word
+    plays "client"
     plays "author";
- 
+
+  "Token" sub entity
+    has "uuid"
+    has "name"
+    has "revoked"
+    has "creation_date"
+    has "duration"
+    has "issuer"
+    plays "authorization";
+
   "Stix-Domain" sub entity
     is-abstract
     has "creation_date"

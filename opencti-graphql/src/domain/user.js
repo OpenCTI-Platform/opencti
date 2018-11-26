@@ -1,8 +1,17 @@
-import { assoc, head, isEmpty, mapObjIndexed, values, pipe, last } from 'ramda';
+import {
+  map,
+  join,
+  head,
+  isEmpty,
+  mapObjIndexed,
+  values,
+  pipe,
+  last
+} from 'ramda';
+import uuidv5 from 'uuid/v5';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
 import uuid from 'uuid/v4';
-import uuidv5 from 'uuid/v5';
 import pubsub from '../config/bus';
 import driver from '../database/neo4j';
 import { FunctionalError, LoginError } from '../config/errors';
@@ -14,12 +23,13 @@ import {
   USER_ADDED_TOPIC
 } from '../config/conf';
 import { decrypt, encrypt } from '../config/crypto';
+import { qk } from '../database/grakn';
 
 // Security related
 export const generateOpenCTIWebToken = email => ({
-  id: uuidv5(email, uuidv5.URL),
+  uuid: uuidv5(email, uuidv5.URL),
   name: OPENCTI_WEB_TOKEN,
-  created_at: moment().toISOString(),
+  creation_date: moment().format('YYYY-MM-DDTHH:mm:ss'),
   issuer: OPENCTI_ISSUER,
   revoked: false,
   duration: OPENCTI_DEFAULT_DURATION // 99 years per default
@@ -35,7 +45,7 @@ export const loginFromProvider = (email, username) => {
     username,
     email,
     roles: [ROLE_USER],
-    created_at: moment().toISOString(),
+    created_at: moment().format('YYYY-MM-DDTHH:mm:ss'),
     password: null
   };
   const token = generateOpenCTIWebToken(email);
@@ -134,21 +144,35 @@ export const findById = userId => {
 };
 
 export const addUser = async user => {
-  const completeUser = pipe(
-    assoc('created_at', moment().toISOString()),
-    assoc('password', await hashPassword(user.password))
-  )(user);
-  const session = driver.session();
-  const promise = session.run(
-    'CREATE (user:User {user})<-[:WEB_ACCESS]-(token:Token {token}) RETURN user',
-    { user: completeUser, token: generateOpenCTIWebToken(user.email) }
+  // Inser the user
+  const userPassword = await hashPassword(user.password);
+  const createUser = qk(`insert $x isa User 
+    has username "${user.username}";
+    $x has email "${user.email}";
+    $x has password "${userPassword}";
+    ${join(' ', map(role => `$x has grant "${role}";`, user.roles))}
+  `);
+  const token = generateOpenCTIWebToken(user.email);
+  const createToken = qk(`insert $x isa Token 
+    has uuid "${token.uuid}";
+    $x has name "${token.name}";
+    $x has creation_date ${token.creation_date};
+    $x has issuer "${token.issuer}";
+    $x has revoked ${token.revoked};
+    $x has duration "${token.duration}";
+  `);
+
+  Promise.all([createUser, createToken]).then(() =>
+    // Create the relation
+    qk(`match $user isa User has email "${user.email}"; 
+      $token isa Token has uuid "${token.uuid}"; 
+      insert (client: $user, authorization: $token) isa authorize;`).then(
+      () => {
+        pubsub.publish(USER_ADDED_TOPIC, { user });
+        return user;
+      }
+    )
   );
-  return promise.then(data => {
-    session.close();
-    const userAdded = head(data.records).get('user').properties;
-    pubsub.publish(USER_ADDED_TOPIC, { userAdded });
-    return userAdded;
-  });
 };
 
 export const deleteUser = userId => {

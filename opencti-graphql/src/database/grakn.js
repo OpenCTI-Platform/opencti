@@ -6,4 +6,13 @@ const instance = axios.create({
   timeout: conf.get('grakn:timeout')
 });
 
+export const qk = queryDef =>
+  instance({
+    method: 'post',
+    url: '/kb/grakn/graql',
+    data: queryDef
+  }).catch(() => {
+    console.log('GRAKN QUERY ERROR', queryDef);
+  });
+
 export default instance;

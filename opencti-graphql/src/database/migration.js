@@ -1,75 +1,74 @@
-import { head, isEmpty, dissoc, map, flatten, pipe } from 'ramda';
+import { head, isEmpty, map, filter} from 'ramda';
 import migrate from 'migrate';
-import driver from './neo4j';
+import { qk } from './grakn';
 import { logger } from '../config/conf';
 
 // noinspection JSUnusedGlobalSymbols
-const neo4jStateStorage = {
+const graknStateStorage = {
   async load(fn) {
-    const session = driver.session();
-    const promise = session.run(
-      'MATCH config=(:Migration)-[r:PART_OF]->(:Configuration) RETURN config'
+    const promise = qk(
+      `match $x isa MigrationStatus has lastRun $lastRun; 
+          (status:$x, state:$y); 
+          $y has title $title; 
+          $y has timestamp $timestamp; 
+          get;`
     );
-    promise.then(data => {
-      if (isEmpty(data.records)) {
+    promise.then(result => {
+      const { data } = result;
+      if (isEmpty(data)) {
         logger.info(
           'Cannot read migrations from database. If this is the first time you run migrations, then this is normal.'
         );
         return fn(null, {});
       }
+
       // Extract the config (end) node
       const migrationStatus = {
-        lastRun: head(data.records).get('config').end.properties.lastRun,
+        lastRun: head(data).lastRun.value,
         migrations: map(
-          record => record.get('config').start.properties,
-          data.records
+          record => ({
+            title: record.title.value,
+            timestamp: record.timestamp.value
+          }),
+          data
         )
       };
-      session.close();
       return fn(null, migrationStatus);
     });
   },
   async save(set, fn) {
     logger.info('OpenCTI Migration: Saving current configuration');
-    const migrations = map(
-      migration =>
-        pipe(
-          dissoc('up'),
-          dissoc('down'),
-          dissoc('description')
-        )(migration),
-      set.migrations
-    );
-    const session = driver.session();
-    await session.run(
-      'MERGE (c:Configuration { name: "migration" }) ON MATCH SET c.lastRun = {lastRun}',
-      { lastRun: set.lastRun }
-    );
+    // Get current done migration
+    const mig = head(filter(m => m.title === set.lastRun, set.migrations));
 
-    const migrationExecutions = pipe(
-      map(migration => {
-        const migrationCreation = session.run(
-          'MERGE (migration:Migration { title: {title} }) ON MATCH SET migration.timestamp = {timestamp}',
-          { title: migration.title, timestamp: migration.timestamp }
-        );
-        const migrationRelation = session.run(
-          'MATCH (c:Configuration {name:"migration"}), (m:Migration {title: {title}}) MERGE (m)-[r:PART_OF]-(c)',
-          { title: migration.title, timestamp: migration.timestamp }
-        );
-        return [migrationCreation, migrationRelation];
-      }),
-      flatten
-    )(migrations);
-    Promise.all(migrationExecutions).then(() => {
-      session.close();
-      return fn();
-    });
+    // Get the MigrationStatus. If exist, update last run, if not create it
+    const migrationStatus = await qk(`match $x isa MigrationStatus; get;`);
+    if (!isEmpty(migrationStatus.data)) {
+      await qk(`match $x isa MigrationStatus has lastRun $run; delete $run;`);
+      await qk(
+        `match $x isa MigrationStatus; insert $x has lastRun "${set.lastRun}";`
+      );
+    } else {
+      await qk(`insert $x isa MigrationStatus has lastRun "${set.lastRun}";`);
+    }
+
+    await qk(
+      `insert $x isa MigrationReference 
+              has title "${mig.title}"; 
+              $x has timestamp ${mig.timestamp};`
+    );
+    await qk(
+      `match $status isa MigrationStatus; 
+              $ref isa MigrationReference has title "${mig.title}"; 
+              insert (status: $status, state: $ref) isa migrate;`
+    );
+    fn();
   }
 };
 
 migrate.load(
   {
-    stateStore: neo4jStateStorage
+    stateStore: graknStateStorage
   },
   (err, set) => {
     if (err) {
@@ -80,7 +79,6 @@ migrate.load(
       if (err2) {
         throw err2;
       }
-      driver.close();
       logger.info('Migrations successfully ran');
     });
   }
