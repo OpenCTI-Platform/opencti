@@ -1,9 +1,14 @@
-import uuid from 'uuid/v4';
-import { assoc } from 'ramda';
 import { withFilter } from 'graphql-subscriptions';
 import { sign } from 'jsonwebtoken';
 import conf, { logger, USER_ADDED_TOPIC } from '../config/conf';
-import { addUser, deleteUser, findAll, findById, login } from '../domain/user';
+import {
+  addUser,
+  deleteUser,
+  findAll,
+  findById,
+  login,
+  setAuthenticationCookie
+} from '../domain/user';
 import pubsub from '../config/bus';
 import { anonymous, admin, auth } from './wrapper';
 
@@ -14,6 +19,16 @@ const userResolvers = {
     ),
     user: admin((_, { id }) => findById(id)),
     me: auth((_, args, { user }) => findById(user.id))
+  },
+  Mutation: {
+    token: anonymous((_, { input }, context) =>
+      login(input.email, input.password).then(token => {
+        setAuthenticationCookie(token, context.res);
+        return sign(token, conf.get('jwt:secret'));
+      })
+    ),
+    userAdd: admin((_, { input }) => addUser(input)),
+    userDelete: admin((_, { id }) => deleteUser(id))
   },
   Subscription: {
     userAdded: {
@@ -29,18 +44,6 @@ const userResolvers = {
         )(_, args, { user })
       )
     }
-  },
-  Mutation: {
-    token: anonymous((_, { input }) =>
-      login(input.username, input.password).then(token =>
-        sign(token, conf.get('jwt:secret'))
-      )
-    ),
-    userAdd: admin((_, { input }) => {
-      const user = assoc('id', uuid(), input);
-      return addUser(user);
-    }),
-    userDelete: admin((_, { id }) => deleteUser(id))
   }
 };
 

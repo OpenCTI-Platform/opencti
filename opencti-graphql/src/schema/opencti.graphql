@@ -42,7 +42,7 @@ input UserAddInput {
     email: String!
 }
 input UserLoginInput {
-    username: String!
+    email: String!
     password: String!
 }
 

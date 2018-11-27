@@ -2,10 +2,9 @@ import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
 import { createTerminus } from '@godaddy/terminus';
-import { sign, verify } from 'jsonwebtoken';
+import { verify } from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import { ApolloServer } from 'apollo-server-express';
-import moment from 'moment';
 import { formatError as apolloFormatError } from 'apollo-errors';
 import { GraphQLError } from 'graphql';
 import compression from 'compression';
@@ -13,7 +12,7 @@ import helmet from 'helmet';
 import { dissocPath } from 'ramda';
 import conf, { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/security';
-import { findByTokenId } from './domain/user';
+import { findByTokenId, setAuthenticationCookie } from './domain/user';
 import schema from './schema/schema';
 import { UnknownError } from './config/errors';
 
@@ -37,15 +36,7 @@ app.get(
     const { provider } = req.params;
     passport.authenticate(provider, (err, token) => {
       if (err || !token) return res.status(err.status).send(err);
-      const creation = moment(token.created_at);
-      const maxDuration = moment.duration(token.duration);
-      const expires = creation.add(maxDuration).toDate();
-      // Create and setup the auth token.
-      res.cookie('opencti_token', sign(token, conf.get('jwt:secret')), {
-        httpOnly: false,
-        expires,
-        secure: !DEV_MODE
-      });
+      setAuthenticationCookie(token, res);
       return res.redirect('/dashboard');
     })(req, res, next);
   }
@@ -64,11 +55,10 @@ const authentication = async token => {
   }
   try {
     const decodedToken = verify(authToken, conf.get('jwt:secret'));
-    const user = await findByTokenId(decodedToken.uuid);
-    return { user };
+    return await findByTokenId(decodedToken.uuid);
   } catch (err) {
     logger.error(err);
-    return { user: undefined };
+    return undefined;
   }
 };
 
@@ -77,11 +67,12 @@ const extractTokenFromBearer = bearer =>
 
 const server = new ApolloServer({
   schema,
-  context({ req, connection }) {
+  async context({ req, res, connection }) {
     if (connection) return connection.context.user; // For websocket connection.
     let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : undefined;
     token = token || extractTokenFromBearer(req.headers.authorization);
-    return authentication(token);
+    const auth = await authentication(token);
+    return { res, user: auth };
   },
   tracing: DEV_MODE,
   formatError: error => {

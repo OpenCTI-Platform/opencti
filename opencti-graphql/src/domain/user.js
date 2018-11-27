@@ -2,9 +2,11 @@ import { head, isEmpty, join, map } from 'ramda';
 import uuidv5 from 'uuid/v5';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
+import { sign } from 'jsonwebtoken';
 import pubsub from '../config/bus';
 import { FunctionalError, LoginError } from '../config/errors';
-import {
+import conf, {
+  DEV_MODE,
   OPENCTI_DEFAULT_DURATION,
   OPENCTI_ISSUER,
   OPENCTI_WEB_TOKEN,
@@ -22,6 +24,18 @@ export const generateOpenCTIWebToken = email => ({
   revoked: false,
   duration: OPENCTI_DEFAULT_DURATION // 99 years per default
 });
+
+export const setAuthenticationCookie = (token, res) => {
+  const creation = moment(token.created);
+  const maxDuration = moment.duration(token.duration);
+  const expires = creation.add(maxDuration).toDate();
+  const signedToken = sign(token, conf.get('jwt:secret'));
+  res.cookie('opencti_token', signedToken, {
+    httpOnly: false,
+    expires,
+    secure: !DEV_MODE
+  });
+};
 
 export const hashPassword = password => bcrypt.hash(password, 10);
 
@@ -111,7 +125,7 @@ export const findById = userId => loadByID(userId);
 
 export const deleteUser = id => deleteByID(id);
 
-export const deletUserByEmail = email => {
+export const deleteUserByEmail = email => {
   const delUser = qk(`match $x has email "${email}"; delete $x;`);
   return delUser.then(result => {
     if (isEmpty(result.data)) {
