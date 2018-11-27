@@ -15,7 +15,6 @@ import {
 } from 'ramda';
 import moment from 'moment';
 import conf from '../config/conf';
-import { decrypt, encrypt } from '../config/crypto';
 import { FunctionalError } from '../config/errors';
 
 const gkDate = 'java.time.LocalDateTime';
