@@ -1,20 +1,9 @@
-import {
-  map,
-  join,
-  head,
-  isEmpty,
-  mapObjIndexed,
-  values,
-  pipe,
-  last
-} from 'ramda';
+import { head, isEmpty, join, map } from 'ramda';
 import uuidv5 from 'uuid/v5';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
-import uuid from 'uuid/v4';
 import pubsub from '../config/bus';
-import driver from '../database/neo4j';
-import { FunctionalError, LoginError } from '../config/errors';
+import { LoginError } from '../config/errors';
 import {
   OPENCTI_DEFAULT_DURATION,
   OPENCTI_ISSUER,
@@ -22,14 +11,13 @@ import {
   ROLE_USER,
   USER_ADDED_TOPIC
 } from '../config/conf';
-import { decrypt, encrypt } from '../config/crypto';
-import { qk } from '../database/grakn';
+import { deleteByID, loadAll, loadByID, now, qk } from '../database/grakn';
 
 // Security related
 export const generateOpenCTIWebToken = email => ({
   uuid: uuidv5(email, uuidv5.URL),
   name: OPENCTI_WEB_TOKEN,
-  creation_date: moment().format('YYYY-MM-DDTHH:mm:ss'),
+  created: now(),
   issuer: OPENCTI_ISSUER,
   revoked: false,
   duration: OPENCTI_DEFAULT_DURATION // 99 years per default
@@ -37,136 +25,30 @@ export const generateOpenCTIWebToken = email => ({
 
 export const hashPassword = password => bcrypt.hash(password, 10);
 
-// User related
-export const loginFromProvider = (email, username) => {
-  const session = driver.session();
-  const user = {
-    id: uuid(),
-    username,
-    email,
-    roles: [ROLE_USER],
-    created_at: moment().format('YYYY-MM-DDTHH:mm:ss'),
-    password: null
-  };
-  const token = generateOpenCTIWebToken(email);
-  const promise = session.run(
-    'MERGE (user:User {email: {user}.email}) ON CREATE SET user = {user} ' +
-      'MERGE (user)<-[:WEB_ACCESS]-(token:Token {name: {token}.name}) ON CREATE SET token = {token} ' +
-      'RETURN token',
-    { user, token }
-  );
-  return promise.then(async data => {
-    session.close();
-    if (isEmpty(data.records)) {
-      throw new LoginError();
-    }
-    return head(data.records).get('token').properties;
-  });
-};
-
-export const login = (email, password) => {
-  const session = driver.session();
-  const promise = session.run(
-    'MATCH (user:User {email: {email}})<-[:WEB_ACCESS]-(token:Token) RETURN user, token',
-    { email }
-  );
-  return promise.then(async data => {
-    session.close();
-    if (isEmpty(data.records)) {
-      throw new LoginError();
-    }
-    const firstRecord = head(data.records);
-    const dbUser = firstRecord.get('user');
-    const dbPassword = dbUser.properties.password;
-    const match = await bcrypt.compare(password, dbPassword);
-    if (!match) {
-      throw new LoginError();
-    }
-    return firstRecord.get('token').properties;
-  });
-};
-
-const pageInfo = (
-  startCursor = '',
-  endCursor = '',
-  hasNextPage = false,
-  hasPreviousPage = false
-) => ({
-  startCursor,
-  endCursor,
-  hasNextPage,
-  hasPreviousPage
-});
-
-export const findAll = (first = 25, after = undefined, orderBy = 'id') => {
-  const skip = after ? parseInt(decrypt(after), 10) : 0;
-  const session = driver.session();
-  const query = `MATCH (g:User) WITH count(g) as global MATCH (user:User) RETURN user, global ORDER BY user.${orderBy.toLowerCase()} SKIP {skip} LIMIT {limit}`;
-  const promise = session.run(query, {
-    skip,
-    limit: first
-  });
-  return promise.then(data => {
-    session.close();
-    if (isEmpty(data.records)) {
-      return { edges: [], pageInfo: pageInfo() };
-    }
-    // Transform the result to be relay compliant.
-    const globalCount = head(data.records).get('global');
-    const edges = pipe(
-      mapObjIndexed((record, key) => {
-        const node = record.get('user').properties;
-        const cursor = encrypt(skip + parseInt(key, 10) + 1);
-        return { node, cursor };
-      }),
-      values
-    )(data.records);
-    const hasNextPage = first + skip < globalCount;
-    const hasPreviousPage = skip > 0;
-    const startCursor = head(edges).cursor;
-    const endCursor = last(edges).cursor;
-    const page = pageInfo(startCursor, endCursor, hasNextPage, hasPreviousPage);
-    return { edges, pageInfo: page };
-  });
-};
-
-export const findById = userId => {
-  const session = driver.session();
-  const promise = session.run('MATCH (user:User {id: {userId}}) RETURN user', {
-    userId
-  });
-  return promise.then(data => {
-    session.close();
-    if (isEmpty(data.records))
-      throw new FunctionalError({ message: 'Cant find this user' });
-    return head(data.records).get('user').properties;
-  });
-};
-
 export const addUser = async user => {
-  // Inser the user
   const userPassword = await hashPassword(user.password);
+  const token = generateOpenCTIWebToken(user.email);
   const createUser = qk(`insert $x isa User 
     has username "${user.username}";
     $x has email "${user.email}";
+    $x has created ${now()};
     $x has password "${userPassword}";
-    ${join(' ', map(role => `$x has grant "${role}";`, user.roles))}
+    ${join(' ', map(role => `$x has grant "${role}";`, user.grant))}
   `);
-  const token = generateOpenCTIWebToken(user.email);
   const createToken = qk(`insert $x isa Token 
     has uuid "${token.uuid}";
     $x has name "${token.name}";
-    $x has creation_date ${token.creation_date};
+    $x has created ${token.created};
     $x has issuer "${token.issuer}";
     $x has revoked ${token.revoked};
     $x has duration "${token.duration}";
   `);
-
+  // Execute user and token creation in parrallel, then create the relation.
   Promise.all([createUser, createToken]).then(() =>
     // Create the relation
     qk(`match $user isa User has email "${user.email}"; 
-      $token isa Token has uuid "${token.uuid}"; 
-      insert (client: $user, authorization: $token) isa authorize;`).then(
+                   $token isa Token has uuid "${token.uuid}"; 
+                   insert (client: $user, authorization: $token) isa authorize;`).then(
       () => {
         pubsub.publish(USER_ADDED_TOPIC, { user });
         return user;
@@ -175,41 +57,78 @@ export const addUser = async user => {
   );
 };
 
-export const deleteUser = userId => {
-  const session = driver.session();
-  const promise = session.run(
-    'MATCH (user:User {id: {userId}}) DELETE user RETURN user',
-    { userId }
-  );
-  return promise.then(data => {
-    session.close();
-    if (isEmpty(data.records)) {
-      throw new FunctionalError({ message: "User doesn't exist" });
-    } else {
-      return userId;
+// User related
+export const loginFromProvider = (email, username) => {
+  // Try to get the user.
+  const loginPromise = qk(`match $client isa User has email "${email}";
+      $client has password $password;
+      (authorization:$token, client:$client); 
+      get;`);
+  return loginPromise.then(result => {
+    const { data } = result;
+    if (isEmpty(data)) {
+      // We need to create the user because we trust the provider
+      const user = {
+        username,
+        email,
+        grant: [ROLE_USER],
+        created: now(),
+        password: null
+      };
+      // Create the user then restart the login
+      return addUser(user).then(() => loginFromProvider(email, username));
     }
+    // We just need to return the current token
+    const element = head(data);
+    return loadByID(element.token.id);
   });
 };
 
+export const login = (email, password) => {
+  const loginPromise = qk(`match $client isa User has email "${email}";
+      $client has password $password;
+      (authorization:$token, client:$client); 
+      get;`);
+  return loginPromise.then(async result => {
+    const { data } = result;
+    if (isEmpty(data)) {
+      throw new LoginError();
+    }
+    const element = head(data);
+    const dbPassword = element.password.value;
+    const match = await bcrypt.compare(password, dbPassword);
+    if (!match) {
+      throw new LoginError();
+    }
+    return loadByID(element.token.id);
+  });
+};
+
+export const findAll = (first = 25, after = undefined, orderBy = 'id') =>
+  loadAll('User', first, after, orderBy);
+
+export const findById = userId => loadByID(userId);
+
+export const deleteUser = id => deleteByID(id);
+
 // Token related
 export const findByTokenId = tokenId => {
-  const session = driver.session();
-  // Fetch user by token relation if the token is not revoked
-  const promise = session.run(
-    'MATCH (token:Token {id: {tokenId}, revoked: false})-->(user) RETURN user, token',
-    { tokenId }
+  const userByToken = qk(
+    `match $token isa Token has uuid "${tokenId}" has revoked false; 
+                 $token has duration $duration; 
+                 $token has created $created; 
+                 (authorization:$token, client:$client); 
+                 get;`
   );
-  return promise.then(data => {
-    session.close();
-    if (isEmpty(data.records)) return undefined;
+  return userByToken.then(result => {
+    const { data } = result;
+    if (isEmpty(data)) return undefined;
     // Token duration validation
-    const record = head(data.records);
-    const token = record.get('token').properties;
-    const creation = moment(token.created_at);
-    const maxDuration = moment.duration(token.duration);
-    const now = moment();
-    const currentDuration = moment.duration(now.diff(creation));
+    const element = head(data);
+    const creation = moment(element.created.value);
+    const maxDuration = moment.duration(element.duration.value);
+    const currentDuration = moment.duration(moment().diff(creation));
     if (currentDuration > maxDuration) return undefined;
-    return record.get('user').properties;
+    return loadByID(element.client.id);
   });
 };

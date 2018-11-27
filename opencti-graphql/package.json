@@ -10,7 +10,8 @@
     "addMigration": "migrate create",
     "lint": "eslint .",
     "test": "jest --coverage",
-    "load": "babel-node ./src/database/loader.js"
+    "load": "babel-node ./src/database/loader.js",
+    "clean": "babel-node ./src/database/clean.js"
   },
   "dependencies": {
     "@babel/core": "^7.1.2",

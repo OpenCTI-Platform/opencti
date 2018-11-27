@@ -31,14 +31,13 @@ type User {
     username: String
     email: String!
     language: String
-    created_at: DateTime
-    updated_at: DateTime
-    roles: [String]
+    created: DateTime
+    grant: [String]
 }
 input UserAddInput {
     username: String!
     password: String!
-    roles: [UserRole]!
+    grant: [UserRole]!
     email: String!
 }
 input UserLoginInput {

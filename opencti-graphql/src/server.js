@@ -14,7 +14,6 @@ import { dissocPath } from 'ramda';
 import conf, { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/security';
 import { findByTokenId } from './domain/user';
-import driver from './database/neo4j';
 import schema from './schema/schema';
 import { UnknownError } from './config/errors';
 
@@ -65,7 +64,7 @@ const authentication = async token => {
   }
   try {
     const decodedToken = verify(authToken, conf.get('jwt:secret'));
-    const user = await findByTokenId(decodedToken.id);
+    const user = await findByTokenId(decodedToken.uuid);
     return { user };
   } catch (err) {
     logger.error(err);
@@ -110,7 +109,6 @@ server.installSubscriptionHandlers(httpServer);
 
 function onSignal() {
   logger.info('OpenCTI is starting cleanup');
-  driver.close();
 }
 
 function onShutdown() {

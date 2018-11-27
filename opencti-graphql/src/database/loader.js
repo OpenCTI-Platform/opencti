@@ -4,7 +4,6 @@ import { mergeMap, scan, take } from 'rxjs/operators';
 import moment from 'moment';
 import uuid from 'uuid/v5';
 import { addMalware } from '../domain/malware';
-import driver from './neo4j';
 
 console.log('Starting data loader');
 
@@ -55,11 +54,9 @@ interval(1) // each 1 ms
       );
     },
     error => {
-      driver.close();
       console.log(error);
     },
     () => {
-      driver.close();
       const duration = Date.now() - start;
       // Compute average request time
       const avgInMs = (duration / malwareCount).toFixed(2);

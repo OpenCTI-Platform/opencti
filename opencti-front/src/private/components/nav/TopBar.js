@@ -88,7 +88,7 @@ class TopBar extends Component {
               open={this.state.menuOpen}
               onClose={this.handleCloseMenu.bind(this)}>
               <MenuItem component={Link} to='/dashboard/profile' onClick={this.handleCloseMenu.bind(this)}>{intl.formatMessage({id: 'Profile'})}</MenuItem>
-              {contains('ROLE_ADMIN', propOr([], 'roles', me)) ?
+              {contains('ROLE_ADMIN', propOr([], 'grant', me)) ?
                 <MenuItem component={Link} to='/admin' onClick={this.handleCloseMenu.bind(this)}>{intl.formatMessage({id: 'Admin'})}</MenuItem> :
                 ''
               }
@@ -108,7 +108,7 @@ TopBar.propTypes = {
 export default injectIntl(withRouter(withStyles(styles)(createFragmentContainer(TopBar, {
   me: graphql`
       fragment TopBar_me on User {
-          roles
+          grant
       }
   `,
 }))));

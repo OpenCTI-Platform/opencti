@@ -11,7 +11,6 @@ define
   # OpenCTI properties
   "issuer" sub attribute datatype string;
   "duration" sub attribute datatype string;
-  "creation_date" sub attribute datatype date;
   "username" sub attribute datatype string;
   "password" sub attribute datatype string;
   "email" sub attribute datatype string;
@@ -172,7 +171,6 @@ define
     is-abstract
     plays "so"
     has "stix_id"
-    has "creation_date"
     has "created"
     has "modified"
     has "revoked"
@@ -235,7 +233,8 @@ define
 
   # OpenCTI entities
   "User" sub entity
-    has "creation_date"
+    has "created"
+    has "modified"
     has "username"
     has "password"
     has "email"
@@ -250,14 +249,13 @@ define
     has "uuid"
     has "name"
     has "revoked"
-    has "creation_date"
+    has "created"
     has "duration"
     has "issuer"
     plays "authorization";
 
   "Stix-Domain" sub entity
     is-abstract
-    has "creation_date"
     has "stix_id"
     has "stix_label"
     has "type"
