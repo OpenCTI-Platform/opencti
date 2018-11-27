@@ -81,12 +81,14 @@ export const pageInfo = (
   startCursor = '',
   endCursor = '',
   hasNextPage = false,
-  hasPreviousPage = false
+  hasPreviousPage = false,
+  globalCount = 0
 ) => ({
   startCursor,
   endCursor,
   hasNextPage,
-  hasPreviousPage
+  hasPreviousPage,
+  globalCount
 });
 
 export const loadAll = (
@@ -95,7 +97,7 @@ export const loadAll = (
   after = undefined,
   orderBy = undefined
 ) => {
-  const skip = after ? parseInt(decrypt(after), 10) : 0;
+  const skip = after ? parseInt(after, 10) : 0;
   const loadCount = qk(`match $count isa ${type}; aggregate count;`).then(
     result => head(result.data)
   );
@@ -114,7 +116,7 @@ export const loadAll = (
     const edges = pipe(
       mapObjIndexed((record, key) => {
         const node = record;
-        const cursor = encrypt(skip + parseInt(key, 10) + 1);
+        const cursor = skip + parseInt(key, 10) + 1;
         return { node, cursor };
       }),
       values
@@ -123,7 +125,13 @@ export const loadAll = (
     const hasPreviousPage = skip > 0;
     const startCursor = head(edges).cursor;
     const endCursor = last(edges).cursor;
-    const page = pageInfo(startCursor, endCursor, hasNextPage, hasPreviousPage);
+    const page = pageInfo(
+      startCursor,
+      endCursor,
+      hasNextPage,
+      hasPreviousPage,
+      globalCount
+    );
     return { edges, pageInfo: page };
   });
 };

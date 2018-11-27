@@ -6,7 +6,8 @@ type PageInfo {
     startCursor: String!,
     endCursor: String!,
     hasNextPage: Boolean!,
-    hasPreviousPage: Boolean!
+    hasPreviousPage: Boolean!,
+    globalCount: Int!
 }
 
 ### User
