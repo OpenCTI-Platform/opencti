@@ -1,4 +1,4 @@
-import { head, isEmpty, map, filter} from 'ramda';
+import { head, isEmpty, map, filter } from 'ramda';
 import migrate from 'migrate';
 import { qk } from './grakn';
 import { logger } from '../config/conf';

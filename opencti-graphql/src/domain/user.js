@@ -3,7 +3,7 @@ import uuidv5 from 'uuid/v5';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
 import pubsub from '../config/bus';
-import { LoginError } from '../config/errors';
+import { FunctionalError, LoginError } from '../config/errors';
 import {
   OPENCTI_DEFAULT_DURATION,
   OPENCTI_ISSUER,
@@ -110,6 +110,17 @@ export const findAll = (first = 25, after = undefined, orderBy = 'id') =>
 export const findById = userId => loadByID(userId);
 
 export const deleteUser = id => deleteByID(id);
+
+export const deletUserByEmail = email => {
+  const delUser = qk(`match $x has email "${email}"; delete $x;`);
+  return delUser.then(result => {
+    if (isEmpty(result.data)) {
+      throw new FunctionalError({ message: "User doesn't exist" });
+    } else {
+      return email;
+    }
+  });
+};
 
 // Token related
 export const findByTokenId = tokenId => {

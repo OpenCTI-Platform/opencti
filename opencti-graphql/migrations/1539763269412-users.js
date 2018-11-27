@@ -1,4 +1,4 @@
-import { addUser, deleteUser } from '../src/domain/user';
+import { addUser, deletUserByEmail } from '../src/domain/user';
 
 module.exports.up = async next => {
   await addUser({
@@ -17,7 +17,7 @@ module.exports.up = async next => {
 };
 
 module.exports.down = async next => {
-  await deleteUser('richard.julien@gmail.com');
-  await deleteUser('samuel.hassine@gmail.com');
+  await deletUserByEmail('richard.julien@gmail.com');
+  await deletUserByEmail('samuel.hassine@gmail.com');
   next();
 };

@@ -1,4 +1,4 @@
-import { addUser, deleteUser } from '../src/domain/user';
+import { addUser, deletUserByEmail } from '../src/domain/user';
 
 module.exports.up = async next => {
   await addUser({
@@ -17,7 +17,7 @@ module.exports.up = async next => {
 };
 
 module.exports.down = async next => {
-  await deleteUser('admin@opencti.org');
-  await deleteUser('user@opencti.org');
+  await deletUserByEmail('admin@opencti.org');
+  await deletUserByEmail('user@opencti.org');
   next();
 };
