@@ -19,7 +19,10 @@ import { decrypt, encrypt } from '../config/crypto';
 import { FunctionalError } from '../config/errors';
 
 const gkDate = 'java.time.LocalDateTime';
-export const now = () => moment().format('YYYY-MM-DDTHH:mm:ss');
+export const now = () =>
+  moment()
+    .utc()
+    .format('YYYY-MM-DDTHH:mm:ss');
 
 const instance = axios.create({
   baseURL: conf.get('grakn:baseURL'),
