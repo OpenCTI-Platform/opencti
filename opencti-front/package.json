@@ -26,7 +26,8 @@
     "relay-compiler": "^1.6.2",
     "relay-runtime": "^1.6.2",
     "typeface-roboto": "0.0.54",
-    "universal-cookie": "^3.0.4"
+    "universal-cookie": "^3.0.4",
+    "yup": "^0.26.6"
   },
   "scripts": {
     "start": "react-scripts start",
