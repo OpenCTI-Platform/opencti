@@ -4,6 +4,11 @@ import {withStyles} from '@material-ui/core/styles'
 import {Formik, Field, Form} from 'formik'
 import {TextField} from 'formik-material-ui';
 import Button from '@material-ui/core/Button'
+import graphql from "babel-plugin-relay/macro";
+import {commitMutation} from "react-relay";
+import environment from "../../relay/environment";
+import {withRouter} from "react-router-dom";
+import {head} from "ramda";
 
 const styles = theme => ({
   login: {
@@ -11,12 +16,31 @@ const styles = theme => ({
   }
 })
 
+const loginMutation = graphql`
+    mutation LoginFormMutation($input: UserLoginInput!) {
+        token(input: $input)
+    }
+`;
+
 class LoginForm extends Component {
-  onSubmit(values, {setSubmitting, resetForm}) {
-    setTimeout(() => {
-      setSubmitting(false);
-      resetForm();
-    }, 500);
+  onSubmit(values, {setSubmitting, resetForm, setErrors}) {
+      commitMutation(environment, {
+          mutation: loginMutation,
+          variables: {
+              input: values,
+          },
+          onCompleted: (response, errors) => {
+              setSubmitting(false);
+              if(errors) {
+                  const error = this.props.intl.formatMessage({id: head(errors).message});
+                  setErrors({email: error}) // Push the error in the email field
+              } else {
+                  resetForm();
+                  //No need to modify the store, auth is handled by a cookie
+                  this.props.history.push('/')
+              }
+          }
+      });
   }
 
   render() {
@@ -24,11 +48,11 @@ class LoginForm extends Component {
     return (
       <div className={classes.login}>
         <Formik
-          initialValues={{name: '', description: ''}}
+          initialValues={{email: '', password: ''}}
           validate={(values) => {
-            const errors = {}
-            if (!values.name) {
-              errors.name = intl.formatMessage({id: 'This field is required'})
+            const errors = {};
+            if (!values.email) {
+              errors.email = intl.formatMessage({id: 'This field is required'})
             }
             return errors
           }}
@@ -37,7 +61,7 @@ class LoginForm extends Component {
             <Form>
               <Field name='email' component={TextField} label={intl.formatMessage({id: 'Email'})} fullWidth={true}/>
               <Field name='password' component={TextField} label={intl.formatMessage({id: 'Password'})} fullWidth={true} style={{marginTop: 20}}/>
-              <Button type='submit' variant='raised' color='primary' disabled={isSubmitting} style={{marginTop: 30}}>
+              <Button type='submit' variant='contained' color='primary' disabled={isSubmitting} onClick={submitForm} style={{marginTop: 30}}>
                 {intl.formatMessage({id: 'Sign in'})}
               </Button>
             </Form>
@@ -48,4 +72,4 @@ class LoginForm extends Component {
   }
 }
 
-export default injectIntl(withStyles(styles)(LoginForm))
+export default injectIntl(withRouter(withStyles(styles)(LoginForm)))
