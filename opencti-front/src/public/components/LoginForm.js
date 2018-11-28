@@ -8,7 +8,7 @@ import graphql from "babel-plugin-relay/macro";
 import {commitMutation} from "react-relay";
 import environment from "../../relay/environment";
 import {withRouter} from "react-router-dom";
-import {head} from "ramda";
+import {head, compose} from "ramda";
 
 const styles = theme => ({
   login: {
@@ -72,4 +72,8 @@ class LoginForm extends Component {
   }
 }
 
-export default injectIntl(withRouter(withStyles(styles)(LoginForm)))
+export default compose(
+    injectIntl,
+    withRouter,
+    withStyles(styles)
+)(LoginForm)
