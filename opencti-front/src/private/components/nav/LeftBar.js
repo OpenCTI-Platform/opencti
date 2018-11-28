@@ -9,7 +9,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
 import Drawer from '@material-ui/core/Drawer'
 import {Dashboard, Public, Domain, Assignment, BugReport, KeyboardArrowRight, KeyboardArrowLeft} from '@material-ui/icons'
-import {Biohazard, AlarmLight, Application, Diamond, Cards, Fire} from 'mdi-material-ui'
+import {Biohazard, AlarmLight, Application, Diamond, Cards, Fire, Gauge} from 'mdi-material-ui'
 
 const styles = theme => ({
   drawerPaper: {
