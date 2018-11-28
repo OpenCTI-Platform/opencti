@@ -1,35 +1,36 @@
 import React, { Component } from 'react';
-import { createPaginationContainer } from "react-relay";
+import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import UserInformation from "../user/UserInformation";
+import * as PropTypes from 'prop-types';
+import UserInformation from '../user/UserInformation';
 
 class Vulnerabilities extends Component {
   render() {
-    console.log('Vulnerabilities', this.props);
     return (
       <div>
         {this.props.data.users.edges.map(
-          edge => <div key={edge.node.id}><UserInformation me={edge.node}/><br/></div>
+          edge => <div key={edge.node.id}><UserInformation me={edge.node}/><br/></div>,
         )}
-        <button onClick={() => this._loadMore()} title="Load More">Load more</button>
+        <button onClick={() => this.loadMore()} title="Load More">Load more</button>
       </div>
     );
   }
 
-  _loadMore() {
+  loadMore() {
     if (!this.props.relay.hasMore() || this.props.relay.isLoading()) {
-      console.log('No more to load', this.props.relay.hasMore(), this.props.relay.isLoading())
       return;
     }
-
-    this.props.relay.loadMore(
-      2,  // Fetch the next 10 feed items
-      error => {
-        console.log(error);
-      },
-    );
+    // Fetch the next 10 feed items
+    this.props.relay.loadMore(2, () => {
+      // console.log(error);
+    });
   }
 }
+
+Vulnerabilities.propTypes = {
+  data: PropTypes.object,
+  relay: PropTypes.object,
+};
 
 export default createPaginationContainer(
   Vulnerabilities,
@@ -66,17 +67,17 @@ export default createPaginationContainer(
         count: totalCount,
       };
     },
-    getVariables(props, {count, cursor}, fragmentVariables) {
+    getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         count,
         cursor,
-        orderBy: fragmentVariables.orderBy
+        orderBy: fragmentVariables.orderBy,
       };
     },
     query: graphql`
         query VulnerabilitiesPaginationQuery($count: Int!, $cursor: ID, $orderBy: UsersOrdering) {
             ...Vulnerabilities_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy)
         }
-    `
-  }
+    `,
+  },
 );
