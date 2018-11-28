@@ -20,6 +20,7 @@
     "react-intl": "^2.7.1",
     "react-relay": "^1.6.2",
     "react-relay-network-modern": "^2.4.0",
+    "babel-plugin-relay": "^1.7.0-rc.1",
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.0.5",
     "react-virtualized": "^9.21.0",
@@ -32,6 +33,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "lint": "eslint .",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 9009 -s public",
@@ -53,8 +55,14 @@
     "@storybook/addons": "^3.4.11",
     "@storybook/react": "^3.4.11",
     "babel-core": "^6.26.3",
-    "babel-plugin-relay": "^1.7.0-rc.1",
     "babel-runtime": "^6.26.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-prettier": "^3.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-prettier": "^3.0.0",
+    "eslint-plugin-react": "^7.11.1",
+    "prettier": "^1.14.3",
     "relay-devtools": "^1.4.0"
   }
 }

@@ -1,0 +1,18 @@
+{
+  "extends": ["plugin:react/recommended", "airbnb-base"],
+  "parserOptions": {
+    "ecmaVersion": 2017,
+    "ecmaFeatures": {
+      "experimentalObjectRestSpread": true
+    }
+  },
+  "env": {
+    "browser": true,
+    "jest": true
+  },
+  "settings": {
+    "react": {
+      "version": "15.0"
+    }
+  }
+}
