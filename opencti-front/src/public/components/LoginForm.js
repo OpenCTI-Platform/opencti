@@ -44,7 +44,7 @@ class LoginForm extends Component {
       onCompleted: (response, errors) => {
         setSubmitting(false);
         if (errors) {
-          const error = this.t(head(errors).message);
+          const error = this.props.t(head(errors).message);
           setErrors({ email: error }); // Push the error in the email field
         } else {
           resetForm();
