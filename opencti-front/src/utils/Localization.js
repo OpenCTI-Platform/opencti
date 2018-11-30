@@ -15,6 +15,11 @@ const i18n = {
       'Update a malware': 'Modifier un code malveillant',
       // Menu
       Dashboard: 'Tableau de bord',
+      Knowledge: 'Connaissance',
+      Explore: 'Explorer',
+      Investigate: 'Investiguer',
+      Sources: 'Sources',
+      Settings: 'Paramètres',
       Actors: 'Acteurs',
       Sectors: 'Secteurs',
       'Intrusion sets': 'Modes opératoires',

@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/core/styles';
 import Input from '@material-ui/core/Input';
 import InputAdornment from '@material-ui/core/InputAdornment';
-import { Search } from '@material-ui/icons';
-import { compose } from 'ramda';
+import {Search} from '@material-ui/icons';
+import {compose} from 'ramda';
 import inject18n from './i18n';
 
 const styles = theme => ({
@@ -15,16 +15,16 @@ const styles = theme => ({
   },
   searchInputInput: {
     transition: theme.transitions.create('width'),
-    width: 150,
+    width: 250,
     '&:focus': {
-      width: 200,
+      width: 350,
     },
   },
 });
 
 class SearchInput extends Component {
   render() {
-    const { t, classes, handleSearch } = this.props;
+    const {t, classes, handleSearch} = this.props;
     return (
       <Input
         name='keyword'
@@ -35,7 +35,7 @@ class SearchInput extends Component {
             <Search/>
           </InputAdornment>
         }
-        classes={{ root: classes.searchInputRoot, input: classes.searchInputInput }}
+        classes={{root: classes.searchInputRoot, input: classes.searchInputInput}}
         disableUnderline={true}
       />
     );

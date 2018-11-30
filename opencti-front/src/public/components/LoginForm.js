@@ -33,7 +33,7 @@ const loginValidation = t => Yup.object().shape({
     .max(100, t('Too Long!'))
     .required(t('This field is required')),
 });
-
+ 
 class LoginForm extends Component {
   onSubmit(values, { setSubmitting, resetForm, setErrors }) {
     commitMutation(environment, {
@@ -66,7 +66,7 @@ class LoginForm extends Component {
           render={({ submitForm, isSubmitting }) => (
             <Form>
               <Field name="email" component={TextField} label={t('Email')} fullWidth={true}/>
-              <Field name="password" component={TextField} label={t('Password')}
+              <Field name="password" component={TextField} type="password" label={t('Password')}
                      fullWidth={true} style={{ marginTop: 20 }}/>
               <Button type="submit" variant="contained" color="primary"
                       disabled={isSubmitting} onClick={submitForm} style={{ marginTop: 30 }}>

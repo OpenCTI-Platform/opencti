@@ -8,10 +8,10 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Drawer from '@material-ui/core/Drawer';
 import {
-  Dashboard, Public, Domain, Assignment, BugReport, KeyboardArrowRight, KeyboardArrowLeft,
+  Explore, Assignment, DeviceHub, KeyboardArrowLeft, KeyboardArrowRight,
 } from '@material-ui/icons';
 import {
-  Biohazard, AlarmLight, Application, Diamond, Cards, Fire,
+  Settings, ClipboardArrowDown, Gauge, Database,
 } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -91,63 +91,9 @@ class LeftBar extends Component {
           <MenuList component='nav' classes={{ root: classes.menuList }}>
             <MenuItem component={Link} to='/dashboard' onClick={this.handleClickAway.bind(this)} selected={location.pathname === '/dashboard'} dense={true}>
               <ListItemIcon classes={{ root: classes.listIcon }}>
-                <Dashboard/>
+                <Gauge/>
               </ListItemIcon>
               {this.state.open ? <ListItemText primary={t('Dashboard')} classes={{ root: classes.listText }}/> : ''}
-            </MenuItem>
-            <MenuItem component={Link} to='/dashboard/actors' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/actors')} dense={true}>
-              <ListItemIcon classes={{ root: classes.listIcon }}>
-                <Public/>
-              </ListItemIcon>
-              {this.state.open ? <ListItemText primary={t('Actors')} classes={{ root: classes.listText }}/> : ''}
-            </MenuItem>
-            <MenuItem component={Link} to='/dashboard/sectors' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/sectors')} dense={true}>
-              <ListItemIcon classes={{ root: classes.listIcon }}>
-                <Domain/>
-              </ListItemIcon>
-              {this.state.open ? <ListItemText primary={t('Sectors')} classes={{ root: classes.listText }}/> : ''}
-            </MenuItem>
-            <MenuItem component={Link} to='/dashboard/intrusion_sets' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/intrusion_sets')} dense={true}>
-              <ListItemIcon classes={{ root: classes.listIcon }}>
-                <Diamond/>
-              </ListItemIcon>
-              {this.state.open ? <ListItemText primary={t('Intrusion sets')} classes={{ root: classes.listText }}/> : ''}
-            </MenuItem>
-            <MenuItem component={Link} to='/dashboard/campaigns' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/campaigns')} dense={true}>
-              <ListItemIcon classes={{ root: classes.listIcon }}>
-                <AlarmLight/>
-              </ListItemIcon>
-              {this.state.open ? <ListItemText primary={t('Campaigns')} classes={{ root: classes.listText }}/> : ''}
-            </MenuItem>
-            <MenuItem component={Link} to='/dashboard/incidents' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/incidents')} dense={true}>
-              <ListItemIcon classes={{ root: classes.listIcon }}>
-                <Fire/>
-              </ListItemIcon>
-              {this.state.open ? <ListItemText primary={t('Incidents')} classes={{ root: classes.listText }}/> : ''}
-            </MenuItem>
-            <MenuItem component={Link} to='/dashboard/malwares' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/malwares')} dense={true}>
-              <ListItemIcon classes={{ root: classes.listIcon }}>
-                <Biohazard/>
-              </ListItemIcon>
-              {this.state.open ? <ListItemText primary={t('Malwares')} classes={{ root: classes.listText }}/> : ''}
-            </MenuItem>
-            <MenuItem component={Link} to='/dashboard/tools' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/tools')} dense={true}>
-              <ListItemIcon classes={{ root: classes.listIcon }}>
-                <Application/>
-              </ListItemIcon>
-              {this.state.open ? <ListItemText primary={t('Tools')} classes={{ root: classes.listText }}/> : ''}
-            </MenuItem>
-            <MenuItem component={Link} to='/dashboard/vulnerabilities' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/vulnerabilities')} dense={true}>
-              <ListItemIcon classes={{ root: classes.listIcon }}>
-                <BugReport/>
-              </ListItemIcon>
-              {this.state.open ? <ListItemText primary={t('Vulnerabilities')} classes={{ root: classes.listText }}/> : ''}
-            </MenuItem>
-            <MenuItem component={Link} to='/dashboard/identities' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/identities')} dense={true}>
-              <ListItemIcon classes={{ root: classes.listIcon }}>
-                <Cards/>
-              </ListItemIcon>
-              {this.state.open ? <ListItemText primary={t('Identities')} classes={{ root: classes.listText }}/> : ''}
             </MenuItem>
             <MenuItem component={Link} to='/dashboard/reports' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/reports')} dense={true}>
               <ListItemIcon classes={{ root: classes.listIcon }}>
@@ -155,8 +101,38 @@ class LeftBar extends Component {
               </ListItemIcon>
               {this.state.open ? <ListItemText primary={t('Reports')} classes={{ root: classes.listText }}/> : ''}
             </MenuItem>
-            <MenuItem onClick={this.toggle.bind(this)} dense={true} style={{ position: 'absolute', bottom: 10, width: '100%' }}>
+            <MenuItem component={Link} to='/dashboard/knowledge' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/actors')} dense={true}>
               <ListItemIcon classes={{ root: classes.listIcon }}>
+                <Database/>
+              </ListItemIcon>
+              {this.state.open ? <ListItemText primary={t('Knowledge')} classes={{ root: classes.listText }}/> : ''}
+            </MenuItem>
+            <MenuItem component={Link} to='/dashboard/explore' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/sectors')} dense={true}>
+              <ListItemIcon classes={{ root: classes.listIcon }}>
+                <Explore/>
+              </ListItemIcon>
+              {this.state.open ? <ListItemText primary={t('Explore')} classes={{ root: classes.listText }}/> : ''}
+            </MenuItem>
+            <MenuItem component={Link} to='/dashboard/investigate' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/intrusion_sets')} dense={true}>
+              <ListItemIcon classes={{ root: classes.listIcon }}>
+                <DeviceHub/>
+              </ListItemIcon>
+              {this.state.open ? <ListItemText primary={t('Investigate')} classes={{ root: classes.listText }}/> : ''}
+            </MenuItem>
+            <MenuItem component={Link} to='/dashboard/sources' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/campaigns')} dense={true}>
+              <ListItemIcon classes={{ root: classes.listIcon }}>
+                <ClipboardArrowDown/>
+              </ListItemIcon>
+              {this.state.open ? <ListItemText primary={t('Sources')} classes={{ root: classes.listText }}/> : ''}
+            </MenuItem>
+            <MenuItem component={Link} to='/dashboard/settings' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/incidents')} dense={true}>
+              <ListItemIcon classes={{ root: classes.listIcon }}>
+                <Settings/>
+              </ListItemIcon>
+              {this.state.open ? <ListItemText primary={t('Settings')} classes={{ root: classes.listText }}/> : ''}
+            </MenuItem>
+            <MenuItem onClick={this.toggle.bind(this)} dense={true} style={{position: 'absolute', bottom: 10, width: '100%'}}>
+              <ListItemIcon classes={{root: classes.listIcon}}>
                 {this.state.open ? <KeyboardArrowLeft/> : <KeyboardArrowRight/>}
               </ListItemIcon>
             </MenuItem>
