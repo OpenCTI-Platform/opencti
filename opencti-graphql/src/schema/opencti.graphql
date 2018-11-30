@@ -61,6 +61,13 @@ type MalwareEdge {
     cursor: String!
     node: Malware!
 }
+
+type AddMalwarePayload {
+    viewer: User
+    malwareEdge: MalwareEdge
+    clientMutationId: String
+}
+
 type Malware {
     id: ID!
     name: String!
@@ -74,20 +81,16 @@ type Malware {
 input MalwareAddInput {
     name: String!
     description: String!
-    created: DateTime
-    modified: DateTime
-    revoked: Boolean
+    clientMutationId: String
 }
 
 ### QUERIES
 type Query {
-    # User
-    users(first: Int, after: ID, orderBy: UsersOrdering, search: String): UserConnection
-    user(id: String!): User
     me: User
-    # Malware
-    malwares(first: Int, after: ID, orderBy: MalwaresOrdering): MalwareConnection
+    user(id: String!): User
+    users(first: Int, after: ID, orderBy: UsersOrdering, search: String): UserConnection
     malware(id: String!): Malware
+    malwares(first: Int, after: ID, orderBy: MalwaresOrdering, search: String): MalwareConnection
 }
 
 ### SUBSCRIPTIONS
@@ -104,7 +107,7 @@ type Mutation {
     userAdd(input: UserAddInput): User
     userDelete(id: ID!): ID
     # Malware
-    malwareAdd(input: MalwareAddInput): Malware
+    malwareAdd(input: MalwareAddInput): AddMalwarePayload
     malwareDelete(id: ID!): ID
 }
 

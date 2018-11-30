@@ -37,7 +37,7 @@ export default createPaginationContainer(
   {
     data: graphql`
         fragment Vulnerabilities_data on Query @argumentDefinitions(
-            count: {type: "Int", defaultValue: 10}
+            count: {type: "Int", defaultValue: 25}
             cursor: {type: "ID"}
             orderBy: {type: "UsersOrdering", defaultValue: ID}
         ) {
