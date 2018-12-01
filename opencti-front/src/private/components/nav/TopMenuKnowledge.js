@@ -5,7 +5,9 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { Public, Domain } from '@material-ui/icons';
-import { Radioactive, Diamond, Fire, ChessKnight } from 'mdi-material-ui';
+import {
+  Radioactive, Diamond, Fire, ChessKnight,
+} from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
@@ -25,33 +27,34 @@ class TopMenuKnowledge extends Component {
     const { t, location, classes } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/knowledge' variant={location.pathname === '/dashboard/knowledge' ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/knowledge' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to='/dashboard/knowledge'
+                variant={location.pathname === '/dashboard/knowledge' || location.pathname.includes('/dashboard/knowledge/threat_actors') ? 'contained' : 'text'} size="small"
+                color={location.pathname === '/dashboard/knowledge' || location.pathname.includes('/dashboard/knowledge/threat_actors') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <Public className={classes.icon} fontSize='small'/>
           {t('Threat actors')}
         </Button>
-        <Button component={Link} to='/dashboard/knowledge/sectors' variant={location.pathname === '/dashboard/knowledge/sectors' ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/knowledge/sectors' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to='/dashboard/knowledge/sectors' variant={location.pathname.includes('/dashboard/knowledge/sectors') ? 'contained' : 'text'} size="small"
+                color={location.pathname.includes('/dashboard/knowledge/sectors') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <Domain className={classes.icon} fontSize='small'/>
           {t('Sectors')}
         </Button>
-        <Button component={Link} to='/dashboard/knowledge/intrusion_sets' variant={location.pathname === '/dashboard/knowledge/intrusion_sets' ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/knowledge/intrusion_sets' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to='/dashboard/knowledge/intrusion_sets' variant={location.pathname.includes('/dashboard/knowledge/intrusion_sets') ? 'contained' : 'text'} size="small"
+                color={location.pathname.includes('/dashboard/knowledge/intrusion_sets') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <Diamond className={classes.icon} fontSize='small'/>
           {t('Intrusion sets')}
         </Button>
-        <Button component={Link} to='/dashboard/knowledge/campaigns' variant={location.pathname === '/dashboard/knowledge/campaigns' ? 'contained' : 'text'} size="small"
+        <Button component={Link} to='/dashboard/knowledge/campaigns' variant={location.pathname.includes('/dashboard/knowledge/campaigns') ? 'contained' : 'text'} size="small"
                 color={location.pathname === '/dashboard/knowledge/campaigns' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <ChessKnight className={classes.icon} fontSize='small'/>
           {t('Campaigns')}
         </Button>
-        <Button component={Link} to='/dashboard/knowledge/incidents' variant={location.pathname === '/dashboard/knowledge/incidents' ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/knowledge/incidents' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to='/dashboard/knowledge/incidents' variant={location.pathname.includes('/dashboard/knowledge/incidents') ? 'contained' : 'text'} size="small"
+                color={location.pathname.includes('/dashboard/knowledge/incidents') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <Fire className={classes.icon} fontSize='small'/>
           {t('Incidents')}
         </Button>
-        <Button component={Link} to='/dashboard/knowledge/malwares' variant={location.pathname === '/dashboard/knowledge/malwares' ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/knowledge/malwares' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to='/dashboard/knowledge/malwares' variant={location.pathname.includes('/dashboard/knowledge/malwares') ? 'contained' : 'text'} size="small"
+                color={location.pathname.includes('/dashboard/knowledge/malwares') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <Radioactive className={classes.icon} fontSize='small'/>
           {t('Malwares')}
         </Button>

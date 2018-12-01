@@ -1,114 +1,118 @@
 * {
-  font-size: 100%;
-  font-family: 'Roboto', sans-serif;
+    font-size: 100%;
+    font-family: 'Roboto', sans-serif;
 }
 
 :focus {
-  outline: 0;
+    outline: 0;
 }
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-animation: autofill 0s forwards;
-  animation: autofill 0s forwards;
-  -webkit-text-fill-color: #fff !important;
-  caret-color: #fff !important;
+    -webkit-animation: autofill 0s forwards;
+    animation: autofill 0s forwards;
+    -webkit-text-fill-color: #fff !important;
+    caret-color: #fff !important;
 }
 
 @keyframes autofill {
-  100% {
-    background: transparent;
-    color: inherit;
-  }
+    100% {
+        background: transparent;
+        color: inherit;
+    }
 }
 
 @-webkit-keyframes autofill {
-  100% {
-    background: transparent;
-    color: inherit;
-  }
+    100% {
+        background: transparent;
+        color: inherit;
+    }
 }
 
 a, a:hover, a:visited, a:focus {
-  text-decoration: none;
+    text-decoration: none;
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
+    width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px grey;
-  border-radius: 10px;
+    box-shadow: inset 0 0 5px grey;
+    border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(64, 193, 255, 0.2);
-  border-radius: 10px;
+    background: rgba(64, 193, 255, 0.2);
+    border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(64, 193, 255, 0.2);
+    background: rgba(64, 193, 255, 0.2);
+}
+
+a {
+    color: #ff3d00;
 }
 
 pre {
-  padding: 10px;
-  font-family: Consolas, monaco, monospace;
-  font-size: 12px;
-  background: rgba(64, 193, 255, 0.2);
-  border-radius: 5px;
-  white-space: pre-wrap;
-  white-space: -moz-pre-wrap;
-  white-space: -pre-wrap;
-  white-space: -o-pre-wrap;
-  word-wrap: break-word;
-  font-weight: 400;
+    padding: 10px;
+    font-family: Consolas, monaco, monospace;
+    font-size: 12px;
+    background: rgba(64, 193, 255, 0.2);
+    border-radius: 5px;
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+    font-weight: 400;
 }
 
 span.icon {
-  font-family: 'Roboto', sans-serif;
-  display: block;
-  float: right;
-  padding: 2px 0 0 0;
-  color: #00bcd4;
-  font-weight: 400;
+    font-family: 'Roboto', sans-serif;
+    display: block;
+    float: right;
+    padding: 2px 0 0 0;
+    color: #00bcd4;
+    font-weight: 400;
 }
 
 span.red {
-  color: #f44336;
+    color: #f44336;
 }
 
 span.green {
-  color: #4cAf50;
+    color: #4cAf50;
 }
 
 span.teal {
-  color: #80cbc4;
+    color: #80cbc4;
 }
 
 span.raw {
-  white-space: pre-line;
+    white-space: pre-line;
 }
 
 ul.rc-tree {
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
 }
 
 ul.rc-tree li {
-  list-style-type: none;
-  vertical-align: middle;
+    list-style-type: none;
+    vertical-align: middle;
 }
 
 div.clearfix {
-  margin: 0;
-  padding: 0;
-  clear: both;
+    margin: 0;
+    padding: 0;
+    clear: both;
 }
 
 .recharts-cartesian-axis-tick {
-  font-size: 10px;
-  font-family: Roboto, sans-serif;
+    font-size: 10px;
+    font-family: Roboto, sans-serif;
 }
