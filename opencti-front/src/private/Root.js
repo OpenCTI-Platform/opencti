@@ -16,7 +16,6 @@ import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
 import Malwares from './components/malwares/Malwares';
-import Test from './components/vulnerabilities/Test';
 
 const styles = theme => ({
   container: {
@@ -75,8 +74,7 @@ class Root extends Component {
                 <main className={classes.content} style={{ paddingRight }}>
                   <div className={classes.toolbar}/>
                   <Route exact path='/dashboard' component={Dashboard}/>
-                  <Route exact path='/dashboard/malwares' component={Malwares}/>
-                  <Route exact path='/dashboard/vulnerabilities' component={Test}/>
+                  <Route exact path='/dashboard/knowledge/malwares' component={Malwares}/>
                 </main>
                 <Snackbar
                   anchorOrigin={{ vertical: 'top', horizontal: 'right' }}

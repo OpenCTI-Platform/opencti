@@ -20,7 +20,7 @@ const i18n = {
       Investigate: 'Investiguer',
       Sources: 'Sources',
       Settings: 'Paramètres',
-      Actors: 'Acteurs',
+      'Threat actors': 'Acteurs',
       Sectors: 'Secteurs',
       'Intrusion sets': 'Modes opératoires',
       Campaigns: 'Campagnes',

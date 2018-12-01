@@ -16,6 +16,8 @@ import logo from '../../../resources/images/logo.png';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard'
+import TopMenuReports from './TopMenuReports'
+import TopMenuKnowledge from './TopMenuKnowledge'
 
 const styles = theme => ({
   appBar: {
@@ -80,7 +82,7 @@ class TopBar extends Component {
   }
 
   render() {
-    const {t, classes, me} = this.props;
+    const {t, classes, location, me} = this.props;
     return (
       <AppBar position='fixed' className={classes.appBar}>
         <Toolbar>
@@ -88,7 +90,9 @@ class TopBar extends Component {
             <img src={logo} alt='logo' className={classes.logo}/>
           </IconButton>
           <div className={classes.menuContainer}>
-            <TopMenuDashboard/>
+            {location.pathname === '/dashboard' || location.pathname === '/dashboard/entities' ? <TopMenuDashboard/> : ''}
+            {location.pathname.includes('/dashboard/reports') ? <TopMenuReports/> : ''}
+            {location.pathname.includes('/dashboard/knowledge') ? <TopMenuKnowledge/> : ''}
           </div>
           <div className={classes.searchContainer}>
             <SearchInput handleSearch={this.handleSearch.bind(this)}/>
@@ -119,6 +123,7 @@ class TopBar extends Component {
 TopBar.propTypes = {
   me: PropTypes.object,
   classes: PropTypes.object,
+  location: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };

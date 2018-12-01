@@ -3,14 +3,15 @@ export default {
   palette: {
     type: 'dark',
     text: { main: '#ffffff', disabled: '#4f4f4f', disabledDark: '#434343' },
-    primary: { main: '#00bcd4', dark: '#00d7ee' },
-    secondary: { main: '#ff3d00', dark: '#ff5d00' },
+    primary: { main: '#00bcd4' },
+    secondary: { main: '#ff3d00' },
     header: { background: '#000000', text: '#ffffff' },
     nav: { background: '#1a1a1a' },
     navAlt: { background: '#14262c' },
     navBottom: { background: '#0f181f' },
     paper: { background: '#303a3d', disabled: '#181f22' },
     field: { background: '#265058' },
+    divider: '#5c5c5c',
   },
   typography: {
     useNextVariants: true,
