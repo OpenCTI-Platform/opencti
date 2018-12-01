@@ -11,6 +11,9 @@ const i18n = {
       Delete: 'Supprimer',
       Cancel: 'Annuler',
       'This field is required': 'Ce champ est requis',
+      'The value is too short': 'La valeur est trop courte',
+      'The value is too long': 'La valeur est trop longue',
+      'No available options': 'Aucune option disponible',
       'Create a malware': 'Créer un code malveillant',
       'Update a malware': 'Modifier un code malveillant',
       // Menu
@@ -43,6 +46,8 @@ const i18n = {
       'Creation date': 'Date de création',
       'Modification date': 'Date de modification',
       'Updated the': 'Mis à jour le',
+      Marking: 'Marquage',
+      'Killchain phases': 'Phases de killchain',
       // Statistics
       'Total entities': 'Nombre d\'entités',
       'Total observables': 'Nombre d\'observables',
