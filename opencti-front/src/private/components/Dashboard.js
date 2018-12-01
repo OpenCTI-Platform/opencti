@@ -89,7 +89,7 @@ class Dashboard extends Component {
   }
 
   render() {
-    const { t, classes } = this.props;
+    const { t, nsd, classes } = this.props;
     return (
       <Grid container={true}>
         <Grid container={true} xs={6} spacing={16}>
@@ -105,7 +105,7 @@ class Dashboard extends Component {
                     5 123
                   </div>
                   <div className={classes.diffDescription}>
-                    (last 24h)
+                    ({t('last 24h')})
                   </div>
                 </div>
                 <div className='clearfix'/>
@@ -130,7 +130,7 @@ class Dashboard extends Component {
                     889
                   </div>
                   <div className={classes.diffDescription}>
-                    (last 24h)
+                    ({t('last 24h')})
                   </div>
                 </div>
                 <div className='clearfix'/>
@@ -155,7 +155,7 @@ class Dashboard extends Component {
                     5
                   </div>
                   <div className={classes.diffDescription}>
-                    (last 24h)
+                    ({t('last 24h')})
                   </div>
                 </div>
                 <div className='clearfix'/>
@@ -180,7 +180,7 @@ class Dashboard extends Component {
                     8
                   </div>
                   <div className={classes.diffDescription}>
-                    (last 24h)
+                    ({t('last 24h')})
                   </div>
                 </div>
                 <div className='clearfix'/>
@@ -206,7 +206,7 @@ class Dashboard extends Component {
                     <BarChart data={this.state.chartData} margin={{
                       top: 5, right: 5, bottom: 25, left: 5,
                     }}>
-                      <XAxis dataKey='date' stroke='#ffffff' interval={0} angle={-45} textAnchor='end'/>
+                      <XAxis dataKey='date' stroke='#ffffff' interval={0} angle={-45} textAnchor='end' tickFormatter={nsd}/>
                       <YAxis stroke='#ffffff'/>
                       <Bar fill={Theme.palette.primary.main} dataKey='number' barSize={10}/>
                     </BarChart>
@@ -224,6 +224,7 @@ class Dashboard extends Component {
 Dashboard.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
+  nsd: PropTypes.func,
   history: PropTypes.object,
 };
 

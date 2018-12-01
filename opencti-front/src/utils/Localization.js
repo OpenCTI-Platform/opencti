@@ -43,6 +43,13 @@ const i18n = {
       'Creation date': 'Date de création',
       'Modification date': 'Date de modification',
       'Updated the': 'Mis à jour le',
+      // Statistics
+      'Total entities': 'Nombre d\'entités',
+      'Total observables': 'Nombre d\'observables',
+      'Total reports': 'Nombre de rapports',
+      'Total investigations': 'Nombre d\'investigations',
+      'Ingested entities': 'Entités stockées',
+      'last 24h': 'dernières 24h',
     },
   },
 };

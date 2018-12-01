@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { Public, Domain } from '@material-ui/icons';
 import {
-  Radioactive, Diamond, Fire, ChessKnight,
+  Biohazard, Diamond, Fire, ChessKnight,
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
@@ -55,7 +55,7 @@ class TopMenuKnowledge extends Component {
         </Button>
         <Button component={Link} to='/dashboard/knowledge/malwares' variant={location.pathname.includes('/dashboard/knowledge/malwares') ? 'contained' : 'text'} size="small"
                 color={location.pathname.includes('/dashboard/knowledge/malwares') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
-          <Radioactive className={classes.icon} fontSize='small'/>
+          <Biohazard className={classes.icon} fontSize='small'/>
           {t('Malwares')}
         </Button>
       </div>
