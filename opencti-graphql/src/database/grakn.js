@@ -11,17 +11,19 @@ import {
   last,
   mapObjIndexed,
   values,
-  isEmpty
+  isEmpty,
+  join
 } from 'ramda';
 import moment from 'moment';
 import { offsetToCursor } from 'graphql-relay';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import conf from '../config/conf';
 import { FunctionalError } from '../config/errors';
+import pubsub from '../config/bus';
 
 const gkDateFormat = 'YYYY-MM-DDTHH:mm:ss';
-export const gkString = 'java.lang.String';
 const gkDate = 'java.time.LocalDateTime';
+const String = 'java.lang.String';
 export const now = () =>
   moment()
     .utc()
@@ -32,14 +34,16 @@ const instance = axios.create({
   timeout: conf.get('grakn:timeout')
 });
 
-export const qk = queryDef =>
-  instance({
+export const qk = queryDef => {
+  // console.error('GRAKN START QK', queryDef);
+  return instance({
     method: 'post',
     url: '/kb/grakn/graql',
     data: queryDef
   }).catch(() => {
-    console.error('GRAKN QUERY ERROR', queryDef);
+    console.error('GRAKN ERROR', queryDef);
   });
+};
 
 const attrByID = id => instance({ method: 'get', url: `${id}/attributes` });
 
@@ -130,6 +134,31 @@ export const loadAll = (
       globalCount
     };
     return { edges, pageInfo };
+  });
+};
+
+export const editInput = (input, topic) => {
+  const { id, key, value } = input;
+  const attributeDefQuery = qk(`match $x label "${key}" sub attribute; get;`);
+  return attributeDefQuery.then(attributeDefinition => {
+    // Getting the data type to create next queries correctly.
+    const type = head(attributeDefinition.data).x['data-type'];
+    // Delete all previous attributes
+    return qk(`match $m id ${id}; $m has ${key} $del; delete $del;`).then(
+      () => {
+        // Create new values
+        const creationQuery = `match $m id ${id}; insert $m ${join(
+          ' ',
+          map(val => `has ${key} ${type === String ? `"${val}"` : val}`, value)
+        )};`;
+        return qk(creationQuery).then(() =>
+          loadByID(id).then(loadedInstance => {
+            pubsub.publish(topic, { data: loadedInstance });
+            return loadedInstance;
+          })
+        );
+      }
+    );
   });
 };
 

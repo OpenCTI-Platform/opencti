@@ -9,8 +9,17 @@ export const OPENCTI_TOKEN = 'opencti_token';
 export const OPENCTI_WEB_TOKEN = 'Default';
 export const OPENCTI_ISSUER = 'OpenCTI';
 export const OPENCTI_DEFAULT_DURATION = 'P99Y';
-export const USER_ADDED_TOPIC = 'USER_ADDED_TOPIC';
-export const MALWARE_ADDED_TOPIC = 'MALWARE_ADDED_TOPIC';
+
+export const BUS_TOPICS = {
+  User: {
+    EDIT_TOPIC: 'USER_EDIT_TOPIC',
+    ADDED_TOPIC: 'USER_ADDED_TOPIC'
+  },
+  Malware: {
+    EDIT_TOPIC: 'MALWARE_EDIT_TOPIC',
+    ADDED_TOPIC: 'MALWARE_ADDED_TOPIC'
+  }
+};
 
 // Initialize the environment.
 dotenv.config();

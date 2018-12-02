@@ -48,6 +48,7 @@
     "passport-google-oauth": "^1.0.0",
     "passport-local": "^1.0.0",
     "ramda": "^0.25.0",
+    "redis": "^2.8.0",
     "rxjs": "^6.3.3",
     "uuid": "^3.3.2",
     "winston": "^3.1.0",

@@ -62,7 +62,7 @@ type MalwareEdge {
     node: Malware!
 }
 
-type AddMalwarePayload {
+type MalwarePayload {
     viewer: User
     malwareEdge: MalwareEdge
     clientMutationId: String
@@ -78,16 +78,34 @@ type Malware {
     modified: DateTime
     revoked: Boolean
 }
+
+type EditUserContext {
+    username: String!
+    focusOn: String! # Field name
+    isTyping: Boolean!
+}
+
+type MalwareEditSubscription {
+    malware: Malware # Can be null if only the context is modified
+    context: [EditUserContext]
+}
+
 input MalwareAddInput {
     name: String!
     description: String!
     clientMutationId: String
 }
 
-input MalwareEditInput {
-    id: ID!
-    key: String!
-    value: [String]!
+input EditInput {
+    id: ID! # ID of the instance to edit
+    key: String! # Field name to change
+    value: [String]! # Values to apply
+}
+
+input EditContext {
+    id: ID! # ID of the instance in edition
+    focusOn: String! # Field name
+    isTyping: Boolean!
 }
 
 ### QUERIES
@@ -103,7 +121,7 @@ type Query {
 ### SUBSCRIPTIONS
 type Subscription {
     userAdded: User
-    malwareAdded: Malware
+    malwareEdit: MalwareEditSubscription
 }
 
 ### MUTATIONS
@@ -114,8 +132,9 @@ type Mutation {
     userAdd(input: UserAddInput): User
     userDelete(id: ID!): ID
     # Malware
-    malwareAdd(input: MalwareAddInput): AddMalwarePayload
+    malwareAdd(input: MalwareAddInput): MalwarePayload
     malwareDelete(id: ID!): ID
-    malwareFieldEdit(input: MalwareEditInput): Malware
+    malwareEditField(input: EditInput): MalwarePayload
+    malwareEditContext(input: EditContext): [EditUserContext]
 }
 

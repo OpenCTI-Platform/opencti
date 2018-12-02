@@ -68,7 +68,7 @@ const extractTokenFromBearer = bearer =>
 const server = new ApolloServer({
   schema,
   async context({ req, res, connection }) {
-    if (connection) return connection.context.user; // For websocket connection.
+    if (connection) return { user: connection.context.user }; // For websocket connection.
     let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : undefined;
     token = token || extractTokenFromBearer(req.headers.authorization);
     const auth = await authentication(token);
@@ -86,8 +86,8 @@ const server = new ApolloServer({
   },
   subscriptions: {
     // https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
-    onConnect: connectionParams => ({
-      user: authentication(
+    onConnect: async connectionParams => ({
+      user: await authentication(
         extractTokenFromBearer(connectionParams.authorization)
       )
     })

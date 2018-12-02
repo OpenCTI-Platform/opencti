@@ -7,6 +7,10 @@
     "uri": "http://opencti.io:4567",
     "timeout": 20000
   },
+  "redis": {
+    "host": "127.0.0.1",
+    "port": "6379"
+  },
   "db": {
     "uri": "bolt://neo4j-community.my.domain.io:7687",
     "user": "setup your user",

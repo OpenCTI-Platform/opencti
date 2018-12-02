@@ -1,19 +1,19 @@
-import { head, isEmpty, join, map } from 'ramda';
+import {head, isEmpty, join, map} from 'ramda';
 import uuidv5 from 'uuid/v5';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
-import { sign } from 'jsonwebtoken';
+import {sign} from 'jsonwebtoken';
 import pubsub from '../config/bus';
-import { FunctionalError, LoginError } from '../config/errors';
+import {FunctionalError, LoginError} from '../config/errors';
 import conf, {
-  DEV_MODE,
-  OPENCTI_DEFAULT_DURATION,
-  OPENCTI_ISSUER,
-  OPENCTI_WEB_TOKEN,
-  ROLE_USER,
-  USER_ADDED_TOPIC
+    BUS_TOPICS,
+    DEV_MODE,
+    OPENCTI_DEFAULT_DURATION,
+    OPENCTI_ISSUER,
+    OPENCTI_WEB_TOKEN,
+    ROLE_USER
 } from '../config/conf';
-import { deleteByID, loadAll, loadByID, now, qk } from '../database/grakn';
+import {deleteByID, loadAll, loadByID, now, qk} from '../database/grakn';
 
 // Security related
 export const generateOpenCTIWebToken = email => ({
@@ -64,7 +64,7 @@ export const addUser = async user => {
                    $token isa Token has uuid "${token.uuid}"; 
                    insert (client: $user, authorization: $token) isa authorize;`).then(
       () => {
-        pubsub.publish(USER_ADDED_TOPIC, { user });
+        pubsub.publish(BUS_TOPICS.User.ADDED_TOPIC, { user });
         return user;
       }
     )
