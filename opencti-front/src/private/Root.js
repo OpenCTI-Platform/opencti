@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import ReactDocumentTitle from 'react-document-title';
 import { Route } from 'react-router-dom';
 import { QueryRenderer } from 'react-relay';
@@ -9,13 +10,13 @@ import SnackbarContent from '@material-ui/core/SnackbarContent';
 import IconButton from '@material-ui/core/IconButton';
 import CheckCircle from '@material-ui/icons/CheckCircle';
 import Close from '@material-ui/icons/Close';
-import * as PropTypes from 'prop-types';
 import environment from '../relay/environment';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
-import Malwares from './components/malwares/Malwares';
+import Malwares from './components/Malwares';
+import RootMalware from './components/malware/Root';
 
 const styles = theme => ({
   container: {
@@ -61,20 +62,39 @@ class Root extends Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, location } = this.props;
     const paddingRight = 24;
+    let topBarDisplay = true;
+    if (location.pathname.includes('/dashboard/threat_actors/')
+      || location.pathname.includes('/dashboard/sectors/')
+      || location.pathname.includes('/dashboard/intrusion_sets/')
+      || location.pathname.includes('/dashboard/campaigns/')
+      || location.pathname.includes('/dashboard/incidents/')
+      || location.pathname.includes('/dashboard/malwares/')
+      || location.pathname.includes('/dashboard/reports/')
+      || location.pathname.includes('/dashboard/identities/')
+      || location.pathname.includes('/dashboard/tools/')
+      || location.pathname.includes('/dashboard/vulnerabilities/')
+      || location.pathname.includes('/dashboard/attack_patterns/')) {
+      topBarDisplay = false;
+    }
+
     return (
-      <QueryRenderer environment={environment} query={userQuery}
-                     variables={{}} render={({ props }) => (
+      <QueryRenderer
+        environment={environment}
+        query={userQuery}
+        variables={{}}
+        render={({ props }) => (
           <ConnectedIntlProvider me={props && props.me ? props.me : null}>
             <ReactDocumentTitle title='OpenCTI - Cyber threat intelligence platform'>
               <div className={classes.root}>
-                <TopBar me={props && props.me ? props.me : null}/>
+                {topBarDisplay ? <TopBar me={props && props.me ? props.me : null}/> : ''}
                 <LeftBar/>
                 <main className={classes.content} style={{ paddingRight }}>
                   <div className={classes.toolbar}/>
                   <Route exact path='/dashboard' component={Dashboard}/>
                   <Route exact path='/dashboard/knowledge/malwares' component={Malwares}/>
+                  <Route path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props && props.me ? props.me : null}/>}/>
                 </main>
                 <Snackbar
                   anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
@@ -103,7 +123,7 @@ class Root extends Component {
               </div>
             </ReactDocumentTitle>
           </ConnectedIntlProvider>
-                     )}
+        )}
       />
     );
   }
@@ -111,6 +131,7 @@ class Root extends Component {
 
 Root.propTypes = {
   classes: PropTypes.object,
+  location: PropTypes.object,
 };
 
 export default withStyles(styles)(Root);

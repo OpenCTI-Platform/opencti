@@ -30,6 +30,8 @@ type UserEdge {
 type User {
     id: ID!
     username: String
+    firstname: String
+    lastname: String
     email: String!
     language: String
     created: DateTime
@@ -71,6 +73,7 @@ type MalwarePayload {
 type Malware {
     id: ID!
     name: String!
+    stix_label: [String]
     description: String
     created_at: DateTime
     updated_at: DateTime

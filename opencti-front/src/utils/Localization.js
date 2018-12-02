@@ -5,11 +5,15 @@ const i18n = {
       'OpenCTI - Cyber threat intelligence platform': 'OpenCTI - Plateforme d\'analyse de la cybermenace',
       // Interface
       Search: 'Rechercher',
+      'Do you want to delete this malware?': 'Souhaitez-vous supprimer ce code malveillant ?',
+      Information: 'Informations',
+      'Last reports': 'Derniers rapports',
       // Form
       Create: 'Créer',
       Update: 'Modifier',
       Delete: 'Supprimer',
       Cancel: 'Annuler',
+      Import: 'Importer',
       'This field is required': 'Ce champ est requis',
       'The value is too short': 'La valeur est trop courte',
       'The value is too long': 'La valeur est trop longue',
@@ -33,6 +37,9 @@ const i18n = {
       Vulnerabilities: 'Vulnérabilités',
       Identities: 'Identités',
       Reports: 'Rapports',
+      Overview: 'Aperçu',
+      Relationships: 'Relations',
+      Entities: 'Entités',
       // User
       'Sign in': 'S\'identifier',
       Email: 'Email',
@@ -46,6 +53,7 @@ const i18n = {
       'Creation date': 'Date de création',
       'Modification date': 'Date de modification',
       'Updated the': 'Mis à jour le',
+      Creator: 'Créateur',
       Marking: 'Marquage',
       'Killchain phases': 'Phases de killchain',
       // Statistics

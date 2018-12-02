@@ -20,7 +20,7 @@ export default {
       padding: 0,
       color: '#00bcd4',
       fontWeight: 400,
-      fontSize: 18,
+      fontSize: 22,
     },
     h2: {
       margin: '0 0 10px 0',

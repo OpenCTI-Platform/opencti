@@ -116,3 +116,7 @@ div.clearfix {
     font-size: 10px;
     font-family: Roboto, sans-serif;
 }
+
+div.markdown p {
+    margin: 0;
+}
