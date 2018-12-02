@@ -11,7 +11,8 @@ import {
   last,
   mapObjIndexed,
   values,
-  isEmpty
+  isEmpty,
+  contains,
 } from 'ramda';
 import moment from 'moment';
 import { offsetToCursor } from 'graphql-relay';
@@ -26,6 +27,8 @@ export const now = () =>
   moment()
     .utc()
     .format(gkDateFormat); // Format that accept grakn
+
+const multipleAttributes = ['stix_label'];
 
 const instance = axios.create({
   baseURL: conf.get('grakn:baseURL'),
@@ -61,7 +64,9 @@ const attrMap = (id, res, withType = false) => {
     chain(toPairs), // Convert to pairs for grouping
     groupBy(head), // Group by key
     map(pluck(1)), // Remove grouping boilerplate
-    map(data => (data.length > 1 ? data : head(data))) // Remove extra list then contains only 1 element
+    mapObjIndexed((num, key, obj) =>
+      obj[key].length === 1 && !contains(key, multipleAttributes) ? head(obj[key]): obj[key]
+    ) // Remove extra list then contains only 1 element
   )(res.data.attributes);
   return Promise.resolve(assoc('id', id, transform));
 };
