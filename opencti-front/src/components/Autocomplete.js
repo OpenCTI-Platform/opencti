@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import classNames from 'classnames';
 import Select from 'react-select';
@@ -187,6 +187,7 @@ class Autocomplete extends Component {
       },
       options,
       onInputChange,
+      onChange,
     } = this.props;
     const errorText = errors[field.name];
     const hasError = dirty && errorText !== undefined;
@@ -223,7 +224,12 @@ class Autocomplete extends Component {
             options={options}
             components={components}
             value={values[field.name]}
-            onChange={(values) => { setFieldValue(field.name, values); }}
+            onChange={(values) => {
+              setFieldValue(field.name, values);
+              if (typeof onChange === 'function') {
+                onChange(values);
+              }
+            }}
             placeholder={label}
             isMulti={true}
             openMenuOnClick={false}
@@ -251,6 +257,7 @@ Autocomplete.propTypes = {
     setFieldValue: PropTypes.func,
   }),
   onInputChange: PropTypes.func,
+  onChange: PropTypes.func,
 };
 
 export default compose(

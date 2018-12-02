@@ -71,6 +71,7 @@ type AddMalwarePayload {
 type Malware {
     id: ID!
     name: String!
+    stix_label: [String]
     description: String
     created_at: DateTime
     updated_at: DateTime
