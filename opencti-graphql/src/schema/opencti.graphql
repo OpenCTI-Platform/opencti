@@ -10,6 +10,11 @@ type PageInfo {
     globalCount: Int!
 }
 
+enum OrderingMode {
+    asc,
+    desc
+}
+
 ### User
 enum UsersOrdering {
     id,
@@ -118,7 +123,7 @@ type Query {
     users(first: Int, after: ID, orderBy: UsersOrdering, search: String): UserConnection
     # Malwares
     malware(id: String!): Malware
-    malwares(first: Int, after: ID, orderBy: MalwaresOrdering, search: String): MalwareConnection
+    malwares(first: Int, after: ID, orderBy: MalwaresOrdering, orderMode: OrderingMode, search: String): MalwareConnection
 }
 
 ### SUBSCRIPTIONS

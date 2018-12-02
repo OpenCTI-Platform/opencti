@@ -32,7 +32,7 @@ define
 
   # STIX SDO
   "name" sub attribute datatype string;
-  "alias" sub attribute datatype string; 
+  "alias" sub attribute datatype string;
   "stix_role" sub attribute datatype string;
   "objective" sub attribute datatype string;
   "goal" sub attribute datatype string;

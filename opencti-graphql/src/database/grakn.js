@@ -103,14 +103,15 @@ export const loadAll = (
   type = 'User',
   first = 25,
   after = undefined,
-  orderBy = undefined
+  orderBy = 'id',
+  orderMode = 'asc'
 ) => {
   const offset = after ? cursorToOffset(after) : 0;
   const loadCount = qk(`match $count isa ${type}; aggregate count;`).then(
     result => head(result.data)
   );
   const loadElements = qk(
-    `match $x isa ${type}; offset ${offset}; limit ${first}; get;`
+    `match $x isa ${type} has ${orderBy} $o; order by $o ${orderMode}; offset ${offset}; limit ${first}; get;`
   ).then(result =>
     Promise.all(
       map(line => attrByID(line.x['@id']).then(res => attrMap(line.x.id, res)))(
