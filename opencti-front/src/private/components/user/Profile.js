@@ -64,13 +64,9 @@ class Profile extends Component {
         return (
             <div>
                 <Paper classes={{root: this.props.classes.panel}} elevation={2}>
-                    <Typography variant='h1' gutterBottom={true}>
-                        <T>Profile</T>
-                    </Typography>
+
                     <UserForm form='user_update' ref='userForm' onSubmit={this.onUpdate.bind(this)} initialValues={initialValues}/>
-                    <Button variant='raised' color='primary' onClick={this.submitUser.bind(this)} style={{marginTop: 30}}>
-                        <T>Update</T>
-                    </Button>
+
                 </Paper>
                 <Paper classes={{root: this.props.classes.panel}} elevation={2}>
                     <Typography variant='h1' gutterBottom={true}>

@@ -30,6 +30,8 @@ type UserEdge {
 type User {
     id: ID!
     username: String
+    firstname: String
+    lastname: String
     email: String!
     language: String
     created: DateTime

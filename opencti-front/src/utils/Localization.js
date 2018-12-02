@@ -39,6 +39,7 @@ const i18n = {
       Reports: 'Rapports',
       Overview: 'Aperçu',
       Relationships: 'Relations',
+      Entities: 'Entités',
       // User
       'Sign in': 'S\'identifier',
       Email: 'Email',
