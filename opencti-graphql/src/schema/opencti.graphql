@@ -84,11 +84,10 @@ input MalwareAddInput {
     clientMutationId: String
 }
 
-#union MalwareField = String | Int
 input MalwareEditInput {
     id: ID!
     key: String!
-    value: String
+    value: [String]!
 }
 
 ### QUERIES
