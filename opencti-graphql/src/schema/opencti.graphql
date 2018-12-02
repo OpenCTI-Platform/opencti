@@ -84,11 +84,19 @@ input MalwareAddInput {
     clientMutationId: String
 }
 
+#union MalwareField = String | Int
+input MalwareEditInput {
+    id: ID!
+    key: String!
+    value: String
+}
+
 ### QUERIES
 type Query {
     me: User
     user(id: String!): User
     users(first: Int, after: ID, orderBy: UsersOrdering, search: String): UserConnection
+    # Malwares
     malware(id: String!): Malware
     malwares(first: Int, after: ID, orderBy: MalwaresOrdering, search: String): MalwareConnection
 }
@@ -109,5 +117,6 @@ type Mutation {
     # Malware
     malwareAdd(input: MalwareAddInput): AddMalwarePayload
     malwareDelete(id: ID!): ID
+    malwareFieldEdit(input: MalwareEditInput): Malware
 }
 
