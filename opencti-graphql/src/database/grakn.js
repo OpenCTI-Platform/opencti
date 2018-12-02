@@ -20,6 +20,7 @@ import conf from '../config/conf';
 import { FunctionalError } from '../config/errors';
 
 const gkDateFormat = 'YYYY-MM-DDTHH:mm:ss';
+export const gkString = 'java.lang.String';
 const gkDate = 'java.time.LocalDateTime';
 export const now = () =>
   moment()
@@ -36,21 +37,26 @@ export const qk = queryDef =>
     method: 'post',
     url: '/kb/grakn/graql',
     data: queryDef
-  }).catch(error => {
-    console.error('GRAKN QUERY ERROR', queryDef, error);
+  }).catch(() => {
+    console.error('GRAKN QUERY ERROR', queryDef);
   });
 
 const attrByID = id => instance({ method: 'get', url: `${id}/attributes` });
 
-const attrMap = (id, res) => {
+const attrMap = (id, res, withType = false) => {
   const transform = pipe(
     map(attr => {
       let transformedVal = attr.value;
-      if (attr['data-type'] === gkDate) {
+      const type = attr['data-type'];
+      if (type === gkDate) {
         // Patch for grakn LocalDate.
         transformedVal = `${moment(attr.value).format(gkDateFormat)}Z`;
       }
-      return { [attr.type.label]: transformedVal };
+      return {
+        [attr.type.label]: withType
+          ? { type, val: transformedVal }
+          : transformedVal
+      };
     }), // Extract values
     chain(toPairs), // Convert to pairs for grouping
     groupBy(head), // Group by key
@@ -72,13 +78,13 @@ export const deleteByID = id => {
 };
 
 // id must be VXXXXX
-export const loadByID = id =>
+export const loadByID = (id, withType = false) =>
   qk(`match $x id ${id}; get;`).then(
     result =>
       Promise.all(
-        map(line => attrByID(line.x['@id']).then(res => attrMap(id, res)))(
-          result.data
-        )
+        map(line =>
+          attrByID(line.x['@id']).then(res => attrMap(id, res, withType))
+        )(result.data)
       ).then(r => head(r)) // Return the unique result
   );
 
