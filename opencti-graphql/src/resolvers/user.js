@@ -9,7 +9,7 @@ import {
   login,
   setAuthenticationCookie
 } from '../domain/user';
-import pubsub from '../config/bus';
+import { pubsub } from '../database/redis';
 import { admin, anonymous, auth } from './wrapper';
 
 const userResolvers = {

@@ -1,14 +1,17 @@
-import * as redis from 'redis';
+import Redis from 'ioredis';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 import conf from '../config/conf';
 
-const client = redis.createClient({
-  host: conf.get('redis:host'),
-  port: conf.get('redis:port'),
+const redisOptions = {
+  port: conf.get('redis:port'), // Redis port
+  host: conf.get('redis:host'), // Redis host
   password: conf.get('redis:password')
+};
+
+export const pubsub = new RedisPubSub({
+  publisher: new Redis(redisOptions),
+  subscriber: new Redis(redisOptions)
 });
 
-client.on('error', err => {
-  console.log(`Error ${err}`);
-});
-
+const client = new Redis(redisOptions);
 export default client;

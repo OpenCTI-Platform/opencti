@@ -18,9 +18,9 @@ import {
 import moment from 'moment';
 import { offsetToCursor } from 'graphql-relay';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import conf from '../config/conf';
+import conf, { logger } from '../config/conf';
 import { FunctionalError } from '../config/errors';
-import pubsub from '../config/bus';
+import { pubsub } from './redis';
 
 const gkDateFormat = 'YYYY-MM-DDTHH:mm:ss';
 const gkDate = 'java.time.LocalDateTime';
@@ -37,15 +37,16 @@ const instance = axios.create({
   timeout: conf.get('grakn:timeout')
 });
 
-export const qk = queryDef =>
-  // console.error('GRAKN START QK', queryDef);
-  instance({
+export const qk = queryDef => {
+  logger.debug(`Grakn query: ${queryDef}`);
+  return instance({
     method: 'post',
     url: '/kb/grakn/graql',
     data: queryDef
   }).catch(() => {
-    console.error('GRAKN ERROR', queryDef);
+    logger.error(`Grakn query error: ${queryDef}`);
   });
+};
 
 const attrByID = id => instance({ method: 'get', url: `${id}/attributes` });
 
