@@ -15,6 +15,8 @@ const TextField = props => (
         props.onChange(value);
       }
     }}
+    classes={props.classes}
+    className={props.className}
   />
 );
 

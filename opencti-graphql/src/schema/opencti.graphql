@@ -15,6 +15,19 @@ enum OrderingMode {
     desc
 }
 
+### Edit
+input EditInput {
+    id: ID! # ID of the instance to edit
+    key: String! # Field name to change
+    value: [String]! # Values to apply
+}
+
+input EditContext {
+    id: ID! # ID of the instance in edition
+    focusOn: String! # Field name
+    isTyping: Boolean!
+}
+
 ### User
 enum UsersOrdering {
     id,
@@ -53,6 +66,12 @@ input UserLoginInput {
     password: String!
 }
 
+type EditUserContext {
+    username: String!
+    focusOn: String! # Field name
+    isTyping: Boolean!
+}
+
 ### Malware
 enum MalwaresOrdering {
     id,
@@ -87,12 +106,6 @@ type Malware {
     revoked: Boolean
 }
 
-type EditUserContext {
-    username: String!
-    focusOn: String! # Field name
-    isTyping: Boolean!
-}
-
 type MalwareEditSubscription {
     malware: Malware # Can be null if only the context is modified
     context: [EditUserContext]
@@ -104,17 +117,98 @@ input MalwareAddInput {
     clientMutationId: String
 }
 
-input EditInput {
-    id: ID! # ID of the instance to edit
-    key: String! # Field name to change
-    value: [String]! # Values to apply
+### IntrusionSets
+enum IntrusionSetsOrdering {
+    id,
+    name,
+    created,
+    modified
+}
+type IntrusionSetsConnection {
+    pageInfo: PageInfo!
+    edges: [IntrusionSetEdge]
+}
+type IntrusionSetEdge {
+    cursor: String!
+    node: IntrusionSet!
 }
 
-input EditContext {
-    id: ID! # ID of the instance in edition
-    focusOn: String! # Field name
-    isTyping: Boolean!
+type IntrusionSetPayload {
+    viewer: User
+    intrusionSetEdge: IntrusionSetEdge
+    clientMutationId: String
 }
+
+type IntrusionSet {
+    id: ID!
+    name: String!
+    stix_label: [String]
+    alias: [String]
+    description: String
+    created_at: DateTime
+    updated_at: DateTime
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+}
+
+type IntrusionSetEditSubscription {
+    intrusionSet: IntrusionSet # Can be null if only the context is modified
+    context: [EditUserContext]
+}
+
+input IntrusionSetAddInput {
+    name: String!
+    description: String!
+    clientMutationId: String
+}
+
+### Reports
+enum ReportsOrdering {
+    id,
+    name,
+    created,
+    modified
+}
+type ReportsConnection {
+    pageInfo: PageInfo!
+    edges: [ReportEdge]
+}
+type ReportEdge {
+    cursor: String!
+    node: Report!
+}
+
+type ReportPayload {
+    viewer: User
+    reportEdge: ReportEdge
+    clientMutationId: String
+}
+
+type Report {
+    id: ID!
+    name: String!
+    stix_label: [String]
+    description: String
+    created_at: DateTime
+    updated_at: DateTime
+    created: DateTime
+    modified: DateTime
+    published: DateTime
+    revoked: Boolean
+}
+
+type ReportEditSubscription {
+    intrusionSet: IntrusionSet # Can be null if only the context is modified
+    context: [EditUserContext]
+}
+
+input ReportAddInput {
+    name: String!
+    description: String!
+    clientMutationId: String
+}
+
 
 ### QUERIES
 type Query {

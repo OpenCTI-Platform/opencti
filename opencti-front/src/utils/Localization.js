@@ -20,6 +20,7 @@ const i18n = {
       'No available options': 'Aucune option disponible',
       'Create a malware': 'Créer un code malveillant',
       'Update a malware': 'Modifier un code malveillant',
+      'New alias': 'Nouvel alias',
       // Menu
       Dashboard: 'Tableau de bord',
       Knowledge: 'Connaissance',
@@ -40,6 +41,7 @@ const i18n = {
       Overview: 'Aperçu',
       Relationships: 'Relations',
       Entities: 'Entités',
+      Observables: 'Observables',
       // User
       'Sign in': 'S\'identifier',
       Email: 'Email',
@@ -48,6 +50,8 @@ const i18n = {
       Profile: 'Profil',
       Admin: 'Admin',
       // Properties
+      'Sort by': 'Trier par',
+      'Filter by': 'Filtrer par',
       Name: 'Nom',
       Description: 'Description',
       'Creation date': 'Date de création',
