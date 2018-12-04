@@ -66,7 +66,7 @@ const styles = theme => ({
 function NoOptionsMessage(props) {
   return (
     <Typography
-      color="textSecondary"
+      color='textSecondary'
       className={props.selectProps.classes.noOptionsMessage}
       {...props.innerProps}
     >
@@ -76,7 +76,7 @@ function NoOptionsMessage(props) {
 }
 
 function inputComponent({ inputRef, ...props }) {
-  return <div ref={inputRef} {...props} />;
+  return <div ref={inputRef}  {...props} />;
 }
 
 function Control(props) {
@@ -86,6 +86,7 @@ function Control(props) {
       InputProps={{
         inputComponent,
         inputProps: {
+          disabled: props.isDisabled,
           className: props.selectProps.classes.input,
           inputRef: props.innerRef,
           children: props.children,
@@ -146,6 +147,7 @@ function MultiValue(props) {
         [props.selectProps.classes.chipFocused]: props.isFocused,
       })}
       onDelete={props.removeProps.onClick}
+
       deleteIcon={<CancelIcon {...props.removeProps} />}
     />
   );
@@ -184,6 +186,7 @@ class Autocomplete extends Component {
         errors,
         values,
         setFieldValue,
+        isSubmitting,
       },
       options,
       onInputChange,
@@ -208,6 +211,7 @@ class Autocomplete extends Component {
           fullWidth
           error={hasError}
           required={required}
+          disabled={isSubmitting}
           style={{ marginTop: '20px' }}
         >
           <Select
@@ -215,7 +219,7 @@ class Autocomplete extends Component {
             styles={selectStyles}
             textFieldProps={{
               onChange: onInputChange,
-              label: values[field.name].length > 0 ? label : ' ',
+              label: values[field.name] ? values[field.name].length > 0 ? label : ' ' : ' ',
               error: hasError,
               InputLabelProps: {
                 shrink: true,
@@ -233,6 +237,7 @@ class Autocomplete extends Component {
             placeholder={label}
             isMulti={true}
             openMenuOnClick={false}
+            isDisabled={isSubmitting}
             noOptionsMessage={() => t('No available options')}
           />
           {hasError && <FormHelperText>{errorText}</FormHelperText>}

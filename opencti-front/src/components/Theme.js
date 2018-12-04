@@ -7,7 +7,7 @@ export default {
     secondary: { main: '#ff3d00' },
     header: { background: '#000000', text: '#ffffff' },
     nav: { background: '#1a1a1a' },
-    navAlt: { background: '#14262c' },
+    navAlt: { background: '#14262c', backgroundHeader: '#2d4b5b' },
     navBottom: { background: '#0f181f' },
     paper: { background: '#303a3d', disabled: '#181f22' },
     field: { background: '#265058' },

@@ -6,7 +6,6 @@ import graphql from 'babel-plugin-relay/macro';
 import PieChart from 'recharts/lib/chart/PieChart';
 import Pie from 'recharts/lib/polar/Pie';
 import Cell from 'recharts/lib/component/Cell';
-import Sector from 'recharts/lib/shape/Sector';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
