@@ -5,6 +5,7 @@
   "author": "Luatix",
   "license": "MIT",
   "scripts": {
+    "build": "babel-node -d ./build ./src -s",
     "start": "babel-node ./src/server.js",
     "migrate": "babel-node ./src/database/migration.js",
     "addMigration": "migrate create",
@@ -14,7 +15,7 @@
     "clean": "babel-node ./src/database/clean.js"
   },
   "dependencies": {
-    "@babel/core": "^7.1.2",
+    "@babel/core": "^7.2.0",
     "@godaddy/terminus": "^4.1.0",
     "apollo-errors": "^1.9.0",
     "apollo-server-express": "^2.1.0",
@@ -43,7 +44,6 @@
     "migrate": "^1.6.1",
     "moment": "^2.22.2",
     "nconf": "^0.10.0",
-    "neo4j-driver": "^1.6.3",
     "passport": "^0.4.0",
     "passport-facebook": "^2.1.1",
     "passport-github": "^1.1.0",
@@ -56,8 +56,8 @@
     "winston-daily-rotate-file": "^3.3.3"
   },
   "devDependencies": {
-    "@babel/node": "^7.0.0",
-    "@babel/preset-env": "^7.1.0",
+    "@babel/node": "^7.2.0",
+    "@babel/preset-env": "^7.2.0",
     "babel-core": "7.0.0-bridge.0",
     "babel-jest": "^23.6.0",
     "eslint": "^5.7.0",
