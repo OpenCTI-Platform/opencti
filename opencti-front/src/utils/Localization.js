@@ -11,6 +11,7 @@ const i18n = {
       // Form
       Create: 'Créer',
       Update: 'Modifier',
+      Export: 'Exporter',
       Delete: 'Supprimer',
       Cancel: 'Annuler',
       Import: 'Importer',

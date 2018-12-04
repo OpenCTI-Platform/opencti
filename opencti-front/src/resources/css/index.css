@@ -3,18 +3,6 @@
     font-family: 'Roboto', sans-serif;
 }
 
-html {
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-body, #root {
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-}
-
 :focus {
     outline: 0;
 }

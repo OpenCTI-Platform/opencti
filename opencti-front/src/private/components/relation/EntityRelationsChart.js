@@ -32,7 +32,7 @@ const colors = {
   URL: '#FF9800',
 };
 
-class EntityObservablesChartComponent extends Component {
+class EntityRelationsChartComponent extends Component {
   constructor(props) {
     super(props);
     this.renderLabel = this.renderLabel.bind(this);
@@ -100,16 +100,16 @@ class EntityObservablesChartComponent extends Component {
   }
 }
 
-EntityObservablesChartComponent.propTypes = {
+EntityRelationsChartComponent.propTypes = {
   observablesStats: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const EntityObservablesChart = createFragmentContainer(EntityObservablesChartComponent, {
+const EntityRelationsChart = createFragmentContainer(EntityRelationsChartComponent, {
   observablesStats: graphql`
-      fragment EntityObservablesChart_observablesStats on Malware {
+      fragment EntityRelationsChart_observablesStats on Malware {
           id,
           name,
           description,
@@ -122,4 +122,4 @@ const EntityObservablesChart = createFragmentContainer(EntityObservablesChartCom
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityObservablesChart);
+)(EntityRelationsChart);
