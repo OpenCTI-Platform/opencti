@@ -101,6 +101,19 @@ input MarkingDefinitionAddInput {
     clientMutationId: String
 }
 
+### Kill Chaine Phases
+type KillChainPhaseConnection {
+    pageInfo: PageInfo!
+    edges: [KillChainPhaseEdge]
+}
+type KillChainPhaseEdge {
+    cursor: String!
+    node: KillChainPhase!
+}
+type KillChainPhase {
+    kill_chain_name: String
+}
+
 ### Malware
 enum MalwaresOrdering {
     id,
@@ -126,7 +139,8 @@ type Malware {
     created: DateTime
     modified: DateTime
     revoked: Boolean
-    markingDefinition: MarkingDefinitionConnection
+    markingDefinitions: MarkingDefinitionConnection
+    killChainPhases: KillChainPhaseConnection
 }
 type MalwareEditSubscription {
     malware: Malware # Can be null if only the context is modified

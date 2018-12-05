@@ -22,6 +22,7 @@ import conf, { logger } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { pubsub } from './redis';
 
+// Global variables
 const gkDateFormat = 'YYYY-MM-DDTHH:mm:ss';
 const gkDate = 'java.time.LocalDateTime';
 const String = 'java.lang.String';
@@ -30,26 +31,29 @@ export const now = () =>
     .utc()
     .format(gkDateFormat); // Format that accept grakn
 
+// Attributes key that can contains multiple values.
 const multipleAttributes = ['stix_label'];
 
+// Instance of Axios to make Grakn API Calls.
 const instance = axios.create({
   baseURL: conf.get('grakn:baseURL'),
   timeout: conf.get('grakn:timeout')
 });
 
-export const qk = queryDef => {
-  logger.debug(`Grakn query: ${queryDef}`);
-  return instance({
-    method: 'post',
-    url: '/kb/grakn/graql',
-    data: queryDef
-  }).catch(() => {
-    logger.error(`Grakn query error: ${queryDef}`);
-  });
-};
-
+/**
+ * API Grakn call to get all attributes for an instance.
+ * @param id
+ * @returns {AxiosPromise}
+ */
 const attrByID = id => instance({ method: 'get', url: `${id}/attributes` });
 
+/**
+ * Mapping function to generate a valid json objects base on Grakn response.
+ * @param id
+ * @param res
+ * @param withType
+ * @returns {Promise<any>}
+ */
 const attrMap = (id, res, withType = false) => {
   const transform = pipe(
     map(attr => {
@@ -77,6 +81,53 @@ const attrMap = (id, res, withType = false) => {
   return Promise.resolve(assoc('id', id, transform));
 };
 
+/**
+ * Basic grakn query function
+ * @param queryDef
+ * @returns {Promise<AxiosResponse<any> | never>}
+ */
+export const qk = queryDef => {
+  logger.debug(`Grakn query: ${queryDef}`);
+  return instance({
+    method: 'post',
+    url: '/kb/grakn/graql',
+    data: queryDef
+  }).catch(() => {
+    logger.error(`Grakn query error: ${queryDef}`);
+  });
+};
+
+/**
+ * Grakn query that generate json objects
+ * @param queryDef the query to process
+ * @param key the instance key to get id from.
+ * @returns {Promise<AxiosResponse<any> | never | never>}
+ */
+export const qkObj = (queryDef, key = 'x') =>
+  qk(queryDef).then(result => {
+    if (result && result.data) {
+      return Promise.all(
+        map(line =>
+          attrByID(line[key]['@id']).then(res => attrMap(line[key].id, res))
+        )(result.data)
+      );
+    }
+    return Promise.resolve([]);
+  });
+
+/**
+ * Grakn query that fetch unique value like attribute count.
+ * @param queryDef
+ * @returns {Promise<AxiosResponse<any> | never | never>}
+ */
+export const qkSingleValue = queryDef =>
+  qk(queryDef).then(result => (result.length > 0 ? head(result.data) : null));
+
+/**
+ * Grakn generic function to delete an instance.
+ * @param id
+ * @returns {Promise<AxiosResponse<any> | never | never>}
+ */
 export const deleteByID = id => {
   const delUser = qk(`match $x id ${id}; delete $x;`);
   return delUser.then(result => {
@@ -88,7 +139,12 @@ export const deleteByID = id => {
   });
 };
 
-// id must be VXXXXX
+/**
+ * Load any grakn instance with internal grakn ID.
+ * @param id
+ * @param withType
+ * @returns {Promise<any[] | never>}
+ */
 export const loadByID = (id, withType = false) =>
   qk(`match $x id ${id}; get;`).then(
     result =>
@@ -99,6 +155,60 @@ export const loadByID = (id, withType = false) =>
       ).then(r => head(r)) // Return the unique result
   );
 
+/**
+ * Pure building of pagination expected format.
+ * @param first
+ * @param offset
+ * @param instances
+ * @param count
+ * @returns {{edges: *, pageInfo: *}}
+ */
+const buildPagination = (first, offset, instances, count) => {
+  const edges = pipe(
+    mapObjIndexed((record, key) => {
+      const node = record;
+      const nodeOffset = offset + parseInt(key, 10) + 1;
+      return { node, cursor: offsetToCursor(nodeOffset) };
+    }),
+    values
+  )(instances);
+  const hasNextPage = first + offset < count;
+  const hasPreviousPage = offset > 0;
+  const startCursor = edges.length > 0 ? head(edges).cursor : null;
+  const endCursor = edges.length > 0 ? last(edges).cursor : null;
+  const pageInfo = {
+    startCursor,
+    endCursor,
+    hasNextPage,
+    hasPreviousPage,
+    globalCount: count
+  };
+  return { edges, pageInfo };
+};
+
+/**
+ * Grakn generic pagination query.
+ * @param query
+ * @param options
+ * @returns Promise
+ */
+export const paginate = (query, options) => {
+  const { first = 25, after, orderBy = 'stix_id', orderMode = 'asc' } = options;
+  const offset = after ? cursorToOffset(after) : 0;
+  const instanceKey = /match\s\$(\w+)\s/i.exec(query)[1]; // We need to resolve the key instance used in query.
+  const count = qkSingleValue(`${query}; aggregate count;`);
+  const elements = qkObj(
+    `${query}; $${instanceKey} has ${orderBy} $o; order by $o ${orderMode}; offset ${offset}; limit ${first}; get;`,
+    instanceKey
+  );
+  return Promise.all([count, elements]).then(data => {
+    const globalCount = data ? head(data) : 0;
+    const instances = data ? last(data) : [];
+    return buildPagination(first, offset, instances, globalCount);
+  });
+};
+
+/* @Deprecated - use paginate */
 export const loadAll = (
   type = 'User',
   first = 25,
@@ -145,6 +255,12 @@ export const loadAll = (
   });
 };
 
+/**
+ * Generic modified of a single instance attribute.
+ * @param input
+ * @param topic
+ * @returns {Promise<any[] | never>}
+ */
 export const editInput = (input, topic) => {
   const { id, key, value } = input;
   const attributeDefQuery = qk(`match $x label "${key}" sub attribute; get;`);
