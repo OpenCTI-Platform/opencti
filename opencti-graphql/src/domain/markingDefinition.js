@@ -13,7 +13,7 @@ import { BUS_TOPICS } from '../config/conf';
 export const findAll = async (
   first = 25,
   after = undefined,
-  orderBy = 'name',
+  orderBy = 'definition',
   orderMode = 'asc'
 ) => loadAll('Marking-Definition', first, after, orderBy, orderMode);
 
