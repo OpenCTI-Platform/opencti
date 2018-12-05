@@ -254,7 +254,7 @@ type Mutation {
     # Malware
     malwareAdd(input: MalwareAddInput): MalwarePayload
     malwareDelete(id: ID!): ID
-    malwareEditField(input: EditInput): MalwarePayload
+    malwareEditField(input: EditInput): Malware
     malwareEditContext(input: EditContext): [EditUserContext]
 }
 
