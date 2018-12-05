@@ -2,20 +2,15 @@ import { head } from 'ramda';
 import { pubsub } from '../database/redis';
 import {
   deleteByID,
-  loadAll,
   loadByID,
   qk,
   now,
-  editInput
+  editInput,
+  paginate
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = async (
-  first = 25,
-  after = undefined,
-  orderBy = 'name',
-  orderMode = 'asc'
-) => loadAll('IntrusionSet', first, after, orderBy, orderMode);
+export const findAll = args => paginate('match $m isa IntrusionSet', args);
 
 export const findMarkingDefinition = intrusionSet => {
   console.log('findMarkingDefinition', intrusionSet);

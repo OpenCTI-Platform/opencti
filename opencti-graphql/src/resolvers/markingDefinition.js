@@ -14,9 +14,7 @@ import { admin, auth } from './wrapper';
 const markingDefinitionResolvers = {
   Query: {
     markingDefinition: auth((_, { id }) => findById(id)),
-    markingDefinitions: auth((_, { first, after, orderBy, orderMode }) =>
-      findAll(first, after, orderBy, orderMode)
-    )
+    markingDefinitions: auth((_, args) => findAll(args))
   },
   Mutation: {
     markingDefinitionAdd: admin((_, { input }, { user }) =>

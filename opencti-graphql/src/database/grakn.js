@@ -208,53 +208,6 @@ export const paginate = (query, options) => {
   });
 };
 
-/* @Deprecated - use paginate */
-export const loadAll = (
-  type = 'User',
-  first = 25,
-  after = undefined,
-  orderBy = 'name',
-  orderMode = 'asc'
-) => {
-  const offset = after ? cursorToOffset(after) : 0;
-  const loadCount = qk(`match $count isa ${type}; aggregate count;`).then(
-    result => head(result.data)
-  );
-  const loadElements = qk(
-    `match $x isa ${type} has ${orderBy} $o; order by $o ${orderMode}; offset ${offset}; limit ${first}; get;`
-  ).then(result =>
-    Promise.all(
-      map(line => attrByID(line.x['@id']).then(res => attrMap(line.x.id, res)))(
-        result.data
-      )
-    )
-  );
-  return Promise.all([loadCount, loadElements]).then(mergedData => {
-    const globalCount = head(mergedData);
-    const instances = last(mergedData);
-    const edges = pipe(
-      mapObjIndexed((record, key) => {
-        const node = record;
-        const nodeOffset = offset + parseInt(key, 10) + 1;
-        return { node, cursor: offsetToCursor(nodeOffset) };
-      }),
-      values
-    )(instances);
-    const hasNextPage = first + offset < globalCount;
-    const hasPreviousPage = offset > 0;
-    const startCursor = head(edges).cursor;
-    const endCursor = last(edges).cursor;
-    const pageInfo = {
-      startCursor,
-      endCursor,
-      hasNextPage,
-      hasPreviousPage,
-      globalCount
-    };
-    return { edges, pageInfo };
-  });
-};
-
 /**
  * Generic modified of a single instance attribute.
  * @param input

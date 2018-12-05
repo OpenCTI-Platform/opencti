@@ -13,7 +13,7 @@ import conf, {
   OPENCTI_WEB_TOKEN,
   ROLE_USER
 } from '../config/conf';
-import { deleteByID, loadAll, loadByID, now, qk } from '../database/grakn';
+import { deleteByID, loadByID, now, paginate, qk } from '../database/grakn';
 
 // Security related
 export const generateOpenCTIWebToken = email => ({
@@ -118,8 +118,10 @@ export const login = (email, password) => {
   });
 };
 
-export const findAll = (first = 25, after = undefined, orderBy = 'id') =>
-  loadAll('User', first, after, orderBy);
+export const findAll = args => {
+  const { first, after, orderBy = 'email' } = args;
+  return paginate('match $m isa User', { first, after, orderBy });
+};
 
 export const findById = userId => loadByID(userId);
 

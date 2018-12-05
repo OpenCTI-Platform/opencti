@@ -33,7 +33,7 @@ type EditUserContext {
 
 ### User
 enum UsersOrdering {
-    id,
+    created,
     email
 }
 enum UserRole {
@@ -71,7 +71,7 @@ input UserLoginInput {
 
 ### Marking definitions
 enum MarkingDefinitionsOrdering {
-    id,
+    stix_id,
     definition_type,
     definition
 }
@@ -113,7 +113,7 @@ type KillChainPhase {
 
 ### Malware
 enum MalwaresOrdering {
-    id,
+    stix_id,
     name,
     created,
     modified
@@ -153,7 +153,7 @@ input MalwareAddInput {
 
 ### IntrusionSets
 enum IntrusionSetsOrdering {
-    id,
+    stix_id,
     name,
     created,
     modified
@@ -190,7 +190,7 @@ input IntrusionSetAddInput {
 
 ### Reports
 enum ReportsOrdering {
-    id,
+    stix_id,
     name,
     created,
     modified

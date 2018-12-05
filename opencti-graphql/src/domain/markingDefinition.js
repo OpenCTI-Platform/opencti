@@ -2,20 +2,16 @@ import { head } from 'ramda';
 import { pubsub } from '../database/redis';
 import {
   deleteByID,
-  loadAll,
   loadByID,
   qk,
   now,
-  editInput
+  editInput,
+  paginate
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = async (
-  first = 25,
-  after = undefined,
-  orderBy = 'stix_id',
-  orderMode = 'asc'
-) => loadAll('Marking-Definition', first, after, orderBy, orderMode);
+export const findAll = args =>
+  paginate('match $m isa Marking-Definition', args);
 
 export const findById = markingDefinitionId => loadByID(markingDefinitionId);
 
