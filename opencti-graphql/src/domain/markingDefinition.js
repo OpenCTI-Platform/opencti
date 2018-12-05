@@ -1,5 +1,4 @@
 import { head } from 'ramda';
-import { offsetToCursor } from 'graphql-relay/lib/connection/arrayconnection';
 import { pubsub } from '../database/redis';
 import {
   deleteByID,
@@ -14,8 +13,8 @@ import { BUS_TOPICS } from '../config/conf';
 export const findAll = async (
   first = 25,
   after = undefined,
-  orderBy = 'stix_id',
-  orderMode = 'name'
+  orderBy = 'name',
+  orderMode = 'asc'
 ) => loadAll('MarkingDefinition', first, after, orderBy, orderMode);
 
 export const findById = markingDefinitionId => loadByID(markingDefinitionId);
@@ -23,11 +22,10 @@ export const findById = markingDefinitionId => loadByID(markingDefinitionId);
 export const addMarkingDefinition = async (user, markingDefinition) => {
   const createMarkingDefinition = qk(`insert $markingDefinition isa MarkingDefinition 
     has type "markingDefinition";
-    $markingDefinition has name "${markingDefinition.name}";
-    $markingDefinition has description "${markingDefinition.description}";
+    $markingDefinition has definition_type "${markingDefinition.name}";
+    $markingDefinition has definition "${markingDefinition.description}";
     $markingDefinition has created ${now()};
     $markingDefinition has modified ${now()};
-    $markingDefinition has revoked false;
   `);
   return createMarkingDefinition.then(result => {
     const { data } = result;
@@ -37,10 +35,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
           markingDefinitionCreated
         });
         return {
-          viewer: user,
-          clientMutationId: markingDefinition.clientMutationId,
           markingDefinitionEdge: {
-            cursor: offsetToCursor(0),
             node: markingDefinitionCreated
           }
         };
@@ -66,4 +61,10 @@ export const markingDefinitionEditContext = (user, input) => {
 };
 
 export const markingDefinitionEditField = (user, input) =>
-  editInput(input, BUS_TOPICS.MarkingDefinition.EDIT_TOPIC);
+  editInput(input, BUS_TOPICS.MarkingDefinition.EDIT_TOPIC).then(
+    markingDefinition => ({
+      markingDefinitionEdge: {
+        node: markingDefinition
+      }
+    })
+  );

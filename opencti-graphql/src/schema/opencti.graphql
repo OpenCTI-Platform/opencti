@@ -9,7 +9,6 @@ type PageInfo {
     hasPreviousPage: Boolean!,
     globalCount: Int!
 }
-
 enum OrderingMode {
     asc,
     desc
@@ -21,9 +20,13 @@ input EditInput {
     key: String! # Field name to change
     value: [String]! # Values to apply
 }
-
 input EditContext {
     id: ID! # ID of the instance in edition
+    focusOn: String! # Field name
+    isTyping: Boolean!
+}
+type EditUserContext {
+    username: String!
     focusOn: String! # Field name
     isTyping: Boolean!
 }
@@ -37,7 +40,6 @@ enum UserRole {
     ROLE_ADMIN
     ROLE_USER
 }
-
 type UserConnection {
     pageInfo: PageInfo!
     edges: [UserEdge]
@@ -61,7 +63,6 @@ type EditUserContext {
     focusOn: String! # Field name
     isTyping: Boolean!
 }
-
 input UserAddInput {
     username: String!
     password: String!
@@ -79,7 +80,6 @@ enum MarkingDefinitionsOrdering {
     definition_type,
     definition
 }
-
 type MarkingDefinitionConnection {
     pageInfo: PageInfo!
     edges: [MarkingDefinitionEdge]
@@ -89,9 +89,7 @@ type MarkingDefinitionEdge {
     node: MarkingDefinition!
 }
 type MarkingDefinitionPayload {
-    viewer: User
     markingDefinitionEdge: MarkingDefinitionEdge
-    clientMutationId: String
 }
 type MarkingDefinition {
     id: ID!
@@ -102,7 +100,6 @@ type MarkingDefinitionSubscription {
     markingDefinition: MarkingDefinition # Can be null if only the context is modified
     context: [EditUserContext]
 }
-
 input MarkingDefinitionAddInput {
     definition_type: String!
     definition: String!
@@ -116,7 +113,6 @@ enum MalwaresOrdering {
     created,
     modified
 }
-
 type MalwareConnection {
     pageInfo: PageInfo!
     edges: [MalwareEdge]
@@ -126,9 +122,7 @@ type MalwareEdge {
     node: Malware!
 }
 type MalwarePayload {
-    viewer: User
     malwareEdge: MalwareEdge
-    clientMutationId: String
 }
 type Malware {
     id: ID!
@@ -146,10 +140,11 @@ type MalwareEditSubscription {
     malware: Malware # Can be null if only the context is modified
     context: [EditUserContext]
 }
-
 input MalwareAddInput {
     name: String!
     description: String!
+    marking_definitions: [String]
+    killchain_phases: [String]
     clientMutationId: String
 }
 
@@ -169,9 +164,7 @@ type IntrusionSetEdge {
     node: IntrusionSet!
 }
 type IntrusionSetPayload {
-    viewer: User
     intrusionSetEdge: IntrusionSetEdge
-    clientMutationId: String
 }
 type IntrusionSet {
     id: ID!
@@ -189,7 +182,6 @@ type IntrusionSetEditSubscription {
     intrusionSet: IntrusionSet # Can be null if only the context is modified
     context: [EditUserContext]
 }
-
 input IntrusionSetAddInput {
     name: String!
     description: String!
@@ -203,7 +195,6 @@ enum ReportsOrdering {
     created,
     modified
 }
-
 type ReportsConnection {
     pageInfo: PageInfo!
     edges: [ReportEdge]
@@ -213,9 +204,7 @@ type ReportEdge {
     node: Report!
 }
 type ReportPayload {
-    viewer: User
     reportEdge: ReportEdge
-    clientMutationId: String
 }
 type Report {
     id: ID!
@@ -233,7 +222,6 @@ type ReportEditSubscription {
     intrusionSet: IntrusionSet # Can be null if only the context is modified
     context: [EditUserContext]
 }
-
 input ReportAddInput {
     name: String!
     description: String!
@@ -272,9 +260,9 @@ type Mutation {
     markingDefinitionEditField(input: EditInput): MarkingDefinition
     markingDefinitionEditContext(input: EditContext): [EditUserContext]
     # Malware
-    malwareAdd(input: MalwareAddInput): MalwarePayload
     malwareDelete(id: ID!): ID
-    malwareEditField(input: EditInput): Malware
+    malwareAdd(input: MalwareAddInput): MalwarePayload
+    malwareEditField(input: EditInput): MalwarePayload
     malwareEditContext(input: EditContext): [EditUserContext]
 }
 
