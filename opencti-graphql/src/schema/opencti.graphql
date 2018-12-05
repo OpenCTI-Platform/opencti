@@ -37,6 +37,7 @@ enum UserRole {
     ROLE_ADMIN
     ROLE_USER
 }
+
 type UserConnection {
     pageInfo: PageInfo!
     edges: [UserEdge]
@@ -55,11 +56,10 @@ type User {
     created: DateTime
     grant: [String]
 }
-
-type MarkingDefinition {
-    id: ID!
-    definition: String
-    definition_type: String
+type EditUserContext {
+    username: String!
+    focusOn: String! # Field name
+    isTyping: Boolean!
 }
 
 input UserAddInput {
@@ -73,26 +73,11 @@ input UserLoginInput {
     password: String!
 }
 
-type EditUserContext {
-    username: String!
-    focusOn: String! # Field name
-    isTyping: Boolean!
-}
-
-### Malware
-enum MalwaresOrdering {
+### Marking definitions
+enum MarkingDefinitionsOrdering {
     id,
-    name,
-    created,
-    modified
-}
-type MalwareConnection {
-    pageInfo: PageInfo!
-    edges: [MalwareEdge]
-}
-type MalwareEdge {
-    cursor: String!
-    node: Malware!
+    definition_type,
+    definition
 }
 
 type MarkingDefinitionConnection {
@@ -103,14 +88,48 @@ type MarkingDefinitionEdge {
     cursor: String!
     node: MarkingDefinition!
 }
+type MarkingDefinitionPayload {
+    viewer: User
+    markingDefinitionEdge: MarkingDefinitionEdge
+    clientMutationId: String
+}
+type MarkingDefinition {
+    id: ID!
+    definition_type: String!
+    definition: String
+}
+type MarkingDefinitionSubscription {
+    markingDefinition: MarkingDefinition # Can be null if only the context is modified
+    context: [EditUserContext]
+}
 
+input MarkingDefinitionAddInput {
+    definition_type: String!
+    definition: String!
+    clientMutationId: String
+}
 
+### Malware
+enum MalwaresOrdering {
+    id,
+    name,
+    created,
+    modified
+}
+
+type MalwareConnection {
+    pageInfo: PageInfo!
+    edges: [MalwareEdge]
+}
+type MalwareEdge {
+    cursor: String!
+    node: Malware!
+}
 type MalwarePayload {
     viewer: User
     malwareEdge: MalwareEdge
     clientMutationId: String
 }
-
 type Malware {
     id: ID!
     name: String!
@@ -123,7 +142,6 @@ type Malware {
     revoked: Boolean
     markingDefinition: MarkingDefinitionConnection
 }
-
 type MalwareEditSubscription {
     malware: Malware # Can be null if only the context is modified
     context: [EditUserContext]
@@ -150,13 +168,11 @@ type IntrusionSetEdge {
     cursor: String!
     node: IntrusionSet!
 }
-
 type IntrusionSetPayload {
     viewer: User
     intrusionSetEdge: IntrusionSetEdge
     clientMutationId: String
 }
-
 type IntrusionSet {
     id: ID!
     name: String!
@@ -169,7 +185,6 @@ type IntrusionSet {
     modified: DateTime
     revoked: Boolean
 }
-
 type IntrusionSetEditSubscription {
     intrusionSet: IntrusionSet # Can be null if only the context is modified
     context: [EditUserContext]
@@ -188,6 +203,7 @@ enum ReportsOrdering {
     created,
     modified
 }
+
 type ReportsConnection {
     pageInfo: PageInfo!
     edges: [ReportEdge]
@@ -196,13 +212,11 @@ type ReportEdge {
     cursor: String!
     node: Report!
 }
-
 type ReportPayload {
     viewer: User
     reportEdge: ReportEdge
     clientMutationId: String
 }
-
 type Report {
     id: ID!
     name: String!
@@ -215,7 +229,6 @@ type Report {
     published: DateTime
     revoked: Boolean
 }
-
 type ReportEditSubscription {
     intrusionSet: IntrusionSet # Can be null if only the context is modified
     context: [EditUserContext]
@@ -227,12 +240,14 @@ input ReportAddInput {
     clientMutationId: String
 }
 
-
 ### QUERIES
 type Query {
     me: User
     user(id: String!): User
     users(first: Int, after: ID, orderBy: UsersOrdering, search: String): UserConnection
+    # MarkingDefinitions
+    markingDefinition(id: String!): MarkingDefinition
+    markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, search: String): MarkingDefinitionConnection
     # Malwares
     malware(id: String!): Malware
     malwares(first: Int, after: ID, orderBy: MalwaresOrdering, orderMode: OrderingMode, search: String): MalwareConnection
@@ -251,6 +266,11 @@ type Mutation {
     # User
     userAdd(input: UserAddInput): User
     userDelete(id: ID!): ID
+    # MarkingDefinition
+    markingDefinitionAdd(input: MalwareAddInput): MarkingDefinitionPayload
+    markingDefinitionDelete(id: ID!): ID
+    markingDefinitionEditField(input: EditInput): MarkingDefinition
+    markingDefinitionEditContext(input: EditContext): [EditUserContext]
     # Malware
     malwareAdd(input: MalwareAddInput): MalwarePayload
     malwareDelete(id: ID!): ID

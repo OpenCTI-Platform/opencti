@@ -5,7 +5,7 @@
   "author": "Luatix",
   "license": "MIT",
   "scripts": {
-    "build": "babel-node -d ./build ./src -s",
+    "build": "babel-node -d ./build ./src",
     "start": "babel-node ./src/server.js",
     "migrate": "babel-node ./src/database/migration.js",
     "addMigration": "migrate create",
