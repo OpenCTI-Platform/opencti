@@ -16,7 +16,7 @@ const resolvers = mergeResolvers([
   globalResolvers,
   userResolvers,
   markingDefinitionResolvers,
-  malwareResolvers,
+  malwareResolvers
 ]);
 
 const schema = makeExecutableSchema({
