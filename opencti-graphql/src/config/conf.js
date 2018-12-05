@@ -41,14 +41,26 @@ nconf.add('argv', {
   e: {
     alias: 'env',
     describe: 'Execution environment'
+  },
+  c: {
+    alias: 'conf',
+    describe: 'Configuration file'
   }
 });
 
+// eslint-disable-next-line
+console.log(`🚀 OpenCTI initialization`);
 // Priority to command line parameter and fallback to DEFAULT_ENV
 const DEFAULT_ENV = 'production';
+const DEFAULT_CONF_PATH = './config/';
 const environment = nconf.get('env') || nconf.get('NODE_ENV') || DEFAULT_ENV;
+console.log(`🚀 OpenCTI starting in ${environment} mode`);
+const confPath = nconf.get('conf') || DEFAULT_CONF_PATH;
 export const DEV_MODE = environment !== 'production';
-nconf.file(environment, `./config/${environment.toLowerCase()}.json`);
+const configurationFile = `${confPath}${environment.toLowerCase()}.json`;
+// eslint-disable-next-line
+console.log(`🚀 OpenCTI configured with ${configurationFile} file`);
+nconf.file(environment, configurationFile);
 nconf.file('default', './config/default.json');
 
 // Setup logger
@@ -77,5 +89,6 @@ if (DEV_MODE) {
   );
 }
 
-logger.info(`🚀 OpenCTI started in ${environment} mode`);
+// eslint-disable-next-line
+console.log(`🚀 OpenCTI started`);
 export default nconf;

@@ -1,5 +1,7 @@
 .idea
 .env
+build
+dist
 node_modules
 config/development.json
 config/test.json

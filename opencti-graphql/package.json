@@ -5,8 +5,9 @@
   "author": "Luatix",
   "license": "MIT",
   "scripts": {
-    "build": "babel-node -d ./build ./src",
+    "build": "babel --out-dir ./dist ./src && pkg package.json --output ./build/opencti-api",
     "start": "babel-node ./src/server.js",
+    "serv": "node dist/server.js",
     "migrate": "babel-node ./src/database/migration.js",
     "addMigration": "migrate create",
     "lint": "eslint .",
@@ -14,8 +15,13 @@
     "load": "babel-node ./src/database/loader.js",
     "clean": "babel-node ./src/database/clean.js"
   },
+  "bin": "./dist/server.js",
+  "pkg": {
+    "scripts": "dist/**/*.js"
+  },
   "dependencies": {
     "@babel/core": "^7.2.0",
+    "@babel/runtime": "^7.2.0",
     "@godaddy/terminus": "^4.1.0",
     "apollo-errors": "^1.9.0",
     "apollo-server-express": "^2.1.0",
@@ -56,7 +62,9 @@
     "winston-daily-rotate-file": "^3.3.3"
   },
   "devDependencies": {
+    "@babel/cli": "^7.2.0",
     "@babel/node": "^7.2.0",
+    "@babel/plugin-transform-runtime": "^7.2.0",
     "@babel/preset-env": "^7.2.0",
     "babel-core": "7.0.0-bridge.0",
     "babel-jest": "^23.6.0",
@@ -67,7 +75,7 @@
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-prettier": "^3.0.0",
     "jest": "^23.6.0",
-    "prettier": "^1.14.3",
-    "regenerator-runtime": "^0.12.1"
+    "pkg": "^4.3.5",
+    "prettier": "^1.14.3"
   }
 }
