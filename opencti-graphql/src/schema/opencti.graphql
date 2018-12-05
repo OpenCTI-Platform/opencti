@@ -100,9 +100,6 @@ type MarkingDefinitionEdge {
     cursor: String!
     node: MarkingDefinition!
 }
-type MalwarePayload {
-    malwareEdge: MalwareEdge
-}
 type Malware {
     id: ID!
     name: String!
@@ -236,8 +233,8 @@ type Mutation {
     userDelete(id: ID!): ID
     # Malware
     malwareDelete(id: ID!): ID
-    malwareAdd(input: MalwareAddInput): MalwarePayload
-    malwareEditField(input: EditInput): MalwarePayload
+    malwareAdd(input: MalwareAddInput): Malware
+    malwareEditField(input: EditInput): Malware
     malwareEditContext(input: EditContext): [EditUserContext]
 }
 
