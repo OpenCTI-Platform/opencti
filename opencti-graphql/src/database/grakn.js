@@ -121,7 +121,9 @@ export const qkObj = (queryDef, key = 'x') =>
  * @returns {Promise<AxiosResponse<any> | never | never>}
  */
 export const qkSingleValue = queryDef =>
-  qk(queryDef).then(result => (result.length > 0 ? head(result.data) : null));
+  qk(queryDef).then(result =>
+    result && result.data.length > 0 ? head(result.data) : null
+  );
 
 /**
  * Grakn generic function to delete an instance.
@@ -160,10 +162,10 @@ export const loadByID = (id, withType = false) =>
  * @param first
  * @param offset
  * @param instances
- * @param count
+ * @param globalCount
  * @returns {{edges: *, pageInfo: *}}
  */
-const buildPagination = (first, offset, instances, count) => {
+const buildPagination = (first, offset, instances, globalCount) => {
   const edges = pipe(
     mapObjIndexed((record, key) => {
       const node = record;
@@ -172,7 +174,7 @@ const buildPagination = (first, offset, instances, count) => {
     }),
     values
   )(instances);
-  const hasNextPage = first + offset < count;
+  const hasNextPage = first + offset < globalCount;
   const hasPreviousPage = offset > 0;
   const startCursor = edges.length > 0 ? head(edges).cursor : null;
   const endCursor = edges.length > 0 ? last(edges).cursor : null;
@@ -181,7 +183,7 @@ const buildPagination = (first, offset, instances, count) => {
     endCursor,
     hasNextPage,
     hasPreviousPage,
-    globalCount: count
+    globalCount
   };
   return { edges, pageInfo };
 };
