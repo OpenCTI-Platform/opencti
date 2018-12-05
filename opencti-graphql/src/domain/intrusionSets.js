@@ -20,10 +20,11 @@ export const findAll = async (
 export const findById = intrusionSetId => loadByID(intrusionSetId);
 
 export const addIntrusionSet = async (user, intrusionSet) => {
-  const createIntrusionSet = qk(`insert $intrusionSet isa IntrusionSet 
-    has type "intrusionSet";
+  const createIntrusionSet = qk(`insert $intrusionSet isa Intrusion-Set 
+    has type "Intrusion-Set";
     $intrusionSet has name "${intrusionSet.name}";
     $intrusionSet has description "${intrusionSet.description}";
+    $intrusionSet has alias "${intrusionSet.alias}";
     $intrusionSet has created ${now()};
     $intrusionSet has modified ${now()};
     $intrusionSet has revoked false;
@@ -31,7 +32,9 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   return createIntrusionSet.then(result => {
     const { data } = result;
     return findById(head(data).intrusionSet.id).then(intrusionSetCreated => {
-      pubsub.publish(BUS_TOPICS.IntrusionSet.ADDED_TOPIC, { intrusionSetCreated });
+      pubsub.publish(BUS_TOPICS.IntrusionSet.ADDED_TOPIC, {
+        intrusionSetCreated
+      });
       return {
         intrusionSetEdge: {
           node: intrusionSetCreated

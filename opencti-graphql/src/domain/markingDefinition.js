@@ -15,15 +15,17 @@ export const findAll = async (
   after = undefined,
   orderBy = 'name',
   orderMode = 'asc'
-) => loadAll('MarkingDefinition', first, after, orderBy, orderMode);
+) => loadAll('Marking-Definition', first, after, orderBy, orderMode);
 
 export const findById = markingDefinitionId => loadByID(markingDefinitionId);
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
-  const createMarkingDefinition = qk(`insert $markingDefinition isa MarkingDefinition 
-    has type "markingDefinition";
-    $markingDefinition has definition_type "${markingDefinition.name}";
-    $markingDefinition has definition "${markingDefinition.description}";
+  const createMarkingDefinition = qk(`insert $markingDefinition isa Marking-Definition 
+    has type "Marking-Definition";
+    $markingDefinition has definition_type "${
+      markingDefinition.definition_type
+    }";
+    $markingDefinition has definition "${markingDefinition.definition}";
     $markingDefinition has created ${now()};
     $markingDefinition has modified ${now()};
   `);

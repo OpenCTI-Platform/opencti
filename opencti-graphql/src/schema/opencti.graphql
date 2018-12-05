@@ -58,11 +58,6 @@ type User {
     created: DateTime
     grant: [String]
 }
-type EditUserContext {
-    username: String!
-    focusOn: String! # Field name
-    isTyping: Boolean!
-}
 input UserAddInput {
     username: String!
     password: String!
