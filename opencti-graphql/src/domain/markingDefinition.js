@@ -13,7 +13,7 @@ import { BUS_TOPICS } from '../config/conf';
 export const findAll = async (
   first = 25,
   after = undefined,
-  orderBy = 'definition',
+  orderBy = 'stix_id',
   orderMode = 'asc'
 ) => loadAll('Marking-Definition', first, after, orderBy, orderMode);
 
@@ -36,11 +36,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
         pubsub.publish(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, {
           markingDefinitionCreated
         });
-        return {
-          markingDefinitionEdge: {
-            node: markingDefinitionCreated
-          }
-        };
+        return markingDefinitionCreated;
       }
     );
   });
@@ -63,10 +59,4 @@ export const markingDefinitionEditContext = (user, input) => {
 };
 
 export const markingDefinitionEditField = (user, input) =>
-  editInput(input, BUS_TOPICS.MarkingDefinition.EDIT_TOPIC).then(
-    markingDefinition => ({
-      markingDefinitionEdge: {
-        node: markingDefinition
-      }
-    })
-  );
+  editInput(input, BUS_TOPICS.MarkingDefinition.EDIT_TOPIC);
