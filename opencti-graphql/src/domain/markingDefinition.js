@@ -13,45 +13,35 @@ import { BUS_TOPICS } from '../config/conf';
 export const findAll = async (
   first = 25,
   after = undefined,
-  orderBy = 'definition',
+  orderBy = 'name',
   orderMode = 'asc'
-) => loadAll('Marking-Definition', first, after, orderBy, orderMode);
+) => loadAll('Malware', first, after, orderBy, orderMode);
 
-export const findById = markingDefinitionId => loadByID(markingDefinitionId);
+export const findById = malwareId => loadByID(malwareId);
 
-export const addMarkingDefinition = async (user, markingDefinition) => {
-  const createMarkingDefinition = qk(`insert $markingDefinition isa Marking-Definition 
-    has type "Marking-Definition";
-    $markingDefinition has definition_type "${
-      markingDefinition.definition_type
-    }";
-    $markingDefinition has definition "${markingDefinition.definition}";
-    $markingDefinition has created ${now()};
-    $markingDefinition has modified ${now()};
+export const addMalware = async (user, malware) => {
+  const createMalware = qk(`insert $malware isa Malware 
+    has type "malware";
+    $malware has name "${malware.name}";
+    $malware has description "${malware.description}";
+    $malware has created ${now()};
+    $malware has modified ${now()};
+    $malware has revoked false;
   `);
-  return createMarkingDefinition.then(result => {
+  return createMalware.then(result => {
     const { data } = result;
-    return findById(head(data).markingDefinition.id).then(
-      markingDefinitionCreated => {
-        pubsub.publish(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, {
-          markingDefinitionCreated
-        });
-        return {
-          markingDefinitionEdge: {
-            node: markingDefinitionCreated
-          }
-        };
-      }
-    );
+    return findById(head(data).malware.id).then(malwareCreated => {
+      pubsub.publish(BUS_TOPICS.Malware.ADDED_TOPIC, { malwareCreated });
+      return malwareCreated;
+    });
   });
 };
 
-export const deleteMarkingDefinition = markingDefinitionId =>
-  deleteByID(markingDefinitionId);
+export const deleteMalware = malwareId => deleteByID(malwareId);
 
-export const markingDefinitionEditContext = (user, input) => {
+export const malwareEditContext = (user, input) => {
   const { focusOn, isTyping } = input;
-  // Context map of markingDefinition users notifications
+  // Context map of malware users notifications
   // SET edit:{V15431} '[ {"user": "email01", "focusOn": "name", "isTyping": true } ]'
   return [
     {
@@ -62,11 +52,5 @@ export const markingDefinitionEditContext = (user, input) => {
   ];
 };
 
-export const markingDefinitionEditField = (user, input) =>
-  editInput(input, BUS_TOPICS.MarkingDefinition.EDIT_TOPIC).then(
-    markingDefinition => ({
-      markingDefinitionEdge: {
-        node: markingDefinition
-      }
-    })
-  );
+export const malwareEditField = (user, input) =>
+  editInput(input, BUS_TOPICS.Malware.EDIT_TOPIC);

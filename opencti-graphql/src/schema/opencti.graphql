@@ -83,9 +83,6 @@ type MarkingDefinitionEdge {
     cursor: String!
     node: MarkingDefinition!
 }
-type MarkingDefinitionPayload {
-    markingDefinitionEdge: MarkingDefinitionEdge
-}
 type MarkingDefinition {
     id: ID!
     definition_type: String!
@@ -115,14 +112,6 @@ type MalwareConnection {
 type MalwareEdge {
     cursor: String!
     node: Malware!
-}
-type MarkingDefinitionConnection {
-    pageInfo: PageInfo!
-    edges: [MarkingDefinitionEdge]
-}
-type MarkingDefinitionEdge {
-    cursor: String!
-    node: MarkingDefinition!
 }
 type Malware {
     id: ID!
@@ -162,9 +151,6 @@ type IntrusionSetsConnection {
 type IntrusionSetEdge {
     cursor: String!
     node: IntrusionSet!
-}
-type IntrusionSetPayload {
-    intrusionSetEdge: IntrusionSetEdge
 }
 type IntrusionSet {
     id: ID!
@@ -256,14 +242,14 @@ type Mutation {
     userAdd(input: UserAddInput): User
     userDelete(id: ID!): ID
     # MarkingDefinition
-    markingDefinitionAdd(input: MalwareAddInput): MarkingDefinitionPayload
-    markingDefinitionDelete(id: ID!): ID
+    markingDefinitionAdd(input: MalwareAddInput): MarkingDefinition
     markingDefinitionEditField(input: EditInput): MarkingDefinition
     markingDefinitionEditContext(input: EditContext): [EditUserContext]
+    markingDefinitionDelete(id: ID!): ID
     # Malware
-    malwareDelete(id: ID!): ID
     malwareAdd(input: MalwareAddInput): Malware
     malwareEditField(input: EditInput): Malware
     malwareEditContext(input: EditContext): [EditUserContext]
+    malwareDelete(id: ID!): ID
 }
 
