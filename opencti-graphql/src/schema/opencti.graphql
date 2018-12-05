@@ -21,11 +21,22 @@ input EditInput {
     key: String! # Field name to change
     value: [String]! # Values to apply
 }
-
 input EditContext {
     id: ID! # ID of the instance in edition
     focusOn: String! # Field name
     isTyping: Boolean!
+}
+type EditUserContext {
+    username: String!
+    focusOn: String! # Field name
+    isTyping: Boolean!
+}
+
+### Marking Definition
+type MarkingDefinition {
+    id: ID!
+    definition: String
+    definition_type: String
 }
 
 ### User
@@ -55,13 +66,6 @@ type User {
     created: DateTime
     grant: [String]
 }
-
-type MarkingDefinition {
-    id: ID!
-    definition: String
-    definition_type: String
-}
-
 input UserAddInput {
     username: String!
     password: String!
@@ -71,12 +75,6 @@ input UserAddInput {
 input UserLoginInput {
     email: String!
     password: String!
-}
-
-type EditUserContext {
-    username: String!
-    focusOn: String! # Field name
-    isTyping: Boolean!
 }
 
 ### Malware
@@ -94,7 +92,6 @@ type MalwareEdge {
     cursor: String!
     node: Malware!
 }
-
 type MarkingDefinitionConnection {
     pageInfo: PageInfo!
     edges: [MarkingDefinitionEdge]
@@ -103,14 +100,9 @@ type MarkingDefinitionEdge {
     cursor: String!
     node: MarkingDefinition!
 }
-
-
 type MalwarePayload {
-    viewer: User
     malwareEdge: MalwareEdge
-    clientMutationId: String
 }
-
 type Malware {
     id: ID!
     name: String!
@@ -123,15 +115,15 @@ type Malware {
     revoked: Boolean
     markingDefinition: MarkingDefinitionConnection
 }
-
 type MalwareEditSubscription {
     malware: Malware # Can be null if only the context is modified
     context: [EditUserContext]
 }
-
 input MalwareAddInput {
     name: String!
     description: String!
+    marking_definitions: [String]
+    killchain_phases: [String]
     clientMutationId: String
 }
 
@@ -150,13 +142,11 @@ type IntrusionSetEdge {
     cursor: String!
     node: IntrusionSet!
 }
-
 type IntrusionSetPayload {
     viewer: User
     intrusionSetEdge: IntrusionSetEdge
     clientMutationId: String
 }
-
 type IntrusionSet {
     id: ID!
     name: String!
@@ -169,12 +159,10 @@ type IntrusionSet {
     modified: DateTime
     revoked: Boolean
 }
-
 type IntrusionSetEditSubscription {
     intrusionSet: IntrusionSet # Can be null if only the context is modified
     context: [EditUserContext]
 }
-
 input IntrusionSetAddInput {
     name: String!
     description: String!
@@ -196,13 +184,11 @@ type ReportEdge {
     cursor: String!
     node: Report!
 }
-
 type ReportPayload {
     viewer: User
     reportEdge: ReportEdge
     clientMutationId: String
 }
-
 type Report {
     id: ID!
     name: String!
@@ -215,18 +201,15 @@ type Report {
     published: DateTime
     revoked: Boolean
 }
-
 type ReportEditSubscription {
     intrusionSet: IntrusionSet # Can be null if only the context is modified
     context: [EditUserContext]
 }
-
 input ReportAddInput {
     name: String!
     description: String!
     clientMutationId: String
 }
-
 
 ### QUERIES
 type Query {
@@ -252,9 +235,9 @@ type Mutation {
     userAdd(input: UserAddInput): User
     userDelete(id: ID!): ID
     # Malware
-    malwareAdd(input: MalwareAddInput): MalwarePayload
     malwareDelete(id: ID!): ID
-    malwareEditField(input: EditInput): Malware
+    malwareAdd(input: MalwareAddInput): MalwarePayload
+    malwareEditField(input: EditInput): MalwarePayload
     malwareEditContext(input: EditContext): [EditUserContext]
 }
 
