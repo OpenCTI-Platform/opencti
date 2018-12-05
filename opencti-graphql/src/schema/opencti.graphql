@@ -116,14 +116,6 @@ type MalwareEdge {
     cursor: String!
     node: Malware!
 }
-type MarkingDefinitionConnection {
-    pageInfo: PageInfo!
-    edges: [MarkingDefinitionEdge]
-}
-type MarkingDefinitionEdge {
-    cursor: String!
-    node: MarkingDefinition!
-}
 type Malware {
     id: ID!
     name: String!
