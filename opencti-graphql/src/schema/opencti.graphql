@@ -55,6 +55,13 @@ type User {
     created: DateTime
     grant: [String]
 }
+
+type MarkingDefinition {
+    id: ID!
+    definition: String
+    definition_type: String
+}
+
 input UserAddInput {
     username: String!
     password: String!
@@ -88,6 +95,16 @@ type MalwareEdge {
     node: Malware!
 }
 
+type MarkingDefinitionConnection {
+    pageInfo: PageInfo!
+    edges: [MarkingDefinitionEdge]
+}
+type MarkingDefinitionEdge {
+    cursor: String!
+    node: MarkingDefinition!
+}
+
+
 type MalwarePayload {
     viewer: User
     malwareEdge: MalwareEdge
@@ -104,6 +121,7 @@ type Malware {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    markingDefinition: MarkingDefinitionConnection
 }
 
 type MalwareEditSubscription {
