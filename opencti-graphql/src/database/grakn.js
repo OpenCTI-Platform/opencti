@@ -103,7 +103,7 @@ export const loadAll = (
   type = 'User',
   first = 25,
   after = undefined,
-  orderBy = 'id',
+  orderBy = 'name',
   orderMode = 'asc'
 ) => {
   const offset = after ? cursorToOffset(after) : 0;
@@ -121,7 +121,7 @@ export const loadAll = (
   );
   return Promise.all([loadCount, loadElements]).then(mergedData => {
     const globalCount = head(mergedData);
-    const malwares = last(mergedData);
+    const instances = last(mergedData);
     const edges = pipe(
       mapObjIndexed((record, key) => {
         const node = record;
@@ -129,7 +129,7 @@ export const loadAll = (
         return { node, cursor: offsetToCursor(nodeOffset) };
       }),
       values
-    )(malwares);
+    )(instances);
     const hasNextPage = first + offset < globalCount;
     const hasPreviousPage = offset > 0;
     const startCursor = head(edges).cursor;

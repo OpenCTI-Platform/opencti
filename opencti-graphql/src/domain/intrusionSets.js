@@ -1,21 +1,67 @@
-import { deleteByID, loadAll, loadByID, now, qk } from '../database/grakn';
+import { head } from 'ramda';
+import { pubsub } from '../database/redis';
+import {
+  deleteByID,
+  loadAll,
+  loadByID,
+  qk,
+  now,
+  editInput
+} from '../database/grakn';
+import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = (first, after) => loadAll('Intrusion-Set', first, after);
+export const findAll = async (
+  first = 25,
+  after = undefined,
+  orderBy = 'name',
+  orderMode = 'asc'
+) => loadAll('IntrusionSet', first, after, orderBy, orderMode);
 
 export const findById = intrusionSetId => loadByID(intrusionSetId);
 
-export const addIntrusionSet = async intrusionSet => {
-  const createIntrusionSet = qk(`insert $intrusion isa Intrusion-Set 
-    has type "intrusion-set";
-    $intrusion has name "${intrusionSet.name}";
-    $intrusion has description "${intrusionSet.description}";
-    $intrusion has alias "${intrusionSet.alias}";
-    $intrusion has created ${now()};
-    $intrusion has stix_id "${intrusionSet.stix_id}";
-    $intrusion has stix_label "${intrusionSet.stix_label}";
-    $intrusion has revoked false;
+export const addIntrusionSet = async (user, intrusionSet) => {
+  const createIntrusionSet = qk(`insert $intrusionSet isa Intrusion-Set 
+    has type "Intrusion-Set";
+    $intrusionSet has name "${intrusionSet.name}";
+    $intrusionSet has description "${intrusionSet.description}";
+    $intrusionSet has alias "${intrusionSet.alias}";
+    $intrusionSet has created ${now()};
+    $intrusionSet has modified ${now()};
+    $intrusionSet has revoked false;
   `);
-  return createIntrusionSet.then(result => findById(result.data.intrusion.id));
+  return createIntrusionSet.then(result => {
+    const { data } = result;
+    return findById(head(data).intrusionSet.id).then(intrusionSetCreated => {
+      pubsub.publish(BUS_TOPICS.IntrusionSet.ADDED_TOPIC, {
+        intrusionSetCreated
+      });
+      return {
+        intrusionSetEdge: {
+          node: intrusionSetCreated
+        }
+      };
+    });
+  });
 };
 
 export const deleteIntrusionSet = intrusionSetId => deleteByID(intrusionSetId);
+
+export const intrusionSetEditContext = (user, input) => {
+  const { focusOn, isTyping } = input;
+  // Context map of intrusionSet users notifications
+  // SET edit:{V15431} '[ {"user": "email01", "focusOn": "name", "isTyping": true } ]'
+  return [
+    {
+      username: user.email,
+      focusOn,
+      isTyping
+    }
+  ];
+};
+
+export const intrusionSetEditField = (user, input) =>
+  editInput(input, BUS_TOPICS.IntrusionSet.EDIT_TOPIC).then(intrusionSet => ({
+    intrusionSetEdge: {
+      node: intrusionSet
+    }
+  }));

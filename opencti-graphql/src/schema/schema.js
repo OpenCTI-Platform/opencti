@@ -3,6 +3,7 @@ import { importSchema } from 'graphql-import';
 import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from 'graphql-tools';
 import userResolvers from '../resolvers/user';
+import markingDefinitionResolvers from '../resolvers/markingDefinition';
 import malwareResolvers from '../resolvers/malware';
 
 const globalResolvers = {
@@ -14,7 +15,8 @@ const typeDefs = importSchema('./src/schema/opencti.graphql');
 const resolvers = mergeResolvers([
   globalResolvers,
   userResolvers,
-  malwareResolvers
+  markingDefinitionResolvers,
+  malwareResolvers,
 ]);
 
 const schema = makeExecutableSchema({

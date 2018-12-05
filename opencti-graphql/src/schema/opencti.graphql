@@ -9,7 +9,6 @@ type PageInfo {
     hasPreviousPage: Boolean!,
     globalCount: Int!
 }
-
 enum OrderingMode {
     asc,
     desc
@@ -30,13 +29,6 @@ type EditUserContext {
     username: String!
     focusOn: String! # Field name
     isTyping: Boolean!
-}
-
-### Marking Definition
-type MarkingDefinition {
-    id: ID!
-    definition: String
-    definition_type: String
 }
 
 ### User
@@ -75,6 +67,38 @@ input UserAddInput {
 input UserLoginInput {
     email: String!
     password: String!
+}
+
+### Marking definitions
+enum MarkingDefinitionsOrdering {
+    id,
+    definition_type,
+    definition
+}
+type MarkingDefinitionConnection {
+    pageInfo: PageInfo!
+    edges: [MarkingDefinitionEdge]
+}
+type MarkingDefinitionEdge {
+    cursor: String!
+    node: MarkingDefinition!
+}
+type MarkingDefinitionPayload {
+    markingDefinitionEdge: MarkingDefinitionEdge
+}
+type MarkingDefinition {
+    id: ID!
+    definition_type: String!
+    definition: String
+}
+type MarkingDefinitionSubscription {
+    markingDefinition: MarkingDefinition # Can be null if only the context is modified
+    context: [EditUserContext]
+}
+input MarkingDefinitionAddInput {
+    definition_type: String!
+    definition: String!
+    clientMutationId: String
 }
 
 ### Malware
@@ -140,9 +164,7 @@ type IntrusionSetEdge {
     node: IntrusionSet!
 }
 type IntrusionSetPayload {
-    viewer: User
     intrusionSetEdge: IntrusionSetEdge
-    clientMutationId: String
 }
 type IntrusionSet {
     id: ID!
@@ -182,9 +204,7 @@ type ReportEdge {
     node: Report!
 }
 type ReportPayload {
-    viewer: User
     reportEdge: ReportEdge
-    clientMutationId: String
 }
 type Report {
     id: ID!
@@ -213,6 +233,9 @@ type Query {
     me: User
     user(id: String!): User
     users(first: Int, after: ID, orderBy: UsersOrdering, search: String): UserConnection
+    # MarkingDefinitions
+    markingDefinition(id: String!): MarkingDefinition
+    markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, search: String): MarkingDefinitionConnection
     # Malwares
     malware(id: String!): Malware
     malwares(first: Int, after: ID, orderBy: MalwaresOrdering, orderMode: OrderingMode, search: String): MalwareConnection
@@ -222,6 +245,7 @@ type Query {
 type Subscription {
     userAdded: User
     malwareEdit: MalwareEditSubscription
+    markingDefinitionEdit: MarkingDefinitionSubscription
 }
 
 ### MUTATIONS
@@ -231,6 +255,11 @@ type Mutation {
     # User
     userAdd(input: UserAddInput): User
     userDelete(id: ID!): ID
+    # MarkingDefinition
+    markingDefinitionAdd(input: MalwareAddInput): MarkingDefinitionPayload
+    markingDefinitionDelete(id: ID!): ID
+    markingDefinitionEditField(input: EditInput): MarkingDefinition
+    markingDefinitionEditContext(input: EditContext): [EditUserContext]
     # Malware
     malwareDelete(id: ID!): ID
     malwareAdd(input: MalwareAddInput): Malware
