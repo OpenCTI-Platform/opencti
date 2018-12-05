@@ -240,6 +240,7 @@ type Query {
 type Subscription {
     userAdded: User
     malwareEdit: MalwareEditSubscription
+    markingDefinitionEdit: MarkingDefinitionSubscription
 }
 
 ### MUTATIONS
