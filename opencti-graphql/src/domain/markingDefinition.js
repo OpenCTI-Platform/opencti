@@ -13,35 +13,41 @@ import { BUS_TOPICS } from '../config/conf';
 export const findAll = async (
   first = 25,
   after = undefined,
-  orderBy = 'name',
+  orderBy = 'stix_id',
   orderMode = 'asc'
-) => loadAll('Malware', first, after, orderBy, orderMode);
+) => loadAll('Marking-Definition', first, after, orderBy, orderMode);
 
-export const findById = malwareId => loadByID(malwareId);
+export const findById = markingDefinitionId => loadByID(markingDefinitionId);
 
-export const addMalware = async (user, malware) => {
-  const createMalware = qk(`insert $malware isa Malware 
-    has type "malware";
-    $malware has name "${malware.name}";
-    $malware has description "${malware.description}";
-    $malware has created ${now()};
-    $malware has modified ${now()};
-    $malware has revoked false;
+export const addMarkingDefinition = async (user, markingDefinition) => {
+  const createMarkingDefinition = qk(`insert $markingDefinition isa Marking-Definition 
+    has type "Marking-Definition";
+    $markingDefinition has definition_type "${
+      markingDefinition.definition_type
+    }";
+    $markingDefinition has definition "${markingDefinition.definition}";
+    $markingDefinition has created ${now()};
+    $markingDefinition has modified ${now()};
   `);
-  return createMalware.then(result => {
+  return createMarkingDefinition.then(result => {
     const { data } = result;
-    return findById(head(data).malware.id).then(malwareCreated => {
-      pubsub.publish(BUS_TOPICS.Malware.ADDED_TOPIC, { malwareCreated });
-      return malwareCreated;
-    });
+    return findById(head(data).markingDefinition.id).then(
+      markingDefinitionCreated => {
+        pubsub.publish(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, {
+          markingDefinitionCreated
+        });
+        return markingDefinitionCreated;
+      }
+    );
   });
 };
 
-export const deleteMalware = malwareId => deleteByID(malwareId);
+export const deleteMarkingDefinition = markingDefinitionId =>
+  deleteByID(markingDefinitionId);
 
-export const malwareEditContext = (user, input) => {
+export const markingDefinitionEditContext = (user, input) => {
   const { focusOn, isTyping } = input;
-  // Context map of malware users notifications
+  // Context map of markingDefinition users notifications
   // SET edit:{V15431} '[ {"user": "email01", "focusOn": "name", "isTyping": true } ]'
   return [
     {
@@ -52,5 +58,5 @@ export const malwareEditContext = (user, input) => {
   ];
 };
 
-export const malwareEditField = (user, input) =>
-  editInput(input, BUS_TOPICS.Malware.EDIT_TOPIC);
+export const markingDefinitionEditField = (user, input) =>
+  editInput(input, BUS_TOPICS.MarkingDefinition.EDIT_TOPIC);

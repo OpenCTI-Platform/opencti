@@ -17,6 +17,11 @@ export const findAll = async (
   orderMode = 'asc'
 ) => loadAll('IntrusionSet', first, after, orderBy, orderMode);
 
+export const findMarkingDefinition = intrusionSet => {
+  console.log('findMarkingDefinition', intrusionSet);
+  return [];
+};
+
 export const findById = intrusionSetId => loadByID(intrusionSetId);
 
 export const addIntrusionSet = async (user, intrusionSet) => {
@@ -24,7 +29,6 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     has type "Intrusion-Set";
     $intrusionSet has name "${intrusionSet.name}";
     $intrusionSet has description "${intrusionSet.description}";
-    $intrusionSet has alias "${intrusionSet.alias}";
     $intrusionSet has created ${now()};
     $intrusionSet has modified ${now()};
     $intrusionSet has revoked false;
@@ -35,11 +39,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
       pubsub.publish(BUS_TOPICS.IntrusionSet.ADDED_TOPIC, {
         intrusionSetCreated
       });
-      return {
-        intrusionSetEdge: {
-          node: intrusionSetCreated
-        }
-      };
+      return intrusionSetCreated;
     });
   });
 };
@@ -60,8 +60,4 @@ export const intrusionSetEditContext = (user, input) => {
 };
 
 export const intrusionSetEditField = (user, input) =>
-  editInput(input, BUS_TOPICS.IntrusionSet.EDIT_TOPIC).then(intrusionSet => ({
-    intrusionSetEdge: {
-      node: intrusionSet
-    }
-  }));
+  editInput(input, BUS_TOPICS.IntrusionSet.EDIT_TOPIC);
