@@ -2,6 +2,8 @@ import nconf from 'nconf';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import dotenv from 'dotenv';
+// noinspection NodeJsCodingAssistanceForCoreModules
+import path from 'path';
 
 export const ROLE_ADMIN = 'ROLE_ADMIN';
 export const ROLE_USER = 'ROLE_USER';
@@ -48,20 +50,20 @@ nconf.add('argv', {
   }
 });
 
-// eslint-disable-next-line
-console.log(`🚀 OpenCTI initialization`);
 // Priority to command line parameter and fallback to DEFAULT_ENV
 const DEFAULT_ENV = 'production';
-const DEFAULT_CONF_PATH = './config/';
+const DEFAULT_CONF_PATH = path.join(__dirname, '../../config/');
 const environment = nconf.get('env') || nconf.get('NODE_ENV') || DEFAULT_ENV;
-console.log(`🚀 OpenCTI starting in ${environment} mode`);
-const confPath = nconf.get('conf') || DEFAULT_CONF_PATH;
-export const DEV_MODE = environment !== 'production';
-const configurationFile = `${confPath}${environment.toLowerCase()}.json`;
-// eslint-disable-next-line
-console.log(`🚀 OpenCTI configured with ${configurationFile} file`);
+const externalConfigurationFile = nconf.get('conf');
+let configurationFile;
+if (externalConfigurationFile) {
+  configurationFile = externalConfigurationFile;
+} else {
+  configurationFile = `${DEFAULT_CONF_PATH}${environment.toLowerCase()}.json`;
+}
+
 nconf.file(environment, configurationFile);
-nconf.file('default', './config/default.json');
+nconf.file('default', `${DEFAULT_CONF_PATH}/default.json`);
 
 // Setup logger
 export const logger = winston.createLogger({
@@ -80,6 +82,7 @@ export const logger = winston.createLogger({
   ]
 });
 
+export const DEV_MODE = environment !== 'production';
 if (DEV_MODE) {
   logger.add(
     new winston.transports.Console({
@@ -90,5 +93,5 @@ if (DEV_MODE) {
 }
 
 // eslint-disable-next-line
-console.log(`🚀 OpenCTI started`);
+console.log(`🚀 OpenCTI started in ${environment} mode with ${externalConfigurationFile ? 'external' : 'embedded'} file`);
 export default nconf;
