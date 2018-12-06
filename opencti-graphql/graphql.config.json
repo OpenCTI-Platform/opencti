@@ -1,6 +1,6 @@
 {
   "schema": {
-    "file": "./src/schema/opencti.graphql"
+    "file": "./config/schema/opencti.graphql"
   },
   "endpoints": [
     {

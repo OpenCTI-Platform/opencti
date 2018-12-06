@@ -2,6 +2,8 @@ import { GraphQLDateTime } from 'graphql-iso-date';
 import { importSchema } from 'graphql-import';
 import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from 'graphql-tools';
+// noinspection NodeJsCodingAssistanceForCoreModules
+import path from 'path';
 import userResolvers from '../resolvers/user';
 import markingDefinitionResolvers from '../resolvers/markingDefinition';
 import malwareResolvers from '../resolvers/malware';
@@ -10,7 +12,8 @@ const globalResolvers = {
   DateTime: GraphQLDateTime
 };
 
-const typeDefs = importSchema('./src/schema/opencti.graphql');
+const schemaPath = path.join(__dirname, '../../config/schema/opencti.graphql');
+const typeDefs = importSchema(schemaPath);
 
 const resolvers = mergeResolvers([
   globalResolvers,
