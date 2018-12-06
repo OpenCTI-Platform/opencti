@@ -4,6 +4,8 @@ import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from 'graphql-tools';
 import userResolvers from '../resolvers/user';
 import markingDefinitionResolvers from '../resolvers/markingDefinition';
+import threatActorResolvers from '../resolvers/threatActor';
+import intrusionSetResolvers from '../resolvers/intrusionSet';
 import malwareResolvers from '../resolvers/malware';
 
 const globalResolvers = {
@@ -16,6 +18,8 @@ const resolvers = mergeResolvers([
   globalResolvers,
   userResolvers,
   markingDefinitionResolvers,
+  threatActorResolvers,
+  intrusionSetResolvers,
   malwareResolvers
 ]);
 

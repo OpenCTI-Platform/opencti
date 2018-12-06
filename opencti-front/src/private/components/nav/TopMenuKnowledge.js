@@ -27,9 +27,8 @@ class TopMenuKnowledge extends Component {
     const { t, location, classes } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/knowledge'
-                variant={location.pathname === '/dashboard/knowledge' || location.pathname.includes('/dashboard/knowledge/threat_actors') ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/knowledge' || location.pathname.includes('/dashboard/knowledge/threat_actors') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to='/dashboard/knowledge/threat_actors' variant={location.pathname.includes('/dashboard/knowledge/threat_actors') ? 'contained' : 'text'} size="small"
+                color={location.pathname.includes('/dashboard/knowledge/threat_actors') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <Public className={classes.icon} fontSize='small'/>
           {t('Threat actors')}
         </Button>

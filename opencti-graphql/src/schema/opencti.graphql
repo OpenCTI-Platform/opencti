@@ -98,7 +98,7 @@ input MarkingDefinitionAddInput {
     clientMutationId: String
 }
 
-### Kill Chaine Phases
+### KillChain Phases
 type KillChainPhaseConnection {
     pageInfo: PageInfo!
     edges: [KillChainPhaseEdge]
@@ -109,6 +109,96 @@ type KillChainPhaseEdge {
 }
 type KillChainPhase {
     kill_chain_name: String
+}
+
+### Threat Actors
+enum ThreatActorsOrdering {
+    stix_id,
+    name,
+    created,
+    modified
+}
+type ThreatActorConnection {
+    pageInfo: PageInfo!
+    edges: [ThreatActorEdge]
+}
+type ThreatActorEdge {
+    cursor: String!
+    node: ThreatActor!
+}
+type ThreatActor {
+    id: ID!
+    name: String!
+    stix_label: [String]
+    alias: [String]
+    stix_role: String
+    goal: String
+    sophistication: String
+    resource_level: String
+    primary_motivation: String
+    secondary_motivation: [String]
+    personal_motivation: String
+    description: String
+    created_at: DateTime
+    updated_at: DateTime
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    markingDefinitions: MarkingDefinitionConnection
+}
+type ThreatActorEditSubscription {
+    threatActor: ThreatActor # Can be null if only the context is modified
+    context: [EditUserContext]
+}
+input ThreatActorAddInput {
+    name: String!
+    description: String!
+    marking_definitions: [String]
+    clientMutationId: String
+}
+
+### IntrusionSets
+enum IntrusionSetsOrdering {
+    stix_id,
+    name,
+    created,
+    modified
+}
+type IntrusionSetConnection {
+    pageInfo: PageInfo!
+    edges: [IntrusionSetEdge]
+}
+type IntrusionSetEdge {
+    cursor: String!
+    node: IntrusionSet!
+}
+type IntrusionSet {
+    id: ID!
+    name: String!
+    stix_label: [String]
+    alias: [String]
+    description: String
+    first_seen: DateTime
+    last_seen: DateTime
+    goal: String
+    resource_level: String
+    primary_motivation: String
+    secondary_motivation: String
+    created_at: DateTime
+    updated_at: DateTime
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    markingDefinitions: MarkingDefinitionConnection
+}
+type IntrusionSetEditSubscription {
+    intrusionSet: IntrusionSet # Can be null if only the context is modified
+    context: [EditUserContext]
+}
+input IntrusionSetAddInput {
+    name: String!
+    description: String!
+    clientMutationId: String
 }
 
 ### Malware
@@ -148,43 +238,6 @@ input MalwareAddInput {
     description: String!
     marking_definitions: [String]
     killchain_phases: [String]
-    clientMutationId: String
-}
-
-### IntrusionSets
-enum IntrusionSetsOrdering {
-    stix_id,
-    name,
-    created,
-    modified
-}
-type IntrusionSetsConnection {
-    pageInfo: PageInfo!
-    edges: [IntrusionSetEdge]
-}
-type IntrusionSetEdge {
-    cursor: String!
-    node: IntrusionSet!
-}
-type IntrusionSet {
-    id: ID!
-    name: String!
-    stix_label: [String]
-    alias: [String]
-    description: String
-    created_at: DateTime
-    updated_at: DateTime
-    created: DateTime
-    modified: DateTime
-    revoked: Boolean
-}
-type IntrusionSetEditSubscription {
-    intrusionSet: IntrusionSet # Can be null if only the context is modified
-    context: [EditUserContext]
-}
-input IntrusionSetAddInput {
-    name: String!
-    description: String!
     clientMutationId: String
 }
 
@@ -236,6 +289,12 @@ type Query {
     # MarkingDefinitions
     markingDefinition(id: String!): MarkingDefinition
     markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, search: String): MarkingDefinitionConnection
+    # ThreatActors
+    threatActor(id: String!): ThreatActor
+    threatActors(first: Int, after: ID, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, search: String): ThreatActorConnection
+    # IntursionSets
+    intrusionSet(id: String!): IntrusionSet
+    intrusionSets(first: Int, after: ID, orderBy: IntrusionSetsOrdering, orderMode: OrderingMode, search: String): IntrusionSetConnection
     # Malwares
     malware(id: String!): Malware
     malwares(first: Int, after: ID, orderBy: MalwaresOrdering, orderMode: OrderingMode, search: String): MalwareConnection
@@ -244,8 +303,10 @@ type Query {
 ### SUBSCRIPTIONS
 type Subscription {
     userAdded: User
-    malwareEdit: MalwareEditSubscription
     markingDefinitionEdit: MarkingDefinitionSubscription
+    threatActorEdit: ThreatActorEditSubscription
+    intrusionSetEdit: IntrusionSetEditSubscription
+    malwareEdit: MalwareEditSubscription
 }
 
 ### MUTATIONS
@@ -260,6 +321,16 @@ type Mutation {
     markingDefinitionEditField(input: EditInput): MarkingDefinition
     markingDefinitionEditContext(input: EditContext): [EditUserContext]
     markingDefinitionDelete(id: ID!): ID
+    # ThreatActor
+    threatActorAdd(input: ThreatActorAddInput): ThreatActor
+    threatActorEditField(input: EditInput): ThreatActor
+    threatActorEditContext(input: EditContext): [EditUserContext]
+    threatActorDelete(id: ID!): ID
+    # IntrusionSet
+    intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet
+    intrusionSetEditField(input: EditInput): IntrusionSet
+    intrusionSetEditContext(input: EditContext): [EditUserContext]
+    intrusionSetDelete(id: ID!): ID
     # Malware
     malwareAdd(input: MalwareAddInput): Malware
     malwareEditField(input: EditInput): Malware

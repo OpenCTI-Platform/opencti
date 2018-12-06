@@ -10,12 +10,15 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa IntrusionSet', args);
+export const findAll = args => paginate('match $m isa Intrusion-Set', args);
 
-export const findMarkingDefinition = intrusionSet => {
-  console.log('findMarkingDefinition', intrusionSet);
-  return [];
-};
+export const findMarkingDef = (intrusionSetId, args) =>
+  paginate(
+    `match $marking isa Marking-Definition; 
+    (marking:$marking, so:$intrusionSet) isa object_marking_refs; 
+    $intrusionSet id ${intrusionSetId}`,
+    args
+  );
 
 export const findById = intrusionSetId => loadByID(intrusionSetId);
 
@@ -31,9 +34,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   return createIntrusionSet.then(result => {
     const { data } = result;
     return findById(head(data).intrusionSet.id).then(intrusionSetCreated => {
-      pubsub.publish(BUS_TOPICS.IntrusionSet.ADDED_TOPIC, {
-        intrusionSetCreated
-      });
+      pubsub.publish(BUS_TOPICS.IntrusionSet.ADDED_TOPIC, { intrusionSetCreated });
       return intrusionSetCreated;
     });
   });
