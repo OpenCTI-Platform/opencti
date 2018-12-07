@@ -234,10 +234,9 @@ export const paginate = (query, options) => {
 /**
  * Generic modified of a single instance attribute.
  * @param input
- * @param topic
  * @returns {Promise<any[] | never>}
  */
-export const editInput = (input, topic) => {
+export const editInput = input => {
   const { id, key, value } = input;
   const attributeDefQuery = qk(`match $x label "${key}" sub attribute; get;`);
   return attributeDefQuery.then(attributeDefinition => {
@@ -251,12 +250,7 @@ export const editInput = (input, topic) => {
           ' ',
           map(val => `has ${key} ${type === String ? `"${val}"` : val}`, value)
         )};`;
-        return qk(creationQuery).then(() =>
-          loadByID(id).then(loadedInstance => {
-            if (topic) pubsub.publish(topic, { data: loadedInstance });
-            return loadedInstance;
-          })
-        );
+        return qk(creationQuery).then(() => loadByID(id));
       }
     );
   });

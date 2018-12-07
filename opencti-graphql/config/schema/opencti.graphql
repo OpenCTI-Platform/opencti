@@ -21,7 +21,6 @@ input EditInput {
     value: [String]! # Values to apply
 }
 input EditContext {
-    id: ID! # ID of the instance in edition
     focusOn: String! # Field name
     isTyping: Boolean!
 }
@@ -306,11 +305,12 @@ type Subscription {
     markingDefinitionEdit: MarkingDefinitionSubscription
     threatActorEdit: ThreatActorEditSubscription
     intrusionSetEdit: IntrusionSetEditSubscription
-    malwareEdit: MalwareEditSubscription
+    malwareEdit(id: ID!): MalwareEditSubscription
 }
 
 ### MUTATIONS
-# Waiting for https://github.com/facebook/graphql/pull/395
+
+# Malware
 input RelationAddInput {
     from_role: String!
     through: String!
@@ -321,10 +321,12 @@ input RelationAddInput {
 type MalwareEditMutations {
     delete: ID
     patch(input: EditInput): Malware
-    notify(input: EditContext): Malware
+    notify(input: EditContext): [EditUserContext]!
     relationAdd(input: RelationAddInput): Malware
     relationDelete(relationId: ID!): ID
 }
+
+# Next
 
 type Mutation {
     # Login

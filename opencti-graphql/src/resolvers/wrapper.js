@@ -6,6 +6,22 @@ import {
   ForbiddenError
 } from '../config/errors';
 
+export function withCancel(asyncIterator, onCancel) {
+  const updatedAsyncIterator = {
+    return() {
+      onCancel();
+      return asyncIterator.return();
+    },
+    next() {
+      return asyncIterator.next();
+    },
+    throw(error) {
+      return asyncIterator.throw(error);
+    }
+  };
+  return { [Symbol.asyncIterator]: () => updatedAsyncIterator };
+}
+
 const base = wrappedFunction => (_, args, context, info) =>
   wrappedFunction(
     _,
