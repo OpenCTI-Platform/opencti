@@ -320,8 +320,8 @@ input RelationAddInput {
 
 type MalwareEditMutations {
     delete: ID
-    patch(input: EditInput): Malware
-    notify(input: EditContext): [EditUserContext]!
+    fieldPatch(input: EditInput): Malware
+    contextPatch(input: EditContext): [EditUserContext]!
     relationAdd(input: RelationAddInput): Malware
     relationDelete(relationId: ID!): ID
 }
