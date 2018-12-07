@@ -225,6 +225,7 @@ type Malware {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
     killChainPhases: KillChainPhaseConnection
 }
@@ -321,7 +322,7 @@ input RelationAddInput {
 type MalwareEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Malware
-    contextPatch(input: EditContext): [EditUserContext]!
+    contextPatch(input: EditContext): Malware
     relationAdd(input: RelationAddInput): Malware
     relationDelete(relationId: ID!): ID
 }
