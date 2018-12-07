@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactDocumentTitle from 'react-document-title';
-import { Route } from 'react-router-dom';
+import { Route, Redirect } from 'react-router-dom';
 import { QueryRenderer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -15,6 +15,8 @@ import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
+import ThreatActors from './components/ThreatActors';
+import IntrusionSets from './components/IntrusionSets';
 import Malwares from './components/Malwares';
 import RootMalware from './components/malware/Root';
 
@@ -62,22 +64,8 @@ class Root extends Component {
   }
 
   render() {
-    const { classes, location } = this.props;
+    const { classes } = this.props;
     const paddingRight = 24;
-    let topBarDisplay = true;
-    if (location.pathname.includes('/dashboard/threat_actors/')
-      || location.pathname.includes('/dashboard/sectors/')
-      || location.pathname.includes('/dashboard/intrusion_sets/')
-      || location.pathname.includes('/dashboard/campaigns/')
-      || location.pathname.includes('/dashboard/incidents/')
-      || location.pathname.includes('/dashboard/malwares/')
-      || location.pathname.includes('/dashboard/reports/')
-      || location.pathname.includes('/dashboard/identities/')
-      || location.pathname.includes('/dashboard/tools/')
-      || location.pathname.includes('/dashboard/vulnerabilities/')
-      || location.pathname.includes('/dashboard/attack_patterns/')) {
-      topBarDisplay = false;
-    }
 
     return (
       <QueryRenderer
@@ -88,11 +76,16 @@ class Root extends Component {
           <ConnectedIntlProvider me={props && props.me ? props.me : null}>
             <ReactDocumentTitle title='OpenCTI - Cyber threat intelligence platform'>
               <div className={classes.root}>
-                {topBarDisplay ? <TopBar me={props && props.me ? props.me : null}/> : ''}
+                <TopBar me={props && props.me ? props.me : null}/>
                 <LeftBar/>
                 <main className={classes.content} style={{ paddingRight }}>
                   <div className={classes.toolbar}/>
                   <Route exact path='/dashboard' component={Dashboard}/>
+                  <Route exact path='/dashboard/knowledge' render={() => (
+                    <Redirect to='/dashboard/knowledge/threat_actors'/>
+                  )}/>
+                  <Route exact path='/dashboard/knowledge/threat_actors' component={ThreatActors}/>
+                  <Route exact path='/dashboard/knowledge/intrusion_sets' component={IntrusionSets}/>
                   <Route exact path='/dashboard/knowledge/malwares' component={Malwares}/>
                   <Route path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props && props.me ? props.me : null}/>}/>
                 </main>
