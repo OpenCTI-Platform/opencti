@@ -92,8 +92,9 @@ export const qk = queryDef => {
     method: 'post',
     url: '/kb/grakn/graql',
     data: queryDef
-  }).catch(() => {
-    logger.error(`Grakn query error: ${queryDef}`);
+  }).catch(error => {
+    logger.error(`Grakn query error: ${queryDef}`, error.response.data);
+    throw new FunctionalError({ message: error.response.data.exception });
   });
 };
 
@@ -134,7 +135,7 @@ export const deleteByID = id => {
   const delUser = qk(`match $x id ${id}; delete $x;`);
   return delUser.then(result => {
     if (isEmpty(result.data)) {
-      throw new FunctionalError({ message: "User doesn't exist" });
+      throw new FunctionalError({ message: "Element doesn't exist" });
     } else {
       return id;
     }
@@ -156,6 +157,26 @@ export const loadByID = (id, withType = false) =>
         )(result.data)
       ).then(r => head(r)) // Return the unique result
   );
+
+/**
+ * Create a relation between to element in the model without restriction.
+ * @param fromId
+ * @param input
+ * @param topic
+ * @returns {Promise<any[] | never>}
+ */
+export const createRelation = (fromId, input, topic) => {
+  const createRel = qk(`match $from id ${fromId}; 
+         $to id ${input.targetId}; 
+         insert (${input.from_role}: $from, ${input.to_role}: $to) 
+         isa ${input.through};`);
+  return createRel.then(() =>
+    loadByID(fromId).then(loadedInstance => {
+      if (topic) pubsub.publish(topic, { data: loadedInstance });
+      return loadedInstance;
+    })
+  );
+};
 
 /**
  * Pure building of pagination expected format.
@@ -232,7 +253,7 @@ export const editInput = (input, topic) => {
         )};`;
         return qk(creationQuery).then(() =>
           loadByID(id).then(loadedInstance => {
-            pubsub.publish(topic, { data: loadedInstance });
+            if (topic) pubsub.publish(topic, { data: loadedInstance });
             return loadedInstance;
           })
         );

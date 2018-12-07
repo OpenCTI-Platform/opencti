@@ -310,12 +310,20 @@ type Subscription {
 }
 
 ### MUTATIONS
+# Waiting for https://github.com/facebook/graphql/pull/395
+input RelationAddInput {
+    from_role: String!
+    through: String!
+    to_role: String!
+    targetId: ID! # The instance ID of the target
+}
+
 type MalwareEditMutations {
     delete: ID
     patch(input: EditInput): Malware
     notify(input: EditContext): Malware
-    #relationAdd(): Malware
-    #relationDelete():
+    relationAdd(input: RelationAddInput): Malware
+    relationDelete(relationId: ID!): ID
 }
 
 type Mutation {
