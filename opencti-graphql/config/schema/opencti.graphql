@@ -16,7 +16,7 @@ enum OrderingMode {
 
 ### Edit
 input EditInput {
-    id: ID! # ID of the instance to edit
+    id: ID # ID of the instance in edition
     key: String! # Field name to change
     value: [String]! # Values to apply
 }
@@ -310,6 +310,14 @@ type Subscription {
 }
 
 ### MUTATIONS
+type MalwareEditMutations {
+    delete: ID
+    patch(input: EditInput): Malware
+    notify(input: EditContext): Malware
+    #relationAdd(): Malware
+    #relationDelete():
+}
+
 type Mutation {
     # Login
     token(input: UserLoginInput) : String
@@ -333,8 +341,6 @@ type Mutation {
     intrusionSetDelete(id: ID!): ID
     # Malware
     malwareAdd(input: MalwareAddInput): Malware
-    malwareEditField(input: EditInput): Malware
-    malwareEditContext(input: EditContext): [EditUserContext]
-    malwareDelete(id: ID!): ID
+    malwareEdit(id: ID!): MalwareEditMutations
 }
 
