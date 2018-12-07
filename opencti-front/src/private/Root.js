@@ -19,6 +19,7 @@ import ThreatActors from './components/ThreatActors';
 import IntrusionSets from './components/IntrusionSets';
 import Malwares from './components/Malwares';
 import RootMalware from './components/malware/Root';
+import Settings from './components/Settings';
 
 const styles = theme => ({
   container: {
@@ -88,6 +89,7 @@ class Root extends Component {
                   <Route exact path='/dashboard/knowledge/intrusion_sets' component={IntrusionSets}/>
                   <Route exact path='/dashboard/knowledge/malwares' component={Malwares}/>
                   <Route path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props && props.me ? props.me : null}/>}/>
+                  <Route exact path='/dashboard/settings' component={Settings}/>
                 </main>
                 <Snackbar
                   anchorOrigin={{ vertical: 'top', horizontal: 'right' }}

@@ -10,16 +10,7 @@ import UserForm from './UserForm'
 import PasswordForm from './user/PasswordForm'
 
 const styles = (theme) => ({
-    panel: {
-        width: '50%',
-        margin: '0 auto',
-        marginBottom: 30,
-        padding: '20px 20px 20px 20px',
-        textAlign: 'left',
-        backgroundColor: theme.palette.paper.background,
-        color: theme.palette.text.main,
-        borderRadius: 6
-    },
+
     goIcon: {
         position: 'absolute',
         right: 10,

@@ -18,6 +18,8 @@ define
   "lastname" sub attribute datatype string;
   "language" sub attribute datatype string;
   "grant" sub attribute datatype string;
+  "external_authentication" sub attribute datatype boolean;
+  "platform_organization" sub attribute datatype string;
 
   # STIX common properties
   "stix_id" sub attribute datatype string;
@@ -232,6 +234,10 @@ define
     plays "state";
 
   # OpenCTI entities
+  "Settings" sub entity
+    has "platform_organization"
+    has "external_authentication"
+
   "User" sub entity
     has "created"
     has "modified"

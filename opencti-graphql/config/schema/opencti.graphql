@@ -235,8 +235,8 @@ type MalwareEditSubscription {
 input MalwareAddInput {
     name: String!
     description: String!
-    marking_definitions: [String]
-    killchain_phases: [String]
+    markingDefinitions: [String]
+    killChainPhases: [String]
     clientMutationId: String
 }
 

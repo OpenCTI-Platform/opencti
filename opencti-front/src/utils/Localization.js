@@ -8,6 +8,10 @@ const i18n = {
       'Do you want to delete this malware?': 'Souhaitez-vous supprimer ce code malveillant ?',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
+      'Global parameters': 'Paramètres généraux',
+      'External authentication': 'Authentification externe',
+      Title: 'Titre',
+      'Sender email address': 'Adresse mail d\'expédition',
       // Form
       Create: 'Créer',
       Update: 'Modifier',
@@ -43,6 +47,10 @@ const i18n = {
       Relationships: 'Relations',
       Entities: 'Entités',
       Observables: 'Observables',
+      Parameters: 'Paramètres',
+      Users: 'Utilisateurs',
+      Groups: 'Groupes',
+      'TTPs frameworks': 'Frameworks de TTP',
       // User
       'Sign in': 'S\'identifier',
       Email: 'Email',

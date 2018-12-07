@@ -19,6 +19,7 @@ import TopMenuDashboard from './TopMenuDashboard';
 import TopMenuReports from './TopMenuReports';
 import TopMenuKnowledge from './TopMenuKnowledge';
 import TopMenuMalware from './TopMenuMalware';
+import TopMenuSettings from './TopMenuSettings';
 
 const styles = theme => ({
   appBar: {
@@ -100,6 +101,7 @@ class TopBar extends Component {
             {location.pathname.includes('/dashboard/reports') ? <TopMenuReports/> : ''}
             {location.pathname === '/dashboard/knowledge' || location.pathname.match('/dashboard/knowledge/[a-z_]+$') ? <TopMenuKnowledge/> : ''}
             {location.pathname.includes('/dashboard/knowledge/malwares/') ? <TopMenuMalware/> : ''}
+            {location.pathname === '/dashboard/settings' || location.pathname.match('/dashboard/settings/[a-z_]+$') ? <TopMenuSettings/> : ''}
           </div>
           <div className={classes.searchContainer}>
             <SearchInput handleSearch={this.handleSearch.bind(this)}/>
