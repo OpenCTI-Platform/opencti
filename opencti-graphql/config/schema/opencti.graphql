@@ -22,12 +22,10 @@ input EditInput {
 }
 input EditContext {
     focusOn: String! # Field name
-    isTyping: Boolean!
 }
 type EditUserContext {
     username: String!
     focusOn: String # Field name
-    isTyping: Boolean
 }
 
 ### User

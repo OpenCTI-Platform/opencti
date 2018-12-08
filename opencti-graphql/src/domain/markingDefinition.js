@@ -42,14 +42,13 @@ export const deleteMarkingDefinition = markingDefinitionId =>
   deleteByID(markingDefinitionId);
 
 export const markingDefinitionEditContext = (user, input) => {
-  const { focusOn, isTyping } = input;
+  const { focusOn } = input;
   // Context map of markingDefinition users notifications
   // SET edit:{V15431} '[ {"user": "email01", "focusOn": "name", "isTyping": true } ]'
   return [
     {
       username: user.email,
-      focusOn,
-      isTyping
+      focusOn
     }
   ];
 };

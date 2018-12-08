@@ -43,14 +43,13 @@ export const addIntrusionSet = async (user, intrusionSet) => {
 export const deleteIntrusionSet = intrusionSetId => deleteByID(intrusionSetId);
 
 export const intrusionSetEditContext = (user, input) => {
-  const { focusOn, isTyping } = input;
+  const { focusOn } = input;
   // Context map of intrusionSet users notifications
   // SET edit:{V15431} '[ {"user": "email01", "focusOn": "name", "isTyping": true } ]'
   return [
     {
       username: user.email,
-      focusOn,
-      isTyping
+      focusOn
     }
   ];
 };

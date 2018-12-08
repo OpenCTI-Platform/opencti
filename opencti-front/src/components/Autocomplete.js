@@ -191,6 +191,7 @@ class Autocomplete extends Component {
       options,
       onInputChange,
       onChange,
+      onFocus,
     } = this.props;
     const errorText = errors[field.name];
     const hasError = dirty && errorText !== undefined;
@@ -232,6 +233,11 @@ class Autocomplete extends Component {
               setFieldValue(field.name, values);
               if (typeof onChange === 'function') {
                 onChange(field.name, values);
+              }
+            }}
+            onFocus={() => {
+              if (typeof onFocus === 'function') {
+                onFocus(field.name);
               }
             }}
             placeholder={label}

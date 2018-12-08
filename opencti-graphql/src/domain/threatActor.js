@@ -34,7 +34,9 @@ export const addThreatActor = async (user, threatActor) => {
   return createThreatActor.then(result => {
     const { data } = result;
     return findById(head(data).threatActor.id).then(threatActorCreated => {
-      pubsub.publish(BUS_TOPICS.ThreatActor.ADDED_TOPIC, { threatActorCreated });
+      pubsub.publish(BUS_TOPICS.ThreatActor.ADDED_TOPIC, {
+        threatActorCreated
+      });
       return threatActorCreated;
     });
   });
@@ -43,14 +45,13 @@ export const addThreatActor = async (user, threatActor) => {
 export const deleteThreatActor = threatActorId => deleteByID(threatActorId);
 
 export const threatActorEditContext = (user, input) => {
-  const { focusOn, isTyping } = input;
+  const { focusOn } = input;
   // Context map of threatActor users notifications
   // SET edit:{V15431} '[ {"user": "email01", "focusOn": "name", "isTyping": true } ]'
   return [
     {
       username: user.email,
-      focusOn,
-      isTyping
+      focusOn
     }
   ];
 };

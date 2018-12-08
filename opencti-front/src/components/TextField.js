@@ -15,6 +15,11 @@ const TextField = props => (
         props.onChange(props.field.name, value);
       }
     }}
+    onFocus={() => {
+      if (typeof props.onFocus === 'function') {
+        props.onFocus(props.field.name);
+      }
+    }}
     classes={props.classes}
     className={props.className}
   />
