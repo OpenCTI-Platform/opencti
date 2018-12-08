@@ -4,7 +4,12 @@ import {
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { installRelayDevTools } from 'relay-devtools';
 import RelayQueryResponseCache from 'relay-runtime/lib/RelayQueryResponseCache';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
+import { execute } from 'apollo-link';
+import { WebSocketLink } from 'apollo-link-ws';
+import Cookies from 'universal-cookie';
 
+const GRAPHQL_SUBSCRIPTION_ENDPOINT = 'ws://localhost:4000/graphql';
 const IN_DEV_MODE = process.env.NODE_ENV === 'development';
 if (IN_DEV_MODE) installRelayDevTools();
 
@@ -47,8 +52,22 @@ function fetchQuery(operation, variables, cacheConfig) {
     }); */
 }
 
+const cookies = new Cookies();
+const subscriptionClient = new SubscriptionClient(GRAPHQL_SUBSCRIPTION_ENDPOINT, {
+  reconnect: true,
+  connectionParams: {
+    authorization: `Bearer ${cookies.get('opencti_token')}`,
+  },
+});
+const subscriptionLink = new WebSocketLink(subscriptionClient);
+
+const networkSubscriptions = (operation, variables) => execute(subscriptionLink, {
+  query: operation.text,
+  variables,
+});
+
 const environment = new Environment({
-  network: Network.create(fetchQuery),
+  network: Network.create(fetchQuery, networkSubscriptions),
   store: new Store(new RecordSource()),
 });
 

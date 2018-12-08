@@ -26,8 +26,8 @@ input EditContext {
 }
 type EditUserContext {
     username: String!
-    focusOn: String! # Field name
-    isTyping: Boolean!
+    focusOn: String # Field name
+    isTyping: Boolean
 }
 
 ### User
@@ -229,10 +229,7 @@ type Malware {
     markingDefinitions: MarkingDefinitionConnection
     killChainPhases: KillChainPhaseConnection
 }
-type MalwareEditSubscription {
-    malware: Malware # Can be null if only the context is modified
-    context: [EditUserContext]
-}
+
 input MalwareAddInput {
     name: String!
     description: String!
@@ -306,7 +303,7 @@ type Subscription {
     markingDefinitionEdit: MarkingDefinitionSubscription
     threatActorEdit: ThreatActorEditSubscription
     intrusionSetEdit: IntrusionSetEditSubscription
-    malwareEdit(id: ID!): MalwareEditSubscription
+    malwareEdit(id: ID!): Malware
 }
 
 ### MUTATIONS
