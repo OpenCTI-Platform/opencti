@@ -33,7 +33,12 @@ export const delEditContext = (user, instanceId) =>
  */
 export const setEditContext = (user, instanceId, input) => {
   const data = assoc('username', user.email, input);
-  client.set(`edit:${instanceId}:${user.id}`, JSON.stringify(data));
+  client.set(
+    `edit:${instanceId}:${user.id}`,
+    JSON.stringify(data),
+    'ex',
+    5 * 60 // Key will be remove if user is not active during 5 minutes
+  );
 };
 
 /**
