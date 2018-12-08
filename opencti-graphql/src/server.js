@@ -86,14 +86,11 @@ const server = new ApolloServer({
   },
   subscriptions: {
     // https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
-    onConnect: async connectionParams => {
-      console.log('connectionParams', connectionParams);
-      return {
-        user: await authentication(
-          extractTokenFromBearer(connectionParams.authorization)
-        )
-      };
-    }
+    onConnect: async connectionParams => ({
+      user: await authentication(
+        extractTokenFromBearer(connectionParams.authorization)
+      )
+    })
   }
 });
 

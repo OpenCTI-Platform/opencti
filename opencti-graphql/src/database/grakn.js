@@ -1,23 +1,24 @@
 import axios from 'axios';
 import {
-  pipe,
-  toPairs,
-  groupBy,
-  chain,
-  pluck,
-  head,
-  map,
   assoc,
-  last,
-  mapObjIndexed,
-  values,
+  chain,
+  contains,
+  groupBy,
+  head,
   isEmpty,
   join,
-  contains
+  last,
+  map,
+  mapObjIndexed,
+  pipe,
+  pluck,
+  toPairs,
+  values
 } from 'ramda';
 import moment from 'moment';
 import { offsetToCursor } from 'graphql-relay';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
+import Grakn from 'grakn';
 import conf, { logger } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { pubsub } from './redis';
@@ -25,7 +26,7 @@ import { pubsub } from './redis';
 // Global variables
 const gkDateFormat = 'YYYY-MM-DDTHH:mm:ss';
 const gkDate = 'java.time.LocalDateTime';
-const String = 'java.lang.String';
+const String = 'String';
 export const now = () =>
   moment()
     .utc()
@@ -35,6 +36,7 @@ export const now = () =>
 const multipleAttributes = ['stix_label'];
 
 // Instance of Axios to make Grakn API Calls.
+const client = new Grakn(conf.get('grakn:driver'));
 const instance = axios.create({
   baseURL: conf.get('grakn:baseURL'),
   timeout: conf.get('grakn:timeout')
@@ -235,6 +237,7 @@ export const paginate = (query, options) => {
  * Generic modified of a single instance attribute.
  * @param input
  * @returns {Promise<any[] | never>}
+ * @Deprecated use editInputTx TODO Migrate all calls to this method
  */
 export const editInput = input => {
   const { id, key, value } = input;
@@ -254,6 +257,31 @@ export const editInput = input => {
       }
     );
   });
+};
+
+export const editInputTx = async (id, input) => {
+  const { key, value } = input;
+  const session = await client.session('grakn');
+  const wTx = await session.transaction(Grakn.txType.WRITE);
+  const labelIterator = await wTx.query(
+    `match $x label "${key}" sub attribute; get;`
+  );
+  const labelAnswer = await labelIterator.next();
+  const type = await labelAnswer
+    .map()
+    .get('x')
+    .dataType();
+  // Delete the old value/values
+  await wTx.query(`match $m id ${id}; $m has ${key} $del; delete $del;`);
+  // Setup the new attribute
+  await wTx.query(
+    `match $m id ${id}; insert $m ${join(
+      ' ',
+      map(val => `has ${key} ${type === String ? `"${val}"` : val}`, value)
+    )};`
+  );
+  await wTx.commit();
+  return loadByID(id);
 };
 
 export default instance;

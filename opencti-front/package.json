@@ -32,6 +32,7 @@
     "recharts": "^1.4.1",
     "relay-compiler": "^1.7.0",
     "relay-runtime": "^1.7.0",
+    "rxjs": "^6.3.3",
     "subscriptions-transport-ws": "^0.9.15",
     "typeface-roboto": "0.0.54",
     "universal-cookie": "^3.0.7",
