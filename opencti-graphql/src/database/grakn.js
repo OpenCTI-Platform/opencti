@@ -167,8 +167,8 @@ export const loadByID = (id, withType = false) =>
  */
 export const createRelation = (fromId, input, topic) => {
   const createRel = qk(`match $from id ${fromId}; 
-         $to id ${input.targetId}; 
-         insert (${input.from_role}: $from, ${input.to_role}: $to) 
+         $to id ${input.toId}; 
+         insert (${input.fromRole}: $from, ${input.toRole}: $to) 
          isa ${input.through};`);
   return createRel.then(() =>
     loadByID(fromId).then(loadedInstance => {

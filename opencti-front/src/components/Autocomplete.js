@@ -76,7 +76,7 @@ function NoOptionsMessage(props) {
 }
 
 function inputComponent({ inputRef, ...props }) {
-  return <div ref={inputRef}  {...props} />;
+  return <div ref={inputRef} {...props} />;
 }
 
 function Control(props) {
@@ -231,7 +231,7 @@ class Autocomplete extends Component {
             onChange={(values) => {
               setFieldValue(field.name, values);
               if (typeof onChange === 'function') {
-                onChange(values);
+                onChange(field.name, values);
               }
             }}
             placeholder={label}

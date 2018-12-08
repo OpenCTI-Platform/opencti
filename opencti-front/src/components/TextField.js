@@ -12,7 +12,7 @@ const TextField = props => (
         value,
       );
       if (typeof props.onChange === 'function') {
-        props.onChange(value);
+        props.onChange(props.field.name, value);
       }
     }}
     classes={props.classes}

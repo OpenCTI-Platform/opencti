@@ -313,10 +313,11 @@ type Subscription {
 
 # Malware
 input RelationAddInput {
-    from_role: String!
+    fromId: ID!
+    fromRole: String!
+    toId: ID!
+    toRole: String!
     through: String!
-    to_role: String!
-    targetId: ID! # The instance ID of the target
 }
 
 type MalwareEditMutations {
