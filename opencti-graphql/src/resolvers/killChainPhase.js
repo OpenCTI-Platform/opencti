@@ -1,0 +1,52 @@
+import { BUS_TOPICS } from '../config/conf';
+import {
+  addKillChainPhase,
+  killChainPhaseDelete,
+  findAll,
+  findById,
+  markingDefinitions,
+  killChainPhases,
+  killChainPhaseEditContext,
+  killChainPhaseEditField,
+  killChainPhaseAddRelation,
+  killChainPhaseDeleteRelation,
+  killChainPhaseCleanContext
+} from '../domain/killChainPhase';
+import { fetchEditContext, pubsub } from '../database/redis';
+import { admin, auth, withCancel } from './wrapper';
+
+const killChainPhaseResolvers = {
+  Query: {
+    killChainPhase: auth((_, { id }) => findById(id)),
+    killChainPhases: auth((_, args) => findAll(args))
+  },
+  KillChainPhase: {
+    markingDefinitions: (killChainPhase, args) => markingDefinitions(killChainPhase.id, args),
+    editContext: admin(killChainPhase => fetchEditContext(killChainPhase.id))
+  },
+  Mutation: {
+    killChainPhaseEdit: admin((_, { id }, { user }) => ({
+      delete: () => killChainPhaseDelete(id),
+      fieldPatch: ({ input }) => killChainPhaseEditField(id, input),
+      contextPatch: ({ input }) => killChainPhaseEditContext(user, id, input),
+      relationAdd: ({ input }) => killChainPhaseAddRelation(id, input),
+      relationDelete: ({ relationId }) => killChainPhaseDeleteRelation(relationId)
+    })),
+    killChainPhaseAdd: admin((_, { input }, { user }) => addKillChainPhase(user, input))
+  },
+  Subscription: {
+    killChainPhaseEdit: {
+      resolve: payload => ({
+        killChainPhase: payload.instance,
+        context: payload.context
+      }),
+      subscribe: admin((_, { id }, { user }) =>
+        withCancel(pubsub.asyncIterator(BUS_TOPICS.KillChainPhase.EDIT_TOPIC), () => {
+          killChainPhaseCleanContext(user, id);
+        })
+      )
+    }
+  }
+};
+
+export default killChainPhaseResolvers;

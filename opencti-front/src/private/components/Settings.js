@@ -42,6 +42,7 @@ class Settings extends Component {
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field name='title' component={TextField} label={t('Title')} fullWidth={true}/>
                   <Field name='sender' component={TextField} label={t('Sender email address')} fullWidth={true} style={{ marginTop: 20 }}/>
+                  <Field name='url' component={TextField} label={t('Base URL')} fullWidth={true} style={{ marginTop: 20 }}/>
                 </Form>
               )}
             />

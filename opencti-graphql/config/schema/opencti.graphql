@@ -98,6 +98,12 @@ input MarkingDefinitionAddInput {
 }
 
 ### KillChain Phases
+enum KillChainPhasesOrdering {
+    stix_id,
+    order,
+    kill_chain_name,
+    phase_name
+}
 type KillChainPhaseConnection {
     pageInfo: PageInfo!
     edges: [KillChainPhaseEdge]
@@ -107,7 +113,26 @@ type KillChainPhaseEdge {
     node: KillChainPhase!
 }
 type KillChainPhase {
-    kill_chain_name: String
+    id: ID!
+    kill_chain_name: String!
+    phase_name: String!
+    order: Int
+    created_at: DateTime
+    updated_at: DateTime
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
+    markingDefinitions: MarkingDefinitionConnection
+}
+type KillChainPhaseEditSubscription {
+    malware: KillChainPhase # Can be null if only the context is modified
+    context: [EditUserContext]
+}
+input KillChainPhaseAddInput {
+    kill_chain_name: String!
+    phase_name: String!
+    order: Int!
 }
 
 ### Threat Actors
@@ -281,6 +306,14 @@ input ReportAddInput {
     clientMutationId: String
 }
 
+### Rekatuibs
+input RelationAddInput {
+    fromRole: String!
+    toId: ID!
+    toRole: String!
+    through: String!
+}
+
 ### QUERIES
 type Query {
     me: User
@@ -289,6 +322,9 @@ type Query {
     # MarkingDefinitions
     markingDefinition(id: String!): MarkingDefinition
     markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, search: String): MarkingDefinitionConnection
+    # KillChainPhases
+    killChainPhase(id: String!): KillChainPhase
+    killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, search: String): KillChainPhaseConnection
     # ThreatActors
     threatActor(id: String!): ThreatActor
     threatActors(first: Int, after: ID, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, search: String): ThreatActorConnection
@@ -304,6 +340,7 @@ type Query {
 type Subscription {
     userAdded: User
     markingDefinitionEdit: MarkingDefinitionSubscription
+    killChainPhaseEdit: KillChainPhaseEditSubscription
     threatActorEdit: ThreatActorEditSubscription
     intrusionSetEdit: IntrusionSetEditSubscription
     malwareEdit(id: ID!): MalwareEditSubscription
@@ -311,15 +348,16 @@ type Subscription {
 
 ### MUTATIONS
 
-# Malware
-input RelationAddInput {
-    fromId: ID!
-    fromRole: String!
-    toId: ID!
-    toRole: String!
-    through: String!
+# KillChainPhase
+type KillChainPhaseEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): KillChainPhase
+    contextPatch(input: EditContext): KillChainPhase
+    relationAdd(input: RelationAddInput): KillChainPhase
+    relationDelete(relationId: ID!): ID
 }
 
+# Malware
 type MalwareEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Malware
@@ -341,6 +379,9 @@ type Mutation {
     markingDefinitionEditField(input: EditInput): MarkingDefinition
     markingDefinitionEditContext(input: EditContext): [EditUserContext]
     markingDefinitionDelete(id: ID!): ID
+    # KillChainPhase
+    killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase
+    killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations
     # ThreatActor
     threatActorAdd(input: ThreatActorAddInput): ThreatActor
     threatActorEditField(input: EditInput): ThreatActor
