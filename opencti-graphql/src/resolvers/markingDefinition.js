@@ -1,53 +1,52 @@
-import { withFilter } from 'graphql-subscriptions';
-import { logger, BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import {
   addMarkingDefinition,
-  deleteMarkingDefinition,
+  markingDefinitionDelete,
   findAll,
   findById,
+  markingDefinitions,
+  killChainPhases,
   markingDefinitionEditContext,
-  markingDefinitionEditField
+  markingDefinitionEditField,
+  markingDefinitionAddRelation,
+  markingDefinitionDeleteRelation,
+  markingDefinitionCleanContext
 } from '../domain/markingDefinition';
-import { pubsub } from '../database/redis';
-import { admin, auth } from './wrapper';
+import { fetchEditContext, pubsub } from '../database/redis';
+import { admin, auth, withCancel } from './wrapper';
 
 const markingDefinitionResolvers = {
   Query: {
     markingDefinition: auth((_, { id }) => findById(id)),
     markingDefinitions: auth((_, args) => findAll(args))
   },
+  MarkingDefinition: {
+    editContext: admin(markingDefinition => fetchEditContext(markingDefinition.id))
+  },
   Mutation: {
-    markingDefinitionAdd: admin((_, { input }, { user }) =>
-      addMarkingDefinition(user, input)
-    ),
-    markingDefinitionDelete: admin((_, { id }) => deleteMarkingDefinition(id)),
-    markingDefinitionEditField: admin((_, { input }, { user }) =>
-      markingDefinitionEditField(user, input)
-    ),
-    markingDefinitionEditContext: admin((_, { input }, { user }) =>
-      markingDefinitionEditContext(user, input)
-    )
+    markingDefinitionEdit: admin((_, { id }, { user }) => ({
+      delete: () => markingDefinitionDelete(id),
+      fieldPatch: ({ input }) => markingDefinitionEditField(id, input),
+      contextPatch: ({ input }) => markingDefinitionEditContext(user, id, input),
+      relationAdd: ({ input }) => markingDefinitionAddRelation(id, input),
+      relationDelete: ({ relationId }) => markingDefinitionDeleteRelation(relationId)
+    })),
+    markingDefinitionAdd: admin((_, { input }, { user }) => addMarkingDefinition(user, input))
   },
   Subscription: {
-    markingDefinitionEdit: {
-      resolve: payload => ({ markingDefinition: payload.data, context: [] }),
-      subscribe: admin((_, args, { user }) =>
-        withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC),
-          payload => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            logger.debug(
-              `${BUS_TOPICS.MarkingDefinition.EDIT_TOPIC}-user`,
-              user
-            );
-            logger.debug(
-              `${BUS_TOPICS.MarkingDefinition.EDIT_TOPIC}-payload`,
-              payload
-            );
-            return true;
+    markingDefinition: {
+      resolve: payload => payload.instance,
+      subscribe: admin((_, { id }, { user }) => {
+        console.log('subscribe from ' + user.email);
+        markingDefinitionEditContext(user, id);
+        return withCancel(
+          pubsub.asyncIterator(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC),
+          () => {
+            console.log('quit from ' + user.email);
+            markingDefinitionCleanContext(user, id);
           }
-        )(_, args, { user })
-      )
+        );
+      })
     }
   }
 };

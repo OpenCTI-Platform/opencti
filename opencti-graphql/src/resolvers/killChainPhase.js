@@ -21,7 +21,8 @@ const killChainPhaseResolvers = {
     killChainPhases: auth((_, args) => findAll(args))
   },
   KillChainPhase: {
-    markingDefinitions: (killChainPhase, args) => markingDefinitions(killChainPhase.id, args),
+    markingDefinitions: (killChainPhase, args) =>
+      markingDefinitions(killChainPhase.id, args),
     editContext: admin(killChainPhase => fetchEditContext(killChainPhase.id))
   },
   Mutation: {
@@ -30,21 +31,27 @@ const killChainPhaseResolvers = {
       fieldPatch: ({ input }) => killChainPhaseEditField(id, input),
       contextPatch: ({ input }) => killChainPhaseEditContext(user, id, input),
       relationAdd: ({ input }) => killChainPhaseAddRelation(id, input),
-      relationDelete: ({ relationId }) => killChainPhaseDeleteRelation(relationId)
+      relationDelete: ({ relationId }) =>
+        killChainPhaseDeleteRelation(relationId)
     })),
-    killChainPhaseAdd: admin((_, { input }, { user }) => addKillChainPhase(user, input))
+    killChainPhaseAdd: admin((_, { input }, { user }) =>
+      addKillChainPhase(user, input)
+    )
   },
   Subscription: {
-    killChainPhaseEdit: {
-      resolve: payload => ({
-        killChainPhase: payload.instance,
-        context: payload.context
-      }),
-      subscribe: admin((_, { id }, { user }) =>
-        withCancel(pubsub.asyncIterator(BUS_TOPICS.KillChainPhase.EDIT_TOPIC), () => {
-          killChainPhaseCleanContext(user, id);
-        })
-      )
+    killChainPhase: {
+      resolve: payload => payload.instance,
+      subscribe: admin((_, { id }, { user }) => {
+        console.log(`subscribe from ${user.email}`);
+        killChainPhaseEditContext(user, id);
+        return withCancel(
+          pubsub.asyncIterator(BUS_TOPICS.KillChainPhase.EDIT_TOPIC),
+          () => {
+            console.log(`quit from ${user.email}`);
+            killChainPhaseCleanContext(user, id);
+          }
+        );
+      })
     }
   }
 };

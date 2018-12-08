@@ -1,18 +1,13 @@
 import { assoc, head } from 'ramda';
+import { delEditContext, pubsub, setEditContext } from '../database/redis';
 import {
-  pubsub,
-  setEditContext,
-  fetchEditContext,
-  delEditContext
-} from '../database/redis';
-import {
+  createRelation,
   deleteByID,
-  loadByID,
-  qk,
-  now,
   editInput,
+  loadByID,
+  now,
   paginate,
-  createRelation
+  qk
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -30,7 +25,7 @@ export const findById = killChainPhaseId => loadByID(killChainPhaseId);
 
 export const addKillChainPhase = async (user, killChainPhase) => {
   const createKillChainPhase = qk(`insert $killChainPhase isa Kill-Chain-Phase 
-    has type "KillChainPhase";
+    has type "kill-chain-phase";
     $killChainPhase has kill_chain_name "${killChainPhase.kill_chain_name}";
     $killChainPhase has phase_name "${killChainPhase.phase_name}";
     $killChainPhase has order "${killChainPhase.order}";
@@ -60,34 +55,30 @@ export const killChainPhaseDeleteRelation = relationId =>
 export const killChainPhaseAddRelation = (killChainPhaseId, input) =>
   createRelation(killChainPhaseId, input, BUS_TOPICS.KillChainPhase.EDIT_TOPIC);
 
-export const killChainPhaseCleanContext = (user, killChainPhaseId) =>
+export const killChainPhaseCleanContext = (user, killChainPhaseId) => {
   delEditContext(user, killChainPhaseId);
+  return findById(killChainPhaseId).then(killChainPhase => {
+    pubsub.publish(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, {
+      instance: killChainPhase
+    });
+    return killChainPhase;
+  });
+};
 
 export const killChainPhaseEditContext = (user, killChainPhaseId, input) => {
   setEditContext(user, killChainPhaseId, input);
-  const killChainPhasePromise = findById(killChainPhaseId);
-  const contextPromise = fetchEditContext(killChainPhaseId);
-  return Promise.all([killChainPhasePromise, contextPromise]).then(
-    ([killChainPhase, context]) => {
-      pubsub.publish(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, {
-        instance: killChainPhase,
-        context
-      });
-      return killChainPhase;
-    }
-  );
+  findById(killChainPhaseId).then(killChainPhase => {
+    pubsub.publish(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, {
+      instance: killChainPhase
+    });
+    return killChainPhase;
+  });
 };
 
-export const killChainPhaseEditField = (killChainPhaseId, input) => {
-  const contextPromise = fetchEditContext(killChainPhaseId);
-  const inputPromise = editInput(assoc('id', killChainPhaseId, input));
-  return Promise.all([contextPromise, inputPromise]).then(
-    ([context, killChainPhase]) => {
-      pubsub.publish(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, {
-        instance: killChainPhase,
-        context
-      });
-      return killChainPhase;
-    }
-  );
-};
+export const killChainPhaseEditField = (killChainPhaseId, input) =>
+  editInput(assoc('id', killChainPhaseId, input)).then(killChainPhase => {
+    pubsub.publish(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, {
+      instance: killChainPhase
+    });
+    return killChainPhase;
+  });

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { fetchQuery, commitMutation } from 'react-relay';
+import { commitMutation } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -9,24 +9,13 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import {
-  compose, head, pathOr, pipe, map, pluck,
-} from 'ramda';
+import { compose, head } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
 import environment from '../../../relay/environment';
-import Autocomplete from '../../../components/Autocomplete';
 import TextField from '../../../components/TextField';
-import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
-
-const killchainPhases = [
-  { value: 'mitre-attack-defense-evation', label: '[MITRE Att&ck] Defense evasion' },
-  { value: 'mitre-attack-persistence', label: '[MITRE Att&ck] Persistence' },
-  { value: 'mitre-attack-initial-access', label: '[MITRE Att&ck] Initial access' },
-  { value: 'nsa-initial-access', label: '[NSA] Initial access' },
-];
 
 const styles = theme => ({
   drawerPaper: {
@@ -72,20 +61,18 @@ const styles = theme => ({
   },
 });
 
-const malwareMutation = graphql`
-    mutation MalwareCreationMutation($input: MalwareAddInput!) {
-        malwareAdd(input: $input) {
-            ...MalwareCard_malware
+const markingDefinitionMutation = graphql`
+    mutation MarkingDefinitionCreationMutation($input: MarkingDefinitionAddInput!) {
+        markingDefinitionAdd(input: $input) {
+            ...MarkingDefinitionLine_markingDefinition
         }
     }
 `;
 
-const malwareValidation = t => Yup.object().shape({
-  name: Yup.string()
+const markingDefinitionValidation = t => Yup.object().shape({
+  definition_type: Yup.string()
     .required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(500, t('The value is too long'))
+  definition: Yup.string()
     .required(t('This field is required')),
 });
 
@@ -93,13 +80,13 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_malwares',
+    'Pagination_markingDefinitions',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class MalwareCreation extends Component {
+class MarkingDefinitionCreation extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false, markingDefinitions: [] };
@@ -113,30 +100,14 @@ class MalwareCreation extends Component {
     this.setState({ open: false });
   }
 
-  searchMarkingDefinitions(event) {
-    fetchQuery(environment, markingDefinitionsLinesSearchQuery, { search: event.target.value }).then((data) => {
-      const markingDefinitions = pipe(
-        pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
-      )(data);
-      this.setState({ markingDefinitions });
-    });
-  }
-
-  searchKillchainPhases(event) {
-    // TODO: Search in GraphQL
-    console.log(event.target.value);
-  }
-
   onSubmit(values, { setSubmitting, resetForm, setErrors }) {
-    values.markingDefinitions = pluck('value', values.markingDefinitions);
     commitMutation(environment, {
-      mutation: malwareMutation,
+      mutation: markingDefinitionMutation,
       variables: {
         input: values,
       },
       updater: (store) => {
-        const payload = store.getRootField('malwareAdd');
+        const payload = store.getRootField('markingDefinitionAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
@@ -145,11 +116,11 @@ class MalwareCreation extends Component {
         const root = store.getRoot();
         const user = root.getLinkedRecord('me');
         const id = Math.floor(Math.random() * 999999) + 100000;
-        const node = store.create(`client:newMalware:V${id}`, 'Malware');
-        node.setValue(`client:newMalware:V${id}`, 'id');
+        const node = store.create(`client:newMarkingDefinition:V${id}`, 'MarkingDefinition');
+        node.setValue(`client:newMarkingDefinition:V${id}`, 'id');
         node.setValue('YOOOOOOOOOOOOOOOOOOOO', 'name');
         node.setValue(values.description, 'description');
-        const newEdge = store.create(`client:newEdge:V${id}`, 'malwareEdge');
+        const newEdge = store.create(`client:newEdge:V${id}`, 'markingDefinitionEdge');
         newEdge.setLinkedRecord(node, 'node');
         sharedUpdater(store, user.getDataID(), this.props.orderBy, newEdge);
       }, */
@@ -183,7 +154,7 @@ class MalwareCreation extends Component {
               <Close fontSize='small'/>
             </IconButton>
             <Typography variant='h6'>
-              {t('Create a malware')}
+              {t('Create a marking definition')}
             </Typography>
             <Button variant='contained' size='small' color='secondary' className={classes.importButton}>
               {t('Import')}
@@ -191,31 +162,14 @@ class MalwareCreation extends Component {
           </div>
           <div className={classes.container}>
             <Formik
-              initialValues={{
-                name: '', description: '', markingDefinitions: [], killchain_phases: [],
-              }}
-              validationSchema={malwareValidation(t)}
+              initialValues={{ definition_type: '', definition: '' }}
+              validationSchema={markingDefinitionValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
               render={({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
-                  <Field name='description' component={TextField} label={t('Description')}
-                         fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
-                  <Field
-                    name='killChainPhases'
-                    component={Autocomplete}
-                    label={t('Killchain phases')}
-                    options={killchainPhases}
-                    onInputChange={this.searchKillchainPhases.bind(this)}
-                  />
-                  <Field
-                    name='markingDefinitions'
-                    component={Autocomplete}
-                    label={t('Marking')}
-                    options={this.state.markingDefinitions}
-                    onInputChange={this.searchMarkingDefinitions.bind(this)}
-                  />
+                  <Field name='definition_type' component={TextField} label={t('Type')} fullWidth={true}/>
+                  <Field name='definition' component={TextField} label={t('Definition')} fullWidth={true} style={{ marginTop: 20 }}/>
                   <div className={classes.buttons}>
                     <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                       {t('Cancel')}
@@ -234,7 +188,7 @@ class MalwareCreation extends Component {
   }
 }
 
-MalwareCreation.propTypes = {
+MarkingDefinitionCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -244,4 +198,4 @@ MalwareCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(MalwareCreation);
+)(MarkingDefinitionCreation);

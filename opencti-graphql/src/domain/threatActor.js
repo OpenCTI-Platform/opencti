@@ -1,18 +1,23 @@
-import { head } from 'ramda';
-import { pubsub } from '../database/redis';
+import { assoc, head } from 'ramda';
 import {
+  delEditContext,
+  pubsub,
+  setEditContext
+} from '../database/redis';
+import {
+  createRelation,
   deleteByID,
-  loadByID,
-  qk,
-  now,
   editInput,
-  paginate
+  loadByID,
+  now,
+  paginate,
+  qk
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Threat-Actor', args);
 
-export const findMarkingDef = (threatActorId, args) =>
+export const markingDefinitions = (threatActorId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
     (marking:$marking, so:$threatActor) isa object_marking_refs; 
@@ -24,7 +29,7 @@ export const findById = threatActorId => loadByID(threatActorId);
 
 export const addThreatActor = async (user, threatActor) => {
   const createThreatActor = qk(`insert $threatActor isa Threat-Actor 
-    has type "Threat-Actor";
+    has type "threat-actor";
     $threatActor has name "${threatActor.name}";
     $threatActor has description "${threatActor.description}";
     $threatActor has created ${now()};
@@ -40,20 +45,37 @@ export const addThreatActor = async (user, threatActor) => {
   });
 };
 
-export const deleteThreatActor = threatActorId => deleteByID(threatActorId);
+export const threatActorDelete = threatActorId => deleteByID(threatActorId);
 
-export const threatActorEditContext = (user, input) => {
-  const { focusOn, isTyping } = input;
-  // Context map of threatActor users notifications
-  // SET edit:{V15431} '[ {"user": "email01", "focusOn": "name", "isTyping": true } ]'
-  return [
-    {
-      username: user.email,
-      focusOn,
-      isTyping
-    }
-  ];
+export const threatActorDeleteRelation = relationId => deleteByID(relationId);
+
+export const threatActorAddRelation = (threatActorId, input) =>
+  createRelation(threatActorId, input, BUS_TOPICS.ThreatActor.EDIT_TOPIC);
+
+export const threatActorCleanContext = (user, threatActorId) => {
+  delEditContext(user, threatActorId);
+  return findById(threatActorId).then(threatActor => {
+    pubsub.publish(BUS_TOPICS.ThreatActor.EDIT_TOPIC, {
+      instance: threatActor
+    });
+    return threatActor;
+  });
 };
 
-export const threatActorEditField = (user, input) =>
-  editInput(input, BUS_TOPICS.ThreatActor.EDIT_TOPIC);
+export const threatActorEditContext = (user, threatActorId, input) => {
+  setEditContext(user, threatActorId, input);
+  findById(threatActorId).then(threatActor => {
+    pubsub.publish(BUS_TOPICS.ThreatActor.EDIT_TOPIC, {
+      instance: threatActor
+    });
+    return threatActor;
+  });
+};
+
+export const threatActorEditField = (threatActorId, input) =>
+  editInput(assoc('id', threatActorId, input)).then(threatActor => {
+    pubsub.publish(BUS_TOPICS.ThreatActor.EDIT_TOPIC, {
+      instance: threatActor
+    });
+    return threatActor;
+  });

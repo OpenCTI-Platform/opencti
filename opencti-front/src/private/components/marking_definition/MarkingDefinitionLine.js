@@ -1,13 +1,11 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight } from '@material-ui/icons';
-import { Biohazard } from 'mdi-material-ui';
+import { KeyboardArrowRight, CenterFocusStrong } from '@material-ui/icons';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
@@ -16,7 +14,6 @@ const styles = theme => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
     '&:hover': {
       background: 'rgba(0, 0, 0, 0.1)',
     },
@@ -43,9 +40,16 @@ const styles = theme => ({
 });
 
 const inlineStyles = {
-  name: {
+  definition_type: {
     float: 'left',
-    width: '70%',
+    width: '25%',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  definition: {
+    float: 'left',
+    width: '40%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -69,14 +73,17 @@ class MarkingDefinitionLineComponent extends Component {
   render() {
     const { fd, classes, markingDefinition } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/knowledge/markingDefinitions/${markingDefinition.id}`}>
+      <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Biohazard/>
+          <CenterFocusStrong/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-                {markingDefinition.name}
+            <div className={classes.bodyItem} style={inlineStyles.definition_type}>
+                {markingDefinition.definition_type}
+            </div>
+            <div className={classes.bodyItem} style={inlineStyles.definition}>
+              {markingDefinition.definition}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
                 {fd(markingDefinition.created)}
@@ -105,7 +112,9 @@ const MarkingDefinitionLineFragment = createFragmentContainer(MarkingDefinitionL
         fragment MarkingDefinitionLine_markingDefinition on MarkingDefinition {
             id,
             definition_type,
-            definition
+            definition,
+            created,
+            modified
         }
     `,
 });
@@ -121,12 +130,15 @@ class MarkingDefinitionLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Biohazard/>
+          <CenterFocusStrong/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
+            <div className={classes.bodyItem} style={inlineStyles.definition_type}>
                 <div className={classes.placeholder} style={{ width: '80%' }}/>
+            </div>
+            <div className={classes.bodyItem} style={inlineStyles.definition}>
+              <div className={classes.placeholder} style={{ width: '70%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
                 <div className={classes.placeholder} style={{ width: 140 }}/>

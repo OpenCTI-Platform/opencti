@@ -72,7 +72,9 @@ input UserLoginInput {
 enum MarkingDefinitionsOrdering {
     stix_id,
     definition_type,
-    definition
+    definition,
+    created,
+    modified
 }
 type MarkingDefinitionConnection {
     pageInfo: PageInfo!
@@ -86,10 +88,12 @@ type MarkingDefinition {
     id: ID!
     definition_type: String!
     definition: String
-}
-type MarkingDefinitionSubscription {
-    markingDefinition: MarkingDefinition # Can be null if only the context is modified
-    context: [EditUserContext]
+    created_at: DateTime
+    updated_at: DateTime
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
 }
 input MarkingDefinitionAddInput {
     definition_type: String!
@@ -124,10 +128,6 @@ type KillChainPhase {
     revoked: Boolean
     editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
-}
-type KillChainPhaseEditSubscription {
-    malware: KillChainPhase # Can be null if only the context is modified
-    context: [EditUserContext]
 }
 input KillChainPhaseAddInput {
     kill_chain_name: String!
@@ -168,11 +168,8 @@ type ThreatActor {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
-}
-type ThreatActorEditSubscription {
-    threatActor: ThreatActor # Can be null if only the context is modified
-    context: [EditUserContext]
 }
 input ThreatActorAddInput {
     name: String!
@@ -213,11 +210,8 @@ type IntrusionSet {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
-}
-type IntrusionSetEditSubscription {
-    intrusionSet: IntrusionSet # Can be null if only the context is modified
-    context: [EditUserContext]
 }
 input IntrusionSetAddInput {
     name: String!
@@ -254,7 +248,6 @@ type Malware {
     markingDefinitions: MarkingDefinitionConnection
     killChainPhases: KillChainPhaseConnection
 }
-
 input MalwareAddInput {
     name: String!
     description: String!
@@ -292,10 +285,8 @@ type Report {
     modified: DateTime
     published: DateTime
     revoked: Boolean
-}
-type ReportEditSubscription {
-    intrusionSet: IntrusionSet # Can be null if only the context is modified
-    context: [EditUserContext]
+    editContext: [EditUserContext]
+    markingDefinitions: MarkingDefinitionConnection
 }
 input ReportAddInput {
     name: String!
@@ -336,14 +327,23 @@ type Query {
 ### SUBSCRIPTIONS
 type Subscription {
     userAdded: User
-    markingDefinitionEdit: MarkingDefinitionSubscription
-    killChainPhaseEdit: KillChainPhaseEditSubscription
-    threatActorEdit: ThreatActorEditSubscription
-    intrusionSetEdit: IntrusionSetEditSubscription
+    markingDefinition(id: ID!): MarkingDefinition
+    killChainPhase(id: ID!): KillChainPhase
+    threatActor(id: ID!): ThreatActor
+    intrusionSet(id: ID!): IntrusionSet
     malware(id: ID!): Malware
 }
 
 ### MUTATIONS
+
+# MarkingDefinition
+type MarkingDefinitionEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): MarkingDefinition
+    contextPatch(input: EditContext): MarkingDefinition
+    relationAdd(input: RelationAddInput): MarkingDefinition
+    relationDelete(relationId: ID!): ID
+}
 
 # KillChainPhase
 type KillChainPhaseEditMutations {
@@ -351,6 +351,24 @@ type KillChainPhaseEditMutations {
     fieldPatch(input: EditInput): KillChainPhase
     contextPatch(input: EditContext): KillChainPhase
     relationAdd(input: RelationAddInput): KillChainPhase
+    relationDelete(relationId: ID!): ID
+}
+
+# ThreatActor
+type ThreatActorEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): ThreatActor
+    contextPatch(input: EditContext): ThreatActor
+    relationAdd(input: RelationAddInput): ThreatActor
+    relationDelete(relationId: ID!): ID
+}
+
+# IntrusionSet
+type IntrusionSetEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): IntrusionSet
+    contextPatch(input: EditContext): IntrusionSet
+    relationAdd(input: RelationAddInput): IntrusionSet
     relationDelete(relationId: ID!): ID
 }
 
@@ -372,23 +390,17 @@ type Mutation {
     userAdd(input: UserAddInput): User
     userDelete(id: ID!): ID
     # MarkingDefinition
-    markingDefinitionAdd(input: MalwareAddInput): MarkingDefinition
-    markingDefinitionEditField(input: EditInput): MarkingDefinition
-    markingDefinitionEditContext(input: EditContext): [EditUserContext]
-    markingDefinitionDelete(id: ID!): ID
+    markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition
+    markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations
     # KillChainPhase
     killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase
     killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations
     # ThreatActor
     threatActorAdd(input: ThreatActorAddInput): ThreatActor
-    threatActorEditField(input: EditInput): ThreatActor
-    threatActorEditContext(input: EditContext): [EditUserContext]
-    threatActorDelete(id: ID!): ID
+    threatActorEdit(id: ID!): ThreatActorEditMutations
     # IntrusionSet
     intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet
-    intrusionSetEditField(input: EditInput): IntrusionSet
-    intrusionSetEditContext(input: EditContext): [EditUserContext]
-    intrusionSetDelete(id: ID!): ID
+    intrusionSetEdit(id: ID!): IntrusionSetEditMutations
     # Malware
     malwareAdd(input: MalwareAddInput): Malware
     malwareEdit(id: ID!): MalwareEditMutations
