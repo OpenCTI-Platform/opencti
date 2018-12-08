@@ -12,6 +12,10 @@ const i18n = {
       'External authentication': 'Authentification externe',
       Title: 'Titre',
       'Sender email address': 'Adresse mail d\'expédition',
+      'Base URL': 'URL de base',
+      Language: 'Langue',
+      Automatic: 'Automatique',
+      Registration: 'Inscription',
       // Form
       Create: 'Créer',
       Update: 'Modifier',

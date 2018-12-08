@@ -14,9 +14,7 @@ import {
   ArrowDropDown, ArrowDropUp, Dashboard, TableChart,
 } from '@material-ui/icons';
 import environment from '../../relay/environment';
-import MarkingDefinitionsLines, { markingDefinitionsLinesQuery } from './markingDefinition/MarkingDefinitionsLines';
-import MarkingDefinitionsCards, { markingDefinitionsCardsQuery, nbCardsToLoad } from './markingDefinition/MarkingDefinitionsCards';
-import MarkingDefinitionCreation from './markingDefinition/MarkingDefinitionCreation';
+import MarkingDefinitionsLines, { markingDefinitionsLinesQuery } from './marking_definition/MarkingDefinitionsLines';
 import inject18n from '../../components/i18n';
 
 const styles = () => ({
