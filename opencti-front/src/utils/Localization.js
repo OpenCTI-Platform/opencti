@@ -12,6 +12,10 @@ const i18n = {
       'External authentication': 'Authentification externe',
       Title: 'Titre',
       'Sender email address': 'Adresse mail d\'expédition',
+      'Base URL': 'URL de base',
+      Language: 'Langue',
+      Automatic: 'Automatique',
+      Registration: 'Inscription',
       // Form
       Create: 'Créer',
       Update: 'Modifier',
@@ -26,6 +30,7 @@ const i18n = {
       'Create a malware': 'Créer un code malveillant',
       'Update a malware': 'Modifier un code malveillant',
       'New alias': 'Nouvel alias',
+      'Create a marking definition': 'Créer un marquage',
       // Menu
       Dashboard: 'Tableau de bord',
       Knowledge: 'Connaissance',
@@ -69,6 +74,8 @@ const i18n = {
       Creator: 'Créateur',
       Marking: 'Marquage',
       'Killchain phases': 'Phases de killchain',
+      Definition: 'Definition',
+      Type: 'Type',
       // Statistics
       'Total entities': 'Nombre d\'entités',
       'Total observables': 'Nombre d\'observables',

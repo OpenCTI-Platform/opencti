@@ -6,8 +6,10 @@ import { compose } from 'ramda';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../components/i18n';
 import TextField from '../../components/TextField';
+import Select from '../../components/Select';
 import Switch from '../../components/Switch';
 
 const styles = theme => ({
@@ -36,12 +38,28 @@ class Settings extends Component {
               {t('Global')}
             </Typography>
             <Formik
-              initialValues={{ title: 'Luatix cyber threat intelligence platform', sender: 'opencti@luatix.org' }}
+              initialValues={{ title: 'Luatix cyber threat intelligence platform', sender: 'opencti@luatix.org', url: 'https://community.opencti.io', language: 'auto' }}
               onSubmit={this.onSubmit.bind(this)}
-              render={({ submitForm, isSubmitting }) => (
+              render={() => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field name='title' component={TextField} label={t('Title')} fullWidth={true}/>
                   <Field name='sender' component={TextField} label={t('Sender email address')} fullWidth={true} style={{ marginTop: 20 }}/>
+                  <Field name='url' component={TextField} label={t('Base URL')} fullWidth={true} style={{ marginTop: 20 }}/>
+                  <Field
+                    name='language'
+                    label={t('Language')}
+                    component={Select}
+                    fullWidth={true}
+                    inputProps={{
+                      name: 'language',
+                      id: 'language',
+                    }}
+                    containerstyle={{ marginTop: 20, width: '100%' }}
+                  >
+                    <MenuItem value='auto'><em>{t('Automatic')}</em></MenuItem>
+                    <MenuItem value='en'>English</MenuItem>
+                    <MenuItem value='fr'>Français</MenuItem>
+                  </Field>
                 </Form>
               )}
             />
@@ -53,12 +71,12 @@ class Settings extends Component {
               {t('Options')}
             </Typography>
             <Formik
-              initialValues={{ title: 'Luatix cyber threat intelligence platform', external_authentication: true }}
+              initialValues={{ external_authentication: true, registration: false }}
               onSubmit={this.onSubmit.bind(this)}
-              render={({ submitForm, isSubmitting }) => (
+              render={() => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field name='external_authentication' component={Switch} label={t('External authentication')}/>
-                  <Field name='external_authentication' component={Switch} label={t('External authentication')}/>
+                  <Field name='registration' component={Switch} label={t('Registration')}/>
                 </Form>
               )}
             />

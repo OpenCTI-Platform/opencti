@@ -9,15 +9,11 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import IconButton from '@material-ui/core/IconButton';
-import {
-  ArrowDropDown, ArrowDropUp, Dashboard, TableChart,
-} from '@material-ui/icons';
+import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import environment from '../../relay/environment';
-import MarkingDefinitionsLines, { markingDefinitionsLinesQuery } from './markingDefinition/MarkingDefinitionsLines';
-import MarkingDefinitionsCards, { markingDefinitionsCardsQuery, nbCardsToLoad } from './markingDefinition/MarkingDefinitionsCards';
-import MarkingDefinitionCreation from './markingDefinition/MarkingDefinitionCreation';
+import MarkingDefinitionsLines, { markingDefinitionsLinesQuery } from './marking_definition/MarkingDefinitionsLines';
 import inject18n from '../../components/i18n';
+import MarkingDefinitionCreation from './marking_definition/MarkingDefinitionCreation';
 
 const styles = () => ({
   windowScrollerWrapper: {
@@ -32,23 +28,7 @@ const styles = () => ({
     textTransform: 'uppercase',
     cursor: 'pointer',
   },
-  parameters: {
-    float: 'left',
-    marginTop: -10,
-  },
-  views: {
-    float: 'right',
-    marginTop: -10,
-  },
   inputLabel: {
-    float: 'left',
-  },
-  sortField: {
-    float: 'left',
-  },
-  sortFieldLabel: {
-    margin: '12px 15px 0 0',
-    fontSize: 14,
     float: 'left',
   },
   sortIcon: {
@@ -64,9 +44,15 @@ const inlineStyles = {
     padding: 0,
     top: '0px',
   },
-  name: {
+  definition_type: {
     float: 'left',
-    width: '70%',
+    width: '25%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  definition: {
+    float: 'left',
+    width: '40%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -87,7 +73,7 @@ class MarkingDefinitions extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      view: 'cards', sortBy: 'name', orderAsc: true, searchTerm: '', searchTimeout: 0,
+      view: 'cards', sortBy: 'definition_type', orderAsc: true, searchTerm: '', searchTimeout: 0,
     };
   }
 
@@ -121,19 +107,6 @@ class MarkingDefinitions extends Component {
     const { classes } = this.props;
     return (
       <div>
-        <div className={classes.views}>
-          <IconButton color={this.state.view === 'cards' ? 'secondary' : 'primary'}
-                      classes={{ root: classes.button }}
-                      onClick={this.handleChangeView.bind(this, 'cards')}>
-            <Dashboard/>
-          </IconButton>
-          <IconButton color={this.state.view === 'lines' ? 'secondary' : 'primary'}
-                      classes={{ root: classes.button }}
-                      onClick={this.handleChangeView.bind(this, 'lines')}>
-            <TableChart/>
-          </IconButton>
-        </div>
-        <div className='clearfix'/>
         <List classes={{ root: classes.linesContainer }}>
           <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
             <ListItemIcon>
@@ -141,7 +114,8 @@ class MarkingDefinitions extends Component {
             </ListItemIcon>
             <ListItemText primary={
               <div>
-                {this.SortHeader('name', 'Name')}
+                {this.SortHeader('definition_type', 'Type')}
+                {this.SortHeader('definition', 'Definition')}
                 {this.SortHeader('created', 'Creation date')}
                 {this.SortHeader('modified', 'Modification date')}
               </div>
@@ -163,6 +137,11 @@ class MarkingDefinitions extends Component {
             }}
           />
         </List>
+        <MarkingDefinitionCreation
+          paginationOptions={{
+            orderBy: this.state.sortBy,
+            orderMode: this.state.orderAsc ? 'asc' : 'desc',
+          }}/>
       </div>
     );
   }

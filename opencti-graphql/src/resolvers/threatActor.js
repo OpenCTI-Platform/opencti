@@ -1,16 +1,18 @@
-import { withFilter } from 'graphql-subscriptions';
-import { logger, BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import {
   addThreatActor,
-  deleteThreatActor,
+  threatActorDelete,
   findAll,
   findById,
-  findMarkingDef,
+  markingDefinitions,
   threatActorEditContext,
-  threatActorEditField
+  threatActorEditField,
+  threatActorAddRelation,
+  threatActorDeleteRelation,
+  threatActorCleanContext
 } from '../domain/threatActor';
-import { pubsub } from '../database/redis';
-import { admin, auth } from './wrapper';
+import { fetchEditContext, pubsub } from '../database/redis';
+import { admin, auth, withCancel } from './wrapper';
 
 const threatActorResolvers = {
   Query: {
@@ -19,37 +21,35 @@ const threatActorResolvers = {
   },
   ThreatActor: {
     markingDefinitions: (threatActor, args) =>
-      findMarkingDef(threatActor.id, args)
+      markingDefinitions(threatActor.id, args),
+    editContext: admin(threatActor => fetchEditContext(threatActor.id))
   },
   Mutation: {
+    threatActorEdit: admin((_, { id }, { user }) => ({
+      delete: () => threatActorDelete(id),
+      fieldPatch: ({ input }) => threatActorEditField(id, input),
+      contextPatch: ({ input }) => threatActorEditContext(user, id, input),
+      relationAdd: ({ input }) => threatActorAddRelation(id, input),
+      relationDelete: ({ relationId }) => threatActorDeleteRelation(relationId)
+    })),
     threatActorAdd: admin((_, { input }, { user }) =>
       addThreatActor(user, input)
-    ),
-    threatActorDelete: admin((_, { id }) => deleteThreatActor(id)),
-    threatActorEditField: admin((_, { input }, { user }) =>
-      threatActorEditField(user, input)
-    ),
-    threatActorEditContext: admin((_, { input }, { user }) =>
-      threatActorEditContext(user, input)
     )
   },
   Subscription: {
-    threatActorEdit: {
-      resolve: payload => ({ threatActor: payload.data, context: [] }),
-      subscribe: admin((_, args, { user }) =>
-        withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.ThreatActor.EDIT_TOPIC),
-          payload => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            logger.debug(`${BUS_TOPICS.ThreatActor.EDIT_TOPIC}-user`, user);
-            logger.debug(
-              `${BUS_TOPICS.ThreatActor.EDIT_TOPIC}-payload`,
-              payload
-            );
-            return true;
+    threatActor: {
+      resolve: payload => payload.instance,
+      subscribe: admin((_, { id }, { user }) => {
+        console.log(`subscribe from ${user.email}`);
+        threatActorEditContext(user, id);
+        return withCancel(
+          pubsub.asyncIterator(BUS_TOPICS.ThreatActor.EDIT_TOPIC),
+          () => {
+            console.log(`quit from ${user.email}`);
+            threatActorCleanContext(user, id);
           }
-        )(_, args, { user })
-      )
+        );
+      })
     }
   }
 };

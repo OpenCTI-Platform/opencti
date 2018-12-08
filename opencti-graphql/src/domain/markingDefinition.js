@@ -1,12 +1,13 @@
-import { head } from 'ramda';
-import { pubsub } from '../database/redis';
+import { assoc, head } from 'ramda';
+import { delEditContext, pubsub, setEditContext } from '../database/redis';
 import {
+  createRelation,
   deleteByID,
-  loadByID,
-  qk,
-  now,
   editInput,
-  paginate
+  loadByID,
+  now,
+  paginate,
+  qk
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -17,13 +18,14 @@ export const findById = markingDefinitionId => loadByID(markingDefinitionId);
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
   const createMarkingDefinition = qk(`insert $markingDefinition isa Marking-Definition 
-    has type "Marking-Definition";
+    has type "marking-definition";
     $markingDefinition has definition_type "${
       markingDefinition.definition_type
     }";
     $markingDefinition has definition "${markingDefinition.definition}";
     $markingDefinition has created ${now()};
     $markingDefinition has modified ${now()};
+    $markingDefinition has revoked false;
   `);
   return createMarkingDefinition.then(result => {
     const { data } = result;
@@ -38,20 +40,47 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   });
 };
 
-export const deleteMarkingDefinition = markingDefinitionId =>
+export const markingDefinitionDelete = markingDefinitionId =>
   deleteByID(markingDefinitionId);
 
-export const markingDefinitionEditContext = (user, input) => {
-  const { focusOn } = input;
-  // Context map of markingDefinition users notifications
-  // SET edit:{V15431} '[ {"user": "email01", "focusOn": "name", "isTyping": true } ]'
-  return [
-    {
-      username: user.email,
-      focusOn
-    }
-  ];
+export const markingDefinitionDeleteRelation = relationId =>
+  deleteByID(relationId);
+
+export const markingDefinitionAddRelation = (markingDefinitionId, input) =>
+  createRelation(
+    markingDefinitionId,
+    input,
+    BUS_TOPICS.MarkingDefinition.EDIT_TOPIC
+  );
+
+export const markingDefinitionCleanContext = (user, markingDefinitionId) => {
+  delEditContext(user, markingDefinitionId);
+  return findById(markingDefinitionId).then(markingDefinition => {
+    pubsub.publish(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, {
+      instance: markingDefinition
+    });
+    return markingDefinition;
+  });
 };
 
-export const markingDefinitionEditField = (user, input) =>
-  editInput(input, BUS_TOPICS.MarkingDefinition.EDIT_TOPIC);
+export const markingDefinitionEditContext = (
+  user,
+  markingDefinitionId,
+  input
+) => {
+  setEditContext(user, markingDefinitionId, input);
+  findById(markingDefinitionId).then(markingDefinition => {
+    pubsub.publish(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, {
+      instance: markingDefinition
+    });
+    return markingDefinition;
+  });
+};
+
+export const markingDefinitionEditField = (markingDefinitionId, input) =>
+  editInput(assoc('id', markingDefinitionId, input)).then(markingDefinition => {
+    pubsub.publish(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, {
+      instance: markingDefinition
+    });
+    return markingDefinition;
+  });

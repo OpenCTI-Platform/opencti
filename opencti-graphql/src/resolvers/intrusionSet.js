@@ -1,16 +1,19 @@
-import { withFilter } from 'graphql-subscriptions';
-import { logger, BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import {
   addIntrusionSet,
-  deleteIntrusionSet,
+  intrusionSetDelete,
   findAll,
   findById,
-  findMarkingDef,
+  markingDefinitions,
+  killChainPhases,
   intrusionSetEditContext,
-  intrusionSetEditField
+  intrusionSetEditField,
+  intrusionSetAddRelation,
+  intrusionSetDeleteRelation,
+  intrusionSetCleanContext
 } from '../domain/intrusionSet';
-import { pubsub } from '../database/redis';
-import { admin, auth } from './wrapper';
+import { fetchEditContext, pubsub } from '../database/redis';
+import { admin, auth, withCancel } from './wrapper';
 
 const intrusionSetResolvers = {
   Query: {
@@ -18,38 +21,33 @@ const intrusionSetResolvers = {
     intrusionSets: auth((_, args) => findAll(args))
   },
   IntrusionSet: {
-    markingDefinitions: (intrusionSet, args) =>
-      findMarkingDef(intrusionSet.id, args)
+    markingDefinitions: (intrusionSet, args) => markingDefinitions(intrusionSet.id, args),
+    editContext: admin(intrusionSet => fetchEditContext(intrusionSet.id))
   },
   Mutation: {
-    intrusionSetAdd: admin((_, { input }, { user }) =>
-      addIntrusionSet(user, input)
-    ),
-    intrusionSetDelete: admin((_, { id }) => deleteIntrusionSet(id)),
-    intrusionSetEditField: admin((_, { input }, { user }) =>
-      intrusionSetEditField(user, input)
-    ),
-    intrusionSetEditContext: admin((_, { input }, { user }) =>
-      intrusionSetEditContext(user, input)
-    )
+    intrusionSetEdit: admin((_, { id }, { user }) => ({
+      delete: () => intrusionSetDelete(id),
+      fieldPatch: ({ input }) => intrusionSetEditField(id, input),
+      contextPatch: ({ input }) => intrusionSetEditContext(user, id, input),
+      relationAdd: ({ input }) => intrusionSetAddRelation(id, input),
+      relationDelete: ({ relationId }) => intrusionSetDeleteRelation(relationId)
+    })),
+    intrusionSetAdd: admin((_, { input }, { user }) => addIntrusionSet(user, input))
   },
   Subscription: {
-    intrusionSetEdit: {
-      resolve: payload => ({ intrusionSet: payload.data, context: [] }),
-      subscribe: admin((_, args, { user }) =>
-        withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.IntrusionSet.EDIT_TOPIC),
-          payload => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            logger.debug(`${BUS_TOPICS.IntrusionSet.EDIT_TOPIC}-user`, user);
-            logger.debug(
-              `${BUS_TOPICS.IntrusionSet.EDIT_TOPIC}-payload`,
-              payload
-            );
-            return true;
+    intrusionSet: {
+      resolve: payload => payload.instance,
+      subscribe: admin((_, { id }, { user }) => {
+        console.log(`subscribe from ${user.email}`);
+        intrusionSetEditContext(user, id);
+        return withCancel(
+          pubsub.asyncIterator(BUS_TOPICS.IntrusionSet.EDIT_TOPIC),
+          () => {
+            console.log(`quit from ${user.email}`);
+            intrusionSetCleanContext(user, id);
           }
-        )(_, args, { user })
-      )
+        );
+      })
     }
   }
 };

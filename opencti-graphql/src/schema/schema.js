@@ -6,6 +6,7 @@ import { makeExecutableSchema } from 'graphql-tools';
 import path from 'path';
 import userResolvers from '../resolvers/user';
 import markingDefinitionResolvers from '../resolvers/markingDefinition';
+import killChainPhaseResolvers from '../resolvers/killChainPhase';
 import threatActorResolvers from '../resolvers/threatActor';
 import intrusionSetResolvers from '../resolvers/intrusionSet';
 import malwareResolvers from '../resolvers/malware';
@@ -21,6 +22,7 @@ const resolvers = mergeResolvers([
   globalResolvers,
   userResolvers,
   markingDefinitionResolvers,
+  killChainPhaseResolvers,
   threatActorResolvers,
   intrusionSetResolvers,
   malwareResolvers
