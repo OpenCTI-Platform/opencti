@@ -303,7 +303,7 @@ type Subscription {
     markingDefinitionEdit: MarkingDefinitionSubscription
     threatActorEdit: ThreatActorEditSubscription
     intrusionSetEdit: IntrusionSetEditSubscription
-    malwareEdit(id: ID!): Malware
+    malware(id: ID!): Malware
 }
 
 ### MUTATIONS
