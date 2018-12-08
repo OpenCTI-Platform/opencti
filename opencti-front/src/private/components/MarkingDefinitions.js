@@ -137,7 +137,11 @@ class MarkingDefinitions extends Component {
             }}
           />
         </List>
-        <MarkingDefinitionCreation/>
+        <MarkingDefinitionCreation
+          paginationOptions={{
+            orderBy: this.state.sortBy,
+            orderMode: this.state.orderAsc ? 'asc' : 'desc',
+          }}/>
       </div>
     );
   }
