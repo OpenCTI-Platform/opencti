@@ -199,8 +199,8 @@ const buildPagination = (first, offset, instances, globalCount) => {
   )(instances);
   const hasNextPage = first + offset < globalCount;
   const hasPreviousPage = offset > 0;
-  const startCursor = edges.length > 0 ? head(edges).cursor : null;
-  const endCursor = edges.length > 0 ? last(edges).cursor : null;
+  const startCursor = edges.length > 0 ? head(edges).cursor : '';
+  const endCursor = edges.length > 0 ? last(edges).cursor : '';
   const pageInfo = {
     startCursor,
     endCursor,
@@ -233,32 +233,6 @@ export const paginate = (query, options) => {
   });
 };
 
-/**
- * Generic modified of a single instance attribute.
- * @param input
- * @returns {Promise<any[] | never>}
- * @Deprecated use editInputTx TODO Migrate all calls to this method
- */
-export const editInput = input => {
-  const { id, key, value } = input;
-  const attributeDefQuery = qk(`match $x label "${key}" sub attribute; get;`);
-  return attributeDefQuery.then(attributeDefinition => {
-    // Getting the data type to create next queries correctly.
-    const type = head(attributeDefinition.data).x['data-type'];
-    // Delete all previous attributes
-    return qk(`match $m id ${id}; $m has ${key} $del; delete $del;`).then(
-      () => {
-        // Create new values
-        const creationQuery = `match $m id ${id}; insert $m ${join(
-          ' ',
-          map(val => `has ${key} ${type === String ? `"${val}"` : val}`, value)
-        )};`;
-        return qk(creationQuery).then(() => loadByID(id));
-      }
-    );
-  });
-};
-
 export const editInputTx = async (id, input) => {
   const { key, value } = input;
   const session = await client.session('grakn');
@@ -272,7 +246,7 @@ export const editInputTx = async (id, input) => {
     .get('x')
     .dataType();
   // Delete the old value/values
-  await wTx.query(`match $m id ${id}; $m has ${key} $del; delete $del;`);
+  await wTx.query(`match $m id ${id}; $m has ${key} $del via $d; delete $d;`);
   // Setup the new attribute
   await wTx.query(
     `match $m id ${id}; insert $m ${join(
