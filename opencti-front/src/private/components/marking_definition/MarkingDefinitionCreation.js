@@ -167,7 +167,7 @@ class MarkingDefinitionCreation extends Component {
           </div>
           <div className={classes.container}>
             <Formik
-              initialValues={{ definition_type: '', definition: '', level: 0 }}
+              initialValues={{ definition_type: '', definition: '', level: '' }}
               validationSchema={markingDefinitionValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}

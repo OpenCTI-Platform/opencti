@@ -1,4 +1,5 @@
 import { head } from 'ramda';
+import uuid from 'uuid/v4';
 import { delEditContext, pubsub, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -26,11 +27,14 @@ export const findById = killChainPhaseId => loadByID(killChainPhaseId);
 export const addKillChainPhase = async (user, killChainPhase) => {
   const createKillChainPhase = qk(`insert $killChainPhase isa Kill-Chain-Phase
     has type "kill-chain-phase";
+    $killChainPhase has stix_id "kill-chain-phase--${uuid()}";
     $killChainPhase has kill_chain_name "${killChainPhase.name}";
     $killChainPhase has phase_name "${killChainPhase.description}";
     $killChainPhase has created ${now()};
     $killChainPhase has modified ${now()};
     $killChainPhase has revoked false;
+    $killChainPhase has created_at ${now()};
+    $killChainPhase has updated_at ${now()};
   `);
   return createKillChainPhase.then(result => {
     const { data } = result;

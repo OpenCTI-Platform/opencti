@@ -79,7 +79,7 @@ class MarkingDefinitions extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      view: 'cards', sortBy: 'definition_type', orderAsc: true, searchTerm: '', searchTimeout: 0,
+      view: 'cards', sortBy: 'level', orderAsc: true, searchTerm: '', searchTimeout: 0,
     };
   }
 

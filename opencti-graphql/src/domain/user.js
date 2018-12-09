@@ -3,7 +3,7 @@ import uuidv5 from 'uuid/v5';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
 import { sign } from 'jsonwebtoken';
-import { pubsub } from '../database/redis';
+import { delEditContext, pubsub, setEditContext } from '../database/redis';
 import { FunctionalError, LoginError } from '../config/errors';
 import conf, {
   BUS_TOPICS,
@@ -13,7 +13,15 @@ import conf, {
   OPENCTI_WEB_TOKEN,
   ROLE_USER
 } from '../config/conf';
-import { deleteByID, loadByID, now, paginate, qk } from '../database/grakn';
+import {
+  createRelation,
+  deleteByID,
+  editInputTx,
+  loadByID,
+  now,
+  paginate,
+  qk
+} from '../database/grakn';
 
 // Security related
 export const generateOpenCTIWebToken = email => ({
@@ -125,7 +133,40 @@ export const findAll = args => {
 
 export const findById = userId => loadByID(userId);
 
-export const deleteUser = id => deleteByID(id);
+export const userDelete = id => deleteByID(id);
+
+export const userDeleteRelation = relationId => deleteByID(relationId);
+
+export const userAddRelation = (userId, input) =>
+  createRelation(userId, input, BUS_TOPICS.User.EDIT_TOPIC);
+
+export const userCleanContext = (user, userId) => {
+  delEditContext(user, userId);
+  return findById(userId).then(userObject => {
+    pubsub.publish(BUS_TOPICS.User.EDIT_TOPIC, {
+      instance: userObject
+    });
+    return userObject;
+  });
+};
+
+export const userEditContext = (user, userId, input) => {
+  setEditContext(user, userId, input);
+  findById(userId).then(userObject => {
+    pubsub.publish(BUS_TOPICS.User.EDIT_TOPIC, {
+      instance: userObject
+    });
+    return userObject;
+  });
+};
+
+export const userEditField = (userId, input) =>
+  editInputTx(userId, input).then(user => {
+    pubsub.publish(BUS_TOPICS.ThreatActor.EDIT_TOPIC, {
+      instance: user
+    });
+    return user;
+  });
 
 export const deleteUserByEmail = email => {
   const delUser = qk(`match $x has email "${email}"; delete $x;`);

@@ -1,4 +1,5 @@
 import { head } from 'ramda';
+import uuid from 'uuid/v4';
 import { delEditContext, pubsub, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -11,7 +12,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa ThreatActor', args);
+export const findAll = args => paginate('match $m isa Threat-Actor', args);
 
 export const markingDefinitions = (threatActorId, args) =>
   paginate(
@@ -24,13 +25,16 @@ export const markingDefinitions = (threatActorId, args) =>
 export const findById = threatActorId => loadByID(threatActorId);
 
 export const addThreatActor = async (user, threatActor) => {
-  const createThreatActor = qk(`insert $threatActor isa ThreatActor 
-    has type "threatActor";
+  const createThreatActor = qk(`insert $threatActor isa Threat-Actor 
+    has type "threat-actor";
+    $threatActor has stix_id "threat-actor--${uuid()}";
     $threatActor has name "${threatActor.name}";
     $threatActor has description "${threatActor.description}";
     $threatActor has created ${now()};
     $threatActor has modified ${now()};
     $threatActor has revoked false;
+    $threatActor has created_at ${now()};
+    $threatActor has updated_at ${now()};
   `);
   return createThreatActor.then(result => {
     const { data } = result;

@@ -31,6 +31,8 @@ type EditUserContext {
 ### User
 enum UsersOrdering {
     created,
+    firstname,
+    lastname,
     email
 }
 enum UserRole {
@@ -54,6 +56,9 @@ type User {
     language: String
     created: DateTime
     grant: [String]
+    editContext: [EditUserContext]
+    created_at: DateTime
+    updated_at: DateTime
 }
 input UserAddInput {
     username: String!
@@ -88,12 +93,12 @@ type MarkingDefinition {
     definition_type: String!
     definition: String!
     level: Int
-    created_at: DateTime
-    updated_at: DateTime
     created: DateTime
     modified: DateTime
     revoked: Boolean
     editContext: [EditUserContext]
+    created_at: DateTime
+    updated_at: DateTime
 }
 input MarkingDefinitionAddInput {
     definition_type: String!
@@ -122,13 +127,13 @@ type KillChainPhase {
     kill_chain_name: String!
     phase_name: String!
     order: Int
-    created_at: DateTime
-    updated_at: DateTime
     created: DateTime
     modified: DateTime
     revoked: Boolean
     editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
+    created_at: DateTime
+    updated_at: DateTime
 }
 input KillChainPhaseAddInput {
     kill_chain_name: String!
@@ -164,13 +169,13 @@ type ThreatActor {
     secondary_motivation: [String]
     personal_motivation: String
     description: String
-    created_at: DateTime
-    updated_at: DateTime
     created: DateTime
     modified: DateTime
     revoked: Boolean
     editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
+    created_at: DateTime
+    updated_at: DateTime
 }
 input ThreatActorAddInput {
     name: String!
@@ -305,9 +310,10 @@ input RelationAddInput {
 
 ### QUERIES
 type Query {
+    # Users
     me: User
     user(id: String!): User
-    users(first: Int, after: ID, orderBy: UsersOrdering, search: String): UserConnection
+    users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
     # MarkingDefinitions
     markingDefinition(id: String!): MarkingDefinition
     markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, search: String): MarkingDefinitionConnection
@@ -327,7 +333,7 @@ type Query {
 
 ### SUBSCRIPTIONS
 type Subscription {
-    userAdded: User
+    user(id: ID!): User
     markingDefinition(id: ID!): MarkingDefinition
     killChainPhase(id: ID!): KillChainPhase
     threatActor(id: ID!): ThreatActor
@@ -336,6 +342,15 @@ type Subscription {
 }
 
 ### MUTATIONS
+
+# User
+type UserEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): User
+    contextPatch(input: EditContext): User
+    relationAdd(input: RelationAddInput): User
+    relationDelete(relationId: ID!): ID
+}
 
 # MarkingDefinition
 type MarkingDefinitionEditMutations {
@@ -388,8 +403,8 @@ type Mutation {
     # Login
     token(input: UserLoginInput) : String
     # User
-    userAdd(input: UserAddInput): User
-    userDelete(id: ID!): ID
+    userAdd(input: UserAddInput): MarkingDefinition
+    userEdit(id: ID!): UserEditMutations
     # MarkingDefinition
     markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition
     markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations

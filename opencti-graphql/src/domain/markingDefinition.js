@@ -1,4 +1,5 @@
 import { head } from 'ramda';
+import uuid from 'uuid/v4';
 import { delEditContext, pubsub, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -11,12 +12,14 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa Marking-Definition', args);
+export const findAll = args =>
+  paginate('match $m isa Marking-Definition', args);
 export const findById = markingDefinitionId => loadByID(markingDefinitionId);
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
   const createMarkingDefinition = qk(`insert $markingDefinition isa Marking-Definition 
     has type "marking-definition";
+    $markingDefinition has stix_id "marking-definition--${uuid()}";
     $markingDefinition has definition_type "${
       markingDefinition.definition_type
     }";
@@ -25,6 +28,8 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
     $markingDefinition has created ${now()};
     $markingDefinition has modified ${now()};
     $markingDefinition has revoked false;
+    $markingDefinition has created_at ${now()};
+    $markingDefinition has updated_at ${now()};
   `);
   return createMarkingDefinition.then(result => {
     const { data } = result;

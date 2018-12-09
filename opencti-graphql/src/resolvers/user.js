@@ -1,22 +1,29 @@
-import { withFilter } from 'graphql-subscriptions';
 import { sign } from 'jsonwebtoken';
-import conf, { BUS_TOPICS, logger } from '../config/conf';
+import conf, { BUS_TOPICS } from '../config/conf';
 import {
   addUser,
-  deleteUser,
+  userDelete,
   findAll,
   findById,
+  userEditContext,
+  userEditField,
+  userAddRelation,
+  userDeleteRelation,
+  userCleanContext,
   login,
   setAuthenticationCookie
 } from '../domain/user';
-import { pubsub } from '../database/redis';
-import { admin, anonymous, auth } from './wrapper';
+import { fetchEditContext, pubsub } from '../database/redis';
+import { admin, auth, anonymous, withCancel } from './wrapper';
 
 const userResolvers = {
   Query: {
-    users: admin((_, args) => findAll(args)),
-    user: admin((_, { id }) => findById(id)),
+    user: auth((_, { id }) => findById(id)),
+    users: auth((_, args) => findAll(args)),
     me: auth((_, args, { user }) => findById(user.id))
+  },
+  User: {
+    editContext: admin(user => fetchEditContext(user.id))
   },
   Mutation: {
     token: anonymous((_, { input }, context) =>
@@ -25,22 +32,27 @@ const userResolvers = {
         return sign(token, conf.get('jwt:secret'));
       })
     ),
-    userAdd: admin((_, { input }) => addUser(input)),
-    userDelete: admin((_, { id }) => deleteUser(id))
+    userEdit: admin((_, { id }, { user }) => ({
+      delete: () => userDelete(id),
+      fieldPatch: ({ input }) => userEditField(id, input),
+      contextPatch: ({ input }) => userEditContext(user, id, input),
+      relationAdd: ({ input }) => userAddRelation(id, input),
+      relationDelete: ({ relationId }) => userDeleteRelation(relationId)
+    })),
+    userAdd: admin((_, { input }, { user }) => addUser(user, input))
   },
   Subscription: {
-    userAdded: {
-      subscribe: admin((_, args, { user }) =>
-        withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.User.ADDED_TOPIC),
-          payload => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            logger.debug(`${BUS_TOPICS.User.ADDED_TOPIC}-user`, user);
-            logger.debug(`${BUS_TOPICS.User.ADDED_TOPIC}-payload`, payload);
-            return true;
+    user: {
+      resolve: payload => payload.instance,
+      subscribe: admin((_, { id }, { user }) => {
+        userEditContext(user, id);
+        return withCancel(
+          pubsub.asyncIterator(BUS_TOPICS.User.EDIT_TOPIC),
+          () => {
+            userCleanContext(user, id);
           }
-        )(_, args, { user })
-      )
+        );
+      })
     }
   }
 };

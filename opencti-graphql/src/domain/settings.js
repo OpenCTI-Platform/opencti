@@ -4,7 +4,7 @@ import {
   createRelation,
   deleteByID,
   editInputTx,
-  loadByID,
+  loadByID, now,
   paginate,
   qk
 } from '../database/grakn';
@@ -21,6 +21,8 @@ export const addSettings = async (user, settings) => {
     $settings has platform_language "${settings.platform_language}";
     $settings has platform_external_auth "${settings.platform_external_auth}";
     $settings has platform_registration "${settings.platform_registration}";
+    $settings has created_at ${now()};
+    $settings has updated_at ${now()};
   `);
   return createSettings.then(result => {
     const { data } = result;

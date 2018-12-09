@@ -1,4 +1,5 @@
 import { head } from 'ramda';
+import uuid from 'uuid/v4';
 import { delEditContext, pubsub, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -26,11 +27,14 @@ export const findById = intrusionSetId => loadByID(intrusionSetId);
 export const addIntrusionSet = async (user, intrusionSet) => {
   const createIntrusionSet = qk(`insert $intrusionSet isa Intrusion-Set 
     has type "intrusion-set";
+    $intrusionSet has stix_id "intrusion-set--${uuid()}";
     $intrusionSet has name "${intrusionSet.name}";
     $intrusionSet has description "${intrusionSet.description}";
     $intrusionSet has created ${now()};
     $intrusionSet has modified ${now()};
     $intrusionSet has revoked false;
+    $intrusionSet has created_at ${now()};
+    $intrusionSet has updated_at ${now()};
   `);
   return createIntrusionSet.then(result => {
     const { data } = result;
