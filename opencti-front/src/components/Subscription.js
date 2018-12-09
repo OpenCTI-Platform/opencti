@@ -21,15 +21,8 @@ const SubscriptionAvatarsStyles = () => ({
 });
 
 const SubscriptionAvatarsFocusStyles = () => ({
-  avatars: {
-    float: 'left',
-    display: 'flex',
-  },
-  avatar: {
-    width: 15,
-    height: 15,
-    marginLeft: 5,
-    textTransform: 'uppercase',
+  container: {
+    color: '#4CAF50',
   },
 });
 
@@ -38,8 +31,8 @@ class SubscriptionAvatarsComponent extends Component {
     const { classes, users } = this.props;
     return (
       <div className={classes.avatars}>
-        {users.map((user, i) => <Tooltip title={user.username}>
-          <Avatar key={i} classes={{ root: classes.avatar }} style={{ backgroundColor: pickColor(i) }}>
+        {users.map((user, i) => <Tooltip title={user.username} key={i}>
+          <Avatar classes={{ root: classes.avatar }} style={{ backgroundColor: pickColor(i) }}>
             {user.username.charAt(0)}
           </Avatar>
         </Tooltip>)}
@@ -57,10 +50,10 @@ export const SubscriptionAvatars = withStyles(SubscriptionAvatarsStyles)(Subscri
 
 class SubscriptionFocusComponent extends Component {
   render() {
-    const { t, users, fieldName } = this.props;
+    const { classes, t, users, fieldName } = this.props;
     let display = false;
     return (
-      <span>
+      <span className={classes.container}>
         {users.map((user, i) => {
           if (user.focusOn === fieldName) {
             display = true;
