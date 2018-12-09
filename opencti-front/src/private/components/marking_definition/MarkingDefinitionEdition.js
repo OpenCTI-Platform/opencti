@@ -96,6 +96,11 @@ const onFormChange$ = new rxjs.Subject().pipe(
 
 
 class MarkingDefinitionEditionContainer extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { colors: {} };
+  }
+
   componentDidMount() {
     const sub = requestSubscription(
       environment,
@@ -109,9 +114,7 @@ class MarkingDefinitionEditionContainer extends Component {
 
       },
     );
-    this.setState({
-      sub,
-    });
+    this.setState({ sub });
     this.subscription = onFormChange$.subscribe(
       (data) => {
         commitMutation(environment, {

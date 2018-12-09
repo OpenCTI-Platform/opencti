@@ -105,6 +105,13 @@ class MarkingDefinitionPopover extends Component {
       variables: {
         id: this.props.markingDefinitionId,
       },
+      updater: (store) => {
+        const payload = store.getRootField('markingDefinitionEdit');
+        console.log(payload);
+        /* const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
+        const container = store.getRoot();
+        sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge); */
+      },
       onCompleted: (response, errors) => {
         this.setState({ deleting: false });
         if (errors) {

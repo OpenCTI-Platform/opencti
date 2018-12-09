@@ -4,8 +4,8 @@ import { withStyles } from '@material-ui/core/styles';
 import Tooltip from '@material-ui/core/Tooltip';
 import Avatar from '@material-ui/core/Avatar';
 import { compose, filter, pipe } from 'ramda';
-import { pickColor } from '../utils/Colors';
 import inject18n from './i18n';
+import { stringToColour } from '../utils/Colors';
 
 const SubscriptionAvatarsStyles = () => ({
   avatars: {
@@ -32,7 +32,7 @@ class SubscriptionAvatarsComponent extends Component {
     return (
       <div className={classes.avatars}>
         {users.map((user, i) => <Tooltip title={user.username} key={i}>
-          <Avatar classes={{ root: classes.avatar }} style={{ backgroundColor: pickColor(i) }}>
+          <Avatar classes={{ root: classes.avatar }} style={{ backgroundColor: stringToColour(user.username) }}>
             {user.username.charAt(0)}
           </Avatar>
         </Tooltip>)}
@@ -65,7 +65,7 @@ class SubscriptionFocusComponent extends Component {
     return (
       <span>
         {focusedUsers.map((user, i) => (
-              <span key={i}><span style={{ color: pickColor(i) }}>{user.username}</span><span>{i + 1 < users.length ? ', ' : ' '}</span></span>
+              <span key={i}><span style={{ color: stringToColour(user.username) }}>{user.username}</span><span>{i + 1 < focusedUsers.length ? ', ' : ' '}</span></span>
         ))}
         {focusedUsers.length > 1 ? t('are updating...') : t('is updating...')}
       </span>
