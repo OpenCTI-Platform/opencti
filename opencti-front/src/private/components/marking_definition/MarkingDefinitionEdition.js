@@ -10,13 +10,13 @@ import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
-import Avatar from '@material-ui/core/Avatar';
 import * as Yup from 'yup';
 import * as rxjs from 'rxjs/index';
 import { debounceTime } from 'rxjs/operators/index';
 import inject18n from '../../../components/i18n';
 import environment from '../../../relay/environment';
 import TextField from '../../../components/TextField';
+import { SubscriptionAvatars, SubscriptionFocus } from '../../../components/Subscription';
 
 const styles = theme => ({
   header: {
@@ -42,6 +42,9 @@ const styles = theme => ({
     backgroundColor: theme.palette.navAlt.background,
     color: theme.palette.header.text,
     borderBottom: '1px solid #5c5c5c',
+  },
+  title: {
+    float: 'left',
   },
 });
 
@@ -166,14 +169,11 @@ class MarkingDefinitionEditionContainer extends Component {
           <IconButton aria-label='Close' className={classes.closeButton} onClick={handleClose.bind(this)}>
             <Close fontSize='small'/>
           </IconButton>
-          <Typography variant='h6'>
+          <Typography variant='h6' classes={{ root: classes.title }}>
             {t('Update a marking definition')}
           </Typography>
-          {editUsers.map((object, i) => <div key={i}><Avatar className={classes.avatar}>
-            {object.username.charAt(0)}
-          </Avatar>
-            focusOn: {object.focusOn}
-          </div>)}
+          <SubscriptionAvatars users={editUsers}/>
+          <div className='clearfix'/>
         </div>
         <div className={classes.container}>
           <Formik
@@ -183,13 +183,17 @@ class MarkingDefinitionEditionContainer extends Component {
             render={() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field name='definition_type' component={TextField} label={t('Type')} fullWidth={true}
-                       onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}/>
+                       onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
+                       helperText={<SubscriptionFocus users={editUsers} fieldName='definition_type'/>}/>
                 <Field name='definition' component={TextField} label={t('Definition')} fullWidth={true} style={{ marginTop: 20 }}
-                       onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}/>
+                       onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
+                       helperText={<SubscriptionFocus users={editUsers} fieldName='definition'/>}/>
                 <Field name='color' component={TextField} label={t('Color')} fullWidth={true} style={{ marginTop: 20 }}
-                       onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}/>
+                       onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
+                       helperText={<SubscriptionFocus users={editUsers} fieldName='color'/>}/>
                 <Field name='level' component={TextField} label={t('Level')} fullWidth={true} type='number' style={{ marginTop: 20 }}
-                       onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}/>
+                       onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
+                       helperText={<SubscriptionFocus users={editUsers} fieldName='level'/>}/>
               </Form>
             )}
           />

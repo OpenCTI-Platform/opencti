@@ -17,6 +17,8 @@ const i18n = {
       Language: 'Langue',
       Automatic: 'Automatique',
       Registration: 'Inscription',
+      'are updating...': 'modifient actuellement...',
+      'is updating...': 'modifie actuellement...',
       // Form
       Create: 'Créer',
       Update: 'Modifier',
