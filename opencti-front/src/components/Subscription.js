@@ -53,12 +53,12 @@ class SubscriptionFocusComponent extends Component {
     const { classes, t, users, fieldName } = this.props;
     let display = false;
     return (
-      <span className={classes.container}>
+      <span>
         {users.map((user, i) => {
           if (user.focusOn === fieldName) {
             display = true;
             return (
-              <span key={i}>{user.username}{i + 1 < users.length ? ', ' : ' '}</span>
+              <span key={i}><span style={{ color: pickColor(i) }}>{user.username}</span><span>{i + 1 < users.length ? ', ' : ' '}</span></span>
             );
           }
           return <span key={i}/>;
