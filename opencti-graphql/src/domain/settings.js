@@ -1,11 +1,12 @@
 import { head } from 'ramda';
-import { delEditContext, pubsub, setEditContext } from '../database/redis';
+import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
   editInputTx,
-  loadByID, now,
-  paginate,
+  loadByID,
+  notify,
+  now,
   qk
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -26,10 +27,9 @@ export const addSettings = async (user, settings) => {
   `);
   return createSettings.then(result => {
     const { data } = result;
-    return findById(head(data).settings.id).then(settingsCreated => {
-      pubsub.publish(BUS_TOPICS.Settings.ADDED_TOPIC, { settingsCreated });
-      return settingsCreated;
-    });
+    return findById(head(data).settings.id).then(created =>
+      notify(BUS_TOPICS.Settings.ADDED_TOPIC, created)
+    );
   });
 };
 
@@ -38,32 +38,25 @@ export const settingsDelete = settingsId => deleteByID(settingsId);
 export const settingsDeleteRelation = relationId => deleteByID(relationId);
 
 export const settingsAddRelation = (settingsId, input) =>
-  createRelation(settingsId, input, BUS_TOPICS.Settings.EDIT_TOPIC);
+  createRelation(settingsId, input).then(settings =>
+    notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings)
+  );
 
 export const settingsCleanContext = (user, settingsId) => {
   delEditContext(user, settingsId);
-  return findById(settingsId).then(settings => {
-    pubsub.publish(BUS_TOPICS.Settings.EDIT_TOPIC, {
-      instance: settings
-    });
-    return settings;
-  });
+  return findById(settingsId).then(settings =>
+    notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings)
+  );
 };
 
 export const settingsEditContext = (user, settingsId, input) => {
   setEditContext(user, settingsId, input);
-  findById(settingsId).then(settings => {
-    pubsub.publish(BUS_TOPICS.Settings.EDIT_TOPIC, {
-      instance: settings
-    });
-    return settings;
-  });
+  findById(settingsId).then(settings =>
+    notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings)
+  );
 };
 
 export const settingsEditField = (settingsId, input) =>
-  editInputTx(settingsId, input).then(settings => {
-    pubsub.publish(BUS_TOPICS.Settings.EDIT_TOPIC, {
-      instance: settings
-    });
-    return settings;
-  });
+  editInputTx(settingsId, input).then(settings =>
+    notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings)
+  );

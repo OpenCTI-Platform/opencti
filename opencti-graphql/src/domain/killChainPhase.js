@@ -1,11 +1,12 @@
 import { head } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, pubsub, setEditContext } from '../database/redis';
+import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
   editInputTx,
   loadByID,
+  notify,
   now,
   paginate,
   qk
@@ -38,13 +39,8 @@ export const addKillChainPhase = async (user, killChainPhase) => {
   `);
   return createKillChainPhase.then(result => {
     const { data } = result;
-    return findById(head(data).killChainPhase.id).then(
-      killChainPhaseCreated => {
-        pubsub.publish(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, {
-          killChainPhaseCreated
-        });
-        return killChainPhaseCreated;
-      }
+    return findById(head(data).killChainPhase.id).then(created =>
+      notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created)
     );
   });
 };
@@ -56,32 +52,25 @@ export const killChainPhaseDeleteRelation = relationId =>
   deleteByID(relationId);
 
 export const killChainPhaseAddRelation = (killChainPhaseId, input) =>
-  createRelation(killChainPhaseId, input, BUS_TOPICS.KillChainPhase.EDIT_TOPIC);
+  createRelation(killChainPhaseId, input).then(killChainPhase =>
+    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase)
+  );
 
 export const killChainPhaseCleanContext = (user, killChainPhaseId) => {
   delEditContext(user, killChainPhaseId);
-  return findById(killChainPhaseId).then(killChainPhase => {
-    pubsub.publish(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, {
-      instance: killChainPhase
-    });
-    return killChainPhase;
-  });
+  return findById(killChainPhaseId).then(killChainPhase =>
+    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase)
+  );
 };
 
 export const killChainPhaseEditContext = (user, killChainPhaseId, input) => {
   setEditContext(user, killChainPhaseId, input);
-  findById(killChainPhaseId).then(killChainPhase => {
-    pubsub.publish(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, {
-      instance: killChainPhase
-    });
-    return killChainPhase;
-  });
+  findById(killChainPhaseId).then(killChainPhase =>
+    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase)
+  );
 };
 
 export const killChainPhaseEditField = (killChainPhaseId, input) =>
-  editInputTx(killChainPhaseId, input).then(killChainPhase => {
-    pubsub.publish(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, {
-      instance: killChainPhase
-    });
-    return killChainPhase;
-  });
+  editInputTx(killChainPhaseId, input).then(killChainPhase =>
+    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase)
+  );
