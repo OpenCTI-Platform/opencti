@@ -1,13 +1,9 @@
-import { assoc, head } from 'ramda';
-import {
-  delEditContext,
-  pubsub,
-  setEditContext
-} from '../database/redis';
+import { head } from 'ramda';
+import { delEditContext, pubsub, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
-  editInput,
+  editInputTx,
   loadByID,
   now,
   paginate,
@@ -15,7 +11,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa Threat-Actor', args);
+export const findAll = args => paginate('match $m isa ThreatActor', args);
 
 export const markingDefinitions = (threatActorId, args) =>
   paginate(
@@ -28,8 +24,8 @@ export const markingDefinitions = (threatActorId, args) =>
 export const findById = threatActorId => loadByID(threatActorId);
 
 export const addThreatActor = async (user, threatActor) => {
-  const createThreatActor = qk(`insert $threatActor isa Threat-Actor 
-    has type "threat-actor";
+  const createThreatActor = qk(`insert $threatActor isa ThreatActor 
+    has type "threatActor";
     $threatActor has name "${threatActor.name}";
     $threatActor has description "${threatActor.description}";
     $threatActor has created ${now()};
@@ -39,7 +35,9 @@ export const addThreatActor = async (user, threatActor) => {
   return createThreatActor.then(result => {
     const { data } = result;
     return findById(head(data).threatActor.id).then(threatActorCreated => {
-      pubsub.publish(BUS_TOPICS.ThreatActor.ADDED_TOPIC, { threatActorCreated });
+      pubsub.publish(BUS_TOPICS.ThreatActor.ADDED_TOPIC, {
+        threatActorCreated
+      });
       return threatActorCreated;
     });
   });
@@ -73,7 +71,7 @@ export const threatActorEditContext = (user, threatActorId, input) => {
 };
 
 export const threatActorEditField = (threatActorId, input) =>
-  editInput(assoc('id', threatActorId, input)).then(threatActor => {
+  editInputTx(threatActorId, input).then(threatActor => {
     pubsub.publish(BUS_TOPICS.ThreatActor.EDIT_TOPIC, {
       instance: threatActor
     });

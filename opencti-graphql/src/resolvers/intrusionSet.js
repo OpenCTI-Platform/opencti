@@ -5,7 +5,6 @@ import {
   findAll,
   findById,
   markingDefinitions,
-  killChainPhases,
   intrusionSetEditContext,
   intrusionSetEditField,
   intrusionSetAddRelation,
@@ -21,7 +20,8 @@ const intrusionSetResolvers = {
     intrusionSets: auth((_, args) => findAll(args))
   },
   IntrusionSet: {
-    markingDefinitions: (intrusionSet, args) => markingDefinitions(intrusionSet.id, args),
+    markingDefinitions: (intrusionSet, args) =>
+      markingDefinitions(intrusionSet.id, args),
     editContext: admin(intrusionSet => fetchEditContext(intrusionSet.id))
   },
   Mutation: {
@@ -32,18 +32,18 @@ const intrusionSetResolvers = {
       relationAdd: ({ input }) => intrusionSetAddRelation(id, input),
       relationDelete: ({ relationId }) => intrusionSetDeleteRelation(relationId)
     })),
-    intrusionSetAdd: admin((_, { input }, { user }) => addIntrusionSet(user, input))
+    intrusionSetAdd: admin((_, { input }, { user }) =>
+      addIntrusionSet(user, input)
+    )
   },
   Subscription: {
     intrusionSet: {
       resolve: payload => payload.instance,
       subscribe: admin((_, { id }, { user }) => {
-        console.log(`subscribe from ${user.email}`);
         intrusionSetEditContext(user, id);
         return withCancel(
           pubsub.asyncIterator(BUS_TOPICS.IntrusionSet.EDIT_TOPIC),
           () => {
-            console.log(`quit from ${user.email}`);
             intrusionSetCleanContext(user, id);
           }
         );

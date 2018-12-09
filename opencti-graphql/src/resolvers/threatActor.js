@@ -40,12 +40,10 @@ const threatActorResolvers = {
     threatActor: {
       resolve: payload => payload.instance,
       subscribe: admin((_, { id }, { user }) => {
-        console.log(`subscribe from ${user.email}`);
         threatActorEditContext(user, id);
         return withCancel(
           pubsub.asyncIterator(BUS_TOPICS.ThreatActor.EDIT_TOPIC),
           () => {
-            console.log(`quit from ${user.email}`);
             threatActorCleanContext(user, id);
           }
         );

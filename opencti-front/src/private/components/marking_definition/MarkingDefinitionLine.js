@@ -5,10 +5,11 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight, CenterFocusStrong } from '@material-ui/icons';
+import { MoreVert, CenterFocusStrong } from '@material-ui/icons';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
+import MarkingDefinitionPopover from './MarkingDefinitionPopover';
 
 const styles = theme => ({
   item: {
@@ -49,7 +50,14 @@ const inlineStyles = {
   },
   definition: {
     float: 'left',
-    width: '40%',
+    width: '30%',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  level: {
+    float: 'left',
+    width: '10%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -85,6 +93,9 @@ class MarkingDefinitionLineComponent extends Component {
             <div className={classes.bodyItem} style={inlineStyles.definition}>
               {markingDefinition.definition}
             </div>
+            <div className={classes.bodyItem} style={inlineStyles.level}>
+              {markingDefinition.level}
+            </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
                 {fd(markingDefinition.created)}
             </div>
@@ -94,7 +105,7 @@ class MarkingDefinitionLineComponent extends Component {
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <MarkingDefinitionPopover markingDefinitionId={markingDefinition.id}/>
         </ListItemIcon>
       </ListItem>
     );
@@ -103,6 +114,7 @@ class MarkingDefinitionLineComponent extends Component {
 
 MarkingDefinitionLineComponent.propTypes = {
   markingDefinition: PropTypes.object,
+  me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
@@ -113,6 +125,7 @@ const MarkingDefinitionLineFragment = createFragmentContainer(MarkingDefinitionL
             id,
             definition_type,
             definition,
+            level,
             created,
             modified
         }
@@ -140,6 +153,9 @@ class MarkingDefinitionLineDummyComponent extends Component {
             <div className={classes.bodyItem} style={inlineStyles.definition}>
               <div className={classes.placeholder} style={{ width: '70%' }}/>
             </div>
+            <div className={classes.bodyItem} style={inlineStyles.level}>
+              <div className={classes.placeholder} style={{ width: '50%' }}/>
+            </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
                 <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
@@ -149,7 +165,7 @@ class MarkingDefinitionLineDummyComponent extends Component {
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <MoreVert/>
         </ListItemIcon>
       </ListItem>
     );

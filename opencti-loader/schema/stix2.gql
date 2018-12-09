@@ -9,6 +9,8 @@ define
   "timestamp" sub attribute datatype long;
 
   # OpenCTI properties
+  "created_at" sub attribute datatype date;
+  "updated_at" sub attribute datatype date;
   "issuer" sub attribute datatype string;
   "duration" sub attribute datatype string;
   "username" sub attribute datatype string;
@@ -18,8 +20,12 @@ define
   "lastname" sub attribute datatype string;
   "language" sub attribute datatype string;
   "grant" sub attribute datatype string;
-  "external_authentication" sub attribute datatype boolean;
-  "platform_organization" sub attribute datatype string;
+  "platform_title" sub attribute datatype string;
+  "platform_language" sub attribute datatype string;
+  "platform_email" sub attribute datatype string;
+  "platform_url" sub attribute datatype string;
+  "platform_external_auth" sub attribute datatype boolean;
+  "platform_registration" sub attribute datatype boolean;
 
   # STIX common properties
   "stix_id" sub attribute datatype string;
@@ -49,6 +55,7 @@ define
   "order" sub attribute datatype long;
   "definition_type" sub attribute datatype string;
   "definition" sub attribute datatype string;
+  "level" sub attribute datatype long;
   "source_name" sub attribute datatype string;
   "url" sub attribute datatype string;
   "hash" sub attribute datatype string;
@@ -77,6 +84,8 @@ define
   "author" sub role;
   "authorization" sub role;
   "client" sub role;
+  "allow" sub role;
+  "allowed" sub role;
 
   # STIX common roles
   "so" sub role;
@@ -135,6 +144,11 @@ define
     relates "status"
     relates "state";
 
+  # Access relationships
+  "permission" sub relationship
+    relates "allow"
+    relates "allowed";
+
   # OpenCTI embeded relationships
   "relation_embedded" sub relationship
     is-abstract;
@@ -180,7 +194,9 @@ define
     has "weight"
     has "first_seen"
     has "last_seen"
-    has "description";
+    has "description"
+    has "created_at"
+    has "updated_at";
 
   # targets
   "targets" sub "stix_relation"
@@ -235,12 +251,16 @@ define
 
   # OpenCTI entities
   "Settings" sub entity
-    has "platform_organization"
-    has "external_authentication"
+    has "platform_title"
+    has "platform_email"
+    has "platform_url"
+    has "platform_language"
+    has "platform_external_auth"
+    has "platform_registration"
+    has "created_at"
+    has "updated_at";
 
   "User" sub entity
-    has "created"
-    has "modified"
     has "username"
     has "password"
     has "email"
@@ -248,8 +268,13 @@ define
     has "lastname"
     has "language"
     has "grant" # roles is a reserved word
+    has "created"
+    has "modified"
+    has "created_at"
+    has "updated_at"
     plays "client"
-    plays "author";
+    plays "author"
+    plays "allowed";
 
   "Token" sub entity
     has "uuid"
@@ -258,6 +283,8 @@ define
     has "created"
     has "duration"
     has "issuer"
+    has "created_at"
+    has "updated_at"
     plays "authorization";
 
   "Stix-Domain" sub entity
@@ -268,6 +295,8 @@ define
     has "created"
     has "modified"
     has "revoked"
+    has "created_at"
+    has "updated_at"
     plays "relate_from"
     plays "relate_to"
     plays "so";
@@ -374,7 +403,9 @@ define
   "Marking-Definition" sub "Stix-Domain"
     has "definition_type"
     has "definition"
-    plays "marking";
+    has "level"
+    plays "marking"
+    plays "allow";
 
   "Report" sub "Stix-Domain"
     has "name"

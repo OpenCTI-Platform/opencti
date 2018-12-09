@@ -5,7 +5,6 @@ import {
   findAll,
   findById,
   markingDefinitions,
-  killChainPhases,
   killChainPhaseEditContext,
   killChainPhaseEditField,
   killChainPhaseAddRelation,
@@ -42,12 +41,10 @@ const killChainPhaseResolvers = {
     killChainPhase: {
       resolve: payload => payload.instance,
       subscribe: admin((_, { id }, { user }) => {
-        console.log(`subscribe from ${user.email}`);
         killChainPhaseEditContext(user, id);
         return withCancel(
           pubsub.asyncIterator(BUS_TOPICS.KillChainPhase.EDIT_TOPIC),
           () => {
-            console.log(`quit from ${user.email}`);
             killChainPhaseCleanContext(user, id);
           }
         );

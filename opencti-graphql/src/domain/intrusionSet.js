@@ -1,9 +1,9 @@
-import { assoc, head } from 'ramda';
+import { head } from 'ramda';
 import { delEditContext, pubsub, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
-  editInput,
+  editInputTx,
   loadByID,
   now,
   paginate,
@@ -35,9 +35,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   return createIntrusionSet.then(result => {
     const { data } = result;
     return findById(head(data).intrusionSet.id).then(intrusionSetCreated => {
-      pubsub.publish(BUS_TOPICS.IntrusionSet.ADDED_TOPIC, {
-        intrusionSetCreated
-      });
+      pubsub.publish(BUS_TOPICS.IntrusionSet.ADDED_TOPIC, { intrusionSetCreated });
       return intrusionSetCreated;
     });
   });
@@ -71,7 +69,7 @@ export const intrusionSetEditContext = (user, intrusionSetId, input) => {
 };
 
 export const intrusionSetEditField = (intrusionSetId, input) =>
-  editInput(assoc('id', intrusionSetId, input)).then(intrusionSet => {
+  editInputTx(intrusionSetId, input).then(intrusionSet => {
     pubsub.publish(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, {
       instance: intrusionSet
     });

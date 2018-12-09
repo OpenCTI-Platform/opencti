@@ -1,9 +1,9 @@
-import { assoc, head } from 'ramda';
+import { head } from 'ramda';
 import { delEditContext, pubsub, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
-  editInput,
+  editInputTx,
   loadByID,
   now,
   paginate,
@@ -11,9 +11,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args =>
-  paginate('match $m isa Marking-Definition', args);
-
+export const findAll = args => paginate('match $m isa Marking-Definition', args);
 export const findById = markingDefinitionId => loadByID(markingDefinitionId);
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
@@ -23,6 +21,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
       markingDefinition.definition_type
     }";
     $markingDefinition has definition "${markingDefinition.definition}";
+    $markingDefinition has level ${markingDefinition.level};
     $markingDefinition has created ${now()};
     $markingDefinition has modified ${now()};
     $markingDefinition has revoked false;
@@ -78,7 +77,7 @@ export const markingDefinitionEditContext = (
 };
 
 export const markingDefinitionEditField = (markingDefinitionId, input) =>
-  editInput(assoc('id', markingDefinitionId, input)).then(markingDefinition => {
+  editInputTx(markingDefinitionId, input).then(markingDefinition => {
     pubsub.publish(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, {
       instance: markingDefinition
     });

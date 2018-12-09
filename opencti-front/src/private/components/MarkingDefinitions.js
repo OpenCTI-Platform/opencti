@@ -52,7 +52,13 @@ const inlineStyles = {
   },
   definition: {
     float: 'left',
-    width: '40%',
+    width: '30%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  level: {
+    float: 'left',
+    width: '10%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -116,6 +122,7 @@ class MarkingDefinitions extends Component {
               <div>
                 {this.SortHeader('definition_type', 'Type')}
                 {this.SortHeader('definition', 'Definition')}
+                {this.SortHeader('level', 'Level')}
                 {this.SortHeader('created', 'Creation date')}
                 {this.SortHeader('modified', 'Modification date')}
               </div>

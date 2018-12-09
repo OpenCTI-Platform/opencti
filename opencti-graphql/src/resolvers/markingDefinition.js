@@ -4,8 +4,6 @@ import {
   markingDefinitionDelete,
   findAll,
   findById,
-  markingDefinitions,
-  killChainPhases,
   markingDefinitionEditContext,
   markingDefinitionEditField,
   markingDefinitionAddRelation,
@@ -21,28 +19,32 @@ const markingDefinitionResolvers = {
     markingDefinitions: auth((_, args) => findAll(args))
   },
   MarkingDefinition: {
-    editContext: admin(markingDefinition => fetchEditContext(markingDefinition.id))
+    editContext: admin(markingDefinition =>
+      fetchEditContext(markingDefinition.id)
+    )
   },
   Mutation: {
     markingDefinitionEdit: admin((_, { id }, { user }) => ({
       delete: () => markingDefinitionDelete(id),
       fieldPatch: ({ input }) => markingDefinitionEditField(id, input),
-      contextPatch: ({ input }) => markingDefinitionEditContext(user, id, input),
+      contextPatch: ({ input }) =>
+        markingDefinitionEditContext(user, id, input),
       relationAdd: ({ input }) => markingDefinitionAddRelation(id, input),
-      relationDelete: ({ relationId }) => markingDefinitionDeleteRelation(relationId)
+      relationDelete: ({ relationId }) =>
+        markingDefinitionDeleteRelation(relationId)
     })),
-    markingDefinitionAdd: admin((_, { input }, { user }) => addMarkingDefinition(user, input))
+    markingDefinitionAdd: admin((_, { input }, { user }) =>
+      addMarkingDefinition(user, input)
+    )
   },
   Subscription: {
     markingDefinition: {
       resolve: payload => payload.instance,
       subscribe: admin((_, { id }, { user }) => {
-        console.log('subscribe from ' + user.email);
         markingDefinitionEditContext(user, id);
         return withCancel(
           pubsub.asyncIterator(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC),
           () => {
-            console.log('quit from ' + user.email);
             markingDefinitionCleanContext(user, id);
           }
         );

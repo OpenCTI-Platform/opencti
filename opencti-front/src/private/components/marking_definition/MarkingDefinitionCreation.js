@@ -74,6 +74,10 @@ const markingDefinitionValidation = t => Yup.object().shape({
     .required(t('This field is required')),
   definition: Yup.string()
     .required(t('This field is required')),
+  level: Yup.number()
+    .typeError(t('The value must be a number'))
+    .integer(t('The value must be a number'))
+    .required(t('This field is required')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -101,6 +105,7 @@ class MarkingDefinitionCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm, setErrors }) {
+    values.level = parseInt(values.level, 10);
     commitMutation(environment, {
       mutation: markingDefinitionMutation,
       variables: {
@@ -162,7 +167,7 @@ class MarkingDefinitionCreation extends Component {
           </div>
           <div className={classes.container}>
             <Formik
-              initialValues={{ definition_type: '', definition: '' }}
+              initialValues={{ definition_type: '', definition: '', level: 0 }}
               validationSchema={markingDefinitionValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
@@ -170,6 +175,7 @@ class MarkingDefinitionCreation extends Component {
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field name='definition_type' component={TextField} label={t('Type')} fullWidth={true}/>
                   <Field name='definition' component={TextField} label={t('Definition')} fullWidth={true} style={{ marginTop: 20 }}/>
+                  <Field name='level' component={TextField} label={t('Level')} fullWidth={true} type='number' style={{ marginTop: 20 }}/>
                   <div className={classes.buttons}>
                     <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                       {t('Cancel')}

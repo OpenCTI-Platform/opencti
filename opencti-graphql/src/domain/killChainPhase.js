@@ -1,9 +1,9 @@
-import { assoc, head } from 'ramda';
+import { head } from 'ramda';
 import { delEditContext, pubsub, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
-  editInput,
+  editInputTx,
   loadByID,
   now,
   paginate,
@@ -24,11 +24,10 @@ export const markingDefinitions = (killChainPhaseId, args) =>
 export const findById = killChainPhaseId => loadByID(killChainPhaseId);
 
 export const addKillChainPhase = async (user, killChainPhase) => {
-  const createKillChainPhase = qk(`insert $killChainPhase isa Kill-Chain-Phase 
+  const createKillChainPhase = qk(`insert $killChainPhase isa Kill-Chain-Phase
     has type "kill-chain-phase";
-    $killChainPhase has kill_chain_name "${killChainPhase.kill_chain_name}";
-    $killChainPhase has phase_name "${killChainPhase.phase_name}";
-    $killChainPhase has order "${killChainPhase.order}";
+    $killChainPhase has kill_chain_name "${killChainPhase.name}";
+    $killChainPhase has phase_name "${killChainPhase.description}";
     $killChainPhase has created ${now()};
     $killChainPhase has modified ${now()};
     $killChainPhase has revoked false;
@@ -76,7 +75,7 @@ export const killChainPhaseEditContext = (user, killChainPhaseId, input) => {
 };
 
 export const killChainPhaseEditField = (killChainPhaseId, input) =>
-  editInput(assoc('id', killChainPhaseId, input)).then(killChainPhase => {
+  editInputTx(killChainPhaseId, input).then(killChainPhase => {
     pubsub.publish(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, {
       instance: killChainPhase
     });

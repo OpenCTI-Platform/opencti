@@ -71,6 +71,7 @@ enum MarkingDefinitionsOrdering {
     stix_id,
     definition_type,
     definition,
+    level,
     created,
     modified
 }
@@ -85,7 +86,8 @@ type MarkingDefinitionEdge {
 type MarkingDefinition {
     id: ID!
     definition_type: String!
-    definition: String
+    definition: String!
+    level: Int
     created_at: DateTime
     updated_at: DateTime
     created: DateTime
@@ -96,6 +98,7 @@ type MarkingDefinition {
 input MarkingDefinitionAddInput {
     definition_type: String!
     definition: String!
+    level: Int!
     clientMutationId: String
 }
 
