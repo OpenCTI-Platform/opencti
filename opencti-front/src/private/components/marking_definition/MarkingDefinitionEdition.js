@@ -184,16 +184,16 @@ class MarkingDefinitionEditionContainer extends Component {
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field name='definition_type' component={TextField} label={t('Type')} fullWidth={true}
                        onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
-                       helperText={<SubscriptionFocus users={editUsers} fieldName='definition_type'/>}/>
+                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='definition_type'/>}/>
                 <Field name='definition' component={TextField} label={t('Definition')} fullWidth={true} style={{ marginTop: 10 }}
                        onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
-                       helperText={<SubscriptionFocus users={editUsers} fieldName='definition'/>}/>
+                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='definition'/>}/>
                 <Field name='color' component={TextField} label={t('Color')} fullWidth={true} style={{ marginTop: 10 }}
                        onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
-                       helperText={<SubscriptionFocus users={editUsers} fieldName='color'/>}/>
+                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='color'/>}/>
                 <Field name='level' component={TextField} label={t('Level')} fullWidth={true} type='number' style={{ marginTop: 10 }}
                        onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
-                       helperText={<SubscriptionFocus users={editUsers} fieldName='level'/>}/>
+                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='level'/>}/>
               </Form>
             )}
           />

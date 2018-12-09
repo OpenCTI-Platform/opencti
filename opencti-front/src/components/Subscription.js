@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Tooltip from '@material-ui/core/Tooltip';
 import Avatar from '@material-ui/core/Avatar';
-import { compose } from 'ramda';
+import { compose, filter, pipe } from 'ramda';
 import { pickColor } from '../utils/Colors';
 import inject18n from './i18n';
 
@@ -50,21 +50,24 @@ export const SubscriptionAvatars = withStyles(SubscriptionAvatarsStyles)(Subscri
 
 class SubscriptionFocusComponent extends Component {
   render() {
-    const { classes, t, users, fieldName } = this.props;
-    let display = false;
+    const {
+      t, me, users, fieldName,
+    } = this.props;
+    const focusedUsers = pipe(
+      //filter(n => n.email === me.email),
+      filter(n => n.focusOn === fieldName),
+    )(users);
+
+    if (focusedUsers.length === 0) {
+      return <span />;
+    }
+
     return (
       <span>
-        {users.map((user, i) => {
-          if (user.focusOn === fieldName) {
-            display = true;
-            return (
+        {focusedUsers.map((user, i) => (
               <span key={i}><span style={{ color: pickColor(i) }}>{user.username}</span><span>{i + 1 < users.length ? ', ' : ' '}</span></span>
-            );
-          }
-          return <span key={i}/>;
-        })
-        }
-        {display ? users.length > 1 ? t('are updating...') : t('is updating...') : ''}
+        ))}
+        {focusedUsers.length > 1 ? t('are updating...') : t('is updating...')}
       </span>
     );
   }
@@ -72,6 +75,7 @@ class SubscriptionFocusComponent extends Component {
 
 SubscriptionFocusComponent.propTypes = {
   classes: PropTypes.object.isRequired,
+  me: PropTypes.object,
   users: PropTypes.array,
   fieldName: PropTypes.string,
   t: PropTypes.func,
