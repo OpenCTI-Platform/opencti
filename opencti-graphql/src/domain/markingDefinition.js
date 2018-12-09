@@ -1,11 +1,12 @@
 import { head } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, pubsub, setEditContext } from '../database/redis';
+import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
   editInputTx,
   loadByID,
+  notify,
   now,
   paginate,
   qk
@@ -34,13 +35,8 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   `);
   return createMarkingDefinition.then(result => {
     const { data } = result;
-    return findById(head(data).markingDefinition.id).then(
-      markingDefinitionCreated => {
-        pubsub.publish(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, {
-          markingDefinitionCreated
-        });
-        return markingDefinitionCreated;
-      }
+    return findById(head(data).markingDefinition.id).then(created =>
+      notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created)
     );
   });
 };
@@ -52,20 +48,15 @@ export const markingDefinitionDeleteRelation = relationId =>
   deleteByID(relationId);
 
 export const markingDefinitionAddRelation = (markingDefinitionId, input) =>
-  createRelation(
-    markingDefinitionId,
-    input,
-    BUS_TOPICS.MarkingDefinition.EDIT_TOPIC
+  createRelation(markingDefinitionId, input).then(markingDefinition =>
+    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition)
   );
 
 export const markingDefinitionCleanContext = (user, markingDefinitionId) => {
   delEditContext(user, markingDefinitionId);
-  return findById(markingDefinitionId).then(markingDefinition => {
-    pubsub.publish(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, {
-      instance: markingDefinition
-    });
-    return markingDefinition;
-  });
+  return findById(markingDefinitionId).then(markingDefinition =>
+    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition)
+  );
 };
 
 export const markingDefinitionEditContext = (
@@ -74,18 +65,12 @@ export const markingDefinitionEditContext = (
   input
 ) => {
   setEditContext(user, markingDefinitionId, input);
-  findById(markingDefinitionId).then(markingDefinition => {
-    pubsub.publish(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, {
-      instance: markingDefinition
-    });
-    return markingDefinition;
-  });
+  findById(markingDefinitionId).then(markingDefinition =>
+    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition)
+  );
 };
 
 export const markingDefinitionEditField = (markingDefinitionId, input) =>
-  editInputTx(markingDefinitionId, input).then(markingDefinition => {
-    pubsub.publish(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, {
-      instance: markingDefinition
-    });
-    return markingDefinition;
-  });
+  editInputTx(markingDefinitionId, input).then(markingDefinition =>
+    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition)
+  );

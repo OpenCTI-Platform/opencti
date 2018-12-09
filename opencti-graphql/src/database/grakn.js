@@ -37,17 +37,23 @@ const multipleAttributes = ['stix_label'];
 
 // Instance of Axios to make Grakn API Calls.
 const client = new Grakn(conf.get('grakn:driver'));
-const instance = axios.create({
+const axiosInstance = axios.create({
   baseURL: conf.get('grakn:baseURL'),
   timeout: conf.get('grakn:timeout')
 });
+
+export const notify = (topic, instance, context) => {
+  pubsub.publish(topic, { instance, context });
+  return instance;
+};
 
 /**
  * API Grakn call to get all attributes for an instance.
  * @param id
  * @returns {AxiosPromise}
  */
-const attrByID = id => instance({ method: 'get', url: `${id}/attributes` });
+const attrByID = id =>
+  axiosInstance({ method: 'get', url: `${id}/attributes` });
 
 /**
  * Mapping function to generate a valid json objects base on Grakn response.
@@ -90,7 +96,7 @@ const attrMap = (id, res, withType = false) => {
  */
 export const qk = queryDef => {
   logger.debug(`Grakn query: ${queryDef}`);
-  return instance({
+  return axiosInstance({
     method: 'post',
     url: '/kb/grakn/graql',
     data: queryDef
@@ -161,23 +167,49 @@ export const loadByID = (id, withType = false) =>
   );
 
 /**
+ * Edit an attribute value.
+ * @param id
+ * @param input
+ * @returns the complete instance
+ */
+export const editInputTx = async (id, input) => {
+  const { key, value } = input;
+  const session = await client.session('grakn');
+  const wTx = await session.transaction(Grakn.txType.WRITE);
+  const labelIterator = await wTx.query(
+    `match $x label "${key}" sub attribute; get;`
+  );
+  const labelAnswer = await labelIterator.next();
+  const type = await labelAnswer
+    .map()
+    .get('x')
+    .dataType();
+  // Delete the old value/values
+  await wTx.query(`match $m id ${id}; $m has ${key} $del via $d; delete $d;`);
+  // Setup the new attribute
+  await wTx.query(
+    `match $m id ${id}; insert $m ${join(
+      ' ',
+      map(val => `has ${key} ${type === String ? `"${val}"` : val}`, value)
+    )};`
+  );
+  await wTx.commit();
+  return loadByID(id);
+};
+
+/**
  * Create a relation between to element in the model without restriction.
- * @param fromId
+ * @param id
  * @param input
  * @param topic
  * @returns {Promise<any[] | never>}
  */
-export const createRelation = (fromId, input, topic) => {
-  const createRel = qk(`match $from id ${fromId}; 
+export const createRelation = (id, input) => {
+  const createRel = qk(`match $from id ${id}; 
          $to id ${input.toId}; 
          insert (${input.fromRole}: $from, ${input.toRole}: $to) 
          isa ${input.through};`);
-  return createRel.then(() =>
-    loadByID(fromId).then(loadedInstance => {
-      if (topic) pubsub.publish(topic, { data: loadedInstance });
-      return loadedInstance;
-    })
-  );
+  return createRel.then(() => loadByID(id));
 };
 
 /**
@@ -233,29 +265,4 @@ export const paginate = (query, options) => {
   });
 };
 
-export const editInputTx = async (id, input) => {
-  const { key, value } = input;
-  const session = await client.session('grakn');
-  const wTx = await session.transaction(Grakn.txType.WRITE);
-  const labelIterator = await wTx.query(
-    `match $x label "${key}" sub attribute; get;`
-  );
-  const labelAnswer = await labelIterator.next();
-  const type = await labelAnswer
-    .map()
-    .get('x')
-    .dataType();
-  // Delete the old value/values
-  await wTx.query(`match $m id ${id}; $m has ${key} $del via $d; delete $d;`);
-  // Setup the new attribute
-  await wTx.query(
-    `match $m id ${id}; insert $m ${join(
-      ' ',
-      map(val => `has ${key} ${type === String ? `"${val}"` : val}`, value)
-    )};`
-  );
-  await wTx.commit();
-  return loadByID(id);
-};
-
-export default instance;
+export default axiosInstance;

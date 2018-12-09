@@ -18,6 +18,7 @@ import {
   deleteByID,
   editInputTx,
   loadByID,
+  notify,
   now,
   paginate,
   qk
@@ -138,35 +139,28 @@ export const userDelete = id => deleteByID(id);
 export const userDeleteRelation = relationId => deleteByID(relationId);
 
 export const userAddRelation = (userId, input) =>
-  createRelation(userId, input, BUS_TOPICS.User.EDIT_TOPIC);
+  createRelation(userId, input).then(userObject =>
+    notify(BUS_TOPICS.User.EDIT_TOPIC, userObject)
+  );
 
 export const userCleanContext = (user, userId) => {
   delEditContext(user, userId);
-  return findById(userId).then(userObject => {
-    pubsub.publish(BUS_TOPICS.User.EDIT_TOPIC, {
-      instance: userObject
-    });
-    return userObject;
-  });
+  return findById(userId).then(userObject =>
+    notify(BUS_TOPICS.User.EDIT_TOPIC, userObject)
+  );
 };
 
 export const userEditContext = (user, userId, input) => {
   setEditContext(user, userId, input);
-  findById(userId).then(userObject => {
-    pubsub.publish(BUS_TOPICS.User.EDIT_TOPIC, {
-      instance: userObject
-    });
-    return userObject;
-  });
+  findById(userId).then(userObject =>
+    notify(BUS_TOPICS.User.EDIT_TOPIC, userObject)
+  );
 };
 
 export const userEditField = (userId, input) =>
-  editInputTx(userId, input).then(user => {
-    pubsub.publish(BUS_TOPICS.ThreatActor.EDIT_TOPIC, {
-      instance: user
-    });
-    return user;
-  });
+  editInputTx(userId, input).then(user =>
+    notify(BUS_TOPICS.User.EDIT_TOPIC, user)
+  );
 
 export const deleteUserByEmail = email => {
   const delUser = qk(`match $x has email "${email}"; delete $x;`);

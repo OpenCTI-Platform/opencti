@@ -6,6 +6,7 @@ import {
   deleteByID,
   editInputTx,
   loadByID,
+  notify,
   now,
   paginate,
   qk
@@ -38,12 +39,9 @@ export const addThreatActor = async (user, threatActor) => {
   `);
   return createThreatActor.then(result => {
     const { data } = result;
-    return findById(head(data).threatActor.id).then(threatActorCreated => {
-      pubsub.publish(BUS_TOPICS.ThreatActor.ADDED_TOPIC, {
-        threatActorCreated
-      });
-      return threatActorCreated;
-    });
+    return findById(head(data).threatActor.id).then(created =>
+      notify(BUS_TOPICS.ThreatActor.ADDED_TOPIC, created)
+    );
   });
 };
 
@@ -52,32 +50,25 @@ export const threatActorDelete = threatActorId => deleteByID(threatActorId);
 export const threatActorDeleteRelation = relationId => deleteByID(relationId);
 
 export const threatActorAddRelation = (threatActorId, input) =>
-  createRelation(threatActorId, input, BUS_TOPICS.ThreatActor.EDIT_TOPIC);
+  createRelation(threatActorId, input).then(threatActor =>
+    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, threatActor)
+  );
 
 export const threatActorCleanContext = (user, threatActorId) => {
   delEditContext(user, threatActorId);
-  return findById(threatActorId).then(threatActor => {
-    pubsub.publish(BUS_TOPICS.ThreatActor.EDIT_TOPIC, {
-      instance: threatActor
-    });
-    return threatActor;
-  });
+  return findById(threatActorId).then(threatActor =>
+    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, threatActor)
+  );
 };
 
 export const threatActorEditContext = (user, threatActorId, input) => {
   setEditContext(user, threatActorId, input);
-  findById(threatActorId).then(threatActor => {
-    pubsub.publish(BUS_TOPICS.ThreatActor.EDIT_TOPIC, {
-      instance: threatActor
-    });
-    return threatActor;
-  });
+  findById(threatActorId).then(threatActor =>
+    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, threatActor)
+  );
 };
 
 export const threatActorEditField = (threatActorId, input) =>
-  editInputTx(threatActorId, input).then(threatActor => {
-    pubsub.publish(BUS_TOPICS.ThreatActor.EDIT_TOPIC, {
-      instance: threatActor
-    });
-    return threatActor;
-  });
+  editInputTx(threatActorId, input).then(threatActor =>
+    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, threatActor)
+  );

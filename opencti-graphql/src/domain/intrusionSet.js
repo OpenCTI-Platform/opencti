@@ -1,11 +1,12 @@
 import { head } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, pubsub, setEditContext } from '../database/redis';
+import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
   editInputTx,
   loadByID,
+  notify,
   now,
   paginate,
   qk
@@ -38,10 +39,9 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   `);
   return createIntrusionSet.then(result => {
     const { data } = result;
-    return findById(head(data).intrusionSet.id).then(intrusionSetCreated => {
-      pubsub.publish(BUS_TOPICS.IntrusionSet.ADDED_TOPIC, { intrusionSetCreated });
-      return intrusionSetCreated;
-    });
+    return findById(head(data).intrusionSet.id).then(created =>
+      notify(BUS_TOPICS.IntrusionSet.ADDED_TOPIC, created)
+    );
   });
 };
 
@@ -50,32 +50,25 @@ export const intrusionSetDelete = intrusionSetId => deleteByID(intrusionSetId);
 export const intrusionSetDeleteRelation = relationId => deleteByID(relationId);
 
 export const intrusionSetAddRelation = (intrusionSetId, input) =>
-  createRelation(intrusionSetId, input, BUS_TOPICS.IntrusionSet.EDIT_TOPIC);
+  createRelation(intrusionSetId, input).then(intrusionSet =>
+    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet)
+  );
 
 export const intrusionSetCleanContext = (user, intrusionSetId) => {
   delEditContext(user, intrusionSetId);
-  return findById(intrusionSetId).then(intrusionSet => {
-    pubsub.publish(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, {
-      instance: intrusionSet
-    });
-    return intrusionSet;
-  });
+  return findById(intrusionSetId).then(intrusionSet =>
+    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet)
+  );
 };
 
 export const intrusionSetEditContext = (user, intrusionSetId, input) => {
   setEditContext(user, intrusionSetId, input);
-  findById(intrusionSetId).then(intrusionSet => {
-    pubsub.publish(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, {
-      instance: intrusionSet
-    });
-    return intrusionSet;
-  });
+  findById(intrusionSetId).then(intrusionSet =>
+    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet)
+  );
 };
 
 export const intrusionSetEditField = (intrusionSetId, input) =>
-  editInputTx(intrusionSetId, input).then(intrusionSet => {
-    pubsub.publish(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, {
-      instance: intrusionSet
-    });
-    return intrusionSet;
-  });
+  editInputTx(intrusionSetId, input).then(intrusionSet =>
+    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet)
+  );
