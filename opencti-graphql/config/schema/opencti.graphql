@@ -77,6 +77,7 @@ enum MarkingDefinitionsOrdering {
     definition_type,
     definition,
     level,
+    color,
     created,
     modified
 }
@@ -93,6 +94,7 @@ type MarkingDefinition {
     definition_type: String!
     definition: String!
     level: Int
+    color: String
     created: DateTime
     modified: DateTime
     revoked: Boolean
@@ -104,6 +106,7 @@ input MarkingDefinitionAddInput {
     definition_type: String!
     definition: String!
     level: Int!
+    color: String!
     clientMutationId: String
 }
 

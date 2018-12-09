@@ -52,7 +52,13 @@ const inlineStyles = {
   },
   definition: {
     float: 'left',
-    width: '30%',
+    width: '25%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  color: {
+    float: 'left',
+    width: '15%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -63,12 +69,6 @@ const inlineStyles = {
     fontWeight: '700',
   },
   created: {
-    float: 'left',
-    width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  modified: {
     float: 'left',
     fontSize: 12,
     fontWeight: '700',
@@ -122,9 +122,9 @@ class MarkingDefinitions extends Component {
               <div>
                 {this.SortHeader('definition_type', 'Type')}
                 {this.SortHeader('definition', 'Definition')}
+                {this.SortHeader('color', 'Color')}
                 {this.SortHeader('level', 'Level')}
                 {this.SortHeader('created', 'Creation date')}
-                {this.SortHeader('modified', 'Modification date')}
               </div>
             }/>
           </ListItem>

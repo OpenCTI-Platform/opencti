@@ -56,6 +56,7 @@ define
   "definition_type" sub attribute datatype string;
   "definition" sub attribute datatype string;
   "level" sub attribute datatype long;
+  "color" sub attribute datatype string;
   "source_name" sub attribute datatype string;
   "url" sub attribute datatype string;
   "hash" sub attribute datatype string;
@@ -404,6 +405,7 @@ define
     has "definition_type"
     has "definition"
     has "level"
+    has "color"
     plays "marking"
     plays "allow";
 

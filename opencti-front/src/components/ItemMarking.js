@@ -22,7 +22,7 @@ const inlineStyles = {
     color: '#2b2b2b',
   },
   green: {
-    backgroundColor: '#2e7D32',
+    backgroundColor: '#2e7d32',
   },
   blue: {
     backgroundColor: '#283593',

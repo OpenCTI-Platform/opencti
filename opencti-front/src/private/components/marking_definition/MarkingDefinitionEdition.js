@@ -78,6 +78,8 @@ const markingDefinitionValidation = t => Yup.object().shape({
     .required(t('This field is required')),
   definition: Yup.string()
     .required(t('This field is required')),
+  color: Yup.string()
+    .required(t('This field is required')),
   level: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
@@ -157,7 +159,7 @@ class MarkingDefinitionEditionContainer extends Component {
     // Add current user to the context if is not available yet.
     const missingMe = find(propEq('username', me.email))(editContext) === undefined;
     const editUsers = missingMe ? insert(0, { username: me.email }, editContext) : editContext;
-    const initialValues = pick(['definition_type', 'definition', 'level'], markingDefinition);
+    const initialValues = pick(['definition_type', 'definition', 'color', 'level'], markingDefinition);
     return (
       <div>
         <div className={classes.header}>
@@ -183,6 +185,8 @@ class MarkingDefinitionEditionContainer extends Component {
                 <Field name='definition_type' component={TextField} label={t('Type')} fullWidth={true}
                        onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}/>
                 <Field name='definition' component={TextField} label={t('Definition')} fullWidth={true} style={{ marginTop: 20 }}
+                       onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}/>
+                <Field name='color' component={TextField} label={t('Color')} fullWidth={true} style={{ marginTop: 20 }}
                        onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}/>
                 <Field name='level' component={TextField} label={t('Level')} fullWidth={true} type='number' style={{ marginTop: 20 }}
                        onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}/>
@@ -210,6 +214,7 @@ const MarkingDefinitionEditionFragment = createFragmentContainer(MarkingDefiniti
           id,
           definition_type,
           definition,
+          color,
           level,
           editContext {
               username

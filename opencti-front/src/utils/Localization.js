@@ -79,6 +79,7 @@ const i18n = {
       'Killchain phases': 'Phases de killchain',
       Definition: 'Definition',
       Level: 'Niveau',
+      Color: 'Couleur',
       Type: 'Type',
       // Statistics
       'Total entities': 'Nombre d\'entités',

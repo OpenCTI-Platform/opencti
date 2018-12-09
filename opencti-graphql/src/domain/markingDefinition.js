@@ -24,6 +24,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
       markingDefinition.definition_type
     }";
     $markingDefinition has definition "${markingDefinition.definition}";
+    $markingDefinition has color "${markingDefinition.color}";
     $markingDefinition has level ${markingDefinition.level};
     $markingDefinition has created ${now()};
     $markingDefinition has modified ${now()};

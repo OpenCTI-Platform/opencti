@@ -50,7 +50,14 @@ const inlineStyles = {
   },
   definition: {
     float: 'left',
-    width: '30%',
+    width: '25%',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  color: {
+    float: 'left',
+    width: '15%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -63,13 +70,6 @@ const inlineStyles = {
     textOverflow: 'ellipsis',
   },
   created: {
-    float: 'left',
-    width: '15%',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  modified: {
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -93,14 +93,14 @@ class MarkingDefinitionLineComponent extends Component {
             <div className={classes.bodyItem} style={inlineStyles.definition}>
               {markingDefinition.definition}
             </div>
+            <div className={classes.bodyItem} style={inlineStyles.color}>
+              {markingDefinition.color}
+            </div>
             <div className={classes.bodyItem} style={inlineStyles.level}>
               {markingDefinition.level}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
                 {fd(markingDefinition.created)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-                {fd(markingDefinition.modified)}
             </div>
           </div>
         }/>
@@ -126,6 +126,7 @@ const MarkingDefinitionLineFragment = createFragmentContainer(MarkingDefinitionL
             definition_type,
             definition,
             level,
+            color,
             created,
             modified
         }
@@ -153,13 +154,13 @@ class MarkingDefinitionLineDummyComponent extends Component {
             <div className={classes.bodyItem} style={inlineStyles.definition}>
               <div className={classes.placeholder} style={{ width: '70%' }}/>
             </div>
+            <div className={classes.bodyItem} style={inlineStyles.color}>
+              <div className={classes.placeholder} style={{ width: '60%' }}/>
+            </div>
             <div className={classes.bodyItem} style={inlineStyles.level}>
-              <div className={classes.placeholder} style={{ width: '50%' }}/>
+              <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-                <div className={classes.placeholder} style={{ width: 140 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
                 <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
           </div>
