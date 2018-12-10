@@ -1,6 +1,12 @@
 ### Scalar
 scalar DateTime
 
+### Stix
+type StixRelationEmbedded {
+    id: ID!
+    stix_id: String
+}
+
 ### Relay
 type PageInfo {
     startCursor: String!,
@@ -85,9 +91,11 @@ type MarkingDefinitionConnection {
     pageInfo: PageInfo!
     edges: [MarkingDefinitionEdge]
 }
+
 type MarkingDefinitionEdge {
     cursor: String!
     node: MarkingDefinition!
+    relation: StixRelationEmbedded!
 }
 type MarkingDefinition {
     id: ID!
@@ -124,6 +132,7 @@ type KillChainPhaseConnection {
 type KillChainPhaseEdge {
     cursor: String!
     node: KillChainPhase!
+    relation: StixRelationEmbedded!
 }
 type KillChainPhase {
     id: ID!

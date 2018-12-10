@@ -110,15 +110,23 @@ export const qk = queryDef => {
  * Grakn query that generate json objects
  * @param queryDef the query to process
  * @param key the instance key to get id from.
+ * @param relationKey the key to bind relation result.
  * @returns {Promise<AxiosResponse<any> | never | never>}
  */
-export const qkObj = (queryDef, key = 'x') =>
+export const qkObj = (queryDef, key = 'x', relationKey) =>
   qk(queryDef).then(result => {
     if (result && result.data) {
       return Promise.all(
-        map(line =>
-          attrByID(line[key]['@id']).then(res => attrMap(line[key].id, res))
-        )(result.data)
+        map(line => ({
+          node: attrByID(line[key]['@id']).then(res =>
+            attrMap(line[key].id, res)
+          ),
+          relation: !relationKey
+            ? null
+            : attrByID(line[relationKey]['@id']).then(res =>
+                attrMap(line[relationKey].id, res)
+              )
+        }))(result.data)
       );
     }
     return Promise.resolve([]);
@@ -201,7 +209,6 @@ export const editInputTx = async (id, input) => {
  * Create a relation between to element in the model without restriction.
  * @param id
  * @param input
- * @param topic
  * @returns {Promise<any[] | never>}
  */
 export const createRelation = (id, input) => {
@@ -223,9 +230,10 @@ export const createRelation = (id, input) => {
 const buildPagination = (first, offset, instances, globalCount) => {
   const edges = pipe(
     mapObjIndexed((record, key) => {
-      const node = record;
+      const { node } = record;
+      const { relation } = record;
       const nodeOffset = offset + parseInt(key, 10) + 1;
-      return { node, cursor: offsetToCursor(nodeOffset) };
+      return { node, relation, cursor: offsetToCursor(nodeOffset) };
     }),
     values
   )(instances);
@@ -253,10 +261,17 @@ export const paginate = (query, options) => {
   const { first = 25, after, orderBy = 'stix_id', orderMode = 'asc' } = options;
   const offset = after ? cursorToOffset(after) : 0;
   const instanceKey = /match\s\$(\w+)\s/i.exec(query)[1]; // We need to resolve the key instance used in query.
+  const findRelationVariable = /\$(\w+)\((\w+):\$(\w+),[\s\w:$]+\)/i.exec(
+    query
+  );
+  const relationKey = findRelationVariable && findRelationVariable[1]; // Could be setup to get relation info
   const count = qkSingleValue(`${query}; aggregate count;`);
   const elements = qkObj(
-    `${query}; $${instanceKey} has ${orderBy} $o; order by $o ${orderMode}; offset ${offset}; limit ${first}; get;`,
-    instanceKey
+    `${query}; $${instanceKey} has ${orderBy} $o; 
+      order by $o ${orderMode}; offset ${offset}; limit ${first}; 
+      get $${instanceKey}${relationKey ? `, $${relationKey}` : ''};`,
+    instanceKey,
+    relationKey
   );
   return Promise.all([count, elements]).then(data => {
     const globalCount = data ? head(data) : 0;
