@@ -11,9 +11,8 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import environment from '../../relay/environment';
-import MarkingDefinitionsLines, { markingDefinitionsLinesQuery } from './marking_definition/MarkingDefinitionsLines';
+import UsersLines, { usersLinesQuery } from './user/UsersLines';
 import inject18n from '../../components/i18n';
-import MarkingDefinitionCreation from './marking_definition/MarkingDefinitionCreation';
 
 const styles = () => ({
   windowScrollerWrapper: {
@@ -44,41 +43,41 @@ const inlineStyles = {
     padding: 0,
     top: '0px',
   },
-  definition_type: {
+  username: {
     float: 'left',
-    width: '25%',
+    width: '20%',
     fontSize: 12,
     fontWeight: '700',
   },
-  definition: {
+  email: {
     float: 'left',
-    width: '25%',
+    width: '30%',
     fontSize: 12,
     fontWeight: '700',
   },
-  color: {
+  firstname: {
     float: 'left',
     width: '15%',
     fontSize: 12,
     fontWeight: '700',
   },
-  level: {
+  lastname: {
     float: 'left',
-    width: '10%',
+    width: '15%',
     fontSize: 12,
     fontWeight: '700',
   },
-  created: {
+  created_at: {
     float: 'left',
     fontSize: 12,
     fontWeight: '700',
   },
 };
 
-class MarkingDefinitions extends Component {
+class Users extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'level', orderAsc: true };
+    this.state = { sortBy: 'username', orderAsc: true };
   }
 
   handleChangeView(mode) {
@@ -118,41 +117,36 @@ class MarkingDefinitions extends Component {
             </ListItemIcon>
             <ListItemText primary={
               <div>
-                {this.SortHeader('definition_type', 'Type')}
-                {this.SortHeader('definition', 'Definition')}
-                {this.SortHeader('color', 'Color')}
-                {this.SortHeader('level', 'Level')}
-                {this.SortHeader('created', 'Creation date')}
+                {this.SortHeader('username', 'Username')}
+                {this.SortHeader('email', 'Email address')}
+                {this.SortHeader('firstname', 'Firstname')}
+                {this.SortHeader('lastname', 'Lastname')}
+                {this.SortHeader('created_at', 'Creation date')}
               </div>
             }/>
           </ListItem>
           <QueryRenderer
             environment={environment}
-            query={markingDefinitionsLinesQuery}
+            query={usersLinesQuery}
             variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
             render={({ error, props }) => {
               if (error) { // Errors
-                return <MarkingDefinitionsLines data={null} dummy={true}/>;
+                return <UsersLines data={null} dummy={true}/>;
               }
               if (props) { // Done
-                return <MarkingDefinitionsLines data={props}/>;
+                return <UsersLines data={props}/>;
               }
               // Loading
-              return <MarkingDefinitionsLines data={null} dummy={true}/>;
+              return <UsersLines data={null} dummy={true}/>;
             }}
           />
         </List>
-        <MarkingDefinitionCreation
-          paginationOptions={{
-            orderBy: this.state.sortBy,
-            orderMode: this.state.orderAsc ? 'asc' : 'desc',
-          }}/>
       </div>
     );
   }
 }
 
-MarkingDefinitions.propTypes = {
+Users.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
@@ -161,4 +155,4 @@ MarkingDefinitions.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(MarkingDefinitions);
+)(Users);

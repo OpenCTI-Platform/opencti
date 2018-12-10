@@ -20,6 +20,7 @@ import IntrusionSets from './components/IntrusionSets';
 import Malwares from './components/Malwares';
 import RootMalware from './components/malware/Root';
 import Settings from './components/Settings';
+import Users from './components/Users';
 import MarkingDefinitions from './components/MarkingDefinitions';
 
 const styles = theme => ({
@@ -91,6 +92,7 @@ class Root extends Component {
                   <Route exact path='/dashboard/knowledge/malwares' component={Malwares}/>
                   <Route path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props && props.me ? props.me : null}/>}/>
                   <Route exact path='/dashboard/settings' component={Settings}/>
+                  <Route exact path='/dashboard/settings/users' component={Users}/>
                   <Route exact path='/dashboard/settings/marking' component={MarkingDefinitions}/>
                 </main>
                 <Snackbar

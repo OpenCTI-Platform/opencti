@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { compose } from 'ramda';
+import { compose, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -75,13 +75,13 @@ class ThreatActorLineComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
-                {threatActor.name}
+                {propOr('-', 'name', threatActor)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(threatActor.created)}
+                {fd(propOr(null, 'created', threatActor))}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.modified}>
-                {fd(threatActor.modified)}
+                {fd(propOr(null, 'modified', threatActor))}
             </div>
           </div>
         }/>
