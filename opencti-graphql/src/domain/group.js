@@ -32,8 +32,7 @@ export const permissions = (groupId, args) =>
 
 export const addGroup = async (user, group) => {
   const createGroup = qk(`insert $group isa Group 
-    has type "group";
-    $group has name "${group.name}";
+    has name "${group.name}";
     $group has description "${group.description}";
     $group has created_at ${now()};
     $group has updated_at ${now()};

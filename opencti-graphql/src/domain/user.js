@@ -49,13 +49,16 @@ export const setAuthenticationCookie = (token, res) => {
 export const hashPassword = password => bcrypt.hash(password, 10);
 
 export const addUser = async user => {
-  const userPassword = await hashPassword(user.password);
+  // const userPassword = await hashPassword(user.password);
   const token = generateOpenCTIWebToken(user.email);
-  const createUser = qk(`insert $x isa User 
+  const createUser = qk(`insert $user isa User 
     has username "${user.username}";
-    $x has email "${user.email}";
-    $x has created ${now()};
-    $x has password "${userPassword}";
+    $user has email "${user.email}";
+    $user has firstname "${user.firstname}";
+    $user has lastname "${user.lastname}";
+    $user has created ${now()};
+    $user has created_at ${now()};
+    $user has updated_at ${now()};
     ${join(' ', map(role => `$x has grant "${role}";`, user.grant))}
   `);
   const createToken = qk(`insert $x isa Token 

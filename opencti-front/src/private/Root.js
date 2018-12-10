@@ -21,6 +21,7 @@ import Malwares from './components/Malwares';
 import RootMalware from './components/malware/Root';
 import Settings from './components/Settings';
 import Users from './components/Users';
+import Groups from './components/Groups';
 import MarkingDefinitions from './components/MarkingDefinitions';
 
 const styles = theme => ({
@@ -93,6 +94,7 @@ class Root extends Component {
                   <Route path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props && props.me ? props.me : null}/>}/>
                   <Route exact path='/dashboard/settings' component={Settings}/>
                   <Route exact path='/dashboard/settings/users' component={Users}/>
+                  <Route exact path='/dashboard/settings/groups' component={Groups}/>
                   <Route exact path='/dashboard/settings/marking' component={MarkingDefinitions}/>
                 </main>
                 <Snackbar

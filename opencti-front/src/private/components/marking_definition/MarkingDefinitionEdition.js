@@ -224,7 +224,7 @@ const MarkingDefinitionEditionFragment = createFragmentContainer(MarkingDefiniti
           color,
           level,
           editContext {
-              username
+              username,
               focusOn
           }
       }

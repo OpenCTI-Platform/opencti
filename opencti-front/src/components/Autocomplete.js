@@ -192,6 +192,7 @@ class Autocomplete extends Component {
       onInputChange,
       onChange,
       onFocus,
+      helperText,
     } = this.props;
     const errorText = errors[field.name];
     const hasError = dirty && errorText !== undefined;
@@ -225,6 +226,7 @@ class Autocomplete extends Component {
               InputLabelProps: {
                 shrink: true,
               },
+              helperText,
             }}
             options={options}
             components={components}
@@ -269,6 +271,8 @@ Autocomplete.propTypes = {
   }),
   onInputChange: PropTypes.func,
   onChange: PropTypes.func,
+  onFocus: PropTypes.func,
+  helperText: PropTypes.node,
 };
 
 export default compose(

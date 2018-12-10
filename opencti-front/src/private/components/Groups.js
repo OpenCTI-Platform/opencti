@@ -11,9 +11,9 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import environment from '../../relay/environment';
-import UsersLines, { usersLinesQuery } from './user/UsersLines';
+import GroupsLines, { groupsLinesQuery } from './group/GroupsLines';
 import inject18n from '../../components/i18n';
-import UserCreation from './user/UserCreation';
+import GroupCreation from './group/GroupCreation';
 
 const styles = () => ({
   windowScrollerWrapper: {
@@ -44,41 +44,29 @@ const inlineStyles = {
     padding: 0,
     top: '0px',
   },
-  username: {
+  name: {
     float: 'left',
-    width: '20%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  email: {
-    float: 'left',
-    width: '30%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  firstname: {
-    float: 'left',
-    width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  lastname: {
-    float: 'left',
-    width: '15%',
+    width: '60%',
     fontSize: 12,
     fontWeight: '700',
   },
   created_at: {
+    float: 'left',
+    width: '15%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  updated_at: {
     float: 'left',
     fontSize: 12,
     fontWeight: '700',
   },
 };
 
-class Users extends Component {
+class Groups extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'username', orderAsc: true };
+    this.state = { sortBy: 'name', orderAsc: true };
   }
 
   handleChangeView(mode) {
@@ -118,31 +106,29 @@ class Users extends Component {
             </ListItemIcon>
             <ListItemText primary={
               <div>
-                {this.SortHeader('username', 'Username')}
-                {this.SortHeader('email', 'Email address')}
-                {this.SortHeader('firstname', 'Firstname')}
-                {this.SortHeader('lastname', 'Lastname')}
+                {this.SortHeader('name', 'Name')}
                 {this.SortHeader('created_at', 'Creation date')}
+                {this.SortHeader('updated_at', 'Modifcation date')}
               </div>
             }/>
           </ListItem>
           <QueryRenderer
             environment={environment}
-            query={usersLinesQuery}
+            query={groupsLinesQuery}
             variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
             render={({ error, props }) => {
               if (error) { // Errors
-                return <UsersLines data={null} dummy={true}/>;
+                return <GroupsLines data={null} dummy={true}/>;
               }
               if (props) { // Done
-                return <UsersLines data={props}/>;
+                return <GroupsLines data={props}/>;
               }
               // Loading
-              return <UsersLines data={null} dummy={true}/>;
+              return <GroupsLines data={null} dummy={true}/>;
             }}
           />
         </List>
-        <UserCreation
+        <GroupCreation
           paginationOptions={{
             orderBy: this.state.sortBy,
             orderMode: this.state.orderAsc ? 'asc' : 'desc',
@@ -152,7 +138,7 @@ class Users extends Component {
   }
 }
 
-Users.propTypes = {
+Groups.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
@@ -161,4 +147,4 @@ Users.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(Users);
+)(Groups);

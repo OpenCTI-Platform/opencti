@@ -40,7 +40,8 @@ enum UsersOrdering {
     email,
     firstname,
     lastname,
-    created_at
+    created_at,
+    updated_at
 }
 enum UserRole {
     ROLE_ADMIN
@@ -68,9 +69,10 @@ type User {
 }
 input UserAddInput {
     username: String!
-    password: String!
-    grant: [UserRole]!
     email: String!
+    firstname: String
+    lastname: String
+    grant: [UserRole]
 }
 input UserLoginInput {
     email: String!
@@ -80,6 +82,8 @@ input UserLoginInput {
 ### Group
 enum GroupsOrdering {
     name,
+    created_at,
+    updated_at
 }
 type GroupConnection {
     pageInfo: PageInfo!
@@ -113,7 +117,9 @@ enum MarkingDefinitionsOrdering {
     level,
     color,
     created,
-    modified
+    modified,
+    created_at,
+    updated_at
 }
 type MarkingDefinitionConnection {
     pageInfo: PageInfo!
@@ -151,7 +157,9 @@ enum KillChainPhasesOrdering {
     stix_id,
     order,
     kill_chain_name,
-    phase_name
+    phase_name,
+    created_at,
+    updated_at
 }
 type KillChainPhaseConnection {
     pageInfo: PageInfo!
@@ -186,7 +194,9 @@ enum ThreatActorsOrdering {
     stix_id,
     name,
     created,
-    modified
+    modified,
+    created_at,
+    updated_at
 }
 type ThreatActorConnection {
     pageInfo: PageInfo!
@@ -229,7 +239,9 @@ enum IntrusionSetsOrdering {
     stix_id,
     name,
     created,
-    modified
+    modified,
+    created_at,
+    updated_at
 }
 type IntrusionSetConnection {
     pageInfo: PageInfo!
@@ -270,7 +282,9 @@ enum MalwaresOrdering {
     stix_id,
     name,
     created,
-    modified
+    modified,
+    created_at,
+    updated_at
 }
 type MalwareConnection {
     pageInfo: PageInfo!
@@ -307,7 +321,10 @@ enum ReportsOrdering {
     stix_id,
     name,
     created,
-    modified
+    modified,
+    published,
+    created_at,
+    updated_at
 }
 type ReportsConnection {
     pageInfo: PageInfo!
@@ -456,7 +473,7 @@ type Mutation {
     # Login
     token(input: UserLoginInput) : String
     # User
-    userAdd(input: UserAddInput): MarkingDefinition
+    userAdd(input: UserAddInput): User
     userEdit(id: ID!): UserEditMutations
     # Group
     groupAdd(input: GroupAddInput): Group

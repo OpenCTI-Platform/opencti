@@ -276,8 +276,6 @@ define
     has "lastname"
     has "language"
     has "grant" # roles is a reserved word
-    has "created"
-    has "modified"
     has "created_at"
     has "updated_at"
     plays "client"
@@ -287,6 +285,8 @@ define
   "Group" sub entity
     has "name"
     has "description"
+    has "created_at"
+    has "updated_at"
     plays "allowed"
     plays "grouping";
 

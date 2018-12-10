@@ -163,9 +163,6 @@ class MarkingDefinitionCreation extends Component {
             <Typography variant='h6'>
               {t('Create a marking definition')}
             </Typography>
-            <Button variant='contained' size='small' color='secondary' className={classes.importButton}>
-              {t('Import')}
-            </Button>
           </div>
           <div className={classes.container}>
             <Formik

@@ -54,7 +54,7 @@ class SubscriptionFocusComponent extends Component {
       t, me, users, fieldName,
     } = this.props;
     const focusedUsers = pipe(
-      //filter(n => n.email === me.email),
+      filter(n => n.email === me.email),
       filter(n => n.focusOn === fieldName),
     )(users);
 
