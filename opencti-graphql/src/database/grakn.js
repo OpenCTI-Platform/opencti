@@ -42,8 +42,8 @@ const axiosInstance = axios.create({
   timeout: conf.get('grakn:timeout')
 });
 
-export const notify = (topic, instance, context) => {
-  pubsub.publish(topic, { instance, context });
+export const notify = (topic, instance, user, context) => {
+  pubsub.publish(topic, { instance, user, context });
   return instance;
 };
 
