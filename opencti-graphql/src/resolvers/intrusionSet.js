@@ -12,7 +12,7 @@ import {
   intrusionSetCleanContext
 } from '../domain/intrusionSet';
 import { fetchEditContext, pubsub } from '../database/redis';
-import { admin, auth, withCancel } from './wrapper';
+import { auth, withCancel } from './wrapper';
 
 const intrusionSetResolvers = {
   Query: {
@@ -22,24 +22,24 @@ const intrusionSetResolvers = {
   IntrusionSet: {
     markingDefinitions: (intrusionSet, args) =>
       markingDefinitions(intrusionSet.id, args),
-    editContext: admin(intrusionSet => fetchEditContext(intrusionSet.id))
+    editContext: auth(intrusionSet => fetchEditContext(intrusionSet.id))
   },
   Mutation: {
-    intrusionSetEdit: admin((_, { id }, { user }) => ({
+    intrusionSetEdit: auth((_, { id }, { user }) => ({
       delete: () => intrusionSetDelete(id),
       fieldPatch: ({ input }) => intrusionSetEditField(id, input),
       contextPatch: ({ input }) => intrusionSetEditContext(user, id, input),
       relationAdd: ({ input }) => intrusionSetAddRelation(id, input),
       relationDelete: ({ relationId }) => intrusionSetDeleteRelation(relationId)
     })),
-    intrusionSetAdd: admin((_, { input }, { user }) =>
+    intrusionSetAdd: auth((_, { input }, { user }) =>
       addIntrusionSet(user, input)
     )
   },
   Subscription: {
     intrusionSet: {
       resolve: payload => payload.instance,
-      subscribe: admin((_, { id }, { user }) => {
+      subscribe: auth((_, { id }, { user }) => {
         intrusionSetEditContext(user, id);
         return withCancel(
           pubsub.asyncIterator(BUS_TOPICS.IntrusionSet.EDIT_TOPIC),

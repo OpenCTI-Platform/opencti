@@ -7,9 +7,10 @@ import { compose, head } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+import environment from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
-import environment from '../../../relay/environment';
+import Message from '../../../components/Message';
 
 const styles = theme => ({
   drawerPaper: {
@@ -54,7 +55,7 @@ const userValidation = t => Yup.object().shape({
 class UserEditionOverviewComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { markingDefinitions: [] };
+    this.state = { displayMessage: false };
   }
 
   onSubmit(values, { setSubmitting, resetForm, setErrors }) {
@@ -71,16 +72,22 @@ class UserEditionOverviewComponent extends Component {
           const error = this.props.t(head(errors).message);
           setErrors({ name: error }); // Push the error in the name field
         } else {
+          this.setState({ displayMessage: true });
           resetForm();
         }
       },
     });
   }
 
+  handleCloseMessage(event, reason) {
+    if (reason === 'clickaway') {
+      return;
+    }
+    this.setState({ displayMessage: false });
+  }
+
   render() {
-    const {
-      classes, t,
-    } = this.props;
+    const { classes, t } = this.props;
     const initialValues = { password: '', confirmation: '' };
     return (
       <div>
@@ -89,14 +96,11 @@ class UserEditionOverviewComponent extends Component {
           initialValues={initialValues}
           validationSchema={userValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
-          render={({ submitForm, handleReset, isSubmitting }) => (
+          render={({ submitForm, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field name='password' component={TextField} label={t('Password')} type='password' fullWidth={true}/>
               <Field name='confirmation' component={TextField} label={t('Confirmation')} type='password' fullWidth={true} style={{ marginTop: 20 }}/>
               <div className={classes.buttons}>
-                <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
-                  {t('Cancel')}
-                </Button>
                 <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
                   {t('Update')}
                 </Button>
@@ -104,6 +108,7 @@ class UserEditionOverviewComponent extends Component {
             </Form>
           )}
         />
+        <Message message={t('The password has been updated')} open={this.state.displayMessage} handleClose={this.handleCloseMessage.bind(this)} />
       </div>
     );
   }

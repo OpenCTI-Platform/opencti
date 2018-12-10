@@ -56,6 +56,7 @@ const i18n = {
       'New alias': 'Nouvel alias',
       'Create a marking definition': 'Créer un marquage',
       'Update a marking definition': 'Modifier un marquage',
+      'The password has been updated': 'Le mot de passe a été modifié',
       // Menu
       Dashboard: 'Tableau de bord',
       Knowledge: 'Connaissance',

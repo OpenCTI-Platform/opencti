@@ -12,7 +12,7 @@ import {
   threatActorCleanContext
 } from '../domain/threatActor';
 import { fetchEditContext, pubsub } from '../database/redis';
-import { admin, auth, withCancel } from './wrapper';
+import { auth, withCancel } from './wrapper';
 
 const threatActorResolvers = {
   Query: {
@@ -22,24 +22,24 @@ const threatActorResolvers = {
   ThreatActor: {
     markingDefinitions: (threatActor, args) =>
       markingDefinitions(threatActor.id, args),
-    editContext: admin(threatActor => fetchEditContext(threatActor.id))
+    editContext: auth(threatActor => fetchEditContext(threatActor.id))
   },
   Mutation: {
-    threatActorEdit: admin((_, { id }, { user }) => ({
+    threatActorEdit: auth((_, { id }, { user }) => ({
       delete: () => threatActorDelete(id),
       fieldPatch: ({ input }) => threatActorEditField(id, input),
       contextPatch: ({ input }) => threatActorEditContext(user, id, input),
       relationAdd: ({ input }) => threatActorAddRelation(id, input),
       relationDelete: ({ relationId }) => threatActorDeleteRelation(relationId)
     })),
-    threatActorAdd: admin((_, { input }, { user }) =>
+    threatActorAdd: auth((_, { input }, { user }) =>
       addThreatActor(user, input)
     )
   },
   Subscription: {
     threatActor: {
       resolve: payload => payload.instance,
-      subscribe: admin((_, { id }, { user }) => {
+      subscribe: auth((_, { id }, { user }) => {
         threatActorEditContext(user, id);
         return withCancel(
           pubsub.asyncIterator(BUS_TOPICS.ThreatActor.EDIT_TOPIC),
