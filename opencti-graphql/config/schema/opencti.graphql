@@ -36,10 +36,11 @@ type EditUserContext {
 
 ### User
 enum UsersOrdering {
-    created,
+    username,
+    email,
     firstname,
     lastname,
-    email
+    created_at
 }
 enum UserRole {
     ROLE_ADMIN
@@ -60,7 +61,6 @@ type User {
     lastname: String
     email: String!
     language: String
-    created: DateTime
     grant: [String]
     editContext: [EditUserContext]
     created_at: DateTime
@@ -75,6 +75,34 @@ input UserAddInput {
 input UserLoginInput {
     email: String!
     password: String!
+}
+
+### Group
+enum GroupsOrdering {
+    name,
+}
+type GroupConnection {
+    pageInfo: PageInfo!
+    edges: [GroupEdge]
+}
+type GroupEdge {
+    cursor: String!
+    node: Group!
+}
+type Group {
+    id: ID!
+    name: String!
+    description: String
+    created_at: DateTime
+    updated_at: DateTime
+    editContext: [EditUserContext]
+    users: UserConnection
+    permissions: MarkingDefinitionConnection
+}
+input GroupAddInput {
+    name: String!
+    description: String!
+    clientMutationId: String
 }
 
 ### Marking definitions
@@ -326,6 +354,9 @@ type Query {
     me: User
     user(id: String!): User
     users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
+    # Groups
+    group(id: String!): Group
+    groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
     # MarkingDefinitions
     markingDefinition(id: String!): MarkingDefinition
     markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, search: String): MarkingDefinitionConnection
@@ -346,6 +377,7 @@ type Query {
 ### SUBSCRIPTIONS
 type Subscription {
     user(id: ID!): User
+    group(id: ID!): Group
     markingDefinition(id: ID!): MarkingDefinition
     killChainPhase(id: ID!): KillChainPhase
     threatActor(id: ID!): ThreatActor
@@ -361,6 +393,15 @@ type UserEditMutations {
     fieldPatch(input: EditInput): User
     contextPatch(input: EditContext): User
     relationAdd(input: RelationAddInput): User
+    relationDelete(relationId: ID!): ID
+}
+
+# Group
+type GroupEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): Group
+    contextPatch(input: EditContext): Group
+    relationAdd(input: RelationAddInput): Group
     relationDelete(relationId: ID!): ID
 }
 
@@ -417,6 +458,9 @@ type Mutation {
     # User
     userAdd(input: UserAddInput): MarkingDefinition
     userEdit(id: ID!): UserEditMutations
+    # Group
+    groupAdd(input: GroupAddInput): Group
+    groupEdit(id: ID!): GroupEditMutations
     # MarkingDefinition
     markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition
     markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations

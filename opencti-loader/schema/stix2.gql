@@ -87,6 +87,8 @@ define
   "client" sub role;
   "allow" sub role;
   "allowed" sub role;
+  "grouping" sub role;
+  "member" sub role;
 
   # STIX common roles
   "so" sub role;
@@ -144,6 +146,11 @@ define
   "migrate" sub relationship
     relates "status"
     relates "state";
+
+  # Group membership relationships
+  "membership" sub relationship
+    relates "grouping"
+    relates "member";
 
   # Access relationships
   "permission" sub relationship
@@ -275,7 +282,13 @@ define
     has "updated_at"
     plays "client"
     plays "author"
-    plays "allowed";
+    plays "member";
+
+  "Group" sub entity
+    has "name"
+    has "description"
+    plays "allowed"
+    plays "grouping";
 
   "Token" sub entity
     has "uuid"

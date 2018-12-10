@@ -7,7 +7,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { MoreVert, CenterFocusStrong } from '@material-ui/icons';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, propOr } from 'ramda';
 import inject18n from '../../../components/i18n';
 import MarkingDefinitionPopover from './MarkingDefinitionPopover';
 
@@ -88,19 +88,19 @@ class MarkingDefinitionLineComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.definition_type}>
-                {markingDefinition.definition_type}
+                {propOr('-', 'definition_type', markingDefinition)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.definition}>
-              {markingDefinition.definition}
+              {propOr('-', 'definition', markingDefinition)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.color}>
-              {markingDefinition.color}
+              {propOr('-', 'color', markingDefinition)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.level}>
-              {markingDefinition.level}
+              {propOr('-', 'level', markingDefinition)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(markingDefinition.created)}
+                {fd(propOr(null, 'created', markingDefinition))}
             </div>
           </div>
         }/>

@@ -1,22 +1,20 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight } from '@material-ui/icons';
-import { Biohazard } from 'mdi-material-ui';
+import { MoreVert, Person } from '@material-ui/icons';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import inject18n from '../../../components/i18n';
+import UserPopover from './UserPopover';
 
 const styles = theme => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
     '&:hover': {
       background: 'rgba(0, 0, 0, 0.1)',
     },
@@ -43,21 +41,35 @@ const styles = theme => ({
 });
 
 const inlineStyles = {
-  name: {
+  username: {
     float: 'left',
-    width: '70%',
+    width: '20%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  created: {
+  email: {
+    float: 'left',
+    width: '30%',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  firstname: {
     float: 'left',
     width: '15%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  modified: {
+  lastname: {
+    float: 'left',
+    width: '15%',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  created_at: {
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -65,91 +77,106 @@ const inlineStyles = {
   },
 };
 
-class MalwareLineComponent extends Component {
+class UserLineComponent extends Component {
   render() {
-    const { fd, classes, malware } = this.props;
+    const { fd, classes, user } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/knowledge/malwares/${malware.id}`}>
+      <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Biohazard/>
+          <Person/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-                {propOr('-', 'name', malware)}
+            <div className={classes.bodyItem} style={inlineStyles.username}>
+                {propOr('-', 'username', user)}
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(propOr(null, 'created', malware))}
+            <div className={classes.bodyItem} style={inlineStyles.email}>
+              {propOr('-', 'email', user)}
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-                {fd(propOr(null, 'modified', malware))}
+            <div className={classes.bodyItem} style={inlineStyles.firstname}>
+              {propOr('-', 'firstname', user)}
+            </div>
+            <div className={classes.bodyItem} style={inlineStyles.lastname}>
+              {propOr('-', 'lastname', user)}
+            </div>
+            <div className={classes.bodyItem} style={inlineStyles.created_at}>
+                {fd(propOr(null, 'created_at', user))}
             </div>
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <UserPopover userId={user.id}/>
         </ListItemIcon>
       </ListItem>
     );
   }
 }
 
-MalwareLineComponent.propTypes = {
-  malware: PropTypes.object,
+UserLineComponent.propTypes = {
+  user: PropTypes.object,
+  me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
 
-const MalwareLineFragment = createFragmentContainer(MalwareLineComponent, {
-  malware: graphql`
-        fragment MalwareLine_malware on Malware {
+const UserLineFragment = createFragmentContainer(UserLineComponent, {
+  user: graphql`
+        fragment UserLine_user on User {
             id,
-            name,
-            created,
-            modified
+            username,
+            email,
+            firstname,
+            lastname,
+            created_at
         }
     `,
 });
 
-export const MalwareLine = compose(
+export const UserLine = compose(
   inject18n,
   withStyles(styles),
-)(MalwareLineFragment);
+)(UserLineFragment);
 
-class MalwareLineDummyComponent extends Component {
+class UserLineDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Biohazard/>
+          <Person/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
+            <div className={classes.bodyItem} style={inlineStyles.username}>
                 <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-                <div className={classes.placeholder} style={{ width: 140 }}/>
+            <div className={classes.bodyItem} style={inlineStyles.email}>
+              <div className={classes.placeholder} style={{ width: '70%' }}/>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
+            <div className={classes.bodyItem} style={inlineStyles.firstname}>
+              <div className={classes.placeholder} style={{ width: '60%' }}/>
+            </div>
+            <div className={classes.bodyItem} style={inlineStyles.lastname}>
+              <div className={classes.placeholder} style={{ width: '80%' }}/>
+            </div>
+            <div className={classes.bodyItem} style={inlineStyles.created_at}>
                 <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <MoreVert/>
         </ListItemIcon>
       </ListItem>
     );
   }
 }
 
-MalwareLineDummyComponent.propTypes = {
+UserLineDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const MalwareLineDummy = compose(
+export const UserLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(MalwareLineDummyComponent);
+)(UserLineDummyComponent);

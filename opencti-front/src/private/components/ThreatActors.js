@@ -89,9 +89,7 @@ const inlineStyles = {
 class ThreatActors extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      view: 'cards', sortBy: 'name', orderAsc: true, searchTerm: '', searchTimeout: 0,
-    };
+    this.state = { view: 'cards', sortBy: 'name', orderAsc: true };
   }
 
   handleChangeView(mode) {

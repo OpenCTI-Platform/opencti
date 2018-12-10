@@ -5,6 +5,7 @@ import { makeExecutableSchema } from 'graphql-tools';
 // noinspection NodeJsCodingAssistanceForCoreModules
 import path from 'path';
 import userResolvers from '../resolvers/user';
+import groupResolvers from '../resolvers/group';
 import markingDefinitionResolvers from '../resolvers/markingDefinition';
 import killChainPhaseResolvers from '../resolvers/killChainPhase';
 import threatActorResolvers from '../resolvers/threatActor';
@@ -21,6 +22,7 @@ const typeDefs = importSchema(schemaPath);
 const resolvers = mergeResolvers([
   globalResolvers,
   userResolvers,
+  groupResolvers,
   markingDefinitionResolvers,
   killChainPhaseResolvers,
   threatActorResolvers,

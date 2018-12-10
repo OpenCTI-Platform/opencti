@@ -18,7 +18,7 @@ import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import inject18n from '../../../components/i18n';
 import environment from '../../../relay/environment';
-import MarkingDefinitionEdition from './MarkingDefinitionEdition';
+import UserEdition from './UserEdition';
 
 const styles = theme => ({
   container: {
@@ -42,26 +42,26 @@ function Transition(props) {
   return <Slide direction="up" {...props} />;
 }
 
-const markingDefinitionPopoverDeletionMutation = graphql`
-    mutation MarkingDefinitionPopoverDeletionMutation($id: ID!) {
-        markingDefinitionEdit(id: $id) {
+const userPopoverDeletionMutation = graphql`
+    mutation UserPopoverDeletionMutation($id: ID!) {
+        userEdit(id: $id) {
             delete
         }
     }
 `;
 
-const markingDefinitionEditionQuery = graphql`
-    query MarkingDefinitionPopoverEditionQuery($id: String!) {
-        markingDefinition(id: $id) {
-            ...MarkingDefinitionEdition_markingDefinition
+const userEditionQuery = graphql`
+    query UserPopoverEditionQuery($id: String!) {
+        user(id: $id) {
+            ...UserEdition_user
         }
         me {
-            ...MarkingDefinitionEdition_me
+            ...UserEdition_me
         }
     }
 `;
 
-class MarkingDefinitionPopover extends Component {
+class UserPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -101,12 +101,12 @@ class MarkingDefinitionPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation(environment, {
-      mutation: markingDefinitionPopoverDeletionMutation,
+      mutation: userPopoverDeletionMutation,
       variables: {
-        id: this.props.markingDefinitionId,
+        id: this.props.userId,
       },
       updater: (store) => {
-        const payload = store.getRootField('markingDefinitionEdit');
+        const payload = store.getRootField('userEdit');
         console.log(payload);
         /* const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
@@ -125,7 +125,7 @@ class MarkingDefinitionPopover extends Component {
   }
 
   render() {
-    const { classes, t, markingDefinitionId } = this.props;
+    const { classes, t, userId } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
@@ -143,14 +143,14 @@ class MarkingDefinitionPopover extends Component {
         <Drawer open={this.state.displayUpdate} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleCloseUpdate.bind(this)}>
           <QueryRenderer
             environment={environment}
-            query={markingDefinitionEditionQuery}
-            variables={{ id: markingDefinitionId }}
+            query={userEditionQuery}
+            variables={{ id: userId }}
             render={({ error, props }) => {
               if (error) { // Errors
                 return <div> &nbsp; </div>;
               }
               if (props) { // Done
-                return <MarkingDefinitionEdition me={props.me} markingDefinition={props.markingDefinition} handleClose={this.handleCloseUpdate.bind(this)}/>;
+                return <UserEdition me={props.me} user={props.user} handleClose={this.handleCloseUpdate.bind(this)}/>;
               }
               // Loading
               return <div> &nbsp; </div>;
@@ -165,7 +165,7 @@ class MarkingDefinitionPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this marking definition?')}
+              {t('Do you want to delete this user?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -182,8 +182,8 @@ class MarkingDefinitionPopover extends Component {
   }
 }
 
-MarkingDefinitionPopover.propTypes = {
-  markingDefinitionId: PropTypes.string,
+UserPopover.propTypes = {
+  userId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
@@ -193,4 +193,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(MarkingDefinitionPopover);
+)(UserPopover);
