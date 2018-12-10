@@ -3,7 +3,7 @@ import uuidv5 from 'uuid/v5';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
 import { sign } from 'jsonwebtoken';
-import { delEditContext, pubsub, setEditContext } from '../database/redis';
+import { delEditContext, setEditContext } from '../database/redis';
 import { FunctionalError, LoginError } from '../config/errors';
 import conf, {
   BUS_TOPICS,
@@ -46,38 +46,45 @@ export const setAuthenticationCookie = (token, res) => {
   });
 };
 
-export const hashPassword = password => bcrypt.hash(password, 10);
+export const findAll = args => {
+  const { first, after, orderBy = 'email' } = args;
+  return paginate('match $m isa User', { first, after, orderBy });
+};
 
-export const addUser = async user => {
+export const findById = userId => loadByID(userId);
+
+export const addUser = async (user, newUser) => {
   // const userPassword = await hashPassword(user.password);
-  const token = generateOpenCTIWebToken(user.email);
+  const token = generateOpenCTIWebToken(newUser.email);
   const createUser = qk(`insert $user isa User 
-    has username "${user.username}";
-    $user has email "${user.email}";
-    $user has firstname "${user.firstname}";
-    $user has lastname "${user.lastname}";
+    has username "${newUser.username}";
+    $user has email "${newUser.email}";
+    $user has firstname "${newUser.firstname}";
+    $user has lastname "${newUser.lastname}";
     $user has created ${now()};
     $user has created_at ${now()};
     $user has updated_at ${now()};
-    ${join(' ', map(role => `$x has grant "${role}";`, user.grant))}
+    ${join(' ', map(role => `$user has grant "${role}";`, newUser.grant))}
   `);
-  const createToken = qk(`insert $x isa Token 
+  const createToken = qk(`insert $token isa Token 
     has uuid "${token.uuid}";
-    $x has name "${token.name}";
-    $x has created ${token.created};
-    $x has issuer "${token.issuer}";
-    $x has revoked ${token.revoked};
-    $x has duration "${token.duration}";
+    $token has name "${token.name}";
+    $token has created ${token.created};
+    $token has issuer "${token.issuer}";
+    $token has revoked ${token.revoked};
+    $token has duration "${token.duration}";
   `);
   // Execute user and token creation in parrallel, then create the relation.
-  Promise.all([createUser, createToken]).then(() =>
+  Promise.all([createUser, createToken]).then(([resultUser, resultToken]) =>
     // Create the relation
-    qk(`match $user isa User has email "${user.email}"; 
+    qk(`match $user isa User has email "${newUser.email}"; 
                    $token isa Token has uuid "${token.uuid}"; 
                    insert (client: $user, authorization: $token) isa authorize;`).then(
       () => {
-        pubsub.publish(BUS_TOPICS.User.ADDED_TOPIC, { user });
-        return user;
+        const { data } = resultUser;
+        return findById(head(data).user.id).then(created =>
+          notify(BUS_TOPICS.User.ADDED_TOPIC, created)
+        );
       }
     )
   );
@@ -130,40 +137,40 @@ export const login = (email, password) => {
   });
 };
 
-export const findAll = args => {
-  const { first, after, orderBy = 'email' } = args;
-  return paginate('match $m isa User', { first, after, orderBy });
-};
-
-export const findById = userId => loadByID(userId);
-
-export const userDelete = id => deleteByID(id);
+export const userDelete = userId => deleteByID(userId);
 
 export const userDeleteRelation = relationId => deleteByID(relationId);
 
 export const userAddRelation = (userId, input) =>
-  createRelation(userId, input).then(userObject =>
-    notify(BUS_TOPICS.User.EDIT_TOPIC, userObject)
+  createRelation(userId, input).then(userToEdit =>
+    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit)
   );
 
 export const userCleanContext = (user, userId) => {
   delEditContext(user, userId);
-  return findById(userId).then(userObject =>
-    notify(BUS_TOPICS.User.EDIT_TOPIC, userObject)
+  return findById(userId).then(userToEdit =>
+    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit)
   );
 };
 
 export const userEditContext = (user, userId, input) => {
   setEditContext(user, userId, input);
-  findById(userId).then(userObject =>
-    notify(BUS_TOPICS.User.EDIT_TOPIC, userObject)
+  findById(userId).then(userToEdit =>
+    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit)
   );
 };
 
-export const userEditField = (userId, input) =>
-  editInputTx(userId, input).then(user =>
-    notify(BUS_TOPICS.User.EDIT_TOPIC, user)
+export const userEditField = (userId, input) => {
+  let { key, value } = input;
+  if (key === 'password') {
+    value = bcrypt.hashSync(head(value), 10);
+  }
+  const finalInput = { key, value: [value] };
+  console.log(finalInput);
+  editInputTx(userId, finalInput).then(userToEdit =>
+    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit)
   );
+};
 
 export const deleteUserByEmail = email => {
   const delUser = qk(`match $x has email "${email}"; delete $x;`);

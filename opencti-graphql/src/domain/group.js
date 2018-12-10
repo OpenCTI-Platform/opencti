@@ -14,7 +14,7 @@ import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Group', args);
 
-export const users = (groupId, args) =>
+export const members = (groupId, args) =>
   paginate(
     `match $user isa User; 
     (member:$user, grouping:$group) isa membership; 

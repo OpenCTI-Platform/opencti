@@ -4,7 +4,7 @@ import {
   groupDelete,
   findAll,
   findById,
-  users,
+  members,
   permissions,
   groupEditContext,
   groupEditField,
@@ -21,7 +21,7 @@ const groupResolvers = {
     groups: auth((_, args) => findAll(args))
   },
   Group: {
-    users: (group, args) => users(group.id, args),
+    members: (group, args) => members(group.id, args),
     permissions: (group, args) => permissions(group.id, args),
     editContext: admin(group => fetchEditContext(group.id))
   },

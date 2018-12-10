@@ -16,6 +16,7 @@ import environment from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { SubscriptionAvatars } from '../../../components/Subscription';
 import UserEditionOverview from './UserEditionOverview';
+import UserEditionPassword from './UserEditionPassword';
 
 const styles = theme => ({
   header: {
@@ -116,6 +117,7 @@ class UserEdition extends Component {
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && <UserEditionOverview user={this.props.user} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 1 && <UserEditionPassword user={this.props.user} editUsers={editUsers} me={me}/>}
         </div>
       </div>
     );
@@ -134,9 +136,10 @@ UserEdition.propTypes = {
 const UserEditionFragment = createFragmentContainer(UserEdition, {
   user: graphql`
     fragment UserEdition_user on User {
-      ...UserEditionOverview_user
+      ...UserEditionOverview_user,
+      ...UserEditionPassword_user,
       editContext {
-        username
+        username,
         focusOn
       }
     }

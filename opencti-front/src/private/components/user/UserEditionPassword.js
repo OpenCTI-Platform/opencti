@@ -1,0 +1,132 @@
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import graphql from 'babel-plugin-relay/macro';
+import { commitMutation, createFragmentContainer } from 'react-relay';
+import { Formik, Field, Form } from 'formik';
+import { compose, head } from 'ramda';
+import * as Yup from 'yup';
+import { withStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+import inject18n from '../../../components/i18n';
+import TextField from '../../../components/TextField';
+import environment from '../../../relay/environment';
+
+const styles = theme => ({
+  drawerPaper: {
+    minHeight: '100vh',
+    width: '50%',
+    position: 'fixed',
+    overflow: 'hidden',
+    backgroundColor: theme.palette.navAlt.background,
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    padding: '30px 30px 30px 30px',
+  },
+  buttons: {
+    marginTop: 20,
+    textAlign: 'right',
+  },
+  button: {
+    marginLeft: theme.spacing.unit * 2,
+  },
+});
+
+const userMutationFieldPatch = graphql`
+    mutation UserEditionPasswordFieldPatchMutation($id: ID!, $input: EditInput!) {
+        userEdit(id: $id) {
+            fieldPatch(input: $input) {
+                ...UserEditionPassword_user
+            }
+        }
+    }
+`;
+
+const userValidation = t => Yup.object().shape({
+  password: Yup.string()
+    .required(t('This field is required')),
+  confirmation: Yup.string()
+    .oneOf([Yup.ref('password'), null], t('The values do not match'))
+    .required(t('This field is required')),
+});
+
+class UserEditionOverviewComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { markingDefinitions: [] };
+  }
+
+  onSubmit(values, { setSubmitting, resetForm, setErrors }) {
+    const field = { key: 'password', value: values.password };
+    commitMutation(environment, {
+      mutation: userMutationFieldPatch,
+      variables: {
+        id: this.props.user.id,
+        input: field,
+      },
+      onCompleted: (response, errors) => {
+        setSubmitting(false);
+        if (errors) {
+          const error = this.props.t(head(errors).message);
+          setErrors({ name: error }); // Push the error in the name field
+        } else {
+          resetForm();
+        }
+      },
+    });
+  }
+
+  render() {
+    const {
+      classes, t,
+    } = this.props;
+    const initialValues = { password: '', confirmation: '' };
+    return (
+      <div>
+        <Formik
+          enableReinitialize
+          initialValues={initialValues}
+          validationSchema={userValidation(t)}
+          onSubmit={this.onSubmit.bind(this)}
+          render={({ submitForm, handleReset, isSubmitting }) => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field name='password' component={TextField} label={t('Password')} type='password' fullWidth={true}/>
+              <Field name='confirmation' component={TextField} label={t('Confirmation')} type='password' fullWidth={true} style={{ marginTop: 20 }}/>
+              <div className={classes.buttons}>
+                <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                  {t('Cancel')}
+                </Button>
+                <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
+                  {t('Update')}
+                </Button>
+              </div>
+            </Form>
+          )}
+        />
+      </div>
+    );
+  }
+}
+
+UserEditionOverviewComponent.propTypes = {
+  classes: PropTypes.object,
+  theme: PropTypes.object,
+  t: PropTypes.func,
+  user: PropTypes.object,
+  editUsers: PropTypes.array,
+  me: PropTypes.object,
+};
+
+const UserEditionOverview = createFragmentContainer(UserEditionOverviewComponent, {
+  user: graphql`
+      fragment UserEditionPassword_user on User {
+          id
+      }
+  `,
+});
+
+export default compose(
+  inject18n,
+  withStyles(styles, { withTheme: true }),
+)(UserEditionOverview);

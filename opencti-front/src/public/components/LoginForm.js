@@ -26,11 +26,9 @@ const loginMutation = graphql`
 
 const loginValidation = t => Yup.object().shape({
   email: Yup.string()
-    .email(t('Invalid email'))
+    .email(t('The value must be an email address'))
     .required(t('This field is required')),
   password: Yup.string()
-    .min(6, t('Too Short!'))
-    .max(100, t('Too Long!'))
     .required(t('This field is required')),
 });
  

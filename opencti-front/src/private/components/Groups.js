@@ -108,7 +108,7 @@ class Groups extends Component {
               <div>
                 {this.SortHeader('name', 'Name')}
                 {this.SortHeader('created_at', 'Creation date')}
-                {this.SortHeader('updated_at', 'Modifcation date')}
+                {this.SortHeader('updated_at', 'Modification date')}
               </div>
             }/>
           </ListItem>

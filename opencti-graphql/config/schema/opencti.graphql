@@ -100,12 +100,12 @@ type Group {
     created_at: DateTime
     updated_at: DateTime
     editContext: [EditUserContext]
-    users: UserConnection
+    members: UserConnection
     permissions: MarkingDefinitionConnection
 }
 input GroupAddInput {
     name: String!
-    description: String!
+    description: String
     clientMutationId: String
 }
 

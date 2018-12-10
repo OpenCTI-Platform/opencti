@@ -112,7 +112,7 @@ class GroupEdition extends Component {
             <Tabs value={this.state.currentTab} onChange={this.handleChangeTab.bind(this)}>
               <Tab label={t('Overview')}/>
               <Tab label={t('Permissions')}/>
-              <Tab label={t('Users')}/>
+              <Tab label={t('Members')}/>
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && <GroupEditionOverview group={this.props.group} editUsers={editUsers} me={me}/>}
@@ -134,7 +134,7 @@ GroupEdition.propTypes = {
 const GroupEditionFragment = createFragmentContainer(GroupEdition, {
   group: graphql`
     fragment GroupEdition_group on Group {
-      ...GroupEditionOverview_group
+      ...GroupEditionOverview_group,
       editContext {
         username,
         focusOn

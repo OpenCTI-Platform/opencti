@@ -59,13 +59,9 @@ const groupEditionOverviewFocus = graphql`
 `;
 
 const groupValidation = t => Yup.object().shape({
-  groupname: Yup.string()
+  name: Yup.string()
     .required(t('This field is required')),
-  email: Yup.string()
-    .required(t('This field is required'))
-    .email(t('The value must be an email address')),
-  firstname: Yup.string(),
-  lastname: Yup.string(),
+  description: Yup.string(),
 });
 
 // We wait 0.5 sec of interruption before saving.
@@ -161,7 +157,8 @@ const GroupEditionOverview = createFragmentContainer(GroupEditionOverviewCompone
   group: graphql`
       fragment GroupEditionOverview_group on Group {
           id,
-          name
+          name,
+          description
       }
   `,
 });

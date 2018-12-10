@@ -26,16 +26,6 @@ const styles = theme => ({
     }),
     padding: '30px 30px 30px 30px',
   },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
 });
 
 const userMutationFieldPatch = graphql`
@@ -74,11 +64,6 @@ const onFormChange$ = new rxjs.Subject().pipe(
 );
 
 class UserEditionOverviewComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { markingDefinitions: [] };
-  }
-
   componentDidMount() {
     this.subscription = onFormChange$.subscribe(
       (data) => {

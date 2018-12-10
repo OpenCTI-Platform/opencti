@@ -37,6 +37,7 @@ const i18n = {
       'The value is too long': 'La valeur est trop longue',
       'The value must be a number': 'La valeur doit être un nombre',
       'The value must be an email address': 'La valeur doit être une adresse email',
+      'The values do not match': 'Les valeurs ne correspondent pas',
       'No available options': 'Aucune option disponible',
       'Create a user': 'Créer un utilisateur',
       'Update a user': 'Modifier un utilisateur',
@@ -106,6 +107,9 @@ const i18n = {
       Username: 'Nom d\'utilisateur',
       Firstname: 'Prénom',
       Lastname: 'Nom',
+      Permissions: 'Permissions',
+      Members: 'Membres',
+      Confirmation: 'Confirmation',
       // Statistics
       'Total entities': 'Nombre d\'entités',
       'Total observables': 'Nombre d\'observables',
