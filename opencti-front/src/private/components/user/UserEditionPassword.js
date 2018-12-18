@@ -52,7 +52,7 @@ const userValidation = t => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-class UserEditionOverviewComponent extends Component {
+class UserEditionPasswordComponent extends Component {
   constructor(props) {
     super(props);
     this.state = { displayMessage: false };
@@ -114,7 +114,7 @@ class UserEditionOverviewComponent extends Component {
   }
 }
 
-UserEditionOverviewComponent.propTypes = {
+UserEditionPasswordComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -123,7 +123,7 @@ UserEditionOverviewComponent.propTypes = {
   me: PropTypes.object,
 };
 
-const UserEditionOverview = createFragmentContainer(UserEditionOverviewComponent, {
+const UserEditionPassword = createFragmentContainer(UserEditionPasswordComponent, {
   user: graphql`
       fragment UserEditionPassword_user on User {
           id
@@ -134,4 +134,4 @@ const UserEditionOverview = createFragmentContainer(UserEditionOverviewComponent
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(UserEditionOverview);
+)(UserEditionPassword);

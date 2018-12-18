@@ -104,13 +104,16 @@ class UserCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm, setErrors }) {
+    values['grant'] = ['ROLE_USER'];
     commitMutation(environment, {
       mutation: userMutation,
       variables: {
         input: values,
       },
       updater: (store) => {
+        console.log(store);
         const payload = store.getRootField('userAdd');
+        console.log(payload);
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);

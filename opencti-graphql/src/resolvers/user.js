@@ -5,6 +5,7 @@ import {
   userDelete,
   findAll,
   findById,
+  groups,
   userEditContext,
   userEditField,
   userAddRelation,
@@ -23,6 +24,7 @@ const userResolvers = {
     me: auth((_, args, { user }) => findById(user.id))
   },
   User: {
+    groups: (user, args) => groups(user.id, args),
     editContext: admin(user => fetchEditContext(user.id))
   },
   Mutation: {

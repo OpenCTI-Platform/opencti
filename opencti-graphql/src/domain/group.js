@@ -14,6 +14,8 @@ import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Group', args);
 
+export const findById = groupId => loadByID(groupId);
+
 export const members = (groupId, args) =>
   paginate(
     `match $user isa User; 
@@ -44,8 +46,6 @@ export const addGroup = async (user, group) => {
     );
   });
 };
-
-export const findById = groupId => loadByID(groupId);
 
 export const groupDelete = groupId => deleteByID(groupId);
 

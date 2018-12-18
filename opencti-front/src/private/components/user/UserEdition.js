@@ -17,6 +17,7 @@ import inject18n from '../../../components/i18n';
 import { SubscriptionAvatars } from '../../../components/Subscription';
 import UserEditionOverview from './UserEditionOverview';
 import UserEditionPassword from './UserEditionPassword';
+import UserEditionGroups from './UserEditionGroups';
 
 const styles = theme => ({
   header: {
@@ -118,6 +119,7 @@ class UserEdition extends Component {
           </AppBar>
           {this.state.currentTab === 0 && <UserEditionOverview user={this.props.user} editUsers={editUsers} me={me}/>}
           {this.state.currentTab === 1 && <UserEditionPassword user={this.props.user} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 2 && <UserEditionGroups user={this.props.user} editUsers={editUsers} me={me}/>}
         </div>
       </div>
     );
@@ -138,6 +140,7 @@ const UserEditionFragment = createFragmentContainer(UserEdition, {
     fragment UserEdition_user on User {
       ...UserEditionOverview_user,
       ...UserEditionPassword_user,
+      ...UserEditionGroups_user,
       editContext {
         username,
         focusOn

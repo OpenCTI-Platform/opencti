@@ -53,14 +53,22 @@ export const findAll = args => {
 
 export const findById = userId => loadByID(userId);
 
+export const groups = (userId, args) =>
+  paginate(
+    `match $group isa Group; 
+    (grouping:$group, member:$user) isa membership; 
+    $user id ${userId}`,
+    args
+  );
+
 export const addUser = async (user, newUser) => {
   // const userPassword = await hashPassword(user.password);
   const token = generateOpenCTIWebToken(newUser.email);
   const createUser = qk(`insert $user isa User 
     has username "${newUser.username}";
     $user has email "${newUser.email}";
-    $user has firstname "${newUser.firstname}";
-    $user has lastname "${newUser.lastname}";
+    ${newUser.firstname ? `$user has firstname "${newUser.firstname}";` : ''}
+    ${newUser.lastname ? `$user has lastname "${newUser.lastname}";` : ''}
     $user has created ${now()};
     $user has created_at ${now()};
     $user has updated_at ${now()};
@@ -75,15 +83,17 @@ export const addUser = async (user, newUser) => {
     $token has duration "${token.duration}";
   `);
   // Execute user and token creation in parrallel, then create the relation.
-  Promise.all([createUser, createToken]).then(([resultUser, resultToken]) =>
+  const createPromise = Promise.all([createUser, createToken]);
+  return createPromise.then(([resultUser, resultToken]) =>
     // Create the relation
     qk(`match $user isa User has email "${newUser.email}"; 
                    $token isa Token has uuid "${token.uuid}"; 
                    insert (client: $user, authorization: $token) isa authorize;`).then(
       () => {
         const { data } = resultUser;
-        return findById(head(data).user.id).then(created =>
-          notify(BUS_TOPICS.User.ADDED_TOPIC, created)
+        console.log(data);
+        return loadByID(head(data).user.id).then(created =>
+          notify(BUS_TOPICS.User.ADDED_TOPIC, created, user)
         );
       }
     )

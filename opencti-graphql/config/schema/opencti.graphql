@@ -64,6 +64,7 @@ type User {
     language: String
     grant: [String]
     editContext: [EditUserContext]
+    groups: GroupConnection
     created_at: DateTime
     updated_at: DateTime
 }
@@ -72,7 +73,7 @@ input UserAddInput {
     email: String!
     firstname: String
     lastname: String
-    grant: [UserRole]
+    grant: [UserRole]!
 }
 input UserLoginInput {
     email: String!
@@ -464,7 +465,7 @@ type MalwareEditMutations {
     fieldPatch(input: EditInput): Malware
     contextPatch(input: EditContext): Malware
     relationAdd(input: RelationAddInput): Malware
-    relationDelete(relationId: ID!): ID
+    relationDelete(relationId:ID!): ID
 }
 
 # Next
