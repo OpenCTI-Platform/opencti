@@ -24,14 +24,18 @@ public class Identity extends Domain {
                             "has name %s " +
                             "has identity_class %s " +
                             "has type %s " +
+                            "has created %s " +
                             "has modified %s " +
-                            "has created %s;",
+                            "has created_at %s " +
+                            "has updated_at %s;",
                     prepare(getId()),
                     prepare(getName()),
                     prepare(getIdentity_class()),
                     prepare(getType()),
+                    getCreated(),
                     getModified(),
-                    getCreated()
+                    getCurrentTime(),
+                    getCurrentTime()
             );
             driver.write(identityCreation);
         }

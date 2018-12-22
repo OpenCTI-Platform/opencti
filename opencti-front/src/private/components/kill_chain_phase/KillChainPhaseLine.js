@@ -9,7 +9,7 @@ import { MoreVert, CenterFocusStrong } from '@material-ui/icons';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import inject18n from '../../../components/i18n';
-import MarkingDefinitionPopover from './MarkingDefinitionPopover';
+import KillChainPhasePopover from './KillChainPhasePopover';
 
 const styles = theme => ({
   item: {
@@ -77,9 +77,9 @@ const inlineStyles = {
   },
 };
 
-class MarkingDefinitionLineComponent extends Component {
+class KillChainPhaseLineComponent extends Component {
   render() {
-    const { fd, classes, markingDefinition } = this.props;
+    const { fd, classes, killChainPhase } = this.props;
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -88,57 +88,55 @@ class MarkingDefinitionLineComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.definition_type}>
-                {propOr('-', 'definition_type', markingDefinition)}
+                {propOr('-', 'definition_type', killChainPhase)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.definition}>
-              {propOr('-', 'definition', markingDefinition)}
+              {propOr('-', 'definition', killChainPhase)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.color}>
-              {propOr('-', 'color', markingDefinition)}
+              {propOr('-', 'color', killChainPhase)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.level}>
-              {propOr('-', 'level', markingDefinition)}
+              {propOr('-', 'level', killChainPhase)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(propOr(null, 'created', markingDefinition))}
+                {fd(propOr(null, 'created', killChainPhase))}
             </div>
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <MarkingDefinitionPopover markingDefinitionId={markingDefinition.id}/>
+          <KillChainPhasePopover killChainPhaseId={killChainPhase.id}/>
         </ListItemIcon>
       </ListItem>
     );
   }
 }
 
-MarkingDefinitionLineComponent.propTypes = {
-  markingDefinition: PropTypes.object,
+KillChainPhaseLineComponent.propTypes = {
+  killChainPhase: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
 
-const MarkingDefinitionLineFragment = createFragmentContainer(MarkingDefinitionLineComponent, {
-  markingDefinition: graphql`
-        fragment MarkingDefinitionLine_markingDefinition on MarkingDefinition {
-            id,
-            definition_type
-            definition
-            level
-            color
+const KillChainPhaseLineFragment = createFragmentContainer(KillChainPhaseLineComponent, {
+  killChainPhase: graphql`
+        fragment KillChainPhaseLine_killChainPhase on KillChainPhase {
+            id
+            kill_chain_name
+            phase_name
             created
             modified
         }
     `,
 });
 
-export const MarkingDefinitionLine = compose(
+export const KillChainPhaseLine = compose(
   inject18n,
   withStyles(styles),
-)(MarkingDefinitionLineFragment);
+)(KillChainPhaseLineFragment);
 
-class MarkingDefinitionLineDummyComponent extends Component {
+class KillChainPhaseLineDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
@@ -173,11 +171,11 @@ class MarkingDefinitionLineDummyComponent extends Component {
   }
 }
 
-MarkingDefinitionLineDummyComponent.propTypes = {
+KillChainPhaseLineDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const MarkingDefinitionLineDummy = compose(
+export const KillChainPhaseLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(MarkingDefinitionLineDummyComponent);
+)(KillChainPhaseLineDummyComponent);

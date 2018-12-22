@@ -3,6 +3,8 @@ package org.opencti.model.base;
 import org.opencti.model.database.GraknDriver;
 import org.opencti.model.sro.Relationship;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,5 +34,10 @@ public interface Stix {
 
     default String prepare(String s) {
         return s != null ? "\"" + s.replace("\\", "\\\\").replaceAll("\"", "\\\\\"") + "\"" : null;
+    }
+
+    default String getCurrentTime() {
+        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        return zonedDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 }

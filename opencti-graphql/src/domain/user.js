@@ -11,7 +11,8 @@ import conf, {
   OPENCTI_DEFAULT_DURATION,
   OPENCTI_ISSUER,
   OPENCTI_WEB_TOKEN,
-  ROLE_USER
+  ROLE_USER,
+  ROLE_ADMIN
 } from '../config/conf';
 import {
   createRelation,
@@ -69,7 +70,6 @@ export const addUser = async (user, newUser) => {
     $user has email "${newUser.email}";
     ${newUser.firstname ? `$user has firstname "${newUser.firstname}";` : ''}
     ${newUser.lastname ? `$user has lastname "${newUser.lastname}";` : ''}
-    $user has created ${now()};
     $user has created_at ${now()};
     $user has updated_at ${now()};
     ${join(' ', map(role => `$user has grant "${role}";`, newUser.grant))}
@@ -81,6 +81,8 @@ export const addUser = async (user, newUser) => {
     $token has issuer "${token.issuer}";
     $token has revoked ${token.revoked};
     $token has duration "${token.duration}";
+    $token has created_at ${now()};
+    $token has updated_at ${now()};
   `);
   // Execute user and token creation in parrallel, then create the relation.
   const createPromise = Promise.all([createUser, createToken]);
@@ -91,7 +93,6 @@ export const addUser = async (user, newUser) => {
                    insert (client: $user, authorization: $token) isa authorize;`).then(
       () => {
         const { data } = resultUser;
-        console.log(data);
         return loadByID(head(data).user.id).then(created =>
           notify(BUS_TOPICS.User.ADDED_TOPIC, created, user)
         );
@@ -104,22 +105,23 @@ export const addUser = async (user, newUser) => {
 export const loginFromProvider = (email, username) => {
   // Try to get the user.
   const loginPromise = qk(`match $client isa User has email "${email}";
-      $client has password $password;
       (authorization:$token, client:$client); 
       get;`);
   return loginPromise.then(result => {
     const { data } = result;
     if (isEmpty(data)) {
       // We need to create the user because we trust the provider
-      const user = {
+      const newUser = {
         username,
         email,
-        grant: [ROLE_USER],
+        grant: [ROLE_USER, ROLE_ADMIN],
         created: now(),
         password: null
       };
       // Create the user then restart the login
-      return addUser(user).then(() => loginFromProvider(email, username));
+      return addUser({}, newUser).then(() =>
+        loginFromProvider(email, username)
+      );
     }
     // We just need to return the current token
     const element = head(data);

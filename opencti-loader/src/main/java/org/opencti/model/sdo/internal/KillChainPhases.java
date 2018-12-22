@@ -34,6 +34,10 @@ public class KillChainPhases implements Stix {
             refBuilder.append(" has stix_id ").append(prepare(getId()));
             refBuilder.append(" has phase_name ").append(prepare(getPhase_name()));
             refBuilder.append(" has kill_chain_name ").append(prepare(getKill_chain_name()));
+            refBuilder.append(" has created ").append(getCurrentTime());
+            refBuilder.append(" has modified ").append(getCurrentTime());
+            refBuilder.append(" has created_at ").append(getCurrentTime());
+            refBuilder.append(" has updated_at ").append(getCurrentTime());
             refBuilder.append(";");
             driver.write(refBuilder.toString());
         }

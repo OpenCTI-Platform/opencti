@@ -81,6 +81,7 @@ const i18n = {
       Parameters: 'Paramètres',
       Users: 'Utilisateurs',
       Groups: 'Groupes',
+      Global: 'Global',
       'TTPs frameworks': 'Frameworks de TTP',
       // User
       'Sign in': 'S\'identifier',
@@ -99,7 +100,7 @@ const i18n = {
       'Updated the': 'Mis à jour le',
       Creator: 'Créateur',
       Marking: 'Marquage',
-      'Killchain phases': 'Phases de killchain',
+      'Kill chain phases': 'Phases de kill chain',
       Definition: 'Definition',
       Level: 'Niveau',
       Color: 'Couleur',

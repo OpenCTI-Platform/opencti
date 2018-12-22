@@ -4,6 +4,8 @@ import org.opencti.model.base.Stix;
 import org.opencti.model.database.GraknDriver;
 import org.opencti.model.sdo.container.Domain;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import static java.lang.String.format;
@@ -31,6 +33,9 @@ public class CourseOfAction extends Domain {
             if (getDescription() != null) query.append(" has description ").append(prepare(getDescription()));
             query.append(" has revoked ").append(getRevoked());
             query.append(" has created ").append(getCreated());
+            query.append(" has modified ").append(getModified());
+            query.append(" has created_at ").append(getCurrentTime());
+            query.append(" has updated_at ").append(getCurrentTime());
             query.append(";");
             driver.write(query.toString());
         }

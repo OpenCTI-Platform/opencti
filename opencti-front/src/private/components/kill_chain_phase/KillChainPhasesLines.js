@@ -9,7 +9,7 @@ import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer, InfiniteLoader, List, WindowScroller,
 } from 'react-virtualized';
-import { MarkingDefinitionLine, MarkingDefinitionLineDummy } from './MarkingDefinitionLine';
+import { KillChainPhaseLine, KillChainPhaseLineDummy } from './KillChainPhaseLine';
 
 const styles = () => ({
   windowScrollerWrapper: {
@@ -29,7 +29,7 @@ const styles = () => ({
   },
 });
 
-class MarkingDefinitionsLines extends Component {
+class KillChainPhasesLines extends Component {
   constructor(props) {
     super(props);
     this._isRowLoaded = this._isRowLoaded.bind(this);
@@ -62,32 +62,32 @@ class MarkingDefinitionsLines extends Component {
     if (this.props.dummy) {
       return true;
     }
-    const list = pathOr([], ['markingDefinitions', 'edges'], this.props.data);
+    const list = pathOr([], ['killChainPhases', 'edges'], this.props.data);
     return !this.props.relay.hasMore() || index < list.length;
   }
 
   _rowRenderer({ index, key, style }) {
     const { dummy } = this.props;
     if (dummy) {
-      return <div key={key} style={style}><MarkingDefinitionLineDummy/></div>;
+      return <div key={key} style={style}><KillChainPhaseLineDummy/></div>;
     }
 
-    const list = pathOr([], ['markingDefinitions', 'edges'], this.props.data);
+    const list = pathOr([], ['killChainPhases', 'edges'], this.props.data);
     if (!this._isRowLoaded({ index })) {
-      return <div key={key} style={style}><MarkingDefinitionLineDummy/></div>;
+      return <div key={key} style={style}><KillChainPhaseLineDummy/></div>;
     }
-    const markingDefinitionNode = list[index];
-    if (!markingDefinitionNode) {
+    const killChainPhaseNode = list[index];
+    if (!killChainPhaseNode) {
       return <div key={key}>&nbsp;</div>;
     }
-    const markingDefinition = markingDefinitionNode.node;
-    return <div key={key} style={style}><MarkingDefinitionLine key={markingDefinition.id} markingDefinition={markingDefinition}/></div>;
+    const killChainPhase = killChainPhaseNode.node;
+    return <div key={key} style={style}><KillChainPhaseLine key={killChainPhase.id} killChainPhase={killChainPhase}/></div>;
   }
 
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
-    const list = dummy ? [] : pathOr([], ['markingDefinitions', 'edges'], this.props.data);
+    const list = dummy ? [] : pathOr([], ['killChainPhases', 'edges'], this.props.data);
     const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
@@ -128,28 +128,28 @@ class MarkingDefinitionsLines extends Component {
   }
 }
 
-MarkingDefinitionsLines.propTypes = {
+KillChainPhasesLines.propTypes = {
   classes: PropTypes.object,
   data: PropTypes.object,
   relay: PropTypes.object,
-  markingDefinitions: PropTypes.object,
+  killChainPhases: PropTypes.object,
   dummy: PropTypes.bool,
 };
 
-export const markingDefinitionsLinesQuery = graphql`
-    query MarkingDefinitionsLinesPaginationQuery($count: Int!, $cursor: ID, $orderBy: MarkingDefinitionsOrdering, $orderMode: OrderingMode) {
-        ...MarkingDefinitionsLines_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
+export const killChainPhasesLinesQuery = graphql`
+    query KillChainPhasesLinesPaginationQuery($count: Int!, $cursor: ID, $orderBy: KillChainPhasesOrdering, $orderMode: OrderingMode) {
+        ...KillChainPhasesLines_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
     }
 `;
 
-export const markingDefinitionsLinesSearchQuery = graphql`
-    query MarkingDefinitionsLinesSearchQuery($search: String) {
-        markingDefinitions(search: $search) {
+export const killChainPhasesLinesSearchQuery = graphql`
+    query KillChainPhasesLinesSearchQuery($search: String) {
+        killChainPhases(search: $search) {
             edges {
                 node {
-                    id
-                    definition_type
-                    definition
+                    id,
+                    kill_chain_name,
+                    phase_name
                 }
             }
         }
@@ -157,19 +157,19 @@ export const markingDefinitionsLinesSearchQuery = graphql`
 `;
 
 export default withStyles(styles)(createPaginationContainer(
-  MarkingDefinitionsLines,
+  KillChainPhasesLines,
   {
     data: graphql`
-        fragment MarkingDefinitionsLines_data on Query @argumentDefinitions(
+        fragment KillChainPhasesLines_data on Query @argumentDefinitions(
             count: {type: "Int", defaultValue: 25}
             cursor: {type: "ID"}
-            orderBy: {type: "MarkingDefinitionsOrdering", defaultValue: ID}
+            orderBy: {type: "KillChainPhasesOrdering", defaultValue: ID}
             orderMode: {type: "OrderingMode", defaultValue: "asc"}
         ) {
-            markingDefinitions(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_markingDefinitions") {
+            killChainPhases(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_killChainPhases") {
                 edges {
                     node {
-                        ...MarkingDefinitionLine_markingDefinition
+                        ...KillChainPhaseLine_killChainPhase
                     }
                 }
             }
@@ -179,7 +179,7 @@ export default withStyles(styles)(createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.markingDefinitions;
+      return props.data && props.data.killChainPhases;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -195,6 +195,6 @@ export default withStyles(styles)(createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: markingDefinitionsLinesQuery,
+    query: killChainPhasesLinesQuery,
   },
 ));

@@ -33,11 +33,17 @@ public class MarkingDefinition extends Domain {
                             "has type %s " +
                             "has definition %s " +
                             "has created %s " +
+                            "has modified %s " +
+                            "has created_at %s " +
+                            "has updated_at %s " +
                             "has definition_type %s;",
                     prepare(getId()),
                     prepare(getType()),
                     prepare("tlp".equals(definitionType) ? getDefinition().getTlp() : getDefinition().getStatement()),
                     getCreated(),
+                    getCurrentTime(),
+                    getCurrentTime(),
+                    getCurrentTime(),
                     prepare(definitionType));
             driver.write(markingCreation);
         }

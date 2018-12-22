@@ -258,7 +258,7 @@ const buildPagination = (first, offset, instances, globalCount) => {
  * @returns Promise
  */
 export const paginate = (query, options) => {
-  const { first = 25, after, orderBy = 'created_at', orderMode = 'asc' } = options;
+  const { first = 200, after, orderBy = 'created_at', orderMode = 'asc' } = options;
   const offset = after ? cursorToOffset(after) : 0;
   const instanceKey = /match\s\$(\w+)\s/i.exec(query)[1]; // We need to resolve the key instance used in query.
   const findRelationVariable = /\$(\w+)\((\w+):\$(\w+),[\s\w:$]+\)/i.exec(

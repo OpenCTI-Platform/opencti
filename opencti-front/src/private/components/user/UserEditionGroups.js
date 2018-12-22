@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer, QueryRenderer } from 'react-relay';
+import { commitMutation, createFragmentContainer, QueryRenderer } from 'react-relay';
 import {
-  compose, map, pathOr, pipe,
+  compose, head, map, pathOr, pipe,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -25,18 +25,39 @@ const styles = theme => ({
   },
 });
 
-class UserEditionGroupsComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { checked: [] };
-  }
+const userMutationRelationAdd = graphql`
+    mutation UserEditionGroupsRelationAddMutation($id: ID!, $input: RelationAddInput!) {
+        userEdit(id: $id) {
+            relationAdd(input: $input) {
+                ...UserEditionGroups_user
+            }
+        }
+    }
+`;
 
-  handleToggle(groupId) {
-    console.log(event);
+class UserEditionGroupsComponent extends Component {
+  handleToggle(groupId, event) {
+    if (event.target.checked) {
+      commitMutation(environment, {
+        mutation: userMutationRelationAdd,
+        variables: {
+          id: this.props.user.id,
+          input: {
+            fromRole: 'member', toId: groupId, toRole: 'grouping', through: 'membership',
+          },
+        },
+      });
+    }
   }
 
   render() {
-    const { classes, t } = this.props;
+    const { classes, user } = this.props;
+    console.log(user);
+    const userGroups = pipe(
+      pathOr([], ['groups', 'edges']),
+      map(n => n.node.id),
+    )(user);
+
     return (
       <div>
         <QueryRenderer
@@ -52,10 +73,11 @@ class UserEditionGroupsComponent extends Component {
                 pathOr([], ['groups', 'edges']),
                 map(n => n.node),
               )(props);
+              console.log(userGroups);
               return (
                 <List dense={true} className={classes.root}>
                   {groups.map(group => (
-                    <ListItem key={group.id} button={true} onClick={this.handleToggle.bind(this, group.id)}>
+                    <ListItem key={group.id}>
                       <ListItemAvatar>
                         <Avatar>{group.name.charAt(0)}</Avatar>
                       </ListItemAvatar>
@@ -63,7 +85,7 @@ class UserEditionGroupsComponent extends Component {
                       <ListItemSecondaryAction>
                         <Checkbox
                           onChange={this.handleToggle.bind(this, group.id)}
-                          checked={this.state.checked.indexOf(group.id) !== -1}
+                          checked={userGroups.indexOf(group.id) !== -1}
                         />
                       </ListItemSecondaryAction>
                     </ListItem>
@@ -93,6 +115,14 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
   user: graphql`
       fragment UserEditionGroups_user on User {
           id
+          groups {
+              edges {
+                  node {
+                      id
+                      name
+                  }
+              }
+          }
       }
   `,
 });

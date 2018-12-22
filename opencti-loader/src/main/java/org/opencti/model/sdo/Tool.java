@@ -27,6 +27,9 @@ public class Tool extends Domain {
             if (getTool_version() != null) query.append(" has tool_version ").append(prepare(getTool_version()));
             query.append(" has revoked ").append(getRevoked());
             query.append(" has created ").append(getCreated());
+            query.append(" has modified ").append(getModified());
+            query.append(" has created_at ").append(getCurrentTime());
+            query.append(" has updated_at ").append(getCurrentTime());
             query.append(";");
             driver.write(query.toString());
         }

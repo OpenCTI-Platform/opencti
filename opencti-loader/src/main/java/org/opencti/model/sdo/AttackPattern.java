@@ -36,6 +36,9 @@ public class AttackPattern extends Domain {
             if (getDescription() != null) query.append(" has description ").append(prepare(getDescription()));
             query.append(" has revoked ").append(getRevoked());
             query.append(" has created ").append(getCreated());
+            query.append(" has modified ").append(getModified());
+            query.append(" has created_at ").append(getCurrentTime());
+            query.append(" has updated_at ").append(getCurrentTime());
             query.append(";");
             driver.write(query.toString());
         }

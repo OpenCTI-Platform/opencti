@@ -35,6 +35,9 @@ public class IntrusionSet extends Domain {
             query.append(" has type ").append(prepare(getType()));
             query.append(" has revoked ").append(getRevoked());
             query.append(" has created ").append(getCreated());
+            query.append(" has modified ").append(getModified());
+            query.append(" has created_at ").append(getCurrentTime());
+            query.append(" has updated_at ").append(getCurrentTime());
             if (getFirst_seen() != null) query.append(" has first_seen ").append(getFirst_seen());
             if (getLast_seen() != null) query.append(" has last_seen ").append(getLast_seen());
             if (getGoal() != null) query.append(" has goal ").append(getGoal());
