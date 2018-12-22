@@ -12,6 +12,7 @@ import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import environment from '../../../relay/environment';
+import Switch from "../../../components/Switch";
 
 const styles = theme => ({
   drawerPaper: {
@@ -155,10 +156,10 @@ UserEditionOverviewComponent.propTypes = {
 const UserEditionOverview = createFragmentContainer(UserEditionOverviewComponent, {
   user: graphql`
       fragment UserEditionOverview_user on User {
-          id,
-          username,
-          email,
-          firstname,
+          id
+          username
+          email
+          firstname
           lastname
       }
   `,

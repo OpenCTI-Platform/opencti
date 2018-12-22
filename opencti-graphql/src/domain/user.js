@@ -57,7 +57,7 @@ export const findById = userId => loadByID(userId);
 export const groups = (userId, args) =>
   paginate(
     `match $group isa Group; 
-    (grouping:$group, member:$user) isa membership; 
+    $rel(grouping:$group, member:$user) isa membership; 
     $user id ${userId}`,
     args
   );

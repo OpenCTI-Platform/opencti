@@ -5,7 +5,8 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { MoreVert, CenterFocusStrong } from '@material-ui/icons';
+import { MoreVert } from '@material-ui/icons';
+import { LockPattern } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import inject18n from '../../../components/i18n';
@@ -41,30 +42,16 @@ const styles = theme => ({
 });
 
 const inlineStyles = {
-  definition_type: {
+  kill_chain_name: {
     float: 'left',
-    width: '25%',
+    width: '30%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  definition: {
+  phase_name: {
     float: 'left',
-    width: '25%',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  color: {
-    float: 'left',
-    width: '15%',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  level: {
-    float: 'left',
-    width: '10%',
+    width: '35%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -83,21 +70,15 @@ class KillChainPhaseLineComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <CenterFocusStrong/>
+          <LockPattern/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
-            <div className={classes.bodyItem} style={inlineStyles.definition_type}>
-                {propOr('-', 'definition_type', killChainPhase)}
+            <div className={classes.bodyItem} style={inlineStyles.kill_chain_name}>
+                {propOr('-', 'kill_chain_name', killChainPhase)}
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.definition}>
-              {propOr('-', 'definition', killChainPhase)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.color}>
-              {propOr('-', 'color', killChainPhase)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.level}>
-              {propOr('-', 'level', killChainPhase)}
+            <div className={classes.bodyItem} style={inlineStyles.phase_name}>
+              {propOr('-', 'phase_name', killChainPhase)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
                 {fd(propOr(null, 'created', killChainPhase))}
@@ -142,21 +123,15 @@ class KillChainPhaseLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <CenterFocusStrong/>
+          <LockPattern/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
-            <div className={classes.bodyItem} style={inlineStyles.definition_type}>
+            <div className={classes.bodyItem} style={inlineStyles.kill_chain_name}>
                 <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.definition}>
+            <div className={classes.bodyItem} style={inlineStyles.phase_name}>
               <div className={classes.placeholder} style={{ width: '70%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.color}>
-              <div className={classes.placeholder} style={{ width: '60%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.level}>
-              <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
                 <div className={classes.placeholder} style={{ width: 140 }}/>

@@ -1,5 +1,3 @@
-
-
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
@@ -79,9 +77,9 @@ const killChainPhaseEditionFocus = graphql`
 `;
 
 const killChainPhaseValidation = t => Yup.object().shape({
-  definition_type: Yup.string()
+  kill_chain_name: Yup.string()
     .required(t('This field is required')),
-  definition: Yup.string()
+  phase_name: Yup.string()
     .required(t('This field is required')),
 });
 
@@ -184,7 +182,7 @@ class KillChainPhaseEditionContainer extends Component {
                 <Field name='kill_chain_name' component={TextField} label={t('Kill chain name')} fullWidth={true}
                        onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
                        helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='kill_chain_name'/>}/>
-                <Field name='phase_name' component={TextField} label={t('Definition')} fullWidth={true} style={{ marginTop: 10 }}
+                <Field name='phase_name' component={TextField} label={t('Phase name')} fullWidth={true} style={{ marginTop: 10 }}
                        onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
                        helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='phase_name'/>}/>
               </Form>

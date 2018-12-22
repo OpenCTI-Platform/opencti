@@ -44,27 +44,15 @@ const inlineStyles = {
     padding: 0,
     top: '0px',
   },
-  definition_type: {
+  kill_chain_name: {
     float: 'left',
-    width: '25%',
+    width: '30%',
     fontSize: 12,
     fontWeight: '700',
   },
-  definition: {
+  phase_name: {
     float: 'left',
-    width: '25%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  color: {
-    float: 'left',
-    width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  level: {
-    float: 'left',
-    width: '10%',
+    width: '35%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -78,7 +66,7 @@ const inlineStyles = {
 class KillChainPhases extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'level', orderAsc: true };
+    this.state = { sortBy: 'kill_chain_name', orderAsc: true };
   }
 
   handleChangeView(mode) {

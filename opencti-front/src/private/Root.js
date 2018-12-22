@@ -23,6 +23,7 @@ import Settings from './components/Settings';
 import Users from './components/Users';
 import Groups from './components/Groups';
 import MarkingDefinitions from './components/MarkingDefinitions';
+import KillChainPhases from './components/KillChainPhases';
 
 const styles = theme => ({
   container: {
@@ -96,6 +97,7 @@ class Root extends Component {
                   <Route exact path='/dashboard/settings/users' component={Users}/>
                   <Route exact path='/dashboard/settings/groups' component={Groups}/>
                   <Route exact path='/dashboard/settings/marking' component={MarkingDefinitions}/>
+                  <Route exact path='/dashboard/settings/killchains' component={KillChainPhases}/>
                 </main>
                 <Snackbar
                   anchorOrigin={{ vertical: 'top', horizontal: 'right' }}

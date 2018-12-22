@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { commitMutation, createFragmentContainer, QueryRenderer } from 'react-relay';
 import {
-  compose, head, map, pathOr, pipe,
+  compose, map, pathOr, pipe, propOr, propEq, find,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -23,6 +23,9 @@ const styles = theme => ({
     maxWidth: 360,
     backgroundColor: theme.palette.background.paper,
   },
+  avatar: {
+    backgroundColor: theme.palette.primary.main,
+  },
 });
 
 const userMutationRelationAdd = graphql`
@@ -35,8 +38,16 @@ const userMutationRelationAdd = graphql`
     }
 `;
 
+const userMutationRelationDelete = graphql`
+    mutation UserEditionGroupsRelationDeleteMutation($id: ID!, $relationId: ID!) {
+        userEdit(id: $id) {
+            relationDelete(relationId: $relationId)
+        }
+    }
+`;
+
 class UserEditionGroupsComponent extends Component {
-  handleToggle(groupId, event) {
+  handleToggle(groupId, userGroup, event) {
     if (event.target.checked) {
       commitMutation(environment, {
         mutation: userMutationRelationAdd,
@@ -47,15 +58,22 @@ class UserEditionGroupsComponent extends Component {
           },
         },
       });
+    } else if (userGroup !== undefined) {
+      commitMutation(environment, {
+        mutation: userMutationRelationDelete,
+        variables: {
+          id: this.props.user.id,
+          relationId: userGroup.relation,
+        },
+      });
     }
   }
 
   render() {
     const { classes, user } = this.props;
-    console.log(user);
     const userGroups = pipe(
       pathOr([], ['groups', 'edges']),
-      map(n => n.node.id),
+      map(n => ({ id: n.node.id, relation: n.relation.id })),
     )(user);
 
     return (
@@ -73,23 +91,25 @@ class UserEditionGroupsComponent extends Component {
                 pathOr([], ['groups', 'edges']),
                 map(n => n.node),
               )(props);
-              console.log(userGroups);
               return (
                 <List dense={true} className={classes.root}>
-                  {groups.map(group => (
-                    <ListItem key={group.id}>
-                      <ListItemAvatar>
-                        <Avatar>{group.name.charAt(0)}</Avatar>
-                      </ListItemAvatar>
-                      <ListItemText primary={group.name}/>
-                      <ListItemSecondaryAction>
-                        <Checkbox
-                          onChange={this.handleToggle.bind(this, group.id)}
-                          checked={userGroups.indexOf(group.id) !== -1}
-                        />
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ))}
+                  {groups.map((group) => {
+                    const userGroup = find(propEq('id', group.id))(userGroups);
+                    return (
+                      <ListItem key={group.id} divider={true}>
+                        <ListItemAvatar>
+                          <Avatar className={classes.avatar}>{group.name.charAt(0)}</Avatar>
+                        </ListItemAvatar>
+                        <ListItemText primary={group.name} secondary={propOr('-', 'description', group)}/>
+                        <ListItemSecondaryAction>
+                          <Checkbox
+                            onChange={this.handleToggle.bind(this, group.id, userGroup)}
+                            checked={userGroup !== undefined}
+                          />
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    );
+                  })}
                 </List>
               );
             }
@@ -120,6 +140,9 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
                   node {
                       id
                       name
+                  }
+                  relation {
+                      id
                   }
               }
           }

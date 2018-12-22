@@ -1,6 +1,11 @@
 ### Scalar
 scalar DateTime
 
+### Relations
+type RelationEmbedded {
+    id: ID!
+}
+
 ### Stix
 type StixRelationEmbedded {
     id: ID!
@@ -93,6 +98,7 @@ type GroupConnection {
 type GroupEdge {
     cursor: String!
     node: Group!
+    relation: RelationEmbedded!
 }
 type Group {
     id: ID!

@@ -149,6 +149,7 @@ export const groupsLinesSearchQuery = graphql`
                 node {
                     id,
                     name,
+                    description,
                     created_at,
                     updated_at
                 }
