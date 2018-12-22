@@ -4,7 +4,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { commitMutation, createFragmentContainer, requestSubscription } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import {
-  compose, insert, find, propEq, pick,
+  compose, insert, find, propEq, pickAll, over, lensProp, defaultTo,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -80,6 +80,10 @@ const killChainPhaseValidation = t => Yup.object().shape({
   kill_chain_name: Yup.string()
     .required(t('This field is required')),
   phase_name: Yup.string()
+    .required(t('This field is required')),
+  phase_order: Yup.number()
+    .typeError(t('The value must be a number'))
+    .integer(t('The value must be a number'))
     .required(t('This field is required')),
 });
 
@@ -159,7 +163,7 @@ class KillChainPhaseEditionContainer extends Component {
     // Add current user to the context if is not available yet.
     const missingMe = find(propEq('username', me.email))(editContext) === undefined;
     const editUsers = missingMe ? insert(0, { username: me.email }, editContext) : editContext;
-    const initialValues = pick(['kill_chain_name', 'phase_name'], killChainPhase);
+    const initialValues = over(lensProp('phase_order'), defaultTo(''), pickAll(['kill_chain_name', 'phase_name', 'phase_order'], killChainPhase));
     return (
       <div>
         <div className={classes.header}>
@@ -167,7 +171,7 @@ class KillChainPhaseEditionContainer extends Component {
             <Close fontSize='small'/>
           </IconButton>
           <Typography variant='h6' classes={{ root: classes.title }}>
-            {t('Update a marking definition')}
+            {t('Update a kill chain phase')}
           </Typography>
           <SubscriptionAvatars users={editUsers}/>
           <div className='clearfix'/>
@@ -185,6 +189,9 @@ class KillChainPhaseEditionContainer extends Component {
                 <Field name='phase_name' component={TextField} label={t('Phase name')} fullWidth={true} style={{ marginTop: 10 }}
                        onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
                        helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='phase_name'/>}/>
+                <Field name='phase_order' component={TextField} label={t('Order')} fullWidth={true} type='number' style={{ marginTop: 10 }}
+                       onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
+                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='phase_order'/>}/>
               </Form>
             )}
           />
@@ -206,11 +213,12 @@ KillChainPhaseEditionContainer.propTypes = {
 const KillChainPhaseEditionFragment = createFragmentContainer(KillChainPhaseEditionContainer, {
   killChainPhase: graphql`
       fragment KillChainPhaseEdition_killChainPhase on KillChainPhase {
-          id,
-          kill_chain_name,
-          phase_name,
+          id
+          kill_chain_name
+          phase_name
+          phase_order
           editContext {
-              username,
+              username
               focusOn
           }
       }

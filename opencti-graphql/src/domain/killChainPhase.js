@@ -29,8 +29,9 @@ export const addKillChainPhase = async (user, killChainPhase) => {
   const createKillChainPhase = qk(`insert $killChainPhase isa Kill-Chain-Phase
     has type "kill-chain-phase";
     $killChainPhase has stix_id "kill-chain-phase--${uuid()}";
-    $killChainPhase has kill_chain_name "${killChainPhase.name}";
-    $killChainPhase has phase_name "${killChainPhase.description}";
+    $killChainPhase has kill_chain_name "${killChainPhase.kill_chain_name}";
+    $killChainPhase has phase_name "${killChainPhase.phase_name}";
+    $killChainPhase has phase_order "${killChainPhase.phase_order}";
     $killChainPhase has created ${now()};
     $killChainPhase has modified ${now()};
     $killChainPhase has revoked false;

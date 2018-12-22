@@ -56,6 +56,12 @@ const inlineStyles = {
     fontSize: 12,
     fontWeight: '700',
   },
+  phase_order: {
+    float: 'left',
+    width: '10%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
   created: {
     float: 'left',
     fontSize: 12,
@@ -108,6 +114,7 @@ class KillChainPhases extends Component {
               <div>
                 {this.SortHeader('kill_chain_name', 'Kill chain')}
                 {this.SortHeader('phase_name', 'Phase name')}
+                {this.SortHeader('phase_order', 'Order')}
                 {this.SortHeader('created', 'Creation date')}
               </div>
             }/>
