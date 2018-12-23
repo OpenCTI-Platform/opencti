@@ -81,7 +81,9 @@ class GroupsLines extends Component {
       return <div key={key}>&nbsp;</div>;
     }
     const group = groupNode.node;
-    return <div key={key} style={style}><GroupLine key={group.id} group={group}/></div>;
+    return <div key={key} style={style}>
+        <GroupLine key={group.id} group={group} paginationOptions={this.props.paginationOptions}/>
+    </div>;
   }
 
   render() {
@@ -130,6 +132,7 @@ class GroupsLines extends Component {
 
 GroupsLines.propTypes = {
   classes: PropTypes.object,
+  paginationOptions: PropTypes.object,
   data: PropTypes.object,
   relay: PropTypes.object,
   groups: PropTypes.object,
