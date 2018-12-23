@@ -1,6 +1,7 @@
 import { head } from 'ramda';
 import {
   deleteByID,
+  editInputTx,
   loadByID,
   loadFirst,
   notify,
@@ -8,14 +9,12 @@ import {
   qk
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import { delEditContext, setEditContext } from '../database/redis';
 
 export const getSettings = () => loadFirst('Settings').then(result => result);
 
-export const updateSettings = async (user, id, settings) =>
-  loadByID(id).then(currentSettings => {
-    console.log(id);
-    console.log(currentSettings);
-    const createSettings = qk(`insert $settings isa Settings 
+export const addSettings = async (user, settings) => {
+  const createSettings = qk(`insert $settings isa Settings 
     has platform_title "${settings.platform_title}";
     $settings has platform_email "${settings.platform_email}";
     $settings has platform_url "${settings.platform_url}";
@@ -25,20 +24,31 @@ export const updateSettings = async (user, id, settings) =>
     $settings has created_at ${now()};
     $settings has updated_at ${now()};
   `);
-    if (currentSettings !== undefined) {
-      return deleteByID(id).then(() => {
-        createSettings.then(result => {
-          const { data } = result;
-          return loadByID(head(data).settings.id).then(created =>
-            notify(BUS_TOPICS.Settings.UPDATE_TOPIC, created)
-          );
-        });
-      });
-    }
-    return createSettings.then(result => {
-      const { data } = result;
-      return loadByID(head(data).settings.id).then(created =>
-        notify(BUS_TOPICS.Settings.UPDATE_TOPIC, created)
-      );
-    });
+  return createSettings.then(result => {
+    const { data } = result;
+    return loadByID(head(data).settings.id).then(created =>
+      notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user)
+    );
   });
+};
+
+export const settingsDelete = settingsId => deleteByID(settingsId);
+
+export const settingsCleanContext = (user, settingsId) => {
+  delEditContext(user, settingsId);
+  return loadByID(settingsId).then(settings =>
+    notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
+  );
+};
+
+export const settingsEditContext = (user, settingsId, input) => {
+  setEditContext(user, settingsId, input);
+  loadByID(settingsId).then(settings =>
+    notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
+  );
+};
+
+export const settingsEditField = (user, settingsId, input) =>
+  editInputTx(settingsId, input).then(settings =>
+    notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
+  );

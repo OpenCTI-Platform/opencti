@@ -135,7 +135,7 @@ class UserEditionOverviewComponent extends Component {
     return (
       <div>
         <Formik
-          enableReinitialize
+          enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={userValidation(t)}
           render={() => (

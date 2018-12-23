@@ -15,7 +15,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Avatar from '@material-ui/core/Avatar';
 import environment from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
-import { groupsLinesSearchQuery } from '../group/GroupsLines';
+import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
 
 const styles = theme => ({
   list: {
@@ -28,86 +28,86 @@ const styles = theme => ({
   },
 });
 
-const userMutationRelationAdd = graphql`
-    mutation UserEditionGroupsRelationAddMutation($id: ID!, $input: RelationAddInput!) {
-        userEdit(id: $id) {
+const groupMutationRelationAdd = graphql`
+    mutation GroupEditionPermissionsMarkingDefinitionsRelationAddMutation($id: ID!, $input: RelationAddInput!) {
+        groupEdit(id: $id) {
             relationAdd(input: $input) {
-                ...UserEditionGroups_user
+                ...GroupEditionPermissions_group
             }
         }
     }
 `;
 
 const userMutationRelationDelete = graphql`
-    mutation UserEditionGroupsRelationDeleteMutation($id: ID!, $relationId: ID!) {
+    mutation GroupEditionPermissionsMarkingDefinitionsRelationDeleteMutation($id: ID!, $relationId: ID!) {
         userEdit(id: $id) {
             relationDelete(relationId: $relationId)
         }
     }
 `;
 
-class UserEditionGroupsComponent extends Component {
-  handleToggle(groupId, userGroup, event) {
+class GroupEditionPermissionsComponent extends Component {
+  handleToggle(markingDefinitionId, groupMarkingDefinition, event) {
     if (event.target.checked) {
       commitMutation(environment, {
-        mutation: userMutationRelationAdd,
+        mutation: groupMutationRelationAdd,
         variables: {
-          id: this.props.user.id,
+          id: this.props.group.id,
           input: {
-            fromRole: 'member',
-            toId: groupId,
-            toRole: 'grouping',
-            through: 'membership',
+            fromRole: 'allowed',
+            toId: markingDefinitionId,
+            toRole: 'allow',
+            through: 'permission',
           },
         },
       });
-    } else if (userGroup !== undefined) {
+    } else if (groupMarkingDefinition !== undefined) {
       commitMutation(environment, {
         mutation: userMutationRelationDelete,
         variables: {
-          id: this.props.user.id,
-          relationId: userGroup.relation,
+          id: this.props.group.id,
+          relationId: groupMarkingDefinition.relation,
         },
       });
     }
   }
 
   render() {
-    const { classes, user } = this.props;
-    const userGroups = pipe(
-      pathOr([], ['groups', 'edges']),
+    const { classes, group } = this.props;
+    const groupMarkingDefinitions = pipe(
+      pathOr([], ['permissions', 'edges']),
       map(n => ({ id: n.node.id, relation: n.relation.id })),
-    )(user);
+    )(group);
 
     return (
       <div>
         <QueryRenderer
           environment={environment}
-          query={groupsLinesSearchQuery}
+          query={markingDefinitionsLinesSearchQuery}
           variables={{ search: 'A' }}
           render={({ error, props }) => {
             if (error) { // Errors
               return <List> &nbsp; </List>;
             }
             if (props) { // Done
-              const groups = pipe(
-                pathOr([], ['groups', 'edges']),
+              const markingDefinitions = pipe(
+                pathOr([], ['permissions', 'edges']),
                 map(n => n.node),
               )(props);
               return (
                 <List dense={true} className={classes.root}>
-                  {groups.map((group) => {
-                    const userGroup = find(propEq('id', group.id))(userGroups);
+                  {markingDefinitions.map((markingDefinition) => {
+                    const groupMarkingDefinition = find(propEq('id', markingDefinition.id))(groupMarkingDefinitions);
                     return (
-                      <ListItem key={group.id} divider={true}>
+                      <ListItem key={markingDefinition.id} divider={true}>
                         <ListItemAvatar>
-                          <Avatar className={classes.avatar}>{group.name.charAt(0)}</Avatar>
+                          <Avatar className={classes.avatar}>{markingDefinition.definition.charAt(0)}</Avatar>
                         </ListItemAvatar>
-                        <ListItemText primary={group.name} secondary={propOr('-', 'description', group)}/>
+                        <ListItemText primary={markingDefinition.definition}/>
                         <ListItemSecondaryAction>
                           <Checkbox
-                            onChange={this.handleToggle.bind(this, group.id, userGroup)}
-                            checked={userGroup !== undefined}
+                            onChange={this.handleToggle.bind(this, markingDefinition.id, groupMarkingDefinition)}
+                            checked={groupMarkingDefinition !== undefined}
                           />
                         </ListItemSecondaryAction>
                       </ListItem>
@@ -125,24 +125,25 @@ class UserEditionGroupsComponent extends Component {
   }
 }
 
-UserEditionGroupsComponent.propTypes = {
+GroupEditionPermissionsComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  user: PropTypes.object,
+  group: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
 };
 
-const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
-  user: graphql`
-      fragment UserEditionGroups_user on User {
+const GroupEditionPermissions = createFragmentContainer(GroupEditionPermissionsComponent, {
+  group: graphql`
+      fragment GroupEditionPermissions_group on Group {
           id
-          groups {
+          permissions {
               edges {
                   node {
                       id
-                      name
+                      definition
+                      definition_type
                   }
                   relation {
                       id
@@ -156,4 +157,4 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(UserEditionGroups);
+)(GroupEditionPermissions);

@@ -122,7 +122,7 @@ class GroupEditionOverviewComponent extends Component {
     return (
       <div>
         <Formik
-          enableReinitialize
+          enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={groupValidation(t)}
           render={() => (

@@ -63,7 +63,7 @@ export const groups = (userId, args) =>
     args
   );
 
-export const userAdd = async (user, newUser) => {
+export const addUser = async (user, newUser) => {
   // const userPassword = await hashPassword(user.password);
   const token = generateOpenCTIWebToken(newUser.email);
   const createUser = qk(`insert $user isa User 
@@ -125,7 +125,7 @@ export const loginFromProvider = (email, username) => {
         password: null
       };
       // Create the user then restart the login
-      return userAdd({}, newUser).then(() =>
+      return addUser({}, newUser).then(() =>
         loginFromProvider(email, username)
       );
     }
