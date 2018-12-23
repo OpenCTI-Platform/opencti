@@ -71,6 +71,7 @@ enum UsersOrdering {
     updated_at
 }
 enum UserRole {
+    ROLE_ROOT
     ROLE_ADMIN
     ROLE_USER
 }
@@ -100,6 +101,7 @@ input UserAddInput {
     email: String!
     firstname: String
     lastname: String
+    language: String
     grant: [UserRole]!
 }
 input UserLoginInput {

@@ -1,7 +1,7 @@
 import { sign } from 'jsonwebtoken';
 import conf, { BUS_TOPICS } from '../config/conf';
 import {
-  addUser,
+  userAdd,
   userDelete,
   findAll,
   findById,
@@ -34,14 +34,14 @@ const userResolvers = {
         return sign(token, conf.get('jwt:secret'));
       })
     ),
-    userEdit: admin((_, { id }, { user }) => ({
+    userEdit: auth((_, { id }, { user }) => ({
       delete: () => userDelete(id),
-      fieldPatch: ({ input }) => userEditField(id, input),
+      fieldPatch: ({ input }) => userEditField(user, id, input),
       contextPatch: ({ input }) => userEditContext(user, id, input),
-      relationAdd: ({ input }) => userAddRelation(id, input),
+      relationAdd: ({ input }) => userAddRelation(user, id, input),
       relationDelete: ({ relationId }) => userDeleteRelation(relationId)
     })),
-    userAdd: admin((_, { input }, { user }) => addUser(user, input))
+    userAdd: auth((_, { input }, { user }) => userAdd(user, input))
   },
   Subscription: {
     user: {

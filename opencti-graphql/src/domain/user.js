@@ -1,4 +1,4 @@
-import { head, isEmpty, join, map } from 'ramda';
+import { contains, head, isEmpty, join, map } from 'ramda';
 import uuidv5 from 'uuid/v5';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
@@ -15,6 +15,7 @@ import conf, {
   ROLE_ADMIN
 } from '../config/conf';
 import {
+  multipleAttributes,
   createRelation,
   deleteByID,
   editInputTx,
@@ -62,7 +63,7 @@ export const groups = (userId, args) =>
     args
   );
 
-export const addUser = async (user, newUser) => {
+export const userAdd = async (user, newUser) => {
   // const userPassword = await hashPassword(user.password);
   const token = generateOpenCTIWebToken(newUser.email);
   const createUser = qk(`insert $user isa User 
@@ -70,6 +71,11 @@ export const addUser = async (user, newUser) => {
     $user has email "${newUser.email}";
     ${newUser.firstname ? `$user has firstname "${newUser.firstname}";` : ''}
     ${newUser.lastname ? `$user has lastname "${newUser.lastname}";` : ''}
+    ${
+      newUser.language
+        ? `$user has language "${newUser.language}";`
+        : '$user has language "auto";'
+    }
     $user has created_at ${now()};
     $user has updated_at ${now()};
     ${join(' ', map(role => `$user has grant "${role}";`, newUser.grant))}
@@ -114,12 +120,12 @@ export const loginFromProvider = (email, username) => {
       const newUser = {
         username,
         email,
-        grant: [ROLE_USER, ROLE_ADMIN],
+        grant: [ROLE_USER],
         created: now(),
         password: null
       };
       // Create the user then restart the login
-      return addUser({}, newUser).then(() =>
+      return userAdd({}, newUser).then(() =>
         loginFromProvider(email, username)
       );
     }
@@ -153,9 +159,9 @@ export const userDelete = userId => deleteByID(userId);
 
 export const userDeleteRelation = relationId => deleteByID(relationId);
 
-export const userAddRelation = (userId, input) =>
+export const userAddRelation = (user, userId, input) =>
   createRelation(userId, input).then(userToEdit =>
-    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit)
+    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit, user)
   );
 
 export const userCleanContext = (user, userId) => {
@@ -172,13 +178,16 @@ export const userEditContext = (user, userId, input) => {
   );
 };
 
-export const userEditField = (userId, input) => {
+export const userEditField = (user, userId, input) => {
   const { key } = input;
   const value =
     key === 'password' ? bcrypt.hashSync(head(input.value), 10) : input.value;
-  const finalInput = { key, value: [value] };
+  let finalInput = { key, value: [value] };
+  if (contains(key, multipleAttributes)) {
+    finalInput = { key, value };
+  }
   editInputTx(userId, finalInput).then(userToEdit =>
-    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit)
+    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit, user)
   );
 };
 

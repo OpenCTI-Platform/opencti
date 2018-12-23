@@ -54,7 +54,10 @@ class UserEditionGroupsComponent extends Component {
         variables: {
           id: this.props.user.id,
           input: {
-            fromRole: 'member', toId: groupId, toRole: 'grouping', through: 'membership',
+            fromRole: 'member',
+            toId: groupId,
+            toRole: 'grouping',
+            through: 'membership',
           },
         },
       });

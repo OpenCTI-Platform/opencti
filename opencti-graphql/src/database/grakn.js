@@ -34,7 +34,7 @@ export const now = () =>
     .format(gkDateFormat); // Format that accept grakn
 
 // Attributes key that can contains multiple values.
-const multipleAttributes = ['stix_label', 'alias', 'grant'];
+export const multipleAttributes = ['stix_label', 'alias', 'grant'];
 
 // Instance of Axios to make Grakn API Calls.
 const client = new Grakn(conf.get('grakn:driver'));

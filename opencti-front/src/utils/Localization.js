@@ -23,6 +23,7 @@ const i18n = {
       'Base URL': 'URL de base',
       Language: 'Langue',
       Automatic: 'Automatique',
+      Roles: 'Rôles',
       Registration: 'Inscription',
       'are updating...': 'modifient actuellement...',
       'is updating...': 'modifie actuellement...',

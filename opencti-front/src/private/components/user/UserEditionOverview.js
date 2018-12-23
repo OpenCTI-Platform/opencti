@@ -4,14 +4,25 @@ import graphql from 'babel-plugin-relay/macro';
 import { commitMutation, createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import { compose, pick } from 'ramda';
+import {
+  assoc, compose, map, propOr, pick, pipe, pluck,
+} from 'ramda';
 import * as Yup from 'yup';
 import * as rxjs from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
+import Select from '../../../components/Select';
+import Autocomplete from '../../../components/Autocomplete';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import environment from '../../../relay/environment';
+
+const roles = [
+  { label: 'ROLE_ROOT', value: 'ROLE_ROOT' },
+  { label: 'ROLE_ADMIN', value: 'ROLE_ADMIN' },
+  { label: 'ROLE_USER', value: 'ROLE_USER' },
+];
 
 const styles = theme => ({
   drawerPaper: {
@@ -56,6 +67,8 @@ const userValidation = t => Yup.object().shape({
     .email(t('The value must be an email address')),
   firstname: Yup.string(),
   lastname: Yup.string(),
+  language: Yup.string(),
+  grant: Yup.array(),
 });
 
 // We wait 0.5 sec of interruption before saving.
@@ -85,9 +98,13 @@ class UserEditionOverviewComponent extends Component {
   }
 
   handleChangeField(name, value) {
+    let newValue = value;
+    if (name === 'grant') {
+      newValue = pluck('value', value);
+    }
     // Validate the field first, if field is valid, debounce then save.
-    userValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      onFormChange$.next({ id: this.props.user.id, input: { key: name, value } });
+    userValidation(this.props.t).validateAt(name, { [name]: newValue }).then(() => {
+      onFormChange$.next({ id: this.props.user.id, input: { key: name, value: newValue } });
     });
   }
 
@@ -107,7 +124,14 @@ class UserEditionOverviewComponent extends Component {
     const {
       t, user, editUsers, me,
     } = this.props;
-    const initialValues = pick(['username', 'email', 'firstname', 'lastname'], user);
+    const grant = pipe(
+      propOr([], 'grant'),
+      map(n => ({ label: n, value: n })),
+    )(user);
+    const initialValues = pipe(
+      assoc('grant', grant),
+      pick(['username', 'email', 'firstname', 'lastname', 'language', 'grant']),
+    )(user);
     return (
       <div>
         <Formik
@@ -135,6 +159,31 @@ class UserEditionOverviewComponent extends Component {
                      onFocus={this.handleChangeFocus.bind(this)}
                      onChange={this.handleChangeField.bind(this)}
                      helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='lastname'/>}/>
+              <Field name='language'
+                     component={Select}
+                     label={t('Language')}
+                     fullWidth={true}
+                     inputProps={{
+                       name: 'language',
+                       id: 'language',
+                     }}
+                     containerstyle={{ marginTop: 20, width: '100%' }}
+                     onFocus={this.handleChangeFocus.bind(this)}
+                     onChange={this.handleChangeField.bind(this)}
+                     helpertext={<SubscriptionFocus me={me} users={editUsers} fieldName='language'/>}>
+                <MenuItem value='auto'><em>{t('Automatic')}</em></MenuItem>
+                <MenuItem value='en'>English</MenuItem>
+                <MenuItem value='fr'>Français</MenuItem>
+              </Field>
+              <Field
+                name='grant'
+                component={Autocomplete}
+                label={t('Roles')}
+                options={roles}
+                onChange={this.handleChangeField.bind(this)}
+                onFocus={this.handleChangeFocus.bind(this)}
+                helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='grant'/>}
+              />
             </Form>
           )}
         />
@@ -160,6 +209,8 @@ const UserEditionOverview = createFragmentContainer(UserEditionOverviewComponent
           email
           firstname
           lastname
+          language
+          grant
       }
   `,
 });
