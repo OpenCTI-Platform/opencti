@@ -72,8 +72,6 @@ class UserEdition extends Component {
           // eslint-disable-next-line
           id: this.props.user.__id,
         },
-        onError: error => console.log(error),
-
       },
     );
     this.setState({

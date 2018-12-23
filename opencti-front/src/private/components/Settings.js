@@ -11,7 +11,6 @@ import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
-import Button from '@material-ui/core/Button';
 import * as Yup from 'yup';
 import * as rxjs from 'rxjs/index';
 import { debounceTime } from 'rxjs/operators/index';
@@ -101,6 +100,9 @@ const settingsValidation = t => Yup.object().shape({
   platform_url: Yup.string()
     .required(t('This field is required'))
     .url(t('The value must be an URL')),
+  platform_language: Yup.string(),
+  platform_external_auth: Yup.boolean(),
+  platform_registration: Yup.boolean(),
 });
 
 // We wait 0.5 sec of interruption before saving.
@@ -133,7 +135,7 @@ class Settings extends Component {
     // Validate the field first, if field is valid, debounce then save.
     settingsValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
       onFormChange$.next({ id, input: { key: name, value } });
-    });
+    }).catch(() => false);
   }
 
   handleChangeFocus(id, name) {
@@ -167,7 +169,7 @@ class Settings extends Component {
                 enableReinitialize={true}
                 initialValues={initialValues}
                 validationSchema={settingsValidation(t)}
-                render={({ submitForm, isSubmitting }) => (
+                render={() => (
                   <Form>
                     <Grid container={true} spacing={32}>
                       <Grid item={true} xs={9}>
@@ -189,17 +191,18 @@ class Settings extends Component {
                                  onFocus={this.handleChangeFocus.bind(this, id)}
                                  onChange={this.handleChangeField.bind(this, id)}
                                  helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='platform_email'/>}/>
-                          <Field
-                            name='platform_language'
-                            label={t('Language')}
-                            component={Select}
-                            fullWidth={true}
-                            inputProps={{
-                              name: 'platform_language',
-                              id: 'platform-language',
-                            }}
-                            containerstyle={{ marginTop: 20, width: '100%' }}
-                          >
+                          <Field name='platform_language'
+                                 component={Select}
+                                 label={t('Language')}
+                                 fullWidth={true}
+                                 inputProps={{
+                                   name: 'platform_language',
+                                   id: 'platform-language',
+                                 }}
+                                 containerstyle={{ marginTop: 10, width: '100%' }}
+                                 onFocus={this.handleChangeFocus.bind(this, id)}
+                                 onChange={this.handleChangeField.bind(this, id)}
+                                 helpertext={<SubscriptionFocus me={me} users={editUsers} fieldName='platform_language'/>}>
                             <MenuItem value='auto'><em>{t('Automatic')}</em></MenuItem>
                             <MenuItem value='en'>English</MenuItem>
                             <MenuItem value='fr'>Français</MenuItem>
@@ -211,14 +214,11 @@ class Settings extends Component {
                           <Typography variant='h1' gutterBottom={true}>
                             {t('Options')}
                           </Typography>
-                          <Field name='platform_external_auth' component={Switch} label={t('External authentication')}/>
-                          <Field name='platform_registration' component={Switch} label={t('Registration')}/>
+                          <Field name='platform_external_auth' component={Switch} label={t('External authentication')} onChange={this.handleChangeField.bind(this, id)}/>
+                          <Field name='platform_registration' component={Switch} label={t('Registration')} onChange={this.handleChangeField.bind(this, id)}/>
                         </Paper>
                       </Grid>
                     </Grid>
-                    <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
-                      {t('Update')}
-                    </Button>
                   </Form>
                 )}
               />

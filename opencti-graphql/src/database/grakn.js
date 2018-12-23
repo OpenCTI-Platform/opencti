@@ -212,14 +212,16 @@ export const editInputTx = async (id, input) => {
     .get('x')
     .dataType();
   // Delete the old value/values
-  await wTx.query(`match $m id ${id}; $m has ${key} $del via $d; delete $d;`);
+  const deleteQuery = `match $m id ${id}; $m has ${key} $del via $d; delete $d;`;
+  logger.debug(`Grakn query: ${deleteQuery}`);
+  await wTx.query(deleteQuery);
   // Setup the new attribute
-  await wTx.query(
-    `match $m id ${id}; insert $m ${join(
-      ' ',
-      map(val => `has ${key} ${type === String ? `"${val}"` : val}`, value)
-    )};`
-  );
+  const createQuery = `match $m id ${id}; insert $m ${join(
+    ' ',
+    map(val => `has ${key} ${type === String ? `"${val}"` : val}`, value)
+  )};`;
+  logger.debug(`Grakn query: ${createQuery}`);
+  await wTx.query(createQuery);
   await wTx.commit();
   return loadByID(id);
 };

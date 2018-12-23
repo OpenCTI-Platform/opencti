@@ -111,9 +111,7 @@ class UserCreation extends Component {
         input: values,
       },
       updater: (store) => {
-        console.log(store);
         const payload = store.getRootField('userAdd');
-        console.log(payload);
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);

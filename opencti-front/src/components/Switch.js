@@ -6,7 +6,19 @@ import { fieldToSwitch } from 'formik-material-ui';
 const Switch = props => (
   <div style={props.containerstyle}>
     <FormControlLabel
-      control={<MuiSwitch {...fieldToSwitch(props)}/>}
+      control={<MuiSwitch
+        {...fieldToSwitch(props)}
+        onChange={(event) => {
+          const value = event.target.checked ? 'true' : 'false';
+          props.form.setFieldValue(
+            event.target.checked,
+            value,
+          );
+          if (typeof props.onChange === 'function') {
+            props.onChange(props.field.name, value);
+          }
+        }}
+      />}
       label={props.label}
     />
   </div>

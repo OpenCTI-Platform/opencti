@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose, head } from 'ramda';
+import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { commitMutation, QueryRenderer } from 'react-relay';
@@ -106,20 +106,11 @@ class KillChainPhasePopover extends Component {
         id: this.props.killChainPhaseId,
       },
       updater: (store) => {
-        const payload = store.getRootField('killChainPhaseEdit');
-        console.log(payload);
-        /* const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge); */
+        console.log(store);
       },
-      onCompleted: (response, errors) => {
+      onCompleted: () => {
         this.setState({ deleting: false });
-        if (errors) {
-          const error = this.props.t(head(errors).message);
-          console.log(error); // TODO Display the deletion error somewhere
-        } else {
-          this.handleCloseDelete();
-        }
+        this.handleCloseDelete();
       },
     });
   }

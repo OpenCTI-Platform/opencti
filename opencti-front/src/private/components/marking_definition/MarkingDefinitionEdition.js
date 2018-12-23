@@ -110,8 +110,6 @@ class MarkingDefinitionEditionContainer extends Component {
           // eslint-disable-next-line
           id: this.props.markingDefinition.id
         },
-        onError: error => console.log(error),
-
       },
     );
     this.setState({ sub });
@@ -139,10 +137,7 @@ class MarkingDefinitionEditionContainer extends Component {
     // Validate the field first, if field is valid, debounce then save.
     markingDefinitionValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
       onFormChange$.next({ id: this.props.markingDefinition.id, input: { key: name, value } });
-    }).catch((error) => {
-      console.log(error.errors); // array of validation error messages
-      return false;
-    });
+    }).catch(() => false);
   }
 
   handleChangeFocus(name) {

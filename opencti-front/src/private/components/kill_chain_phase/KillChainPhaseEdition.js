@@ -108,8 +108,6 @@ class KillChainPhaseEditionContainer extends Component {
           // eslint-disable-next-line
           id: this.props.killChainPhase.id
         },
-        onError: error => console.log(error),
-
       },
     );
     this.setState({ sub });
@@ -138,7 +136,6 @@ class KillChainPhaseEditionContainer extends Component {
     killChainPhaseValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
       onFormChange$.next({ id: this.props.killChainPhase.id, input: { key: name, value } });
     }).catch((error) => {
-      console.log(error.errors); // array of validation error messages
       return false;
     });
   }

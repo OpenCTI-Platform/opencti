@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose, head } from 'ramda';
+import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { commitMutation, QueryRenderer } from 'react-relay';
@@ -119,12 +119,7 @@ class GroupPopover extends Component {
       },
       onCompleted: (response, errors) => {
         this.setState({ deleting: false });
-        if (errors) {
-          const error = this.props.t(head(errors).message);
-          console.log(error); // TODO Display the deletion error somewhere
-        } else {
-          this.handleCloseDelete();
-        }
+        this.handleCloseDelete();
       },
     });
   }

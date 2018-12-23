@@ -167,7 +167,7 @@ class UserEditionOverviewComponent extends Component {
                        name: 'language',
                        id: 'language',
                      }}
-                     containerstyle={{ marginTop: 20, width: '100%' }}
+                     containerstyle={{ marginTop: 10, width: '100%' }}
                      onFocus={this.handleChangeFocus.bind(this)}
                      onChange={this.handleChangeField.bind(this)}
                      helpertext={<SubscriptionFocus me={me} users={editUsers} fieldName='language'/>}>

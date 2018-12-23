@@ -70,8 +70,6 @@ class GroupEdition extends Component {
           // eslint-disable-next-line
           id: this.props.group.__id,
         },
-        onError: error => console.log(error),
-
       },
     );
     this.setState({
