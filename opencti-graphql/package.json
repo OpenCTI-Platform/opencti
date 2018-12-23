@@ -28,7 +28,7 @@
     "apollo-server-express": "^2.1.0",
     "await": "^0.2.6",
     "axios": "^0.18.0",
-    "bcrypt": "^3.0.2",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
     "compression": "^1.7.3",
     "cookie-parser": "^1.4.3",

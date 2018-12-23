@@ -1,7 +1,7 @@
 import { head, isEmpty, join, map } from 'ramda';
 import uuidv5 from 'uuid/v5';
 import moment from 'moment';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { delEditContext, setEditContext } from '../database/redis';
 import { FunctionalError, LoginError } from '../config/errors';
@@ -86,7 +86,7 @@ export const addUser = async (user, newUser) => {
   `);
   // Execute user and token creation in parrallel, then create the relation.
   const createPromise = Promise.all([createUser, createToken]);
-  return createPromise.then(([resultUser, resultToken]) =>
+  return createPromise.then(([resultUser]) =>
     // Create the relation
     qk(`match $user isa User has email "${newUser.email}"; 
                    $token isa Token has uuid "${token.uuid}"; 
@@ -134,14 +134,14 @@ export const login = (email, password) => {
       $client has password $password;
       (authorization:$token, client:$client); 
       get;`);
-  return loginPromise.then(async result => {
+  return loginPromise.then(result => {
     const { data } = result;
     if (isEmpty(data)) {
       throw new LoginError();
     }
     const element = head(data);
     const dbPassword = element.password.value;
-    const match = await bcrypt.compare(password, dbPassword);
+    const match = bcrypt.compareSync(password, dbPassword);
     if (!match) {
       throw new LoginError();
     }
@@ -173,12 +173,10 @@ export const userEditContext = (user, userId, input) => {
 };
 
 export const userEditField = (userId, input) => {
-  let { key, value } = input;
-  if (key === 'password') {
-    value = bcrypt.hashSync(head(value), 10);
-  }
+  const { key } = input;
+  const value =
+    key === 'password' ? bcrypt.hashSync(head(input.value), 10) : input.value;
   const finalInput = { key, value: [value] };
-  console.log(finalInput);
   editInputTx(userId, finalInput).then(userToEdit =>
     notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit)
   );
