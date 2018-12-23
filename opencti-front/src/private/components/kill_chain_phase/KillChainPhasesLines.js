@@ -88,7 +88,7 @@ class KillChainPhasesLines extends Component {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
     const list = dummy ? [] : pathOr([], ['killChainPhases', 'edges'], this.props.data);
-    const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
+    const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 5 : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
         {({

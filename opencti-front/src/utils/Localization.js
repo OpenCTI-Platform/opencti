@@ -118,6 +118,7 @@ const i18n = {
       'Kill chain': 'Kill chain',
       'Phase name': 'Nom de l\'étape',
       'Kill chain name': 'Nom de la kill chain',
+      Order: 'Ordre',
       // Statistics
       'Total entities': 'Nombre d\'entités',
       'Total observables': 'Nombre d\'observables',

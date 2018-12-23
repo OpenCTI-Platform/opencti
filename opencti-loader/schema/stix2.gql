@@ -52,7 +52,7 @@ define
   "tool_version" sub attribute datatype string;
   "kill_chain_name" sub attribute datatype string;
   "phase_name" sub attribute datatype string;
-  "order" sub attribute datatype long;
+  "phase_order" sub attribute datatype long;
   "definition_type" sub attribute datatype string;
   "definition" sub attribute datatype string;
   "level" sub attribute datatype long;
@@ -400,7 +400,7 @@ define
   "Kill-Chain-Phase" sub "Stix-Domain"
     has "kill_chain_name"
     has "phase_name"
-    has "order"
+    has "phase_order"
     plays "kill_chain_phase";
 
   "Malware" sub "Stix-Domain"

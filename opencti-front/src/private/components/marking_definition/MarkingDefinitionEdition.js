@@ -218,13 +218,13 @@ MarkingDefinitionEditionContainer.propTypes = {
 const MarkingDefinitionEditionFragment = createFragmentContainer(MarkingDefinitionEditionContainer, {
   markingDefinition: graphql`
       fragment MarkingDefinitionEdition_markingDefinition on MarkingDefinition {
-          id,
-          definition_type,
-          definition,
-          color,
-          level,
+          id
+          definition_type
+          definition
+          color
+          level
           editContext {
-              username,
+              username
               focusOn
           }
       }

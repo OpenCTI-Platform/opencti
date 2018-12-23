@@ -39,6 +39,28 @@ type EditUserContext {
     focusOn: String # Field name
 }
 
+### Settings
+type Settings {
+    id: ID!
+    platform_title: String
+    platform_email: String
+    platform_url: String
+    platform_language: String
+    platform_external_auth: Boolean
+    platform_registration: Boolean
+    editContext: [EditUserContext]
+    created_at: DateTime
+    updated_at: DateTime
+}
+input SettingsAddInput {
+    platform_title: String
+    platform_email: String
+    platform_url: String
+    platform_language: String
+    platform_external_auth: Boolean
+    platform_registration: Boolean
+}
+
 ### User
 enum UsersOrdering {
     username,
@@ -162,7 +184,7 @@ input MarkingDefinitionAddInput {
 ### KillChain Phases
 enum KillChainPhasesOrdering {
     stix_id,
-    order,
+    phase_order,
     kill_chain_name,
     phase_name,
     created_at,
@@ -181,7 +203,7 @@ type KillChainPhase {
     id: ID!
     kill_chain_name: String!
     phase_name: String!
-    order: Int
+    phase_order: Int
     created: DateTime
     modified: DateTime
     revoked: Boolean
@@ -193,7 +215,7 @@ type KillChainPhase {
 input KillChainPhaseAddInput {
     kill_chain_name: String!
     phase_name: String!
-    order: Int!
+    phase_order: Int!
 }
 
 ### Threat Actors
@@ -374,6 +396,8 @@ input RelationAddInput {
 
 ### QUERIES
 type Query {
+    # Settings
+    settings: Settings
     # Users
     me: User
     user(id: String!): User
@@ -400,6 +424,7 @@ type Query {
 
 ### SUBSCRIPTIONS
 type Subscription {
+    Settings: Settings
     user(id: ID!): User
     group(id: ID!): Group
     markingDefinition(id: ID!): MarkingDefinition
@@ -410,6 +435,11 @@ type Subscription {
 }
 
 ### MUTATIONS
+# Settings
+type SettingsEditMutations {
+    fieldPatch(input: EditInput): Settings
+    contextPatch(input: EditContext): Settings
+}
 
 # User
 type UserEditMutations {
@@ -477,6 +507,8 @@ type MalwareEditMutations {
 # Next
 
 type Mutation {
+    # Settings
+    settingsUpdate: SettingsEditMutations
     # Login
     token(input: UserLoginInput) : String
     # User

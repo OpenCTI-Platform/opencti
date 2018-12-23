@@ -101,6 +101,7 @@ class KillChainPhaseCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm, setErrors }) {
+    values.phase_order = parseInt(values.phase_order, 10);
     commitMutation(environment, {
       mutation: killChainPhaseMutation,
       variables: {
@@ -160,7 +161,7 @@ class KillChainPhaseCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
-                definition_type: '', definition: '', color: '', level: '',
+                kill_chain_name: '', phase_name: '', phase_order: '',
               }}
               validationSchema={killChainPhaseValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -169,6 +170,7 @@ class KillChainPhaseCreation extends Component {
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field name='kill_chain_name' component={TextField} label={t('Kill chain name')} fullWidth={true}/>
                   <Field name='phase_name' component={TextField} label={t('Phase name')} fullWidth={true} style={{ marginTop: 20 }}/>
+                  <Field name='phase_order' component={TextField} label={t('Order')} fullWidth={true} type='number' style={{ marginTop: 20 }}/>
                   <div className={classes.buttons}>
                     <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                       {t('Cancel')}

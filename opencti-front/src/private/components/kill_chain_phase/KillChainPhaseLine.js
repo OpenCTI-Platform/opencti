@@ -56,6 +56,13 @@ const inlineStyles = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
+  phase_order: {
+    float: 'left',
+    width: '10%',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
   created: {
     float: 'left',
     whiteSpace: 'nowrap',
@@ -79,6 +86,9 @@ class KillChainPhaseLineComponent extends Component {
             </div>
             <div className={classes.bodyItem} style={inlineStyles.phase_name}>
               {propOr('-', 'phase_name', killChainPhase)}
+            </div>
+            <div className={classes.bodyItem} style={inlineStyles.phase_order}>
+              {propOr('-', 'phase_order', killChainPhase)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
                 {fd(propOr(null, 'created', killChainPhase))}
@@ -106,6 +116,7 @@ const KillChainPhaseLineFragment = createFragmentContainer(KillChainPhaseLineCom
             id
             kill_chain_name
             phase_name
+            phase_order
             created
             modified
         }
@@ -132,6 +143,9 @@ class KillChainPhaseLineDummyComponent extends Component {
             </div>
             <div className={classes.bodyItem} style={inlineStyles.phase_name}>
               <div className={classes.placeholder} style={{ width: '70%' }}/>
+            </div>
+            <div className={classes.bodyItem} style={inlineStyles.phase_order}>
+              <div className={classes.placeholder} style={{ width: '90%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
                 <div className={classes.placeholder} style={{ width: 140 }}/>
