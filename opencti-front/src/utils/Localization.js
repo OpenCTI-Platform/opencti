@@ -38,6 +38,7 @@ const i18n = {
       'The value is too long': 'La valeur est trop longue',
       'The value must be a number': 'La valeur doit être un nombre',
       'The value must be an email address': 'La valeur doit être une adresse email',
+      'The value must be an URL': 'La valeur doit être une URL',
       'The values do not match': 'Les valeurs ne correspondent pas',
       'No available options': 'Aucune option disponible',
       'Create a user': 'Créer un utilisateur',
@@ -60,6 +61,7 @@ const i18n = {
       'Create a kill chain phase': 'Créer une étape de kill chain',
       'Update a kill chain phase': 'Modifier une étape de kill chain',
       'The password has been updated': 'Le mot de passe a été modifié',
+      'Settings have been updated': 'Les paramètres ont été mis à jour',
       // Menu
       Dashboard: 'Tableau de bord',
       Knowledge: 'Connaissance',
@@ -119,6 +121,7 @@ const i18n = {
       'Phase name': 'Nom de l\'étape',
       'Kill chain name': 'Nom de la kill chain',
       Order: 'Ordre',
+      Options: 'Options',
       // Statistics
       'Total entities': 'Nombre d\'entités',
       'Total observables': 'Nombre d\'observables',

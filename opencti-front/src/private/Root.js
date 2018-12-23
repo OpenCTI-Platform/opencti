@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ReactDocumentTitle from 'react-document-title';
 import { Route, Redirect } from 'react-router-dom';
 import { QueryRenderer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -12,6 +11,7 @@ import CheckCircle from '@material-ui/icons/CheckCircle';
 import Close from '@material-ui/icons/Close';
 import environment from '../relay/environment';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
+import { ConnectedDocumentTitle } from '../components/AppDocumentTitle';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
@@ -49,11 +49,15 @@ const styles = theme => ({
   toolbar: theme.mixins.toolbar,
 });
 
-const userQuery = graphql`
-    query RootUserQuery {
+const rootQuery = graphql`
+    query RootQuery {
         me {
             ...AppIntlProvider_me
             ...TopBar_me
+        }
+        settings {
+            ...AppIntlProvider_settings
+            ...AppDocumentTitle_settings
         }
     }
 `;
@@ -75,11 +79,11 @@ class Root extends Component {
     return (
       <QueryRenderer
         environment={environment}
-        query={userQuery}
+        query={rootQuery}
         variables={{}}
         render={({ props }) => (
-          <ConnectedIntlProvider me={props && props.me ? props.me : null}>
-            <ReactDocumentTitle title='OpenCTI - Cyber threat intelligence platform'>
+          <ConnectedIntlProvider me={props && props.me ? props.me : null} settings={props && props.settings ? props.settings : null}>
+            <ConnectedDocumentTitle settings={props && props.settings ? props.settings : null}>
               <div className={classes.root}>
                 <TopBar me={props && props.me ? props.me : null}/>
                 <LeftBar/>
@@ -124,7 +128,7 @@ class Root extends Component {
                   />
                 </Snackbar>
               </div>
-            </ReactDocumentTitle>
+            </ConnectedDocumentTitle>
           </ConnectedIntlProvider>
         )}
       />

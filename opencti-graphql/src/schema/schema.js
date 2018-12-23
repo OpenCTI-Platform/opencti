@@ -4,6 +4,7 @@ import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from 'graphql-tools';
 // noinspection NodeJsCodingAssistanceForCoreModules
 import path from 'path';
+import settingsResolvers from '../resolvers/settings';
 import userResolvers from '../resolvers/user';
 import groupResolvers from '../resolvers/group';
 import markingDefinitionResolvers from '../resolvers/markingDefinition';
@@ -21,6 +22,7 @@ const typeDefs = importSchema(schemaPath);
 
 const resolvers = mergeResolvers([
   globalResolvers,
+  settingsResolvers,
   userResolvers,
   groupResolvers,
   markingDefinitionResolvers,

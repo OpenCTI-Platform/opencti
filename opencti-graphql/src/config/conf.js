@@ -13,6 +13,9 @@ export const OPENCTI_ISSUER = 'OpenCTI';
 export const OPENCTI_DEFAULT_DURATION = 'P99Y';
 
 export const BUS_TOPICS = {
+  Settings: {
+    UPDATE_TOPIC: 'SETTINGS_UPDATE_TOPIC'
+  },
   User: {
     EDIT_TOPIC: 'USER_EDIT_TOPIC',
     ADDED_TOPIC: 'USER_ADDED_TOPIC'

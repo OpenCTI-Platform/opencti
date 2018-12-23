@@ -52,7 +52,7 @@ type Settings {
     created_at: DateTime
     updated_at: DateTime
 }
-input SettingsAddInput {
+input SettingsInput {
     platform_title: String
     platform_email: String
     platform_url: String
@@ -435,12 +435,6 @@ type Subscription {
 }
 
 ### MUTATIONS
-# Settings
-type SettingsEditMutations {
-    fieldPatch(input: EditInput): Settings
-    contextPatch(input: EditContext): Settings
-}
-
 # User
 type UserEditMutations {
     delete: ID
@@ -508,7 +502,7 @@ type MalwareEditMutations {
 
 type Mutation {
     # Settings
-    settingsUpdate: SettingsEditMutations
+    settingsUpdate(id: ID, input: SettingsInput): Settings
     # Login
     token(input: UserLoginInput) : String
     # User

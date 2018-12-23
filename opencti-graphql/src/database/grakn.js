@@ -26,6 +26,7 @@ import { pubsub } from './redis';
 // Global variables
 const gkDateFormat = 'YYYY-MM-DDTHH:mm:ss';
 const gkDate = 'java.time.LocalDateTime';
+const gkBoolean = 'java.lang.Boolean';
 const String = 'String';
 export const now = () =>
   moment()
@@ -70,6 +71,9 @@ const attrMap = (id, res, withType = false) => {
       if (type === gkDate) {
         // Patch for grakn LocalDate.
         transformedVal = `${moment(attr.value).format(gkDateFormat)}Z`;
+      }
+      if (type === gkBoolean) {
+        transformedVal = attr.value === 'true';
       }
       return {
         [attr.type.label]: withType
@@ -157,6 +161,21 @@ export const deleteByID = id => {
     }
   });
 };
+
+/**
+ * Load the first
+ * @param type
+ * @returns {Promise<any[] | never>}
+ */
+export const loadFirst = type =>
+  qk(`match $x isa ${type}; offset 0; limit 1; get;`).then(
+    result =>
+      Promise.all(
+        map(line =>
+          attrByID(line.x['@id']).then(res => attrMap(line.x.id, res))
+        )(result.data)
+      ).then(r => head(r)) // Return the unique result
+  );
 
 /**
  * Load any grakn instance with internal grakn ID.
@@ -258,7 +277,12 @@ const buildPagination = (first, offset, instances, globalCount) => {
  * @returns Promise
  */
 export const paginate = (query, options) => {
-  const { first = 200, after, orderBy = 'created_at', orderMode = 'asc' } = options;
+  const {
+    first = 200,
+    after,
+    orderBy = 'created_at',
+    orderMode = 'asc'
+  } = options;
   const offset = after ? cursorToOffset(after) : 0;
   const instanceKey = /match\s\$(\w+)\s/i.exec(query)[1]; // We need to resolve the key instance used in query.
   const findRelationVariable = /\$(\w+)\((\w+):\$(\w+),[\s\w:$]+\)/i.exec(
