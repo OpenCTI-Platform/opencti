@@ -16,6 +16,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
+import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
 import environment from '../../../relay/environment';
 import GroupEdition from './GroupEdition';
@@ -106,11 +107,15 @@ class GroupPopover extends Component {
         id: this.props.groupId,
       },
       updater: (store) => {
-        const payload = store.getRootField('groupEdit');
-        console.log(payload);
-        /* const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
-        sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge); */
+        const payload = store.getRootField('groupEdit');
+        const userProxy = store.get(container.getDataID());
+        const conn = ConnectionHandler.getConnection(
+          userProxy,
+          'Pagination_groups',
+          this.props.paginationOptions,
+        );
+        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
       },
       onCompleted: (response, errors) => {
         this.setState({ deleting: false });
@@ -150,7 +155,8 @@ class GroupPopover extends Component {
                 return <div> &nbsp; </div>;
               }
               if (props) { // Done
-                return <GroupEdition me={props.me} group={props.group} handleClose={this.handleCloseUpdate.bind(this)}/>;
+                return <GroupEdition me={props.me} group={props.group}
+                                     handleClose={this.handleCloseUpdate.bind(this)}/>;
               }
               // Loading
               return <div> &nbsp; </div>;
@@ -184,6 +190,7 @@ class GroupPopover extends Component {
 
 GroupPopover.propTypes = {
   groupId: PropTypes.string,
+  paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

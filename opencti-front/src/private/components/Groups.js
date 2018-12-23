@@ -97,6 +97,10 @@ class Groups extends Component {
 
   render() {
     const { classes } = this.props;
+    const paginationOptions = {
+      orderBy: this.state.sortBy,
+      orderMode: this.state.orderAsc ? 'asc' : 'desc',
+    };
     return (
       <div>
         <List classes={{ root: classes.linesContainer }}>
@@ -115,24 +119,20 @@ class Groups extends Component {
           <QueryRenderer
             environment={environment}
             query={groupsLinesQuery}
-            variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
+            variables={{ count: 25, ...paginationOptions }}
             render={({ error, props }) => {
               if (error) { // Errors
                 return <GroupsLines data={null} dummy={true}/>;
               }
               if (props) { // Done
-                return <GroupsLines data={props}/>;
+                return <GroupsLines data={props} paginationOptions={paginationOptions}/>;
               }
               // Loading
               return <GroupsLines data={null} dummy={true}/>;
             }}
           />
         </List>
-        <GroupCreation
-          paginationOptions={{
-            orderBy: this.state.sortBy,
-            orderMode: this.state.orderAsc ? 'asc' : 'desc',
-          }}/>
+        <GroupCreation paginationOptions={paginationOptions}/>
       </div>
     );
   }

@@ -85,7 +85,7 @@ class GroupLineComponent extends Component {
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <GroupPopover groupId={group.id}/>
+          <GroupPopover groupId={group.id} paginationOptions={this.props.paginationOptions}/>
         </ListItemIcon>
       </ListItem>
     );
@@ -94,6 +94,7 @@ class GroupLineComponent extends Component {
 
 GroupLineComponent.propTypes = {
   group: PropTypes.object,
+  paginationOptions: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,

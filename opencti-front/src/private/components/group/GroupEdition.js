@@ -115,7 +115,8 @@ class GroupEdition extends Component {
               <Tab label={t('Members')}/>
             </Tabs>
           </AppBar>
-          {this.state.currentTab === 0 && <GroupEditionOverview group={this.props.group} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 0 && <GroupEditionOverview
+              group={this.props.group} editUsers={editUsers} me={me}/>}
         </div>
       </div>
     );
