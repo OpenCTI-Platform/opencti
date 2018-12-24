@@ -109,6 +109,10 @@ class MarkingDefinitions extends Component {
 
   render() {
     const { classes } = this.props;
+    const paginationOptions = {
+      orderBy: this.state.sortBy,
+      orderMode: this.state.orderAsc ? 'asc' : 'desc',
+    };
     return (
       <div>
         <List classes={{ root: classes.linesContainer }}>
@@ -135,18 +139,14 @@ class MarkingDefinitions extends Component {
                 return <MarkingDefinitionsLines data={null} dummy={true}/>;
               }
               if (props) { // Done
-                return <MarkingDefinitionsLines data={props}/>;
+                return <MarkingDefinitionsLines data={props} paginationOptions={paginationOptions}/>;
               }
               // Loading
               return <MarkingDefinitionsLines data={null} dummy={true}/>;
             }}
           />
         </List>
-        <MarkingDefinitionCreation
-          paginationOptions={{
-            orderBy: this.state.sortBy,
-            orderMode: this.state.orderAsc ? 'asc' : 'desc',
-          }}/>
+        <MarkingDefinitionCreation paginationOptions={paginationOptions}/>
       </div>
     );
   }

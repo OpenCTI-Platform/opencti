@@ -81,7 +81,7 @@ class KillChainPhasesLines extends Component {
       return <div key={key}>&nbsp;</div>;
     }
     const killChainPhase = killChainPhaseNode.node;
-    return <div key={key} style={style}><KillChainPhaseLine key={killChainPhase.id} killChainPhase={killChainPhase}/></div>;
+    return <div key={key} style={style}><KillChainPhaseLine key={killChainPhase.id} killChainPhase={killChainPhase} paginationOptions={this.props.paginationOptions}/></div>;
   }
 
   render() {
@@ -130,6 +130,7 @@ class KillChainPhasesLines extends Component {
 
 KillChainPhasesLines.propTypes = {
   classes: PropTypes.object,
+  paginationOptions: PropTypes.object,
   data: PropTypes.object,
   relay: PropTypes.object,
   killChainPhases: PropTypes.object,

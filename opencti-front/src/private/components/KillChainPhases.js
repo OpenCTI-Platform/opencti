@@ -103,6 +103,10 @@ class KillChainPhases extends Component {
 
   render() {
     const { classes } = this.props;
+    const paginationOptions = {
+      orderBy: this.state.sortBy,
+      orderMode: this.state.orderAsc ? 'asc' : 'desc',
+    };
     return (
       <div>
         <List classes={{ root: classes.linesContainer }}>
@@ -128,18 +132,14 @@ class KillChainPhases extends Component {
                 return <KillChainPhasesLines data={null} dummy={true}/>;
               }
               if (props) { // Done
-                return <KillChainPhasesLines data={props}/>;
+                return <KillChainPhasesLines data={props} paginationOptions={paginationOptions}/>;
               }
               // Loading
               return <KillChainPhasesLines data={null} dummy={true}/>;
             }}
           />
         </List>
-        <KillChainPhaseCreation
-          paginationOptions={{
-            orderBy: this.state.sortBy,
-            orderMode: this.state.orderAsc ? 'asc' : 'desc',
-          }}/>
+        <KillChainPhaseCreation paginationOptions={paginationOptions}/>
       </div>
     );
   }

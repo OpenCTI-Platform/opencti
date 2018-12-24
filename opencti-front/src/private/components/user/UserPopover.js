@@ -19,6 +19,7 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import inject18n from '../../../components/i18n';
 import environment from '../../../relay/environment';
 import UserEdition from './UserEdition';
+import { ConnectionHandler } from "relay-runtime";
 
 const styles = theme => ({
   container: {
@@ -105,6 +106,17 @@ class UserPopover extends Component {
       variables: {
         id: this.props.userId,
       },
+      updater: (store) => {
+        const container = store.getRoot();
+        const payload = store.getRootField('userEdit');
+        const userProxy = store.get(container.getDataID());
+        const conn = ConnectionHandler.getConnection(
+          userProxy,
+          'Pagination_users',
+          this.props.paginationOptions,
+        );
+        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+      },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
@@ -172,6 +184,7 @@ class UserPopover extends Component {
 
 UserPopover.propTypes = {
   userId: PropTypes.string,
+  paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

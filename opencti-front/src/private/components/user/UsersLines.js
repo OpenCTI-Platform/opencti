@@ -81,7 +81,7 @@ class UsersLines extends Component {
       return <div key={key}>&nbsp;</div>;
     }
     const user = userNode.node;
-    return <div key={key} style={style}><UserLine key={user.id} user={user}/></div>;
+    return <div key={key} style={style}><UserLine key={user.id} user={user} paginationOptions={this.props.paginationOptions}/></div>;
   }
 
   render() {
@@ -130,6 +130,7 @@ class UsersLines extends Component {
 
 UsersLines.propTypes = {
   classes: PropTypes.object,
+  paginationOptions: PropTypes.object,
   data: PropTypes.object,
   relay: PropTypes.object,
   users: PropTypes.object,

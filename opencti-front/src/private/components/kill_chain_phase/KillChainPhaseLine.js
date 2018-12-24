@@ -73,7 +73,7 @@ const inlineStyles = {
 
 class KillChainPhaseLineComponent extends Component {
   render() {
-    const { fd, classes, killChainPhase } = this.props;
+    const { fd, classes, killChainPhase, paginationOptions } = this.props;
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -96,7 +96,7 @@ class KillChainPhaseLineComponent extends Component {
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KillChainPhasePopover killChainPhaseId={killChainPhase.id}/>
+          <KillChainPhasePopover killChainPhaseId={killChainPhase.id} paginationOptions={paginationOptions}/>
         </ListItemIcon>
       </ListItem>
     );
@@ -105,6 +105,7 @@ class KillChainPhaseLineComponent extends Component {
 
 KillChainPhaseLineComponent.propTypes = {
   killChainPhase: PropTypes.object,
+  paginationOptions: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,

@@ -19,6 +19,7 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import inject18n from '../../../components/i18n';
 import environment from '../../../relay/environment';
 import MarkingDefinitionEdition from './MarkingDefinitionEdition';
+import { ConnectionHandler } from "relay-runtime";
 
 const styles = theme => ({
   container: {
@@ -106,7 +107,15 @@ class MarkingDefinitionPopover extends Component {
         id: this.props.markingDefinitionId,
       },
       updater: (store) => {
-        console.log(store);
+        const container = store.getRoot();
+        const payload = store.getRootField('markingDefinitionEdit');
+        const userProxy = store.get(container.getDataID());
+        const conn = ConnectionHandler.getConnection(
+          userProxy,
+          'Pagination_markingDefinitions',
+          this.props.paginationOptions,
+        );
+        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -175,6 +184,7 @@ class MarkingDefinitionPopover extends Component {
 
 MarkingDefinitionPopover.propTypes = {
   markingDefinitionId: PropTypes.string,
+  paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

@@ -65,7 +65,9 @@ const inlineStyles = {
 
 class GroupLineComponent extends Component {
   render() {
-    const { fd, classes, group } = this.props;
+    const {
+      fd, classes, group, paginationOptions,
+    } = this.props;
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -85,7 +87,7 @@ class GroupLineComponent extends Component {
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <GroupPopover groupId={group.id} paginationOptions={this.props.paginationOptions}/>
+          <GroupPopover groupId={group.id} paginationOptions={paginationOptions}/>
         </ListItemIcon>
       </ListItem>
     );

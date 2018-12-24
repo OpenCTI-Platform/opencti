@@ -109,6 +109,10 @@ class Users extends Component {
 
   render() {
     const { classes } = this.props;
+    const paginationOptions = {
+      orderBy: this.state.sortBy,
+      orderMode: this.state.orderAsc ? 'asc' : 'desc',
+    };
     return (
       <div>
         <List classes={{ root: classes.linesContainer }}>
@@ -135,18 +139,14 @@ class Users extends Component {
                 return <UsersLines data={null} dummy={true}/>;
               }
               if (props) { // Done
-                return <UsersLines data={props}/>;
+                return <UsersLines data={props} paginationOptions={paginationOptions}/>;
               }
               // Loading
               return <UsersLines data={null} dummy={true}/>;
             }}
           />
         </List>
-        <UserCreation
-          paginationOptions={{
-            orderBy: this.state.sortBy,
-            orderMode: this.state.orderAsc ? 'asc' : 'desc',
-          }}/>
+        <UserCreation paginationOptions={paginationOptions}/>
       </div>
     );
   }

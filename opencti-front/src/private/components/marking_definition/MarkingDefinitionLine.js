@@ -79,7 +79,9 @@ const inlineStyles = {
 
 class MarkingDefinitionLineComponent extends Component {
   render() {
-    const { fd, classes, markingDefinition } = this.props;
+    const {
+      fd, classes, markingDefinition, paginationOptions,
+    } = this.props;
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -105,7 +107,7 @@ class MarkingDefinitionLineComponent extends Component {
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <MarkingDefinitionPopover markingDefinitionId={markingDefinition.id}/>
+          <MarkingDefinitionPopover markingDefinitionId={markingDefinition.id} paginationOptions={paginationOptions}/>
         </ListItemIcon>
       </ListItem>
     );
@@ -114,6 +116,7 @@ class MarkingDefinitionLineComponent extends Component {
 
 MarkingDefinitionLineComponent.propTypes = {
   markingDefinition: PropTypes.object,
+  paginationOptions: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,

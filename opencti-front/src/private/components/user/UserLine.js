@@ -79,7 +79,7 @@ const inlineStyles = {
 
 class UserLineComponent extends Component {
   render() {
-    const { fd, classes, user } = this.props;
+    const { fd, classes, user, paginationOptions } = this.props;
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -105,7 +105,7 @@ class UserLineComponent extends Component {
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <UserPopover userId={user.id}/>
+          <UserPopover userId={user.id} paginationOptions={paginationOptions}/>
         </ListItemIcon>
       </ListItem>
     );
@@ -114,6 +114,7 @@ class UserLineComponent extends Component {
 
 UserLineComponent.propTypes = {
   user: PropTypes.object,
+  paginationOptions: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,

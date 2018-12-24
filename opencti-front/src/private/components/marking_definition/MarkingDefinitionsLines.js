@@ -81,7 +81,7 @@ class MarkingDefinitionsLines extends Component {
       return <div key={key}>&nbsp;</div>;
     }
     const markingDefinition = markingDefinitionNode.node;
-    return <div key={key} style={style}><MarkingDefinitionLine key={markingDefinition.id} markingDefinition={markingDefinition}/></div>;
+    return <div key={key} style={style}><MarkingDefinitionLine key={markingDefinition.id} markingDefinition={markingDefinition} paginationOptions={this.props.paginationOptions}/></div>;
   }
 
   render() {
@@ -130,6 +130,7 @@ class MarkingDefinitionsLines extends Component {
 
 MarkingDefinitionsLines.propTypes = {
   classes: PropTypes.object,
+  paginationOptions: PropTypes.object,
   data: PropTypes.object,
   relay: PropTypes.object,
   markingDefinitions: PropTypes.object,
