@@ -117,7 +117,7 @@ class GroupPopover extends Component {
         );
         ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
       },
-      onCompleted: (response, errors) => {
+      onCompleted: () => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
       },

@@ -16,6 +16,7 @@ import environment from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { SubscriptionAvatars } from '../../../components/Subscription';
 import GroupEditionOverview from './GroupEditionOverview';
+import GroupEditionPermissions from './GroupEditionPermissions';
 
 const styles = theme => ({
   header: {
@@ -110,11 +111,10 @@ class GroupEdition extends Component {
             <Tabs value={this.state.currentTab} onChange={this.handleChangeTab.bind(this)}>
               <Tab label={t('Overview')}/>
               <Tab label={t('Permissions')}/>
-              <Tab label={t('Members')}/>
             </Tabs>
           </AppBar>
-          {this.state.currentTab === 0 && <GroupEditionOverview
-              group={this.props.group} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 0 && <GroupEditionOverview group={this.props.group} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 1 && <GroupEditionPermissions group={this.props.group} editUsers={editUsers} me={me}/>}
         </div>
       </div>
     );
@@ -133,7 +133,8 @@ GroupEdition.propTypes = {
 const GroupEditionFragment = createFragmentContainer(GroupEdition, {
   group: graphql`
     fragment GroupEdition_group on Group {
-      ...GroupEditionOverview_group,
+      ...GroupEditionOverview_group
+      ...GroupEditionPermissions_group
       editContext {
         username,
         focusOn

@@ -19,7 +19,7 @@ export const findById = groupId => loadByID(groupId);
 export const members = (groupId, args) =>
   paginate(
     `match $user isa User; 
-    (member:$user, grouping:$group) isa membership; 
+    $rel((member:$user, grouping:$group) isa membership; 
     $group id ${groupId}`,
     args
   );
@@ -27,7 +27,7 @@ export const members = (groupId, args) =>
 export const permissions = (groupId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
-    (allow:$marking, allowed:$group) isa permission; 
+    $rel(allow:$marking, allowed:$group) isa permission; 
     $group id ${groupId}`,
     args
   );

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { commitMutation, createFragmentContainer, QueryRenderer } from 'react-relay';
 import {
-  compose, map, pathOr, pipe, propOr, propEq, find,
+  compose, map, pathOr, pipe, propEq, find,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -91,7 +91,7 @@ class GroupEditionPermissionsComponent extends Component {
             }
             if (props) { // Done
               const markingDefinitions = pipe(
-                pathOr([], ['permissions', 'edges']),
+                pathOr([], ['markingDefinitions', 'edges']),
                 map(n => n.node),
               )(props);
               return (

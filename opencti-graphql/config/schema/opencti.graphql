@@ -6,12 +6,6 @@ type RelationEmbedded {
     id: ID!
 }
 
-### Stix
-type StixRelationEmbedded {
-    id: ID!
-    stix_id: String
-}
-
 ### Relay
 type PageInfo {
     startCursor: String!,
@@ -160,7 +154,7 @@ type MarkingDefinitionConnection {
 type MarkingDefinitionEdge {
     cursor: String!
     node: MarkingDefinition!
-    relation: StixRelationEmbedded!
+    relation: RelationEmbedded!
 }
 type MarkingDefinition {
     id: ID!
@@ -199,7 +193,7 @@ type KillChainPhaseConnection {
 type KillChainPhaseEdge {
     cursor: String!
     node: KillChainPhase!
-    relation: StixRelationEmbedded!
+    relation: RelationEmbedded!
 }
 type KillChainPhase {
     id: ID!
