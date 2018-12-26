@@ -44,6 +44,10 @@ export const BUS_TOPICS = {
   Malware: {
     EDIT_TOPIC: 'MALWARE_EDIT_TOPIC',
     ADDED_TOPIC: 'MALWARE_ADDED_TOPIC'
+  },
+  Report: {
+    EDIT_TOPIC: 'REPORT_EDIT_TOPIC',
+    ADDED_TOPIC: 'REPORT_ADDED_TOPIC'
   }
 };
 

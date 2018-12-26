@@ -32,6 +32,7 @@ export const now = () =>
   moment()
     .utc()
     .format(gkDateFormat); // Format that accept grakn
+export const prepareDate = date => moment(date).format(gkDateFormat);
 
 // Attributes key that can contains multiple values.
 export const multipleAttributes = ['stix_label', 'alias', 'grant'];
@@ -191,6 +192,21 @@ export const loadByID = (id, withType = false) =>
           attrByID(line.x['@id']).then(res => attrMap(id, res, withType))
         )(result.data)
       ).then(r => head(r)) // Return the unique result
+  );
+
+/**
+ * Simple load all query
+ * @param queryDef
+ * @returns {Promise<any[] | never>}
+ */
+export const queryAll = queryDef =>
+  qk(queryDef).then(
+    result =>
+      Promise.all(
+        map(line =>
+          attrByID(line.x['@id']).then(res => attrMap(line.x.id, res))
+        )(result.data)
+      )
   );
 
 /**

@@ -1,21 +1,22 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { MoreVert } from '@material-ui/icons';
-import { LockPattern } from 'mdi-material-ui';
+import { KeyboardArrowRight, Description } from '@material-ui/icons';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import inject18n from '../../../components/i18n';
-import KillChainPhasePopover from './KillChainPhasePopover';
+import ItemMarking from '../../../components/ItemMarking';
 
 const styles = theme => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
+    cursor: 'pointer',
     '&:hover': {
       background: 'rgba(0, 0, 0, 0.1)',
     },
@@ -42,28 +43,28 @@ const styles = theme => ({
 });
 
 const inlineStyles = {
-  kill_chain_name: {
+  name: {
     float: 'left',
-    width: '30%',
+    width: '50%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  phase_name: {
+  author: {
     float: 'left',
-    width: '35%',
+    width: '20%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  phase_order: {
+  published: {
     float: 'left',
-    width: '10%',
+    width: '15%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  created: {
+  marking: {
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -71,103 +72,108 @@ const inlineStyles = {
   },
 };
 
-class KillChainPhaseLineComponent extends Component {
+class ReportLineComponent extends Component {
   render() {
-    const {
-      fd, classes, killChainPhase, paginationOptions,
-    } = this.props;
+    const { fd, classes, report } = this.props;
+
     return (
-      <ListItem classes={{ default: classes.item }} divider={true}>
+      <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/reports/${report.id}`}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <LockPattern/>
+          <Description/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
-            <div className={classes.bodyItem} style={inlineStyles.kill_chain_name}>
-                {propOr('-', 'kill_chain_name', killChainPhase)}
+            <div className={classes.bodyItem} style={inlineStyles.name}>
+              {propOr('-', 'name', report)}
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.phase_name}>
-              {propOr('-', 'phase_name', killChainPhase)}
+            <div className={classes.bodyItem} style={inlineStyles.author}>
+              {propOr('-', 'author', report)}
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.phase_order}>
-              {propOr('-', 'phase_order', killChainPhase)}
+            <div className={classes.bodyItem} style={inlineStyles.published}>
+              {fd(propOr(null, 'published', report))}
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(propOr(null, 'created', killChainPhase))}
+            <div className={classes.bodyItem} style={inlineStyles.marking}>
+              <ItemMarking label='TLP:RED' position='normal'/>
             </div>
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KillChainPhasePopover killChainPhaseId={killChainPhase.id} paginationOptions={paginationOptions}/>
+          <KeyboardArrowRight/>
         </ListItemIcon>
       </ListItem>
     );
   }
 }
 
-KillChainPhaseLineComponent.propTypes = {
-  killChainPhase: PropTypes.object,
-  paginationOptions: PropTypes.object,
-  me: PropTypes.object,
+ReportLineComponent.propTypes = {
+  report: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
 
-const KillChainPhaseLineFragment = createFragmentContainer(KillChainPhaseLineComponent, {
-  killChainPhase: graphql`
-        fragment KillChainPhaseLine_killChainPhase on KillChainPhase {
-            id
-            kill_chain_name
-            phase_name
-            phase_order
-            created
-            modified
-        }
-    `,
+const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
+  report: graphql`
+      fragment ReportLine_report on Report {
+          id
+          name
+          createdByRef {
+              name
+          }
+          published
+          markingDefinitions {
+              edges {
+                  node {
+                      definition_type
+                      definition
+                  }
+              }
+          }
+      }
+  `,
 });
 
-export const KillChainPhaseLine = compose(
+export const ReportLine = compose(
   inject18n,
   withStyles(styles),
-)(KillChainPhaseLineFragment);
+)(ReportLineFragment);
 
-class KillChainPhaseLineDummyComponent extends Component {
+class ReportLineDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <LockPattern/>
+          <Description/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
-            <div className={classes.bodyItem} style={inlineStyles.kill_chain_name}>
-                <div className={classes.placeholder} style={{ width: '80%' }}/>
+            <div className={classes.bodyItem} style={inlineStyles.name}>
+              <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.phase_name}>
+            <div className={classes.bodyItem} style={inlineStyles.author}>
               <div className={classes.placeholder} style={{ width: '70%' }}/>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.phase_order}>
-              <div className={classes.placeholder} style={{ width: '90%' }}/>
+            <div className={classes.bodyItem} style={inlineStyles.published}>
+              <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-                <div className={classes.placeholder} style={{ width: 140 }}/>
+            <div className={classes.bodyItem} style={inlineStyles.marking}>
+              <div className={classes.placeholder} style={{ width: '90%' }}/>
             </div>
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <MoreVert/>
+          <KeyboardArrowRight/>
         </ListItemIcon>
       </ListItem>
     );
   }
 }
 
-KillChainPhaseLineDummyComponent.propTypes = {
+ReportLineDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const KillChainPhaseLineDummy = compose(
+export const ReportLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(KillChainPhaseLineDummyComponent);
+)(ReportLineDummyComponent);

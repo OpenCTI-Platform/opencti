@@ -22,7 +22,6 @@ const styles = theme => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    overflow: 'hidden',
     backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,

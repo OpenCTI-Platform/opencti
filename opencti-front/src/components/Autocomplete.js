@@ -214,7 +214,7 @@ class Autocomplete extends Component {
           error={hasError}
           required={required}
           disabled={isSubmitting}
-          style={{ marginTop: '10px' }}
+          style={{ marginTop: '20px' }}
         >
           <Select
             classes={classes}

@@ -47,6 +47,10 @@ class ItemMarking extends Component {
         style = classes.chip;
     }
 
+    if (this.props.color) {
+      return <Chip classes={{ root: style }} style={{ backgroundColor: this.props.color }} label={this.props.label}/>;
+    }
+
     switch (this.props.label) {
       case 'CD':
       case 'CD-SF':
@@ -73,6 +77,7 @@ ItemMarking.propTypes = {
   classes: PropTypes.object.isRequired,
   variant: PropTypes.string,
   label: PropTypes.string,
+  color: PropTypes.string,
 };
 
 export default withStyles(styles)(ItemMarking);

@@ -16,10 +16,10 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
+import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
 import environment from '../../../relay/environment';
 import KillChainPhaseEdition from './KillChainPhaseEdition';
-import { ConnectionHandler } from "relay-runtime";
 
 const styles = theme => ({
   container: {

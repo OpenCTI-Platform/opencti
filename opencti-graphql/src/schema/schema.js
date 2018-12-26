@@ -9,9 +9,11 @@ import userResolvers from '../resolvers/user';
 import groupResolvers from '../resolvers/group';
 import markingDefinitionResolvers from '../resolvers/markingDefinition';
 import killChainPhaseResolvers from '../resolvers/killChainPhase';
+import identityResolvers from '../resolvers/identity';
 import threatActorResolvers from '../resolvers/threatActor';
 import intrusionSetResolvers from '../resolvers/intrusionSet';
 import malwareResolvers from '../resolvers/malware';
+import reportResolvers from '../resolvers/report';
 
 const globalResolvers = {
   DateTime: GraphQLDateTime
@@ -27,9 +29,11 @@ const resolvers = mergeResolvers([
   groupResolvers,
   markingDefinitionResolvers,
   killChainPhaseResolvers,
+  identityResolvers,
   threatActorResolvers,
   intrusionSetResolvers,
-  malwareResolvers
+  malwareResolvers,
+  reportResolvers
 ]);
 
 const schema = makeExecutableSchema({

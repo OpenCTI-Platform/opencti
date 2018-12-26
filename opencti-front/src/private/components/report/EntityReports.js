@@ -108,7 +108,7 @@ class EntityReportsComponent extends Component {
               </ListItemIcon>
               <ListItemText primary={truncate('dsqd sdqsd qsdqs dqsd qsd qsdqs ', 120)} secondary={truncate('dfsfds fdsf sdf sdfsdfdsf sdf sdf sdf sdfsd fdsf sdfsdf sdfs fdsdf sdf', 150)}/>
               <div style={{ minWidth: 100 }}>
-                <ItemMarking label='TLP:RED' position='normal'/>
+
               </div>
               <div style={inlineStyles.itemDate}>28 mai 2018</div>
             </ListItem>

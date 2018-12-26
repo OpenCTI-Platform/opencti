@@ -61,6 +61,8 @@ const i18n = {
       'Update a marking definition': 'Modifier un marquage',
       'Create a kill chain phase': 'Créer une étape de kill chain',
       'Update a kill chain phase': 'Modifier une étape de kill chain',
+      'Create a report': 'Créer un rapport',
+      'Update a report': 'Modifier un rapport',
       'The password has been updated': 'Le mot de passe a été modifié',
       'Settings have been updated': 'Les paramètres ont été mis à jour',
       // Menu
@@ -89,6 +91,9 @@ const i18n = {
       Groups: 'Groupes',
       Global: 'Global',
       'TTPs frameworks': 'Frameworks de TTP',
+      'All reports': 'Tous les rapports',
+      'Internal productions': 'Productions internes',
+      'External sources': 'Sources externes',
       // User
       'Sign in': 'S\'identifier',
       Email: 'Email',
@@ -123,6 +128,8 @@ const i18n = {
       'Kill chain name': 'Nom de la kill chain',
       Order: 'Ordre',
       Options: 'Options',
+      Author: 'Auteur',
+      'Publication date': 'Date de publication',
       // Statistics
       'Total entities': 'Nombre d\'entités',
       'Total observables': 'Nombre d\'observables',

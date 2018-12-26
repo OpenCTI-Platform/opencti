@@ -19,6 +19,7 @@ import ThreatActors from './components/ThreatActors';
 import IntrusionSets from './components/IntrusionSets';
 import Malwares from './components/Malwares';
 import RootMalware from './components/malware/Root';
+import Reports from './components/Reports';
 import Settings from './components/Settings';
 import Users from './components/Users';
 import Groups from './components/Groups';
@@ -97,6 +98,7 @@ class Root extends Component {
                   <Route exact path='/dashboard/knowledge/intrusion_sets' component={IntrusionSets}/>
                   <Route exact path='/dashboard/knowledge/malwares' component={Malwares}/>
                   <Route path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props && props.me ? props.me : null}/>}/>
+                  <Route exact path='/dashboard/reports' component={Reports}/>
                   <Route exact path='/dashboard/settings' component={Settings}/>
                   <Route exact path='/dashboard/settings/users' component={Users}/>
                   <Route exact path='/dashboard/settings/groups' component={Groups}/>

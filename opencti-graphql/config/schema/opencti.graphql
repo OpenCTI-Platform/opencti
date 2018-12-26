@@ -214,6 +214,46 @@ input KillChainPhaseAddInput {
     phase_order: Int!
 }
 
+### Identities
+enum IdentitiesOrdering {
+    stix_id,
+    name,
+    description,
+    identity_class,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type IdentityConnection {
+    pageInfo: PageInfo!
+    edges: [IdentityEdge]
+}
+type IdentityEdge {
+    cursor: String!
+    node: Identity!
+}
+type Identity {
+    id: ID!
+    name: String!
+    description: String
+    identity_class: String
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
+    markingDefinitions: MarkingDefinitionConnection
+    created_at: DateTime
+    updated_at: DateTime
+}
+input IdentityAddInput {
+    name: String!
+    description: String!
+    identity_class: String
+    marking_definitions: [String]
+    clientMutationId: String
+}
+
 ### Threat Actors
 enum ThreatActorsOrdering {
     stix_id,
@@ -341,6 +381,9 @@ input MalwareAddInput {
     clientMutationId: String
 }
 
+### STIX objects
+union StixDomainConnection = KillChainPhaseConnection | ThreatActorConnection | IntrusionSetConnection | MalwareConnection
+
 ### Reports
 enum ReportsOrdering {
     stix_id,
@@ -348,10 +391,11 @@ enum ReportsOrdering {
     created,
     modified,
     published,
+    createdByRef,
     created_at,
     updated_at
 }
-type ReportsConnection {
+type ReportConnection {
     pageInfo: PageInfo!
     edges: [ReportEdge]
 }
@@ -365,8 +409,8 @@ type ReportPayload {
 type Report {
     id: ID!
     name: String!
-    stix_label: [String]
     description: String
+    report_class: String
     created_at: DateTime
     updated_at: DateTime
     created: DateTime
@@ -374,11 +418,17 @@ type Report {
     published: DateTime
     revoked: Boolean
     editContext: [EditUserContext]
+    createdByRef: Identity
     markingDefinitions: MarkingDefinitionConnection
+    objectRefs: StixDomainConnection
 }
 input ReportAddInput {
     name: String!
-    description: String!
+    description: String
+    published: DateTime
+    report_class: String
+    createdByRef: String
+    markingDefinitions: [String]
     clientMutationId: String
 }
 
@@ -407,6 +457,9 @@ type Query {
     # KillChainPhases
     killChainPhase(id: String!): KillChainPhase
     killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, search: String): KillChainPhaseConnection
+    # Identities
+    identity(id: String!): Identity
+    identities(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): IdentityConnection
     # ThreatActors
     threatActor(id: String!): ThreatActor
     threatActors(first: Int, after: ID, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, search: String): ThreatActorConnection
@@ -416,6 +469,9 @@ type Query {
     # Malwares
     malware(id: String!): Malware
     malwares(first: Int, after: ID, orderBy: MalwaresOrdering, orderMode: OrderingMode, search: String): MalwareConnection
+    # Reports
+    report(id: String!): Report
+    reports(first: Int, after: ID, orderBy: ReportsOrdering, orderMode: OrderingMode, search: String): ReportConnection
 }
 
 ### SUBSCRIPTIONS
@@ -425,9 +481,11 @@ type Subscription {
     group(id: ID!): Group
     markingDefinition(id: ID!): MarkingDefinition
     killChainPhase(id: ID!): KillChainPhase
+    identity(id: ID!): Identity
     threatActor(id: ID!): ThreatActor
     intrusionSet(id: ID!): IntrusionSet
     malware(id: ID!): Malware
+    report(id: ID!): Report
 }
 
 ### MUTATIONS
@@ -474,6 +532,15 @@ type KillChainPhaseEditMutations {
     relationDelete(relationId: ID!): ID
 }
 
+# Identity
+type IdentityEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): Identity
+    contextPatch(input: EditContext): Identity
+    relationAdd(input: RelationAddInput): Identity
+    relationDelete(relationId: ID!): ID
+}
+
 # ThreatActor
 type ThreatActorEditMutations {
     delete: ID
@@ -501,6 +568,15 @@ type MalwareEditMutations {
     relationDelete(relationId:ID!): ID
 }
 
+# Report
+type ReportEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): Report
+    contextPatch(input: EditContext): Report
+    relationAdd(input: RelationAddInput): Report
+    relationDelete(relationId:ID!): ID
+}
+
 # Next
 
 type Mutation {
@@ -521,6 +597,9 @@ type Mutation {
     # KillChainPhase
     killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase
     killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations
+    # Identity
+    identityAdd(input: IdentityAddInput): Identity
+    identityEdit(id: ID!): IdentityEditMutations
     # ThreatActor
     threatActorAdd(input: ThreatActorAddInput): ThreatActor
     threatActorEdit(id: ID!): ThreatActorEditMutations
@@ -530,5 +609,8 @@ type Mutation {
     # Malware
     malwareAdd(input: MalwareAddInput): Malware
     malwareEdit(id: ID!): MalwareEditMutations
+    # Report
+    reportAdd(input: ReportAddInput): Report
+    reportEdit(id: ID!): ReportEditMutations
 }
 
