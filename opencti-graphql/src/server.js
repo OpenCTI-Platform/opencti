@@ -10,6 +10,7 @@ import { GraphQLError } from 'graphql';
 import compression from 'compression';
 import helmet from 'helmet';
 import { dissocPath } from 'ramda';
+import path from 'path';
 import conf, { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/security';
 import { findByTokenId, setAuthenticationCookie } from './domain/user';
@@ -21,6 +22,10 @@ const app = express();
 app.use(cookieParser());
 app.use(compression());
 app.use(helmet());
+
+// Static for generated fronted
+app.use('/', express.static(path.join(__dirname, '../public')));
+app.use('/static', express.static(path.join(__dirname, '../public/static')));
 
 // #### Login
 const urlencodedParser = bodyParser.urlencoded({ extended: true });
