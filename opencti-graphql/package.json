@@ -18,7 +18,7 @@
   "bin": "./dist/server.js",
   "pkg": {
     "scripts": "dist/**/*.js",
-    "assets": "config/**/*"
+    "assets": ["config/**/*", "public/**/*"]
   },
   "dependencies": {
     "@babel/core": "^7.2.0",
