@@ -248,9 +248,9 @@ type Identity {
 }
 input IdentityAddInput {
     name: String!
-    description: String!
-    identity_class: String
-    marking_definitions: [String]
+    description: String
+    identity_class: String!
+    markingDefinitions: [String]
     clientMutationId: String
 }
 
@@ -295,7 +295,7 @@ type ThreatActor {
 input ThreatActorAddInput {
     name: String!
     description: String!
-    marking_definitions: [String]
+    markingDefinitions: [String]
     clientMutationId: String
 }
 

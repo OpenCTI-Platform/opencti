@@ -11,7 +11,8 @@ import {
   paginate,
   qk,
   queryAll,
-  prepareDate
+  prepareDate,
+  takeTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -21,9 +22,9 @@ export const findById = reportId => loadByID(reportId);
 
 export const createdByRef = (reportId, args) =>
   queryAll(
-    `match $identity isa Identity; 
-    $rel(creator:$identity, so:$report) isa created_by_ref; 
-    $report id ${reportId}`,
+    `match $x isa Identity; 
+    $rel(creator:$x, so:$report) isa created_by_ref; 
+    $report id ${reportId}; get $x;`,
     args
   ).then(r => head(r)); // Return the unique result;
 
@@ -44,7 +45,8 @@ export const objectRefs = (reportId, args) =>
   );
 
 export const addReport = async (user, report) => {
-  const createReport = qk(`insert $report isa Report 
+  const wTx = await takeTx();
+  const reportIterator = await wTx.query(`insert $report isa Report 
     has type "report";
     $report has stix_id "report--${uuid()}";
     $report has name "${report.name}";
@@ -57,12 +59,20 @@ export const addReport = async (user, report) => {
     $report has created_at ${now()};
     $report has updated_at ${now()};
   `);
-  return createReport.then(result => {
-    const { data } = result;
-    return loadByID(head(data).report.id).then(created =>
-      notify(BUS_TOPICS.Report.ADDED_TOPIC, created, user)
-    );
-  });
+  const createdReport = await reportIterator.next();
+  const createdReportId = await createdReport.map().get('report').id;
+
+  if (report.createdByRef) {
+    await wTx.query(`match $from id ${createdReportId};
+         $to id ${report.createdByRef};
+         insert (so: $from, creator: $to)
+         isa created_by_ref;`);
+  }
+  await wTx.commit();
+
+  return loadByID(createdReportId).then(created =>
+    notify(BUS_TOPICS.Report.ADDED_TOPIC, created, user)
+  );
 };
 
 export const reportDelete = reportId => deleteByID(reportId);

@@ -178,6 +178,7 @@ class UserEditionOverviewComponent extends Component {
               <Field
                 name='grant'
                 component={Autocomplete}
+                multiple={true}
                 label={t('Roles')}
                 options={roles}
                 onChange={this.handleChangeField.bind(this)}

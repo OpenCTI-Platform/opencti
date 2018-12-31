@@ -44,6 +44,12 @@ const axiosInstance = axios.create({
   timeout: conf.get('grakn:timeout')
 });
 
+export const takeTx = async () => {
+  const session = await client.session('grakn');
+  const wTx = await session.transaction(Grakn.txType.WRITE);
+  return wTx;
+}
+
 export const notify = (topic, instance, user, context) => {
   pubsub.publish(topic, { instance, user, context });
   return instance;
@@ -148,13 +154,13 @@ export const qkSingleValue = queryDef =>
   );
 
 /**
- * Grakn generic function to delete an instance.
+ * Grakn generic function to delete an instance (and orphan relationships)
  * @param id
  * @returns {Promise<AxiosResponse<any> | never | never>}
  */
 export const deleteByID = id => {
-  const delUser = qk(`match $x id ${id}; delete $x;`);
-  return delUser.then(result => {
+  const deleteQuery = qk(`match $x id ${id}; $z($x, $y); delete $z, $x;`);
+  return deleteQuery.then(result => {
     if (isEmpty(result.data)) {
       throw new FunctionalError({ message: "Element doesn't exist" });
     } else {
@@ -200,13 +206,12 @@ export const loadByID = (id, withType = false) =>
  * @returns {Promise<any[] | never>}
  */
 export const queryAll = queryDef =>
-  qk(queryDef).then(
-    result =>
-      Promise.all(
-        map(line =>
-          attrByID(line.x['@id']).then(res => attrMap(line.x.id, res))
-        )(result.data)
+  qk(queryDef).then(result =>
+    Promise.all(
+      map(line => attrByID(line.x['@id']).then(res => attrMap(line.x.id, res)))(
+        result.data
       )
+    )
   );
 
 /**

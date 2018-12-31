@@ -15,12 +15,14 @@ import {
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
-import {parse} from '../../../utils/Time';
+import { parse } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import environment from '../../../relay/environment';
 import Autocomplete from '../../../components/Autocomplete';
+import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import TextField from '../../../components/TextField';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
+import IdentityCreation from '../identity/IdentityCreation';
 
 const styles = theme => ({
   drawerPaper: {
@@ -97,11 +99,6 @@ export const reportCreationIdentitiesSearchQuery = graphql`
                 node {
                     id
                     name
-                    created,
-                    modified,
-                    identity_class,
-                    created_at
-                    updated_at
                 }
             }
         }
@@ -111,7 +108,9 @@ export const reportCreationIdentitiesSearchQuery = graphql`
 class ReportCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, identities: [], markingDefinitions: [] };
+    this.state = {
+      open: false, identities: [], identityCreation: false, identityInput: '', markingDefinitions: [],
+    };
   }
 
   handleOpen() {
@@ -132,6 +131,14 @@ class ReportCreation extends Component {
     });
   }
 
+  handleOpenIdentityCreation(inputValue) {
+    this.setState({ identityCreation: true, identityInput: inputValue });
+  }
+
+  handleCloseIdentityCreation() {
+    this.setState({ identityCreation: false });
+  }
+
   searchMarkingDefinitions(event) {
     fetchQuery(environment, markingDefinitionsLinesSearchQuery, { search: event.target.value }).then((data) => {
       const markingDefinitions = pipe(
@@ -144,6 +151,7 @@ class ReportCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm, setErrors }) {
     values.published = parse(values.published).format();
+    values.createdByRef = values.createdByRef.value;
     values.markingDefinitions = pluck('value', values.markingDefinitions);
     commitMutation(environment, {
       mutation: reportMutation,
@@ -204,40 +212,54 @@ class ReportCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
-                name: '', published: '', description: '', author: '', markingDefinitions: [],
+                name: '', published: '', description: '', createdByRef: '', markingDefinitions: [],
               }}
               validationSchema={reportValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
-              render={({ submitForm, handleReset, isSubmitting }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
-                  <Field name='published' component={TextField} label={t('Publication date')} fullWidth={true} style={{ marginTop: 20 }}/>
-                  <Field name='description' component={TextField} label={t('Description')}
-                         fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
-                  <Field
-                    name='author'
-                    component={Autocomplete}
-                    label={t('Author')}
-                    options={this.state.identities}
-                    onInputChange={this.searchIdentities.bind(this)}
+              render={({
+                submitForm, handleReset, isSubmitting, setFieldValue,
+              }) => (
+                <div>
+                  <Form style={{ margin: '20px 0 20px 0' }}>
+                    <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
+                    <Field name='published' component={TextField} label={t('Publication date')} fullWidth={true} style={{ marginTop: 20 }}/>
+                    <Field name='description' component={TextField} label={t('Description')}
+                           fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
+                    <Field
+                      name='createdByRef'
+                      component={AutocompleteCreate}
+                      multiple={false}
+                      handleCreate={this.handleOpenIdentityCreation.bind(this)}
+                      label={t('Author')}
+                      options={this.state.identities}
+                      onInputChange={this.searchIdentities.bind(this)}
+                    />
+                    <Field
+                      name='markingDefinitions'
+                      component={Autocomplete}
+                      multiple={true}
+                      label={t('Marking')}
+                      options={this.state.markingDefinitions}
+                      onInputChange={this.searchMarkingDefinitions.bind(this)}
+                    />
+                    <div className={classes.buttons}>
+                      <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                        {t('Cancel')}
+                      </Button>
+                      <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
+                        {t('Create')}
+                      </Button>
+                    </div>
+                  </Form>
+                  <IdentityCreation
+                    contextual={true}
+                    inputValue={this.state.identityInput}
+                    open={this.state.identityCreation}
+                    handleClose={this.handleCloseIdentityCreation.bind(this)}
+                    creationCallback={(data) => { setFieldValue('createdByRef', {label: data.identityAdd.name, value: data.identityAdd.id}); }}
                   />
-                  <Field
-                    name='markingDefinitions'
-                    component={Autocomplete}
-                    label={t('Marking')}
-                    options={this.state.markingDefinitions}
-                    onInputChange={this.searchMarkingDefinitions.bind(this)}
-                  />
-                  <div className={classes.buttons}>
-                    <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
-                      {t('Cancel')}
-                    </Button>
-                    <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
+                </div>
               )}
             />
           </div>

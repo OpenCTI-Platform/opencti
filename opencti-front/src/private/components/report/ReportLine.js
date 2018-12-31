@@ -8,7 +8,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight, Description } from '@material-ui/icons';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import { compose, propOr, pathOr } from 'ramda';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 
@@ -87,7 +87,7 @@ class ReportLineComponent extends Component {
               {propOr('-', 'name', report)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.author}>
-              {propOr('-', 'author', report)}
+              {pathOr('-', ['createdByRef', 'name'], report)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.published}>
               {fd(propOr(null, 'published', report))}

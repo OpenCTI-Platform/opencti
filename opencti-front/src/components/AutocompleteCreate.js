@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import classNames from 'classnames';
-import Select from 'react-select';
+import CreatableSelect from 'react-select/lib/Creatable';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
@@ -171,7 +171,11 @@ const components = {
   ValueContainer,
 };
 
-class Autocomplete extends Component {
+class AutocompleteCreate extends Component {
+  handleCreateCallback(handleCreate, callback) {
+
+  }
+
   render() {
     const {
       required,
@@ -193,6 +197,7 @@ class Autocomplete extends Component {
       onFocus,
       helperText,
       multiple,
+      handleCreate,
     } = this.props;
     const errorText = errors[field.name];
     const hasError = dirty && errorText !== undefined;
@@ -223,7 +228,7 @@ class Autocomplete extends Component {
           disabled={isSubmitting}
           style={{ marginTop: '20px' }}
         >
-          <Select
+          <CreatableSelect
             classes={classes}
             styles={selectStyles}
             textFieldProps={{
@@ -252,8 +257,10 @@ class Autocomplete extends Component {
             placeholder={label}
             isMulti={multiple}
             openMenuOnClick={false}
+            onCreateOption={handleCreate.bind(this)}
             isDisabled={isSubmitting}
             noOptionsMessage={() => <span style={{ fontStyle: 'italic' }}>{t('No available options')}</span>}
+            formatCreateLabel={(inputValue) => <span style={{ fontStyle: 'italic' }}>{t('Create')} {inputValue}</span>}
           />
           {hasError && <FormHelperText>{errorText}</FormHelperText>}
         </FormControl>
@@ -262,7 +269,7 @@ class Autocomplete extends Component {
   }
 }
 
-Autocomplete.propTypes = {
+AutocompleteCreate.propTypes = {
   required: PropTypes.bool,
   classes: PropTypes.object.isRequired,
   theme: PropTypes.object.isRequired,
@@ -281,9 +288,10 @@ Autocomplete.propTypes = {
   onFocus: PropTypes.func,
   helperText: PropTypes.node,
   multiple: PropTypes.bool,
+  handleCreate: PropTypes.func,
 };
 
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(Autocomplete);
+)(AutocompleteCreate);

@@ -5,6 +5,7 @@ import {
   reportDelete,
   findAll,
   findById,
+  createdByRef,
   markingDefinitions,
   objectRefs,
   reportEditContext,
@@ -22,6 +23,7 @@ const reportResolvers = {
     reports: auth((_, args) => findAll(args))
   },
   Report: {
+    createdByRef: (report, args) => createdByRef(report.id, args),
     markingDefinitions: (report, args) => markingDefinitions(report.id, args),
     objectRefs: (report, args) => objectRefs(report.id, args),
     editContext: auth(report => fetchEditContext(report.id))
