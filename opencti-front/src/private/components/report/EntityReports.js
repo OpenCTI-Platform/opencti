@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
+import { QueryRenderer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
@@ -15,6 +15,7 @@ import { Description } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 import truncate from '../../../utils/String';
+import environment from '../../../relay/environment';
 
 const styles = theme => ({
   paper: {
@@ -54,121 +55,90 @@ const inlineStyles = {
   },
 };
 
-class EntityReportsComponent extends Component {
+const entityReportsQuery = graphql`
+    query EntityReportsQuery($objectId: String!, $first: Int) {
+        reportsOf(objectId: $objectId, first: $first) {
+            edges {
+                node {
+                    id
+                    name
+                    published
+                    createdByRef {
+                        name
+                    }
+                    markingDefinitions {
+                        edges {
+                            node {
+                                definition
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+`;
+
+class EntityReports extends Component {
   render() {
-    const { t, classes } = this.props;
+    const { t, classes, entityId } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant='h4' gutterBottom={true}>
           {t('Last reports')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <List>
-            <ListItem
-              dense={true}
-              classes={{ default: classes.item }}
-              divider={true}
-              component={Link}
-              to={'/dashboard/reports/'}
-            >
-              <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <Description/>
-              </ListItemIcon>
-              <ListItemText primary={truncate('dsqd sdqsd qsdqs dqsd qsd qsdqs ', 120)} secondary={truncate('dfsfds fdsf sdf sdfsdfdsf sdf sdf sdf sdfsd fdsf sdfsdf sdfs fdsdf sdf', 150)}/>
-              <div style={{ minWidth: 100 }}>
-                <ItemMarking label='TLP:RED' position='normal'/>
-              </div>
-              <div style={inlineStyles.itemDate}>28 mai 2018</div>
-            </ListItem>
-            <ListItem
-              dense={true}
-              classes={{ default: classes.item }}
-              divider={true}
-              component={Link}
-              to={'/dashboard/reports/'}
-            >
-              <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <Description/>
-              </ListItemIcon>
-              <ListItemText primary={truncate('dsqd sdqsd qsdqs dqsd qsd qsdqs ', 120)} secondary={truncate('dfsfds fdsf sdf sdfsdfdsf sdf sdf sdf sdfsd fdsf sdfsdf sdfs fdsdf sdf', 150)}/>
-              <div style={{ minWidth: 100 }}>
-                <ItemMarking label='TLP:RED' position='normal'/>
-              </div>
-              <div style={inlineStyles.itemDate}>28 mai 2018</div>
-            </ListItem>
-            <ListItem
-              dense={true}
-              classes={{ default: classes.item }}
-              divider={true}
-              component={Link}
-              to={'/dashboard/reports/'}
-            >
-              <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <Description/>
-              </ListItemIcon>
-              <ListItemText primary={truncate('dsqd sdqsd qsdqs dqsd qsd qsdqs ', 120)} secondary={truncate('dfsfds fdsf sdf sdfsdfdsf sdf sdf sdf sdfsd fdsf sdfsdf sdfs fdsdf sdf', 150)}/>
-              <div style={{ minWidth: 100 }}>
-
-              </div>
-              <div style={inlineStyles.itemDate}>28 mai 2018</div>
-            </ListItem>
-            <ListItem
-              dense={true}
-              classes={{ default: classes.item }}
-              divider={true}
-              component={Link}
-              to={'/dashboard/reports/'}
-            >
-              <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <Description/>
-              </ListItemIcon>
-              <ListItemText primary={truncate('dsqd sdqsd qsdqs dqsd qsd qsdqs ', 120)} secondary={truncate('dfsfds fdsf sdf sdfsdfdsf sdf sdf sdf sdfsd fdsf sdfsdf sdfs fdsdf sdf', 150)}/>
-              <div style={{ minWidth: 100 }}>
-                <ItemMarking label='TLP:RED' position='normal'/>
-              </div>
-              <div style={inlineStyles.itemDate}>28 mai 2018</div>
-            </ListItem>
-            <ListItem
-              dense={true}
-              classes={{ default: classes.item }}
-              divider={true}
-              component={Link}
-              to={'/dashboard/reports/'}
-            >
-              <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <Description/>
-              </ListItemIcon>
-              <ListItemText primary={truncate('dsqd sdqsd qsdqs dqsd qsd qsdqs ', 120)} secondary={truncate('dfsfds fdsf sdf sdfsdfdsf sdf sdf sdf sdfsd fdsf sdfsdf sdfs fdsdf sdf', 150)}/>
-              <div style={{ minWidth: 100 }}>
-                <ItemMarking label='TLP:RED' position='normal'/>
-              </div>
-              <div style={inlineStyles.itemDate}>28 mai 2018</div>
-            </ListItem>
-          </List>
+          <QueryRenderer
+            environment={environment}
+            query={entityReportsQuery}
+            variables={{ objectId: entityId, first: 5 }}
+            render={({ props }) => {
+              if (props && props.reportsOf) {
+                return (
+                  <List>
+                    {props.reportsOf.edges.map((report) => {
+                      console.log(report);
+                      return (
+                        <ListItem
+                          dense={true}
+                          classes={{ default: classes.item }}
+                          divider={true}
+                          component={Link}
+                          to={'/dashboard/reports/'}
+                        >
+                          <ListItemIcon classes={{ root: classes.itemIcon }}>
+                            <Description/>
+                          </ListItemIcon>
+                          <ListItemText primary={truncate('dsqd sdqsd qsdqs dqsd qsd qsdqs ', 120)}
+                                        secondary={truncate('dfsfds fdsf sdf sdfsdfdsf sdf sdf sdf sdfsd fdsf sdfsdf sdfs fdsdf sdf', 150)}/>
+                          <div style={{ minWidth: 100 }}>
+                            <ItemMarking label='TLP:RED' position='normal'/>
+                          </div>
+                          <div style={inlineStyles.itemDate}>28 mai 2018</div>
+                        </ListItem>
+                      );
+                    })}
+                  </List>
+                );
+              }
+              return (
+                <div> &nbsp; </div>
+              );
+            }}
+          />
         </Paper>
       </div>
     );
   }
 }
 
-EntityReportsComponent.propTypes = {
-  reports: PropTypes.object,
+EntityReports.propTypes = {
+  entityId: PropTypes.string,
+  limit: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
-
-const EntityReports = createFragmentContainer(EntityReportsComponent, {
-  reports: graphql`
-      fragment EntityReports_reports on Malware {
-          id,
-          name,
-          description,
-          created,
-          modified
-      }
-  `,
-});
 
 export default compose(
   inject18n,

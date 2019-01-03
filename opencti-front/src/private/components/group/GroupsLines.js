@@ -113,7 +113,7 @@ class GroupsLines extends Component {
                       onScroll={onChildScroll}
                       overscanRowCount={2}
                       rowCount={rowCount}
-                      rowHeight={45}
+                      rowHeight={50}
                       rowRenderer={this._rowRenderer}
                       scrollToIndex={scrollToIndex}
                       scrollTop={scrollTop}

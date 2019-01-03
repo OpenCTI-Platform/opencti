@@ -1,4 +1,4 @@
-import { head } from 'ramda';
+import { head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
@@ -9,7 +9,6 @@ import {
   notify,
   now,
   paginate,
-  qk,
   queryAll,
   prepareDate,
   takeTx
@@ -17,6 +16,13 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Report', args);
+export const findAllByRef = args =>
+  paginate(
+    `match $report isa Report; 
+    $rel(knowledge_aggregation:$report, so:$so) isa object_marking_refs; 
+    $so id ${args.objectId}`,
+    args
+  );
 
 export const findById = reportId => loadByID(reportId);
 
@@ -67,6 +73,18 @@ export const addReport = async (user, report) => {
          $to id ${report.createdByRef};
          insert (so: $from, creator: $to)
          isa created_by_ref;`);
+  }
+
+  if (report.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.query(
+        `match $from id ${createdReportId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      report.markingDefinitions
+    );
+    await Promise.all(markingDefinitionsPromises);
   }
   await wTx.commit();
 

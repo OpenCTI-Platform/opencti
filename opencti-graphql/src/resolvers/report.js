@@ -4,6 +4,7 @@ import {
   addReport,
   reportDelete,
   findAll,
+  findAllByRef,
   findById,
   createdByRef,
   markingDefinitions,
@@ -20,7 +21,8 @@ import { auth, withCancel } from './wrapper';
 const reportResolvers = {
   Query: {
     report: auth((_, { id }) => findById(id)),
-    reports: auth((_, args) => findAll(args))
+    reports: auth((_, args) => findAll(args)),
+    reportsOf: auth((_, args) => findAllByRef(args))
   },
   Report: {
     createdByRef: (report, args) => createdByRef(report.id, args),

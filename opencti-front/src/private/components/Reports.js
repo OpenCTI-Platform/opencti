@@ -46,7 +46,7 @@ const inlineStyles = {
   },
   name: {
     float: 'left',
-    width: '50%',
+    width: '40%',
     fontSize: 12,
     fontWeight: '700',
   },

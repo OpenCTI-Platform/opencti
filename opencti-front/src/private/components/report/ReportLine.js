@@ -8,7 +8,9 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight, Description } from '@material-ui/icons';
 import * as PropTypes from 'prop-types';
-import { compose, propOr, pathOr } from 'ramda';
+import {
+  compose, propOr, pathOr, take,
+} from 'ramda';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 
@@ -45,7 +47,7 @@ const styles = theme => ({
 const inlineStyles = {
   name: {
     float: 'left',
-    width: '50%',
+    width: '40%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -77,7 +79,7 @@ class ReportLineComponent extends Component {
     const { fd, classes, report } = this.props;
 
     return (
-      <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/reports/${report.id}`}>
+      <ListItem classes={{ root: classes.item }} divider={true} component={Link} to={`/dashboard/reports/all/${report.id}`}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Description/>
         </ListItemIcon>
@@ -93,7 +95,7 @@ class ReportLineComponent extends Component {
               {fd(propOr(null, 'published', report))}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.marking}>
-              <ItemMarking label='TLP:RED' position='normal'/>
+              {take(2, pathOr([], ['markingDefinitions', 'edges'], report)).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} label={markingDefinition.node.definition}/>)}
             </div>
           </div>
         }/>
@@ -123,7 +125,7 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
           markingDefinitions {
               edges {
                   node {
-                      definition_type
+                      id
                       definition
                   }
               }

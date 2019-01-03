@@ -16,9 +16,10 @@ import logo from '../../../resources/images/logo.png';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
-import TopMenuReports from './TopMenuReports';
 import TopMenuKnowledge from './TopMenuKnowledge';
 import TopMenuMalware from './TopMenuMalware';
+import TopMenuReports from './TopMenuReports';
+import TopMenuReport from './TopMenuReport';
 import TopMenuSettings from './TopMenuSettings';
 
 const styles = theme => ({
@@ -98,9 +99,10 @@ class TopBar extends Component {
           </IconButton>
           <div className={classes.menuContainer}>
             {location.pathname === '/dashboard' || location.pathname === '/dashboard/entities' ? <TopMenuDashboard/> : ''}
-            {location.pathname.includes('/dashboard/reports') ? <TopMenuReports/> : ''}
             {location.pathname === '/dashboard/knowledge' || location.pathname.match('/dashboard/knowledge/[a-z_]+$') ? <TopMenuKnowledge/> : ''}
             {location.pathname.includes('/dashboard/knowledge/malwares/') ? <TopMenuMalware/> : ''}
+            {location.pathname === '/dashboard/reports' || location.pathname.match('/dashboard/reports/[a-z_]+$') ? <TopMenuReports/> : ''}
+            {location.pathname.includes('/dashboard/reports/all/') ? <TopMenuReport/> : ''}
             {location.pathname === '/dashboard/settings' || location.pathname.match('/dashboard/settings/[a-z_]+$') ? <TopMenuSettings/> : ''}
           </div>
           <div className={classes.searchContainer}>

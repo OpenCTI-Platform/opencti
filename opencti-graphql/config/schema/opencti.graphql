@@ -372,6 +372,7 @@ type Malware {
     editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
     killChainPhases: KillChainPhaseConnection
+    reports: ReportConnection
 }
 input MalwareAddInput {
     name: String!
@@ -472,6 +473,7 @@ type Query {
     # Reports
     report(id: String!): Report
     reports(first: Int, after: ID, orderBy: ReportsOrdering, orderMode: OrderingMode, search: String): ReportConnection
+    reportsOf(objectId: String!, first: Int, after: ID, orderBy: ReportsOrdering, orderMode: OrderingMode, search: String): ReportConnection
 }
 
 ### SUBSCRIPTIONS

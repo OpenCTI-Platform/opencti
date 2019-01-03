@@ -4,11 +4,6 @@ import { Route, Redirect } from 'react-router-dom';
 import { QueryRenderer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import Snackbar from '@material-ui/core/Snackbar';
-import SnackbarContent from '@material-ui/core/SnackbarContent';
-import IconButton from '@material-ui/core/IconButton';
-import CheckCircle from '@material-ui/icons/CheckCircle';
-import Close from '@material-ui/icons/Close';
 import environment from '../relay/environment';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedDocumentTitle } from '../components/AppDocumentTitle';
@@ -20,6 +15,7 @@ import IntrusionSets from './components/IntrusionSets';
 import Malwares from './components/Malwares';
 import RootMalware from './components/malware/Root';
 import Reports from './components/Reports';
+import RootReport from './components/report/Root';
 import Settings from './components/Settings';
 import Users from './components/Users';
 import Groups from './components/Groups';
@@ -64,15 +60,6 @@ const rootQuery = graphql`
 `;
 
 class Root extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { snackbarOpen: false };
-  }
-
-  snackbarDismiss() {
-    this.setState({ snackbarOpen: false });
-  }
-
   render() {
     const { classes } = this.props;
     const paddingRight = 24;
@@ -98,37 +85,17 @@ class Root extends Component {
                   <Route exact path='/dashboard/knowledge/intrusion_sets' component={IntrusionSets}/>
                   <Route exact path='/dashboard/knowledge/malwares' component={Malwares}/>
                   <Route path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props && props.me ? props.me : null}/>}/>
-                  <Route exact path='/dashboard/reports' component={Reports}/>
+                  <Route exact path='/dashboard/reports' render={() => (
+                    <Redirect to='/dashboard/reports/all'/>
+                  )}/>
+                  <Route exact path='/dashboard/reports/all' component={Reports}/>
+                  <Route path='/dashboard/reports/all/:reportId' render={routeProps => <RootReport {...routeProps} me={props && props.me ? props.me : null}/>}/>
                   <Route exact path='/dashboard/settings' component={Settings}/>
                   <Route exact path='/dashboard/settings/users' component={Users}/>
                   <Route exact path='/dashboard/settings/groups' component={Groups}/>
                   <Route exact path='/dashboard/settings/marking' component={MarkingDefinitions}/>
                   <Route exact path='/dashboard/settings/killchains' component={KillChainPhases}/>
                 </main>
-                <Snackbar
-                  anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                  open={this.state.snackbarOpen}
-                  onClose={this.snackbarDismiss.bind(this)}
-                  autoHideDuration={1500}>
-                  <SnackbarContent
-                    message={
-                      <span className={classes.message}>
-                  <CheckCircle className={classes.messageIcon}/>
-                  Action done
-                </span>
-                    }
-                    action={[
-                      <IconButton
-                        key='close'
-                        aria-label='Close'
-                        color='inherit'
-                        onClick={this.snackbarDismiss.bind(this)}
-                      >
-                        <Close/>
-                      </IconButton>,
-                    ]}
-                  />
-                </Snackbar>
               </div>
             </ConnectedDocumentTitle>
           </ConnectedIntlProvider>

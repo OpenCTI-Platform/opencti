@@ -6,11 +6,8 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
-import MalwareHeader from './MalwareHeader';
-import MalwareOverview from './MalwareOverview';
-import EntityReports from '../report/EntityReports';
-import EntityObservablesChart from '../observable/EntityObservablesChart';
-import MalwareEdition from './MalwareEdition';
+import ReportHeader from './ReportHeader';
+import ReportOverview from './ReportOverview';
 
 const styles = () => ({
   container: {
@@ -21,43 +18,42 @@ const styles = () => ({
   },
 });
 
-class MalwareComponent extends Component {
+class ReportComponent extends Component {
   render() {
-    const { classes, malwareId, malware } = this.props;
+    const { classes, reportId, report } = this.props;
     return (
       <div className={classes.container}>
-        <MalwareHeader malware={malware} />
+        <ReportHeader report={report}/>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
           <Grid item={true} xs={6}>
-            <MalwareOverview malware={malware}/>
+            <ReportOverview report={report}/>
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityReports entityId={malwareId}/>
+            &nbsp;
           </Grid>
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart malware={malware}/>
+            &nbsp;
           </Grid>
         </Grid>
-        <MalwareEdition malwareId={malwareId}/>
       </div>
     );
   }
 }
 
-MalwareComponent.propTypes = {
-  malwareId: PropTypes.string.isRequired,
-  malware: PropTypes.object,
+ReportComponent.propTypes = {
+  reportId: PropTypes.string.isRequired,
+  report: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const Malware = createFragmentContainer(MalwareComponent, {
-  malware: graphql`
-      fragment Malware_malware on Malware {
-          ...MalwareHeader_malware
-          ...MalwareOverview_malware
+const Report = createFragmentContainer(ReportComponent, {
+  report: graphql`
+      fragment Report_report on Report {
+          ...ReportHeader_report
+          ...ReportOverview_report
       }
   `,
 });
@@ -65,4 +61,4 @@ const Malware = createFragmentContainer(MalwareComponent, {
 export default compose(
   inject18n,
   withStyles(styles),
-)(Malware);
+)(Report);

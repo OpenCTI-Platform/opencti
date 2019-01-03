@@ -224,7 +224,24 @@ class Settings extends Component {
               />
             );
           }
-          return <div> &nbsp; </div>;
+          return (
+            <Grid container={true} spacing={32}>
+              <Grid item={true} xs={9}>
+                <Paper classes={{ root: classes.paper }} elevation={2}>
+                  <Typography variant='h1' gutterBottom={true}>
+                    {t('Global')}
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item={true} xs={3}>
+                <Paper classes={{ root: classes.paper }} elevation={2}>
+                  <Typography variant='h1' gutterBottom={true}>
+                    {t('Options')}
+                  </Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+          );
         }}
       />
     );

@@ -20,7 +20,7 @@ class TopMenuDashboard extends Component {
     const { t, location, classes } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/reports' variant={location.pathname === '/dashboard/reports' ? 'contained' : 'text'} size="small" color={location.pathname === '/dashboard/reports' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to='/dashboard/reports/all' variant={location.pathname === '/dashboard/reports/all' ? 'contained' : 'text'} size="small" color={location.pathname === '/dashboard/reports/all' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('All reports')}
         </Button>
         <Button component={Link} to='/dashboard/reports/internal' variant={location.pathname === '/dashboard/reports/internal' ? 'contained' : 'text'} size="small" color={location.pathname === '/dashboard/reports/internal' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
