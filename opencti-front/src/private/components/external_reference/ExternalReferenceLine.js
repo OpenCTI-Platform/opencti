@@ -1,22 +1,20 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { compose, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight } from '@material-ui/icons';
-import { Diamond } from 'mdi-material-ui';
+import Avatar from '@material-ui/core/Avatar'
+import { MoreVert } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
     '&:hover': {
       background: 'rgba(0, 0, 0, 0.1)',
     },
@@ -40,24 +38,29 @@ const styles = theme => ({
     height: '1em',
     backgroundColor: theme.palette.text.disabled,
   },
+  avatar: {
+    width: 24,
+    height: 24,
+    backgroundColor: theme.palette.primary.main
+  },
 });
 
 const inlineStyles = {
   name: {
     float: 'left',
-    width: '70%',
+    width: '60%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  created: {
+  created_at: {
     float: 'left',
     width: '15%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  modified: {
+  updated_at: {
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -65,91 +68,97 @@ const inlineStyles = {
   },
 };
 
-class IntrusionSetLineComponent extends Component {
+class ExternalReferenceLineComponent extends Component {
   render() {
-    const { fd, classes, intrusionSet } = this.props;
+    const {
+      fd, classes, externalReference, paginationOptions,
+    } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSet.id}`}>
+      <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Diamond/>
+          <Avatar className={classes.avatar}>A</Avatar>
         </ListItemIcon>
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
-                {intrusionSet.name}
+              {propOr('-', 'name', externalReference)}
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(intrusionSet.created)}
+            <div className={classes.bodyItem} style={inlineStyles.created_at}>
+              {fd(propOr(null, 'created_at', externalReference))}
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-                {fd(intrusionSet.modified)}
+            <div className={classes.bodyItem} style={inlineStyles.updated_at}>
+              {fd(propOr(null, 'updated_at', externalReference))}
             </div>
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          &nbsp;
         </ListItemIcon>
       </ListItem>
     );
   }
 }
 
-IntrusionSetLineComponent.propTypes = {
-  intrusionSet: PropTypes.object,
+ExternalReferenceLineComponent.propTypes = {
+  externalReference: PropTypes.object,
+  paginationOptions: PropTypes.object,
+  me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
 
-const IntrusionSetLineFragment = createFragmentContainer(IntrusionSetLineComponent, {
-  intrusionSet: graphql`
-        fragment IntrusionSetLine_intrusionSet on IntrusionSet {
-            id
-            name
-            created
-            modified
-        }
-    `,
+const ExternalReferenceLineFragment = createFragmentContainer(ExternalReferenceLineComponent, {
+  externalReference: graphql`
+      fragment ExternalReferenceLine_externalReference on ExternalReference {
+          id
+          source_name
+          description
+          url
+          hash
+          external_id
+      }
+  `,
 });
 
-export const IntrusionSetLine = compose(
+export const ExternalReferenceLine = compose(
   inject18n,
   withStyles(styles),
-)(IntrusionSetLineFragment);
+)(ExternalReferenceLineFragment);
 
-class IntrusionSetLineDummyComponent extends Component {
+class ExternalReferenceLineDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Diamond/>
+          <Avatar className={classes.avatar}>A</Avatar>
         </ListItemIcon>
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
-                <div className={classes.placeholder} style={{ width: '80%' }}/>
+              <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-                <div className={classes.placeholder} style={{ width: 140 }}/>
+            <div className={classes.bodyItem} style={inlineStyles.created_at}>
+              <div className={classes.placeholder} style={{ width: 80 }}/>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-                <div className={classes.placeholder} style={{ width: 140 }}/>
+            <div className={classes.bodyItem} style={inlineStyles.updated_at}>
+              <div className={classes.placeholder} style={{ width: 80 }}/>
             </div>
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <MoreVert/>
         </ListItemIcon>
       </ListItem>
     );
   }
 }
 
-IntrusionSetLineDummyComponent.propTypes = {
+ExternalReferenceLineDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const IntrusionSetLineDummy = compose(
+export const ExternalReferenceLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(IntrusionSetLineDummyComponent);
+)(ExternalReferenceLineDummyComponent);

@@ -9,27 +9,27 @@ import {
   addSettings
 } from '../domain/settings';
 import { fetchEditContext, pubsub } from '../database/redis';
-import { auth, withCancel } from './wrapper';
+import { admin, auth, withCancel } from './wrapper';
 
 const settingsResolvers = {
   Query: {
     settings: () => getSettings()
   },
   Settings: {
-    editContext: auth(settings => fetchEditContext(settings.id))
+    editContext: admin(settings => fetchEditContext(settings.id))
   },
   Mutation: {
-    settingsEdit: auth((_, { id }, { user }) => ({
+    settingsEdit: admin((_, { id }, { user }) => ({
       delete: () => settingsDelete(id),
       fieldPatch: ({ input }) => settingsEditField(user, id, input),
       contextPatch: ({ input }) => settingsEditContext(user, id, input)
     })),
-    settingsAdd: auth((_, { input }, { user }) => addSettings(user, input))
+    settingsAdd: admin((_, { input }, { user }) => addSettings(user, input))
   },
   Subscription: {
     settings: {
       resolve: payload => payload.instance,
-      subscribe: auth((_, { id }, { user }) => {
+      subscribe: admin((_, { id }, { user }) => {
         settingsEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.Settings.EDIT_TOPIC),

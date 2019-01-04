@@ -8,6 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import ReportHeader from './ReportHeader';
 import ReportOverview from './ReportOverview';
+import EntityExternalReferences from '../external_reference/EntityExternalReferences';
 
 const styles = () => ({
   container: {
@@ -29,7 +30,7 @@ class ReportComponent extends Component {
             <ReportOverview report={report}/>
           </Grid>
           <Grid item={true} xs={6}>
-            &nbsp;
+            <EntityExternalReferences entityId={reportId}/>
           </Grid>
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>

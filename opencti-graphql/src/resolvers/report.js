@@ -4,7 +4,7 @@ import {
   addReport,
   reportDelete,
   findAll,
-  findAllByRef,
+  findAllBySo,
   findById,
   createdByRef,
   markingDefinitions,
@@ -22,7 +22,7 @@ const reportResolvers = {
   Query: {
     report: auth((_, { id }) => findById(id)),
     reports: auth((_, args) => findAll(args)),
-    reportsOf: auth((_, args) => findAllByRef(args))
+    reportsOf: auth((_, args) => findAllBySo(args))
   },
   Report: {
     createdByRef: (report, args) => createdByRef(report.id, args),

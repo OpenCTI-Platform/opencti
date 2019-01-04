@@ -177,6 +177,51 @@ input MarkingDefinitionAddInput {
     clientMutationId: String
 }
 
+### ExternalReferences
+enum ExternalReferencesOrdering {
+    stix_id,
+    source_name,
+    url,
+    hash,
+    external_id,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type ExternalReferenceConnection {
+    pageInfo: PageInfo!
+    edges: [ExternalReferenceEdge]
+}
+
+type ExternalReferenceEdge {
+    cursor: String!
+    node: ExternalReference!
+    relation: RelationEmbedded!
+}
+type ExternalReference {
+    id: ID!
+    source_name: String!
+    description: String
+    url: String
+    hash: String
+    external_id: String
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
+    created_at: DateTime
+    updated_at: DateTime
+}
+input ExternalReferenceAddInput {
+    source_name: String!
+    description: String
+    url: String
+    hash: String
+    external_id: String
+    clientMutationId: String
+}
+
 ### KillChain Phases
 enum KillChainPhasesOrdering {
     stix_id,
@@ -433,7 +478,7 @@ input ReportAddInput {
     clientMutationId: String
 }
 
-### Rekatuibs
+### Relations
 input RelationAddInput {
     fromRole: String!
     toId: ID!
@@ -455,6 +500,10 @@ type Query {
     # MarkingDefinitions
     markingDefinition(id: String!): MarkingDefinition
     markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, search: String): MarkingDefinitionConnection
+    # ExternalReferences
+    externalReference(id: String!): ExternalReference
+    externalReferences(first: Int, after: ID, orderBy: ExternalReferencesOrdering, orderMode: OrderingMode, search: String): ExternalReferenceConnection
+    externalReferencesOf(objectId: String!, first: Int, after: ID, orderBy: ExternalReferencesOrdering, orderMode: OrderingMode, search: String): ExternalReferenceConnection
     # KillChainPhases
     killChainPhase(id: String!): KillChainPhase
     killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, search: String): KillChainPhaseConnection
@@ -482,6 +531,7 @@ type Subscription {
     user(id: ID!): User
     group(id: ID!): Group
     markingDefinition(id: ID!): MarkingDefinition
+    externalReference(id: ID!): ExternalReference
     killChainPhase(id: ID!): KillChainPhase
     identity(id: ID!): Identity
     threatActor(id: ID!): ThreatActor
@@ -522,6 +572,15 @@ type MarkingDefinitionEditMutations {
     fieldPatch(input: EditInput): MarkingDefinition
     contextPatch(input: EditContext): MarkingDefinition
     relationAdd(input: RelationAddInput): MarkingDefinition
+    relationDelete(relationId: ID!): ID
+}
+
+# ExternalReference
+type ExternalReferenceEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): ExternalReference
+    contextPatch(input: EditContext): ExternalReference
+    relationAdd(input: RelationAddInput): ExternalReference
     relationDelete(relationId: ID!): ID
 }
 
@@ -596,6 +655,10 @@ type Mutation {
     # MarkingDefinition
     markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition
     markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations
+    # ExternalReference
+    externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference
+    externalReferenceEdit(id: ID!): ExternalReferenceEditMutations
+    externalReferencesAddTo(objectId: String, externalReferencesIds: [String]): StixDomainConnection
     # KillChainPhase
     killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase
     killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations

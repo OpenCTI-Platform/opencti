@@ -1,8 +1,10 @@
 import { BUS_TOPICS } from '../config/conf';
 import {
   addExternalReference,
+  addExternalReferencesTo,
   externalReferenceDelete,
   findAll,
+  findAllBySo,
   findById,
   externalReferenceEditContext,
   externalReferenceEditField,
@@ -11,20 +13,21 @@ import {
   externalReferenceCleanContext
 } from '../domain/externalReference';
 import { fetchEditContext, pubsub } from '../database/redis';
-import { admin, auth, withCancel } from './wrapper';
+import { auth, withCancel } from './wrapper';
 
 const externalReferenceResolvers = {
   Query: {
     externalReference: auth((_, { id }) => findById(id)),
-    externalReferences: auth((_, args) => findAll(args))
+    externalReferences: auth((_, args) => findAll(args)),
+    externalReferencesOf: auth((_, args) => findAllBySo(args))
   },
   ExternalReference: {
-    editContext: admin(externalReference =>
+    editContext: auth(externalReference =>
       fetchEditContext(externalReference.id)
     )
   },
   Mutation: {
-    externalReferenceEdit: admin((_, { id }, { user }) => ({
+    externalReferenceEdit: auth((_, { id }, { user }) => ({
       delete: () => externalReferenceDelete(id),
       fieldPatch: ({ input }) => externalReferenceEditField(id, input),
       contextPatch: ({ input }) =>
@@ -33,14 +36,18 @@ const externalReferenceResolvers = {
       relationDelete: ({ relationId }) =>
         externalReferenceDeleteRelation(relationId)
     })),
-    externalReferenceAdd: admin((_, { input }, { user }) =>
+    externalReferenceAdd: auth((_, { input }, { user }) =>
       addExternalReference(user, input)
+    ),
+    externalReferencesAddTo: auth(
+      (_, { objectId }, { externalReferencesIds }) =>
+        addExternalReferencesTo(objectId, externalReferencesIds)
     )
   },
   Subscription: {
     externalReference: {
       resolve: payload => payload.instance,
-      subscribe: admin((_, { id }, { user }) => {
+      subscribe: auth((_, { id }, { user }) => {
         externalReferenceEditContext(user, id);
         return withCancel(
           pubsub.asyncIterator(BUS_TOPICS.ExternalReference.EDIT_TOPIC),

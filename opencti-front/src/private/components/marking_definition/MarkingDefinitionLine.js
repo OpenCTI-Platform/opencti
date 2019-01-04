@@ -125,7 +125,7 @@ MarkingDefinitionLineComponent.propTypes = {
 const MarkingDefinitionLineFragment = createFragmentContainer(MarkingDefinitionLineComponent, {
   markingDefinition: graphql`
         fragment MarkingDefinitionLine_markingDefinition on MarkingDefinition {
-            id,
+            id
             definition_type
             definition
             level

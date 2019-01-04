@@ -14,63 +14,75 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args =>
-  paginate('match $m isa Marking-Definition', args);
-export const findById = markingDefinitionId => loadByID(markingDefinitionId);
+  paginate('match $m isa External-Reference', args);
+export const findAllBySo = args =>
+  paginate(
+    `match $externalReference isa External-Reference; 
+    $rel(external_reference:$externalReference, so:$so) isa external_references; 
+    $so id ${args.objectId}`,
+    args
+  );
 
-export const addMarkingDefinition = async (user, markingDefinition) => {
-  const createMarkingDefinition = qk(`insert $markingDefinition isa Marking-Definition 
+export const findById = externalReferenceId => loadByID(externalReferenceId);
+
+export const addExternalReference = async (user, externalReference) => {
+  const createExternalReference = qk(`insert $externalReference isa External-Reference 
     has type "marking-definition";
-    $markingDefinition has stix_id "marking-definition--${uuid()}";
-    $markingDefinition has definition_type "${
-      markingDefinition.definition_type
+    $externalReference has stix_id "marking-definition--${uuid()}";
+    $externalReference has definition_type "${
+      externalReference.definition_type
     }";
-    $markingDefinition has definition "${markingDefinition.definition}";
-    $markingDefinition has color "${markingDefinition.color}";
-    $markingDefinition has level ${markingDefinition.level};
-    $markingDefinition has created ${now()};
-    $markingDefinition has modified ${now()};
-    $markingDefinition has revoked false;
-    $markingDefinition has created_at ${now()};
-    $markingDefinition has updated_at ${now()};
+    $externalReference has definition "${externalReference.definition}";
+    $externalReference has color "${externalReference.color}";
+    $externalReference has level ${externalReference.level};
+    $externalReference has created ${now()};
+    $externalReference has modified ${now()};
+    $externalReference has revoked false;
+    $externalReference has created_at ${now()};
+    $externalReference has updated_at ${now()};
   `);
-  return createMarkingDefinition.then(result => {
+  return createExternalReference.then(result => {
     const { data } = result;
-    return findById(head(data).markingDefinition.id).then(created =>
-      notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created)
+    return findById(head(data).externalReference.id).then(created =>
+      notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created)
     );
   });
 };
 
-export const markingDefinitionDelete = markingDefinitionId =>
-  deleteByID(markingDefinitionId);
+export const addExternalReferencesTo = (objectId, externalReferencesIds) => {
 
-export const markingDefinitionDeleteRelation = relationId =>
+}
+
+export const externalReferenceDelete = externalReferenceId =>
+  deleteByID(externalReferenceId);
+
+export const externalReferenceDeleteRelation = relationId =>
   deleteByID(relationId);
 
-export const markingDefinitionAddRelation = (markingDefinitionId, input) =>
-  createRelation(markingDefinitionId, input).then(markingDefinition =>
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition)
+export const externalReferenceAddRelation = (externalReferenceId, input) =>
+  createRelation(externalReferenceId, input).then(externalReference =>
+    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference)
   );
 
-export const markingDefinitionCleanContext = (user, markingDefinitionId) => {
-  delEditContext(user, markingDefinitionId);
-  return findById(markingDefinitionId).then(markingDefinition =>
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition)
+export const externalReferenceCleanContext = (user, externalReferenceId) => {
+  delEditContext(user, externalReferenceId);
+  return findById(externalReferenceId).then(externalReference =>
+    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference)
   );
 };
 
-export const markingDefinitionEditContext = (
+export const externalReferenceEditContext = (
   user,
-  markingDefinitionId,
+  externalReferenceId,
   input
 ) => {
-  setEditContext(user, markingDefinitionId, input);
-  findById(markingDefinitionId).then(markingDefinition =>
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition)
+  setEditContext(user, externalReferenceId, input);
+  findById(externalReferenceId).then(externalReference =>
+    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference)
   );
 };
 
-export const markingDefinitionEditField = (markingDefinitionId, input) =>
-  editInputTx(markingDefinitionId, input).then(markingDefinition =>
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition)
+export const externalReferenceEditField = (externalReferenceId, input) =>
+  editInputTx(externalReferenceId, input).then(externalReference =>
+    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference)
   );

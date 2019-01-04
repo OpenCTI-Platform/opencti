@@ -27,6 +27,7 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
+    height: '100%',
     fontSize: 13,
   },
   goIcon: {

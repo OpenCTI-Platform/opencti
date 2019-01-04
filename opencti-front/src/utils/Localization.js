@@ -35,6 +35,7 @@ const i18n = {
       Delete: 'Supprimer',
       Cancel: 'Annuler',
       Import: 'Importer',
+      Add: 'Ajouter',
       'This field is required': 'Ce champ est requis',
       'The value is too short': 'La valeur est trop courte',
       'The value is too long': 'La valeur est trop longue',
@@ -68,6 +69,7 @@ const i18n = {
       'Update a report': 'Modifier un rapport',
       'The password has been updated': 'Le mot de passe a été modifié',
       'Settings have been updated': 'Les paramètres ont été mis à jour',
+      'Add external references': 'Ajouter des références externes',
       // Menu
       Dashboard: 'Tableau de bord',
       Knowledge: 'Connaissance',
@@ -139,6 +141,8 @@ const i18n = {
       Country: 'Pays',
       City: 'Ville',
       Person: 'Personne',
+      'Linked knowledge': 'Connaissance liée',
+      'External references': 'Références externes',
       // Statistics
       'Total entities': 'Nombre d\'entités',
       'Total observables': 'Nombre d\'observables',

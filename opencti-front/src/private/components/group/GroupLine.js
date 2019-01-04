@@ -105,9 +105,9 @@ GroupLineComponent.propTypes = {
 const GroupLineFragment = createFragmentContainer(GroupLineComponent, {
   group: graphql`
       fragment GroupLine_group on Group {
-          id,
-          name,
-          created_at,
+          id
+          name
+          created_at
           updated_at
       }
   `,

@@ -21,7 +21,6 @@ const styles = () => ({
   marking: {
     float: 'right',
     overflowX: 'hidden',
-    marginTop: '-5px',
   },
   alias: {
     marginRight: 7,

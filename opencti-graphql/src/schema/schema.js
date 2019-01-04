@@ -8,6 +8,7 @@ import settingsResolvers from '../resolvers/settings';
 import userResolvers from '../resolvers/user';
 import groupResolvers from '../resolvers/group';
 import markingDefinitionResolvers from '../resolvers/markingDefinition';
+import externalReferenceResolvers from '../resolvers/externalReference';
 import killChainPhaseResolvers from '../resolvers/killChainPhase';
 import identityResolvers from '../resolvers/identity';
 import threatActorResolvers from '../resolvers/threatActor';
@@ -28,6 +29,7 @@ const resolvers = mergeResolvers([
   userResolvers,
   groupResolvers,
   markingDefinitionResolvers,
+  externalReferenceResolvers,
   killChainPhaseResolvers,
   identityResolvers,
   threatActorResolvers,

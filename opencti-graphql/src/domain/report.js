@@ -16,7 +16,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Report', args);
-export const findAllByRef = args =>
+export const findAllBySo = args =>
   paginate(
     `match $report isa Report; 
     $rel(knowledge_aggregation:$report, so:$so) isa object_marking_refs; 

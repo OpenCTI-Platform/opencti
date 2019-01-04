@@ -33,10 +33,6 @@ public class ExternalReference implements Stix {
             externalIdQuery.append(format("has external_id %s ", prepare(getExternal_id())));
         externalIdQuery.append(format("has source_name %s ", prepare(getSource_name())));
         externalIdQuery.append(format("has url %s ", prepare(getUrl())));
-        externalIdQuery.append(format("has created %s ", getCurrentTime()));
-        externalIdQuery.append(format("has modified %s ", getCurrentTime()));
-        externalIdQuery.append(format("has created_at %s ", getCurrentTime()));
-        externalIdQuery.append(format("has updated_at %s ", getCurrentTime()));
         Object externalRef = driver.read("match " + externalIdQuery.toString() + "; get;");
 
         if (externalRef == null) {
@@ -49,6 +45,10 @@ public class ExternalReference implements Stix {
             if (getDescription() != null)
                 refBuilder.append(" has description ").append(prepare(getDescription()));
             refBuilder.append(" has url ").append(prepare(getUrl()));
+            refBuilder.append(" has created ").append(getCurrentTime());
+            refBuilder.append(" has modified ").append(getCurrentTime());
+            refBuilder.append(" has created_at ").append(getCurrentTime());
+            refBuilder.append(" has updated_at ").append(getCurrentTime());
             refBuilder.append(";");
             driver.write(refBuilder.toString());
         }

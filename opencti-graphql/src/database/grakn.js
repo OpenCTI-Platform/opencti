@@ -112,8 +112,8 @@ export const qk = queryDef => {
     url: '/kb/grakn/graql',
     data: queryDef
   }).catch(error => {
-    logger.error(`Grakn query error: ${queryDef}`, error.response.data);
-    throw new FunctionalError({ message: error.response.data.exception });
+    logger.error(`Grakn query error: ${queryDef}`, error.response);
+    //throw new FunctionalError({ message: error.response.data.exception });
   });
 };
 

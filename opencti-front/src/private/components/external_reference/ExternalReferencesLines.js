@@ -9,7 +9,7 @@ import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer, InfiniteLoader, List, WindowScroller,
 } from 'react-virtualized';
-import { GroupLine, GroupLineDummy } from './GroupLine';
+import { ExternalReferenceLine, ExternalReferenceLineDummy } from './ExternalReferenceLine';
 
 const styles = () => ({
   windowScrollerWrapper: {
@@ -29,7 +29,7 @@ const styles = () => ({
   },
 });
 
-class GroupsLines extends Component {
+class ExternalReferencesLines extends Component {
   constructor(props) {
     super(props);
     this._isRowLoaded = this._isRowLoaded.bind(this);
@@ -62,34 +62,34 @@ class GroupsLines extends Component {
     if (this.props.dummy) {
       return true;
     }
-    const list = pathOr([], ['groups', 'edges'], this.props.data);
+    const list = pathOr([], ['externalReferences', 'edges'], this.props.data);
     return !this.props.relay.hasMore() || index < list.length;
   }
 
   _rowRenderer({ index, key, style }) {
     const { dummy } = this.props;
     if (dummy) {
-      return <div key={key} style={style}><GroupLineDummy/></div>;
+      return <div key={key} style={style}><ExternalReferenceLineDummy/></div>;
     }
 
-    const list = pathOr([], ['groups', 'edges'], this.props.data);
+    const list = pathOr([], ['externalReferences', 'edges'], this.props.data);
     if (!this._isRowLoaded({ index })) {
-      return <div key={key} style={style}><GroupLineDummy/></div>;
+      return <div key={key} style={style}><ExternalReferenceLineDummy/></div>;
     }
-    const groupNode = list[index];
-    if (!groupNode) {
+    const externalReferenceNode = list[index];
+    if (!externalReferenceNode) {
       return <div key={key}>&nbsp;</div>;
     }
-    const group = groupNode.node;
+    const externalReference = externalReferenceNode.node;
     return <div key={key} style={style}>
-        <GroupLine key={group.id} group={group} paginationOptions={this.props.paginationOptions}/>
+        <ExternalReferenceLine key={externalReference.id} externalReference={externalReference} paginationOptions={this.props.paginationOptions}/>
     </div>;
   }
 
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
-    const list = dummy ? [] : pathOr([], ['groups', 'edges'], this.props.data);
+    const list = dummy ? [] : pathOr([], ['externalReferences', 'edges'], this.props.data);
     const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
@@ -130,31 +130,32 @@ class GroupsLines extends Component {
   }
 }
 
-GroupsLines.propTypes = {
+ExternalReferencesLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   data: PropTypes.object,
   relay: PropTypes.object,
-  groups: PropTypes.object,
+  externalReferences: PropTypes.object,
   dummy: PropTypes.bool,
 };
 
-export const groupsLinesQuery = graphql`
-    query GroupsLinesPaginationQuery($count: Int!, $cursor: ID, $orderBy: GroupsOrdering, $orderMode: OrderingMode) {
-        ...GroupsLines_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
+export const externalReferencesLinesQuery = graphql`
+    query ExternalReferencesLinesPaginationQuery($count: Int!, $cursor: ID, $orderBy: ExternalReferencesOrdering, $orderMode: OrderingMode) {
+        ...ExternalReferencesLines_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
     }
 `;
 
-export const groupsLinesSearchQuery = graphql`
-    query GroupsLinesSearchQuery($search: String) {
-        groups(search: $search) {
+export const externalReferencesLinesSearchQuery = graphql`
+    query ExternalReferencesLinesSearchQuery($search: String) {
+        externalReferences(search: $search) {
             edges {
                 node {
                     id
-                    name
+                    source_name
                     description
-                    created_at
-                    updated_at
+                    url
+                    hash
+                    external_id
                 }
             }
         }
@@ -162,19 +163,19 @@ export const groupsLinesSearchQuery = graphql`
 `;
 
 export default withStyles(styles)(createPaginationContainer(
-  GroupsLines,
+  ExternalReferencesLines,
   {
     data: graphql`
-        fragment GroupsLines_data on Query @argumentDefinitions(
+        fragment ExternalReferencesLines_data on Query @argumentDefinitions(
             count: {type: "Int", defaultValue: 25}
             cursor: {type: "ID"}
-            orderBy: {type: "GroupsOrdering", defaultValue: ID}
+            orderBy: {type: "ExternalReferencesOrdering", defaultValue: ID}
             orderMode: {type: "OrderingMode", defaultValue: "asc"}
         ) {
-            groups(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_groups") {
+            externalReferences(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_externalReferences") {
                 edges {
                     node {
-                        ...GroupLine_group
+                        ...ExternalReferenceLine_externalReference
                     }
                 }
             }
@@ -184,7 +185,7 @@ export default withStyles(styles)(createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.groups;
+      return props.data && props.data.externalReferences;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -200,6 +201,6 @@ export default withStyles(styles)(createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: groupsLinesQuery,
+    query: externalReferencesLinesQuery,
   },
 ));
