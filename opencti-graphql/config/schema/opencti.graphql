@@ -428,7 +428,23 @@ input MalwareAddInput {
 }
 
 ### STIX objects
-union StixDomainConnection = KillChainPhaseConnection | ThreatActorConnection | IntrusionSetConnection | MalwareConnection
+enum StixDomainOrderering {
+    stix_id,
+    name,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+union StixDomain =  KillChainPhase | ThreatActor | IntrusionSet | Malware | Report
+type StixDomainEdge {
+    cursor: String!
+    node: StixDomain!
+}
+type StixDomainConnection {
+    pageInfo: PageInfo!
+    edges: [StixDomainEdge]
+}
 
 ### Reports
 enum ReportsOrdering {
@@ -658,7 +674,6 @@ type Mutation {
     # ExternalReference
     externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference
     externalReferenceEdit(id: ID!): ExternalReferenceEditMutations
-    externalReferencesAddTo(objectId: String, externalReferencesIds: [String]): StixDomainConnection
     # KillChainPhase
     killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase
     killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations

@@ -3,6 +3,7 @@ import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
+  deleteRelationByID,
   editInputTx,
   loadByID,
   notify,
@@ -49,7 +50,7 @@ export const addGroup = async (user, group) => {
 
 export const groupDelete = groupId => deleteByID(groupId);
 
-export const groupDeleteRelation = relationId => deleteByID(relationId);
+export const groupDeleteRelation = relationId => deleteRelationByID(relationId);
 
 export const groupAddRelation = (groupId, input) =>
   createRelation(groupId, input).then(group =>

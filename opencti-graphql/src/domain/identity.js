@@ -4,6 +4,7 @@ import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
+  deleteRelationByID,
   editInputTx,
   loadByID,
   notify,
@@ -47,7 +48,8 @@ export const addIdentity = async (user, identity) => {
 
 export const identityDelete = identityId => deleteByID(identityId);
 
-export const identityDeleteRelation = relationId => deleteByID(relationId);
+export const identityDeleteRelation = relationId =>
+  deleteRelationByID(relationId);
 
 export const identityAddRelation = (user, identityId, input) =>
   createRelation(identityId, input).then(identity =>

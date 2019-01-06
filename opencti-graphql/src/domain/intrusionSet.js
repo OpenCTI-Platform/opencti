@@ -4,6 +4,7 @@ import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
+  deleteRelationByID,
   editInputTx,
   loadByID,
   notify,
@@ -47,7 +48,8 @@ export const addIntrusionSet = async (user, intrusionSet) => {
 
 export const intrusionSetDelete = intrusionSetId => deleteByID(intrusionSetId);
 
-export const intrusionSetDeleteRelation = relationId => deleteByID(relationId);
+export const intrusionSetDeleteRelation = relationId =>
+  deleteRelationByID(relationId);
 
 export const intrusionSetAddRelation = (intrusionSetId, input) =>
   createRelation(intrusionSetId, input).then(intrusionSet =>

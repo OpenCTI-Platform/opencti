@@ -20,11 +20,37 @@ const styles = theme => ({
       width: 350,
     },
   },
+  searchInputRootStatic: {
+    borderRadius: 5,
+    padding: '0 10px 0 10px',
+    backgroundColor: theme.palette.navAlt.background,
+  },
+  searchInputInputStatic: {
+    width: 250,
+  },
 });
 
 class SearchInput extends Component {
   render() {
-    const { t, classes, handleSearch } = this.props;
+    const {
+      t, classes, handleSearch, variant, placeholder
+    } = this.props;
+    if (variant === 'controlled') {
+      return (
+          <Input
+            name='keyword'
+            placeholder={placeholder}
+            onChange={handleSearch.bind(this)}
+            startAdornment={
+              <InputAdornment position='start'>
+                <Search/>
+              </InputAdornment>
+            }
+            classes={{ root: classes.searchInputRootStatic, input: classes.searchInputInputStatic }}
+            disableUnderline={true}
+          />
+      );
+    }
     return (
       <Input
         name='keyword'
@@ -46,7 +72,8 @@ SearchInput.propTypes = {
   t: PropTypes.func.isRequired,
   classes: PropTypes.object.isRequired,
   handleSearch: PropTypes.func,
-  image: PropTypes.string,
+  variant: PropTypes.string,
+  placeholder: PropTypes.string,
 };
 
 export default compose(

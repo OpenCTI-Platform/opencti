@@ -12,12 +12,12 @@ import conf, {
   OPENCTI_ISSUER,
   OPENCTI_WEB_TOKEN,
   ROLE_USER,
-  ROLE_ADMIN
 } from '../config/conf';
 import {
   multipleAttributes,
   createRelation,
   deleteByID,
+  deleteRelationByID,
   editInputTx,
   loadByID,
   notify,
@@ -69,8 +69,8 @@ export const addUser = async (user, newUser) => {
   const createUser = qk(`insert $user isa User 
     has username "${newUser.username}";
     $user has email "${newUser.email}";
-    ${newUser.firstname ? `$user has firstname "${newUser.firstname}";` : ''}
-    ${newUser.lastname ? `$user has lastname "${newUser.lastname}";` : ''}
+    $user has firstname "${newUser.firstname}";
+    $user has lastname "${newUser.lastname}";
     ${
       newUser.language
         ? `$user has language "${newUser.language}";`
@@ -157,7 +157,7 @@ export const login = (email, password) => {
 
 export const userDelete = userId => deleteByID(userId);
 
-export const userDeleteRelation = relationId => deleteByID(relationId);
+export const userDeleteRelation = relationId => deleteRelationByID(relationId);
 
 export const userAddRelation = (user, userId, input) =>
   createRelation(userId, input).then(userToEdit =>

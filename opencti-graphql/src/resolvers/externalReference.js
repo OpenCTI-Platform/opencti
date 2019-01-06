@@ -1,11 +1,11 @@
 import { BUS_TOPICS } from '../config/conf';
 import {
   addExternalReference,
-  addExternalReferencesTo,
   externalReferenceDelete,
   findAll,
   findAllBySo,
   findById,
+  search,
   externalReferenceEditContext,
   externalReferenceEditField,
   externalReferenceAddRelation,
@@ -18,7 +18,12 @@ import { auth, withCancel } from './wrapper';
 const externalReferenceResolvers = {
   Query: {
     externalReference: auth((_, { id }) => findById(id)),
-    externalReferences: auth((_, args) => findAll(args)),
+    externalReferences: auth((_, args) => {
+      if (args.search && args.search.length > 0) {
+        return search(args);
+      }
+      return findAll(args);
+    }),
     externalReferencesOf: auth((_, args) => findAllBySo(args))
   },
   ExternalReference: {
@@ -38,10 +43,6 @@ const externalReferenceResolvers = {
     })),
     externalReferenceAdd: auth((_, { input }, { user }) =>
       addExternalReference(user, input)
-    ),
-    externalReferencesAddTo: auth(
-      (_, { objectId }, { externalReferencesIds }) =>
-        addExternalReferencesTo(objectId, externalReferencesIds)
     )
   },
   Subscription: {

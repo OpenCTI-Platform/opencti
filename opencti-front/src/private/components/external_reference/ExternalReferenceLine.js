@@ -71,7 +71,7 @@ const inlineStyles = {
 class ExternalReferenceLineComponent extends Component {
   render() {
     const {
-      fd, classes, externalReference, paginationOptions,
+      fd, classes, externalReference,
     } = this.props;
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>

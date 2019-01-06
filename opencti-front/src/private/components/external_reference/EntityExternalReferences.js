@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import { compose } from 'ramda';
-import { QueryRenderer } from 'react-relay';
+import { compose, head, map } from 'ramda';
+import { commitMutation, QueryRenderer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
@@ -11,12 +10,15 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { Description } from '@material-ui/icons';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import IconButton from '@material-ui/core/IconButton';
+import Avatar from '@material-ui/core/Avatar';
+import { LinkOff } from '@material-ui/icons';
+import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
-import ItemMarking from '../../../components/ItemMarking';
 import truncate from '../../../utils/String';
 import environment from '../../../relay/environment';
-import AddExternalReference from './AddExternalReference';
+import AddExternalReferences from './AddExternalReferences';
 
 const styles = theme => ({
   paper: {
@@ -27,34 +29,29 @@ const styles = theme => ({
     color: theme.palette.text.main,
     borderRadius: 6,
   },
-  item: {
-    height: 60,
-    minHeight: 60,
-    maxHeight: 60,
-    transition: 'background-color 0.1s ease',
-    paddingRight: 0,
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+  avatar: {
+    width: 24,
+    height: 24,
+    backgroundColor: theme.palette.primary.main,
   },
-  itemIcon: {
-    marginRight: 0,
-    color: theme.palette.primary.main,
+  avatarDisabled: {
+    width: 24,
+    height: 24,
+  },
+  placeholder: {
+    display: 'inline-block',
+    height: '1em',
+    backgroundColor: theme.palette.text.disabled,
   },
 });
 
-const inlineStyles = {
-  itemDate: {
-    fontSize: 11,
-    width: 80,
-    minWidth: 80,
-    maxWidth: 80,
-    marginRight: 24,
-    textAlign: 'right',
-    color: '#ffffff',
-  },
-};
+export const externalReferenceMutationRelationDelete = graphql`
+    mutation EntityExternalReferencesRelationDeleteMutation($id: ID!, $relationId: ID!) {
+        externalReferenceEdit(id: $id) {
+            relationDelete(relationId: $relationId)
+        }
+    }
+`;
 
 const entityExternalReferencesQuery = graphql`
     query EntityExternalReferencesQuery($objectId: String!, $first: Int) {
@@ -68,62 +65,124 @@ const entityExternalReferencesQuery = graphql`
                     hash
                     external_id
                 }
+                relation {
+                    id
+                }
             }
         }
     }
 `;
 
 class EntityExternalReferences extends Component {
+  removeExternalReference(externalReferenceEdge) {
+    commitMutation(environment, {
+      mutation: externalReferenceMutationRelationDelete,
+      variables: {
+        id: externalReferenceEdge.node.id,
+        relationId: externalReferenceEdge.relation.id,
+      },
+    });
+  }
+
   render() {
     const { t, classes, entityId } = this.props;
+    const paginationOptions = { objectId: entityId, first: 20 };
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true} style={{float: 'left'}}>
-          {t('External references')}
-        </Typography>
-        <AddExternalReference entityId={entityId}/>
-        <div className='clearfix'/>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
-          <QueryRenderer
-            environment={environment}
-            query={entityExternalReferencesQuery}
-            variables={{ objectId: entityId, first: 100 }}
-            render={({ props }) => {
-              if (props && props.externalReferencesOf) {
-                return (
+      <QueryRenderer
+        environment={environment}
+        query={entityExternalReferencesQuery}
+        variables={paginationOptions}
+        render={({ props }) => {
+          if (props && props.externalReferencesOf) {
+            return (
+              <div style={{ height: '100%' }}>
+                <Typography variant='h4' gutterBottom={true} style={{ float: 'left' }}>
+                  {t('External references')}
+                </Typography>
+                <AddExternalReferences entityId={entityId} entityExternalReferences={props.externalReferencesOf.edges} paginationOptions={paginationOptions}/>
+                <div className='clearfix'/>
+                <Paper classes={{ root: classes.paper }} elevation={2}>
                   <List>
-                    {props.externalReferencesOf.edges.map((externalReference) => {
-                      console.log(externalReference);
+                    {props.externalReferencesOf.edges.map((externalReferenceEdge) => {
+                      const externalReference = externalReferenceEdge.node;
+                      if (externalReference.url) {
+                        return (
+                          <ListItem
+                            key={externalReference.id}
+                            dense={true}
+                            divider={true}
+                            button={true}
+                            component='a'
+                            href={externalReference.url}
+                          >
+                            <ListItemIcon >
+                              <Avatar classes={{ root: classes.avatar }}>{externalReference.source_name.substring(0, 1)}</Avatar>
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={`${externalReference.source_name} ${externalReference.external_id}`}
+                              secondary={truncate(externalReference.description !== null && externalReference.description.length > 0 ? externalReference.description : externalReference.url, 120)}
+                            />
+                            <ListItemSecondaryAction>
+                              <IconButton aria-label='Remove' onClick={this.removeExternalReference.bind(this, externalReferenceEdge)}>
+                                <LinkOff/>
+                              </IconButton>
+                            </ListItemSecondaryAction>
+                          </ListItem>
+                        );
+                      }
                       return (
                         <ListItem
+                          key={externalReference.id}
                           dense={true}
-                          classes={{ default: classes.item }}
                           divider={true}
-                          component={Link}
-                          to={'/dashboard/reports/'}
+                          button={false}
                         >
-                          <ListItemIcon classes={{ root: classes.itemIcon }}>
-                            <Description/>
+                          <ListItemIcon>
+                            <Avatar classes={{ root: classes.avatar }}>{externalReference.source_name.substring(0, 1)}</Avatar>
                           </ListItemIcon>
-                          <ListItemText primary={truncate('dsqd sdqsd qsdqs dqsd qsd qsdqs ', 120)}
-                                        secondary={truncate('dfsfds fdsf sdf sdfsdfdsf sdf sdf sdf sdfsd fdsf sdfsdf sdfs fdsdf sdf', 150)}/>
-                          <div style={{ minWidth: 100 }}>
-                            <ItemMarking label='TLP:RED' position='normal'/>
-                          </div>
-                          <div style={inlineStyles.itemDate}>28 mai 2018</div>
+                          <ListItemText
+                            primary={`${externalReference.source_name} ${externalReference.external_id}`}
+                            secondary={truncate(externalReference.description, 120)}
+                          />
                         </ListItem>
                       );
                     })}
                   </List>
-                );
-              }
-              return (
-                <div> &nbsp; </div>
-              );
-            }}
-          />
-        </Paper>
-      </div>
+                </Paper>
+              </div>
+            );
+          }
+          return (
+            <div style={{ height: '100%' }}>
+              <Typography variant='h4' gutterBottom={true} style={{ float: 'left' }}>
+                {t('External references')}
+              </Typography>
+              <AddExternalReferences entityId='' entityExternalReferences={[]}/>
+              <div className='clearfix'/>
+              <Paper classes={{ root: classes.paper }} elevation={2}>
+                <List>
+                  {Array.from(Array(5), (e, i) => (
+                    <ListItem
+                      key={i}
+                      dense={true}
+                      divider={true}
+                      button={false}
+                    >
+                      <ListItemIcon>
+                        <Avatar classes={{ root: classes.avatarDisabled }}>{i}</Avatar>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={<span className={classes.placeholder} style={{ width: '80%' }}/>}
+                        secondary={<span className={classes.placeholder} style={{ width: '90%' }}/>}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+            </div>
+          );
+        }}
+      />
     );
   }
 }

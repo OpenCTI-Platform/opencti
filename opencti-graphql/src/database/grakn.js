@@ -170,6 +170,22 @@ export const deleteByID = id => {
 };
 
 /**
+ * Grakn generic function to delete a relationship
+ * @param id
+ * @returns {Promise<AxiosResponse<any> | never | never>}
+ */
+export const deleteRelationByID = id => {
+  const deleteQuery = qk(`match $x id ${id}; delete $x;`);
+  return deleteQuery.then(result => {
+    if (isEmpty(result.data)) {
+      throw new FunctionalError({ message: "Element doesn't exist" });
+    } else {
+      return id;
+    }
+  });
+};
+
+/**
  * Load the first
  * @param type
  * @returns {Promise<any[] | never>}
@@ -304,7 +320,7 @@ export const paginate = (query, options) => {
     first = 200,
     after,
     orderBy = 'created_at',
-    orderMode = 'asc'
+    orderMode = 'asc',
   } = options;
   const offset = after ? cursorToOffset(after) : 0;
   const instanceKey = /match\s\$(\w+)\s/i.exec(query)[1]; // We need to resolve the key instance used in query.

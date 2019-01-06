@@ -1,15 +1,16 @@
-import { head } from 'ramda';
+import { head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
+  deleteRelationByID,
   editInputTx,
   loadByID,
   notify,
   now,
   paginate,
-  qk
+  qk,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -25,16 +26,27 @@ export const findAllBySo = args =>
 
 export const findById = externalReferenceId => loadByID(externalReferenceId);
 
+export const search = args =>
+  paginate(
+    `match $m isa External-Reference 
+    has source_name $sn
+    has description $desc
+    has url $url;
+    { $sn contains "${args.search}"; } or
+    { $desc contains "${args.search}"; } or
+    { $url contains "${args.search}"; }`,
+    args
+  );
+
 export const addExternalReference = async (user, externalReference) => {
   const createExternalReference = qk(`insert $externalReference isa External-Reference 
-    has type "marking-definition";
-    $externalReference has stix_id "marking-definition--${uuid()}";
-    $externalReference has definition_type "${
-      externalReference.definition_type
-    }";
-    $externalReference has definition "${externalReference.definition}";
-    $externalReference has color "${externalReference.color}";
-    $externalReference has level ${externalReference.level};
+    has type "external-reference";
+    $externalReference has stix_id "external-reference--${uuid()}";
+    $externalReference has source_name "${externalReference.source_name}";
+    $externalReference has description "${externalReference.description}";
+    $externalReference has url "${externalReference.url}";
+    $externalReference has hash "${externalReference.hash}";
+    $externalReference has external_id "${externalReference.external_id}";
     $externalReference has created ${now()};
     $externalReference has modified ${now()};
     $externalReference has revoked false;
@@ -49,15 +61,11 @@ export const addExternalReference = async (user, externalReference) => {
   });
 };
 
-export const addExternalReferencesTo = (objectId, externalReferencesIds) => {
-
-}
-
 export const externalReferenceDelete = externalReferenceId =>
   deleteByID(externalReferenceId);
 
 export const externalReferenceDeleteRelation = relationId =>
-  deleteByID(relationId);
+  deleteRelationByID(relationId);
 
 export const externalReferenceAddRelation = (externalReferenceId, input) =>
   createRelation(externalReferenceId, input).then(externalReference =>

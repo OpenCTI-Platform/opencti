@@ -1,9 +1,10 @@
 import { head } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, pubsub, setEditContext } from '../database/redis';
+import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
+  deleteRelationByID,
   editInputTx,
   loadByID,
   notify,
@@ -47,7 +48,7 @@ export const addThreatActor = async (user, threatActor) => {
 
 export const threatActorDelete = threatActorId => deleteByID(threatActorId);
 
-export const threatActorDeleteRelation = relationId => deleteByID(relationId);
+export const threatActorDeleteRelation = relationId => deleteRelationByID(relationId);
 
 export const threatActorAddRelation = (threatActorId, input) =>
   createRelation(threatActorId, input).then(threatActor =>

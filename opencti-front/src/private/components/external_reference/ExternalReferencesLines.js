@@ -146,8 +146,8 @@ export const externalReferencesLinesQuery = graphql`
 `;
 
 export const externalReferencesLinesSearchQuery = graphql`
-    query ExternalReferencesLinesSearchQuery($search: String) {
-        externalReferences(search: $search) {
+    query ExternalReferencesLinesSearchQuery($search: String, $first: Int) {
+        externalReferences(search: $search, first: $first) {
             edges {
                 node {
                     id
