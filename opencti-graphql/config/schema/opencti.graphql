@@ -6,6 +6,12 @@ type RelationEmbedded {
     id: ID!
 }
 
+type RelationData {
+    from: StixDomain
+    to: StixDomain
+    relation: RelationEmbedded
+}
+
 ### Relay
 type PageInfo {
     startCursor: String!,
@@ -436,7 +442,7 @@ enum StixDomainOrderering {
     created_at,
     updated_at
 }
-union StixDomain =  KillChainPhase | ThreatActor | IntrusionSet | Malware | Report
+union StixDomain =  ExternalReference | KillChainPhase | ThreatActor | IntrusionSet | Malware | Report
 type StixDomainEdge {
     cursor: String!
     node: StixDomain!
@@ -596,7 +602,7 @@ type ExternalReferenceEditMutations {
     delete: ID
     fieldPatch(input: EditInput): ExternalReference
     contextPatch(input: EditContext): ExternalReference
-    relationAdd(input: RelationAddInput): ExternalReference
+    relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): ID
 }
 

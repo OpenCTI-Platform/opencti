@@ -16,8 +16,10 @@ import Autocomplete from '../../../components/Autocomplete';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import environment from '../../../relay/environment';
-import { killChainPhasesLinesSearchQuery } from '../kill_chain_phase/KillChainPhasesLines';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
+import AutocompleteCreate from '../../../components/AutocompleteCreate';
+import { reportCreationIdentitiesSearchQuery } from './ReportCreation';
+import IdentityCreation from '../identity/IdentityCreation';
 
 const styles = theme => ({
   drawerPaper: {
@@ -85,9 +87,8 @@ const reportMutationRelationDelete = graphql`
 const reportValidation = t => Yup.object().shape({
   name: Yup.string()
     .required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(500, t('The value is too long'))
+  published: Yup.date()
+    .typeError(t('This field must be a valid date2'))
     .required(t('This field is required')),
 });
 
@@ -122,16 +123,22 @@ class ReportEditionOverviewComponent extends Component {
     }
   }
 
-  searchKillChainPhases(event) {
-    fetchQuery(environment, killChainPhasesLinesSearchQuery, { search: event.target.value })
-      .then((data) => {
-        const killChainPhases = pipe(
-          pathOr([], ['killChainPhases', 'edges']),
-          sortWith([ascend(path(['node', 'phase_order']))]),
-          map(n => ({ label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`, value: n.node.id })),
-        )(data);
-        this.setState({ killChainPhases });
-      });
+  searchIdentities(event) {
+    fetchQuery(environment, reportCreationIdentitiesSearchQuery, { search: event.target.value }).then((data) => {
+      const identities = pipe(
+        pathOr([], ['identities', 'edges']),
+        map(n => ({ label: n.node.name, value: n.node.id })),
+      )(data);
+      this.setState({ identities });
+    });
+  }
+
+  handleOpenIdentityCreation(inputValue) {
+    this.setState({ identityCreation: true, identityInput: inputValue });
+  }
+
+  handleCloseIdentityCreation() {
+    this.setState({ identityCreation: false });
   }
 
   searchMarkingDefinitions(event) {
@@ -162,39 +169,6 @@ class ReportEditionOverviewComponent extends Component {
         },
       },
     });
-  }
-
-  handleChangeKillChainPhases(name, values) {
-    const { report } = this.props;
-    const currentKillChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map(n => ({ label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`, value: n.node.id, relationId: n.relation.id })),
-    )(report);
-
-    const added = difference(values, currentKillChainPhases);
-    const removed = difference(currentKillChainPhases, values);
-
-    if (added.length > 0) {
-      commitMutation(environment, {
-        mutation: reportMutationRelationAdd,
-        variables: {
-          id: this.props.report.id,
-          input: {
-            fromRole: 'phase_belonging', toId: head(added).value, toRole: 'kill_chain_phase', through: 'kill_chain_phases',
-          },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation(environment, {
-        mutation: reportMutationRelationDelete,
-        variables: {
-          id: this.props.report.id,
-          relationId: head(removed).relationId,
-        },
-      });
-    }
   }
 
   handleChangeMarkingDefinition(name, values) {
@@ -253,40 +227,57 @@ class ReportEditionOverviewComponent extends Component {
           enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={reportValidation(t)}
-          render={() => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field name='name' component={TextField} label={t('Name')} fullWidth={true}
-                     onFocus={this.handleChangeFocus.bind(this)}
-                     onChange={this.handleChangeField.bind(this)}
-                     helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='name'/>}/>
-              <Field name='description' component={TextField} label={t('Description')}
-                     fullWidth={true} multiline={true} rows='4' style={{ marginTop: 10 }}
-                     onFocus={this.handleChangeFocus.bind(this)}
-                     onChange={this.handleChangeField.bind(this)}
-                     helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='description'/>}/>
-              <Field
-                name='killChainPhases'
-                component={Autocomplete}
-                multiple={true}
-                label={t('Kill chain phases')}
-                options={this.state.killChainPhases}
-                onInputChange={this.searchKillChainPhases.bind(this)}
-                onChange={this.handleChangeKillChainPhases.bind(this)}
-                onFocus={this.handleChangeFocus.bind(this)}
-                helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='killChainPhases'/>}
+          render={({ setFieldValue }) => (
+            <div>
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field name='name' component={TextField} label={t('Name')} fullWidth={true}
+                       onFocus={this.handleChangeFocus.bind(this)}
+                       onChange={this.handleChangeField.bind(this)}
+                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='name'/>}/>
+                <Field name='published' component={TextField} label={t('Publication date')}
+                       fullWidth={true} style={{ marginTop: 10 }}
+                       onFocus={this.handleChangeFocus.bind(this)}
+                       onChange={this.handleChangeField.bind(this)}
+                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='published'/>}/>
+                <Field name='description' component={TextField} label={t('Description')}
+                       fullWidth={true} multiline={true} rows='4' style={{ marginTop: 10 }}
+                       onFocus={this.handleChangeFocus.bind(this)}
+                       onChange={this.handleChangeField.bind(this)}
+                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='description'/>}/>
+                <Field
+                  name='createdByRef'
+                  component={AutocompleteCreate}
+                  multiple={false}
+                  handleCreate={this.handleOpenIdentityCreation.bind(this)}
+                  label={t('Author')}
+                  options={this.state.identities}
+                  onInputChange={this.searchIdentities.bind(this)}
+                  onChange={this.handleChangeCreatedByRef.bind(this)}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='killChainPhases'/>}
+                />
+                <Field
+                  name='markingDefinitions'
+                  component={Autocomplete}
+                  multiple={true}
+                  label={t('Marking')}
+                  options={this.state.markingDefinitions}
+                  onInputChange={this.searchMarkingDefinitions.bind(this)}
+                  onChange={this.handleChangeMarkingDefinition.bind(this)}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='markingDefinitions'/>}
+                />
+              </Form>
+              <IdentityCreation
+                contextual={true}
+                inputValue={this.state.identityInput}
+                open={this.state.identityCreation}
+                handleClose={this.handleCloseIdentityCreation.bind(this)}
+                creationCallback={(data) => {
+                  setFieldValue('createdByRef', { label: data.identityAdd.name, value: data.identityAdd.id });
+                }}
               />
-              <Field
-                name='markingDefinitions'
-                component={Autocomplete}
-                multiple={true}
-                label={t('Marking')}
-                options={this.state.markingDefinitions}
-                onInputChange={this.searchMarkingDefinitions.bind(this)}
-                onChange={this.handleChangeMarkingDefinition.bind(this)}
-                onFocus={this.handleChangeFocus.bind(this)}
-                helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='markingDefinitions'/>}
-              />
-            </Form>
+            </div>
           )}
         />
       </div>

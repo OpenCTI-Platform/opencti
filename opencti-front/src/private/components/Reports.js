@@ -72,7 +72,7 @@ const inlineStyles = {
 class Reports extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'name', orderAsc: true };
+    this.state = { sortBy: 'published', orderAsc: false };
   }
 
   handleChangeView(mode) {

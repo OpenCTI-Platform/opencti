@@ -21,7 +21,7 @@ import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import environment from '../../../relay/environment';
 import { externalReferencesLinesSearchQuery } from './ExternalReferencesLines';
-import { externalReferenceMutationRelationDelete } from './EntityExternalReferences';
+import { externalReferenceMutationRelationDelete } from './EntityExternalReferencesLines';
 
 const styles = theme => ({
   drawerPaper: {
@@ -75,13 +75,33 @@ const externalReferenceMutationRelationAdd = graphql`
     mutation AddExternalReferencesRelationAddMutation($id: ID!, $input: RelationAddInput!) {
         externalReferenceEdit(id: $id) {
             relationAdd(input: $input) {
-                id
-                source_name
-                description
+                from {
+                    ... on ExternalReference {
+                        id
+                        source_name
+                        description
+                        url
+                        hash
+                        external_id
+                    }
+                }
+                relation {
+                    id
+                }
             }
         }
     }
 `;
+
+const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
+  const userProxy = store.get(userId);
+  const conn = ConnectionHandler.getConnection(
+    userProxy,
+    'Pagination_externalReferencesOf',
+    paginationOptions,
+  );
+  ConnectionHandler.insertEdgeBefore(conn, newEdge);
+};
 
 class AddExternalReferences extends Component {
   constructor(props) {
@@ -116,37 +136,33 @@ class AddExternalReferences extends Component {
         },
         updater: (store) => {
           const container = store.getRoot();
-          const test = store.get('client:root:externalReferencesOf(first:20,objectId:"V8432")');
-          const payload = store.getRootField('externalReferenceEdit');
           const userProxy = store.get(container.getDataID());
-          /* const conn = ConnectionHandler.getConnection(
+          const conn = ConnectionHandler.getConnection(
             userProxy,
-            'List_externalReferencesOf',
-            paginationOptions,
+            'Pagination_externalReferencesOf',
+            this.props.paginationOptions,
           );
-          ConnectionHandler.deleteNode(conn, payload.getValue('delete')); */
-          console.log(payload);
-          ConnectionHandler.deleteNode(test, payload.getValue('relationDelete', { relationId: externalReference.id }));
+          ConnectionHandler.deleteNode(conn, externalReference.id);
         },
       });
     } else {
+      const input = {
+        fromRole: 'external_reference', toId: entityId, toRole: 'so', through: 'external_references',
+      };
       commitMutation(environment, {
         mutation: externalReferenceMutationRelationAdd,
         variables: {
           id: externalReference.id,
-          input: {
-            fromRole: 'external_reference', toId: entityId, toRole: 'so', through: 'external_references',
-          },
+          input,
         },
         updater: (store) => {
-          // TODO
+          const payload = store.getRootField('externalReferenceEdit').getLinkedRecord('relationAdd', { input }).getLinkedRecord('from');
+          const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
+          const container = store.getRoot();
+          sharedUpdater(store, container.getDataID(), paginationOptions, newEdge);
         },
       });
     }
-  }
-
-  removeExternalReference(externalReference) {
-    this.setState({ externalReferences: filter(t => t !== externalReference, this.state.externalReferences) });
   }
 
   render() {

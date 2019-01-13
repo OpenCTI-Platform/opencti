@@ -257,7 +257,9 @@ class ReportCreation extends Component {
                     inputValue={this.state.identityInput}
                     open={this.state.identityCreation}
                     handleClose={this.handleCloseIdentityCreation.bind(this)}
-                    creationCallback={(data) => { setFieldValue('createdByRef', {label: data.identityAdd.name, value: data.identityAdd.id}); }}
+                    creationCallback={(data) => {
+                      setFieldValue('createdByRef', { label: data.identityAdd.name, value: data.identityAdd.id });
+                    }}
                   />
                 </div>
               )}

@@ -7,6 +7,7 @@ import path from 'path';
 import settingsResolvers from '../resolvers/settings';
 import userResolvers from '../resolvers/user';
 import groupResolvers from '../resolvers/group';
+import stixDomainDefinitionResolvers from '../resolvers/stixDomain';
 import markingDefinitionResolvers from '../resolvers/markingDefinition';
 import externalReferenceResolvers from '../resolvers/externalReference';
 import killChainPhaseResolvers from '../resolvers/killChainPhase';
@@ -28,6 +29,7 @@ const resolvers = mergeResolvers([
   settingsResolvers,
   userResolvers,
   groupResolvers,
+  stixDomainDefinitionResolvers,
   markingDefinitionResolvers,
   externalReferenceResolvers,
   killChainPhaseResolvers,

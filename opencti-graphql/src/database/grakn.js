@@ -48,7 +48,7 @@ export const takeTx = async () => {
   const session = await client.session('grakn');
   const wTx = await session.transaction(Grakn.txType.WRITE);
   return wTx;
-}
+};
 
 export const notify = (topic, instance, user, context) => {
   pubsub.publish(topic, { instance, user, context });
@@ -113,7 +113,7 @@ export const qk = queryDef => {
     data: queryDef
   }).catch(error => {
     logger.error(`Grakn query error: ${queryDef}`, error.response);
-    //throw new FunctionalError({ message: error.response.data.exception });
+    // throw new FunctionalError({ message: error.response.data.exception });
   });
 };
 
@@ -272,9 +272,13 @@ export const editInputTx = async (id, input) => {
 export const createRelation = (id, input) => {
   const createRel = qk(`match $from id ${id}; 
          $to id ${input.toId}; 
-         insert (${input.fromRole}: $from, ${input.toRole}: $to) 
+         insert $rel(${input.fromRole}: $from, ${input.toRole}: $to) 
          isa ${input.through};`);
-  return createRel.then(() => loadByID(id));
+  return createRel.then(result => ({
+    from: loadByID(id),
+    to: loadByID(input.toId),
+    relation: loadByID(head(result.data).rel.id)
+  }));
 };
 
 /**
@@ -320,7 +324,7 @@ export const paginate = (query, options) => {
     first = 200,
     after,
     orderBy = 'created_at',
-    orderMode = 'asc',
+    orderMode = 'asc'
   } = options;
   const offset = after ? cursorToOffset(after) : 0;
   const instanceKey = /match\s\$(\w+)\s/i.exec(query)[1]; // We need to resolve the key instance used in query.

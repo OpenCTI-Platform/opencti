@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose, head, map } from 'ramda';
-import { commitMutation, QueryRenderer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { compose } from 'ramda';
+import { QueryRenderer } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -10,14 +9,10 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import IconButton from '@material-ui/core/IconButton';
 import Avatar from '@material-ui/core/Avatar';
-import { LinkOff } from '@material-ui/icons';
-import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
-import truncate from '../../../utils/String';
 import environment from '../../../relay/environment';
+import EntityExternalReferencesLines, { entityExternalReferencesLinesQuery } from './EntityExternalReferencesLines';
 import AddExternalReferences from './AddExternalReferences';
 
 const styles = theme => ({
@@ -45,111 +40,24 @@ const styles = theme => ({
   },
 });
 
-export const externalReferenceMutationRelationDelete = graphql`
-    mutation EntityExternalReferencesRelationDeleteMutation($id: ID!, $relationId: ID!) {
-        externalReferenceEdit(id: $id) {
-            relationDelete(relationId: $relationId)
-        }
-    }
-`;
-
-const entityExternalReferencesQuery = graphql`
-    query EntityExternalReferencesQuery($objectId: String!, $first: Int) {
-        externalReferencesOf(objectId: $objectId, first: $first) {
-            edges {
-                node {
-                    id
-                    source_name
-                    description
-                    url
-                    hash
-                    external_id
-                }
-                relation {
-                    id
-                }
-            }
-        }
-    }
-`;
-
 class EntityExternalReferences extends Component {
-  removeExternalReference(externalReferenceEdge) {
-    commitMutation(environment, {
-      mutation: externalReferenceMutationRelationDelete,
-      variables: {
-        id: externalReferenceEdge.node.id,
-        relationId: externalReferenceEdge.relation.id,
-      },
-    });
-  }
-
   render() {
     const { t, classes, entityId } = this.props;
-    const paginationOptions = { objectId: entityId, first: 20 };
+    const paginationOptions = { objectId: entityId, orderBy: 'created_at', orderMode: 'desc'};
     return (
       <QueryRenderer
         environment={environment}
-        query={entityExternalReferencesQuery}
-        variables={paginationOptions}
+        query={entityExternalReferencesLinesQuery}
+        variables={{
+          objectId: entityId,
+          count: 5,
+          orderBy: 'created_at',
+          orderMode: 'desc',
+        }}
         render={({ props }) => {
-          if (props && props.externalReferencesOf) {
+          if (props) {
             return (
-              <div style={{ height: '100%' }}>
-                <Typography variant='h4' gutterBottom={true} style={{ float: 'left' }}>
-                  {t('External references')}
-                </Typography>
-                <AddExternalReferences entityId={entityId} entityExternalReferences={props.externalReferencesOf.edges} paginationOptions={paginationOptions}/>
-                <div className='clearfix'/>
-                <Paper classes={{ root: classes.paper }} elevation={2}>
-                  <List>
-                    {props.externalReferencesOf.edges.map((externalReferenceEdge) => {
-                      const externalReference = externalReferenceEdge.node;
-                      if (externalReference.url) {
-                        return (
-                          <ListItem
-                            key={externalReference.id}
-                            dense={true}
-                            divider={true}
-                            button={true}
-                            component='a'
-                            href={externalReference.url}
-                          >
-                            <ListItemIcon >
-                              <Avatar classes={{ root: classes.avatar }}>{externalReference.source_name.substring(0, 1)}</Avatar>
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={`${externalReference.source_name} ${externalReference.external_id}`}
-                              secondary={truncate(externalReference.description !== null && externalReference.description.length > 0 ? externalReference.description : externalReference.url, 120)}
-                            />
-                            <ListItemSecondaryAction>
-                              <IconButton aria-label='Remove' onClick={this.removeExternalReference.bind(this, externalReferenceEdge)}>
-                                <LinkOff/>
-                              </IconButton>
-                            </ListItemSecondaryAction>
-                          </ListItem>
-                        );
-                      }
-                      return (
-                        <ListItem
-                          key={externalReference.id}
-                          dense={true}
-                          divider={true}
-                          button={false}
-                        >
-                          <ListItemIcon>
-                            <Avatar classes={{ root: classes.avatar }}>{externalReference.source_name.substring(0, 1)}</Avatar>
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={`${externalReference.source_name} ${externalReference.external_id}`}
-                            secondary={truncate(externalReference.description, 120)}
-                          />
-                        </ListItem>
-                      );
-                    })}
-                  </List>
-                </Paper>
-              </div>
+              <EntityExternalReferencesLines entityId={entityId} data={props} paginationOptions={paginationOptions}/>
             );
           }
           return (
