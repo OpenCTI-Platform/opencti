@@ -1,3 +1,4 @@
+import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addIntrusionSet,
@@ -27,9 +28,9 @@ const intrusionSetResolvers = {
   Mutation: {
     intrusionSetEdit: auth((_, { id }, { user }) => ({
       delete: () => intrusionSetDelete(id),
-      fieldPatch: ({ input }) => intrusionSetEditField(id, input),
+      fieldPatch: ({ input }) => intrusionSetEditField(user, id, input),
       contextPatch: ({ input }) => intrusionSetEditContext(user, id, input),
-      relationAdd: ({ input }) => intrusionSetAddRelation(id, input),
+      relationAdd: ({ input }) => intrusionSetAddRelation(user, id, input),
       relationDelete: ({ relationId }) => intrusionSetDeleteRelation(relationId)
     })),
     intrusionSetAdd: auth((_, { input }, { user }) =>
@@ -41,12 +42,16 @@ const intrusionSetResolvers = {
       resolve: payload => payload.instance,
       subscribe: auth((_, { id }, { user }) => {
         intrusionSetEditContext(user, id);
-        return withCancel(
-          pubsub.asyncIterator(BUS_TOPICS.IntrusionSet.EDIT_TOPIC),
-          () => {
-            intrusionSetCleanContext(user, id);
+        const filtering = withFilter(
+          () => pubsub.asyncIterator(BUS_TOPICS.IntrusionSet.EDIT_TOPIC),
+          payload => {
+            if (!payload) return false; // When disconnect, an empty payload is dispatched.
+            return payload.user.id !== user.id;
           }
-        );
+        )(_, { id }, { user });
+        return withCancel(filtering, () => {
+          intrusionSetCleanContext(user, id);
+        });
       })
     }
   }

@@ -10,7 +10,7 @@ import {
   notify,
   now,
   paginate,
-  qk,
+  qk
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -55,7 +55,7 @@ export const addExternalReference = async (user, externalReference) => {
   `);
   return createExternalReference.then(result => {
     const { data } = result;
-    return findById(head(data).externalReference.id).then(created =>
+    return loadByID(head(data).externalReference.id).then(created =>
       notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created)
     );
   });
@@ -64,18 +64,32 @@ export const addExternalReference = async (user, externalReference) => {
 export const externalReferenceDelete = externalReferenceId =>
   deleteByID(externalReferenceId);
 
-export const externalReferenceDeleteRelation = relationId =>
-  deleteRelationByID(relationId);
+export const externalReferenceDeleteRelation = (
+  user,
+  externalReferenceId,
+  relationId
+) =>
+  deleteRelationByID(relationId).then(() => {
+    loadByID(externalReferenceId).then(externalReferenceData => {
+      notify(BUS_TOPICS.Group.EDIT_TOPIC, externalReferenceData, user);
+    });
+    return relationId;
+  });
 
-export const externalReferenceAddRelation = (externalReferenceId, input) =>
-  createRelation(externalReferenceId, input).then(externalReference =>
-    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference)
-  );
+export const externalReferenceAddRelation = (
+  user,
+  externalReferenceId,
+  input
+) =>
+  createRelation(externalReferenceId, input).then(relationData => {
+    notify(BUS_TOPICS.Group.EDIT_TOPIC, relationData.from, user);
+    return relationData;
+  });
 
 export const externalReferenceCleanContext = (user, externalReferenceId) => {
   delEditContext(user, externalReferenceId);
-  return findById(externalReferenceId).then(externalReference =>
-    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference)
+  return loadByID(externalReferenceId).then(externalReference =>
+    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
   );
 };
 
@@ -85,12 +99,12 @@ export const externalReferenceEditContext = (
   input
 ) => {
   setEditContext(user, externalReferenceId, input);
-  findById(externalReferenceId).then(externalReference =>
-    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference)
+  loadByID(externalReferenceId).then(externalReference =>
+    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
   );
 };
 
-export const externalReferenceEditField = (externalReferenceId, input) =>
+export const externalReferenceEditField = (user, externalReferenceId, input) =>
   editInputTx(externalReferenceId, input).then(externalReference =>
-    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference)
+    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
   );

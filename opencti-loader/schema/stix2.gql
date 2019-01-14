@@ -260,6 +260,7 @@ define
 
   # OpenCTI entities
   "Settings" sub entity
+    has "type"
     has "platform_title"
     has "platform_email"
     has "platform_url"
@@ -270,6 +271,7 @@ define
     has "updated_at";
 
   "User" sub entity
+    has "type"
     has "username"
     has "password"
     has "email"
@@ -284,6 +286,7 @@ define
     plays "member";
 
   "Group" sub entity
+    has "type"
     has "name"
     has "description"
     has "created_at"
@@ -293,6 +296,7 @@ define
 
   "Token" sub entity
     has "uuid"
+    has "type"
     has "name"
     has "revoked"
     has "created"

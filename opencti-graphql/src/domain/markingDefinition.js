@@ -36,7 +36,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   `);
   return createMarkingDefinition.then(result => {
     const { data } = result;
-    return findById(head(data).markingDefinition.id).then(created =>
+    return loadByID(head(data).markingDefinition.id).then(created =>
       notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created)
     );
   });
@@ -48,15 +48,19 @@ export const markingDefinitionDelete = markingDefinitionId =>
 export const markingDefinitionDeleteRelation = relationId =>
   deleteRelationByID(relationId);
 
-export const markingDefinitionAddRelation = (markingDefinitionId, input) =>
-  createRelation(markingDefinitionId, input).then(markingDefinition =>
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition)
+export const markingDefinitionAddRelation = (
+  user,
+  markingDefinitionId,
+  input
+) =>
+  createRelation(markingDefinitionId, input).then(relation =>
+    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, relation, user)
   );
 
 export const markingDefinitionCleanContext = (user, markingDefinitionId) => {
   delEditContext(user, markingDefinitionId);
-  return findById(markingDefinitionId).then(markingDefinition =>
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition)
+  return loadByID(markingDefinitionId).then(markingDefinition =>
+    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );
 };
 
@@ -66,12 +70,12 @@ export const markingDefinitionEditContext = (
   input
 ) => {
   setEditContext(user, markingDefinitionId, input);
-  findById(markingDefinitionId).then(markingDefinition =>
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition)
+  loadByID(markingDefinitionId).then(markingDefinition =>
+    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );
 };
 
-export const markingDefinitionEditField = (markingDefinitionId, input) =>
+export const markingDefinitionEditField = (user, markingDefinitionId, input) =>
   editInputTx(markingDefinitionId, input).then(markingDefinition =>
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition)
+    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );

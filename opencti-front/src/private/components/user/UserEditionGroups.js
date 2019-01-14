@@ -32,7 +32,9 @@ const userMutationRelationAdd = graphql`
     mutation UserEditionGroupsRelationAddMutation($id: ID!, $input: RelationAddInput!) {
         userEdit(id: $id) {
             relationAdd(input: $input) {
-                ...UserEditionGroups_user
+                from {
+                    ...UserEditionGroups_user
+                }
             }
         }
     }
@@ -84,7 +86,7 @@ class UserEditionGroupsComponent extends Component {
         <QueryRenderer
           environment={environment}
           query={groupsLinesSearchQuery}
-          variables={{ search: 'A' }}
+          variables={{ search: '' }}
           render={({ error, props }) => {
             if (error) { // Errors
               return <List> &nbsp; </List>;

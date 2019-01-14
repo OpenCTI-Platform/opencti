@@ -41,7 +41,7 @@ export const addKillChainPhase = async (user, killChainPhase) => {
   `);
   return createKillChainPhase.then(result => {
     const { data } = result;
-    return findById(head(data).killChainPhase.id).then(created =>
+    return loadByID(head(data).killChainPhase.id).then(created =>
       notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created)
     );
   });
@@ -53,26 +53,26 @@ export const killChainPhaseDelete = killChainPhaseId =>
 export const killChainPhaseDeleteRelation = relationId =>
   deleteRelationByID(relationId);
 
-export const killChainPhaseAddRelation = (killChainPhaseId, input) =>
-  createRelation(killChainPhaseId, input).then(killChainPhase =>
-    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase)
+export const killChainPhaseAddRelation = (user, killChainPhaseId, input) =>
+  createRelation(killChainPhaseId, input).then(relation =>
+    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relation, user)
   );
 
 export const killChainPhaseCleanContext = (user, killChainPhaseId) => {
   delEditContext(user, killChainPhaseId);
-  return findById(killChainPhaseId).then(killChainPhase =>
-    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase)
+  return loadByID(killChainPhaseId).then(killChainPhase =>
+    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );
 };
 
 export const killChainPhaseEditContext = (user, killChainPhaseId, input) => {
   setEditContext(user, killChainPhaseId, input);
-  findById(killChainPhaseId).then(killChainPhase =>
-    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase)
+  loadByID(killChainPhaseId).then(killChainPhase =>
+    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );
 };
 
-export const killChainPhaseEditField = (killChainPhaseId, input) =>
+export const killChainPhaseEditField = (user, killChainPhaseId, input) =>
   editInputTx(killChainPhaseId, input).then(killChainPhase =>
-    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase)
+    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );

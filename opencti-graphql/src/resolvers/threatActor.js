@@ -1,3 +1,4 @@
+import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addThreatActor,
@@ -27,9 +28,9 @@ const threatActorResolvers = {
   Mutation: {
     threatActorEdit: auth((_, { id }, { user }) => ({
       delete: () => threatActorDelete(id),
-      fieldPatch: ({ input }) => threatActorEditField(id, input),
+      fieldPatch: ({ input }) => threatActorEditField(user, id, input),
       contextPatch: ({ input }) => threatActorEditContext(user, id, input),
-      relationAdd: ({ input }) => threatActorAddRelation(id, input),
+      relationAdd: ({ input }) => threatActorAddRelation(user, id, input),
       relationDelete: ({ relationId }) => threatActorDeleteRelation(relationId)
     })),
     threatActorAdd: auth((_, { input }, { user }) =>
@@ -41,12 +42,16 @@ const threatActorResolvers = {
       resolve: payload => payload.instance,
       subscribe: auth((_, { id }, { user }) => {
         threatActorEditContext(user, id);
-        return withCancel(
-          pubsub.asyncIterator(BUS_TOPICS.ThreatActor.EDIT_TOPIC),
-          () => {
-            threatActorCleanContext(user, id);
+        const filtering = withFilter(
+          () => pubsub.asyncIterator(BUS_TOPICS.ThreatActor.EDIT_TOPIC),
+          payload => {
+            if (!payload) return false; // When disconnect, an empty payload is dispatched.
+            return payload.user.id !== user.id;
           }
-        );
+        )(_, { id }, { user });
+        return withCancel(filtering, () => {
+          threatActorCleanContext(user, id);
+        });
       })
     }
   }

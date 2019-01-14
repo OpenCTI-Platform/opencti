@@ -1,3 +1,4 @@
+import { withFilter } from 'graphql-subscriptions';
 import { sign } from 'jsonwebtoken';
 import conf, { BUS_TOPICS } from '../config/conf';
 import {
@@ -19,8 +20,8 @@ import { admin, auth, anonymous, withCancel } from './wrapper';
 
 const userResolvers = {
   Query: {
-    user: auth((_, { id }) => findById(id)),
-    users: auth((_, args) => findAll(args)),
+    user: admin((_, { id }) => findById(id)),
+    users: admin((_, args) => findAll(args)),
     me: auth((_, args, { user }) => findById(user.id))
   },
   User: {
@@ -34,26 +35,30 @@ const userResolvers = {
         return sign(token, conf.get('jwt:secret'));
       })
     ),
-    userEdit: auth((_, { id }, { user }) => ({
+    userEdit: admin((_, { id }, { user }) => ({
       delete: () => userDelete(id),
       fieldPatch: ({ input }) => userEditField(user, id, input),
       contextPatch: ({ input }) => userEditContext(user, id, input),
       relationAdd: ({ input }) => userAddRelation(user, id, input),
       relationDelete: ({ relationId }) => userDeleteRelation(relationId)
     })),
-    userAdd: auth((_, { input }, { user }) => addUser(user, input))
+    userAdd: admin((_, { input }, { user }) => addUser(user, input))
   },
   Subscription: {
     user: {
       resolve: payload => payload.instance,
       subscribe: admin((_, { id }, { user }) => {
         userEditContext(user, id);
-        return withCancel(
-          pubsub.asyncIterator(BUS_TOPICS.User.EDIT_TOPIC),
-          () => {
-            userCleanContext(user, id);
+        const filtering = withFilter(
+          () => pubsub.asyncIterator(BUS_TOPICS.User.EDIT_TOPIC),
+          payload => {
+            if (!payload) return false; // When disconnect, an empty payload is dispatched.
+            return payload.user.id !== user.id;
           }
-        );
+        )(_, { id }, { user });
+        return withCancel(filtering, () => {
+          userCleanContext(user, id);
+        });
       })
     }
   }

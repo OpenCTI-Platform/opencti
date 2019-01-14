@@ -1,3 +1,4 @@
+import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addKillChainPhase,
@@ -27,9 +28,9 @@ const killChainPhaseResolvers = {
   Mutation: {
     killChainPhaseEdit: admin((_, { id }, { user }) => ({
       delete: () => killChainPhaseDelete(id),
-      fieldPatch: ({ input }) => killChainPhaseEditField(id, input),
+      fieldPatch: ({ input }) => killChainPhaseEditField(user, id, input),
       contextPatch: ({ input }) => killChainPhaseEditContext(user, id, input),
-      relationAdd: ({ input }) => killChainPhaseAddRelation(id, input),
+      relationAdd: ({ input }) => killChainPhaseAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         killChainPhaseDeleteRelation(relationId)
     })),
@@ -42,12 +43,16 @@ const killChainPhaseResolvers = {
       resolve: payload => payload.instance,
       subscribe: admin((_, { id }, { user }) => {
         killChainPhaseEditContext(user, id);
-        return withCancel(
-          pubsub.asyncIterator(BUS_TOPICS.KillChainPhase.EDIT_TOPIC),
-          () => {
-            killChainPhaseCleanContext(user, id);
+        const filtering = withFilter(
+          () => pubsub.asyncIterator(BUS_TOPICS.KillChainPhase.EDIT_TOPIC),
+          payload => {
+            if (!payload) return false; // When disconnect, an empty payload is dispatched.
+            return payload.user.id !== user.id;
           }
-        );
+        )(_, { id }, { user });
+        return withCancel(filtering, () => {
+          killChainPhaseCleanContext(user, id);
+        });
       })
     }
   }

@@ -32,15 +32,17 @@ const groupMutationRelationAdd = graphql`
     mutation GroupEditionPermissionsMarkingDefinitionsRelationAddMutation($id: ID!, $input: RelationAddInput!) {
         groupEdit(id: $id) {
             relationAdd(input: $input) {
-                ...GroupEditionPermissions_group
+                from {
+                    ...GroupEditionPermissions_group
+                }
             }
         }
     }
 `;
 
-const userMutationRelationDelete = graphql`
+const groupMutationRelationDelete = graphql`
     mutation GroupEditionPermissionsMarkingDefinitionsRelationDeleteMutation($id: ID!, $relationId: ID!) {
-        userEdit(id: $id) {
+        groupEdit(id: $id) {
             relationDelete(relationId: $relationId)
         }
     }
@@ -63,7 +65,7 @@ class GroupEditionPermissionsComponent extends Component {
       });
     } else if (groupMarkingDefinition !== undefined) {
       commitMutation(environment, {
-        mutation: userMutationRelationDelete,
+        mutation: groupMutationRelationDelete,
         variables: {
           id: this.props.group.id,
           relationId: groupMarkingDefinition.relation,
@@ -84,7 +86,7 @@ class GroupEditionPermissionsComponent extends Component {
         <QueryRenderer
           environment={environment}
           query={markingDefinitionsLinesSearchQuery}
-          variables={{ search: 'A' }}
+          variables={{ search: '' }}
           render={({ error, props }) => {
             if (error) { // Errors
               return <List> &nbsp; </List>;

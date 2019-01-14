@@ -1,7 +1,7 @@
 import { createError } from 'apollo-errors';
 
 export const LoginError = createError('LoginError', {
-  message: 'Login failed'
+  message: 'Wrong username or password'
 });
 
 export const UnknownError = createError('UnknownError', {

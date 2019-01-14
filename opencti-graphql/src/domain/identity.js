@@ -52,8 +52,8 @@ export const identityDeleteRelation = relationId =>
   deleteRelationByID(relationId);
 
 export const identityAddRelation = (user, identityId, input) =>
-  createRelation(identityId, input).then(identity =>
-    notify(BUS_TOPICS.Identity.EDIT_TOPIC, identity, user)
+  createRelation(identityId, input).then(relation =>
+    notify(BUS_TOPICS.Identity.EDIT_TOPIC, relation, user)
   );
 
 export const identityCleanContext = (user, identityId) => {

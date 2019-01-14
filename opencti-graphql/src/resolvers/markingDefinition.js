@@ -1,3 +1,4 @@
+import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addMarkingDefinition,
@@ -26,10 +27,10 @@ const markingDefinitionResolvers = {
   Mutation: {
     markingDefinitionEdit: admin((_, { id }, { user }) => ({
       delete: () => markingDefinitionDelete(id),
-      fieldPatch: ({ input }) => markingDefinitionEditField(id, input),
+      fieldPatch: ({ input }) => markingDefinitionEditField(user, id, input),
       contextPatch: ({ input }) =>
         markingDefinitionEditContext(user, id, input),
-      relationAdd: ({ input }) => markingDefinitionAddRelation(id, input),
+      relationAdd: ({ input }) => markingDefinitionAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         markingDefinitionDeleteRelation(relationId)
     })),
@@ -42,12 +43,16 @@ const markingDefinitionResolvers = {
       resolve: payload => payload.instance,
       subscribe: admin((_, { id }, { user }) => {
         markingDefinitionEditContext(user, id);
-        return withCancel(
-          pubsub.asyncIterator(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC),
-          () => {
-            markingDefinitionCleanContext(user, id);
+        const filtering = withFilter(
+          () => pubsub.asyncIterator(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC),
+          payload => {
+            if (!payload) return false; // When disconnect, an empty payload is dispatched.
+            return payload.user.id !== user.id;
           }
-        );
+        )(_, { id }, { user });
+        return withCancel(filtering, () => {
+          markingDefinitionCleanContext(user, id);
+        });
       })
     }
   }

@@ -14,8 +14,9 @@ import { delEditContext, setEditContext } from '../database/redis';
 export const getSettings = () => loadFirst('Settings').then(result => result);
 
 export const addSettings = async (user, settings) => {
-  const createSettings = qk(`insert $settings isa Settings 
-    has platform_title "${settings.platform_title}";
+  const createSettings = qk(`insert $settings isa Settings
+    has type "settings";  
+    $settings has platform_title "${settings.platform_title}";
     $settings has platform_email "${settings.platform_email}";
     $settings has platform_url "${settings.platform_url}";
     $settings has platform_language "${settings.platform_language}";

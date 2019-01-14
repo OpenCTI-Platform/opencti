@@ -40,7 +40,7 @@ export const addThreatActor = async (user, threatActor) => {
   `);
   return createThreatActor.then(result => {
     const { data } = result;
-    return findById(head(data).threatActor.id).then(created =>
+    return loadByID(head(data).threatActor.id).then(created =>
       notify(BUS_TOPICS.ThreatActor.ADDED_TOPIC, created)
     );
   });
@@ -48,28 +48,29 @@ export const addThreatActor = async (user, threatActor) => {
 
 export const threatActorDelete = threatActorId => deleteByID(threatActorId);
 
-export const threatActorDeleteRelation = relationId => deleteRelationByID(relationId);
+export const threatActorDeleteRelation = relationId =>
+  deleteRelationByID(relationId);
 
-export const threatActorAddRelation = (threatActorId, input) =>
-  createRelation(threatActorId, input).then(threatActor =>
-    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, threatActor)
+export const threatActorAddRelation = (user, threatActorId, input) =>
+  createRelation(threatActorId, input).then(relation =>
+    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, relation, user)
   );
 
 export const threatActorCleanContext = (user, threatActorId) => {
   delEditContext(user, threatActorId);
-  return findById(threatActorId).then(threatActor =>
+  return loadByID(threatActorId).then(threatActor =>
     notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, threatActor)
   );
 };
 
 export const threatActorEditContext = (user, threatActorId, input) => {
   setEditContext(user, threatActorId, input);
-  findById(threatActorId).then(threatActor =>
-    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, threatActor)
+  loadByID(threatActorId).then(threatActor =>
+    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, threatActor, user)
   );
 };
 
-export const threatActorEditField = (threatActorId, input) =>
+export const threatActorEditField = (user, threatActorId, input) =>
   editInputTx(threatActorId, input).then(threatActor =>
-    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, threatActor)
+    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, threatActor, user)
   );

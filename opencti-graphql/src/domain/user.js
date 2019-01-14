@@ -11,7 +11,7 @@ import conf, {
   OPENCTI_DEFAULT_DURATION,
   OPENCTI_ISSUER,
   OPENCTI_WEB_TOKEN,
-  ROLE_USER,
+  ROLE_USER
 } from '../config/conf';
 import {
   multipleAttributes,
@@ -67,7 +67,8 @@ export const addUser = async (user, newUser) => {
   // const userPassword = await hashPassword(user.password);
   const token = generateOpenCTIWebToken(newUser.email);
   const createUser = qk(`insert $user isa User 
-    has username "${newUser.username}";
+    has type "user";
+    $user has username "${newUser.username}";
     $user has email "${newUser.email}";
     $user has firstname "${newUser.firstname}";
     $user has lastname "${newUser.lastname}";
@@ -81,7 +82,8 @@ export const addUser = async (user, newUser) => {
     ${join(' ', map(role => `$user has grant "${role}";`, newUser.grant))}
   `);
   const createToken = qk(`insert $token isa Token 
-    has uuid "${token.uuid}";
+    has type "token"; 
+    $token has uuid "${token.uuid}";
     $token has name "${token.name}";
     $token has created ${token.created};
     $token has issuer "${token.issuer}";
@@ -160,21 +162,21 @@ export const userDelete = userId => deleteByID(userId);
 export const userDeleteRelation = relationId => deleteRelationByID(relationId);
 
 export const userAddRelation = (user, userId, input) =>
-  createRelation(userId, input).then(userToEdit =>
-    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit, user)
+  createRelation(userId, input).then(relation =>
+    notify(BUS_TOPICS.User.EDIT_TOPIC, relation, user)
   );
 
 export const userCleanContext = (user, userId) => {
   delEditContext(user, userId);
-  return findById(userId).then(userToEdit =>
-    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit)
+  return loadByID(userId).then(userToEdit =>
+    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit, user)
   );
 };
 
 export const userEditContext = (user, userId, input) => {
   setEditContext(user, userId, input);
-  findById(userId).then(userToEdit =>
-    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit)
+  loadByID(userId).then(userToEdit =>
+    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit, user)
   );
 };
 

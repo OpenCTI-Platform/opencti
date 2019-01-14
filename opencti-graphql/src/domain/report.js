@@ -100,8 +100,8 @@ export const reportDeleteRelation = relationId =>
   deleteRelationByID(relationId);
 
 export const reportAddRelation = (user, reportId, input) =>
-  createRelation(reportId, input).then(report =>
-    notify(BUS_TOPICS.Report.EDIT_TOPIC, report, user)
+  createRelation(reportId, input).then(relation =>
+    notify(BUS_TOPICS.Report.EDIT_TOPIC, relation, user)
   );
 
 export const reportCleanContext = (user, reportId) => {

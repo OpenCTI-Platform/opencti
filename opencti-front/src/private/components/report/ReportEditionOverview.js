@@ -6,7 +6,7 @@ import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc, compose, map, pathOr, pipe, pick,
-  difference, head, sortWith, ascend, path,
+  difference, head,
 } from 'ramda';
 import * as Yup from 'yup';
 import * as rxjs from 'rxjs';
@@ -70,7 +70,9 @@ const reportMutationRelationAdd = graphql`
     mutation ReportEditionOverviewRelationAddMutation($id: ID!, $input: RelationAddInput!) {
         reportEdit(id: $id) {
             relationAdd(input: $input) {
-                ...ReportEditionOverview_report
+                from {
+                    ...ReportEditionOverview_report
+                }
             }
         }
     }

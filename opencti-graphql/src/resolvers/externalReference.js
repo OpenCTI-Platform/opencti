@@ -1,3 +1,4 @@
+import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addExternalReference,
@@ -34,10 +35,10 @@ const externalReferenceResolvers = {
   Mutation: {
     externalReferenceEdit: auth((_, { id }, { user }) => ({
       delete: () => externalReferenceDelete(id),
-      fieldPatch: ({ input }) => externalReferenceEditField(id, input),
+      fieldPatch: ({ input }) => externalReferenceEditField(user, id, input),
       contextPatch: ({ input }) =>
         externalReferenceEditContext(user, id, input),
-      relationAdd: ({ input }) => externalReferenceAddRelation(id, input),
+      relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         externalReferenceDeleteRelation(relationId)
     })),
@@ -50,12 +51,16 @@ const externalReferenceResolvers = {
       resolve: payload => payload.instance,
       subscribe: auth((_, { id }, { user }) => {
         externalReferenceEditContext(user, id);
-        return withCancel(
-          pubsub.asyncIterator(BUS_TOPICS.ExternalReference.EDIT_TOPIC),
-          () => {
-            externalReferenceCleanContext(user, id);
+        const filtering = withFilter(
+          () => pubsub.asyncIterator(BUS_TOPICS.ExternalReference.EDIT_TOPIC),
+          payload => {
+            if (!payload) return false; // When disconnect, an empty payload is dispatched.
+            return payload.user.id !== user.id;
           }
-        );
+        )(_, { id }, { user });
+        return withCancel(filtering, () => {
+          externalReferenceCleanContext(user, id);
+        });
       })
     }
   }

@@ -274,11 +274,18 @@ export const createRelation = (id, input) => {
          $to id ${input.toId}; 
          insert $rel(${input.fromRole}: $from, ${input.toRole}: $to) 
          isa ${input.through};`);
-  return createRel.then(result => ({
-    from: loadByID(id),
-    to: loadByID(input.toId),
-    relation: loadByID(head(result.data).rel.id)
-  }));
+  return createRel.then(result => {
+    const fromData = loadByID(id);
+    const toData = loadByID(input.toId);
+    const relationData = loadByID(head(result.data).rel.id);
+    return Promise.all([fromData, toData, relationData]).then(
+      ([fromDataResult, toDataResult, relationDataResult]) => ({
+        from: fromDataResult,
+        to: toDataResult,
+        relation: relationDataResult
+      })
+    );
+  });
 };
 
 /**

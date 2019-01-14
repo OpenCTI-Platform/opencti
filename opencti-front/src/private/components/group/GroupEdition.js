@@ -49,11 +49,11 @@ const styles = theme => ({
 });
 
 const subscription = graphql`
-  subscription GroupEditionSubscription($id: ID!) {
-    group(id: $id) {
-      ...GroupEdition_group
+    subscription GroupEditionSubscription($id: ID!) {
+        group(id: $id) {
+            ...GroupEdition_group
+        }
     }
-  }
 `;
 
 class GroupEdition extends Component {
@@ -69,7 +69,7 @@ class GroupEdition extends Component {
         subscription,
         variables: {
           // eslint-disable-next-line
-          id: this.props.group.__id,
+          id: this.props.group.__id
         },
       },
     );
@@ -132,19 +132,19 @@ GroupEdition.propTypes = {
 
 const GroupEditionFragment = createFragmentContainer(GroupEdition, {
   group: graphql`
-    fragment GroupEdition_group on Group {
-      ...GroupEditionOverview_group
-      ...GroupEditionPermissions_group
-      editContext {
-        username,
-        focusOn
+      fragment GroupEdition_group on Group {
+          ...GroupEditionOverview_group
+          ...GroupEditionPermissions_group
+          editContext {
+              username,
+              focusOn
+          }
       }
-    }
   `,
   me: graphql`
-    fragment GroupEdition_me on User {
-      email
-    }
+      fragment GroupEdition_me on User {
+          email
+      }
   `,
 });
 

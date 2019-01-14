@@ -40,7 +40,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   `);
   return createIntrusionSet.then(result => {
     const { data } = result;
-    return findById(head(data).intrusionSet.id).then(created =>
+    return loadByID(head(data).intrusionSet.id).then(created =>
       notify(BUS_TOPICS.IntrusionSet.ADDED_TOPIC, created)
     );
   });
@@ -51,26 +51,26 @@ export const intrusionSetDelete = intrusionSetId => deleteByID(intrusionSetId);
 export const intrusionSetDeleteRelation = relationId =>
   deleteRelationByID(relationId);
 
-export const intrusionSetAddRelation = (intrusionSetId, input) =>
-  createRelation(intrusionSetId, input).then(intrusionSet =>
-    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet)
+export const intrusionSetAddRelation = (user, intrusionSetId, input) =>
+  createRelation(intrusionSetId, input).then(relation =>
+    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, relation, user)
   );
 
 export const intrusionSetCleanContext = (user, intrusionSetId) => {
   delEditContext(user, intrusionSetId);
-  return findById(intrusionSetId).then(intrusionSet =>
-    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet)
+  return loadByID(intrusionSetId).then(intrusionSet =>
+    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet, user)
   );
 };
 
 export const intrusionSetEditContext = (user, intrusionSetId, input) => {
   setEditContext(user, intrusionSetId, input);
-  findById(intrusionSetId).then(intrusionSet =>
-    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet)
+  loadByID(intrusionSetId).then(intrusionSet =>
+    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet, user)
   );
 };
 
-export const intrusionSetEditField = (intrusionSetId, input) =>
+export const intrusionSetEditField = (user, intrusionSetId, input) =>
   editInputTx(intrusionSetId, input).then(intrusionSet =>
-    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet)
+    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet, user)
   );

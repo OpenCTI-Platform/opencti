@@ -156,8 +156,11 @@ class AddExternalReferences extends Component {
           input,
         },
         updater: (store) => {
-          const payload = store.getRootField('externalReferenceEdit').getLinkedRecord('relationAdd', { input }).getLinkedRecord('from');
-          const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
+          const payload = store.getRootField('externalReferenceEdit').getLinkedRecord('relationAdd', { input });
+          const edge = store.create('newEdge', 'ExternalReferenceEdge');
+          edge.setValue('node', payload.getLinkedRecord('from'));
+          edge.setValue('relation', payload.getLinkedRecord('relation'));
+          const newEdge = payload.setLinkedRecord(edge, 'edge'); // Creation of the pagination container.
           const container = store.getRoot();
           sharedUpdater(store, container.getDataID(), paginationOptions, newEdge);
         },

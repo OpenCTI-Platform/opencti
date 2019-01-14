@@ -35,7 +35,8 @@ export const permissions = (groupId, args) =>
 
 export const addGroup = async (user, group) => {
   const createGroup = qk(`insert $group isa Group 
-    has name "${group.name}";
+    has type "group";
+    $group has name "${group.name}";
     $group has description "${group.description}";
     $group has created_at ${now()};
     $group has updated_at ${now()};
@@ -50,26 +51,35 @@ export const addGroup = async (user, group) => {
 
 export const groupDelete = groupId => deleteByID(groupId);
 
-export const groupDeleteRelation = relationId => deleteRelationByID(relationId);
+export const groupDeleteRelation = (user, groupId, relationId) =>
+  deleteRelationByID(relationId).then(() => {
+    loadByID(groupId).then(groupData => {
+      notify(BUS_TOPICS.Group.EDIT_TOPIC, groupData, user);
+    });
+    return relationId;
+  });
 
-export const groupAddRelation = (groupId, input) =>
-  createRelation(groupId, input).then(group =>
-    notify(BUS_TOPICS.Group.EDIT_TOPIC, group)
-  );
+export const groupAddRelation = (user, groupId, input) =>
+  createRelation(groupId, input).then(relationData => {
+    notify(BUS_TOPICS.Group.EDIT_TOPIC, relationData.from, user);
+    return relationData;
+  });
 
 export const groupCleanContext = (user, groupId) => {
   delEditContext(user, groupId);
   return loadByID(groupId).then(group =>
-    notify(BUS_TOPICS.Group.EDIT_TOPIC, group)
+    notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user)
   );
 };
 
 export const groupEditContext = (user, groupId, input) => {
   setEditContext(user, groupId, input);
-  loadByID(groupId).then(group => notify(BUS_TOPICS.Group.EDIT_TOPIC, group));
+  loadByID(groupId).then(group =>
+    notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user)
+  );
 };
 
-export const groupEditField = (groupId, input) =>
+export const groupEditField = (user, groupId, input) =>
   editInputTx(groupId, input).then(group =>
-    notify(BUS_TOPICS.Group.EDIT_TOPIC, group)
+    notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user)
   );
