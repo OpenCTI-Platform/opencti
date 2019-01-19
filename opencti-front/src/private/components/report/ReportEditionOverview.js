@@ -6,7 +6,7 @@ import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc, compose, map, pathOr, pipe, pick,
-  difference, head,
+  difference, head, union,
 } from 'ramda';
 import * as Yup from 'yup';
 import { dateFormat } from '../../../utils/Time';
@@ -104,12 +104,12 @@ class ReportEditionOverviewComponent extends Component {
   }
 
   searchIdentities(event) {
-    fetchQuery(environment, reportCreationIdentitiesSearchQuery, { search: event.target.value }).then((data) => {
+    fetchQuery(environment, reportCreationIdentitiesSearchQuery, { search: event.target.value, first: 10 }).then((data) => {
       const identities = pipe(
         pathOr([], ['identities', 'edges']),
         map(n => ({ label: n.node.name, value: n.node.id })),
       )(data);
-      this.setState({ identities });
+      this.setState({ identities: union(this.state.identities, identities) });
     });
   }
 
@@ -153,8 +153,7 @@ class ReportEditionOverviewComponent extends Component {
     }).catch(() => false);
   }
 
-  handleChangeCreatedByRef(createdByRef, value) {
-    console.log(value);
+  handleChangeCreatedByRef(name, value) {
     const { report } = this.props;
     const currentCreatedByRef = {
       label: pathOr(null, ['createdByRef', 'node', 'name'], report),
@@ -162,8 +161,39 @@ class ReportEditionOverviewComponent extends Component {
       relation: pathOr(null, ['createdByRef', 'relation', 'id'], report),
     };
 
-    if (currentCreatedByRef) {
-      console.log(currentCreatedByRef);
+    if (currentCreatedByRef.value === null) {
+      commitMutation(environment, {
+        mutation: reportMutationRelationAdd,
+        variables: {
+          id: value.value,
+          input: {
+            fromRole: 'creator',
+            toId: this.props.report.id,
+            toRole: 'so',
+            through: 'created_by_ref',
+          },
+        },
+      });
+    } else if (currentCreatedByRef.value !== value.value) {
+      commitMutation(environment, {
+        mutation: reportMutationRelationDelete,
+        variables: {
+          id: this.props.report.id,
+          relationId: currentCreatedByRef.relation,
+        },
+      });
+      commitMutation(environment, {
+        mutation: reportMutationRelationAdd,
+        variables: {
+          id: value.value,
+          input: {
+            fromRole: 'creator',
+            toId: this.props.report.id,
+            toRole: 'so',
+            through: 'created_by_ref',
+          },
+        },
+      });
     }
   }
 

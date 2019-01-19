@@ -18,6 +18,16 @@ export const findAll = args => paginate('match $m isa Identity', args);
 
 export const findById = identityId => loadByID(identityId);
 
+export const search = args =>
+  paginate(
+    `match $m isa Identity
+    has name $name
+    has description $desc;
+    { $name contains "${args.search}"; } or
+    { $desc contains "${args.search}"; }`,
+    args
+  );
+
 export const markingDefinitions = (identityId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 

@@ -5,6 +5,7 @@ import {
   identityDelete,
   findAll,
   findById,
+  search,
   markingDefinitions,
   identityEditContext,
   identityEditField,
@@ -18,7 +19,12 @@ import { auth, withCancel } from './wrapper';
 const identityResolvers = {
   Query: {
     identity: auth((_, { id }) => findById(id)),
-    identities: auth((_, args) => findAll(args))
+    identities: auth((_, args) => {
+      if (args.search && args.search.length > 0) {
+        return search(args);
+      }
+      return findAll(args);
+    }),
   },
   Identity: {
     markingDefinitions: (identity, args) =>

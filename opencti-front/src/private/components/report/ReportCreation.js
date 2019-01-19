@@ -10,7 +10,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, head, pathOr, pipe, map, pluck,
+  compose, head, pathOr, pipe, map, pluck, union,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -94,8 +94,8 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 };
 
 export const reportCreationIdentitiesSearchQuery = graphql`
-    query ReportCreationIdentitiesSearchQuery($search: String) {
-        identities(search: $search) {
+    query ReportCreationIdentitiesSearchQuery($search: String, $first: Int) {
+        identities(search: $search, first: $first) {
             edges {
                 node {
                     id
@@ -123,12 +123,12 @@ class ReportCreation extends Component {
   }
 
   searchIdentities(event) {
-    fetchQuery(environment, reportCreationIdentitiesSearchQuery, { search: event.target.value }).then((data) => {
+    fetchQuery(environment, reportCreationIdentitiesSearchQuery, { search: event.target.value, first: 10 }).then((data) => {
       const identities = pipe(
         pathOr([], ['identities', 'edges']),
         map(n => ({ label: n.node.name, value: n.node.id })),
       )(data);
-      this.setState({ identities });
+      this.setState({ identities: union(this.state.identities, identities) });
     });
   }
 

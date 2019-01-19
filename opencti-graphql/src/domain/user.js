@@ -69,6 +69,7 @@ export const addUser = async (user, newUser) => {
   const createUser = qk(`insert $user isa User 
     has type "user";
     $user has name "${newUser.name}";
+    $user has description "${newUser.description}";
     $user has email "${newUser.email}";
     $user has firstname "${newUser.firstname}";
     $user has lastname "${newUser.lastname}";

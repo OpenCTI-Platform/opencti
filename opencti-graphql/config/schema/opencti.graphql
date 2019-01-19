@@ -145,7 +145,8 @@ type UserEdge {
 }
 type User {
     id: ID!
-    name: String
+    name: String!
+    description: String
     firstname: String
     lastname: String
     email: String
@@ -158,6 +159,7 @@ type User {
 }
 input UserAddInput {
     name: String!
+    description: String
     email: String
     firstname: String
     lastname: String

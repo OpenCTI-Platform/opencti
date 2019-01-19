@@ -76,6 +76,7 @@ const userValidation = t => Yup.object().shape({
     .email(t('The value must be an email address')),
   firstname: Yup.string(),
   lastname: Yup.string(),
+  description: Yup.string(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -103,7 +104,7 @@ class UserCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm, setErrors }) {
-    values['grant'] = ['ROLE_USER'];
+    values.grant = ['ROLE_USER'];
     commitMutation(environment, {
       mutation: userMutation,
       variables: {
@@ -163,7 +164,7 @@ class UserCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
-                name: '', email: '', firstname: '', lastname: '',
+                name: '', email: '', firstname: '', lastname: '', description: '',
               }}
               validationSchema={userValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -174,6 +175,7 @@ class UserCreation extends Component {
                   <Field name='email' component={TextField} label={t('Email address')} fullWidth={true} style={{ marginTop: 20 }}/>
                   <Field name='firstname' component={TextField} label={t('Firstname')} fullWidth={true} style={{ marginTop: 20 }}/>
                   <Field name='lastname' component={TextField} label={t('Lastname')} fullWidth={true} style={{ marginTop: 20 }}/>
+                  <Field name='description' component={TextField} label={t('Description')} fullWidth={true} multiline={true} rows={4} style={{ marginTop: 20 }}/>
                   <div className={classes.buttons}>
                     <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                       {t('Cancel')}

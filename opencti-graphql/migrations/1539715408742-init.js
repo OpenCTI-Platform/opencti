@@ -5,6 +5,7 @@ module.exports.up = async next => {
     {},
     {
       name: 'admin',
+      description: '',
       password: 'admin',
       firstname: '',
       lastname: '',
@@ -16,6 +17,7 @@ module.exports.up = async next => {
     {},
     {
       name: 'user',
+      description: '',
       password: 'user',
       firstname: '',
       lastname: '',

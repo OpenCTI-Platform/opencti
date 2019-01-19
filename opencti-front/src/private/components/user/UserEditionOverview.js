@@ -67,6 +67,7 @@ const userValidation = t => Yup.object().shape({
   lastname: Yup.string(),
   language: Yup.string(),
   grant: Yup.array(),
+  description: Yup.string(),
 });
 
 class UserEditionOverviewComponent extends Component {
@@ -105,7 +106,7 @@ class UserEditionOverviewComponent extends Component {
     )(user);
     const initialValues = pipe(
       assoc('grant', grant),
-      pick(['name', 'email', 'firstname', 'lastname', 'language', 'grant']),
+      pick(['name', 'description', 'email', 'firstname', 'lastname', 'language', 'grant']),
     )(user);
     return (
       <div>
@@ -160,6 +161,11 @@ class UserEditionOverviewComponent extends Component {
                 onFocus={this.handleChangeFocus.bind(this)}
                 helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='grant'/>}
               />
+              <Field name='description' component={TextField} label={t('Description')}
+                     fullWidth={true} multiline={true} rows={4} style={{ marginTop: 10 }}
+                     onFocus={this.handleChangeFocus.bind(this)}
+                     onSubmit={this.handleSubmitField.bind(this)}
+                     helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='description'/>}/>
             </Form>
           )}
         />
@@ -182,6 +188,7 @@ const UserEditionOverview = createFragmentContainer(UserEditionOverviewComponent
       fragment UserEditionOverview_user on User {
           id
           name
+          description
           email
           firstname
           lastname
