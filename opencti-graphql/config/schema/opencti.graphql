@@ -81,7 +81,11 @@ type StixDomainEdge {
     cursor: String!
     node: StixDomain!
 }
-union StixDomain =  MarkingDefinition | ExternalReference | KillChainPhase | ThreatActor | IntrusionSet | Malware | Report | Group | User | Organization
+interface StixDomain {
+    id: ID!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
 
 ### Identities
 enum IdentitiesOrdering {
@@ -101,17 +105,10 @@ type IdentityEdge {
     cursor: String!
     node: Identity!
 }
-type Identity {
+interface Identity {
     id: ID!
     name: String!
     description: String
-    created: DateTime
-    modified: DateTime
-    revoked: Boolean
-    editContext: [EditUserContext]
-    markingDefinitions: MarkingDefinitionConnection
-    created_at: DateTime
-    updated_at: DateTime
 }
 input IdentityAddInput  {
     name: String!
@@ -143,7 +140,7 @@ type UserEdge {
     cursor: String!
     node: User!
 }
-type User {
+type User implements StixDomain & Identity {
     id: ID!
     name: String!
     description: String
@@ -154,8 +151,8 @@ type User {
     grant: [String]
     editContext: [EditUserContext]
     groups: GroupConnection
-    created_at: DateTime
-    updated_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
 }
 input UserAddInput {
     name: String!
@@ -189,7 +186,7 @@ type OrganizationEdge {
     cursor: String!
     node: Organization!
 }
-type Organization {
+type Organization implements StixDomain & Identity {
     id: ID!
     name: String!
     description: String
@@ -198,8 +195,8 @@ type Organization {
     revoked: Boolean
     editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
-    created_at: DateTime
-    updated_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
 }
 input OrganizationAddInput  {
     name: String!
@@ -223,15 +220,15 @@ type GroupEdge {
     node: Group!
     relation: RelationEmbedded!
 }
-type Group {
+type Group implements StixDomain {
     id: ID!
     name: String!
     description: String
-    created_at: DateTime
-    updated_at: DateTime
     editContext: [EditUserContext]
     members: UserConnection
     permissions: MarkingDefinitionConnection
+    created_at: DateTime!
+    updated_at: DateTime!
 }
 input GroupAddInput {
     name: String!
@@ -261,7 +258,7 @@ type MarkingDefinitionEdge {
     node: MarkingDefinition!
     relation: RelationEmbedded!
 }
-type MarkingDefinition {
+type MarkingDefinition implements StixDomain {
     id: ID!
     definition_type: String!
     definition: String!
@@ -271,8 +268,8 @@ type MarkingDefinition {
     modified: DateTime
     revoked: Boolean
     editContext: [EditUserContext]
-    created_at: DateTime
-    updated_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
 }
 input MarkingDefinitionAddInput {
     definition_type: String!
@@ -304,7 +301,7 @@ type ExternalReferenceEdge {
     node: ExternalReference!
     relation: RelationEmbedded!
 }
-type ExternalReference {
+type ExternalReference implements StixDomain {
     id: ID!
     source_name: String!
     description: String
@@ -315,8 +312,8 @@ type ExternalReference {
     modified: DateTime
     revoked: Boolean
     editContext: [EditUserContext]
-    created_at: DateTime
-    updated_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
 }
 input ExternalReferenceAddInput {
     source_name: String!
@@ -345,7 +342,7 @@ type KillChainPhaseEdge {
     node: KillChainPhase!
     relation: RelationEmbedded!
 }
-type KillChainPhase {
+type KillChainPhase implements StixDomain {
     id: ID!
     kill_chain_name: String!
     phase_name: String!
@@ -355,8 +352,8 @@ type KillChainPhase {
     revoked: Boolean
     editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
-    created_at: DateTime
-    updated_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
 }
 input KillChainPhaseAddInput {
     kill_chain_name: String!
@@ -381,7 +378,7 @@ type ThreatActorEdge {
     cursor: String!
     node: ThreatActor!
 }
-type ThreatActor {
+type ThreatActor implements StixDomain {
     id: ID!
     name: String!
     stix_label: [String]
@@ -400,8 +397,8 @@ type ThreatActor {
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
-    created_at: DateTime
-    updated_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
 }
 input ThreatActorAddInput {
     name: String!
@@ -427,7 +424,7 @@ type IntrusionSetEdge {
     cursor: String!
     node: IntrusionSet!
 }
-type IntrusionSet {
+type IntrusionSet implements StixDomain {
     id: ID!
     name: String!
     stix_label: [String]
@@ -445,8 +442,8 @@ type IntrusionSet {
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
-    created_at: DateTime
-    updated_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
 }
 input IntrusionSetAddInput {
     name: String!
@@ -471,7 +468,7 @@ type MalwareEdge {
     cursor: String!
     node: Malware!
 }
-type Malware {
+type Malware implements StixDomain {
     id: ID!
     name: String!
     stix_label: [String]
@@ -484,8 +481,8 @@ type Malware {
     markingDefinitions: MarkingDefinitionConnection
     killChainPhases: KillChainPhaseConnection
     reports: ReportConnection
-    created_at: DateTime
-    updated_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
 }
 input MalwareAddInput {
     name: String!
@@ -517,7 +514,7 @@ type ReportEdge {
 type ReportPayload {
     reportEdge: ReportEdge
 }
-type Report {
+type Report implements StixDomain {
     id: ID!
     name: String!
     description: String
@@ -530,8 +527,8 @@ type Report {
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
     objectRefs: StixDomainConnection
-    created_at: DateTime
-    updated_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
 }
 input ReportAddInput {
     name: String!

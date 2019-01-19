@@ -6,14 +6,13 @@ import {
   findAll,
   findById,
   search,
-  markingDefinitions,
   identityEditContext,
   identityEditField,
   identityAddRelation,
   identityDeleteRelation,
   identityCleanContext
 } from '../domain/identity';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { pubsub } from '../database/redis';
 import { auth, withCancel } from './wrapper';
 
 const identityResolvers = {
@@ -24,12 +23,17 @@ const identityResolvers = {
         return search(args);
       }
       return findAll(args);
-    }),
+    })
   },
   Identity: {
-    markingDefinitions: (identity, args) =>
-      markingDefinitions(identity.id, args),
-    editContext: auth(identity => fetchEditContext(identity.id))
+    __resolveType(obj) {
+      if (obj.type) {
+        return obj.type.replace(/(?:^|-)(\w)/g, (matches, letter) =>
+          letter.toUpperCase()
+        );
+      }
+      return 'Unknown';
+    }
   },
   Mutation: {
     identityEdit: auth((_, { id }, { user }) => ({
