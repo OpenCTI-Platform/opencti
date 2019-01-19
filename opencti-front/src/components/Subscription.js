@@ -50,14 +50,8 @@ export const SubscriptionAvatars = withStyles(SubscriptionAvatarsStyles)(Subscri
 
 class SubscriptionFocusComponent extends Component {
   render() {
-    const {
-      t, me, users, fieldName,
-    } = this.props;
-    const focusedUsers = pipe(
-      filter(n => n.email === me.email),
-      filter(n => n.focusOn === fieldName),
-    )(users);
-
+    const {t, users, fieldName} = this.props;
+    const focusedUsers = filter(n => n.focusOn === fieldName, users);
     if (focusedUsers.length === 0) {
       return <span />;
     }
