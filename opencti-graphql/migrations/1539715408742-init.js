@@ -6,6 +6,8 @@ module.exports.up = async next => {
     {
       username: 'admin',
       password: 'admin',
+      firstname: '',
+      lastname: '',
       email: 'admin@opencti.org',
       grant: ['ROLE_ADMIN']
     }
@@ -15,6 +17,8 @@ module.exports.up = async next => {
     {
       username: 'user',
       password: 'user',
+      firstname: '',
+      lastname: '',
       email: 'user@opencti.org',
       grant: ['ROLE_USER']
     }

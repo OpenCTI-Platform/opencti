@@ -4,7 +4,7 @@ import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
-  deleteRelationByID,
+  deleteRelation,
   editInputTx,
   loadByID,
   notify,
@@ -96,13 +96,17 @@ export const addReport = async (user, report) => {
 
 export const reportDelete = reportId => deleteByID(reportId);
 
-export const reportDeleteRelation = relationId =>
-  deleteRelationByID(relationId);
-
 export const reportAddRelation = (user, reportId, input) =>
-  createRelation(reportId, input).then(relation =>
-    notify(BUS_TOPICS.Report.EDIT_TOPIC, relation, user)
-  );
+  createRelation(reportId, input).then(relationData => {
+    notify(BUS_TOPICS.Report.EDIT_TOPIC, relationData.node, user);
+    return relationData;
+  });
+
+export const reportDeleteRelation = (user, reportId, relationId) =>
+  deleteRelation(reportId, relationId).then(relationData => {
+    notify(BUS_TOPICS.Report.EDIT_TOPIC, relationData.node, user);
+    return relationData;
+  });
 
 export const reportCleanContext = (user, reportId) => {
   delEditContext(user, reportId);

@@ -4,7 +4,7 @@ import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
-  deleteRelationByID,
+  deleteRelation,
   editInputTx,
   loadByID,
   notify,
@@ -64,25 +64,23 @@ export const addExternalReference = async (user, externalReference) => {
 export const externalReferenceDelete = externalReferenceId =>
   deleteByID(externalReferenceId);
 
-export const externalReferenceDeleteRelation = (
-  user,
-  externalReferenceId,
-  relationId
-) =>
-  deleteRelationByID(relationId).then(() => {
-    loadByID(externalReferenceId).then(externalReferenceData => {
-      notify(BUS_TOPICS.Group.EDIT_TOPIC, externalReferenceData, user);
-    });
-    return relationId;
-  });
-
 export const externalReferenceAddRelation = (
   user,
   externalReferenceId,
   input
 ) =>
   createRelation(externalReferenceId, input).then(relationData => {
-    notify(BUS_TOPICS.Group.EDIT_TOPIC, relationData.from, user);
+    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, relationData.node, user);
+    return relationData;
+  });
+
+export const externalReferenceDeleteRelation = (
+  user,
+  externalReferenceId,
+  relationId
+) =>
+  deleteRelation(externalReferenceId, relationId).then(relationData => {
+    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
 

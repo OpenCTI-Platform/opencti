@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -7,8 +8,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { MoreVert } from '@material-ui/icons';
 import { LockPattern } from 'mdi-material-ui';
-import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
 import KillChainPhasePopover from './KillChainPhasePopover';
 
@@ -45,6 +45,7 @@ const inlineStyles = {
   kill_chain_name: {
     float: 'left',
     width: '30%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -52,6 +53,7 @@ const inlineStyles = {
   phase_name: {
     float: 'left',
     width: '35%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -59,12 +61,14 @@ const inlineStyles = {
   phase_order: {
     float: 'left',
     width: '10%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   created: {
     float: 'left',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -84,21 +88,24 @@ class KillChainPhaseLineComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.kill_chain_name}>
-                {propOr('-', 'kill_chain_name', killChainPhase)}
+              {killChainPhase.kill_chain_name}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.phase_name}>
-              {propOr('-', 'phase_name', killChainPhase)}
+              {killChainPhase.phase_name}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.phase_order}>
-              {propOr('-', 'phase_order', killChainPhase)}
+              {killChainPhase.phase_order}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(propOr(null, 'created', killChainPhase))}
+              {fd(killChainPhase.created)}
             </div>
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KillChainPhasePopover killChainPhaseId={killChainPhase.id} paginationOptions={paginationOptions}/>
+          <KillChainPhasePopover
+            killChainPhaseId={killChainPhase.id}
+            paginationOptions={paginationOptions}
+          />
         </ListItemIcon>
       </ListItem>
     );
@@ -115,15 +122,15 @@ KillChainPhaseLineComponent.propTypes = {
 
 const KillChainPhaseLineFragment = createFragmentContainer(KillChainPhaseLineComponent, {
   killChainPhase: graphql`
-        fragment KillChainPhaseLine_killChainPhase on KillChainPhase {
-            id
-            kill_chain_name
-            phase_name
-            phase_order
-            created
-            modified
-        }
-    `,
+      fragment KillChainPhaseLine_killChainPhase on KillChainPhase {
+          id
+          kill_chain_name
+          phase_name
+          phase_order
+          created
+          modified
+      }
+  `,
 });
 
 export const KillChainPhaseLine = compose(
@@ -142,7 +149,7 @@ class KillChainPhaseLineDummyComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.kill_chain_name}>
-                <div className={classes.placeholder} style={{ width: '80%' }}/>
+              <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.phase_name}>
               <div className={classes.placeholder} style={{ width: '70%' }}/>
@@ -151,7 +158,7 @@ class KillChainPhaseLineDummyComponent extends Component {
               <div className={classes.placeholder} style={{ width: '90%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-                <div className={classes.placeholder} style={{ width: 140 }}/>
+              <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
           </div>
         }/>

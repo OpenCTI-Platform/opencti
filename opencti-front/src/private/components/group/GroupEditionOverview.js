@@ -6,8 +6,6 @@ import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
-import * as rxjs from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
@@ -64,44 +62,7 @@ const groupValidation = t => Yup.object().shape({
   description: Yup.string(),
 });
 
-// We wait 0.5 sec of interruption before saving.
-const onFormChange$ = new rxjs.Subject().pipe(
-  debounceTime(500),
-);
-
 class GroupEditionOverviewComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { markingDefinitions: [] };
-  }
-
-  componentDidMount() {
-    this.subscription = onFormChange$.subscribe(
-      (data) => {
-        commitMutation(environment, {
-          mutation: groupMutationFieldPatch,
-          variables: {
-            id: data.id,
-            input: data.input,
-          },
-        });
-      },
-    );
-  }
-
-  componentWillUnmount() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
-  }
-
-  handleChangeField(name, value) {
-    // Validate the field first, if field is valid, debounce then save.
-    groupValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      onFormChange$.next({ id: this.props.group.id, input: { key: name, value } });
-    });
-  }
-
   handleChangeFocus(name) {
     commitMutation(environment, {
       mutation: groupEditionOverviewFocus,
@@ -112,6 +73,15 @@ class GroupEditionOverviewComponent extends Component {
         },
       },
     });
+  }
+
+  handleSubmitField(name, value) {
+    groupValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
+      commitMutation(environment, {
+        mutation: groupMutationFieldPatch,
+        variables: { id: this.props.group.id, input: { key: name, value } },
+      });
+    }).catch(() => false);
   }
 
   render() {
@@ -129,12 +99,12 @@ class GroupEditionOverviewComponent extends Component {
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field name='name' component={TextField} label={t('Name')} fullWidth={true}
                      onFocus={this.handleChangeFocus.bind(this)}
-                     onChange={this.handleChangeField.bind(this)}
+                     onSubmit={this.handleSubmitField.bind(this)}
                      helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='name'/>}/>
               <Field name='description' component={TextField} label={t('Description')}
                      fullWidth={true} multiline={true} rows={4} style={{ marginTop: 10 }}
                      onFocus={this.handleChangeFocus.bind(this)}
-                     onChange={this.handleChangeField.bind(this)}
+                     onSubmit={this.handleSubmitField.bind(this)}
                      helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='description'/>}/>
             </Form>
           )}

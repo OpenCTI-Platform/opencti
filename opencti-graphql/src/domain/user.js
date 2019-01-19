@@ -17,7 +17,7 @@ import {
   multipleAttributes,
   createRelation,
   deleteByID,
-  deleteRelationByID,
+  deleteRelation,
   editInputTx,
   loadByID,
   notify,
@@ -159,12 +159,17 @@ export const login = (email, password) => {
 
 export const userDelete = userId => deleteByID(userId);
 
-export const userDeleteRelation = relationId => deleteRelationByID(relationId);
-
 export const userAddRelation = (user, userId, input) =>
-  createRelation(userId, input).then(relation =>
-    notify(BUS_TOPICS.User.EDIT_TOPIC, relation, user)
-  );
+  createRelation(userId, input).then(relationData => {
+    notify(BUS_TOPICS.User.EDIT_TOPIC, relationData.node, user);
+    return relationData;
+  });
+
+export const userDeleteRelation = (user, userId, relationId) =>
+  deleteRelation(userId, relationId).then(relationData => {
+    notify(BUS_TOPICS.User.EDIT_TOPIC, relationData.node, user);
+    return relationData;
+  });
 
 export const userCleanContext = (user, userId) => {
   delEditContext(user, userId);

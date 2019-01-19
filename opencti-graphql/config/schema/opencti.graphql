@@ -574,7 +574,7 @@ type UserEditMutations {
     fieldPatch(input: EditInput): User
     contextPatch(input: EditContext): User
     relationAdd(input: RelationAddInput): RelationData
-    relationDelete(relationId: ID!): ID
+    relationDelete(relationId: ID!): RelationData
 }
 
 # Group
@@ -592,7 +592,7 @@ type MarkingDefinitionEditMutations {
     fieldPatch(input: EditInput): MarkingDefinition
     contextPatch(input: EditContext): MarkingDefinition
     relationAdd(input: RelationAddInput): RelationData
-    relationDelete(relationId: ID!): ID
+    relationDelete(relationId: ID!): RelationData
 }
 
 # ExternalReference
@@ -601,7 +601,7 @@ type ExternalReferenceEditMutations {
     fieldPatch(input: EditInput): ExternalReference
     contextPatch(input: EditContext): ExternalReference
     relationAdd(input: RelationAddInput): RelationData
-    relationDelete(relationId: ID!): ID
+    relationDelete(relationId: ID!): RelationData
 }
 
 # KillChainPhase
@@ -610,7 +610,7 @@ type KillChainPhaseEditMutations {
     fieldPatch(input: EditInput): KillChainPhase
     contextPatch(input: EditContext): KillChainPhase
     relationAdd(input: RelationAddInput): RelationData
-    relationDelete(relationId: ID!): ID
+    relationDelete(relationId: ID!): RelationData
 }
 
 # Identity
@@ -619,7 +619,7 @@ type IdentityEditMutations {
     fieldPatch(input: EditInput): Identity
     contextPatch(input: EditContext): Identity
     relationAdd(input: RelationAddInput): RelationData
-    relationDelete(relationId: ID!): ID
+    relationDelete(relationId: ID!): RelationData
 }
 
 # ThreatActor
@@ -628,7 +628,7 @@ type ThreatActorEditMutations {
     fieldPatch(input: EditInput): ThreatActor
     contextPatch(input: EditContext): ThreatActor
     relationAdd(input: RelationAddInput): RelationData
-    relationDelete(relationId: ID!): ID
+    relationDelete(relationId: ID!): RelationData
 }
 
 # IntrusionSet
@@ -637,7 +637,7 @@ type IntrusionSetEditMutations {
     fieldPatch(input: EditInput): IntrusionSet
     contextPatch(input: EditContext): IntrusionSet
     relationAdd(input: RelationAddInput): RelationData
-    relationDelete(relationId: ID!): ID
+    relationDelete(relationId: ID!): RelationData
 }
 
 # Malware
@@ -646,7 +646,7 @@ type MalwareEditMutations {
     fieldPatch(input: EditInput): Malware
     contextPatch(input: EditContext): Malware
     relationAdd(input: RelationAddInput): RelationData
-    relationDelete(relationId:ID!): ID
+    relationDelete(relationId:ID!): RelationData
 }
 
 # Report
@@ -655,7 +655,7 @@ type ReportEditMutations {
     fieldPatch(input: EditInput): Report
     contextPatch(input: EditContext): Report
     relationAdd(input: RelationAddInput): RelationData
-    relationDelete(relationId:ID!): ID
+    relationDelete(relationId:ID!): RelationData
 }
 
 # Next

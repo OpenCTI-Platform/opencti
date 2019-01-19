@@ -31,7 +31,8 @@ const intrusionSetResolvers = {
       fieldPatch: ({ input }) => intrusionSetEditField(user, id, input),
       contextPatch: ({ input }) => intrusionSetEditContext(user, id, input),
       relationAdd: ({ input }) => intrusionSetAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => intrusionSetDeleteRelation(relationId)
+      relationDelete: ({ relationId }) =>
+        intrusionSetDeleteRelation(user, id, relationId)
     })),
     intrusionSetAdd: auth((_, { input }, { user }) =>
       addIntrusionSet(user, input)

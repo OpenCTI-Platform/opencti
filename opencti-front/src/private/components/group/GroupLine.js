@@ -7,7 +7,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { MoreVert, Group } from '@material-ui/icons';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
 import GroupPopover from './GroupPopover';
 
@@ -44,6 +44,7 @@ const inlineStyles = {
   name: {
     float: 'left',
     width: '60%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -51,12 +52,14 @@ const inlineStyles = {
   created_at: {
     float: 'left',
     width: '15%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   updated_at: {
     float: 'left',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -76,13 +79,13 @@ class GroupLineComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
-              {propOr('-', 'name', group)}
+              {group.name}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              {fd(propOr(null, 'created_at', group))}
+              {fd(group.created_at)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-              {fd(propOr(null, 'updated_at', group))}
+              {fd(group.updated_at)}
             </div>
           </div>
         }/>

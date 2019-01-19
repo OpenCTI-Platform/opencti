@@ -6,6 +6,8 @@ module.exports.up = async next => {
     {
       username: 'Julien',
       password: 'julien',
+      firstname: 'Julien',
+      lastname: 'Richard',
       email: 'richard.julien@gmail.com',
       grant: ['ROLE_ROOT', 'ROLE_ADMIN']
     }
@@ -15,6 +17,8 @@ module.exports.up = async next => {
     {
       username: 'Samuel Hassine',
       password: 'samuel',
+      firstname: 'Samuel',
+      lastname: 'Hassine',
       email: 'samuel.hassine@gmail.com',
       grant: ['ROLE_ROOT', 'ROLE_ADMIN']
     }

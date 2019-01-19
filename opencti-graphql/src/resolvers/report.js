@@ -36,7 +36,8 @@ const reportResolvers = {
       fieldPatch: ({ input }) => reportEditField(user, id, input),
       contextPatch: ({ input }) => reportEditContext(user, id, input),
       relationAdd: ({ input }) => reportAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => reportDeleteRelation(relationId)
+      relationDelete: ({ relationId }) =>
+        reportDeleteRelation(user, id, relationId)
     })),
     reportAdd: auth((_, { input }, { user }) => addReport(user, input))
   },

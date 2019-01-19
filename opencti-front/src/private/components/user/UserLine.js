@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -6,8 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { MoreVert, Person } from '@material-ui/icons';
-import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
 import UserPopover from './UserPopover';
 
@@ -44,6 +44,7 @@ const inlineStyles = {
   username: {
     float: 'left',
     width: '20%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -51,6 +52,7 @@ const inlineStyles = {
   email: {
     float: 'left',
     width: '30%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -58,6 +60,7 @@ const inlineStyles = {
   firstname: {
     float: 'left',
     width: '15%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -65,12 +68,14 @@ const inlineStyles = {
   lastname: {
     float: 'left',
     width: '15%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   created_at: {
     float: 'left',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -79,7 +84,9 @@ const inlineStyles = {
 
 class UserLineComponent extends Component {
   render() {
-    const { fd, classes, user, paginationOptions } = this.props;
+    const {
+      fd, classes, user, paginationOptions,
+    } = this.props;
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -88,19 +95,19 @@ class UserLineComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.username}>
-                {propOr('-', 'username', user)}
+              {user.username}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.email}>
-              {propOr('-', 'email', user)}
+              {user.email}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.firstname}>
-              {propOr('-', 'firstname', user)}
+              {user.firstname}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.lastname}>
-              {propOr('-', 'lastname', user)}
+              {user.lastname}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created_at}>
-                {fd(propOr(null, 'created_at', user))}
+              {fd(user.created_at)}
             </div>
           </div>
         }/>
@@ -122,15 +129,15 @@ UserLineComponent.propTypes = {
 
 const UserLineFragment = createFragmentContainer(UserLineComponent, {
   user: graphql`
-        fragment UserLine_user on User {
-            id,
-            username,
-            email,
-            firstname,
-            lastname,
-            created_at
-        }
-    `,
+      fragment UserLine_user on User {
+          id,
+          username,
+          email,
+          firstname,
+          lastname,
+          created_at
+      }
+  `,
 });
 
 export const UserLine = compose(
@@ -149,7 +156,7 @@ class UserLineDummyComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.username}>
-                <div className={classes.placeholder} style={{ width: '80%' }}/>
+              <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.email}>
               <div className={classes.placeholder} style={{ width: '70%' }}/>
@@ -161,7 +168,7 @@ class UserLineDummyComponent extends Component {
               <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created_at}>
-                <div className={classes.placeholder} style={{ width: 140 }}/>
+              <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
           </div>
         }/>

@@ -31,7 +31,8 @@ const threatActorResolvers = {
       fieldPatch: ({ input }) => threatActorEditField(user, id, input),
       contextPatch: ({ input }) => threatActorEditContext(user, id, input),
       relationAdd: ({ input }) => threatActorAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => threatActorDeleteRelation(relationId)
+      relationDelete: ({ relationId }) =>
+        threatActorDeleteRelation(user, id, relationId)
     })),
     threatActorAdd: auth((_, { input }, { user }) =>
       addThreatActor(user, input)

@@ -32,7 +32,7 @@ const markingDefinitionResolvers = {
         markingDefinitionEditContext(user, id, input),
       relationAdd: ({ input }) => markingDefinitionAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
-        markingDefinitionDeleteRelation(relationId)
+        markingDefinitionDeleteRelation(user, id, relationId)
     })),
     markingDefinitionAdd: admin((_, { input }, { user }) =>
       addMarkingDefinition(user, input)

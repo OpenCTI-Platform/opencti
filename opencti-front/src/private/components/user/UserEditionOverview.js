@@ -8,8 +8,6 @@ import {
   assoc, compose, map, propOr, pick, pipe, pluck,
 } from 'ramda';
 import * as Yup from 'yup';
-import * as rxjs from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
 import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
@@ -94,7 +92,7 @@ class UserEditionOverviewComponent extends Component {
         mutation: userMutationFieldPatch,
         variables: { id: this.props.user.id, input: { key: name, value: newValue } },
       });
-    });
+    }).catch(() => false);
   }
 
   render() {

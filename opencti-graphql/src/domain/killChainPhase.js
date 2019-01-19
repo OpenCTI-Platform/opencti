@@ -4,7 +4,7 @@ import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
-  deleteRelationByID,
+  deleteRelation,
   editInputTx,
   loadByID,
   notify,
@@ -50,13 +50,21 @@ export const addKillChainPhase = async (user, killChainPhase) => {
 export const killChainPhaseDelete = killChainPhaseId =>
   deleteByID(killChainPhaseId);
 
-export const killChainPhaseDeleteRelation = relationId =>
-  deleteRelationByID(relationId);
-
 export const killChainPhaseAddRelation = (user, killChainPhaseId, input) =>
-  createRelation(killChainPhaseId, input).then(relation =>
-    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relation, user)
-  );
+  createRelation(killChainPhaseId, input).then(relationData => {
+    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relationData.node, user);
+    return relationData;
+  });
+
+export const killChainPhaseDeleteRelation = (
+  user,
+  killChainPhaseId,
+  relationId
+) =>
+  deleteRelation(killChainPhaseId, relationId).then(relationData => {
+    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relationData.node, user);
+    return relationData;
+  });
 
 export const killChainPhaseCleanContext = (user, killChainPhaseId) => {
   delEditContext(user, killChainPhaseId);

@@ -47,7 +47,13 @@ const styles = theme => ({
 export const externalReferenceMutationRelationDelete = graphql`
     mutation EntityExternalReferencesLinesRelationDeleteMutation($id: ID!, $relationId: ID!) {
         externalReferenceEdit(id: $id) {
-            relationDelete(relationId: $relationId)
+            relationDelete(relationId: $relationId) {
+                node {
+                    ... on ExternalReference {
+                        id
+                    }
+                }
+            }
         }
     }
 `;

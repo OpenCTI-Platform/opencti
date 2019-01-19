@@ -40,7 +40,8 @@ const userResolvers = {
       fieldPatch: ({ input }) => userEditField(user, id, input),
       contextPatch: ({ input }) => userEditContext(user, id, input),
       relationAdd: ({ input }) => userAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => userDeleteRelation(relationId)
+      relationDelete: ({ relationId }) =>
+        userDeleteRelation(user, id, relationId)
     })),
     userAdd: admin((_, { input }, { user }) => addUser(user, input))
   },

@@ -81,7 +81,11 @@ const reportMutationRelationAdd = graphql`
 const reportMutationRelationDelete = graphql`
     mutation ReportEditionOverviewRelationDeleteMutation($id: ID!, $relationId: ID!) {
         reportEdit(id: $id) {
-            relationDelete(relationId: $relationId)
+            relationDelete(relationId: $relationId) {
+                node {
+                    ...ReportEditionOverview_report
+                }
+            }
         }
     }
 `;

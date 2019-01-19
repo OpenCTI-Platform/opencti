@@ -11,8 +11,6 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
-import * as rxjs from 'rxjs/index';
-import { debounceTime } from 'rxjs/operators/index';
 import inject18n from '../../../components/i18n';
 import environment from '../../../relay/environment';
 import TextField from '../../../components/TextField';
@@ -87,18 +85,7 @@ const killChainPhaseValidation = t => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-// We wait 0.5 sec of interruption before saving.
-const onFormChange$ = new rxjs.Subject().pipe(
-  debounceTime(500),
-);
-
-
 class KillChainPhaseEditionContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { colors: {} };
-  }
-
   componentDidMount() {
     const sub = requestSubscription(
       environment,
@@ -111,33 +98,10 @@ class KillChainPhaseEditionContainer extends Component {
       },
     );
     this.setState({ sub });
-    this.subscription = onFormChange$.subscribe(
-      (data) => {
-        commitMutation(environment, {
-          mutation: killChainPhaseMutationFieldPatch,
-          variables: {
-            id: data.id,
-            input: data.input,
-          },
-        });
-      },
-    );
   }
 
   componentWillUnmount() {
     this.state.sub.dispose();
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
-  }
-
-  handleChangeField(name, value) {
-    // Validate the field first, if field is valid, debounce then save.
-    killChainPhaseValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      onFormChange$.next({ id: this.props.killChainPhase.id, input: { key: name, value } });
-    }).catch((error) => {
-      return false;
-    });
   }
 
   handleChangeFocus(name) {
@@ -152,12 +116,20 @@ class KillChainPhaseEditionContainer extends Component {
     });
   }
 
+  handleSubmitField(name, value) {
+    killChainPhaseValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
+      commitMutation(environment, {
+        mutation: killChainPhaseMutationFieldPatch,
+        variables: { id: this.props.killChainPhase.id, input: { key: name, value } },
+      });
+    }).catch(() => false);
+  }
+
   render() {
     const {
       t, classes, handleClose, killChainPhase, me,
     } = this.props;
     const { editContext } = killChainPhase;
-    // Add current user to the context if is not available yet.
     const missingMe = find(propEq('username', me.email))(editContext) === undefined;
     const editUsers = missingMe ? insert(0, { username: me.email }, editContext) : editContext;
     const initialValues = over(lensProp('phase_order'), defaultTo(''), pickAll(['kill_chain_name', 'phase_name', 'phase_order'], killChainPhase));
@@ -181,13 +153,18 @@ class KillChainPhaseEditionContainer extends Component {
             render={() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field name='kill_chain_name' component={TextField} label={t('Kill chain name')} fullWidth={true}
-                       onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
+                       onFocus={this.handleChangeFocus.bind(this)}
+                       onSubmit={this.handleSubmitField.bind(this)}
                        helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='kill_chain_name'/>}/>
-                <Field name='phase_name' component={TextField} label={t('Phase name')} fullWidth={true} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
+                <Field name='phase_name' component={TextField} label={t('Phase name')}
+                       fullWidth={true} style={{ marginTop: 10 }}
+                       onFocus={this.handleChangeFocus.bind(this)}
+                       onSubmit={this.handleSubmitField.bind(this)}
                        helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='phase_name'/>}/>
-                <Field name='phase_order' component={TextField} label={t('Order')} fullWidth={true} type='number' style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)} onChange={this.handleChangeField.bind(this)}
+                <Field name='phase_order' component={TextField} label={t('Order')}
+                       fullWidth={true} type='number' style={{ marginTop: 10 }}
+                       onFocus={this.handleChangeFocus.bind(this)}
+                       onSubmit={this.handleSubmitField.bind(this)}
                        helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='phase_order'/>}/>
               </Form>
             )}

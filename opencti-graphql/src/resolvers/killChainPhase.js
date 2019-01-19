@@ -32,7 +32,7 @@ const killChainPhaseResolvers = {
       contextPatch: ({ input }) => killChainPhaseEditContext(user, id, input),
       relationAdd: ({ input }) => killChainPhaseAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
-        killChainPhaseDeleteRelation(relationId)
+        killChainPhaseDeleteRelation(user, id, relationId)
     })),
     killChainPhaseAdd: admin((_, { input }, { user }) =>
       addKillChainPhase(user, input)

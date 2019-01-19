@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -6,8 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { MoreVert, CenterFocusStrong } from '@material-ui/icons';
-import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
 import MarkingDefinitionPopover from './MarkingDefinitionPopover';
 
@@ -44,6 +44,7 @@ const inlineStyles = {
   definition_type: {
     float: 'left',
     width: '25%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -51,6 +52,7 @@ const inlineStyles = {
   definition: {
     float: 'left',
     width: '25%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -58,6 +60,7 @@ const inlineStyles = {
   color: {
     float: 'left',
     width: '15%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -65,12 +68,14 @@ const inlineStyles = {
   level: {
     float: 'left',
     width: '10%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   created: {
     float: 'left',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -90,24 +95,27 @@ class MarkingDefinitionLineComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.definition_type}>
-                {propOr('-', 'definition_type', markingDefinition)}
+              {markingDefinition.definition_type}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.definition}>
-              {propOr('-', 'definition', markingDefinition)}
+              {markingDefinition.definition}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.color}>
-              {propOr('-', 'color', markingDefinition)}
+              {markingDefinition.color}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.level}>
-              {propOr('-', 'level', markingDefinition)}
+              {markingDefinition.level}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(propOr(null, 'created', markingDefinition))}
+              {fd(markingDefinition.created)}
             </div>
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <MarkingDefinitionPopover markingDefinitionId={markingDefinition.id} paginationOptions={paginationOptions}/>
+          <MarkingDefinitionPopover
+            markingDefinitionId={markingDefinition.id}
+            paginationOptions={paginationOptions}
+          />
         </ListItemIcon>
       </ListItem>
     );
@@ -124,16 +132,16 @@ MarkingDefinitionLineComponent.propTypes = {
 
 const MarkingDefinitionLineFragment = createFragmentContainer(MarkingDefinitionLineComponent, {
   markingDefinition: graphql`
-        fragment MarkingDefinitionLine_markingDefinition on MarkingDefinition {
-            id
-            definition_type
-            definition
-            level
-            color
-            created
-            modified
-        }
-    `,
+      fragment MarkingDefinitionLine_markingDefinition on MarkingDefinition {
+          id
+          definition_type
+          definition
+          level
+          color
+          created
+          modified
+      }
+  `,
 });
 
 export const MarkingDefinitionLine = compose(
@@ -152,7 +160,7 @@ class MarkingDefinitionLineDummyComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.definition_type}>
-                <div className={classes.placeholder} style={{ width: '80%' }}/>
+              <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.definition}>
               <div className={classes.placeholder} style={{ width: '70%' }}/>
@@ -164,7 +172,7 @@ class MarkingDefinitionLineDummyComponent extends Component {
               <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-                <div className={classes.placeholder} style={{ width: 140 }}/>
+              <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
           </div>
         }/>

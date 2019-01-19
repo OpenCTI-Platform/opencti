@@ -21,7 +21,8 @@ const identityResolvers = {
     identities: auth((_, args) => findAll(args))
   },
   Identity: {
-    markingDefinitions: (identity, args) => markingDefinitions(identity.id, args),
+    markingDefinitions: (identity, args) =>
+      markingDefinitions(identity.id, args),
     editContext: auth(identity => fetchEditContext(identity.id))
   },
   Mutation: {
@@ -30,7 +31,8 @@ const identityResolvers = {
       fieldPatch: ({ input }) => identityEditField(user, id, input),
       contextPatch: ({ input }) => identityEditContext(user, id, input),
       relationAdd: ({ input }) => identityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => identityDeleteRelation(relationId)
+      relationDelete: ({ relationId }) =>
+        identityDeleteRelation(user, id, relationId)
     })),
     identityAdd: auth((_, { input }, { user }) => addIdentity(user, input))
   },
