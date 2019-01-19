@@ -20,6 +20,16 @@ const TextField = props => (
         props.onFocus(props.field.name);
       }
     }}
+    onKeyPress={(event) => {
+      if (typeof props.onSubmit === 'function' && event.key === 'Enter') {
+        props.onSubmit(props.field.name, event.target.value);
+      }
+    }}
+    onBlur={(event) => {
+      if (typeof props.onSubmit === 'function') {
+        props.onSubmit(props.field.name, event.target.value);
+      }
+    }}
     classes={props.classes}
     className={props.className}
   />

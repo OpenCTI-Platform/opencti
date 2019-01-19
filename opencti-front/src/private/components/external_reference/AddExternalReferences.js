@@ -75,7 +75,7 @@ const externalReferenceMutationRelationAdd = graphql`
     mutation AddExternalReferencesRelationAddMutation($id: ID!, $input: RelationAddInput!) {
         externalReferenceEdit(id: $id) {
             relationAdd(input: $input) {
-                from {
+                node {
                     ... on ExternalReference {
                         id
                         source_name
@@ -147,23 +147,22 @@ class AddExternalReferences extends Component {
       });
     } else {
       const input = {
-        fromRole: 'external_reference', toId: entityId, toRole: 'so', through: 'external_references',
+        fromRole: 'so', toId: externalReference.id, toRole: 'external_reference', through: 'external_references',
       };
       commitMutation(environment, {
         mutation: externalReferenceMutationRelationAdd,
         variables: {
-          id: externalReference.id,
+          id: entityId,
           input,
         },
         updater: (store) => {
           const payload = store.getRootField('externalReferenceEdit').getLinkedRecord('relationAdd', { input });
-          const edge = store.create('newEdge', 'ExternalReferenceEdge');
-          edge.setValue('node', payload.getLinkedRecord('from'));
-          edge.setValue('relation', payload.getLinkedRecord('relation'));
-          const newEdge = payload.setLinkedRecord(edge, 'edge'); // Creation of the pagination container.
           const container = store.getRoot();
-          sharedUpdater(store, container.getDataID(), paginationOptions, newEdge);
+          sharedUpdater(store, container.getDataID(), paginationOptions, payload);
         },
+        onCompleted: () => {
+          console.log(this.props);
+        }
       });
     }
   }
@@ -194,6 +193,7 @@ class AddExternalReferences extends Component {
               query={externalReferencesLinesSearchQuery}
               variables={{ search: this.state.search, first: 20 }}
               render={({ props }) => {
+                console.log(props);
                 if (props && props.externalReferences) {
                   return (
                     <List>

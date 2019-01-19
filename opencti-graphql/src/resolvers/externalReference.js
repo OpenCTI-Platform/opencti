@@ -40,7 +40,7 @@ const externalReferenceResolvers = {
         externalReferenceEditContext(user, id, input),
       relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
-        externalReferenceDeleteRelation(relationId)
+        externalReferenceDeleteRelation(user, id, relationId)
     })),
     externalReferenceAdd: auth((_, { input }, { user }) =>
       addExternalReference(user, input)

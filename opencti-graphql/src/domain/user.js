@@ -188,7 +188,7 @@ export const userEditField = (user, userId, input) => {
   if (contains(key, multipleAttributes)) {
     finalInput = { key, value };
   }
-  editInputTx(userId, finalInput).then(userToEdit =>
+  return editInputTx(userId, finalInput).then(userToEdit =>
     notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit, user)
   );
 };

@@ -275,16 +275,33 @@ export const createRelation = (id, input) => {
          insert $rel(${input.fromRole}: $from, ${input.toRole}: $to) 
          isa ${input.through};`);
   return createRel.then(result => {
-    const fromData = loadByID(id);
-    const toData = loadByID(input.toId);
+    const nodeData = loadByID(input.toId);
     const relationData = loadByID(head(result.data).rel.id);
-    return Promise.all([fromData, toData, relationData]).then(
-      ([fromDataResult, toDataResult, relationDataResult]) => ({
-        from: fromDataResult,
-        to: toDataResult,
+    return Promise.all([nodeData, relationData]).then(
+      ([nodeDataResult, relationDataResult]) => ({
+        node: nodeDataResult,
         relation: relationDataResult
       })
     );
+  });
+};
+
+/**
+ * Grakn generic function to delete a relationship
+ * @param id
+ * @returns {Promise<AxiosResponse<any> | never | never>}
+ */
+export const deleteRelation = (id, relationId) => {
+  const deleteQuery = qk(`match $x id ${relationId}; delete $x;`);
+  return deleteQuery.then(result => {
+    if (isEmpty(result.data)) {
+      throw new FunctionalError({ message: "Element doesn't exist" });
+    } else {
+      return loadByID(id).then(data => ({
+        node: data,
+        relation: { id: relationId }
+      }));
+    }
   });
 };
 

@@ -32,7 +32,7 @@ const userMutationRelationAdd = graphql`
     mutation UserEditionGroupsRelationAddMutation($id: ID!, $input: RelationAddInput!) {
         userEdit(id: $id) {
             relationAdd(input: $input) {
-                from {
+                node {
                     ...UserEditionGroups_user
                 }
             }

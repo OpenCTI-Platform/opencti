@@ -32,7 +32,7 @@ const groupMutationRelationAdd = graphql`
     mutation GroupEditionPermissionsMarkingDefinitionsRelationAddMutation($id: ID!, $input: RelationAddInput!) {
         groupEdit(id: $id) {
             relationAdd(input: $input) {
-                from {
+                node {
                     ...GroupEditionPermissions_group
                 }
             }
@@ -43,7 +43,11 @@ const groupMutationRelationAdd = graphql`
 const groupMutationRelationDelete = graphql`
     mutation GroupEditionPermissionsMarkingDefinitionsRelationDeleteMutation($id: ID!, $relationId: ID!) {
         groupEdit(id: $id) {
-            relationDelete(relationId: $relationId)
+            relationDelete(relationId: $relationId)  {
+                node {
+                    ...GroupEditionPermissions_group
+                }
+            }
         }
     }
 `;
@@ -54,11 +58,11 @@ class GroupEditionPermissionsComponent extends Component {
       commitMutation(environment, {
         mutation: groupMutationRelationAdd,
         variables: {
-          id: this.props.group.id,
+          id: markingDefinitionId,
           input: {
-            fromRole: 'allowed',
-            toId: markingDefinitionId,
-            toRole: 'allow',
+            fromRole: 'allow',
+            toId: this.props.group.id,
+            toRole: 'allowed',
             through: 'permission',
           },
         },

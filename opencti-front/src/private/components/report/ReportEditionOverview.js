@@ -70,7 +70,7 @@ const reportMutationRelationAdd = graphql`
     mutation ReportEditionOverviewRelationAddMutation($id: ID!, $input: RelationAddInput!) {
         reportEdit(id: $id) {
             relationAdd(input: $input) {
-                from {
+                node {
                     ...ReportEditionOverview_report
                 }
             }

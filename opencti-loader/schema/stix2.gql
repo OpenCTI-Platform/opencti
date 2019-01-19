@@ -158,6 +158,11 @@ define
     relates "allow"
     relates "allowed";
 
+  "user_permission" sub relationship
+
+    relates "allow"
+    relates "allowed";
+
   # OpenCTI embeded relationships
   "relation_embedded" sub relationship
     is-abstract;
@@ -283,7 +288,8 @@ define
     has "updated_at"
     plays "client"
     plays "author"
-    plays "member";
+    plays "member"
+    plays "allowed";
 
   "Group" sub entity
     has "type"
@@ -468,3 +474,17 @@ define
     has "description"
     plays "target"
     plays "problem";
+
+    ## RULES
+    # Access rules
+    "UserPermissionRule" sub rule
+    when {
+      ("member": $user, "grouping": $group) isa membership;
+      ("allowed": $group, "allow": $marking) isa permission;
+      $marking isa "Marking-Definition" has "level" $markingLevel has "definition_type" $markingType;
+      $markingDefinition isa "Marking-Definition" has "level" $markingDefinitionLevel has "definition_type" $markingDefinitionType;
+      $markingDefinitionType == $markingType;
+      $markingDefinitionLevel <= $markingLevel;
+    } then {
+      ("allowed": $user, "allow": $markingDefinition) isa "user_permission";
+    };

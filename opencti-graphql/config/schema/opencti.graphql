@@ -7,8 +7,7 @@ type RelationEmbedded {
 }
 
 type RelationData {
-    from: StixDomain
-    to: StixDomain
+    node: StixDomain
     relation: RelationEmbedded
 }
 
@@ -441,7 +440,7 @@ enum StixDomainOrderering {
     created_at,
     updated_at
 }
-union StixDomain =  ExternalReference | KillChainPhase | ThreatActor | IntrusionSet | Malware | Report | Group | User
+union StixDomain =  MarkingDefinition | ExternalReference | KillChainPhase | ThreatActor | IntrusionSet | Malware | Report | Group | User
 type StixDomainEdge {
     cursor: String!
     node: StixDomain!
@@ -584,7 +583,7 @@ type GroupEditMutations {
     fieldPatch(input: EditInput): Group
     contextPatch(input: EditContext): Group
     relationAdd(input: RelationAddInput): RelationData
-    relationDelete(relationId: ID!): ID
+    relationDelete(relationId: ID!): RelationData
 }
 
 # MarkingDefinition
