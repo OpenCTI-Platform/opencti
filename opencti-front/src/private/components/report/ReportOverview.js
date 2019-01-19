@@ -42,7 +42,7 @@ class ReportOverviewComponent extends Component {
           <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
             {t('Author')}
           </Typography>
-          {pathOr('-', ['createdByRef', 'name'], report)}
+          {pathOr('-', ['createdByRef', 'node', 'name'], report)}
           <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
             {t('Description')}
           </Typography>
@@ -69,7 +69,9 @@ const ReportOverview = createFragmentContainer(ReportOverviewComponent, {
           published
           modified
           createdByRef {
-            name
+            node {
+                name
+            }
           }
       }
   `,

@@ -153,7 +153,9 @@ export const reportsLinesSearchQuery = graphql`
                     id
                     name
                     createdByRef {
-                        name
+                        node {
+                            name
+                        }
                     }
                     published
                     created_at

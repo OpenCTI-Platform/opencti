@@ -93,8 +93,8 @@ class UserEdition extends Component {
     } = this.props;
     const { editContext } = user;
     // Add current user to the context if is not available yet.
-    const missingMe = find(propEq('username', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { username: me.email }, editContext) : editContext;
+    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
+    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
     return (
       <div>
         <div className={classes.header}>
@@ -140,7 +140,7 @@ const UserEditionFragment = createFragmentContainer(UserEdition, {
       ...UserEditionPassword_user,
       ...UserEditionGroups_user,
       editContext {
-        username,
+        name,
         focusOn
       }
     }

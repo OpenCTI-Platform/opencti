@@ -64,7 +64,9 @@ const entityReportsQuery = graphql`
                     name
                     published
                     createdByRef {
-                        name
+                        node {
+                            name
+                        }
                     }
                     markingDefinitions {
                         edges {

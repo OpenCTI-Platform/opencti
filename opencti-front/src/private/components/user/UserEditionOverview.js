@@ -58,7 +58,7 @@ const userEditionOverviewFocus = graphql`
 `;
 
 const userValidation = t => Yup.object().shape({
-  username: Yup.string()
+  name: Yup.string()
     .required(t('This field is required')),
   email: Yup.string()
     .required(t('This field is required'))
@@ -105,7 +105,7 @@ class UserEditionOverviewComponent extends Component {
     )(user);
     const initialValues = pipe(
       assoc('grant', grant),
-      pick(['username', 'email', 'firstname', 'lastname', 'language', 'grant']),
+      pick(['name', 'email', 'firstname', 'lastname', 'language', 'grant']),
     )(user);
     return (
       <div>
@@ -115,10 +115,10 @@ class UserEditionOverviewComponent extends Component {
           validationSchema={userValidation(t)}
           render={() => (
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field name='username' component={TextField} label={t('Username')} fullWidth={true}
+              <Field name='name' component={TextField} label={t('name')} fullWidth={true}
                      onFocus={this.handleChangeFocus.bind(this)}
                      onSubmit={this.handleSubmitField.bind(this)}
-                     helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='username'/>}/>
+                     helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='name'/>}/>
               <Field name='email' component={TextField} label={t('Email address')}
                      fullWidth={true} style={{ marginTop: 10 }}
                      onFocus={this.handleChangeFocus.bind(this)}
@@ -181,7 +181,7 @@ const UserEditionOverview = createFragmentContainer(UserEditionOverviewComponent
   user: graphql`
       fragment UserEditionOverview_user on User {
           id
-          username
+          name
           email
           firstname
           lastname

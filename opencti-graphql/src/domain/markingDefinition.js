@@ -78,7 +78,7 @@ export const markingDefinitionEditContext = (
   input
 ) => {
   setEditContext(user, markingDefinitionId, input);
-  loadByID(markingDefinitionId).then(markingDefinition =>
+  return loadByID(markingDefinitionId).then(markingDefinition =>
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );
 };

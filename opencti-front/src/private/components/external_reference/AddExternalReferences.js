@@ -117,8 +117,8 @@ class AddExternalReferences extends Component {
     this.setState({ open: false });
   }
 
-  handleSearch(event) {
-    this.setState({ search: event.target.value });
+  handleSearch(keyword) {
+    this.setState({ search: keyword });
   }
 
   toggleExternalReference(externalReference) {
@@ -181,7 +181,7 @@ class AddExternalReferences extends Component {
               {t('Add external references')}
             </Typography>
             <div className={classes.search}>
-              <SearchInput variant='controlled' placeholder={`${t('Search')}...`} handleSearch={this.handleSearch.bind(this)}/>
+              <SearchInput variant='inDrawer' placeholder={`${t('Search')}...`} onSubmit={this.handleSearch.bind(this)}/>
             </div>
           </div>
           <div className={classes.container}>

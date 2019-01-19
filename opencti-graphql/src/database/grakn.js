@@ -128,20 +128,35 @@ export const qkObj = (queryDef, key = 'x', relationKey) =>
   qk(queryDef).then(result => {
     if (result && result.data) {
       return Promise.all(
-        map(line => ({
-          node: attrByID(line[key]['@id']).then(res =>
+        map(line => {
+          const nodePromise = attrByID(line[key]['@id']).then(res =>
             attrMap(line[key].id, res)
-          ),
-          relation: !relationKey
-            ? null
+          );
+          const relationPromise = !relationKey
+            ? Promise.resolve(null)
             : attrByID(line[relationKey]['@id']).then(res =>
                 attrMap(line[relationKey].id, res)
-              )
-        }))(result.data)
+              );
+          return Promise.all([nodePromise, relationPromise]).then(
+            ([node, relation]) => ({
+              node,
+              relation
+            })
+          );
+        })(result.data)
       );
     }
     return Promise.resolve([]);
   });
+
+/**
+ * Grakn query that generate json objects
+ * @param queryDef the query to process
+ * @param key the instance key to get id from.
+ * @param relationKey the key to bind relation result.
+ * @returns {Promise<AxiosResponse<any> | never | never>}
+ */
+export const qkObjUnique = (queryDef, key = 'x', relationKey) => qkObj(queryDef, key, relationKey).then(result => head(result));
 
 /**
  * Grakn query that fetch unique value like attribute count.
@@ -160,22 +175,6 @@ export const qkSingleValue = queryDef =>
  */
 export const deleteByID = id => {
   const deleteQuery = qk(`match $x id ${id}; $z($x, $y); delete $z, $x;`);
-  return deleteQuery.then(result => {
-    if (isEmpty(result.data)) {
-      throw new FunctionalError({ message: "Element doesn't exist" });
-    } else {
-      return id;
-    }
-  });
-};
-
-/**
- * Grakn generic function to delete a relationship
- * @param id
- * @returns {Promise<AxiosResponse<any> | never | never>}
- */
-export const deleteRelationByID = id => {
-  const deleteQuery = qk(`match $x id ${id}; delete $x;`);
   return deleteQuery.then(result => {
     if (isEmpty(result.data)) {
       throw new FunctionalError({ message: "Element doesn't exist" });
@@ -214,20 +213,6 @@ export const loadByID = (id, withType = false) =>
           attrByID(line.x['@id']).then(res => attrMap(id, res, withType))
         )(result.data)
       ).then(r => head(r)) // Return the unique result
-  );
-
-/**
- * Simple load all query
- * @param queryDef
- * @returns {Promise<any[] | never>}
- */
-export const queryAll = queryDef =>
-  qk(queryDef).then(result =>
-    Promise.all(
-      map(line => attrByID(line.x['@id']).then(res => attrMap(line.x.id, res)))(
-        result.data
-      )
-    )
   );
 
 /**

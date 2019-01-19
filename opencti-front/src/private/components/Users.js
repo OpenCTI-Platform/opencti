@@ -41,7 +41,7 @@ const inlineStyles = {
     padding: 0,
     top: '0px',
   },
-  username: {
+  name: {
     float: 'left',
     width: '20%',
     fontSize: 12,
@@ -75,7 +75,7 @@ const inlineStyles = {
 class Users extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'username', orderAsc: true };
+    this.state = { sortBy: 'name', orderAsc: true };
   }
 
   handleChangeView(mode) {
@@ -119,7 +119,7 @@ class Users extends Component {
             </ListItemIcon>
             <ListItemText primary={
               <div>
-                {this.SortHeader('username', 'Username')}
+                {this.SortHeader('name', 'name')}
                 {this.SortHeader('email', 'Email address')}
                 {this.SortHeader('firstname', 'Firstname')}
                 {this.SortHeader('lastname', 'Lastname')}

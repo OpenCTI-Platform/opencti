@@ -31,9 +31,9 @@ class SubscriptionAvatarsComponent extends Component {
     const { classes, users } = this.props;
     return (
       <div className={classes.avatars}>
-        {users.map((user, i) => <Tooltip title={user.username} key={i}>
-          <Avatar classes={{ root: classes.avatar }} style={{ backgroundColor: stringToColour(user.username) }}>
-            {user.username.charAt(0)}
+        {users.map((user, i) => <Tooltip title={user.name} key={i}>
+          <Avatar classes={{ root: classes.avatar }} style={{ backgroundColor: stringToColour(user.name) }}>
+            {user.name.charAt(0)}
           </Avatar>
         </Tooltip>)}
       </div>
@@ -54,7 +54,7 @@ class SubscriptionFocusComponent extends Component {
       t, me, users, fieldName,
     } = this.props;
     const focusedUsers = pipe(
-      filter(n => n.username !== me.email),
+      filter(n => n.name !== me.email),
       filter(n => n.focusOn === fieldName),
     )(users);
     if (focusedUsers.length === 0) {
@@ -64,7 +64,7 @@ class SubscriptionFocusComponent extends Component {
     return (
       <span>
         {focusedUsers.map((user, i) => (
-              <span key={i}><span style={{ color: stringToColour(user.username) }}>{user.username}</span><span>{i + 1 < focusedUsers.length ? ', ' : ' '}</span></span>
+              <span key={i}><span style={{ color: stringToColour(user.name) }}>{user.name}</span><span>{i + 1 < focusedUsers.length ? ', ' : ' '}</span></span>
         ))}
         {focusedUsers.length > 1 ? t('are updating...') : t('is updating...')}
       </span>

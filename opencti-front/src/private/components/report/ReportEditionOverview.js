@@ -9,14 +9,15 @@ import {
   difference, head,
 } from 'ramda';
 import * as Yup from 'yup';
+import { dateFormat } from '../../../utils/Time';
+import environment from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import Autocomplete from '../../../components/Autocomplete';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
-import environment from '../../../relay/environment';
-import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import { reportCreationIdentitiesSearchQuery } from './ReportCreation';
+import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
 import IdentityCreation from '../identity/IdentityCreation';
 
 const styles = theme => ({
@@ -92,14 +93,14 @@ const reportValidation = t => Yup.object().shape({
   name: Yup.string()
     .required(t('This field is required')),
   published: Yup.date()
-    .typeError(t('This field must be a valid date2'))
+    .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
 });
 
 class ReportEditionOverviewComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { killChainPhases: [], markingDefinitions: [] };
+    this.state = { identityCreation: false, identities: [], markingDefinitions: [] };
   }
 
   searchIdentities(event) {
@@ -152,6 +153,20 @@ class ReportEditionOverviewComponent extends Component {
     }).catch(() => false);
   }
 
+  handleChangeCreatedByRef(createdByRef, value) {
+    console.log(value);
+    const { report } = this.props;
+    const currentCreatedByRef = {
+      label: pathOr(null, ['createdByRef', 'node', 'name'], report),
+      value: pathOr(null, ['createdByRef', 'node', 'id'], report),
+      relation: pathOr(null, ['createdByRef', 'relation', 'id'], report),
+    };
+
+    if (currentCreatedByRef) {
+      console.log(currentCreatedByRef);
+    }
+  }
+
   handleChangeMarkingDefinition(name, values) {
     const { report } = this.props;
     const currentMarkingDefinitions = pipe(
@@ -166,9 +181,12 @@ class ReportEditionOverviewComponent extends Component {
       commitMutation(environment, {
         mutation: reportMutationRelationAdd,
         variables: {
-          id: this.props.report.id,
+          id: head(added).value,
           input: {
-            fromRole: 'so', toId: head(added).value, toRole: 'marking', through: 'object_marking_refs',
+            fromRole: 'marking',
+            toId: this.props.report.id,
+            toRole: 'so',
+            through: 'object_marking_refs',
           },
         },
       });
@@ -189,19 +207,22 @@ class ReportEditionOverviewComponent extends Component {
     const {
       t, report, editUsers, me,
     } = this.props;
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map(n => ({ label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`, value: n.node.id, relationId: n.relation.id })),
-    )(report);
+    const createdByRef = {
+      label: pathOr(null, ['createdByRef', 'node', 'name'], report),
+      value: pathOr(null, ['createdByRef', 'node', 'id'], report),
+      relation: pathOr(null, ['createdByRef', 'relation', 'id'], report),
+    };
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map(n => ({ label: n.node.definition, value: n.node.id, relationId: n.relation.id })),
     )(report);
     const initialValues = pipe(
-      assoc('killChainPhases', killChainPhases),
+      assoc('createdByRef', createdByRef),
       assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'description', 'killChainPhases', 'markingDefinitions']),
+      assoc('published', dateFormat(report.published)),
+      pick(['name', 'published', 'description', 'createdByRef', 'markingDefinitions']),
     )(report);
+
     return (
       <div>
         <Formik
@@ -235,7 +256,7 @@ class ReportEditionOverviewComponent extends Component {
                   onInputChange={this.searchIdentities.bind(this)}
                   onChange={this.handleChangeCreatedByRef.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='killChainPhases'/>}
+                  helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='createdByRef'/>}
                 />
                 <Field
                   name='markingDefinitions'
@@ -280,7 +301,17 @@ const ReportEditionOverview = createFragmentContainer(ReportEditionOverviewCompo
       fragment ReportEditionOverview_report on Report {
           id
           name
+          published
           description
+          createdByRef {
+              node {
+                  id
+                  name
+              }
+              relation {
+                  id
+              }
+          }
           markingDefinitions {
               edges {
                   node {

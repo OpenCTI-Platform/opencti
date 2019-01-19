@@ -32,7 +32,7 @@ export const delEditContext = (user, instanceId) =>
  * @param input
  */
 export const setEditContext = (user, instanceId, input) => {
-  const data = assoc('username', user.email, input);
+  const data = assoc('name', user.email, input);
   client.set(
     `edit:${instanceId}:${user.id}`,
     JSON.stringify(data),

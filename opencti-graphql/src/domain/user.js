@@ -68,7 +68,7 @@ export const addUser = async (user, newUser) => {
   const token = generateOpenCTIWebToken(newUser.email);
   const createUser = qk(`insert $user isa User 
     has type "user";
-    $user has username "${newUser.username}";
+    $user has name "${newUser.name}";
     $user has email "${newUser.email}";
     $user has firstname "${newUser.firstname}";
     $user has lastname "${newUser.lastname}";
@@ -110,7 +110,7 @@ export const addUser = async (user, newUser) => {
 };
 
 // User related
-export const loginFromProvider = (email, username) => {
+export const loginFromProvider = (email, name) => {
   // Try to get the user.
   const loginPromise = qk(`match $client isa User has email "${email}";
       (authorization:$token, client:$client); 
@@ -120,7 +120,7 @@ export const loginFromProvider = (email, username) => {
     if (isEmpty(data)) {
       // We need to create the user because we trust the provider
       const newUser = {
-        username,
+        name,
         email,
         grant: [ROLE_USER],
         created: now(),
@@ -128,7 +128,7 @@ export const loginFromProvider = (email, username) => {
       };
       // Create the user then restart the login
       return addUser({}, newUser).then(() =>
-        loginFromProvider(email, username)
+        loginFromProvider(email, name)
       );
     }
     // We just need to return the current token
@@ -180,7 +180,7 @@ export const userCleanContext = (user, userId) => {
 
 export const userEditContext = (user, userId, input) => {
   setEditContext(user, userId, input);
-  loadByID(userId).then(userToEdit =>
+  return loadByID(userId).then(userToEdit =>
     notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit, user)
   );
 };

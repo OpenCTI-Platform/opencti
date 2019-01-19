@@ -65,14 +65,19 @@ public class Relationship extends Domain {
                         "$to isa %s has stix_id %s; " +
                         "(%s: $from, %s: $to) isa %s; " +
                         "offset 0; limit 1; get;",
-                from.getEntityName(),
-                prepare(from.getId()),
-                to.getEntityName(),
-                prepare(to.getId()),
+                from.getEntityName().replace("Identity", "Organization"),
+                prepare(from.getId()).replace("identity", "organization"),
+                to.getEntityName().replace("Identity", "Organization"),
+                prepare(to.getId()).replace("identity", "organization"),
                 fromRole,
                 toRole,
                 getRelationship_type());
-        Object relation = driver.read(getRelation);
+        Object relation = null;
+        try {
+            relation = driver.read(getRelation);
+        } catch (Exception e) {
+            System.out.format(e.toString());
+        }
 
         if (relation == null) {
             String relationCreation = format("match $from isa %s " +
@@ -81,15 +86,19 @@ public class Relationship extends Domain {
                             "insert (%s: $from, %s: $to) " +
                             "has stix_id %s" +
                             "isa %s;",
-                    from.getEntityName(),
-                    prepare(from.getId()),
-                    to.getEntityName(),
-                    prepare(to.getId()),
+                    from.getEntityName().replace("Identity", "Organization"),
+                    prepare(from.getId()).replace("identity", "organization"),
+                    to.getEntityName().replace("Identity", "Organization"),
+                    prepare(to.getId()).replace("identity", "organization"),
                     fromRole,
                     toRole,
                     prepare(getId()),
                     getRelationship_type());
-            driver.write(relationCreation);
+            try {
+                driver.write(relationCreation);
+            } catch (Exception e) {
+                System.out.format(e.toString());
+            }
         }
     }
 

@@ -46,7 +46,7 @@ const settingsQuery = graphql`
             platform_external_auth
             platform_registration
             editContext {
-                username,
+                name,
                 focusOn
             }
         }
@@ -136,8 +136,8 @@ class Settings extends Component {
             const { settings, me } = props;
             const { id, editContext } = settings;
             // Add current group to the context if is not available yet.
-            const missingMe = find(propEq('username', me.email))(editContext) === undefined;
-            const editUsers = missingMe ? insert(0, { username: me.email }, editContext) : editContext;
+            const missingMe = find(propEq('name', me.email))(editContext) === undefined;
+            const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
             const initialValues = pick(['platform_title', 'platform_email', 'platform_url', 'platform_language', 'platform_external_auth', 'platform_registration'], settings);
             return (
               <Formik

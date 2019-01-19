@@ -130,8 +130,8 @@ class KillChainPhaseEditionContainer extends Component {
       t, classes, handleClose, killChainPhase, me,
     } = this.props;
     const { editContext } = killChainPhase;
-    const missingMe = find(propEq('username', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { username: me.email }, editContext) : editContext;
+    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
+    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
     const initialValues = over(lensProp('phase_order'), defaultTo(''), pickAll(['kill_chain_name', 'phase_name', 'phase_order'], killChainPhase));
     return (
       <div>
@@ -192,7 +192,7 @@ const KillChainPhaseEditionFragment = createFragmentContainer(KillChainPhaseEdit
           phase_name
           phase_order
           editContext {
-              username
+              name
               focusOn
           }
       }

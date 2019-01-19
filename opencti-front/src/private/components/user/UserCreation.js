@@ -69,7 +69,7 @@ const userMutation = graphql`
 `;
 
 const userValidation = t => Yup.object().shape({
-  username: Yup.string()
+  name: Yup.string()
     .required(t('This field is required')),
   email: Yup.string()
     .required(t('This field is required'))
@@ -163,14 +163,14 @@ class UserCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
-                username: '', email: '', firstname: '', lastname: '',
+                name: '', email: '', firstname: '', lastname: '',
               }}
               validationSchema={userValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
               render={({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field name='username' component={TextField} label={t('Username')} fullWidth={true}/>
+                  <Field name='name' component={TextField} label={t('name')} fullWidth={true}/>
                   <Field name='email' component={TextField} label={t('Email address')} fullWidth={true} style={{ marginTop: 20 }}/>
                   <Field name='firstname' component={TextField} label={t('Firstname')} fullWidth={true} style={{ marginTop: 20 }}/>
                   <Field name='lastname' component={TextField} label={t('Lastname')} fullWidth={true} style={{ marginTop: 20 }}/>

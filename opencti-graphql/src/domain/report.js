@@ -10,7 +10,7 @@ import {
   notify,
   now,
   paginate,
-  queryAll,
+  qkObjUnique,
   prepareDate,
   takeTx
 } from '../database/grakn';
@@ -27,13 +27,14 @@ export const findAllBySo = args =>
 
 export const findById = reportId => loadByID(reportId);
 
-export const createdByRef = (reportId, args) =>
-  queryAll(
+export const createdByRef = reportId =>
+  qkObjUnique(
     `match $x isa Identity; 
     $rel(creator:$x, so:$report) isa created_by_ref; 
-    $report id ${reportId};  offset 0; limit 1; get $x;`,
-    args
-  ).then(r => head(r));
+    $report id ${reportId};  offset 0; limit 1; get $x,$rel;`,
+    'x',
+    'rel'
+  );
 
 export const markingDefinitions = (reportId, args) =>
   paginate(
@@ -118,7 +119,7 @@ export const reportCleanContext = (user, reportId) => {
 
 export const reportEditContext = (user, reportId, input) => {
   setEditContext(user, reportId, input);
-  loadByID(reportId).then(report =>
+  return loadByID(reportId).then(report =>
     notify(BUS_TOPICS.Report.EDIT_TOPIC, report, user)
   );
 };

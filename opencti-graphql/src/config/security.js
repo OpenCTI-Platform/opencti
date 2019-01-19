@@ -8,8 +8,8 @@ import { login, loginFromProvider } from '../domain/user';
 import conf from './conf';
 
 // Local auth
-const localStrategy = new LocalStrategy((username, password, done) => {
-  login(username, password)
+const localStrategy = new LocalStrategy((name, password, done) => {
+  login(name, password)
     .then(token => done(null, token))
     .catch(err => done(err));
 });
@@ -26,9 +26,9 @@ const facebookStrategy = new FacebookStrategy(
   (accessToken, refreshToken, profile, done) => {
     // eslint-disable-next-line no-underscore-dangle
     const data = profile._json; // TODO CHECK THAT
-    const username = `${data.last_name} ${data.first_name}`;
+    const name = `${data.last_name} ${data.first_name}`;
     const { email } = data;
-    loginFromProvider(email, username)
+    loginFromProvider(email, name)
       .then(token => {
         done(null, token);
       })
@@ -47,10 +47,10 @@ const googleOptions = {
 const googleStrategy = new GoogleStrategy(
   googleOptions,
   (token, tokenSecret, profile, done) => {
-    const username = profile.displayName;
+    const name = profile.displayName;
     const email = head(profile.emails).value;
     // let picture = head(profile.photos).value;
-    loginFromProvider(email, username)
+    loginFromProvider(email, name)
       .then(loggedToken => {
         done(null, loggedToken);
       })
@@ -69,10 +69,10 @@ const githubOptions = {
 const githubStrategy = new GithubStrategy(
   githubOptions,
   (token, tokenSecret, profile, done) => {
-    const username = profile.name;
+    const name = profile.name;
     const email = head(profile.emails).value;
     // let picture = profile.avatar_url;
-    loginFromProvider(email, username)
+    loginFromProvider(email, name)
       .then(loggedToken => {
         done(null, loggedToken);
       })

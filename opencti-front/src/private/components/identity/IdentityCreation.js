@@ -77,7 +77,7 @@ const identityMutation = graphql`
 const identityValidation = t => Yup.object().shape({
   name: Yup.string()
     .required(t('This field is required')),
-  identity_class: Yup.string()
+  type: Yup.string()
     .required(t('This field is required')),
 });
 
@@ -146,7 +146,7 @@ class IdentityCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
-                name: '', description: '', identity_class: '',
+                name: '', description: '', type: '',
               }}
               validationSchema={identityValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -156,21 +156,21 @@ class IdentityCreation extends Component {
                   <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
                   <Field name='description' component={TextField} label={t('Description')}
                          fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
-                  <Field name='identity_class'
+                  <Field name='type'
                          component={Select}
                          label={t("Type d'entité")}
                          fullWidth={true}
                          inputProps={{
-                           name: 'identity_class',
-                           id: 'identity-class',
+                           name: 'type',
+                           id: 'type',
                          }}
                          containerstyle={{ marginTop: 10, width: '100%' }}
                   >
-                    <MenuItem value='sector'>{t('Sector')}</MenuItem>
-                    <MenuItem value='organization'>{t('Organization')}</MenuItem>
-                    <MenuItem value='country'>{t('Country')}</MenuItem>
-                    <MenuItem value='city'>{t('City')}</MenuItem>
-                    <MenuItem value='individual'>{t('Person')}</MenuItem>
+                    <MenuItem value='Sector'>{t('Sector')}</MenuItem>
+                    <MenuItem value='Organization'>{t('Organization')}</MenuItem>
+                    <MenuItem value='Country'>{t('Country')}</MenuItem>
+                    <MenuItem value='City'>{t('City')}</MenuItem>
+                    <MenuItem value='User'>{t('Person')}</MenuItem>
                   </Field>
                   <div className={classes.buttons}>
                     <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
@@ -198,7 +198,7 @@ class IdentityCreation extends Component {
         <Formik
           enableReinitialize={true}
           initialValues={{
-            name: inputValue, description: '', identity_class: 'organization',
+            name: inputValue, description: '', type: 'Organization',
           }}
           validationSchema={identityValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
@@ -213,21 +213,21 @@ class IdentityCreation extends Component {
                   <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
                   <Field name='description' component={TextField} label={t('Description')}
                          fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
-                  <Field name='identity_class'
+                  <Field name='type'
                          component={Select}
                          label={t('Entity type')}
                          fullWidth={true}
                          inputProps={{
-                           name: 'identity_class',
-                           id: 'identity-class',
+                           name: 'type',
+                           id: 'type',
                          }}
                          containerstyle={{ marginTop: 20, width: '100%' }}
                   >
-                    <MenuItem value='sector'>{t('Sector')}</MenuItem>
-                    <MenuItem value='organization'>{t('Organization')}</MenuItem>
-                    <MenuItem value='country'>{t('Country')}</MenuItem>
-                    <MenuItem value='city'>{t('City')}</MenuItem>
-                    <MenuItem value='individual'>{t('Person')}</MenuItem>
+                    <MenuItem value='Sector'>{t('Sector')}</MenuItem>
+                    <MenuItem value='Organization'>{t('Organization')}</MenuItem>
+                    <MenuItem value='Country'>{t('Country')}</MenuItem>
+                    <MenuItem value='City'>{t('City')}</MenuItem>
+                    <MenuItem value='User'>{t('Person')}</MenuItem>
                   </Field>
                 </DialogContent>
                 <DialogActions>

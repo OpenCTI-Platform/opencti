@@ -4,7 +4,7 @@ const i18n = {
       // Titles
       'OpenCTI - Cyber threat intelligence platform': 'OpenCTI - Plateforme d\'analyse de la cybermenace',
       // Errors
-      'Wrong username or password': 'Nom d\'utilisateur ou mot de passe incorrect',
+      'Wrong name or password': 'Nom d\'utilisateur ou mot de passe incorrect',
       // Interface
       Search: 'Rechercher',
       'Do you want to delete this user?': 'Souahitez-vous supprimer cet utilisateur ?',
@@ -125,7 +125,7 @@ const i18n = {
       Color: 'Couleur',
       Type: 'Type',
       'Email address': 'Adresse email',
-      Username: 'Nom d\'utilisateur',
+      name: 'Nom d\'utilisateur',
       Firstname: 'Prénom',
       Lastname: 'Nom',
       Permissions: 'Permissions',

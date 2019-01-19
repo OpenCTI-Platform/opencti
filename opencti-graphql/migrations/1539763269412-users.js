@@ -4,7 +4,7 @@ module.exports.up = async next => {
   await addUser(
     {},
     {
-      username: 'Julien',
+      name: 'Julien',
       password: 'julien',
       firstname: 'Julien',
       lastname: 'Richard',
@@ -15,7 +15,7 @@ module.exports.up = async next => {
   await addUser(
     {},
     {
-      username: 'Samuel Hassine',
+      name: 'Samuel Hassine',
       password: 'samuel',
       firstname: 'Samuel',
       lastname: 'Hassine',

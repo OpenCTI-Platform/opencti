@@ -43,21 +43,25 @@ const styles = theme => ({
 class EntityExternalReferences extends Component {
   render() {
     const { t, classes, entityId } = this.props;
-    const paginationOptions = { objectId: entityId, orderBy: 'created_at', orderMode: 'desc'};
+    const paginationOptions = { objectId: entityId, orderBy: 'created_at', orderMode: 'desc' };
     return (
       <QueryRenderer
         environment={environment}
         query={entityExternalReferencesLinesQuery}
         variables={{
           objectId: entityId,
-          count: 5,
+          count: 200,
           orderBy: 'created_at',
           orderMode: 'desc',
         }}
         render={({ props }) => {
           if (props) {
             return (
-              <EntityExternalReferencesLines entityId={entityId} data={props} paginationOptions={paginationOptions}/>
+              <EntityExternalReferencesLines
+                entityId={entityId}
+                data={props}
+                paginationOptions={paginationOptions}
+              />
             );
           }
           return (

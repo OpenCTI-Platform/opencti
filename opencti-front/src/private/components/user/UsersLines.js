@@ -149,7 +149,7 @@ export const usersLinesSearchQuery = graphql`
             edges {
                 node {
                     id,
-                    username,
+                    name,
                     email,
                     firstname,
                     lastname,

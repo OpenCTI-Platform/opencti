@@ -13,7 +13,6 @@ define
   "updated_at" sub attribute datatype date;
   "issuer" sub attribute datatype string;
   "duration" sub attribute datatype string;
-  "username" sub attribute datatype string;
   "password" sub attribute datatype string;
   "email" sub attribute datatype string;
   "firstname" sub attribute datatype string;
@@ -61,9 +60,6 @@ define
   "url" sub attribute datatype string;
   "hash" sub attribute datatype string;
   "external_id" sub attribute datatype string;
-  "identity_class" sub attribute datatype string;
-  "sector" sub attribute datatype string;
-  "contact_information" sub attribute datatype string;
   "published" sub attribute datatype date;
   "report_class" sub attribute datatype string;
   "pattern" sub attribute datatype string;
@@ -73,7 +69,6 @@ define
   # STIX SRO
   "relationship_type" sub attribute datatype string;
   "weight" sub attribute datatype long;
-
 
   ## ROLES
 
@@ -135,6 +130,14 @@ define
   "relate_from" sub role;
   "relate_to" sub role;
 
+  # localization
+  "location" sub role;
+  "localized" sub role;
+
+  # belonging
+  "gather" sub role;
+  "part_of" sub role;
+
   ## RELATIONSHIPS
 
   # Login relationship
@@ -159,7 +162,7 @@ define
     relates "allowed";
 
   "user_permission" sub relationship
-
+    has "grant"
     relates "allow"
     relates "allowed";
 
@@ -222,11 +225,6 @@ define
     relates "usage"
     relates "user";
 
-  # attributed-to
-  "attributed-to" sub "stix_relation"
-    relates "origin"
-    relates "attribution";
-
   # related-to
   "related-to" sub "stix_relation"
     relates "relate_from"
@@ -242,15 +240,34 @@ define
     relates "characterize"
     relates "indicator";
 
-  # variant-of
-  "variant-of" sub "stix_relation"
-    relates "original"
-    relates "variation";
-
   # impersonates
   "impersonates" sub "stix_relation"
     relates "genuine"
     relates "dummy";
+
+  # parentship
+  "parentship" sub "stix_relation"
+    is-abstract;
+
+  # attributed-to
+  "attributed-to" sub "parentship"
+    relates "origin"
+    relates "attribution";
+
+  # variant-of
+  "variant-of" sub "parentship"
+    relates "original"
+    relates "variation";
+
+  # localization
+  "localization" sub "parentship"
+    relates "location"
+    relates "localized";
+
+  # belonging
+  "gathering" sub "parentship"
+    relates "gather"
+    relates "part_of";
 
   ## ENTITIES
   # Migration entities
@@ -274,22 +291,6 @@ define
     has "platform_registration"
     has "created_at"
     has "updated_at";
-
-  "User" sub entity
-    has "type"
-    has "username"
-    has "password"
-    has "email"
-    has "firstname"
-    has "lastname"
-    has "language"
-    has "grant" # roles is a reserved word
-    has "created_at"
-    has "updated_at"
-    plays "client"
-    plays "author"
-    plays "member"
-    plays "allowed";
 
   "Group" sub entity
     has "type"
@@ -362,15 +363,56 @@ define
     plays "external_reference";
 
   "Identity" sub "Stix-Domain"
+    is-abstract
     has "name"
     has "description"
-    has "identity_class"
-    has "sector"
-    has "contact_information"
     plays "creator"
     plays "target"
     plays "origin"
+    plays "dummy"
     plays "genuine";
+
+  "Country" sub "Identity"
+    plays "location";
+
+  "City" sub "Identity"
+    plays "localized"
+    plays "location";
+
+  "Sector" sub "Identity"
+    plays "gather";
+
+  "Organization" sub "Identity"
+    plays "localized"
+    plays "gather";
+
+  "Threat-Actor" sub "Identity"
+    has "alias"
+    has "stix_role"
+    has "goal"
+    has "sophistication"
+    has "resource_level"
+    has "primary_motivation"
+    has "secondary_motivation"
+    has "personal_motivation"
+    plays "attribution"
+    plays "source"
+    plays "user"
+    plays "characterize"
+    plays "part_of";
+
+  "User" sub "Identity"
+    has "password"
+    has "email"
+    has "firstname"
+    has "lastname"
+    has "language"
+    has "grant" # roles is a reserved word
+    plays "client"
+    plays "author"
+    plays "member"
+    plays "allowed"
+    plays "part_of";
 
   "Indicator" sub "Stix-Domain"
     has "name"
@@ -381,7 +423,7 @@ define
     plays "phase_belonging"
     plays "indicator";
 
-  "X-OpenCTI-Incident" sub "Stix-Domain"
+  "Incident" sub "Stix-Domain"
     has "name"
     has "description"
     has "first_seen"
@@ -439,24 +481,6 @@ define
     has "published"
     has "report_class"
     plays "knowledge_aggregation";
-
-  "Threat-Actor" sub "Stix-Domain"
-    has "name"
-    has "description"
-    has "alias"
-    has "stix_role"
-    has "goal"
-    has "sophistication"
-    has "resource_level"
-    has "primary_motivation"
-    has "secondary_motivation"
-    has "personal_motivation"
-    plays "attribution"
-    plays "source"
-    plays "dummy"
-    plays "user"
-    plays "origin"
-    plays "characterize";
 
   "Tool" sub "Stix-Domain"
     has "name"

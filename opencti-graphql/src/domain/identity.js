@@ -27,9 +27,9 @@ export const markingDefinitions = (identityId, args) =>
   );
 
 export const addIdentity = async (user, identity) => {
-  const createIdentity = qk(`insert $identity isa Identity 
-    has type "identity";
-    $identity has stix_id "identity--${uuid()}";
+  const createIdentity = qk(`insert $identity isa ${identity.type} 
+    has type "${identity.type.toLowerCase()}";
+    $identity has stix_id "${identity.type.toLowerCase()}--${uuid()}";
     $identity has name "${identity.name}";
     $identity has description "${identity.description}";
     $identity has created ${now()};
@@ -69,7 +69,7 @@ export const identityCleanContext = (user, identityId) => {
 
 export const identityEditContext = (user, identityId, input) => {
   setEditContext(user, identityId, input);
-  loadByID(identityId).then(identity =>
+  return loadByID(identityId).then(identity =>
     notify(BUS_TOPICS.Identity.EDIT_TOPIC, identity, user)
   );
 };

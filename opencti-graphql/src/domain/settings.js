@@ -44,7 +44,7 @@ export const settingsCleanContext = (user, settingsId) => {
 
 export const settingsEditContext = (user, settingsId, input) => {
   setEditContext(user, settingsId, input);
-  loadByID(settingsId).then(settings =>
+  return loadByID(settingsId).then(settings =>
     notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
   );
 };

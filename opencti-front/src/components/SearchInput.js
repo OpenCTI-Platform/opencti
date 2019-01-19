@@ -8,60 +8,52 @@ import { compose } from 'ramda';
 import inject18n from './i18n';
 
 const styles = theme => ({
-  searchInputRoot: {
+  searchRoot: {
     borderRadius: 5,
     padding: '0 10px 0 10px',
     backgroundColor: theme.palette.field.background,
   },
-  searchInputInput: {
+  searchRootInDrawer: {
+    borderRadius: 5,
+    padding: '0 10px 0 10px',
+    backgroundColor: theme.palette.navAlt.background,
+  },
+  searchInput: {
     transition: theme.transitions.create('width'),
     width: 250,
     '&:focus': {
       width: 350,
     },
   },
-  searchInputRootStatic: {
-    borderRadius: 5,
-    padding: '0 10px 0 10px',
-    backgroundColor: theme.palette.navAlt.background,
-  },
-  searchInputInputStatic: {
-    width: 250,
-  },
 });
 
 class SearchInput extends Component {
   render() {
     const {
-      t, classes, handleSearch, variant, placeholder
+      t, classes, onChange, onSubmit, variant,
     } = this.props;
-    if (variant === 'controlled') {
-      return (
-          <Input
-            name='keyword'
-            placeholder={placeholder}
-            onChange={handleSearch.bind(this)}
-            startAdornment={
-              <InputAdornment position='start'>
-                <Search/>
-              </InputAdornment>
-            }
-            classes={{ root: classes.searchInputRootStatic, input: classes.searchInputInputStatic }}
-            disableUnderline={true}
-          />
-      );
-    }
     return (
       <Input
         name='keyword'
         placeholder={`${t('Search')}...`}
-        onChange={handleSearch.bind(this)}
+        onChange={(event) => {
+          const { value } = event.target;
+          if (typeof onChange === 'function') {
+            onChange(value);
+          }
+        }}
+        onKeyPress={(event) => {
+          const { value } = event.target;
+          if (typeof onSubmit === 'function' && event.key === 'Enter') {
+            onSubmit(value);
+          }
+        }}
         startAdornment={
           <InputAdornment position='start'>
             <Search/>
           </InputAdornment>
         }
-        classes={{ root: classes.searchInputRoot, input: classes.searchInputInput }}
+        classes={{ root: variant === 'inDrawer' ? classes.searchRootInDrawer : classes.searchRoot, input: classes.searchInput }}
         disableUnderline={true}
       />
     );
@@ -71,9 +63,9 @@ class SearchInput extends Component {
 SearchInput.propTypes = {
   t: PropTypes.func.isRequired,
   classes: PropTypes.object.isRequired,
-  handleSearch: PropTypes.func,
+  onChange: PropTypes.func,
+  onSubmit: PropTypes.func,
   variant: PropTypes.string,
-  placeholder: PropTypes.string,
 };
 
 export default compose(

@@ -41,7 +41,7 @@ const styles = theme => ({
 });
 
 const inlineStyles = {
-  username: {
+  name: {
     float: 'left',
     width: '20%',
     height: 20,
@@ -94,8 +94,8 @@ class UserLineComponent extends Component {
         </ListItemIcon>
         <ListItemText primary={
           <div>
-            <div className={classes.bodyItem} style={inlineStyles.username}>
-              {user.username}
+            <div className={classes.bodyItem} style={inlineStyles.name}>
+              {user.name}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.email}>
               {user.email}
@@ -131,7 +131,7 @@ const UserLineFragment = createFragmentContainer(UserLineComponent, {
   user: graphql`
       fragment UserLine_user on User {
           id,
-          username,
+          name,
           email,
           firstname,
           lastname,
@@ -155,7 +155,7 @@ class UserLineDummyComponent extends Component {
         </ListItemIcon>
         <ListItemText primary={
           <div>
-            <div className={classes.bodyItem} style={inlineStyles.username}>
+            <div className={classes.bodyItem} style={inlineStyles.name}>
               <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.email}>

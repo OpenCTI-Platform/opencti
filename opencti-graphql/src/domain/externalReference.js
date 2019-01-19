@@ -97,7 +97,7 @@ export const externalReferenceEditContext = (
   input
 ) => {
   setEditContext(user, externalReferenceId, input);
-  loadByID(externalReferenceId).then(externalReference =>
+  return loadByID(externalReferenceId).then(externalReference =>
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
   );
 };

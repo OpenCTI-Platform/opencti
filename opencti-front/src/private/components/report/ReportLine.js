@@ -8,9 +8,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight, Description } from '@material-ui/icons';
-import {
-  compose, propOr, pathOr, take,
-} from 'ramda';
+import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 
@@ -94,13 +92,14 @@ class ReportLineComponent extends Component {
               {report.name}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.author}>
-              {pathOr('', ['createdByRef', 'name'], report)}
+              {pathOr('', ['createdByRef', 'node', 'name'], report)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.published}>
               {fd(report.published)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.marking}>
-              {take(2, pathOr([], ['markingDefinitions', 'edges'], report)).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} variant='inList' label={markingDefinition.node.definition}/>)}
+              {take(2, pathOr([], ['markingDefinitions', 'edges'], report)).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} variant='inList'
+                                                                                                                  label={markingDefinition.node.definition}/>)}
             </div>
           </div>
         }/>
@@ -124,7 +123,9 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
           id
           name
           createdByRef {
-              name
+              node {
+                  name
+              }
           }
           published
           markingDefinitions {

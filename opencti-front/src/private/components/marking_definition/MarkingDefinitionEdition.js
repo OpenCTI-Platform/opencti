@@ -133,8 +133,8 @@ class MarkingDefinitionEditionContainer extends Component {
     } = this.props;
     const { editContext } = markingDefinition;
     // Add current user to the context if is not available yet.
-    const missingMe = find(propEq('username', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { username: me.email }, editContext) : editContext;
+    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
+    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
     const initialValues = pick(['definition_type', 'definition', 'color', 'level'], markingDefinition);
     return (
       <div>
@@ -201,7 +201,7 @@ const MarkingDefinitionEditionFragment = createFragmentContainer(MarkingDefiniti
           color
           level
           editContext {
-              username
+              name
               focusOn
           }
       }

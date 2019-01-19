@@ -17,21 +17,19 @@ public class Identity extends Domain {
 
     @Override
     public void load(GraknDriver driver, Map<String, Stix> stixElements) {
-        Object identity = driver.read(format("match $m isa Identity has stix_id %s; get;", prepare(getId())));
+        Object identity = driver.read(format("match $m isa Organization has stix_id %s; get;", prepare(getId())));
         if (identity == null) {
-            String identityCreation = format("insert $m isa Identity " +
+            String identityCreation = format("insert $m isa Organization " +
                             "has stix_id %s " +
                             "has name %s " +
-                            "has identity_class %s " +
                             "has type %s " +
                             "has created %s " +
                             "has modified %s " +
                             "has created_at %s " +
                             "has updated_at %s;",
-                    prepare(getId()),
+                    prepare(getId()).replace("identity", "organization"),
                     prepare(getName()),
-                    prepare(getIdentity_class()),
-                    prepare(getType()),
+                    "\"organization\"",
                     getCreated(),
                     getModified(),
                     getCurrentTime(),
@@ -42,7 +40,6 @@ public class Identity extends Domain {
     }
 
     private String name;
-    private String identity_class;
 
     public String getName() {
         return name;
@@ -50,13 +47,5 @@ public class Identity extends Domain {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    private String getIdentity_class() {
-        return identity_class;
-    }
-
-    public void setIdentity_class(String identity_class) {
-        this.identity_class = identity_class;
     }
 }

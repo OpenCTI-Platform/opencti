@@ -91,8 +91,8 @@ class ReportEditionContainer extends Component {
     } = this.props;
     const { editContext } = report;
     // Add current user to the context if is not available yet.
-    const missingMe = find(propEq('username', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { username: me.email }, editContext) : editContext;
+    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
+    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
     return (
       <div>
         <div className={classes.header}>
@@ -134,7 +134,7 @@ const ReportEditionFragment = createFragmentContainer(ReportEditionContainer, {
     fragment ReportEditionContainer_report on Report {
       ...ReportEditionOverview_report
       editContext {
-        username
+        name
         focusOn
       }
     }

@@ -80,7 +80,7 @@ class TopBar extends Component {
     this.props.history.push('/');
   }
 
-  handleSearch() {
+  handleSearch(keyword) {
     return false;
   }
 
@@ -106,7 +106,7 @@ class TopBar extends Component {
             {location.pathname === '/dashboard/settings' || location.pathname.match('/dashboard/settings/[a-z_]+$') ? <TopMenuSettings/> : ''}
           </div>
           <div className={classes.searchContainer}>
-            <SearchInput handleSearch={this.handleSearch.bind(this)}/>
+            <SearchInput onSubmit={this.handleSearch.bind(this)}/>
           </div>
           <IconButton size='large' classes={{ root: classes.menuButton }} aria-owns={this.state.open ? 'menu-appbar' : null}
                       aria-haspopup='true' onClick={this.handleOpenMenu.bind(this)} color='inherit'>

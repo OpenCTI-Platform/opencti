@@ -72,7 +72,7 @@ export const groupCleanContext = (user, groupId) => {
 
 export const groupEditContext = (user, groupId, input) => {
   setEditContext(user, groupId, input);
-  loadByID(groupId).then(group =>
+  return loadByID(groupId).then(group =>
     notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user)
   );
 };

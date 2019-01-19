@@ -48,7 +48,7 @@ UserInformationComponent.propTypes = {
 const UserInformationFragment = createFragmentContainer(UserInformationComponent, {
   me: graphql`
       fragment UserInformation_me on User {
-          username,
+          name,
           firstname,
           lastname,
           email,

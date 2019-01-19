@@ -75,7 +75,7 @@ export const killChainPhaseCleanContext = (user, killChainPhaseId) => {
 
 export const killChainPhaseEditContext = (user, killChainPhaseId, input) => {
   setEditContext(user, killChainPhaseId, input);
-  loadByID(killChainPhaseId).then(killChainPhase =>
+  return loadByID(killChainPhaseId).then(killChainPhase =>
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );
 };

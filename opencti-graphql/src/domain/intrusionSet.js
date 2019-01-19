@@ -69,7 +69,7 @@ export const intrusionSetCleanContext = (user, intrusionSetId) => {
 
 export const intrusionSetEditContext = (user, intrusionSetId, input) => {
   setEditContext(user, intrusionSetId, input);
-  loadByID(intrusionSetId).then(intrusionSet =>
+  return loadByID(intrusionSetId).then(intrusionSet =>
     notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet, user)
   );
 };

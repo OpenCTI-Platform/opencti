@@ -11,6 +11,11 @@ type RelationData {
     relation: RelationEmbedded
 }
 
+type createdByRef {
+    node: Identity
+    relation: RelationEmbedded
+}
+
 ### Relay
 type PageInfo {
     startCursor: String!,
@@ -34,7 +39,7 @@ input EditContext {
     focusOn: String! # Field name
 }
 type EditUserContext {
-    username: String!
+    name: String!
     focusOn: String # Field name
 }
 
@@ -60,9 +65,65 @@ input SettingsAddInput {
     platform_registration: Boolean
 }
 
+### STIX objects
+enum StixDomainOrderering {
+    name,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type StixDomainConnection {
+    pageInfo: PageInfo!
+    edges: [StixDomainEdge]
+}
+type StixDomainEdge {
+    cursor: String!
+    node: StixDomain!
+}
+union StixDomain =  MarkingDefinition | ExternalReference | KillChainPhase | ThreatActor | IntrusionSet | Malware | Report | Group | User | Organization
+
+### Identities
+enum IdentitiesOrdering {
+    stix_id,
+    name,
+    description,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type IdentityConnection {
+    pageInfo: PageInfo!
+    edges: [IdentityEdge]
+}
+type IdentityEdge {
+    cursor: String!
+    node: Identity!
+}
+type Identity {
+    id: ID!
+    name: String!
+    description: String
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
+    markingDefinitions: MarkingDefinitionConnection
+    created_at: DateTime
+    updated_at: DateTime
+}
+input IdentityAddInput  {
+    name: String!
+    description: String
+    type: String!
+    markingDefinitions: [String]
+    clientMutationId: String
+}
+
 ### User
 enum UsersOrdering {
-    username,
+    name,
     email,
     firstname,
     lastname,
@@ -84,10 +145,10 @@ type UserEdge {
 }
 type User {
     id: ID!
-    username: String
+    name: String
     firstname: String
     lastname: String
-    email: String!
+    email: String
     language: String
     grant: [String]
     editContext: [EditUserContext]
@@ -96,16 +157,53 @@ type User {
     updated_at: DateTime
 }
 input UserAddInput {
-    username: String!
-    email: String!
+    name: String!
+    email: String
     firstname: String
     lastname: String
     language: String
-    grant: [UserRole]!
+    grant: [UserRole]
 }
 input UserLoginInput {
     email: String!
     password: String!
+}
+
+### Organizations
+enum OrganizationsOrdering {
+    stix_id,
+    name,
+    description,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type OrganizationConnection {
+    pageInfo: PageInfo!
+    edges: [OrganizationEdge]
+}
+type OrganizationEdge {
+    cursor: String!
+    node: Organization!
+}
+type Organization {
+    id: ID!
+    name: String!
+    description: String
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
+    markingDefinitions: MarkingDefinitionConnection
+    created_at: DateTime
+    updated_at: DateTime
+}
+input OrganizationAddInput  {
+    name: String!
+    description: String
+    markingDefinitions: [String]
+    clientMutationId: String
 }
 
 ### Group
@@ -264,46 +362,6 @@ input KillChainPhaseAddInput {
     phase_order: Int!
 }
 
-### Identities
-enum IdentitiesOrdering {
-    stix_id,
-    name,
-    description,
-    identity_class,
-    created,
-    modified,
-    created_at,
-    updated_at
-}
-type IdentityConnection {
-    pageInfo: PageInfo!
-    edges: [IdentityEdge]
-}
-type IdentityEdge {
-    cursor: String!
-    node: Identity!
-}
-type Identity {
-    id: ID!
-    name: String!
-    description: String
-    identity_class: String
-    created: DateTime
-    modified: DateTime
-    revoked: Boolean
-    editContext: [EditUserContext]
-    markingDefinitions: MarkingDefinitionConnection
-    created_at: DateTime
-    updated_at: DateTime
-}
-input IdentityAddInput   {
-    name: String!
-    description: String
-    identity_class: String!
-    markingDefinitions: [String]
-    clientMutationId: String
-}
-
 ### Threat Actors
 enum ThreatActorsOrdering {
     stix_id,
@@ -338,6 +396,7 @@ type ThreatActor {
     modified: DateTime
     revoked: Boolean
     editContext: [EditUserContext]
+    createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
     created_at: DateTime
     updated_at: DateTime
@@ -378,13 +437,14 @@ type IntrusionSet {
     resource_level: String
     primary_motivation: String
     secondary_motivation: String
-    created_at: DateTime
-    updated_at: DateTime
     created: DateTime
     modified: DateTime
     revoked: Boolean
     editContext: [EditUserContext]
+    createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
+    created_at: DateTime
+    updated_at: DateTime
 }
 input IntrusionSetAddInput {
     name: String!
@@ -414,15 +474,16 @@ type Malware {
     name: String!
     stix_label: [String]
     description: String
-    created_at: DateTime
-    updated_at: DateTime
     created: DateTime
     modified: DateTime
     revoked: Boolean
     editContext: [EditUserContext]
+    createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
     killChainPhases: KillChainPhaseConnection
     reports: ReportConnection
+    created_at: DateTime
+    updated_at: DateTime
 }
 input MalwareAddInput {
     name: String!
@@ -430,24 +491,6 @@ input MalwareAddInput {
     markingDefinitions: [String]
     killChainPhases: [String]
     clientMutationId: String
-}
-
-### STIX objects
-enum StixDomainOrderering {
-    name,
-    created,
-    modified,
-    created_at,
-    updated_at
-}
-union StixDomain =  MarkingDefinition | ExternalReference | KillChainPhase | ThreatActor | IntrusionSet | Malware | Report | Group | User
-type StixDomainEdge {
-    cursor: String!
-    node: StixDomain!
-}
-type StixDomainConnection {
-    pageInfo: PageInfo!
-    edges: [StixDomainEdge]
 }
 
 ### Reports
@@ -477,16 +520,16 @@ type Report {
     name: String!
     description: String
     report_class: String
-    created_at: DateTime
-    updated_at: DateTime
     created: DateTime
     modified: DateTime
     published: DateTime
     revoked: Boolean
     editContext: [EditUserContext]
-    createdByRef: Identity
+    createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
     objectRefs: StixDomainConnection
+    created_at: DateTime
+    updated_at: DateTime
 }
 input ReportAddInput {
     name: String!
@@ -510,10 +553,16 @@ input RelationAddInput {
 type Query {
     # Settings
     settings: Settings
+    # Identities
+    identity(id: String!): Identity
+    identities(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): IdentityConnection
     # Users
     me: User
     user(id: String!): User
     users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
+    # Organizations
+    organization(id: String!): Organization
+    organizations(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): OrganizationConnection
     # Groups
     group(id: String!): Group
     groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
@@ -527,9 +576,6 @@ type Query {
     # KillChainPhases
     killChainPhase(id: String!): KillChainPhase
     killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, search: String): KillChainPhaseConnection
-    # Identities
-    identity(id: String!): Identity
-    identities(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): IdentityConnection
     # ThreatActors
     threatActor(id: String!): ThreatActor
     threatActors(first: Int, after: ID, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, search: String): ThreatActorConnection
@@ -548,12 +594,13 @@ type Query {
 ### SUBSCRIPTIONS
 type Subscription {
     settings(id: ID!): Settings
+    identity(id: ID!): Identity
     user(id: ID!): User
+    organization(id: ID!): Organization
     group(id: ID!): Group
     markingDefinition(id: ID!): MarkingDefinition
     externalReference(id: ID!): ExternalReference
     killChainPhase(id: ID!): KillChainPhase
-    identity(id: ID!): Identity
     threatActor(id: ID!): ThreatActor
     intrusionSet(id: ID!): IntrusionSet
     malware(id: ID!): Malware
@@ -568,11 +615,29 @@ type SettingsEditMutations {
     contextPatch(input: EditContext): Settings
 }
 
+# Identity
+type IdentityEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): Identity
+    contextPatch(input: EditContext): Identity
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId: ID!): RelationData
+}
+
 # User
 type UserEditMutations {
     delete: ID
     fieldPatch(input: EditInput): User
     contextPatch(input: EditContext): User
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId: ID!): RelationData
+}
+
+# Organization
+type OrganizationEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): Organization
+    contextPatch(input: EditContext): Organization
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -609,15 +674,6 @@ type KillChainPhaseEditMutations {
     delete: ID
     fieldPatch(input: EditInput): KillChainPhase
     contextPatch(input: EditContext): KillChainPhase
-    relationAdd(input: RelationAddInput): RelationData
-    relationDelete(relationId: ID!): RelationData
-}
-
-# Identity
-type IdentityEditMutations {
-    delete: ID
-    fieldPatch(input: EditInput): Identity
-    contextPatch(input: EditContext): Identity
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -666,9 +722,15 @@ type Mutation {
     settingsEdit(id: ID!): SettingsEditMutations
     # Login
     token(input: UserLoginInput) : String
+    # Identity
+    identityAdd(input: IdentityAddInput): Identity
+    identityEdit(id: ID!): IdentityEditMutations
     # User
     userAdd(input: UserAddInput): User
     userEdit(id: ID!): UserEditMutations
+    # Organization
+    organizationAdd(input: OrganizationAddInput): Organization
+    organizationEdit(id: ID!): OrganizationEditMutations
     # Group
     groupAdd(input: GroupAddInput): Group
     groupEdit(id: ID!): GroupEditMutations
@@ -681,9 +743,6 @@ type Mutation {
     # KillChainPhase
     killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase
     killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations
-    # Identity
-    identityAdd(input: IdentityAddInput): Identity
-    identityEdit(id: ID!): IdentityEditMutations
     # ThreatActor
     threatActorAdd(input: ThreatActorAddInput): ThreatActor
     threatActorEdit(id: ID!): ThreatActorEditMutations

@@ -5,13 +5,14 @@ import { makeExecutableSchema } from 'graphql-tools';
 // noinspection NodeJsCodingAssistanceForCoreModules
 import path from 'path';
 import settingsResolvers from '../resolvers/settings';
+import identityResolvers from '../resolvers/identity';
 import userResolvers from '../resolvers/user';
+import organizationResolvers from '../resolvers/organization';
 import groupResolvers from '../resolvers/group';
 import stixDomainDefinitionResolvers from '../resolvers/stixDomain';
 import markingDefinitionResolvers from '../resolvers/markingDefinition';
 import externalReferenceResolvers from '../resolvers/externalReference';
 import killChainPhaseResolvers from '../resolvers/killChainPhase';
-import identityResolvers from '../resolvers/identity';
 import threatActorResolvers from '../resolvers/threatActor';
 import intrusionSetResolvers from '../resolvers/intrusionSet';
 import malwareResolvers from '../resolvers/malware';
@@ -27,13 +28,14 @@ const typeDefs = importSchema(schemaPath);
 const resolvers = mergeResolvers([
   globalResolvers,
   settingsResolvers,
+  identityResolvers,
   userResolvers,
+  organizationResolvers,
   groupResolvers,
   stixDomainDefinitionResolvers,
   markingDefinitionResolvers,
   externalReferenceResolvers,
   killChainPhaseResolvers,
-  identityResolvers,
   threatActorResolvers,
   intrusionSetResolvers,
   malwareResolvers,

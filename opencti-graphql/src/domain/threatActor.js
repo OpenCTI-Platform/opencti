@@ -69,7 +69,7 @@ export const threatActorCleanContext = (user, threatActorId) => {
 
 export const threatActorEditContext = (user, threatActorId, input) => {
   setEditContext(user, threatActorId, input);
-  loadByID(threatActorId).then(threatActor =>
+  return loadByID(threatActorId).then(threatActor =>
     notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, threatActor, user)
   );
 };
