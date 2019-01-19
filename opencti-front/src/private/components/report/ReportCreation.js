@@ -79,6 +79,7 @@ const reportValidation = t => Yup.object().shape({
   name: Yup.string()
     .required(t('This field is required')),
   published: Yup.date()
+    .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
 });
 

@@ -31,9 +31,9 @@ export const createdByRef = (reportId, args) =>
   queryAll(
     `match $x isa Identity; 
     $rel(creator:$x, so:$report) isa created_by_ref; 
-    $report id ${reportId}; get $x;`,
+    $report id ${reportId};  offset 0; limit 1; get $x;`,
     args
-  ).then(r => head(r)); // Return the unique result;
+  ).then(r => head(r));
 
 export const markingDefinitions = (reportId, args) =>
   paginate(
@@ -87,6 +87,7 @@ export const addReport = async (user, report) => {
     );
     await Promise.all(markingDefinitionsPromises);
   }
+
   await wTx.commit();
 
   return loadByID(createdReportId).then(created =>

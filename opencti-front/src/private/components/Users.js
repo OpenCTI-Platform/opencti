@@ -16,9 +16,6 @@ import inject18n from '../../components/i18n';
 import UserCreation from './user/UserCreation';
 
 const styles = () => ({
-  windowScrollerWrapper: {
-    flex: '1 1 auto',
-  },
   linesContainer: {
     marginTop: 0,
     paddingTop: 0,

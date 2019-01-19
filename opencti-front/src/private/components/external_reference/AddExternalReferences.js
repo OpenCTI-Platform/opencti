@@ -159,9 +159,6 @@ class AddExternalReferences extends Component {
           const payload = store.getRootField('externalReferenceEdit').getLinkedRecord('relationAdd', { input });
           const container = store.getRoot();
           sharedUpdater(store, container.getDataID(), paginationOptions, payload);
-        },
-        onCompleted: () => {
-          console.log(this.props);
         }
       });
     }
@@ -193,7 +190,6 @@ class AddExternalReferences extends Component {
               query={externalReferencesLinesSearchQuery}
               variables={{ search: this.state.search, first: 20 }}
               render={({ props }) => {
-                console.log(props);
                 if (props && props.externalReferences) {
                   return (
                     <List>

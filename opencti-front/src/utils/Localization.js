@@ -44,6 +44,7 @@ const i18n = {
       'The value must be a number': 'La valeur doit être un nombre',
       'The value must be an email address': 'La valeur doit être une adresse email',
       'The value must be an URL': 'La valeur doit être une URL',
+      'The value must be a date (YYYY-MM-DD)': 'La valeur doit être une date (AAAA-MM-JJ)',
       'The values do not match': 'Les valeurs ne correspondent pas',
       'No available options': 'Aucune option disponible',
       'Create a user': 'Créer un utilisateur',

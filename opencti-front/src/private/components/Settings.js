@@ -12,8 +12,6 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import * as Yup from 'yup';
-import * as rxjs from 'rxjs/index';
-import { debounceTime } from 'rxjs/operators/index';
 import { SubscriptionFocus } from '../../components/Subscription';
 import environment from '../../relay/environment';
 import inject18n from '../../components/i18n';
@@ -105,39 +103,7 @@ const settingsValidation = t => Yup.object().shape({
   platform_registration: Yup.boolean(),
 });
 
-// We wait 0.5 sec of interruption before saving.
-const onFormChange$ = new rxjs.Subject().pipe(
-  debounceTime(500),
-);
-
 class Settings extends Component {
-  componentDidMount() {
-    this.subscription = onFormChange$.subscribe(
-      (data) => {
-        commitMutation(environment, {
-          mutation: settingsMutationFieldPatch,
-          variables: {
-            id: data.id,
-            input: data.input,
-          },
-        });
-      },
-    );
-  }
-
-  componentWillUnmount() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
-  }
-
-  handleChangeField(id, name, value) {
-    // Validate the field first, if field is valid, debounce then save.
-    settingsValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      onFormChange$.next({ id, input: { key: name, value } });
-    }).catch(() => false);
-  }
-
   handleChangeFocus(id, name) {
     commitMutation(environment, {
       mutation: settingsFocus,
@@ -148,6 +114,15 @@ class Settings extends Component {
         },
       },
     });
+  }
+
+  handleSubmitField(id, name, value) {
+    settingsValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
+      commitMutation(environment, {
+        mutation: settingsMutationFieldPatch,
+        variables:{ id, input: { key: name, value } },
+      });
+    }).catch(() => false);
   }
 
   render() {
@@ -179,17 +154,17 @@ class Settings extends Component {
                           </Typography>
                           <Field name='platform_title' component={TextField} label={t('Name')} fullWidth={true}
                                  onFocus={this.handleChangeFocus.bind(this, id)}
-                                 onChange={this.handleChangeField.bind(this, id)}
+                                 onSubmit={this.handleSubmitField.bind(this, id)}
                                  helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='platform_title'/>}/>
                           <Field name='platform_email' component={TextField} label={t('Sender email address')}
                                  fullWidth={true} style={{ marginTop: 10 }}
                                  onFocus={this.handleChangeFocus.bind(this, id)}
-                                 onChange={this.handleChangeField.bind(this, id)}
+                                 onSubmit={this.handleSubmitField.bind(this, id)}
                                  helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='platform_email'/>}/>
                           <Field name='platform_url' component={TextField} label={t('Base URL')}
                                  fullWidth={true} style={{ marginTop: 10 }}
                                  onFocus={this.handleChangeFocus.bind(this, id)}
-                                 onChange={this.handleChangeField.bind(this, id)}
+                                 onSubmit={this.handleSubmitField.bind(this, id)}
                                  helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='platform_email'/>}/>
                           <Field name='platform_language'
                                  component={Select}
@@ -201,7 +176,7 @@ class Settings extends Component {
                                  }}
                                  containerstyle={{ marginTop: 10, width: '100%' }}
                                  onFocus={this.handleChangeFocus.bind(this, id)}
-                                 onChange={this.handleChangeField.bind(this, id)}
+                                 onChange={this.handleSubmitField.bind(this, id)}
                                  helpertext={<SubscriptionFocus me={me} users={editUsers} fieldName='platform_language'/>}>
                             <MenuItem value='auto'><em>{t('Automatic')}</em></MenuItem>
                             <MenuItem value='en'>English</MenuItem>
@@ -214,8 +189,8 @@ class Settings extends Component {
                           <Typography variant='h1' gutterBottom={true}>
                             {t('Options')}
                           </Typography>
-                          <Field name='platform_external_auth' component={Switch} label={t('External authentication')} onChange={this.handleChangeField.bind(this, id)}/>
-                          <Field name='platform_registration' component={Switch} label={t('Registration')} onChange={this.handleChangeField.bind(this, id)}/>
+                          <Field name='platform_external_auth' component={Switch} label={t('External authentication')} onChange={this.handleSubmitField.bind(this, id)}/>
+                          <Field name='platform_registration' component={Switch} label={t('Registration')} onChange={this.handleSubmitField.bind(this, id)}/>
                         </Paper>
                       </Grid>
                     </Grid>

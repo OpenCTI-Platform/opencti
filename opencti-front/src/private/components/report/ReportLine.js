@@ -49,6 +49,7 @@ const inlineStyles = {
   name: {
     float: 'left',
     width: '40%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -56,6 +57,7 @@ const inlineStyles = {
   author: {
     float: 'left',
     width: '20%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -63,12 +65,14 @@ const inlineStyles = {
   published: {
     float: 'left',
     width: '15%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   marking: {
     float: 'left',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -87,16 +91,16 @@ class ReportLineComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
-              {propOr('-', 'name', report)}
+              {report.name}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.author}>
-              {pathOr('-', ['createdByRef', 'name'], report)}
+              {pathOr('', ['createdByRef', 'name'], report)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.published}>
-              {fd(propOr(null, 'published', report))}
+              {fd(report.published)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.marking}>
-              {take(2, pathOr([], ['markingDefinitions', 'edges'], report)).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} label={markingDefinition.node.definition}/>)}
+              {take(2, pathOr([], ['markingDefinitions', 'edges'], report)).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} variant='inList' label={markingDefinition.node.definition}/>)}
             </div>
           </div>
         }/>

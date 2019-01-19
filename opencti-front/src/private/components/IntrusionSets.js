@@ -23,9 +23,6 @@ import IntrusionSetsCards, { intrusionSetsCardsQuery, nbCardsToLoad } from './in
 import inject18n from '../../components/i18n';
 
 const styles = () => ({
-  windowScrollerWrapper: {
-    flex: '1 1 auto',
-  },
   linesContainer: {
     marginTop: 0,
     paddingTop: 0,

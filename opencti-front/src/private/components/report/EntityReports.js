@@ -97,7 +97,6 @@ class EntityReports extends Component {
                 return (
                   <List>
                     {props.reportsOf.edges.map((report) => {
-                      console.log(report);
                       return (
                         <ListItem
                           dense={true}
