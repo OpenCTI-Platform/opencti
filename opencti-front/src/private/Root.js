@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Redirect, withRouter } from 'react-router-dom';
-import { QueryRenderer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import { compose, filter, isEmpty } from 'ramda';
 import Cookies from 'js-cookie';
-import environment from '../relay/environment';
+import { QueryRenderer } from '../relay/environment';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedDocumentTitle } from '../components/AppDocumentTitle';
 import TopBar from './components/nav/TopBar';
@@ -102,7 +101,6 @@ class Root extends Component {
 
     return (
       <QueryRenderer
-        environment={environment}
         query={rootQuery}
         variables={{}}
         render={({ props }) => (

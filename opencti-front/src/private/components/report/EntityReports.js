@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { QueryRenderer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
@@ -15,7 +14,7 @@ import { Description } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 import truncate from '../../../utils/String';
-import environment from '../../../relay/environment';
+import { QueryRenderer } from '../../../relay/environment';
 
 const styles = theme => ({
   paper: {
@@ -91,7 +90,6 @@ class EntityReports extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
-            environment={environment}
             query={entityReportsQuery}
             variables={{ objectId: entityId, first: 5 }}
             render={({ props }) => {

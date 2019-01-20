@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
-import { QueryRenderer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import environment from '../../../relay/environment';
+import { QueryRenderer } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import Report from './Report';
 import ReportKnowledge from './ReportKnowledge';
@@ -26,7 +25,6 @@ class RootReport extends Component {
       <div>
         <TopBar me={me || null}/>
         <QueryRenderer
-          environment={environment}
           query={reportQuery}
           variables={{ id: reportId }}
           render={({ props }) => (

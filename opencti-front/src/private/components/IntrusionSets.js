@@ -1,8 +1,7 @@
 /* eslint-disable no-nested-ternary */
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { QueryRenderer } from 'react-relay';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -17,7 +16,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import {
   ArrowDropDown, ArrowDropUp, ArrowUpward, ArrowDownward, Dashboard, TableChart,
 } from '@material-ui/icons';
-import environment from '../../relay/environment';
+import { QueryRenderer } from '../../relay/environment';
 import IntrusionSetsLines, { intrusionSetsLinesQuery } from './intrusion_set/IntrusionSetsLines';
 import IntrusionSetsCards, { intrusionSetsCardsQuery, nbCardsToLoad } from './intrusion_set/IntrusionSetsCards';
 import inject18n from '../../components/i18n';
@@ -145,17 +144,13 @@ class IntrusionSets extends Component {
   renderCards() {
     return (
       <QueryRenderer
-        environment={environment}
         query={intrusionSetsCardsQuery}
         variables={{
           count: nbCardsToLoad,
           orderBy: this.state.sortBy,
           orderMode: this.state.orderAsc ? 'asc' : 'desc',
         }}
-        render={({ error, props }) => {
-          if (error) {
-            return <IntrusionSetsCards data={null} dummy={true}/>;
-          }
+        render={({ props }) => {
           if (props) {
             return <IntrusionSetsCards data={props} dummy={false}/>;
           }
@@ -190,13 +185,9 @@ class IntrusionSets extends Component {
           }/>
         </ListItem>
         <QueryRenderer
-          environment={environment}
           query={intrusionSetsLinesQuery}
           variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
-          render={({ error, props }) => {
-            if (error) { // Errors
-              return <IntrusionSetsLines data={null} dummy={true}/>;
-            }
+          render={({ props }) => {
             if (props) { // Done
               return <IntrusionSetsLines data={props}/>;
             }

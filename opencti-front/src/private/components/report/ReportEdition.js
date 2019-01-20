@@ -1,15 +1,14 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
-import { QueryRenderer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
 import ReportEditionContainer from './ReportEditionContainer';
-import environment from '../../../relay/environment';
+import { QueryRenderer } from '../../../relay/environment';
 
 const styles = theme => ({
   editButton: {
@@ -65,13 +64,9 @@ class ReportEdition extends Component {
              className={classes.editButton}><Edit/></Fab>
         <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
           <QueryRenderer
-              environment={environment}
               query={reportEditionQuery}
               variables={{ id: reportId }}
-              render={({ error, props }) => {
-                if (error) { // Errors
-                  return <div> &nbsp; </div>;
-                }
+              render={({ props }) => {
                 if (props) { // Done
                   return <ReportEditionContainer me={props.me} report={props.report}
                                                   handleClose={this.handleClose.bind(this)}/>;

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { QueryRenderer } from 'react-relay';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -15,7 +14,7 @@ import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
-import environment from '../../../relay/environment';
+import { QueryRenderer } from '../../../relay/environment';
 import AddStixDomainsLines, { addStixDomainsLinesQuery } from './AddStixDomainsLines';
 import StixDomainCreation from './StixDomainCreation';
 
@@ -107,7 +106,6 @@ class AddStixDomains extends Component {
           </div>
           <div className={classes.container}>
             <QueryRenderer
-              environment={environment}
               query={addStixDomainsLinesQuery}
               variables={{
                 search: this.state.search,
