@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { propOr, contains, compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
@@ -78,7 +78,7 @@ class TopBar extends Component {
   handleLogout() {
     this.handleCloseMenu();
     Cookies.remove('opencti_token');
-    this.props.history.push('/');
+    this.props.history.push('/login');
   }
 
   handleSearch(keyword) {

@@ -15,7 +15,7 @@ import conf, { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/security';
 import { findByTokenId, setAuthenticationCookie } from './domain/user';
 import schema from './schema/schema';
-import { UnknownError } from './config/errors';
+import { Unknown } from './config/errors';
 
 // Init the http server
 const app = express();
@@ -84,7 +84,7 @@ const server = new ApolloServer({
     logger.error(error); // Log the complete error.
     let e = apolloFormatError(error);
     if (e instanceof GraphQLError) {
-      e = apolloFormatError(new UnknownError()); // Forward only an unknown error
+      e = apolloFormatError(new Unknown()); // Forward only an unknown error
     }
     // Remove the exception stack in production.
     return DEV_MODE ? e : dissocPath(['extensions', 'exception'], e);
