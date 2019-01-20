@@ -71,7 +71,8 @@ class Root extends Component {
         query={rootQuery}
         variables={{}}
         render={({ props }) => (
-          <ConnectedIntlProvider me={props && props.me ? props.me : null} settings={props && props.settings ? props.settings : null}>
+          <ConnectedIntlProvider me={props && props.me ? props.me : null}
+                                 settings={props && props.settings ? props.settings : null}>
             <ConnectedDocumentTitle settings={props && props.settings ? props.settings : null}>
               <div className={classes.root}>
                 <TopBar me={props && props.me ? props.me : null}/>
@@ -79,16 +80,12 @@ class Root extends Component {
                 <main className={classes.content} style={{ paddingRight }}>
                   <div className={classes.toolbar}/>
                   <Route exact path='/dashboard' component={Dashboard}/>
-                  <Route exact path='/dashboard/knowledge' render={() => (
-                    <Redirect to='/dashboard/knowledge/threat_actors'/>
-                  )}/>
+                  <Route exact path='/dashboard/knowledge' render={() => (<Redirect to='/dashboard/knowledge/threat_actors'/>)}/>
                   <Route exact path='/dashboard/knowledge/threat_actors' component={ThreatActors}/>
                   <Route exact path='/dashboard/knowledge/intrusion_sets' component={IntrusionSets}/>
                   <Route exact path='/dashboard/knowledge/malwares' component={Malwares}/>
                   <Route path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props && props.me ? props.me : null}/>}/>
-                  <Route exact path='/dashboard/reports' render={() => (
-                    <Redirect to='/dashboard/reports/all'/>
-                  )}/>
+                  <Route exact path='/dashboard/reports' render={() => (<Redirect to='/dashboard/reports/all'/>)}/>
                   <Route exact path='/dashboard/reports/all' component={Reports}/>
                   <Route path='/dashboard/reports/all/:reportId' render={routeProps => <RootReport {...routeProps} me={props && props.me ? props.me : null}/>}/>
                   <Route exact path='/dashboard/sources/references' component={ExternalReferences}/>
