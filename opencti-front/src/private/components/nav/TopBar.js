@@ -4,6 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { propOr, contains, compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
+import Cookies from 'js-cookie';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import { AccountCircle } from '@material-ui/icons';
@@ -21,7 +22,6 @@ import TopMenuReports from './TopMenuReports';
 import TopMenuReport from './TopMenuReport';
 import TopMenuSources from './TopMenuSources';
 import TopMenuSettings from './TopMenuSettings';
-import { cookies } from '../../../Root';
 
 const styles = theme => ({
   appBar: {
@@ -77,7 +77,7 @@ class TopBar extends Component {
 
   handleLogout() {
     this.handleCloseMenu();
-    cookies.remove('opencti_token');
+    Cookies.remove('opencti_token');
     this.props.history.push('/');
   }
 

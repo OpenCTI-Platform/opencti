@@ -8,13 +8,14 @@ import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { createMuiTheme } from '@material-ui/core/styles';
 import * as serviceWorker from './config/serviceWorker';
+import Cookies from 'js-cookie';
 import theme from './components/Theme';
-import Root, { cookies } from './Root';
+import Root from './Root';
 import Login from './public/components/Login';
 import RootPrivate from './private/Root';
 
 const isLogged = () => {
-  const openctiToken = cookies.get('opencti_token');
+  const openctiToken = Cookies.get('opencti_token');
   if (openctiToken) {
     const decode = jwt.decode(openctiToken);
     return decode !== undefined;

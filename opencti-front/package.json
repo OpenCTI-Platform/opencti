@@ -15,6 +15,7 @@
     "formik-material-ui": "^0.0.16",
     "graphql": "^14.1.1",
     "http-proxy-middleware": "^0.19.1",
+    "js-cookie": "^2.2.0",
     "jsonwebtoken": "^8.4.0",
     "mdi-material-ui": "^5.8.0",
     "moment-timezone": "^0.5.23",
@@ -37,7 +38,6 @@
     "rxjs": "^6.3.3",
     "subscriptions-transport-ws": "^0.9.15",
     "typeface-roboto": "0.0.54",
-    "universal-cookie": "^3.0.7",
     "yup": "^0.26.7"
   },
   "devDependencies": {
