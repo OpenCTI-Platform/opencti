@@ -18,6 +18,7 @@ import inject18n from '../../../components/i18n';
 import truncate from '../../../utils/String';
 import environment from '../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
+import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
 
 const styles = theme => ({
   paper: {
@@ -43,20 +44,6 @@ const styles = theme => ({
     backgroundColor: theme.palette.text.disabled,
   },
 });
-
-export const externalReferenceMutationRelationDelete = graphql`
-    mutation EntityExternalReferencesLinesRelationDeleteMutation($id: ID!, $relationId: ID!) {
-        externalReferenceEdit(id: $id) {
-            relationDelete(relationId: $relationId) {
-                node {
-                    ... on ExternalReference {
-                        id
-                    }
-                }
-            }
-        }
-    }
-`;
 
 class EntityExternalReferencesLines extends Component {
   removeExternalReference(externalReferenceEdge) {

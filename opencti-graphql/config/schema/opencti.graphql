@@ -66,10 +66,8 @@ input SettingsAddInput {
 }
 
 ### STIX objects
-enum StixDomainOrderering {
+enum StixDomainsOrdering {
     name,
-    created,
-    modified,
     created_at,
     updated_at
 }
@@ -83,17 +81,23 @@ type StixDomainEdge {
 }
 interface StixDomain {
     id: ID!
+    name: String!
+    description: String
     created_at: DateTime!
     updated_at: DateTime!
+}
+input StixDomainAddInput  {
+    name: String!
+    description: String
+    type: String!
+    markingDefinitions: [String]
+    clientMutationId: String
 }
 
 ### Identities
 enum IdentitiesOrdering {
     stix_id,
     name,
-    description,
-    created,
-    modified,
     created_at,
     updated_at
 }
@@ -149,6 +153,8 @@ type User implements StixDomain & Identity {
     email: String
     language: String
     grant: [String]
+    created: DateTime
+    modified: DateTime
     editContext: [EditUserContext]
     groups: GroupConnection
     created_at: DateTime!
@@ -161,6 +167,8 @@ input UserAddInput {
     firstname: String
     lastname: String
     language: String
+    created: DateTime
+    modified: DateTime
     grant: [UserRole]
 }
 input UserLoginInput {
@@ -295,7 +303,7 @@ type MarkingDefinitionEdge {
     node: MarkingDefinition!
     relation: RelationEmbedded!
 }
-type MarkingDefinition implements StixDomain {
+type MarkingDefinition {
     id: ID!
     definition_type: String!
     definition: String!
@@ -338,7 +346,7 @@ type ExternalReferenceEdge {
     node: ExternalReference!
     relation: RelationEmbedded!
 }
-type ExternalReference implements StixDomain {
+type ExternalReference {
     id: ID!
     source_name: String!
     description: String
@@ -379,7 +387,7 @@ type KillChainPhaseEdge {
     node: KillChainPhase!
     relation: RelationEmbedded!
 }
-type KillChainPhase implements StixDomain {
+type KillChainPhase {
     id: ID!
     kill_chain_name: String!
     phase_name: String!
@@ -589,6 +597,9 @@ input RelationAddInput {
 type Query {
     # Settings
     settings: Settings
+    # StixDomains
+    stixDomain(id: String!): StixDomain
+    stixDomains(first: Int, after: ID, orderBy: StixDomainsOrdering, orderMode: OrderingMode, search: String): StixDomainConnection
     # Identities
     identity(id: String!): Identity
     identities(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): IdentityConnection
@@ -633,6 +644,7 @@ type Query {
 ### SUBSCRIPTIONS
 type Subscription {
     settings(id: ID!): Settings
+    stixDomain(id: ID!): StixDomain
     identity(id: ID!): Identity
     user(id: ID!): User
     organization(id: ID!): Organization
@@ -653,6 +665,15 @@ type SettingsEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Settings
     contextPatch(input: EditContext): Settings
+}
+
+# StixDomain
+type StixDomainEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): StixDomain
+    contextPatch(input: EditContext): StixDomain
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId: ID!): RelationData
 }
 
 # Identity
@@ -771,6 +792,9 @@ type Mutation {
     settingsEdit(id: ID!): SettingsEditMutations
     # Login
     token(input: UserLoginInput) : String
+    # StixDomain
+    stixDomainAdd(input: StixDomainAddInput): StixDomain
+    stixDomainEdit(id: ID!): StixDomainEditMutations
     # Identity
     identityAdd(input: IdentityAddInput): Identity
     identityEdit(id: ID!): IdentityEditMutations

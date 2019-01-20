@@ -74,6 +74,7 @@ const i18n = {
       'Create an external reference': 'Créer une référence externe',
       'Update an external reference': 'Modifier une référence externe',
       'Add external references': 'Ajouter des références externes',
+      'Add entities': 'Ajouter des entités',
       'The password has been updated': 'Le mot de passe a été modifié',
       'Settings have been updated': 'Les paramètres ont été mis à jour',
       // Menu

@@ -65,9 +65,9 @@ const styles = theme => ({
   },
 });
 
-const externalReferenceCreationMutation = graphql`
-    mutation ExternalReferenceCreationMutation($input: ExternalReferenceAddInput!) {
-        externalReferenceAdd(input: $input) {
+const stixDomainCreationMutation = graphql`
+    mutation StixDomainCreationMutation($input: StixDomainAddInput!) {
+        stixDomainAdd(input: $input) {
             id
             source_name
             description
@@ -78,7 +78,7 @@ const externalReferenceCreationMutation = graphql`
     }
 `;
 
-const externalReferenceValidation = t => Yup.object().shape({
+const stixDomainValidation = t => Yup.object().shape({
   source_name: Yup.string()
     .required(t('This field is required')),
   external_id: Yup.string(),
@@ -91,13 +91,13 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_externalReferences',
+    'Pagination_stixDomains',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class ExternalReferenceCreation extends Component {
+class StixDomainCreation extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -113,12 +113,12 @@ class ExternalReferenceCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm, setErrors }) {
     commitMutation(environment, {
-      mutation: externalReferenceCreationMutation,
+      mutation: stixDomainCreationMutation,
       variables: {
         input: values,
       },
       updater: (store) => {
-        const payload = store.getRootField('externalReferenceAdd');
+        const payload = store.getRootField('stixDomainAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
@@ -169,7 +169,7 @@ class ExternalReferenceCreation extends Component {
               initialValues={{
                 source_name: '', external_id: '', url: '', description: '',
               }}
-              validationSchema={externalReferenceValidation(t)}
+              validationSchema={stixDomainValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
               render={({ submitForm, handleReset, isSubmitting }) => (
@@ -210,7 +210,7 @@ class ExternalReferenceCreation extends Component {
           initialValues={{
             source_name: inputValue, external_id: '', url: '', description: '',
           }}
-          validationSchema={externalReferenceValidation(t)}
+          validationSchema={stixDomainValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onResetContextual.bind(this)}
           render={({ submitForm, handleReset, isSubmitting }) => (
@@ -251,7 +251,7 @@ class ExternalReferenceCreation extends Component {
   }
 }
 
-ExternalReferenceCreation.propTypes = {
+StixDomainCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -264,4 +264,4 @@ ExternalReferenceCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(ExternalReferenceCreation);
+)(StixDomainCreation);

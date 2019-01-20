@@ -48,12 +48,12 @@ class TopMenuReport extends Component {
                 color={location.pathname === `/dashboard/reports/all/${reportId}` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('Overview')}
         </Button>
-        <Button component={Link} to={`/dashboard/reports/${reportId}/reports`} variant={location.pathname === `/dashboard/reports/${reportId}/reports` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/reports/${reportId}/reports` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to={`/dashboard/reports/all/${reportId}/knowledge`} variant={location.pathname === `/dashboard/reports/all/${reportId}/knowledge` ? 'contained' : 'text'} size="small"
+                color={location.pathname === `/dashboard/reports/all/${reportId}/knowledge` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('Knowledge')}
         </Button>
-        <Button component={Link} to={`/dashboard/reports/${reportId}/observables`} variant={location.pathname === `/dashboard/reports/${reportId}/observables` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/reports/${reportId}/observables` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to={`/dashboard/reports/all/${reportId}/observables`} variant={location.pathname === `/dashboard/reports/all/${reportId}/observables` ? 'contained' : 'text'} size="small"
+                color={location.pathname === `/dashboard/reports/all/${reportId}/observables` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('Observables')}
         </Button>
       </div>

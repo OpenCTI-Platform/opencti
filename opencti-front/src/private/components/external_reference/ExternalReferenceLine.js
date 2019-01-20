@@ -7,7 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
-import { MoreVert, CenterFocusStrong } from '@material-ui/icons';
+import { MoreVert } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
 import ExternalReferencePopover from './ExternalReferencePopover';

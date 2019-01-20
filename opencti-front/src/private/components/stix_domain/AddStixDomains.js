@@ -11,12 +11,13 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
+import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import environment from '../../../relay/environment';
-import AddExternalReferencesLines, { addExternalReferencesLinesQuery } from './AddExternalReferencesLines';
-import ExternalReferenceCreation from './ExternalReferenceCreation';
+import AddStixDomainsLines, { addStixDomainsLinesQuery } from './AddStixDomainsLines';
+import StixDomainCreation from './StixDomainCreation';
 
 const styles = theme => ({
   drawerPaper: {
@@ -31,8 +32,9 @@ const styles = theme => ({
     padding: 0,
   },
   createButton: {
-    float: 'left',
-    marginTop: -15,
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
   },
   title: {
     float: 'left',
@@ -63,10 +65,10 @@ const styles = theme => ({
   },
 });
 
-class AddExternalReferences extends Component {
+class AddStixDomains extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, search: '' };
+    this.state = { open: false, stixDomains: [], search: '' };
   }
 
   handleOpen() {
@@ -83,21 +85,21 @@ class AddExternalReferences extends Component {
 
   render() {
     const {
-      t, classes, entityId, entityExternalReferences, entityPaginationOptions,
+      t, classes, entityId, entityStixDomains, entityPaginationOptions,
     } = this.props;
     const paginationOptions = { search: this.state.search, orderBy: 'created_at', orderMode: 'desc' };
     return (
       <div>
-        <IconButton color='secondary' aria-label='Add' onClick={this.handleOpen.bind(this)} classes={{ root: classes.createButton }}>
-          <Add fontSize='small'/>
-        </IconButton>
+        <Fab onClick={this.handleOpen.bind(this)}
+             color='secondary' aria-label='Add'
+             className={classes.createButton}><Add/></Fab>
         <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
           <div className={classes.header}>
             <IconButton aria-label='Close' className={classes.closeButton} onClick={this.handleClose.bind(this)}>
               <Close fontSize='small'/>
             </IconButton>
             <Typography variant='h6' classes={{ root: classes.title }}>
-              {t('Add external references')}
+              {t('Add entities')}
             </Typography>
             <div className={classes.search}>
               <SearchInput variant='inDrawer' placeholder={`${t('Search')}...`} onSubmit={this.handleSearch.bind(this)}/>
@@ -106,7 +108,7 @@ class AddExternalReferences extends Component {
           <div className={classes.container}>
             <QueryRenderer
               environment={environment}
-              query={addExternalReferencesLinesQuery}
+              query={addStixDomainsLinesQuery}
               variables={{
                 search: this.state.search,
                 count: 20,
@@ -116,9 +118,9 @@ class AddExternalReferences extends Component {
               render={({ props }) => {
                 if (props) {
                   return (
-                    <AddExternalReferencesLines
+                    <AddStixDomainsLines
                       entityId={entityId}
-                      entityExternalReferences={entityExternalReferences}
+                      entityStixDomains={entityStixDomains}
                       entityPaginationOptions={entityPaginationOptions}
                       data={props}
                     />
@@ -147,7 +149,7 @@ class AddExternalReferences extends Component {
             />
           </div>
         </Drawer>
-        <ExternalReferenceCreation
+        <StixDomainCreation
           display={this.state.open}
           contextual={true}
           inputValue={this.state.search}
@@ -158,9 +160,9 @@ class AddExternalReferences extends Component {
   }
 }
 
-AddExternalReferences.propTypes = {
+AddStixDomains.propTypes = {
   entityId: PropTypes.string,
-  entityExternalReferences: PropTypes.array,
+  entityStixDomains: PropTypes.array,
   entityPaginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -170,4 +172,4 @@ AddExternalReferences.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(AddExternalReferences);
+)(AddStixDomains);
