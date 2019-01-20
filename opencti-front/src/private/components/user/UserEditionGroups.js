@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, createFragmentContainer, QueryRenderer } from 'react-relay';
+import { commitMutation, createFragmentContainer } from 'react-relay';
 import {
   compose, map, pathOr, pipe, propOr, propEq, find,
 } from 'ramda';
@@ -13,7 +13,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Checkbox from '@material-ui/core/Checkbox';
 import Avatar from '@material-ui/core/Avatar';
-import environment from '../../../relay/environment';
+import environment, { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { groupsLinesSearchQuery } from '../group/GroupsLines';
 
@@ -88,13 +88,9 @@ class UserEditionGroupsComponent extends Component {
     return (
       <div>
         <QueryRenderer
-          environment={environment}
           query={groupsLinesSearchQuery}
           variables={{ search: '' }}
-          render={({ error, props }) => {
-            if (error) { // Errors
-              return <List> &nbsp; </List>;
-            }
+          render={({ props }) => {
             if (props) { // Done
               const groups = pipe(
                 pathOr([], ['groups', 'edges']),

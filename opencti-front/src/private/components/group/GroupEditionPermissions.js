@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, createFragmentContainer, QueryRenderer } from 'react-relay';
+import { commitMutation, createFragmentContainer } from 'react-relay';
 import {
   compose, map, pathOr, pipe, propEq, find,
 } from 'ramda';
@@ -13,7 +13,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Checkbox from '@material-ui/core/Checkbox';
 import Avatar from '@material-ui/core/Avatar';
-import environment from '../../../relay/environment';
+import environment, { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
 
@@ -88,13 +88,9 @@ class GroupEditionPermissionsComponent extends Component {
     return (
       <div>
         <QueryRenderer
-          environment={environment}
           query={markingDefinitionsLinesSearchQuery}
           variables={{ search: '' }}
-          render={({ error, props }) => {
-            if (error) { // Errors
-              return <List> &nbsp; </List>;
-            }
+          render={({ props }) => {
             if (props) { // Done
               const markingDefinitions = pipe(
                 pathOr([], ['markingDefinitions', 'edges']),
@@ -107,12 +103,18 @@ class GroupEditionPermissionsComponent extends Component {
                     return (
                       <ListItem key={markingDefinition.id} divider={true}>
                         <ListItemAvatar>
-                          <Avatar className={classes.avatar}>{markingDefinition.definition.charAt(0)}</Avatar>
+                          <Avatar className={classes.avatar}>
+                              {markingDefinition.definition.charAt(0)}
+                          </Avatar>
                         </ListItemAvatar>
                         <ListItemText primary={markingDefinition.definition}/>
                         <ListItemSecondaryAction>
                           <Checkbox
-                            onChange={this.handleToggle.bind(this, markingDefinition.id, groupMarkingDefinition)}
+                            onChange={this.handleToggle.bind(
+                              this,
+                              markingDefinition.id,
+                              groupMarkingDefinition,
+                            )}
                             checked={groupMarkingDefinition !== undefined}
                           />
                         </ListItemSecondaryAction>
