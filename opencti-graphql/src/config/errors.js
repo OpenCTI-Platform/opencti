@@ -1,25 +1,38 @@
 import { createError } from 'apollo-errors';
 
-export const LoginError = createError('LoginError', {
-  message: 'Wrong name or password'
+const TYPE_AUTH = 'authentication';
+const TYPE_TECHNICAL = 'technical';
+const TYPE_BUSINESS = 'business';
+
+// TYPE_BUSINESS
+export const AuthenticationFailure = createError('AuthenticationFailure', {
+  message: 'Wrong name or password',
+  data: { type: TYPE_BUSINESS }
 });
 
-export const UnknownError = createError('UnknownError', {
-  message: 'An unknown error has occurred!  Please try again later'
+export const MissingElement = createError('MissingElement', {
+  message: 'Please set a functional error message',
+  data: { type: TYPE_BUSINESS }
 });
 
-export const AuthRequiredError = createError('AuthRequiredError', {
-  message: 'You must be logged in to do this'
+// TYPE_AUTH
+export const AuthRequired = createError('AuthRequired', {
+  message: 'You must be logged in to do this',
+  data: { type: TYPE_AUTH }
 });
 
-export const AlreadyAuthError = createError('AlreadyAuthError', {
-  message: 'You are already authenticated'
+export const AlreadyAuth = createError('AlreadyAuth', {
+  message: 'You are already authenticated',
+  data: { type: TYPE_AUTH }
 });
 
-export const ForbiddenError = createError('ForbiddenError', {
-  message: 'You are not allowed to do this'
+export const Forbidden = createError('Forbidden', {
+  message: 'You are not allowed to do this',
+  data: { type: TYPE_AUTH }
 });
 
-export const FunctionalError = createError('FunctionalError', {
-  message: 'Please set a functional error message'
+// TYPE_TECHNICAL
+export const Unknown = createError('Unknown', {
+  message: 'An unknown error has occurred!  Please try again later',
+  data: { type: TYPE_TECHNICAL }
 });

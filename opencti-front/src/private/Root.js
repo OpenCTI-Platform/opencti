@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { Route, Redirect } from 'react-router-dom';
+import * as PropTypes from 'prop-types';
+import { Route, Redirect, withRouter } from 'react-router-dom';
 import { QueryRenderer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
+import { compose, filter, isEmpty } from 'ramda';
+import Cookies from 'js-cookie';
 import environment from '../relay/environment';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedDocumentTitle } from '../components/AppDocumentTitle';
@@ -22,6 +24,39 @@ import Users from './components/Users';
 import Groups from './components/Groups';
 import MarkingDefinitions from './components/MarkingDefinitions';
 import KillChainPhases from './components/KillChainPhases';
+
+class PrivateErrorBoundaryComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null, errorInfo: null };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.log('componentDidCatch', error, errorInfo);
+    this.setState({
+      error,
+      errorInfo,
+    });
+  }
+
+  render() {
+    if (this.state.errorInfo) {
+      const authRequired = filter(e => e.data.type === 'authentication', this.state.error.data);
+      if (!isEmpty(authRequired)) {
+        Cookies.remove('opencti_token');
+        return this.props.history.push('/login');
+      }
+      return <div>ERROR</div>;
+    }
+    return this.props.children;
+  }
+}
+PrivateErrorBoundaryComponent.propTypes = {
+  history: PropTypes.object,
+  children: PropTypes.node,
+};
+const PrivateErrorBoundary = compose(withRouter)(PrivateErrorBoundaryComponent);
+
 
 const styles = theme => ({
   container: {
@@ -79,21 +114,23 @@ class Root extends Component {
                 <LeftBar/>
                 <main className={classes.content} style={{ paddingRight }}>
                   <div className={classes.toolbar}/>
-                  <Route exact path='/dashboard' component={Dashboard}/>
-                  <Route exact path='/dashboard/knowledge' render={() => (<Redirect to='/dashboard/knowledge/threat_actors'/>)}/>
-                  <Route exact path='/dashboard/knowledge/threat_actors' component={ThreatActors}/>
-                  <Route exact path='/dashboard/knowledge/intrusion_sets' component={IntrusionSets}/>
-                  <Route exact path='/dashboard/knowledge/malwares' component={Malwares}/>
-                  <Route path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props && props.me ? props.me : null}/>}/>
-                  <Route exact path='/dashboard/reports' render={() => (<Redirect to='/dashboard/reports/all'/>)}/>
-                  <Route exact path='/dashboard/reports/all' component={Reports}/>
-                  <Route path='/dashboard/reports/all/:reportId' render={routeProps => <RootReport {...routeProps} me={props && props.me ? props.me : null}/>}/>
-                  <Route exact path='/dashboard/sources/references' component={ExternalReferences}/>
-                  <Route exact path='/dashboard/settings' component={Settings}/>
-                  <Route exact path='/dashboard/settings/users' component={Users}/>
-                  <Route exact path='/dashboard/settings/groups' component={Groups}/>
-                  <Route exact path='/dashboard/settings/marking' component={MarkingDefinitions}/>
-                  <Route exact path='/dashboard/settings/killchains' component={KillChainPhases}/>
+                  <PrivateErrorBoundary>
+                    <Route exact path='/dashboard' component={Dashboard}/>
+                    <Route exact path='/dashboard/knowledge' render={() => (<Redirect to='/dashboard/knowledge/threat_actors'/>)}/>
+                    <Route exact path='/dashboard/knowledge/threat_actors' component={ThreatActors}/>
+                    <Route exact path='/dashboard/knowledge/intrusion_sets' component={IntrusionSets}/>
+                    <Route exact path='/dashboard/knowledge/malwares' component={Malwares}/>
+                    <Route path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props && props.me ? props.me : null}/>}/>
+                    <Route exact path='/dashboard/reports' render={() => (<Redirect to='/dashboard/reports/all'/>)}/>
+                    <Route exact path='/dashboard/reports/all' component={Reports}/>
+                    <Route path='/dashboard/reports/all/:reportId' render={routeProps => <RootReport {...routeProps} me={props && props.me ? props.me : null}/>}/>
+                    <Route exact path='/dashboard/sources/references' component={ExternalReferences}/>
+                    <Route exact path='/dashboard/settings' component={Settings}/>
+                    <Route exact path='/dashboard/settings/users' component={Users}/>
+                    <Route exact path='/dashboard/settings/groups' component={Groups}/>
+                    <Route exact path='/dashboard/settings/marking' component={MarkingDefinitions}/>
+                    <Route exact path='/dashboard/settings/killchains' component={KillChainPhases}/>
+                  </PrivateErrorBoundary>
                 </main>
               </div>
             </ConnectedDocumentTitle>

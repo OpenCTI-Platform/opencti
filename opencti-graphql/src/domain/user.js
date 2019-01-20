@@ -4,7 +4,7 @@ import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { delEditContext, setEditContext } from '../database/redis';
-import { FunctionalError, LoginError } from '../config/errors';
+import { MissingElement, AuthenticationFailure } from '../config/errors';
 import conf, {
   BUS_TOPICS,
   DEV_MODE,
@@ -146,13 +146,13 @@ export const login = (email, password) => {
   return loginPromise.then(result => {
     const { data } = result;
     if (isEmpty(data)) {
-      throw new LoginError();
+      throw new AuthenticationFailure();
     }
     const element = head(data);
     const dbPassword = element.password.value;
     const match = bcrypt.compareSync(password, dbPassword);
     if (!match) {
-      throw new LoginError();
+      throw new AuthenticationFailure();
     }
     return loadByID(element.token.id);
   });
@@ -203,7 +203,7 @@ export const deleteUserByEmail = email => {
   const delUser = qk(`match $x has email "${email}"; delete $x;`);
   return delUser.then(result => {
     if (isEmpty(result.data)) {
-      throw new FunctionalError({ message: "User doesn't exist" });
+      throw new MissingElement({ message: "User doesn't exist" });
     } else {
       return email;
     }

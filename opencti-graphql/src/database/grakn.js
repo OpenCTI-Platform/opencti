@@ -20,7 +20,7 @@ import { offsetToCursor } from 'graphql-relay';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn';
 import conf, { logger } from '../config/conf';
-import { FunctionalError } from '../config/errors';
+import { MissingElement } from '../config/errors';
 import { pubsub } from './redis';
 
 // Global variables
@@ -156,7 +156,8 @@ export const qkObj = (queryDef, key = 'x', relationKey) =>
  * @param relationKey the key to bind relation result.
  * @returns {Promise<AxiosResponse<any> | never | never>}
  */
-export const qkObjUnique = (queryDef, key = 'x', relationKey) => qkObj(queryDef, key, relationKey).then(result => head(result));
+export const qkObjUnique = (queryDef, key = 'x', relationKey) =>
+  qkObj(queryDef, key, relationKey).then(result => head(result));
 
 /**
  * Grakn query that fetch unique value like attribute count.
@@ -177,7 +178,7 @@ export const deleteByID = id => {
   const deleteQuery = qk(`match $x id ${id}; $z($x, $y); delete $z, $x;`);
   return deleteQuery.then(result => {
     if (isEmpty(result.data)) {
-      throw new FunctionalError({ message: "Element doesn't exist" });
+      throw new MissingElement({ message: "Element doesn't exist" });
     } else {
       return id;
     }
@@ -280,7 +281,9 @@ export const deleteRelation = (id, relationId) => {
   const deleteQuery = qk(`match $x id ${relationId}; delete $x;`);
   return deleteQuery.then(result => {
     if (isEmpty(result.data)) {
-      throw new FunctionalError({ message: "Element doesn't exist" });
+      throw new MissingElement({
+        message: `Element ${relationId} doesn't exist`
+      });
     } else {
       return loadByID(id).then(data => ({
         node: data,
