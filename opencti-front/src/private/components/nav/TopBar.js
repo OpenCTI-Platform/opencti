@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
-import Cookies from 'universal-cookie';
 import { propOr, contains, compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
+import Cookies from 'js-cookie';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import { AccountCircle } from '@material-ui/icons';
@@ -77,7 +77,7 @@ class TopBar extends Component {
 
   handleLogout() {
     this.handleCloseMenu();
-    new Cookies().remove('opencti_token');
+    Cookies.remove('opencti_token');
     this.props.history.push('/');
   }
 

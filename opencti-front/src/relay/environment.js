@@ -7,7 +7,7 @@ import RelayQueryResponseCache from 'relay-runtime/lib/RelayQueryResponseCache';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { execute } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
-import Cookies from 'universal-cookie';
+import Cookies from 'js-cookie';
 
 const GRAPHQL_SUBSCRIPTION_ENDPOINT = 'ws://localhost:4000/graphql';
 const IN_DEV_MODE = process.env.NODE_ENV === 'development';
@@ -52,11 +52,10 @@ function fetchQuery(operation, variables, cacheConfig) {
     }); */
 }
 
-const cookies = new Cookies();
 const subscriptionClient = new SubscriptionClient(GRAPHQL_SUBSCRIPTION_ENDPOINT, {
   reconnect: true,
   connectionParams: {
-    authorization: `Bearer ${cookies.get('opencti_token')}`,
+    authorization: `Bearer ${Cookies.get('opencti_token')}`,
   },
 });
 const subscriptionLink = new WebSocketLink(subscriptionClient);

@@ -3,41 +3,19 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './resources/css/index.css';
 import { BrowserRouter, Redirect, Route } from 'react-router-dom';
-import Cookies from 'universal-cookie';
 import jwt from 'jsonwebtoken';
 import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { createMuiTheme } from '@material-ui/core/styles';
 import * as serviceWorker from './config/serviceWorker';
+import Cookies from 'js-cookie';
 import theme from './components/Theme';
 import Root from './Root';
 import Login from './public/components/Login';
 import RootPrivate from './private/Root';
 
-// Loading application
-/*
-commitLocalUpdate(environment, (store) => {
-    let openctiToken = cookies.get('opencti_token');
-    const id = 'user_auth_id';
-    let authentication = store.create(id, 'User');
-    authentication.setValue(id, 'id');
-    if(openctiToken) {
-        let record = jwt.decode(openctiToken);
-        const keys = Object.keys(record);
-        for (let ii = 0; ii < keys.length; ii++) {
-            const key = keys[ii];
-            const val = record[key];
-            authentication.setValue(val, key);
-        }
-    } else {
-        store.delete(id);
-    }
-});
-*/
-
 const isLogged = () => {
-  const cookies = new Cookies();
-  const openctiToken = cookies.get('opencti_token');
+  const openctiToken = Cookies.get('opencti_token');
   if (openctiToken) {
     const decode = jwt.decode(openctiToken);
     return decode !== undefined;
