@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { commitMutation } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import { Formik, Field, Form } from 'formik';
@@ -12,8 +11,9 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import * as Yup from 'yup';
+import { withRouter } from 'react-router-dom';
 import { SubscriptionFocus } from '../../components/Subscription';
-import environment, { QueryRenderer } from '../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 import TextField from '../../components/TextField';
 import Select from '../../components/Select';
@@ -88,7 +88,6 @@ const settingsFocus = graphql`
     }
 `;
 
-
 const settingsValidation = t => Yup.object().shape({
   platform_title: Yup.string()
     .required(t('This field is required')),
@@ -105,7 +104,7 @@ const settingsValidation = t => Yup.object().shape({
 
 class Settings extends Component {
   handleChangeFocus(id, name) {
-    commitMutation(environment, {
+    commitMutation(this.props.history, {
       mutation: settingsFocus,
       variables: {
         id,
@@ -118,9 +117,9 @@ class Settings extends Component {
 
   handleSubmitField(id, name, value) {
     settingsValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      commitMutation(environment, {
+      commitMutation(this.props.history, {
         mutation: settingsMutationFieldPatch,
-        variables:{ id, input: { key: name, value } },
+        variables: { id, input: { key: name, value } },
       });
     }).catch(() => false);
   }
@@ -231,5 +230,6 @@ Settings.propTypes = {
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles),
 )(Settings);

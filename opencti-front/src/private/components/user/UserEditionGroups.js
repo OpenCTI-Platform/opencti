@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import {
   compose, map, pathOr, pipe, propOr, propEq, find,
 } from 'ramda';
@@ -13,7 +13,8 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Checkbox from '@material-ui/core/Checkbox';
 import Avatar from '@material-ui/core/Avatar';
-import environment, { QueryRenderer } from '../../../relay/environment';
+import { withRouter } from 'react-router-dom';
+import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { groupsLinesSearchQuery } from '../group/GroupsLines';
 
@@ -55,7 +56,7 @@ const userMutationRelationDelete = graphql`
 class UserEditionGroupsComponent extends Component {
   handleToggle(groupId, userGroup, event) {
     if (event.target.checked) {
-      commitMutation(environment, {
+      commitMutation(this.props.history, {
         mutation: userMutationRelationAdd,
         variables: {
           id: groupId,
@@ -68,7 +69,7 @@ class UserEditionGroupsComponent extends Component {
         },
       });
     } else if (userGroup !== undefined) {
-      commitMutation(environment, {
+      commitMutation(this.props.history, {
         mutation: userMutationRelationDelete,
         variables: {
           id: this.props.user.id,
@@ -134,6 +135,7 @@ UserEditionGroupsComponent.propTypes = {
   user: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
+  history: PropTypes.object,
 };
 
 const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
@@ -157,5 +159,6 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles, { withTheme: true }),
 )(UserEditionGroups);

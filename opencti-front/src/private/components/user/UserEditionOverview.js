@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
@@ -14,7 +14,8 @@ import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
 import Autocomplete from '../../../components/Autocomplete';
 import { SubscriptionFocus } from '../../../components/Subscription';
-import environment from '../../../relay/environment';
+import { commitMutation } from '../../../relay/environment';
+import {withRouter} from "react-router-dom";
 
 const roles = [
   { label: 'ROLE_ROOT', value: 'ROLE_ROOT' },
@@ -72,7 +73,7 @@ const userValidation = t => Yup.object().shape({
 
 class UserEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
-    commitMutation(environment, {
+    commitMutation(this.props.history, {
       mutation: userEditionOverviewFocus,
       variables: {
         id: this.props.user.id,
@@ -89,7 +90,7 @@ class UserEditionOverviewComponent extends Component {
       newValue = pluck('value', value);
     }
     userValidation(this.props.t).validateAt(name, { [name]: newValue }).then(() => {
-      commitMutation(environment, {
+      commitMutation(this.props.history, {
         mutation: userMutationFieldPatch,
         variables: { id: this.props.user.id, input: { key: name, value: newValue } },
       });
@@ -181,6 +182,7 @@ UserEditionOverviewComponent.propTypes = {
   user: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
+  history: PropTypes.object,
 };
 
 const UserEditionOverview = createFragmentContainer(UserEditionOverviewComponent, {
@@ -200,5 +202,6 @@ const UserEditionOverview = createFragmentContainer(UserEditionOverviewComponent
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles, { withTheme: true }),
 )(UserEditionOverview);

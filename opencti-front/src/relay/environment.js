@@ -8,7 +8,9 @@ import { execute } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
 import Cookies from 'js-cookie';
 import React, { Component } from 'react';
-import { commitMutation as CM, QueryRenderer as QR } from 'react-relay';
+import {
+  commitMutation as CM, QueryRenderer as QR, requestSubscription as RS, fetchQuery as FQ,
+} from 'react-relay';
 import * as PropTypes from 'prop-types';
 import {
   map, isEmpty, difference, filter,
@@ -17,8 +19,15 @@ import {
 const GRAPHQL_SUBSCRIPTION_ENDPOINT = 'ws://localhost:4000/graphql';
 const IN_DEV_MODE = process.env.NODE_ENV === 'development';
 if (IN_DEV_MODE) installRelayDevTools();
+class ApplicationError extends Error {
+  constructor(errors) {
+    super();
+    this.data = errors;
+  }
+}
 
-function fetchQuery(operation, variables) {
+// Network
+function networkFetch(operation, variables) {
   return fetch('/graphql', {
     method: 'POST',
     headers: {
@@ -36,7 +45,6 @@ function fetchQuery(operation, variables) {
       return Promise.resolve(json);
     });
 }
-
 const subscriptionClient = new SubscriptionClient(GRAPHQL_SUBSCRIPTION_ENDPOINT, {
   reconnect: true,
   connectionParams: {
@@ -44,26 +52,16 @@ const subscriptionClient = new SubscriptionClient(GRAPHQL_SUBSCRIPTION_ENDPOINT,
   },
 });
 const subscriptionLink = new WebSocketLink(subscriptionClient);
-
 const networkSubscriptions = (operation, variables) => execute(subscriptionLink, {
   query: operation.text,
   variables,
 });
-
 const environment = new Environment({
-  network: Network.create(fetchQuery, networkSubscriptions),
+  network: Network.create(networkFetch, networkSubscriptions),
   store: new Store(new RecordSource()),
 });
 
-export default environment;
-
-class ApplicationError extends Error {
-  constructor(errors) {
-    super();
-    this.data = errors;
-  }
-}
-
+// Components
 export class QueryRenderer extends Component {
   render() {
     const {
@@ -80,7 +78,6 @@ export class QueryRenderer extends Component {
     />);
   }
 }
-
 QueryRenderer.propTypes = {
   managedErrorTypes: PropTypes.array,
   variables: PropTypes.object,
@@ -88,6 +85,7 @@ QueryRenderer.propTypes = {
   query: PropTypes.func,
 };
 
+// Relay functions
 export const commitMutation = (history, {
   mutation, variables, updater, optimisticUpdater, onCompleted,
 }) => CM(environment, {
@@ -107,3 +105,7 @@ export const commitMutation = (history, {
     }
   },
 });
+
+export const requestSubscription = args => RS(environment, args);
+
+export const fetchQuery = (query, args) => FQ(environment, query, args);

@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import { compose, head } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import environment from '../../../relay/environment';
+import { withRouter } from 'react-router-dom';
+import { commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import Message from '../../../components/Message';
@@ -60,7 +61,7 @@ class UserEditionPasswordComponent extends Component {
 
   onSubmit(values, { setSubmitting, resetForm, setErrors }) {
     const field = { key: 'password', value: values.password };
-    commitMutation(environment, {
+    commitMutation(this.props.history, {
       mutation: userMutationFieldPatch,
       variables: {
         id: this.props.user.id,
@@ -121,6 +122,7 @@ UserEditionPasswordComponent.propTypes = {
   user: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
+  history: PropTypes.object,
 };
 
 const UserEditionPassword = createFragmentContainer(UserEditionPasswordComponent, {
@@ -133,5 +135,6 @@ const UserEditionPassword = createFragmentContainer(UserEditionPasswordComponent
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles, { withTheme: true }),
 )(UserEditionPassword);

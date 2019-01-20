@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, createFragmentContainer, requestSubscription } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import {
   compose, insert, find, propEq, pick,
@@ -11,8 +11,9 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
+import { withRouter } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
-import environment from '../../../relay/environment';
+import { commitMutation, requestSubscription } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../components/Subscription';
 
@@ -89,16 +90,13 @@ const markingDefinitionValidation = t => Yup.object().shape({
 
 class MarkingDefinitionEditionContainer extends Component {
   componentDidMount() {
-    const sub = requestSubscription(
-      environment,
-      {
-        subscription,
-        variables: {
-          // eslint-disable-next-line
+    const sub = requestSubscription({
+      subscription,
+      variables: {
+        // eslint-disable-next-line
           id: this.props.markingDefinition.id
-        },
       },
-    );
+    });
     this.setState({ sub });
   }
 
@@ -107,7 +105,7 @@ class MarkingDefinitionEditionContainer extends Component {
   }
 
   handleChangeFocus(name) {
-    commitMutation(environment, {
+    commitMutation(this.props.history, {
       mutation: markingDefinitionEditionFocus,
       variables: {
         id: this.props.markingDefinition.id,
@@ -120,7 +118,7 @@ class MarkingDefinitionEditionContainer extends Component {
 
   handleSubmitField(name, value) {
     markingDefinitionValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      commitMutation(environment, {
+      commitMutation(this.props.history, {
         mutation: markingDefinitionMutationFieldPatch,
         variables: { id: this.props.markingDefinition.id, input: { key: name, value } },
       });
@@ -190,6 +188,7 @@ MarkingDefinitionEditionContainer.propTypes = {
   me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  history: PropTypes.object,
 };
 
 const MarkingDefinitionEditionFragment = createFragmentContainer(MarkingDefinitionEditionContainer, {
@@ -215,5 +214,6 @@ const MarkingDefinitionEditionFragment = createFragmentContainer(MarkingDefiniti
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles, { withTheme: true }),
 )(MarkingDefinitionEditionFragment);

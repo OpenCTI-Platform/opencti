@@ -4,12 +4,11 @@ import { Field, Form, Formik } from 'formik';
 import { TextField } from 'formik-material-ui';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation } from 'react-relay';
 import { withRouter } from 'react-router-dom';
-import { compose, head } from 'ramda';
+import { compose } from 'ramda';
 import * as Yup from 'yup';
 import * as PropTypes from 'prop-types';
-import environment from '../../relay/environment';
+import { commitMutation } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 
 const styles = () => ({
@@ -33,22 +32,17 @@ const loginValidation = t => Yup.object().shape({
 });
 
 class LoginForm extends Component {
-  onSubmit(values, { setSubmitting, resetForm, setErrors }) {
-    commitMutation(environment, {
+  onSubmit(values, { setSubmitting, resetForm }) {
+    commitMutation(this.props.history, {
       mutation: loginMutation,
       variables: {
         input: values,
       },
-      onCompleted: (response, errors) => {
+      onCompleted: () => {
         setSubmitting(false);
-        if (errors) {
-          const error = this.props.t(head(errors).message);
-          setErrors({ email: error }); // Push the error in the email field
-        } else {
-          resetForm();
-          // No need to modify the store, auth is handled by a cookie
-          this.props.history.push('/');
-        }
+        resetForm();
+        // No need to modify the store, auth is handled by a cookie
+        this.props.history.push('/');
       },
     });
   }

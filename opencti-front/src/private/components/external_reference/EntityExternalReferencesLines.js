@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { commitMutation, createPaginationContainer } from 'react-relay';
+import * as PropTypes from 'prop-types';
+import { createPaginationContainer } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -14,9 +14,11 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import Avatar from '@material-ui/core/Avatar';
 import { LinkOff } from '@material-ui/icons';
+import { compose } from 'ramda';
+import { withRouter } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
 import truncate from '../../../utils/String';
-import environment from '../../../relay/environment';
+import { commitMutation } from '../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
 
@@ -45,9 +47,9 @@ const styles = theme => ({
   },
 });
 
-class EntityExternalReferencesLines extends Component {
+class EntityExternalReferencesLinesContainer extends Component {
   removeExternalReference(externalReferenceEdge) {
-    commitMutation(environment, {
+    commitMutation(this.props.history, {
       mutation: externalReferenceMutationRelationDelete,
       variables: {
         id: externalReferenceEdge.node.id,
@@ -75,7 +77,9 @@ class EntityExternalReferencesLines extends Component {
         <Typography variant='h4' gutterBottom={true} style={{ float: 'left' }}>
           {t('External references')}
         </Typography>
-        <AddExternalReferences entityId={entityId} entityExternalReferences={data.externalReferencesOf.edges} entityPaginationOptions={paginationOptions}/>
+        <AddExternalReferences entityId={entityId}
+                               entityExternalReferences={data.externalReferencesOf.edges}
+                               entityPaginationOptions={paginationOptions}/>
         <div className='clearfix'/>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List>
@@ -93,11 +97,15 @@ class EntityExternalReferencesLines extends Component {
                     href={externalReference.url}
                   >
                     <ListItemIcon>
-                      <Avatar classes={{ root: classes.avatar }}>{externalReference.source_name.substring(0, 1)}</Avatar>
+                      <Avatar classes={{ root: classes.avatar }}>
+                          {externalReference.source_name.substring(0, 1)}
+                      </Avatar>
                     </ListItemIcon>
                     <ListItemText
                       primary={`${externalReference.source_name} ${externalReferenceId}`}
-                      secondary={truncate(externalReference.description !== null && externalReference.description.length > 0 ? externalReference.description : externalReference.url, 120)}
+                      secondary={truncate(externalReference.description !== null
+                      && externalReference.description.length > 0
+                        ? externalReference.description : externalReference.url, 120)}
                     />
                     <ListItemSecondaryAction>
                       <IconButton aria-label='Remove' onClick={this.removeExternalReference.bind(this, externalReferenceEdge)}>
@@ -115,7 +123,9 @@ class EntityExternalReferencesLines extends Component {
                   button={false}
                 >
                   <ListItemIcon>
-                    <Avatar classes={{ root: classes.avatar }}>{externalReference.source_name.substring(0, 1)}</Avatar>
+                    <Avatar classes={{ root: classes.avatar }}>
+                        {externalReference.source_name.substring(0, 1)}
+                    </Avatar>
                   </ListItemIcon>
                   <ListItemText
                     primary={`${externalReference.source_name} ${externalReferenceId}`}
@@ -132,7 +142,7 @@ class EntityExternalReferencesLines extends Component {
   }
 }
 
-EntityExternalReferencesLines.propTypes = {
+EntityExternalReferencesLinesContainer.propTypes = {
   entityId: PropTypes.string,
   paginationOptions: PropTypes.object,
   data: PropTypes.object,
@@ -140,6 +150,7 @@ EntityExternalReferencesLines.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  history: PropTypes.object,
 };
 
 export const entityExternalReferencesLinesQuery = graphql`
@@ -148,34 +159,34 @@ export const entityExternalReferencesLinesQuery = graphql`
     }
 `;
 
-export default inject18n(withStyles(styles)(createPaginationContainer(
-  EntityExternalReferencesLines,
+const EntityExternalReferencesLines = createPaginationContainer(
+  EntityExternalReferencesLinesContainer,
   {
     data: graphql`
-        fragment EntityExternalReferencesLines_data on Query @argumentDefinitions(
-            objectId: {type: "String!"}
-            count: {type: "Int", defaultValue: 25}
-            cursor: {type: "ID"}
-            orderBy: {type: "ExternalReferencesOrdering", defaultValue: ID}
-            orderMode: {type: "OrderingMode", defaultValue: "asc"}
-        ) {
-            externalReferencesOf(objectId: $objectId, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_externalReferencesOf") {
-                edges {
-                    node {
-                        id
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                    }
-                    relation {
-                        id
+            fragment EntityExternalReferencesLines_data on Query @argumentDefinitions(
+                objectId: {type: "String!"}
+                count: {type: "Int", defaultValue: 25}
+                cursor: {type: "ID"}
+                orderBy: {type: "ExternalReferencesOrdering", defaultValue: ID}
+                orderMode: {type: "OrderingMode", defaultValue: "asc"}
+            ) {
+                externalReferencesOf(objectId: $objectId, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_externalReferencesOf") {
+                    edges {
+                        node {
+                            id
+                            source_name
+                            description
+                            url
+                            hash
+                            external_id
+                        }
+                        relation {
+                            id
+                        }
                     }
                 }
             }
-        }
-    `,
+        `,
   },
   {
     direction: 'forward',
@@ -198,4 +209,10 @@ export default inject18n(withStyles(styles)(createPaginationContainer(
     },
     query: entityExternalReferencesLinesQuery,
   },
-)));
+);
+
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(EntityExternalReferencesLines);

@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { commitMutation } from 'react-relay';
+import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
-import { compose, head } from 'ramda';
+import { compose } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -17,7 +16,8 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import environment from '../../../relay/environment';
+import { withRouter } from 'react-router-dom';
+import { commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 
@@ -108,8 +108,8 @@ class StixDomainCreation extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm, setErrors }) {
-    commitMutation(environment, {
+  onSubmit(values, { setSubmitting, resetForm }) {
+    commitMutation(this.props.history, {
       mutation: stixDomainCreationMutation,
       variables: {
         input: values,
@@ -120,19 +120,10 @@ class StixDomainCreation extends Component {
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
       },
-      onCompleted: (response, errors) => {
+      onCompleted: () => {
         setSubmitting(false);
-        if (errors) {
-          const error = this.props.t(head(errors).message);
-          setErrors({ name: error });
-        } else {
-          resetForm();
-          if (this.props.contextual) {
-            this.handleClose();
-          } else {
-            this.handleClose();
-          }
-        }
+        resetForm();
+        this.handleClose();
       },
     });
   }
@@ -256,9 +247,11 @@ StixDomainCreation.propTypes = {
   contextual: PropTypes.bool,
   display: PropTypes.bool,
   inputValue: PropTypes.string,
+  history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles, { withTheme: true }),
 )(StixDomainCreation);

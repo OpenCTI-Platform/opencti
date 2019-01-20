@@ -1,15 +1,16 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
+import { withRouter } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
-import environment from '../../../relay/environment';
+import { commitMutation } from '../../../relay/environment';
 
 const styles = theme => ({
   drawerPaper: {
@@ -64,7 +65,7 @@ const groupValidation = t => Yup.object().shape({
 
 class GroupEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
-    commitMutation(environment, {
+    commitMutation(this.props.history, {
       mutation: groupEditionOverviewFocus,
       variables: {
         id: this.props.group.id,
@@ -77,7 +78,7 @@ class GroupEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     groupValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      commitMutation(environment, {
+      commitMutation(this.props.history, {
         mutation: groupMutationFieldPatch,
         variables: { id: this.props.group.id, input: { key: name, value } },
       });
@@ -121,6 +122,7 @@ GroupEditionOverviewComponent.propTypes = {
   group: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
+  history: PropTypes.object,
 };
 
 const GroupEditionOverview = createFragmentContainer(GroupEditionOverviewComponent, {
@@ -135,5 +137,6 @@ const GroupEditionOverview = createFragmentContainer(GroupEditionOverviewCompone
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles, { withTheme: true }),
 )(GroupEditionOverview);

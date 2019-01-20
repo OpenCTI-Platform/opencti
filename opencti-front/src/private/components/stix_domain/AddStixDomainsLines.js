@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { commitMutation, createPaginationContainer } from 'react-relay';
-import { map, filter, head } from 'ramda';
+import * as PropTypes from 'prop-types';
+import { createPaginationContainer } from 'react-relay';
+import {
+  map, filter, head, compose,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -11,9 +13,10 @@ import Avatar from '@material-ui/core/Avatar';
 import { CheckCircle } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
+import { withRouter } from 'react-router-dom';
 import truncate from '../../../utils/String';
 import inject18n from '../../../components/i18n';
-import environment from '../../../relay/environment';
+import { commitMutation } from '../../../relay/environment';
 
 const styles = theme => ({
   itemIcon: {
@@ -67,15 +70,14 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class AddStixDomainsLines extends Component {
+class AddStixDomainsLinesContainer extends Component {
   toggleStixDomain(stixDomain) {
     const { entityId, entityStixDomains, entityPaginationOptions } = this.props;
     const entityStixDomainsIds = map(n => n.node.id, entityStixDomains);
     const alreadyAdded = entityStixDomainsIds.includes(stixDomain.id);
-
     if (alreadyAdded) {
       const existingStixDomain = head(filter(n => n.node.id === stixDomain.id, entityStixDomains));
-      commitMutation(environment, {
+      commitMutation(this.props.history, {
         mutation: stixDomainMutationRelationDelete,
         variables: {
           id: stixDomain.id,
@@ -99,7 +101,7 @@ class AddStixDomainsLines extends Component {
         toRole: 'external_reference',
         through: 'external_references',
       };
-      commitMutation(environment, {
+      commitMutation(this.props.history, {
         mutation: stixDomainLinesMutationRelationAdd,
         variables: {
           id: entityId,
@@ -131,14 +133,18 @@ class AddStixDomainsLines extends Component {
               classes={{ root: classes.menuItem }}
               divider={true}
               button={true}
-              onClick={this.toggleStixDomain.bind(this, stixDomain)}
-            >
+              onClick={this.toggleStixDomain.bind(this, stixDomain)}>
               <ListItemIcon>
-                {alreadyAdded ? <CheckCircle classes={{ root: classes.icon }}/> : <Avatar classes={{ root: classes.avatar }}>{stixDomain.source_name.substring(0, 1)}</Avatar>}
+                {alreadyAdded ? <CheckCircle classes={{ root: classes.icon }}/>
+                  : <Avatar classes={{ root: classes.avatar }}>
+                        {stixDomain.source_name.substring(0, 1)}
+                    </Avatar>}
               </ListItemIcon>
               <ListItemText
                 primary={`${stixDomain.source_name} ${stixDomainId}`}
-                secondary={truncate(stixDomain.description !== null && stixDomain.description.length > 0 ? stixDomain.description : stixDomain.url, 120)}
+                secondary={truncate(stixDomain.description !== null
+                && stixDomain.description.length > 0
+                  ? stixDomain.description : stixDomain.url, 120)}
               />
             </ListItem>
           );
@@ -148,7 +154,7 @@ class AddStixDomainsLines extends Component {
   }
 }
 
-AddStixDomainsLines.propTypes = {
+AddStixDomainsLinesContainer.propTypes = {
   entityId: PropTypes.string,
   entityStixDomains: PropTypes.array,
   entityPaginationOptions: PropTypes.object,
@@ -157,6 +163,7 @@ AddStixDomainsLines.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  history: PropTypes.object,
 };
 
 export const addStixDomainsLinesQuery = graphql`
@@ -165,10 +172,8 @@ export const addStixDomainsLinesQuery = graphql`
     }
 `;
 
-export default inject18n(withStyles(styles)(createPaginationContainer(
-  AddStixDomainsLines,
-  {
-    data: graphql`
+const AddStixDomainsLines = createPaginationContainer(AddStixDomainsLinesContainer, {
+  data: graphql`
         fragment AddStixDomainsLines_data on Query @argumentDefinitions(
             search: {type: "String"}
             count: {type: "Int", defaultValue: 25}
@@ -188,26 +193,30 @@ export default inject18n(withStyles(styles)(createPaginationContainer(
             }
         }
     `,
+}, {
+  direction: 'forward',
+  getConnectionFromProps(props) {
+    return props.data && props.data.stixDomains;
   },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.stixDomains;
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
-    },
-    getVariables(props, { count, cursor }, fragmentVariables) {
-      return {
-        count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
-      };
-    },
-    query: addStixDomainsLinesQuery,
+  getFragmentVariables(prevVars, totalCount) {
+    return {
+      ...prevVars,
+      count: totalCount,
+    };
   },
-)));
+  getVariables(props, { count, cursor }, fragmentVariables) {
+    return {
+      count,
+      cursor,
+      orderBy: fragmentVariables.orderBy,
+      orderMode: fragmentVariables.orderMode,
+    };
+  },
+  query: addStixDomainsLinesQuery,
+});
+
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(AddStixDomainsLines);
