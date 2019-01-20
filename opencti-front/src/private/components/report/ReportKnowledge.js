@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -23,7 +23,7 @@ class ReportComponent extends Component {
     return (
       <div className={classes.container}>
         <ReportHeader report={report}/>
-
+        <AddStixDomains entityId={propOr(null, 'id', report)} entityStixDomains={[]} />
       </div>
     );
   }
@@ -38,8 +38,19 @@ ReportComponent.propTypes = {
 
 const Report = createFragmentContainer(ReportComponent, {
   report: graphql`
-      fragment Report_report on Report {
+      fragment ReportKnowledge_report on Report {
           ...ReportHeader_report
+          id
+          name
+          objectRefs {
+              edges {
+                  node {
+                      id
+                      type
+                      name
+                  }
+              }
+          }
       }
   `,
 });

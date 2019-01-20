@@ -65,10 +65,10 @@ public class Relationship extends Domain {
                         "$to isa %s has stix_id %s; " +
                         "(%s: $from, %s: $to) isa %s; " +
                         "offset 0; limit 1; get;",
-                from.getEntityName().replace("Identity", "Organization"),
-                prepare(from.getId()).replace("identity", "organization"),
-                to.getEntityName().replace("Identity", "Organization"),
-                prepare(to.getId()).replace("identity", "organization"),
+                from.getEntityName(),
+                prepare(from.getId()),
+                to.getEntityName(),
+                prepare(to.getId()),
                 fromRole,
                 toRole,
                 getRelationship_type());
@@ -86,10 +86,10 @@ public class Relationship extends Domain {
                             "insert (%s: $from, %s: $to) " +
                             "has stix_id %s" +
                             "isa %s;",
-                    from.getEntityName().replace("Identity", "Organization"),
-                    prepare(from.getId()).replace("identity", "organization"),
-                    to.getEntityName().replace("Identity", "Organization"),
-                    prepare(to.getId()).replace("identity", "organization"),
+                    from.getEntityName(),
+                    prepare(from.getId()),
+                    to.getEntityName(),
+                    prepare(to.getId()),
                     fromRole,
                     toRole,
                     prepare(getId()),

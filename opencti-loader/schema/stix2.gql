@@ -327,32 +327,10 @@ define
     plays "relate_to"
     plays "so";
 
-  "Attack-Pattern" sub "Stix-Domain"
+  "Stix-Domain-Entity" sub "Stix-Domain"
+    is-abstract
     has "name"
-    has "description"
-    plays "phase_belonging"
-    plays "source"
-    plays "user"
-    plays "usage"
-    plays "problem"
-    plays "characterize";
-
-  "Campaign" sub "Stix-Domain"
-    has "name"
-    has "description"
-    has "alias"
-    has "first_seen"
-    has "last_seen"
-    has "objective"
-    plays "attribution"
-    plays "usage"
-    plays "source"
-    plays "characterize";
-
-  "Course-Of-Action" sub "Stix-Domain"
-    has "name"
-    has "description"
-    plays "mitigation";
+    has "description";
 
   "External-Reference" sub "Stix-Domain"
     has "source_name"
@@ -362,10 +340,43 @@ define
     has "external_id"
     plays "external_reference";
 
-  "Identity" sub "Stix-Domain"
+  "Kill-Chain-Phase" sub "Stix-Domain"
+    has "kill_chain_name"
+    has "phase_name"
+    has "phase_order"
+    plays "kill_chain_phase";
+
+  "Marking-Definition" sub "Stix-Domain"
+    has "definition_type"
+    has "definition"
+    has "level"
+    has "color"
+    plays "marking"
+    plays "allow";
+
+  "Attack-Pattern" sub "Stix-Domain-Entity"
+    plays "phase_belonging"
+    plays "source"
+    plays "user"
+    plays "usage"
+    plays "problem"
+    plays "characterize";
+
+  "Campaign" sub "Stix-Domain-Entity"
+    has "alias"
+    has "first_seen"
+    has "last_seen"
+    has "objective"
+    plays "attribution"
+    plays "usage"
+    plays "source"
+    plays "characterize";
+
+  "Course-Of-Action" sub "Stix-Domain-Entity"
+    plays "mitigation";
+
+  "Identity" sub "Stix-Domain-Entity"
     is-abstract
-    has "name"
-    has "description"
     plays "creator"
     plays "target"
     plays "origin"
@@ -414,18 +425,14 @@ define
     plays "allowed"
     plays "part_of";
 
-  "Indicator" sub "Stix-Domain"
-    has "name"
-    has "description"
+  "Indicator" sub "Stix-Domain-Entity"
     has "pattern"
     has "valid_from"
     has "valid_until"
     plays "phase_belonging"
     plays "indicator";
 
-  "Incident" sub "Stix-Domain"
-    has "name"
-    has "description"
+  "Incident" sub "Stix-Domain-Entity"
     has "first_seen"
     has "last_seen"
     plays "attribution"
@@ -433,9 +440,7 @@ define
     plays "source"
     plays "characterize";
 
-  "Intrusion-Set" sub "Stix-Domain"
-    has "name"
-    has "description"
+  "Intrusion-Set" sub "Stix-Domain-Entity"
     has "alias"
     has "first_seen"
     has "last_seen"
@@ -449,15 +454,7 @@ define
     plays "origin"
     plays "characterize";
 
-  "Kill-Chain-Phase" sub "Stix-Domain"
-    has "kill_chain_name"
-    has "phase_name"
-    has "phase_order"
-    plays "kill_chain_phase";
-
-  "Malware" sub "Stix-Domain"
-    has "name"
-    has "description"
+  "Malware" sub "Stix-Domain-Entity"
     plays "phase_belonging"
     plays "source"
     plays "user"
@@ -467,24 +464,12 @@ define
     plays "characterize"
     plays "original";
 
-  "Marking-Definition" sub "Stix-Domain"
-    has "definition_type"
-    has "definition"
-    has "level"
-    has "color"
-    plays "marking"
-    plays "allow";
-
-  "Report" sub "Stix-Domain"
-    has "name"
-    has "description"
+  "Report" sub "Stix-Domain-Entity"
     has "published"
     has "report_class"
     plays "knowledge_aggregation";
 
-  "Tool" sub "Stix-Domain"
-    has "name"
-    has "description"
+  "Tool" sub "Stix-Domain-Entity"
     has "tool_version"
     plays "phase_belonging"
     plays "source"
@@ -493,9 +478,7 @@ define
     plays "problem"
     plays "characterize";
 
-  "Vulnerability" sub "Stix-Domain"
-    has "name"
-    has "description"
+  "Vulnerability" sub "Stix-Domain-Entity"
     plays "target"
     plays "problem";
 

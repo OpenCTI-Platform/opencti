@@ -66,14 +66,11 @@ const styles = theme => ({
 });
 
 const stixDomainCreationMutation = graphql`
-    mutation StixDomainCreationMutation($input: StixDomainAddInput!) {
-        stixDomainAdd(input: $input) {
+    mutation StixDomainCreationMutation($input: StixDomainEntityAddInput!) {
+        stixDomainEntityAdd(input: $input) {
             id
-            source_name
+            name
             description
-            url
-            external_id
-            created
         }
     }
 `;

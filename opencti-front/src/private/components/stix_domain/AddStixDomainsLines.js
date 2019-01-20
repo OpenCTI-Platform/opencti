@@ -16,9 +16,8 @@ import inject18n from '../../../components/i18n';
 import environment from '../../../relay/environment';
 
 const styles = theme => ({
-  avatar: {
-    width: 24,
-    height: 24,
+  itemIcon: {
+    color: theme.palette.primary.main,
   },
   icon: {
     color: theme.palette.primary.main,
@@ -27,16 +26,12 @@ const styles = theme => ({
 
 const stixDomainLinesMutationRelationAdd = graphql`
     mutation AddStixDomainsLinesRelationAddMutation($id: ID!, $input: RelationAddInput!) {
-        stixDomainEdit(id: $id) {
+        stixDomainEntityEdit(id: $id) {
             relationAdd(input: $input) {
                 node {
-                    ... on StixDomain {
+                    ... on StixDomainEntity {
                         id
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
+                        name
                     }
                 }
                 relation {
@@ -48,12 +43,13 @@ const stixDomainLinesMutationRelationAdd = graphql`
 `;
 
 export const stixDomainMutationRelationDelete = graphql`
-    mutation EntityStixDomainsLinesRelationDeleteMutation($id: ID!, $relationId: ID!) {
-        stixDomainEdit(id: $id) {
+    mutation AddStixDomainsLinesRelationDeleteMutation($id: ID!, $relationId: ID!) {
+        stixDomainEntityEdit(id: $id) {
             relationDelete(relationId: $relationId) {
                 node {
-                    ... on StixDomain {
+                    ... on StixDomainEntity {
                         id
+                        name
                     }
                 }
             }
@@ -164,7 +160,7 @@ AddStixDomainsLines.propTypes = {
 };
 
 export const addStixDomainsLinesQuery = graphql`
-    query AddStixDomainsLinesQuery($search: String, $count: Int!, $cursor: ID, $orderBy: StixDomainsOrdering, $orderMode: OrderingMode) {
+    query AddStixDomainsLinesQuery($search: String, $count: Int!, $cursor: ID, $orderBy: StixDomainEntitiesOrdering, $orderMode: OrderingMode) {
         ...AddStixDomainsLines_data @arguments(search: $search, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
     }
 `;
@@ -177,17 +173,16 @@ export default inject18n(withStyles(styles)(createPaginationContainer(
             search: {type: "String"}
             count: {type: "Int", defaultValue: 25}
             cursor: {type: "ID"}
-            orderBy: {type: "StixDomainsOrdering", defaultValue: ID}
+            orderBy: {type: "StixDomainEntitiesOrdering", defaultValue: ID}
             orderMode: {type: "OrderingMode", defaultValue: "asc"}
         ) {
-            stixDomains(search: $search, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_stixDomains") {
+            stixDomainEntities(search: $search, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_stixDomainEntities") {
                 edges {
                     node {
                         id
-                        source_name
+                        type
+                        name
                         description
-                        url
-                        external_id
                     }
                 }
             }

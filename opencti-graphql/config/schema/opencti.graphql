@@ -7,7 +7,7 @@ type RelationEmbedded {
 }
 
 type RelationData {
-    node: StixDomain
+    node: GlobalObject
     relation: RelationEmbedded
 }
 
@@ -65,28 +65,35 @@ input SettingsAddInput {
     platform_registration: Boolean
 }
 
+### Global objects
+interface GlobalObject {
+    id: ID!
+    type: String!
+}
+
 ### STIX objects
-enum StixDomainsOrdering {
+enum StixDomainEntitiesOrdering {
     name,
     created_at,
     updated_at
 }
-type StixDomainConnection {
+type StixDomainEntityConnection {
     pageInfo: PageInfo!
-    edges: [StixDomainEdge]
+    edges: [StixDomainEntityEdge]
 }
-type StixDomainEdge {
+type StixDomainEntityEdge {
     cursor: String!
-    node: StixDomain!
+    node: StixDomainEntity!
 }
-interface StixDomain {
+interface StixDomainEntity {
     id: ID!
+    type: String!
     name: String!
     description: String
     created_at: DateTime!
     updated_at: DateTime!
 }
-input StixDomainAddInput  {
+input StixDomainEntityAddInput  {
     name: String!
     description: String
     type: String!
@@ -111,6 +118,7 @@ type IdentityEdge {
 }
 interface Identity {
     id: ID!
+    type: String!
     name: String!
     description: String
 }
@@ -144,8 +152,9 @@ type UserEdge {
     cursor: String!
     node: User!
 }
-type User implements StixDomain & Identity {
+type User implements GlobalObject & StixDomainEntity & Identity {
     id: ID!
+    type: String!
     name: String!
     description: String
     firstname: String
@@ -194,8 +203,9 @@ type OrganizationEdge {
     cursor: String!
     node: Organization!
 }
-type Organization implements StixDomain & Identity {
+type Organization implements GlobalObject & StixDomainEntity & Identity {
     id: ID!
+    type: String!
     name: String!
     description: String
     created: DateTime
@@ -231,8 +241,9 @@ type SectorEdge {
     cursor: String!
     node: Sector!
 }
-type Sector implements StixDomain & Identity {
+type Sector implements GlobalObject & StixDomainEntity & Identity {
     id: ID!
+    type: String!
     name: String!
     description: String
     created: DateTime
@@ -244,6 +255,82 @@ type Sector implements StixDomain & Identity {
     updated_at: DateTime!
 }
 input SectorAddInput  {
+    name: String!
+    description: String
+    markingDefinitions: [String]
+    clientMutationId: String
+}
+
+### Cities
+enum CitiesOrdering {
+    stix_id,
+    name,
+    description,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type CityConnection {
+    pageInfo: PageInfo!
+    edges: [CityEdge]
+}
+type CityEdge {
+    cursor: String!
+    node: City!
+}
+type City implements GlobalObject & StixDomainEntity & Identity {
+    id: ID!
+    type: String!
+    name: String!
+    description: String
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
+    markingDefinitions: MarkingDefinitionConnection
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+input CityAddInput  {
+    name: String!
+    description: String
+    markingDefinitions: [String]
+    clientMutationId: String
+}
+
+### Countries
+enum CountriesOrdering {
+    stix_id,
+    name,
+    description,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type CountryConnection {
+    pageInfo: PageInfo!
+    edges: [CountryEdge]
+}
+type CountryEdge {
+    cursor: String!
+    node: Country!
+}
+type Country implements GlobalObject & StixDomainEntity & Identity {
+    id: ID!
+    type: String!
+    name: String!
+    description: String
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
+    markingDefinitions: MarkingDefinitionConnection
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+input CountryAddInput  {
     name: String!
     description: String
     markingDefinitions: [String]
@@ -265,8 +352,9 @@ type GroupEdge {
     node: Group!
     relation: RelationEmbedded!
 }
-type Group implements StixDomain {
+type Group implements GlobalObject & StixDomainEntity {
     id: ID!
+    type: String!
     name: String!
     description: String
     editContext: [EditUserContext]
@@ -303,8 +391,9 @@ type MarkingDefinitionEdge {
     node: MarkingDefinition!
     relation: RelationEmbedded!
 }
-type MarkingDefinition {
+type MarkingDefinition implements GlobalObject {
     id: ID!
+    type: String!
     definition_type: String!
     definition: String!
     level: Int
@@ -346,8 +435,9 @@ type ExternalReferenceEdge {
     node: ExternalReference!
     relation: RelationEmbedded!
 }
-type ExternalReference {
+type ExternalReference implements GlobalObject {
     id: ID!
+    type: String!
     source_name: String!
     description: String
     url: String
@@ -387,8 +477,9 @@ type KillChainPhaseEdge {
     node: KillChainPhase!
     relation: RelationEmbedded!
 }
-type KillChainPhase {
+type KillChainPhase implements GlobalObject {
     id: ID!
+    type: String!
     kill_chain_name: String!
     phase_name: String!
     phase_order: Int
@@ -404,6 +495,88 @@ input KillChainPhaseAddInput {
     kill_chain_name: String!
     phase_name: String!
     phase_order: Int!
+}
+
+### AttackPattern
+enum AttackPatternsOrdering {
+    stix_id,
+    name,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type AttackPatternConnection {
+    pageInfo: PageInfo!
+    edges: [MalwareEdge]
+}
+type AttackPatternEdge {
+    cursor: String!
+    node: AttackPattern!
+}
+type AttackPattern implements GlobalObject & StixDomainEntity {
+    id: ID!
+    type: String!
+    name: String!
+    stix_label: [String]
+    description: String
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
+    createdByRef: createdByRef
+    markingDefinitions: MarkingDefinitionConnection
+    killChainPhases: KillChainPhaseConnection
+    reports: ReportConnection
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+input AttackPatternAddInput {
+    name: String!
+    description: String!
+    markingDefinitions: [String]
+    killChainPhases: [String]
+    clientMutationId: String
+}
+
+### CourseOfAction
+enum CourseOfActionsOrdering {
+    stix_id,
+    name,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type CourseOfActionConnection {
+    pageInfo: PageInfo!
+    edges: [CourseOfActionEdge]
+}
+type CourseOfActionEdge {
+    cursor: String!
+    node: Malware!
+}
+type CourseOfAction implements GlobalObject & StixDomainEntity {
+    id: ID!
+    type: String!
+    name: String!
+    stix_label: [String]
+    description: String
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
+    createdByRef: createdByRef
+    markingDefinitions: MarkingDefinitionConnection
+    reports: ReportConnection
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+input CourseOfActionAddInput {
+    name: String!
+    description: String!
+    markingDefinitions: [String]
+    clientMutationId: String
 }
 
 ### Threat Actors
@@ -423,8 +596,9 @@ type ThreatActorEdge {
     cursor: String!
     node: ThreatActor!
 }
-type ThreatActor implements StixDomain {
+type ThreatActor implements GlobalObject & StixDomainEntity {
     id: ID!
+    type: String!
     name: String!
     stix_label: [String]
     alias: [String]
@@ -469,8 +643,9 @@ type IntrusionSetEdge {
     cursor: String!
     node: IntrusionSet!
 }
-type IntrusionSet implements StixDomain {
+type IntrusionSet implements GlobalObject & StixDomainEntity {
     id: ID!
+    type: String!
     name: String!
     stix_label: [String]
     alias: [String]
@@ -496,6 +671,101 @@ input IntrusionSetAddInput {
     clientMutationId: String
 }
 
+### Campaign
+enum CampaignsOrdering {
+    stix_id,
+    name,
+    first_seen,
+    last_seen,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type CampaignConnection {
+    pageInfo: PageInfo!
+    edges: [CampaignEdge]
+}
+type CampaignEdge {
+    cursor: String!
+    node: Campaign!
+}
+type Campaign implements GlobalObject & StixDomainEntity {
+    id: ID!
+    type: String!
+    name: String!
+    stix_label: [String]
+    alias: [String]
+    description: String
+    first_seen: DateTime
+    last_seen: DateTime
+    objective: String
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
+    createdByRef: createdByRef
+    markingDefinitions: MarkingDefinitionConnection
+    reports: ReportConnection
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+input CampaignAddInput {
+    name: String!
+    description: String!
+    first_seen: DateTime
+    last_seen: DateTime
+    objective: String
+    markingDefinitions: [String]
+    clientMutationId: String
+}
+
+### Incident
+enum IncidentsOrdering {
+    stix_id,
+    name,
+    first_seen,
+    last_seen,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type IncidentConnection {
+    pageInfo: PageInfo!
+    edges: [MalwareEdge]
+}
+type IncidentEdge {
+    cursor: String!
+    node: Incident!
+}
+type Incident implements GlobalObject & StixDomainEntity {
+    id: ID!
+    type: String!
+    name: String!
+    stix_label: [String]
+    description: String
+    first_seen: DateTime
+    last_seen: DateTime
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
+    createdByRef: createdByRef
+    markingDefinitions: MarkingDefinitionConnection
+    reports: ReportConnection
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+input IncidentAddInput {
+    name: String!
+    description: String!
+    first_seen: DateTime
+    last_seen: DateTime
+    markingDefinitions: [String]
+    clientMutationId: String
+}
+
 ### Malware
 enum MalwaresOrdering {
     stix_id,
@@ -513,8 +783,9 @@ type MalwareEdge {
     cursor: String!
     node: Malware!
 }
-type Malware implements StixDomain {
+type Malware implements GlobalObject & StixDomainEntity {
     id: ID!
+    type: String!
     name: String!
     stix_label: [String]
     description: String
@@ -534,6 +805,90 @@ input MalwareAddInput {
     description: String!
     markingDefinitions: [String]
     killChainPhases: [String]
+    clientMutationId: String
+}
+
+### Tool
+enum ToolsOrdering {
+    stix_id,
+    name,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type ToolConnection {
+    pageInfo: PageInfo!
+    edges: [ToolEdge]
+}
+type ToolEdge {
+    cursor: String!
+    node: Tool!
+}
+type Tool implements GlobalObject & StixDomainEntity {
+    id: ID!
+    type: String!
+    name: String!
+    stix_label: [String]
+    description: String
+    tool_version: String
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
+    createdByRef: createdByRef
+    markingDefinitions: MarkingDefinitionConnection
+    killChainPhases: KillChainPhaseConnection
+    reports: ReportConnection
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+input ToolAddInput {
+    name: String!
+    description: String!
+    tool_version: String
+    markingDefinitions: [String]
+    killChainPhases: [String]
+    clientMutationId: String
+}
+
+### Vulnerability
+enum VulnerabilitiesOrdering {
+    stix_id,
+    name,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type VulnerabilityConnection {
+    pageInfo: PageInfo!
+    edges: [VulnerabilityEdge]
+}
+type VulnerabilityEdge {
+    cursor: String!
+    node: Vulnerability!
+}
+type Vulnerability implements GlobalObject & StixDomainEntity {
+    id: ID!
+    type: String!
+    name: String!
+    stix_label: [String]
+    description: String
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
+    createdByRef: createdByRef
+    markingDefinitions: MarkingDefinitionConnection
+    reports: ReportConnection
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+input VulnerabilityAddInput {
+    name: String!
+    description: String!
+    markingDefinitions: [String]
     clientMutationId: String
 }
 
@@ -559,8 +914,9 @@ type ReportEdge {
 type ReportPayload {
     reportEdge: ReportEdge
 }
-type Report implements StixDomain {
+type Report implements GlobalObject & StixDomainEntity {
     id: ID!
+    type: String!
     name: String!
     description: String
     report_class: String
@@ -571,7 +927,7 @@ type Report implements StixDomain {
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
-    objectRefs: StixDomainConnection
+    objectRefs: StixDomainEntityConnection
     created_at: DateTime!
     updated_at: DateTime!
 }
@@ -597,9 +953,9 @@ input RelationAddInput {
 type Query {
     # Settings
     settings: Settings
-    # StixDomains
-    stixDomain(id: String!): StixDomain
-    stixDomains(first: Int, after: ID, orderBy: StixDomainsOrdering, orderMode: OrderingMode, search: String): StixDomainConnection
+    # StixDomainEntities
+    stixDomainEntity(id: String!): StixDomainEntity
+    stixDomainEntities(first: Int, after: ID, orderBy: StixDomainEntitiesOrdering, orderMode: OrderingMode, search: String): StixDomainEntityConnection
     # Identities
     identity(id: String!): Identity
     identities(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): IdentityConnection
@@ -613,6 +969,12 @@ type Query {
     # Sectors
     sector(id: String!): Sector
     sectors(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): SectorConnection
+    # Cities
+    city(id: String!): City
+    cities(first: Int, after: ID, orderBy: CitiesOrdering, orderMode: OrderingMode, search: String): CityConnection
+    # Countries
+    country(id: String!): Country
+    countries(first: Int, after: ID, orderBy: CountriesOrdering, orderMode: OrderingMode, search: String): CountryConnection
     # Groups
     group(id: String!): Group
     groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
@@ -626,15 +988,33 @@ type Query {
     # KillChainPhases
     killChainPhase(id: String!): KillChainPhase
     killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, search: String): KillChainPhaseConnection
+    # AttackPatterns
+    attackPattern(id: String!): AttackPattern
+    attackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, search: String): AttackPatternConnection
+    # CourseOfActions
+    courseOfAction(id: String!): CourseOfAction
+    courseOfActions(first: Int, after: ID, orderBy: CourseOfActionsOrdering, orderMode: OrderingMode, search: String): CourseOfActionConnection
     # ThreatActors
     threatActor(id: String!): ThreatActor
     threatActors(first: Int, after: ID, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, search: String): ThreatActorConnection
     # IntursionSets
     intrusionSet(id: String!): IntrusionSet
     intrusionSets(first: Int, after: ID, orderBy: IntrusionSetsOrdering, orderMode: OrderingMode, search: String): IntrusionSetConnection
+    # Campaigns
+    campaign(id: String!): Campaign
+    campaigns(first: Int, after: ID, orderBy: CampaignsOrdering, orderMode: OrderingMode, search: String): CampaignConnection
+    # Incidents
+    incident(id: String!): Incident
+    incidents(first: Int, after: ID, orderBy: IncidentsOrdering, orderMode: OrderingMode, search: String): IncidentConnection
     # Malwares
     malware(id: String!): Malware
     malwares(first: Int, after: ID, orderBy: MalwaresOrdering, orderMode: OrderingMode, search: String): MalwareConnection
+    # Tools
+    tool(id: String!): Tool
+    tools(first: Int, after: ID, orderBy: ToolsOrdering, orderMode: OrderingMode, search: String): ToolConnection
+    # Vulnerabilities
+    vulnerability(id: String!): Tool
+    vulnerabilities(first: Int, after: ID, orderBy: VulnerabilitiesOrdering, orderMode: OrderingMode, search: String): VulnerabilityConnection
     # Reports
     report(id: String!): Report
     reports(first: Int, after: ID, orderBy: ReportsOrdering, orderMode: OrderingMode, search: String): ReportConnection
@@ -644,18 +1024,26 @@ type Query {
 ### SUBSCRIPTIONS
 type Subscription {
     settings(id: ID!): Settings
-    stixDomain(id: ID!): StixDomain
+    stixDomainEntity(id: ID!): StixDomainEntity
     identity(id: ID!): Identity
     user(id: ID!): User
     organization(id: ID!): Organization
     sector(id: ID!): Sector
+    city(id: ID!): City
+    country(id: ID!): Country
     group(id: ID!): Group
     markingDefinition(id: ID!): MarkingDefinition
     externalReference(id: ID!): ExternalReference
     killChainPhase(id: ID!): KillChainPhase
+    attackPattern(id: ID!): AttackPattern
+    courseOfAction(id: ID!): CourseOfAction
     threatActor(id: ID!): ThreatActor
     intrusionSet(id: ID!): IntrusionSet
+    campaign(id: ID!): Campaign
+    incident(id: ID!): Incident
     malware(id: ID!): Malware
+    tool(id: ID!): Tool
+    vulnerability(id: ID!): Vulnerability
     report(id: ID!): Report
 }
 
@@ -668,10 +1056,10 @@ type SettingsEditMutations {
 }
 
 # StixDomain
-type StixDomainEditMutations {
+type StixDomainEntityEditMutations {
     delete: ID
-    fieldPatch(input: EditInput): StixDomain
-    contextPatch(input: EditContext): StixDomain
+    fieldPatch(input: EditInput): StixDomainEntity
+    contextPatch(input: EditContext): StixDomainEntity
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -703,11 +1091,29 @@ type OrganizationEditMutations {
     relationDelete(relationId: ID!): RelationData
 }
 
-# Organization
+# Sector
 type SectorEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Sector
     contextPatch(input: EditContext): Sector
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId: ID!): RelationData
+}
+
+# City
+type CityEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): City
+    contextPatch(input: EditContext): City
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId: ID!): RelationData
+}
+
+# Country
+type CountryEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): Country
+    contextPatch(input: EditContext): Country
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -748,6 +1154,24 @@ type KillChainPhaseEditMutations {
     relationDelete(relationId: ID!): RelationData
 }
 
+# AttackPattern
+type AttackPatternEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): AttackPattern
+    contextPatch(input: EditContext): AttackPattern
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId:ID!): RelationData
+}
+
+# CourseOfAction
+type CourseOfActionEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): CourseOfAction
+    contextPatch(input: EditContext): CourseOfAction
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId:ID!): RelationData
+}
+
 # ThreatActor
 type ThreatActorEditMutations {
     delete: ID
@@ -766,11 +1190,47 @@ type IntrusionSetEditMutations {
     relationDelete(relationId: ID!): RelationData
 }
 
+# Campaign
+type CampaignEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): Campaign
+    contextPatch(input: EditContext): Campaign
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId:ID!): RelationData
+}
+
+# Incident
+type IncidentEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): Incident
+    contextPatch(input: EditContext): Incident
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId:ID!): RelationData
+}
+
 # Malware
 type MalwareEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Malware
     contextPatch(input: EditContext): Malware
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId:ID!): RelationData
+}
+
+# Tool
+type ToolEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): Tool
+    contextPatch(input: EditContext): Tool
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId:ID!): RelationData
+}
+
+# Vulnerability
+type VulnerabilityEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): Vulnerability
+    contextPatch(input: EditContext): Vulnerability
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId:ID!): RelationData
 }
@@ -784,7 +1244,7 @@ type ReportEditMutations {
     relationDelete(relationId:ID!): RelationData
 }
 
-# Next
+# Mutations
 
 type Mutation {
     # Settings
@@ -792,9 +1252,9 @@ type Mutation {
     settingsEdit(id: ID!): SettingsEditMutations
     # Login
     token(input: UserLoginInput) : String
-    # StixDomain
-    stixDomainAdd(input: StixDomainAddInput): StixDomain
-    stixDomainEdit(id: ID!): StixDomainEditMutations
+    # StixDomainEntity
+    stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity
+    stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations
     # Identity
     identityAdd(input: IdentityAddInput): Identity
     identityEdit(id: ID!): IdentityEditMutations
@@ -807,6 +1267,12 @@ type Mutation {
     # Sector
     sectorAdd(input: SectorAddInput): Sector
     sectorEdit(id: ID!): SectorEditMutations
+    # City
+    cityAdd(input: CityAddInput): City
+    cityEdit(id: ID!): CityEditMutations
+    # Country
+    countryAdd(input: CountryAddInput): Country
+    countryEdit(id: ID!): CountryEditMutations
     # Group
     groupAdd(input: GroupAddInput): Group
     groupEdit(id: ID!): GroupEditMutations
@@ -819,15 +1285,33 @@ type Mutation {
     # KillChainPhase
     killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase
     killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations
+    # AttackPattern
+    attackPatternAdd(input: AttackPatternAddInput): AttackPattern
+    attackPatternEdit(id: ID!): AttackPatternEditMutations
+    # CourseOfAction
+    courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction
+    courseOfActionEdit(id: ID!): CourseOfActionEditMutations
     # ThreatActor
     threatActorAdd(input: ThreatActorAddInput): ThreatActor
     threatActorEdit(id: ID!): ThreatActorEditMutations
     # IntrusionSet
     intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet
     intrusionSetEdit(id: ID!): IntrusionSetEditMutations
+    # Campaign
+    campaignAdd(input: CampaignAddInput): Campaign
+    campaignEdit(id: ID!): CampaignEditMutations
+    # Incident
+    incidentAdd(input: IncidentAddInput): Incident
+    incidentEdit(id: ID!): IncidentEditMutations
     # Malware
     malwareAdd(input: MalwareAddInput): Malware
     malwareEdit(id: ID!): MalwareEditMutations
+    # Tool
+    toolAdd(input: ToolAddInput): Tool
+    toolEdit(id: ID!): ToolEditMutations
+    # Vulnerability
+    vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability
+    vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
     # Report
     reportAdd(input: ReportAddInput): Report
     reportEdit(id: ID!): ReportEditMutations

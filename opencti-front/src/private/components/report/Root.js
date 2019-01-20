@@ -14,6 +14,7 @@ const reportQuery = graphql`
             ...Report_report
             ...ReportHeader_report
             ...ReportOverview_report
+            ...ReportKnowledge_report
         }
     }
 `;
