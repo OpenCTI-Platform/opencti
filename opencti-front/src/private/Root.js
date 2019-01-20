@@ -57,16 +57,12 @@ PrivateErrorBoundaryComponent.propTypes = {
 };
 const PrivateErrorBoundary = compose(withRouter)(PrivateErrorBoundaryComponent);
 
-
 const styles = theme => ({
-  container: {
-    flexGrow: 1,
-    zIndex: 1,
-    overflow: 'hidden',
-    position: 'relative',
-    display: 'flex',
+  root: {
+    height: '100%',
   },
   content: {
+    height: '100%',
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     padding: '24px 24px 24px 84px',

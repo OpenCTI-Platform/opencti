@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { Graph } from 'react-d3-graph';
+import {
+  compose, pipe, map, assoc,
+} from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
+import GraphNode from '../../../components/GraphNode';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
 
 const styles = () => ({
@@ -24,15 +28,41 @@ export const reportKnowledgeGraphQuery = graphql`
     }
 `;
 
+const graphConfig = {
+  nodeHighlightBehavior: true,
+  node: {
+    renderLabel: false,
+    size: 700,
+    svg: '',
+    symbolType: '',
+    viewGenerator: node => <GraphNode node={node}/>,
+  },
+  link: {
+    highlightColor: 'lightblue',
+  },
+};
+
 class ReportKnowledgeGraphComponent extends Component {
   render() {
     const { classes, report } = this.props;
+    const nodes = map(n => ({
+      id: n.node.id,
+      name: n.node.name,
+      entity_type: n.node.type,
+    }), report.objectRefs.edges);
+    const data = {
+      nodes,
+      links: [],
+    };
+
     return (
       <div className={classes.container}>
         <ReportAddObjectRefs reportId={report.id} reportObjectRefs={report.objectRefs.edges}/>
-        {report.objectRefs.edges.map(objectRef => (
-            <div key={objectRef.node.id}>{objectRef.node.name}</div>
-        ))}
+        <Graph
+          id='ReportGraph'
+          data={data}
+          config={graphConfig}
+        />
       </div>
     );
   }
