@@ -29,20 +29,23 @@ class RootReport extends Component {
           environment={environment}
           query={reportQuery}
           variables={{ id: reportId }}
-          render={({ props }) => (
-            <div>
-              <Route exact path='/dashboard/reports/all/:reportId' render={routeProps => <Report
-                {...routeProps}
-                reportId={reportId}
-                report={props && props.report ? props.report : null}/>
-              }/>
-              <Route exact path='/dashboard/reports/all/:reportId/knowledge' render={routeProps => <ReportKnowledge
-                {...routeProps}
-                reportId={reportId}
-                report={props && props.report ? props.report : null}/>
-              }/>
-            </div>
-          )}
+          render={({ props }) => {
+            if (props && props.report) {
+              return (
+                <div>
+                  <Route exact path='/dashboard/reports/all/:reportId' render={
+                    routeProps => <Report {...routeProps} report={props.report}/>
+                  }/>
+                  <Route exact path='/dashboard/reports/all/:reportId/knowledge' render={
+                    routeProps => <ReportKnowledge {...routeProps} report={props.report}/>
+                  }/>
+                </div>
+              );
+            }
+            return (
+              <div> &nbsp; </div>
+            );
+          }}
         />
       </div>
     );

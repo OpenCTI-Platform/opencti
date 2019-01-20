@@ -29,6 +29,9 @@ const styles = theme => ({
     color: theme.palette.text.main,
     borderRadius: 6,
   },
+  list: {
+    padding: 0,
+  },
   avatar: {
     width: 24,
     height: 24,
@@ -78,7 +81,7 @@ class EntityExternalReferencesLines extends Component {
         <AddExternalReferences entityId={entityId} entityExternalReferences={data.externalReferencesOf.edges} entityPaginationOptions={paginationOptions}/>
         <div className='clearfix'/>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <List>
+          <List classes={{root: classes.list}}>
             {data.externalReferencesOf.edges.map((externalReferenceEdge) => {
               const externalReference = externalReferenceEdge.node;
               const externalReferenceId = externalReference.external_id ? `(${externalReference.external_id})` : '';
@@ -121,6 +124,11 @@ class EntityExternalReferencesLines extends Component {
                     primary={`${externalReference.source_name} ${externalReferenceId}`}
                     secondary={truncate(externalReference.description, 120)}
                   />
+                  <ListItemSecondaryAction>
+                    <IconButton aria-label='Remove' onClick={this.removeExternalReference.bind(this, externalReferenceEdge)}>
+                      <LinkOff/>
+                    </IconButton>
+                  </ListItemSecondaryAction>
                 </ListItem>
               );
             })}

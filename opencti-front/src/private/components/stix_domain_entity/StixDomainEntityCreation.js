@@ -65,8 +65,8 @@ const styles = theme => ({
   },
 });
 
-const stixDomainCreationMutation = graphql`
-    mutation StixDomainCreationMutation($input: StixDomainEntityAddInput!) {
+const stixDomainEntityCreationMutation = graphql`
+    mutation StixDomainEntityCreationMutation($input: StixDomainEntityAddInput!) {
         stixDomainEntityAdd(input: $input) {
             id
             name
@@ -94,7 +94,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class StixDomainCreation extends Component {
+class StixDomainEntityCreation extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -110,7 +110,7 @@ class StixDomainCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm, setErrors }) {
     commitMutation(environment, {
-      mutation: stixDomainCreationMutation,
+      mutation: stixDomainEntityCreationMutation,
       variables: {
         input: values,
       },
@@ -248,7 +248,7 @@ class StixDomainCreation extends Component {
   }
 }
 
-StixDomainCreation.propTypes = {
+StixDomainEntityCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -261,4 +261,4 @@ StixDomainCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(StixDomainCreation);
+)(StixDomainEntityCreation);

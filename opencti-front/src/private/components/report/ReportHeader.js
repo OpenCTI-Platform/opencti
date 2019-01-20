@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose, propOr, pathOr } from 'ramda';
+import { compose, pathOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -37,10 +37,10 @@ class ReportHeaderComponent extends Component {
     return (
       <div>
         <Typography variant='h1' gutterBottom={true} classes={{ root: classes.title }}>
-          {propOr('-', 'name', report)}
+          {report.name}
         </Typography>
         <div className={classes.popover}>
-          <ReportPopover reportId={propOr('-', 'id', report)}/>
+          <ReportPopover reportId={report.id}/>
         </div>
         <div className={classes.marking}>
           {pathOr([], ['markingDefinitions', 'edges'], report).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} label={markingDefinition.node.definition}/>)}

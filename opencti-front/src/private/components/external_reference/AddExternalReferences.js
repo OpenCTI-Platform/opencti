@@ -74,7 +74,7 @@ class AddExternalReferences extends Component {
   }
 
   handleClose() {
-    this.setState({ open: false });
+    this.setState({ open: false, search: '' });
   }
 
   handleSearch(keyword) {

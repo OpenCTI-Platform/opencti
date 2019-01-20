@@ -21,7 +21,7 @@ export const findById = stixDomainEntityId => loadByID(stixDomainEntityId);
 
 export const search = args =>
   paginate(
-    `match $m isa Stix-Domain
+    `match $m isa Stix-Domain-Entity
     has name $name
     has description $desc;
     { $name contains "${args.search}"; } or

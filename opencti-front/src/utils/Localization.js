@@ -155,6 +155,7 @@ const i18n = {
       'Source name': 'Nom de la source',
       'External ID': 'ID externe',
       URL: 'URL',
+      'entitie(s)': 'entité(s)',
       // Statistics
       'Total entities': 'Nombre d\'entités',
       'Total observables': 'Nombre d\'observables',
@@ -162,7 +163,23 @@ const i18n = {
       'Total investigations': 'Nombre d\'investigations',
       'Ingested entities': 'Entités stockées',
       'last 24h': 'dernières 24h',
+      // Types
+      'entity_attack-pattern': 'TTP',
+      'entity_intrusion-set': 'Mode opératoire',
+      entity_malware: 'Code malveillant',
+      entity_tool: 'Outil',
+      entity_organization: 'Organisation',
+      entity_user: 'Personne',
     },
+    en: {
+      // Types
+      'entity_attack-pattern': 'TTP',
+      'entity_intrusion-set': 'Intrusion set',
+      entity_malware: 'Malware',
+      entity_tool: 'Tool',
+      entity_organization: 'Organization',
+      entity_user: 'Person',
+    }
   },
 };
 

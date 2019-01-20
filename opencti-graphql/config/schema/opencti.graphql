@@ -84,6 +84,7 @@ type StixDomainEntityConnection {
 type StixDomainEntityEdge {
     cursor: String!
     node: StixDomainEntity!
+    relation: RelationEmbedded!
 }
 interface StixDomainEntity {
     id: ID!
@@ -910,6 +911,7 @@ type ReportConnection {
 type ReportEdge {
     cursor: String!
     node: Report!
+    relation: RelationEmbedded!
 }
 type ReportPayload {
     reportEdge: ReportEdge
@@ -1316,4 +1318,3 @@ type Mutation {
     reportAdd(input: ReportAddInput): Report
     reportEdit(id: ID!): ReportEditMutations
 }
-

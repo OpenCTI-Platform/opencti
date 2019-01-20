@@ -22,7 +22,7 @@ const styles = () => ({
 
 class ReportComponent extends Component {
   render() {
-    const { classes, reportId, report } = this.props;
+    const { classes, report } = this.props;
     return (
       <div className={classes.container}>
         <ReportHeader report={report}/>
@@ -31,17 +31,16 @@ class ReportComponent extends Component {
             <ReportOverview report={report}/>
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityExternalReferences entityId={reportId}/>
+            <EntityExternalReferences entityId={report.id}/>
           </Grid>
         </Grid>
-        <ReportEdition reportId={reportId}/>
+        <ReportEdition reportId={report.id}/>
       </div>
     );
   }
 }
 
 ReportComponent.propTypes = {
-  reportId: PropTypes.string.isRequired,
   report: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -50,6 +49,7 @@ ReportComponent.propTypes = {
 const Report = createFragmentContainer(ReportComponent, {
   report: graphql`
       fragment Report_report on Report {
+          id
           ...ReportHeader_report
           ...ReportOverview_report
       }

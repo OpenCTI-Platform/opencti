@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
+import { compose } from 'ramda';
+import { QueryRenderer, createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
+import environment from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import ReportHeader from './ReportHeader';
-import AddStixDomains from '../stix_domain/AddStixDomains';
+import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
 
 const styles = () => ({
   container: {
@@ -17,40 +18,43 @@ const styles = () => ({
   },
 });
 
-class ReportComponent extends Component {
+class ReportKnowledgeComponent extends Component {
   render() {
     const { classes, report } = this.props;
     return (
       <div className={classes.container}>
         <ReportHeader report={report}/>
-        <AddStixDomains entityId={propOr(null, 'id', report)} entityStixDomains={[]} />
+        <QueryRenderer
+          environment={environment}
+          query={reportKnowledgeGraphQuery}
+          variables={{ id: report.id }}
+          render={({ props }) => {
+            if (props && props.report) {
+              return (
+                <ReportKnowledgeGraph report={props.report}/>
+              );
+            }
+            return (
+              <div> &nbsp; </div>
+            );
+          }}
+        />
       </div>
     );
   }
 }
 
-ReportComponent.propTypes = {
-  reportId: PropTypes.string.isRequired,
+ReportKnowledgeComponent.propTypes = {
   report: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const Report = createFragmentContainer(ReportComponent, {
+const ReportKnowledge = createFragmentContainer(ReportKnowledgeComponent, {
   report: graphql`
       fragment ReportKnowledge_report on Report {
-          ...ReportHeader_report
           id
-          name
-          objectRefs {
-              edges {
-                  node {
-                      id
-                      type
-                      name
-                  }
-              }
-          }
+          ...ReportHeader_report
       }
   `,
 });
@@ -58,4 +62,4 @@ const Report = createFragmentContainer(ReportComponent, {
 export default compose(
   inject18n,
   withStyles(styles),
-)(Report);
+)(ReportKnowledge);

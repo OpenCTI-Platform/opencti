@@ -16,8 +16,8 @@ import { Add, Close } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import environment from '../../../relay/environment';
-import AddStixDomainsLines, { addStixDomainsLinesQuery } from './AddStixDomainsLines';
-import StixDomainCreation from './StixDomainCreation';
+import ReportAddObjectRefsLines, { reportAddObjectRefsLinesQuery } from './ReportAddObjectRefsLines';
+import StixDomainEntityCreation from '../stix_domain_entity/StixDomainEntityCreation';
 
 const styles = theme => ({
   drawerPaper: {
@@ -65,10 +65,10 @@ const styles = theme => ({
   },
 });
 
-class AddStixDomains extends Component {
+class ReportAddObjectRefs extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, stixDomains: [], search: '' };
+    this.state = { open: false, search: '' };
   }
 
   handleOpen() {
@@ -76,7 +76,7 @@ class AddStixDomains extends Component {
   }
 
   handleClose() {
-    this.setState({ open: false });
+    this.setState({ open: false, search: '' });
   }
 
   handleSearch(keyword) {
@@ -85,7 +85,7 @@ class AddStixDomains extends Component {
 
   render() {
     const {
-      t, classes, entityId, entityStixDomains, entityPaginationOptions,
+      t, classes, reportId, reportObjectRefs,
     } = this.props;
     const paginationOptions = { search: this.state.search, orderBy: 'created_at', orderMode: 'desc' };
     return (
@@ -108,7 +108,7 @@ class AddStixDomains extends Component {
           <div className={classes.container}>
             <QueryRenderer
               environment={environment}
-              query={addStixDomainsLinesQuery}
+              query={reportAddObjectRefsLinesQuery}
               variables={{
                 search: this.state.search,
                 count: 20,
@@ -118,10 +118,9 @@ class AddStixDomains extends Component {
               render={({ props }) => {
                 if (props) {
                   return (
-                    <AddStixDomainsLines
-                      entityId={entityId}
-                      entityStixDomains={entityStixDomains}
-                      entityPaginationOptions={entityPaginationOptions}
+                    <ReportAddObjectRefsLines
+                      reportId={reportId}
+                      reportObjectRefs={reportObjectRefs}
                       data={props}
                     />
                   );
@@ -149,7 +148,7 @@ class AddStixDomains extends Component {
             />
           </div>
         </Drawer>
-        <StixDomainCreation
+        <StixDomainEntityCreation
           display={this.state.open}
           contextual={true}
           inputValue={this.state.search}
@@ -160,10 +159,9 @@ class AddStixDomains extends Component {
   }
 }
 
-AddStixDomains.propTypes = {
-  entityId: PropTypes.string,
-  entityStixDomains: PropTypes.array,
-  entityPaginationOptions: PropTypes.object,
+ReportAddObjectRefs.propTypes = {
+  reportId: PropTypes.string,
+  reportObjectRefs: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
@@ -172,4 +170,4 @@ AddStixDomains.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(AddStixDomains);
+)(ReportAddObjectRefs);
