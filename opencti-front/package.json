@@ -38,6 +38,7 @@
     "rxjs": "^6.3.3",
     "subscriptions-transport-ws": "^0.9.15",
     "typeface-roboto": "0.0.54",
+    "vis": "^4.21.0",
     "yup": "^0.26.7"
   },
   "devDependencies": {

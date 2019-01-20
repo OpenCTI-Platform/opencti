@@ -6,6 +6,7 @@ import graphql from 'babel-plugin-relay/macro';
 import environment from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import Report from './Report';
+import ReportKnowledge from './ReportKnowledge';
 
 const reportQuery = graphql`
     query RootReportQuery($id: String!) {
@@ -13,6 +14,7 @@ const reportQuery = graphql`
             ...Report_report
             ...ReportHeader_report
             ...ReportOverview_report
+            ...ReportKnowledge_report
         }
     }
 `;
@@ -28,11 +30,18 @@ class RootReport extends Component {
           query={reportQuery}
           variables={{ id: reportId }}
           render={({ props }) => (
-            <Route exact path='/dashboard/reports/all/:reportId' render={routeProps => <Report
-              {...routeProps}
-              reportId={reportId}
-              report={props && props.report ? props.report : null}/>
-            }/>
+            <div>
+              <Route exact path='/dashboard/reports/all/:reportId' render={routeProps => <Report
+                {...routeProps}
+                reportId={reportId}
+                report={props && props.report ? props.report : null}/>
+              }/>
+              <Route exact path='/dashboard/reports/all/:reportId/knowledge' render={routeProps => <ReportKnowledge
+                {...routeProps}
+                reportId={reportId}
+                report={props && props.report ? props.report : null}/>
+              }/>
+            </div>
           )}
         />
       </div>

@@ -10,6 +10,7 @@ import {
   notify,
   now,
   paginate,
+  qkObjUnique,
   qk
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -25,6 +26,15 @@ export const markingDefinitions = (threatActorId, args) =>
   );
 
 export const findById = threatActorId => loadByID(threatActorId);
+
+export const createdByRef = threatActorId =>
+  qkObjUnique(
+    `match $x isa Identity; 
+    $rel(creator:$x, so:$report) isa created_by_ref; 
+    $report id ${threatActorId};  offset 0; limit 1; get $x,$rel;`,
+    'x',
+    'rel'
+  );
 
 export const addThreatActor = async (user, threatActor) => {
   const createThreatActor = qk(`insert $threatActor isa Threat-Actor 

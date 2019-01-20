@@ -16,27 +16,22 @@ import inject18n from '../../../components/i18n';
 import environment from '../../../relay/environment';
 
 const styles = theme => ({
-  avatar: {
-    width: 24,
-    height: 24,
+  itemIcon: {
+    color: theme.palette.primary.main,
   },
   icon: {
     color: theme.palette.primary.main,
   },
 });
 
-const externalReferenceLinesMutationRelationAdd = graphql`
-    mutation AddExternalReferencesLinesRelationAddMutation($id: ID!, $input: RelationAddInput!) {
-        externalReferenceEdit(id: $id) {
+const stixDomainLinesMutationRelationAdd = graphql`
+    mutation AddStixDomainsLinesRelationAddMutation($id: ID!, $input: RelationAddInput!) {
+        stixDomainEntityEdit(id: $id) {
             relationAdd(input: $input) {
                 node {
-                    ... on ExternalReference {
+                    ... on StixDomainEntity {
                         id
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
+                        name
                     }
                 }
                 relation {
@@ -47,13 +42,14 @@ const externalReferenceLinesMutationRelationAdd = graphql`
     }
 `;
 
-export const externalReferenceMutationRelationDelete = graphql`
-    mutation AddExternalReferencesLinesRelationDeleteMutation($id: ID!, $relationId: ID!) {
-        externalReferenceEdit(id: $id) {
+export const stixDomainMutationRelationDelete = graphql`
+    mutation AddStixDomainsLinesRelationDeleteMutation($id: ID!, $relationId: ID!) {
+        stixDomainEntityEdit(id: $id) {
             relationDelete(relationId: $relationId) {
                 node {
-                    ... on ExternalReference {
+                    ... on StixDomainEntity {
                         id
+                        name
                     }
                 }
             }
@@ -65,52 +61,52 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_externalReferencesOf',
+    'Pagination_stixDomainsOf',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class AddExternalReferencesLines extends Component {
-  toggleExternalReference(externalReference) {
-    const { entityId, entityExternalReferences, entityPaginationOptions } = this.props;
-    const entityExternalReferencesIds = map(n => n.node.id, entityExternalReferences);
-    const alreadyAdded = entityExternalReferencesIds.includes(externalReference.id);
+class AddStixDomainsLines extends Component {
+  toggleStixDomain(stixDomain) {
+    const { entityId, entityStixDomains, entityPaginationOptions } = this.props;
+    const entityStixDomainsIds = map(n => n.node.id, entityStixDomains);
+    const alreadyAdded = entityStixDomainsIds.includes(stixDomain.id);
 
     if (alreadyAdded) {
-      const existingExternalReference = head(filter(n => n.node.id === externalReference.id, entityExternalReferences));
+      const existingStixDomain = head(filter(n => n.node.id === stixDomain.id, entityStixDomains));
       commitMutation(environment, {
-        mutation: externalReferenceMutationRelationDelete,
+        mutation: stixDomainMutationRelationDelete,
         variables: {
-          id: externalReference.id,
-          relationId: existingExternalReference.relation.id,
+          id: stixDomain.id,
+          relationId: existingStixDomain.relation.id,
         },
         updater: (store) => {
           const container = store.getRoot();
           const userProxy = store.get(container.getDataID());
           const conn = ConnectionHandler.getConnection(
             userProxy,
-            'Pagination_externalReferencesOf',
+            'Pagination_stixDomainsOf',
             entityPaginationOptions,
           );
-          ConnectionHandler.deleteNode(conn, externalReference.id);
+          ConnectionHandler.deleteNode(conn, stixDomain.id);
         },
       });
     } else {
       const input = {
         fromRole: 'so',
-        toId: externalReference.id,
+        toId: stixDomain.id,
         toRole: 'external_reference',
         through: 'external_references',
       };
       commitMutation(environment, {
-        mutation: externalReferenceLinesMutationRelationAdd,
+        mutation: stixDomainLinesMutationRelationAdd,
         variables: {
           id: entityId,
           input,
         },
         updater: (store) => {
-          const payload = store.getRootField('externalReferenceEdit').getLinkedRecord('relationAdd', { input });
+          const payload = store.getRootField('stixDomainEdit').getLinkedRecord('relationAdd', { input });
           const container = store.getRoot();
           sharedUpdater(store, container.getDataID(), entityPaginationOptions, payload);
         },
@@ -120,29 +116,29 @@ class AddExternalReferencesLines extends Component {
 
   render() {
     const {
-      classes, data, entityExternalReferences,
+      classes, data, entityStixDomains,
     } = this.props;
-    const entityExternalReferencesIds = map(n => n.node.id, entityExternalReferences);
+    const entityStixDomainsIds = map(n => n.node.id, entityStixDomains);
     return (
       <List>
-        {data.externalReferences.edges.map((externalReferenceNode) => {
-          const externalReference = externalReferenceNode.node;
-          const alreadyAdded = entityExternalReferencesIds.includes(externalReference.id);
-          const externalReferenceId = externalReference.external_id ? `(${externalReference.external_id})` : '';
+        {data.stixDomains.edges.map((stixDomainNode) => {
+          const stixDomain = stixDomainNode.node;
+          const alreadyAdded = entityStixDomainsIds.includes(stixDomain.id);
+          const stixDomainId = stixDomain.external_id ? `(${stixDomain.external_id})` : '';
           return (
             <ListItem
-              key={externalReference.id}
+              key={stixDomain.id}
               classes={{ root: classes.menuItem }}
               divider={true}
               button={true}
-              onClick={this.toggleExternalReference.bind(this, externalReference)}
+              onClick={this.toggleStixDomain.bind(this, stixDomain)}
             >
               <ListItemIcon>
-                {alreadyAdded ? <CheckCircle classes={{ root: classes.icon }}/> : <Avatar classes={{ root: classes.avatar }}>{externalReference.source_name.substring(0, 1)}</Avatar>}
+                {alreadyAdded ? <CheckCircle classes={{ root: classes.icon }}/> : <Avatar classes={{ root: classes.avatar }}>{stixDomain.source_name.substring(0, 1)}</Avatar>}
               </ListItemIcon>
               <ListItemText
-                primary={`${externalReference.source_name} ${externalReferenceId}`}
-                secondary={truncate(externalReference.description !== null && externalReference.description.length > 0 ? externalReference.description : externalReference.url, 120)}
+                primary={`${stixDomain.source_name} ${stixDomainId}`}
+                secondary={truncate(stixDomain.description !== null && stixDomain.description.length > 0 ? stixDomain.description : stixDomain.url, 120)}
               />
             </ListItem>
           );
@@ -152,9 +148,9 @@ class AddExternalReferencesLines extends Component {
   }
 }
 
-AddExternalReferencesLines.propTypes = {
+AddStixDomainsLines.propTypes = {
   entityId: PropTypes.string,
-  entityExternalReferences: PropTypes.array,
+  entityStixDomains: PropTypes.array,
   entityPaginationOptions: PropTypes.object,
   data: PropTypes.object,
   limit: PropTypes.number,
@@ -163,31 +159,30 @@ AddExternalReferencesLines.propTypes = {
   fld: PropTypes.func,
 };
 
-export const addExternalReferencesLinesQuery = graphql`
-    query AddExternalReferencesLinesQuery($search: String, $count: Int!, $cursor: ID, $orderBy: ExternalReferencesOrdering, $orderMode: OrderingMode) {
-        ...AddExternalReferencesLines_data @arguments(search: $search, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
+export const addStixDomainsLinesQuery = graphql`
+    query AddStixDomainsLinesQuery($search: String, $count: Int!, $cursor: ID, $orderBy: StixDomainEntitiesOrdering, $orderMode: OrderingMode) {
+        ...AddStixDomainsLines_data @arguments(search: $search, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
     }
 `;
 
 export default inject18n(withStyles(styles)(createPaginationContainer(
-  AddExternalReferencesLines,
+  AddStixDomainsLines,
   {
     data: graphql`
-        fragment AddExternalReferencesLines_data on Query @argumentDefinitions(
+        fragment AddStixDomainsLines_data on Query @argumentDefinitions(
             search: {type: "String"}
             count: {type: "Int", defaultValue: 25}
             cursor: {type: "ID"}
-            orderBy: {type: "ExternalReferencesOrdering", defaultValue: ID}
+            orderBy: {type: "StixDomainEntitiesOrdering", defaultValue: ID}
             orderMode: {type: "OrderingMode", defaultValue: "asc"}
         ) {
-            externalReferences(search: $search, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_externalReferences") {
+            stixDomainEntities(search: $search, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_stixDomainEntities") {
                 edges {
                     node {
                         id
-                        source_name
+                        type
+                        name
                         description
-                        url
-                        external_id
                     }
                 }
             }
@@ -197,7 +192,7 @@ export default inject18n(withStyles(styles)(createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.externalReferences;
+      return props.data && props.data.stixDomains;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -213,6 +208,6 @@ export default inject18n(withStyles(styles)(createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: addExternalReferencesLinesQuery,
+    query: addStixDomainsLinesQuery,
   },
 )));
