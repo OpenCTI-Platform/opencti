@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, QueryRenderer } from 'react-relay';
+import { commitMutation } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles/index';
 import Drawer from '@material-ui/core/Drawer';
 import Menu from '@material-ui/core/Menu';
@@ -16,10 +16,10 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
+import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
-import environment from '../../../relay/environment';
+import environment, { QueryRenderer } from '../../../relay/environment';
 import UserEdition from './UserEdition';
-import { ConnectionHandler } from "relay-runtime";
 
 const styles = theme => ({
   container: {
@@ -142,15 +142,13 @@ class UserPopover extends Component {
         </Menu>
         <Drawer open={this.state.displayUpdate} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleCloseUpdate.bind(this)}>
           <QueryRenderer
-            environment={environment}
             query={userEditionQuery}
             variables={{ id: userId }}
-            render={({ error, props }) => {
-              if (error) { // Errors
-                return <div> &nbsp; </div>;
-              }
+            render={({ props }) => {
               if (props) { // Done
-                return <UserEdition me={props.me} user={props.user} handleClose={this.handleCloseUpdate.bind(this)}/>;
+                return <UserEdition me={props.me}
+                                    user={props.user}
+                                    handleClose={this.handleCloseUpdate.bind(this)}/>;
               }
               // Loading
               return <div> &nbsp; </div>;

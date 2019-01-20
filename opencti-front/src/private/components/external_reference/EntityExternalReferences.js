@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { QueryRenderer } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -11,7 +10,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
 import inject18n from '../../../components/i18n';
-import environment from '../../../relay/environment';
+import { QueryRenderer } from '../../../relay/environment';
 import EntityExternalReferencesLines, { entityExternalReferencesLinesQuery } from './EntityExternalReferencesLines';
 import AddExternalReferences from './AddExternalReferences';
 
@@ -46,7 +45,6 @@ class EntityExternalReferences extends Component {
     const paginationOptions = { objectId: entityId, orderBy: 'created_at', orderMode: 'desc' };
     return (
       <QueryRenderer
-        environment={environment}
         query={entityExternalReferencesLinesQuery}
         variables={{
           objectId: entityId,

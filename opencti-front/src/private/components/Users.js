@@ -1,8 +1,7 @@
 /* eslint-disable no-nested-ternary */
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { QueryRenderer } from 'react-relay';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -10,7 +9,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
-import environment from '../../relay/environment';
+import { QueryRenderer } from '../../relay/environment';
 import UsersLines, { usersLinesQuery } from './user/UsersLines';
 import inject18n from '../../components/i18n';
 import UserCreation from './user/UserCreation';
@@ -116,13 +115,9 @@ class Users extends Component {
             }/>
           </ListItem>
           <QueryRenderer
-            environment={environment}
             query={usersLinesQuery}
             variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
-            render={({ error, props }) => {
-              if (error) { // Errors
-                return <UsersLines data={null} dummy={true}/>;
-              }
+            render={({ props }) => {
               if (props) { // Done
                 return <UsersLines data={props} paginationOptions={paginationOptions}/>;
               }

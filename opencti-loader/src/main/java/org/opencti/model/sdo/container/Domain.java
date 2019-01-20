@@ -26,11 +26,11 @@ public abstract class Domain extends StixBase {
 
     protected List<Relationship> createCreatorRef(Map<String, Stix> stixElements) {
         List<Relationship> relations = new ArrayList<>();
-        if (getCreated_by_ref() != null) {
+        /*if (getCreated_by_ref() != null) {
             Stix stixCreator = stixElements.get(getCreated_by_ref());
             if (stixCreator == null) throw new RuntimeException("Cant find identity " + getCreated_by_ref());
             relations.add(new Relationship(this, stixCreator, "so", "creator", "created_by_ref"));
-        }
+        }*/
         return relations;
     }
 

@@ -1,8 +1,7 @@
 /* eslint-disable no-nested-ternary */
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { QueryRenderer } from 'react-relay';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -10,7 +9,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
-import environment from '../../relay/environment';
+import { QueryRenderer } from '../../relay/environment';
 import GroupsLines, { groupsLinesQuery } from './group/GroupsLines';
 import inject18n from '../../components/i18n';
 import GroupCreation from './group/GroupCreation';
@@ -102,13 +101,9 @@ class Groups extends Component {
             }/>
           </ListItem>
           <QueryRenderer
-            environment={environment}
             query={groupsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
-            render={({ error, props }) => {
-              if (error) { // Errors
-                return <GroupsLines data={null} dummy={true}/>;
-              }
+            render={({ props }) => {
               if (props) { // Done
                 return <GroupsLines data={props} paginationOptions={paginationOptions}/>;
               }

@@ -73,11 +73,7 @@ public class Relationship extends Domain {
                 toRole,
                 getRelationship_type());
         Object relation = null;
-        try {
-            relation = driver.read(getRelation);
-        } catch (Exception e) {
-            System.out.format(e.toString());
-        }
+        relation = driver.read(getRelation);
 
         if (relation == null) {
             String relationCreation = format("match $from isa %s " +
@@ -94,11 +90,7 @@ public class Relationship extends Domain {
                     toRole,
                     prepare(getId()),
                     getRelationship_type());
-            try {
-                driver.write(relationCreation);
-            } catch (Exception e) {
-                System.out.format(e.toString());
-            }
+            driver.write(relationCreation);
         }
     }
 

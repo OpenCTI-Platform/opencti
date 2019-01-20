@@ -12,14 +12,14 @@ public class Identity extends Domain {
 
     @Override
     public boolean isImplemented() {
-        return true;
+        return false;
     }
 
     @Override
     public void load(GraknDriver driver, Map<String, Stix> stixElements) {
-        Object identity = driver.read(format("match $m isa Organization has stix_id %s; get;", prepare(getId())));
+        Object identity = driver.read(format("match $m isa Identity has stix_id %s; get;", prepare(getId())));
         if (identity == null) {
-            String identityCreation = format("insert $m isa Organization " +
+            String identityCreation = format("insert $m isa Identity " +
                             "has stix_id %s " +
                             "has name %s " +
                             "has type %s " +
@@ -27,9 +27,9 @@ public class Identity extends Domain {
                             "has modified %s " +
                             "has created_at %s " +
                             "has updated_at %s;",
-                    prepare(getId()).replace("identity", "organization"),
+                    prepare(getId()),
                     prepare(getName()),
-                    "\"organization\"",
+                    prepare(getType()),
                     getCreated(),
                     getModified(),
                     getCurrentTime(),

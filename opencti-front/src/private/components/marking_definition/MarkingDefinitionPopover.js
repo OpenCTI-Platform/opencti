@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, QueryRenderer } from 'react-relay';
+import { commitMutation } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
 import Drawer from '@material-ui/core/Drawer';
@@ -18,7 +18,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import inject18n from '../../../components/i18n';
-import environment from '../../../relay/environment';
+import environment, { QueryRenderer } from '../../../relay/environment';
 import MarkingDefinitionEdition from './MarkingDefinitionEdition';
 
 const styles = theme => ({
@@ -142,15 +142,13 @@ class MarkingDefinitionPopover extends Component {
         </Menu>
         <Drawer open={this.state.displayUpdate} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleCloseUpdate.bind(this)}>
           <QueryRenderer
-            environment={environment}
             query={markingDefinitionEditionQuery}
             variables={{ id: markingDefinitionId }}
-            render={({ error, props }) => {
-              if (error) { // Errors
-                return <div> &nbsp; </div>;
-              }
+            render={({ props }) => {
               if (props) { // Done
-                return <MarkingDefinitionEdition me={props.me} markingDefinition={props.markingDefinition} handleClose={this.handleCloseUpdate.bind(this)}/>;
+                return <MarkingDefinitionEdition me={props.me}
+                                                 markingDefinition={props.markingDefinition}
+                                                 handleClose={this.handleCloseUpdate.bind(this)}/>;
               }
               // Loading
               return <div> &nbsp; </div>;

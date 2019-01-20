@@ -2,7 +2,6 @@
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { QueryRenderer } from 'react-relay';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -10,7 +9,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
-import environment from '../../relay/environment';
+import { QueryRenderer } from '../../relay/environment';
 import ExternalReferencesLines, { externalReferencesLinesQuery } from './external_reference/ExternalReferencesLines';
 import inject18n from '../../components/i18n';
 import ExternalReferenceCreation from './external_reference/ExternalReferenceCreation';
@@ -109,15 +108,12 @@ class ExternalReferences extends Component {
             }/>
           </ListItem>
           <QueryRenderer
-            environment={environment}
             query={externalReferencesLinesQuery}
             variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
-            render={({ error, props }) => {
-              if (error) { // Errors
-                return <ExternalReferencesLines data={null} dummy={true}/>;
-              }
+            render={({ props }) => {
               if (props) { // Done
-                return <ExternalReferencesLines data={props} paginationOptions={paginationOptions}/>;
+                return <ExternalReferencesLines data={props}
+                                                paginationOptions={paginationOptions}/>;
               }
               // Loading
               return <ExternalReferencesLines data={null} dummy={true}/>;

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { commitMutation, QueryRenderer } from 'react-relay';
+import * as PropTypes from 'prop-types';
+import { commitMutation } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import { Formik, Field, Form } from 'formik';
@@ -13,7 +13,7 @@ import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import * as Yup from 'yup';
 import { SubscriptionFocus } from '../../components/Subscription';
-import environment from '../../relay/environment';
+import environment, { QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 import TextField from '../../components/TextField';
 import Select from '../../components/Select';
@@ -129,7 +129,6 @@ class Settings extends Component {
     const { t, classes } = this.props;
     return (
       <QueryRenderer
-        environment={environment}
         query={settingsQuery}
         render={({ props }) => {
           if (props && props.settings && props.me) {
