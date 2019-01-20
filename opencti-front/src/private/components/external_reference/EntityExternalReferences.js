@@ -69,7 +69,7 @@ class EntityExternalReferences extends Component {
               <Typography variant='h4' gutterBottom={true} style={{ float: 'left' }}>
                 {t('External references')}
               </Typography>
-              <AddExternalReferences entityId='' entityExternalReferences={[]}/>
+              <AddExternalReferences entityId='' entityPaginationOptions={{}}/>
               <div className='clearfix'/>
               <Paper classes={{ root: classes.paper }} elevation={2}>
                 <List>

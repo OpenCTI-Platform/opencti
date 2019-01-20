@@ -19,7 +19,7 @@ import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import inject18n from '../../../components/i18n';
 import environment from '../../../relay/environment';
-import MarkingDefinitionEdition from './MarkingDefinitionEdition';
+import ExternalReferenceEdition from './ExternalReferenceEdition';
 
 const styles = theme => ({
   container: {
@@ -43,26 +43,26 @@ function Transition(props) {
   return <Slide direction="up" {...props} />;
 }
 
-const markingDefinitionPopoverDeletionMutation = graphql`
-    mutation MarkingDefinitionPopoverDeletionMutation($id: ID!) {
-        markingDefinitionEdit(id: $id) {
+const externalReferencePopoverDeletionMutation = graphql`
+    mutation ExternalReferencePopoverDeletionMutation($id: ID!) {
+        externalReferenceEdit(id: $id) {
             delete
         }
     }
 `;
 
-const markingDefinitionEditionQuery = graphql`
-    query MarkingDefinitionPopoverEditionQuery($id: String!) {
-        markingDefinition(id: $id) {
-            ...MarkingDefinitionEdition_markingDefinition
+const externalReferenceEditionQuery = graphql`
+    query ExternalReferencePopoverEditionQuery($id: String!) {
+        externalReference(id: $id) {
+            ...ExternalReferenceEdition_externalReference
         }
         me {
-            ...MarkingDefinitionEdition_me
+            ...ExternalReferenceEdition_me
         }
     }
 `;
 
-class MarkingDefinitionPopover extends Component {
+class ExternalReferencePopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -102,17 +102,17 @@ class MarkingDefinitionPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation(environment, {
-      mutation: markingDefinitionPopoverDeletionMutation,
+      mutation: externalReferencePopoverDeletionMutation,
       variables: {
-        id: this.props.markingDefinitionId,
+        id: this.props.externalReferenceId,
       },
       updater: (store) => {
         const container = store.getRoot();
-        const payload = store.getRootField('markingDefinitionEdit');
+        const payload = store.getRootField('externalReferenceEdit');
         const userProxy = store.get(container.getDataID());
         const conn = ConnectionHandler.getConnection(
           userProxy,
-          'Pagination_markingDefinitions',
+          'Pagination_externalReferences',
           this.props.paginationOptions,
         );
         ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
@@ -125,7 +125,7 @@ class MarkingDefinitionPopover extends Component {
   }
 
   render() {
-    const { classes, t, markingDefinitionId } = this.props;
+    const { classes, t, externalReferenceId } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
@@ -143,14 +143,14 @@ class MarkingDefinitionPopover extends Component {
         <Drawer open={this.state.displayUpdate} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleCloseUpdate.bind(this)}>
           <QueryRenderer
             environment={environment}
-            query={markingDefinitionEditionQuery}
-            variables={{ id: markingDefinitionId }}
+            query={externalReferenceEditionQuery}
+            variables={{ id: externalReferenceId }}
             render={({ error, props }) => {
               if (error) { // Errors
                 return <div> &nbsp; </div>;
               }
               if (props) { // Done
-                return <MarkingDefinitionEdition me={props.me} markingDefinition={props.markingDefinition} handleClose={this.handleCloseUpdate.bind(this)}/>;
+                return <ExternalReferenceEdition me={props.me} externalReference={props.externalReference} handleClose={this.handleCloseUpdate.bind(this)}/>;
               }
               // Loading
               return <div> &nbsp; </div>;
@@ -165,7 +165,7 @@ class MarkingDefinitionPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this marking definition?')}
+              {t('Do you want to delete this external reference?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -182,8 +182,8 @@ class MarkingDefinitionPopover extends Component {
   }
 }
 
-MarkingDefinitionPopover.propTypes = {
-  markingDefinitionId: PropTypes.string,
+ExternalReferencePopover.propTypes = {
+  externalReferenceId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -194,4 +194,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(MarkingDefinitionPopover);
+)(ExternalReferencePopover);

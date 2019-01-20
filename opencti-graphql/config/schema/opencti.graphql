@@ -205,6 +205,43 @@ input OrganizationAddInput  {
     clientMutationId: String
 }
 
+### Sectors
+enum SectorsOrdering {
+    stix_id,
+    name,
+    description,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type SectorConnection {
+    pageInfo: PageInfo!
+    edges: [SectorEdge]
+}
+type SectorEdge {
+    cursor: String!
+    node: Sector!
+}
+type Sector implements StixDomain & Identity {
+    id: ID!
+    name: String!
+    description: String
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    editContext: [EditUserContext]
+    markingDefinitions: MarkingDefinitionConnection
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+input SectorAddInput  {
+    name: String!
+    description: String
+    markingDefinitions: [String]
+    clientMutationId: String
+}
+
 ### Group
 enum GroupsOrdering {
     name,
@@ -562,6 +599,9 @@ type Query {
     # Organizations
     organization(id: String!): Organization
     organizations(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): OrganizationConnection
+    # Sectors
+    sector(id: String!): Sector
+    sectors(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): SectorConnection
     # Groups
     group(id: String!): Group
     groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
@@ -596,6 +636,7 @@ type Subscription {
     identity(id: ID!): Identity
     user(id: ID!): User
     organization(id: ID!): Organization
+    sector(id: ID!): Sector
     group(id: ID!): Group
     markingDefinition(id: ID!): MarkingDefinition
     externalReference(id: ID!): ExternalReference
@@ -637,6 +678,15 @@ type OrganizationEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Organization
     contextPatch(input: EditContext): Organization
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId: ID!): RelationData
+}
+
+# Organization
+type SectorEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): Sector
+    contextPatch(input: EditContext): Sector
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -730,6 +780,9 @@ type Mutation {
     # Organization
     organizationAdd(input: OrganizationAddInput): Organization
     organizationEdit(id: ID!): OrganizationEditMutations
+    # Sector
+    sectorAdd(input: SectorAddInput): Sector
+    sectorEdit(id: ID!): SectorEditMutations
     # Group
     groupAdd(input: GroupAddInput): Group
     groupEdit(id: ID!): GroupEditMutations

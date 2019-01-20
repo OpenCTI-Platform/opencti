@@ -88,12 +88,13 @@ class EntityExternalReferencesLines extends Component {
         <Typography variant='h4' gutterBottom={true} style={{ float: 'left' }}>
           {t('External references')}
         </Typography>
-        <AddExternalReferences entityId={entityId} entityExternalReferences={data.externalReferencesOf.edges} paginationOptions={paginationOptions}/>
+        <AddExternalReferences entityId={entityId} entityExternalReferences={data.externalReferencesOf.edges} entityPaginationOptions={paginationOptions}/>
         <div className='clearfix'/>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List>
             {data.externalReferencesOf.edges.map((externalReferenceEdge) => {
               const externalReference = externalReferenceEdge.node;
+              const externalReferenceId = externalReference.external_id ? `(${externalReference.external_id})` : '';
               if (externalReference.url) {
                 return (
                   <ListItem
@@ -108,7 +109,7 @@ class EntityExternalReferencesLines extends Component {
                       <Avatar classes={{ root: classes.avatar }}>{externalReference.source_name.substring(0, 1)}</Avatar>
                     </ListItemIcon>
                     <ListItemText
-                      primary={`${externalReference.source_name} ${externalReference.external_id}`}
+                      primary={`${externalReference.source_name} ${externalReferenceId}`}
                       secondary={truncate(externalReference.description !== null && externalReference.description.length > 0 ? externalReference.description : externalReference.url, 120)}
                     />
                     <ListItemSecondaryAction>
@@ -130,7 +131,7 @@ class EntityExternalReferencesLines extends Component {
                     <Avatar classes={{ root: classes.avatar }}>{externalReference.source_name.substring(0, 1)}</Avatar>
                   </ListItemIcon>
                   <ListItemText
-                    primary={`${externalReference.source_name} ${externalReference.external_id}`}
+                    primary={`${externalReference.source_name} ${externalReferenceId}`}
                     secondary={truncate(externalReference.description, 120)}
                   />
                 </ListItem>

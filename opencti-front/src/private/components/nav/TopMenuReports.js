@@ -15,7 +15,7 @@ const styles = theme => ({
   },
 });
 
-class TopMenuDashboard extends Component {
+class TopMenuReports extends Component {
   render() {
     const { t, location, classes } = this.props;
     return (
@@ -34,7 +34,7 @@ class TopMenuDashboard extends Component {
   }
 }
 
-TopMenuDashboard.propTypes = {
+TopMenuReports.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,
@@ -45,4 +45,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(TopMenuDashboard);
+)(TopMenuReports);

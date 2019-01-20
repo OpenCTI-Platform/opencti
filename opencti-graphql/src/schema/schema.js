@@ -8,6 +8,7 @@ import settingsResolvers from '../resolvers/settings';
 import identityResolvers from '../resolvers/identity';
 import userResolvers from '../resolvers/user';
 import organizationResolvers from '../resolvers/organization';
+import sectorResolvers from '../resolvers/sector';
 import groupResolvers from '../resolvers/group';
 import stixDomainDefinitionResolvers from '../resolvers/stixDomain';
 import markingDefinitionResolvers from '../resolvers/markingDefinition';
@@ -31,6 +32,7 @@ const resolvers = mergeResolvers([
   identityResolvers,
   userResolvers,
   organizationResolvers,
+  sectorResolvers,
   groupResolvers,
   stixDomainDefinitionResolvers,
   markingDefinitionResolvers,

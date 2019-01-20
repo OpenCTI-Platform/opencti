@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { commitMutation, QueryRenderer } from 'react-relay';
-import {
-  compose, map, filter, head,
-} from 'ramda';
+import { QueryRenderer } from 'react-relay';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
@@ -13,15 +11,12 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
-import { Add, Close, CheckCircle } from '@material-ui/icons';
-import graphql from 'babel-plugin-relay/macro';
-import { ConnectionHandler } from 'relay-runtime';
-import truncate from '../../../utils/String';
+import { Add, Close } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import environment from '../../../relay/environment';
-import { externalReferencesLinesSearchQuery } from './ExternalReferencesLines';
-import { externalReferenceMutationRelationDelete } from './EntityExternalReferencesLines';
+import AddExternalReferencesLines, { addExternalReferencesLinesQuery } from './AddExternalReferencesLines';
+import ExternalReferenceCreation from './ExternalReferenceCreation';
 
 const styles = theme => ({
   drawerPaper: {
@@ -66,42 +61,7 @@ const styles = theme => ({
     width: 24,
     height: 24,
   },
-  icon: {
-    color: theme.palette.primary.main,
-  },
 });
-
-const externalReferenceMutationRelationAdd = graphql`
-    mutation AddExternalReferencesRelationAddMutation($id: ID!, $input: RelationAddInput!) {
-        externalReferenceEdit(id: $id) {
-            relationAdd(input: $input) {
-                node {
-                    ... on ExternalReference {
-                        id
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                    }
-                }
-                relation {
-                    id
-                }
-            }
-        }
-    }
-`;
-
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_externalReferencesOf',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
 
 class AddExternalReferences extends Component {
   constructor(props) {
@@ -121,52 +81,11 @@ class AddExternalReferences extends Component {
     this.setState({ search: keyword });
   }
 
-  toggleExternalReference(externalReference) {
-    const { entityId, entityExternalReferences, paginationOptions } = this.props;
-    const entityExternalReferencesIds = map(n => n.node.id, entityExternalReferences);
-    const alreadyAdded = entityExternalReferencesIds.includes(externalReference.id);
-
-    if (alreadyAdded) {
-      const existingExternalReference = head(filter(n => n.node.id === externalReference.id, entityExternalReferences));
-      commitMutation(environment, {
-        mutation: externalReferenceMutationRelationDelete,
-        variables: {
-          id: externalReference.id,
-          relationId: existingExternalReference.relation.id,
-        },
-        updater: (store) => {
-          const container = store.getRoot();
-          const userProxy = store.get(container.getDataID());
-          const conn = ConnectionHandler.getConnection(
-            userProxy,
-            'Pagination_externalReferencesOf',
-            this.props.paginationOptions,
-          );
-          ConnectionHandler.deleteNode(conn, externalReference.id);
-        },
-      });
-    } else {
-      const input = {
-        fromRole: 'so', toId: externalReference.id, toRole: 'external_reference', through: 'external_references',
-      };
-      commitMutation(environment, {
-        mutation: externalReferenceMutationRelationAdd,
-        variables: {
-          id: entityId,
-          input,
-        },
-        updater: (store) => {
-          const payload = store.getRootField('externalReferenceEdit').getLinkedRecord('relationAdd', { input });
-          const container = store.getRoot();
-          sharedUpdater(store, container.getDataID(), paginationOptions, payload);
-        }
-      });
-    }
-  }
-
   render() {
-    const { t, classes, entityExternalReferences } = this.props;
-    const entityExternalReferencesIds = map(n => n.node.id, entityExternalReferences);
+    const {
+      t, classes, entityId, entityExternalReferences, entityPaginationOptions,
+    } = this.props;
+    const paginationOptions = { search: this.state.search, orderBy: 'created_at', orderMode: 'desc' };
     return (
       <div>
         <IconButton color='secondary' aria-label='Add' onClick={this.handleOpen.bind(this)} classes={{ root: classes.createButton }}>
@@ -187,34 +106,22 @@ class AddExternalReferences extends Component {
           <div className={classes.container}>
             <QueryRenderer
               environment={environment}
-              query={externalReferencesLinesSearchQuery}
-              variables={{ search: this.state.search, first: 20 }}
+              query={addExternalReferencesLinesQuery}
+              variables={{
+                search: this.state.search,
+                count: 20,
+                orderBy: 'created_at',
+                orderMode: 'desc',
+              }}
               render={({ props }) => {
-                if (props && props.externalReferences) {
+                if (props) {
                   return (
-                    <List>
-                      {props.externalReferences.edges.map((externalReferenceNode) => {
-                        const externalReference = externalReferenceNode.node;
-                        const alreadyAdded = entityExternalReferencesIds.includes(externalReference.id);
-                        return (
-                          <ListItem
-                            key={externalReference.id}
-                            classes={{ root: classes.menuItem }}
-                            divider={true}
-                            button={true}
-                            onClick={this.toggleExternalReference.bind(this, externalReference)}
-                          >
-                            <ListItemIcon>
-                              {alreadyAdded ? <CheckCircle classes={{ root: classes.icon }} /> : <Avatar classes={{ root: classes.avatar }}>{externalReference.source_name.substring(0, 1)}</Avatar>}
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={`${externalReference.source_name} ${externalReference.external_id}`}
-                              secondary={truncate(externalReference.description !== null && externalReference.description.length > 0 ? externalReference.description : externalReference.url, 120)}
-                            />
-                          </ListItem>
-                        );
-                      })}
-                    </List>
+                    <AddExternalReferencesLines
+                      entityId={entityId}
+                      entityExternalReferences={entityExternalReferences}
+                      entityPaginationOptions={entityPaginationOptions}
+                      data={props}
+                    />
                   );
                 }
                 return (
@@ -222,7 +129,6 @@ class AddExternalReferences extends Component {
                     {Array.from(Array(20), (e, i) => (
                       <ListItem
                         key={i}
-                        classes={{ root: classes.menuItem }}
                         divider={true}
                         button={false}
                       >
@@ -240,6 +146,11 @@ class AddExternalReferences extends Component {
               }}
             />
           </div>
+          <ExternalReferenceCreation
+            contextual={true}
+            inputValue={this.state.search}
+            paginationOptions={paginationOptions}
+          />
         </Drawer>
       </div>
     );
@@ -249,7 +160,7 @@ class AddExternalReferences extends Component {
 AddExternalReferences.propTypes = {
   entityId: PropTypes.string,
   entityExternalReferences: PropTypes.array,
-  paginationOptions: PropTypes.object,
+  entityPaginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,

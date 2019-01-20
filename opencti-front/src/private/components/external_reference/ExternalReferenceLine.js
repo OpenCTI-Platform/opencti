@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -8,8 +7,10 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
-import { MoreVert } from '@material-ui/icons';
+import { MoreVert, CenterFocusStrong } from '@material-ui/icons';
+import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
+import ExternalReferencePopover from './ExternalReferencePopover';
 
 const styles = theme => ({
   item: {
@@ -21,6 +22,15 @@ const styles = theme => ({
   },
   itemIcon: {
     color: theme.palette.primary.main,
+  },
+  avatar: {
+    width: 24,
+    height: 24,
+    backgroundColor: theme.palette.primary.main,
+  },
+  avatarDisabled: {
+    width: 24,
+    height: 24,
   },
   bodyItem: {
     fontSize: 13,
@@ -38,30 +48,36 @@ const styles = theme => ({
     height: '1em',
     backgroundColor: theme.palette.text.disabled,
   },
-  avatar: {
-    width: 24,
-    height: 24,
-    backgroundColor: theme.palette.primary.main,
-  },
 });
 
 const inlineStyles = {
-  name: {
-    float: 'left',
-    width: '60%',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created_at: {
+  source_name: {
     float: 'left',
     width: '15%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  updated_at: {
+  external_id: {
     float: 'left',
+    width: '10%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  url: {
+    float: 'left',
+    width: '50%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  created: {
+    float: 'left',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -71,28 +87,34 @@ const inlineStyles = {
 class ExternalReferenceLineComponent extends Component {
   render() {
     const {
-      fd, classes, externalReference,
+      fd, classes, externalReference, paginationOptions,
     } = this.props;
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Avatar className={classes.avatar}>A</Avatar>
+          <Avatar classes={{ root: classes.avatar }}>{externalReference.source_name.substring(0, 1)}</Avatar>
         </ListItemIcon>
         <ListItemText primary={
           <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {propOr('-', 'name', externalReference)}
+            <div className={classes.bodyItem} style={inlineStyles.source_name}>
+              {externalReference.source_name}
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              {fd(propOr(null, 'created_at', externalReference))}
+            <div className={classes.bodyItem} style={inlineStyles.external_id}>
+              {externalReference.external_id}
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-              {fd(propOr(null, 'updated_at', externalReference))}
+            <div className={classes.bodyItem} style={inlineStyles.url}>
+              {externalReference.url}
+            </div>
+            <div className={classes.bodyItem} style={inlineStyles.created}>
+              {fd(externalReference.created)}
             </div>
           </div>
         }/>
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          &nbsp;
+          <ExternalReferencePopover
+            externalReferenceId={externalReference.id}
+            paginationOptions={paginationOptions}
+          />
         </ListItemIcon>
       </ListItem>
     );
@@ -112,10 +134,9 @@ const ExternalReferenceLineFragment = createFragmentContainer(ExternalReferenceL
       fragment ExternalReferenceLine_externalReference on ExternalReference {
           id
           source_name
-          description
-          url
-          hash
           external_id
+          url
+          created
       }
   `,
 });
@@ -131,18 +152,21 @@ class ExternalReferenceLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Avatar className={classes.avatar}>A</Avatar>
+          <Avatar classes={{ root: classes.avatarDisabled }}>A</Avatar>
         </ListItemIcon>
         <ListItemText primary={
           <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
+            <div className={classes.bodyItem} style={inlineStyles.source_name}>
               <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              <div className={classes.placeholder} style={{ width: 80 }}/>
+            <div className={classes.bodyItem} style={inlineStyles.external_id}>
+              <div className={classes.placeholder} style={{ width: '70%' }}/>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-              <div className={classes.placeholder} style={{ width: 80 }}/>
+            <div className={classes.bodyItem} style={inlineStyles.url}>
+              <div className={classes.placeholder} style={{ width: '60%' }}/>
+            </div>
+            <div className={classes.bodyItem} style={inlineStyles.created}>
+              <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
           </div>
         }/>

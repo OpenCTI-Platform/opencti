@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { commitMutation } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
+import { ConnectionHandler } from 'relay-runtime';
 import { compose, head } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -14,13 +15,11 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
-import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import inject18n from '../../../components/i18n';
 import environment from '../../../relay/environment';
+import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
-import Select from '../../../components/Select';
 
 const styles = theme => ({
   drawerPaper: {
@@ -65,23 +64,39 @@ const styles = theme => ({
   },
 });
 
-const identityMutation = graphql`
-    mutation IdentityCreationMutation($input: IdentityAddInput!) {
-        identityAdd(input: $input) {
+const externalReferenceCreationMutation = graphql`
+    mutation ExternalReferenceCreationMutation($input: ExternalReferenceAddInput!) {
+        externalReferenceAdd(input: $input) {
             id
-            name
+            source_name
+            description
+            url
+            external_id
+            created
         }
     }
 `;
 
-const identityValidation = t => Yup.object().shape({
-  name: Yup.string()
+const externalReferenceValidation = t => Yup.object().shape({
+  source_name: Yup.string()
     .required(t('This field is required')),
-  type: Yup.string()
-    .required(t('This field is required')),
+  external_id: Yup.string(),
+  url: Yup.string()
+    .url(t('The value must be an URL')),
+  description: Yup.string(),
 });
 
-class IdentityCreation extends Component {
+const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
+  const userProxy = store.get(userId);
+  const conn = ConnectionHandler.getConnection(
+    userProxy,
+    'Pagination_externalReferences',
+    paginationOptions,
+  );
+  ConnectionHandler.insertEdgeBefore(conn, newEdge);
+};
+
+class ExternalReferenceCreation extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -97,20 +112,25 @@ class IdentityCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm, setErrors }) {
     commitMutation(environment, {
-      mutation: identityMutation,
+      mutation: externalReferenceCreationMutation,
       variables: {
         input: values,
+      },
+      updater: (store) => {
+        const payload = store.getRootField('externalReferenceAdd');
+        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
+        const container = store.getRoot();
+        sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
       },
       onCompleted: (response, errors) => {
         setSubmitting(false);
         if (errors) {
           const error = this.props.t(head(errors).message);
-          setErrors({ name: error }); // Push the error in the name field
+          setErrors({ name: error });
         } else {
-          this.props.creationCallback(response);
           resetForm();
           if (this.props.contextual) {
-            this.props.handleClose();
+            this.handleClose();
           } else {
             this.handleClose();
           }
@@ -124,7 +144,7 @@ class IdentityCreation extends Component {
   }
 
   onResetContextual() {
-    this.props.handleClose();
+    this.handleClose();
   }
 
   renderClassic() {
@@ -140,38 +160,24 @@ class IdentityCreation extends Component {
               <Close fontSize='small'/>
             </IconButton>
             <Typography variant='h6'>
-              {t('Create an entity')}
+              {t('Create an external reference')}
             </Typography>
           </div>
           <div className={classes.container}>
             <Formik
               initialValues={{
-                name: '', description: '', type: '',
+                source_name: '', external_id: '', url: '', description: '',
               }}
-              validationSchema={identityValidation(t)}
+              validationSchema={externalReferenceValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
               render={({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
+                  <Field name='source_name' component={TextField} label={t('Source name')} fullWidth={true}/>
+                  <Field name='external_id' component={TextField} label={t('External ID')} fullWidth={true} style={{ marginTop: 20 }}/>
+                  <Field name='url' component={TextField} label={t('URL')} fullWidth={true} style={{ marginTop: 20 }}/>
                   <Field name='description' component={TextField} label={t('Description')}
                          fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
-                  <Field name='type'
-                         component={Select}
-                         label={t("Type d'entité")}
-                         fullWidth={true}
-                         inputProps={{
-                           name: 'type',
-                           id: 'type',
-                         }}
-                         containerstyle={{ marginTop: 10, width: '100%' }}
-                  >
-                    <MenuItem value='Sector'>{t('Sector')}</MenuItem>
-                    <MenuItem value='Organization'>{t('Organization')}</MenuItem>
-                    <MenuItem value='Country'>{t('Country')}</MenuItem>
-                    <MenuItem value='City'>{t('City')}</MenuItem>
-                    <MenuItem value='User'>{t('Person')}</MenuItem>
-                  </Field>
                   <div className={classes.buttons}>
                     <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                       {t('Cancel')}
@@ -191,44 +197,33 @@ class IdentityCreation extends Component {
 
   renderContextual() {
     const {
-      t, classes, inputValue, open,
+      t, classes, inputValue,
     } = this.props;
     return (
       <div>
+        <Fab onClick={this.handleOpen.bind(this)}
+             color='secondary' aria-label='Add'
+             className={classes.createButton}><Add/></Fab>
         <Formik
           enableReinitialize={true}
           initialValues={{
-            name: inputValue, description: '', type: 'Organization',
+            source_name: inputValue, external_id: '', url: '', description: '',
           }}
-          validationSchema={identityValidation(t)}
+          validationSchema={externalReferenceValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onResetContextual.bind(this)}
           render={({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <Dialog open={open} onClose={this.handleClose.bind(this)}>
+              <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
                 <DialogTitle>
-                  {t('Create an entity')}
+                  {t('Create an external reference')}
                 </DialogTitle>
                 <DialogContent>
-                  <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
+                  <Field name='source_name' component={TextField} label={t('Source name')} fullWidth={true}/>
+                  <Field name='external_id' component={TextField} label={t('External ID')} fullWidth={true} style={{ marginTop: 20 }}/>
+                  <Field name='url' component={TextField} label={t('URL')} fullWidth={true} style={{ marginTop: 20 }}/>
                   <Field name='description' component={TextField} label={t('Description')}
                          fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
-                  <Field name='type'
-                         component={Select}
-                         label={t('Entity type')}
-                         fullWidth={true}
-                         inputProps={{
-                           name: 'type',
-                           id: 'type',
-                         }}
-                         containerstyle={{ marginTop: 20, width: '100%' }}
-                  >
-                    <MenuItem value='Sector'>{t('Sector')}</MenuItem>
-                    <MenuItem value='Organization'>{t('Organization')}</MenuItem>
-                    <MenuItem value='Country'>{t('Country')}</MenuItem>
-                    <MenuItem value='City'>{t('City')}</MenuItem>
-                    <MenuItem value='User'>{t('Person')}</MenuItem>
-                  </Field>
                 </DialogContent>
                 <DialogActions>
                   <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
@@ -255,19 +250,16 @@ class IdentityCreation extends Component {
   }
 }
 
-IdentityCreation.propTypes = {
+ExternalReferenceCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
   contextual: PropTypes.bool,
-  open: PropTypes.bool,
-  handleClose: PropTypes.func,
   inputValue: PropTypes.string,
-  creationCallback: PropTypes.func,
 };
 
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(IdentityCreation);
+)(ExternalReferenceCreation);

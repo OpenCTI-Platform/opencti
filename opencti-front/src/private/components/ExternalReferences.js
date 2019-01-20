@@ -11,9 +11,9 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import environment from '../../relay/environment';
-import UsersLines, { usersLinesQuery } from './user/UsersLines';
+import ExternalReferencesLines, { externalReferencesLinesQuery } from './external_reference/ExternalReferencesLines';
 import inject18n from '../../components/i18n';
-import UserCreation from './user/UserCreation';
+import ExternalReferenceCreation from './external_reference/ExternalReferenceCreation';
 
 const styles = () => ({
   linesContainer: {
@@ -41,41 +41,35 @@ const inlineStyles = {
     padding: 0,
     top: '0px',
   },
-  name: {
-    float: 'left',
-    width: '20%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  email: {
-    float: 'left',
-    width: '30%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  firstname: {
+  source_name: {
     float: 'left',
     width: '15%',
     fontSize: 12,
     fontWeight: '700',
   },
-  lastname: {
+  external_id: {
     float: 'left',
-    width: '15%',
+    width: '10%',
     fontSize: 12,
     fontWeight: '700',
   },
-  created_at: {
+  url: {
+    float: 'left',
+    width: '50%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  created: {
     float: 'left',
     fontSize: 12,
     fontWeight: '700',
   },
 };
 
-class Users extends Component {
+class ExternalReferences extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'name', orderAsc: true };
+    this.state = { sortBy: 'created', orderAsc: false };
   }
 
   reverseBy(field) {
@@ -107,37 +101,36 @@ class Users extends Component {
             </ListItemIcon>
             <ListItemText primary={
               <div>
-                {this.SortHeader('name', 'name')}
-                {this.SortHeader('email', 'Email address')}
-                {this.SortHeader('firstname', 'Firstname')}
-                {this.SortHeader('lastname', 'Lastname')}
-                {this.SortHeader('created_at', 'Creation date')}
+                {this.SortHeader('source_name', 'Source name')}
+                {this.SortHeader('external_id', 'External ID')}
+                {this.SortHeader('url', 'URL')}
+                {this.SortHeader('created', 'Creation date')}
               </div>
             }/>
           </ListItem>
           <QueryRenderer
             environment={environment}
-            query={usersLinesQuery}
+            query={externalReferencesLinesQuery}
             variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
             render={({ error, props }) => {
               if (error) { // Errors
-                return <UsersLines data={null} dummy={true}/>;
+                return <ExternalReferencesLines data={null} dummy={true}/>;
               }
               if (props) { // Done
-                return <UsersLines data={props} paginationOptions={paginationOptions}/>;
+                return <ExternalReferencesLines data={props} paginationOptions={paginationOptions}/>;
               }
               // Loading
-              return <UsersLines data={null} dummy={true}/>;
+              return <ExternalReferencesLines data={null} dummy={true}/>;
             }}
           />
         </List>
-        <UserCreation paginationOptions={paginationOptions}/>
+        <ExternalReferenceCreation paginationOptions={paginationOptions}/>
       </div>
     );
   }
 }
 
-Users.propTypes = {
+ExternalReferences.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
@@ -146,4 +139,4 @@ Users.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(Users);
+)(ExternalReferences);

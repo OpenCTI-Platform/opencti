@@ -78,18 +78,6 @@ class MarkingDefinitions extends Component {
     this.state = { sortBy: 'level', orderAsc: true };
   }
 
-  handleChangeView(mode) {
-    this.setState({ view: mode });
-  }
-
-  handleChangeSortBy(event) {
-    this.setState({ sortBy: event.target.value });
-  }
-
-  reverse() {
-    this.setState({ orderAsc: !this.state.orderAsc });
-  }
-
   reverseBy(field) {
     this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
   }

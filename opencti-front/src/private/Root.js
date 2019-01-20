@@ -16,6 +16,7 @@ import Malwares from './components/Malwares';
 import RootMalware from './components/malware/Root';
 import Reports from './components/Reports';
 import RootReport from './components/report/Root';
+import ExternalReferences from './components/ExternalReferences';
 import Settings from './components/Settings';
 import Users from './components/Users';
 import Groups from './components/Groups';
@@ -90,6 +91,7 @@ class Root extends Component {
                   )}/>
                   <Route exact path='/dashboard/reports/all' component={Reports}/>
                   <Route path='/dashboard/reports/all/:reportId' render={routeProps => <RootReport {...routeProps} me={props && props.me ? props.me : null}/>}/>
+                  <Route exact path='/dashboard/sources/references' component={ExternalReferences}/>
                   <Route exact path='/dashboard/settings' component={Settings}/>
                   <Route exact path='/dashboard/settings/users' component={Users}/>
                   <Route exact path='/dashboard/settings/groups' component={Groups}/>
