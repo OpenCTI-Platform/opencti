@@ -38,10 +38,12 @@ class LoginForm extends Component {
       variables: {
         input: values,
       },
+      onError: (error) => {
+        console.log(error);
+      },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        // No need to modify the store, auth is handled by a cookie
         this.props.history.push('/');
       },
     });

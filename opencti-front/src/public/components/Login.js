@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
-import ReactDocumentTitle from 'react-document-title';
+import * as PropTypes from 'prop-types';
+import graphql from 'babel-plugin-relay/macro';
+import { pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { Google, FacebookBox, GithubCircle } from 'mdi-material-ui';
-import * as PropTypes from 'prop-types';
-import StandaloneIntlProvider from '../../components/AppIntlProvider';
+import { QueryRenderer } from '../../relay/environment';
+import { ConnectedIntlProvider } from '../../components/AppIntlProvider';
+import { ConnectedDocumentTitle } from '../../components/AppDocumentTitle';
 import logo from '../../resources/images/logo_opencti.png';
 import LoginForm from './LoginForm';
 
@@ -51,6 +54,16 @@ const styles = theme => ({
   },
 });
 
+const LoginQuery = graphql`
+    query LoginQuery {
+        settings {
+            platform_external_auth
+            ...AppIntlProvider_settings
+            ...AppDocumentTitle_settings
+        }
+    }
+`;
+
 class Login extends Component {
   constructor(props) {
     super(props);
@@ -71,30 +84,45 @@ class Login extends Component {
     this.setState({ width: window.innerWidth, height: window.innerHeight });
   }
 
+  renderExternalAuth() {
+    return (
+      <div>
+        <div style={{ marginTop: 20 }}>&nbsp;</div>
+        <Button className = { this.props.classes.buttonGoogle} variant='contained' size='small' component='a' href='/auth/google'>
+          <Google className={this.props.classes.iconSmall}/>
+          Google
+        </Button>
+        <Button className={this.props.classes.buttonFacebook} variant='contained' size='small' component='a' href='/auth/facebook'>
+          <FacebookBox className={this.props.classes.iconSmall}/>
+          Facebook
+        </Button>
+        <Button className={this.props.classes.buttonGithub} variant='contained' size='small' component='a' href='/auth/github'>
+          <GithubCircle className={this.props.classes.iconSmall}/>
+          Github
+        </Button>
+      </div>
+    );
+  }
+
   render() {
     const marginTop = (this.state.height / 2) - (loginHeight / 2) - 120;
     return (
-      <StandaloneIntlProvider>
-        <ReactDocumentTitle title='OpenCTI platform - Dashboard login'>
-          <div className={this.props.classes.container} style={{ marginTop }}>
-            <img src={logo} alt='logo' className={this.props.classes.logo}/>
-            <LoginForm/>
-            <div style={{ marginTop: 20 }}>&nbsp;</div>
-            <Button className={this.props.classes.buttonGoogle} variant='contained' size='small' component='a' href='/auth/google'>
-              <Google className={this.props.classes.iconSmall}/>
-              Google
-            </Button>
-            <Button className={this.props.classes.buttonFacebook} variant='contained' size='small' component='a' href='/auth/facebook'>
-              <FacebookBox className={this.props.classes.iconSmall}/>
-              Facebook
-            </Button>
-            <Button className={this.props.classes.buttonGithub} variant='contained' size='small' component='a' href='/auth/github'>
-              <GithubCircle className={this.props.classes.iconSmall}/>
-              Github
-            </Button>
-          </div>
-        </ReactDocumentTitle>
-      </StandaloneIntlProvider>
+      <QueryRenderer
+        query={LoginQuery}
+        variables={{}}
+        render={({ props }) => (
+          <ConnectedIntlProvider me={props && props.me ? props.me : null}
+                                 settings={props && props.settings ? props.settings : null}>
+            <ConnectedDocumentTitle settings={props && props.settings ? props.settings : null}>
+              <div className={this.props.classes.container} style={{ marginTop }}>
+                <img src={logo} alt='logo' className={this.props.classes.logo}/>
+                <LoginForm/>
+                {pathOr(false, ['settings', 'platform_external_auth'], props) === true ? this.renderExternalAuth() : ''}
+              </div>
+            </ConnectedDocumentTitle>
+          </ConnectedIntlProvider>
+        )}
+      />
     );
   }
 }

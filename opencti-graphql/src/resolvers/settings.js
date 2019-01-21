@@ -9,7 +9,7 @@ import {
   addSettings
 } from '../domain/settings';
 import { fetchEditContext, pubsub } from '../database/redis';
-import { admin, auth, withCancel } from './wrapper';
+import { admin, withCancel } from './wrapper';
 
 const settingsResolvers = {
   Query: {
