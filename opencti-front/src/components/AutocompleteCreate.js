@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import classNames from 'classnames';
 import CreatableSelect from 'react-select/lib/Creatable';

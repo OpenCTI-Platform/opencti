@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';

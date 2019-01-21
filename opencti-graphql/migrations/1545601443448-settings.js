@@ -1,4 +1,4 @@
-import { addSettings, settingsDelete } from '../src/domain/settings';
+import { addSettings } from '../src/domain/settings';
 import { addMarkingDefinition } from '../src/domain/markingDefinition';
 
 module.exports.up = async next => {

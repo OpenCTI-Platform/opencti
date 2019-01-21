@@ -146,7 +146,7 @@ class AddExternalReferences extends Component {
           </div>
         </Drawer>
         <ExternalReferenceCreation
-          display={this.state.open}
+
           contextual={true}
           inputValue={this.state.search}
           paginationOptions={paginationOptions}

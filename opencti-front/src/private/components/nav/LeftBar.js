@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
@@ -14,7 +15,6 @@ import {
 import {
   Settings, ClipboardArrowDown, Gauge, Database,
 } from 'mdi-material-ui';
-import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
 

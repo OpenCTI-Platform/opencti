@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { compose } from 'ramda';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
 import Avatar from '@material-ui/core/Avatar';
 import inject18n from './i18n';
 import ItemIcon from './ItemIcon';
@@ -13,6 +11,7 @@ const styles = () => ({
     width: '100%',
     height: '100%',
     backgroundColor: '#000000',
+    color: '#ffffff',
   },
 });
 
@@ -22,12 +21,7 @@ class GraphNode extends Component {
     console.log(node);
     return (
       <div className={classes.node}>
-          <CardHeader
-            classes={{ root: classes.header }}
-            avatar={<Avatar className={classes.avatar}><ItemIcon type={node.entity_type}/></Avatar>}
-            title={node.name}
-            subheader={t(`entity_${node.entity_type}`)}
-          />
+        {node.name}
       </div>
     );
   }

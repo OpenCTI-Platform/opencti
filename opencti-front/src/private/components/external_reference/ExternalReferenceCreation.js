@@ -196,17 +196,17 @@ class ExternalReferenceCreation extends Component {
         <Fab onClick={this.handleOpen.bind(this)}
              color='secondary' aria-label='Add'
              className={classes.createButton}><Add/></Fab>
-        <Formik
-          enableReinitialize={true}
-          initialValues={{
-            source_name: inputValue, external_id: '', url: '', description: '',
-          }}
-          validationSchema={externalReferenceValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
-          onReset={this.onResetContextual.bind(this)}
-          render={({ submitForm, handleReset, isSubmitting }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
+        <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
+          <Formik
+            enableReinitialize={true}
+            initialValues={{
+              source_name: inputValue, external_id: '', url: '', description: '',
+            }}
+            validationSchema={externalReferenceValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={this.onResetContextual.bind(this)}
+            render={({ submitForm, handleReset, isSubmitting }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
                 <DialogTitle>
                   {t('Create an external reference')}
                 </DialogTitle>
@@ -225,10 +225,10 @@ class ExternalReferenceCreation extends Component {
                     {t('Create')}
                   </Button>
                 </DialogActions>
-              </Dialog>
-            </Form>
-          )}
-        />
+              </Form>
+            )}
+          />
+        </Dialog>
       </div>
     );
   }
