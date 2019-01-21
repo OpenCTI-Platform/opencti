@@ -191,7 +191,7 @@ type User implements GlobalObject & StixDomainEntity & Identity {
 }
 input UserAddInput {
     email: String! @constraint(minLength: 5, format: "email")
-    name: String!
+    name: String!  @constraint(minLength: 3)
     description: String
     firstname: String
     lastname: String
