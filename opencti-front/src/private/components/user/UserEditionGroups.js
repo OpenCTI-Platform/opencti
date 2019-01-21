@@ -13,7 +13,6 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Checkbox from '@material-ui/core/Checkbox';
 import Avatar from '@material-ui/core/Avatar';
-import { withRouter } from 'react-router-dom';
 import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { groupsLinesSearchQuery } from '../group/GroupsLines';
@@ -56,7 +55,7 @@ const userMutationRelationDelete = graphql`
 class UserEditionGroupsComponent extends Component {
   handleToggle(groupId, userGroup, event) {
     if (event.target.checked) {
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: userMutationRelationAdd,
         variables: {
           id: groupId,
@@ -69,7 +68,7 @@ class UserEditionGroupsComponent extends Component {
         },
       });
     } else if (userGroup !== undefined) {
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: userMutationRelationDelete,
         variables: {
           id: this.props.user.id,
@@ -135,7 +134,6 @@ UserEditionGroupsComponent.propTypes = {
   user: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
-  history: PropTypes.object,
 };
 
 const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
@@ -159,6 +157,5 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles, { withTheme: true }),
 )(UserEditionGroups);

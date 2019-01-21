@@ -3,15 +3,13 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
-import { compose, head } from 'ramda';
+import { compose } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { withRouter } from 'react-router-dom';
-import { commitMutation } from '../../../relay/environment';
+import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
-import Message from '../../../components/Message';
 
 const styles = theme => ({
   drawerPaper: {
@@ -59,32 +57,22 @@ class UserEditionPasswordComponent extends Component {
     this.state = { displayMessage: false };
   }
 
-  onSubmit(values, { setSubmitting, resetForm, setErrors }) {
+  onSubmit(values, { setSubmitting, resetForm }) {
     const field = { key: 'password', value: values.password };
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: userMutationFieldPatch,
       variables: {
         id: this.props.user.id,
         input: field,
       },
-      onCompleted: (response, errors) => {
+      setSubmitting,
+      onCompleted: () => {
         setSubmitting(false);
-        if (errors) {
-          const error = this.props.t(head(errors).message);
-          setErrors({ name: error }); // Push the error in the name field
-        } else {
-          this.setState({ displayMessage: true });
-          resetForm();
-        }
+        MESSAGING$.notify('The password has been updated');
+        this.setState({ displayMessage: true });
+        resetForm();
       },
     });
-  }
-
-  handleCloseMessage(event, reason) {
-    if (reason === 'clickaway') {
-      return;
-    }
-    this.setState({ displayMessage: false });
   }
 
   render() {
@@ -109,7 +97,6 @@ class UserEditionPasswordComponent extends Component {
             </Form>
           )}
         />
-        <Message message={t('The password has been updated')} open={this.state.displayMessage} handleClose={this.handleCloseMessage.bind(this)} />
       </div>
     );
   }
@@ -122,7 +109,6 @@ UserEditionPasswordComponent.propTypes = {
   user: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
-  history: PropTypes.object,
 };
 
 const UserEditionPassword = createFragmentContainer(UserEditionPasswordComponent, {
@@ -135,6 +121,5 @@ const UserEditionPassword = createFragmentContainer(UserEditionPasswordComponent
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles, { withTheme: true }),
 )(UserEditionPassword);

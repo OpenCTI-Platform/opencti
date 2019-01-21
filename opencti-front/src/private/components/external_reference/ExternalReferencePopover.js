@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -100,7 +99,7 @@ class ExternalReferencePopover extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: externalReferencePopoverDeletionMutation,
       variables: {
         id: this.props.externalReferenceId,
@@ -183,11 +182,9 @@ ExternalReferencePopover.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles),
 )(ExternalReferencePopover);

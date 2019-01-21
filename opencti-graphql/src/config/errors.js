@@ -15,6 +15,14 @@ export const MissingElement = createError('MissingElement', {
   data: { type: TYPE_BUSINESS }
 });
 
+export const ConstraintFailure = field => {
+  const ErrorType = createError('Functional', {
+    message: `Validation error for ${field}`,
+    data: { type: TYPE_BUSINESS }
+  });
+  return new ErrorType();
+};
+
 // TYPE_AUTH
 export const AuthRequired = createError('AuthRequired', {
   message: 'You must be logged in to do this',

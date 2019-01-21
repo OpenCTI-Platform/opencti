@@ -273,7 +273,7 @@ Autocomplete.propTypes = {
   field: PropTypes.object,
   form: PropTypes.shape({
     dirty: PropTypes.bool,
-    errors: PropTypes.object,
+    messages: PropTypes.object,
     setFieldValue: PropTypes.func,
   }),
   onInputChange: PropTypes.func,

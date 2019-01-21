@@ -11,7 +11,6 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
-import { withRouter } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
 import { commitMutation, requestSubscription } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
@@ -103,7 +102,7 @@ class KillChainPhaseEditionContainer extends Component {
   }
 
   handleChangeFocus(name) {
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: killChainPhaseEditionFocus,
       variables: {
         id: this.props.killChainPhase.id,
@@ -116,7 +115,7 @@ class KillChainPhaseEditionContainer extends Component {
 
   handleSubmitField(name, value) {
     killChainPhaseValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: killChainPhaseMutationFieldPatch,
         variables: { id: this.props.killChainPhase.id, input: { key: name, value } },
       });
@@ -180,7 +179,6 @@ KillChainPhaseEditionContainer.propTypes = {
   me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
 };
 
 const KillChainPhaseEditionFragment = createFragmentContainer(KillChainPhaseEditionContainer, {
@@ -205,6 +203,5 @@ const KillChainPhaseEditionFragment = createFragmentContainer(KillChainPhaseEdit
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles, { withTheme: true }),
 )(KillChainPhaseEditionFragment);

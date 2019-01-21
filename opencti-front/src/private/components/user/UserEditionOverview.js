@@ -15,7 +15,6 @@ import Select from '../../../components/Select';
 import Autocomplete from '../../../components/Autocomplete';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation } from '../../../relay/environment';
-import {withRouter} from "react-router-dom";
 
 const roles = [
   { label: 'ROLE_ROOT', value: 'ROLE_ROOT' },
@@ -73,7 +72,7 @@ const userValidation = t => Yup.object().shape({
 
 class UserEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: userEditionOverviewFocus,
       variables: {
         id: this.props.user.id,
@@ -90,7 +89,7 @@ class UserEditionOverviewComponent extends Component {
       newValue = pluck('value', value);
     }
     userValidation(this.props.t).validateAt(name, { [name]: newValue }).then(() => {
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: userMutationFieldPatch,
         variables: { id: this.props.user.id, input: { key: name, value: newValue } },
       });
@@ -182,7 +181,6 @@ UserEditionOverviewComponent.propTypes = {
   user: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
-  history: PropTypes.object,
 };
 
 const UserEditionOverview = createFragmentContainer(UserEditionOverviewComponent, {
@@ -202,6 +200,5 @@ const UserEditionOverview = createFragmentContainer(UserEditionOverviewComponent
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles, { withTheme: true }),
 )(UserEditionOverview);

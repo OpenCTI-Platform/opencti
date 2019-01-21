@@ -15,7 +15,6 @@ import IconButton from '@material-ui/core/IconButton';
 import Avatar from '@material-ui/core/Avatar';
 import { LinkOff } from '@material-ui/icons';
 import { compose } from 'ramda';
-import { withRouter } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
 import truncate from '../../../utils/String';
 import { commitMutation } from '../../../relay/environment';
@@ -52,7 +51,7 @@ const styles = theme => ({
 
 class EntityExternalReferencesLinesContainer extends Component {
   removeExternalReference(externalReferenceEdge) {
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: externalReferenceMutationRelationDelete,
       variables: {
         id: externalReferenceEdge.node.id,
@@ -85,7 +84,7 @@ class EntityExternalReferencesLinesContainer extends Component {
                                entityPaginationOptions={paginationOptions}/>
         <div className='clearfix'/>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <List classes={{root: classes.list}}>
+          <List classes={{ root: classes.list }}>
             {data.externalReferencesOf.edges.map((externalReferenceEdge) => {
               const externalReference = externalReferenceEdge.node;
               const externalReferenceId = externalReference.external_id ? `(${externalReference.external_id})` : '';
@@ -158,7 +157,6 @@ EntityExternalReferencesLinesContainer.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
-  history: PropTypes.object,
 };
 
 export const entityExternalReferencesLinesQuery = graphql`
@@ -221,6 +219,5 @@ const EntityExternalReferencesLines = createPaginationContainer(
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles),
 )(EntityExternalReferencesLines);

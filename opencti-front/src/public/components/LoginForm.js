@@ -5,7 +5,7 @@ import { TextField } from 'formik-material-ui';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
 import { withRouter } from 'react-router-dom';
-import { compose } from 'ramda';
+import { compose, head } from 'ramda';
 import * as Yup from 'yup';
 import * as PropTypes from 'prop-types';
 import { commitMutation } from '../../relay/environment';
@@ -32,15 +32,17 @@ const loginValidation = t => Yup.object().shape({
 });
 
 class LoginForm extends Component {
-  onSubmit(values, { setSubmitting, resetForm }) {
-    commitMutation(this.props.history, {
+  onSubmit(values, { setSubmitting, resetForm, setErrors }) {
+    commitMutation({
       mutation: loginMutation,
       variables: {
         input: values,
       },
-      onError: (error) => {
-        console.log(error);
+      onError: (errors) => {
+        const error = this.props.t(head(errors).message);
+        setErrors({ email: error });
       },
+      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();

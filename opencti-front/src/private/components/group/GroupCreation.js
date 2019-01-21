@@ -12,7 +12,6 @@ import { compose } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
-import { withRouter } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
@@ -99,7 +98,7 @@ class GroupCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: groupMutation,
       variables: {
         input: values,
@@ -110,6 +109,7 @@ class GroupCreation extends Component {
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
       },
+      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -171,11 +171,9 @@ GroupCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles, { withTheme: true }),
 )(GroupCreation);

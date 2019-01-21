@@ -15,7 +15,7 @@ import conf, { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/security';
 import { findByTokenId, setAuthenticationCookie } from './domain/user';
 import schema from './schema/schema';
-import { Unknown } from './config/errors';
+import { ConstraintFailure, Unknown } from './config/errors';
 
 // Init the http server
 const app = express();
@@ -84,7 +84,14 @@ const server = new ApolloServer({
     logger.error(error); // Log the complete error.
     let e = apolloFormatError(error);
     if (e instanceof GraphQLError) {
-      e = apolloFormatError(new Unknown()); // Forward only an unknown error
+      const errorCode = e.extensions.exception.code;
+      if (errorCode === 'ERR_GRAPHQL_CONSTRAINT_VALIDATION') {
+        const { fieldName } = e.extensions.exception;
+        const ConstraintError = new ConstraintFailure(fieldName);
+        e = apolloFormatError(ConstraintError);
+      } else {
+        e = apolloFormatError(new Unknown());
+      }
     }
     // Remove the exception stack in production.
     return DEV_MODE ? e : dissocPath(['extensions', 'exception'], e);

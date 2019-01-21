@@ -9,7 +9,6 @@ import {
   difference, head, union,
 } from 'ramda';
 import * as Yup from 'yup';
-import { withRouter } from 'react-router-dom';
 import { dateFormat } from '../../../utils/Time';
 import { commitMutation, fetchQuery } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
@@ -138,7 +137,7 @@ class ReportEditionOverviewComponent extends Component {
   }
 
   handleChangeFocus(name) {
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: reportEditionOverviewFocus,
       variables: {
         id: this.props.report.id,
@@ -151,7 +150,7 @@ class ReportEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     reportValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: reportMutationFieldPatch,
         variables: { id: this.props.report.id, input: { key: name, value } },
       });
@@ -167,7 +166,7 @@ class ReportEditionOverviewComponent extends Component {
     };
 
     if (currentCreatedByRef.value === null) {
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: reportMutationRelationAdd,
         variables: {
           id: value.value,
@@ -180,14 +179,14 @@ class ReportEditionOverviewComponent extends Component {
         },
       });
     } else if (currentCreatedByRef.value !== value.value) {
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: reportMutationRelationDelete,
         variables: {
           id: this.props.report.id,
           relationId: currentCreatedByRef.relation,
         },
       });
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: reportMutationRelationAdd,
         variables: {
           id: value.value,
@@ -213,7 +212,7 @@ class ReportEditionOverviewComponent extends Component {
     const removed = difference(currentMarkingDefinitions, values);
 
     if (added.length > 0) {
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: reportMutationRelationAdd,
         variables: {
           id: head(added).value,
@@ -228,7 +227,7 @@ class ReportEditionOverviewComponent extends Component {
     }
 
     if (removed.length > 0) {
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: reportMutationRelationDelete,
         variables: {
           id: this.props.report.id,
@@ -329,7 +328,6 @@ ReportEditionOverviewComponent.propTypes = {
   report: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
-  history: PropTypes.object,
 };
 
 const ReportEditionOverview = createFragmentContainer(ReportEditionOverviewComponent, {
@@ -366,6 +364,5 @@ const ReportEditionOverview = createFragmentContainer(ReportEditionOverviewCompo
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles, { withTheme: true }),
 )(ReportEditionOverview);

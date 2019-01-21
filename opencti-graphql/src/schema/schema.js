@@ -2,6 +2,7 @@ import { GraphQLDateTime } from 'graphql-iso-date';
 import { importSchema } from 'graphql-import';
 import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from 'graphql-tools';
+import ConstraintDirective from 'graphql-constraint-directive';
 // noinspection NodeJsCodingAssistanceForCoreModules
 import path from 'path';
 import settingsResolvers from '../resolvers/settings';
@@ -64,7 +65,8 @@ const resolvers = mergeResolvers([
 
 const schema = makeExecutableSchema({
   typeDefs,
-  resolvers
+  resolvers,
+  schemaDirectives: { constraint: ConstraintDirective }
 });
 
 export default schema;

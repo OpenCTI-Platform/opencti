@@ -5,7 +5,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import { compose, filter, isEmpty } from 'ramda';
 import Cookies from 'js-cookie';
-import { QueryRenderer } from '../relay/environment';
+import { MESSAGING$, QueryRenderer } from '../relay/environment';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedDocumentTitle } from '../components/AppDocumentTitle';
 import TopBar from './components/nav/TopBar';
@@ -23,6 +23,7 @@ import Users from './components/Users';
 import Groups from './components/Groups';
 import MarkingDefinitions from './components/MarkingDefinitions';
 import KillChainPhases from './components/KillChainPhases';
+import Message from '../components/Message';
 
 class PrivateErrorBoundaryComponent extends React.Component {
   constructor(props) {
@@ -31,11 +32,7 @@ class PrivateErrorBoundaryComponent extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.log('componentDidCatch', error, errorInfo);
-    this.setState({
-      error,
-      errorInfo,
-    });
+    this.setState({ error, errorInfo });
   }
 
   render() {
@@ -91,6 +88,17 @@ const rootQuery = graphql`
 `;
 
 class Root extends Component {
+  componentDidMount() {
+    MESSAGING$.redirect.subscribe({
+      next: url => this.props.history.push(url),
+    });
+  }
+
+  // eslint-disable-next-line
+  componentWillUnmount() {
+    MESSAGING$.redirect.unsubscribe();
+  }
+
   render() {
     const { classes } = this.props;
     const paddingRight = 24;
@@ -106,6 +114,7 @@ class Root extends Component {
               <div className={classes.root}>
                 <TopBar me={props && props.me ? props.me : null}/>
                 <LeftBar/>
+                <Message/>
                 <main className={classes.content} style={{ paddingRight }}>
                   <div className={classes.toolbar}/>
                   <PrivateErrorBoundary>
@@ -138,6 +147,10 @@ class Root extends Component {
 Root.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
+  history: PropTypes.object,
 };
 
-export default withStyles(styles)(Root);
+export default compose(
+  withRouter,
+  withStyles(styles),
+)(Root);

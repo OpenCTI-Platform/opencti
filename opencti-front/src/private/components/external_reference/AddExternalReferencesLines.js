@@ -13,7 +13,6 @@ import Avatar from '@material-ui/core/Avatar';
 import { CheckCircle } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
-import { withRouter } from 'react-router-dom';
 import truncate from '../../../utils/String';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
@@ -84,7 +83,7 @@ class AddExternalReferencesLinesContainer extends Component {
       const existingExternalReference = head(
         filter(n => n.node.id === externalReference.id, entityExternalReferences),
       );
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: externalReferenceMutationRelationDelete,
         variables: {
           id: externalReference.id,
@@ -108,14 +107,15 @@ class AddExternalReferencesLinesContainer extends Component {
         toRole: 'external_reference',
         through: 'external_references',
       };
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: externalReferenceLinesMutationRelationAdd,
         variables: {
           id: entityId,
           input,
         },
         updater: (store) => {
-          const payload = store.getRootField('externalReferenceEdit').getLinkedRecord('relationAdd', { input });
+          const payload = store.getRootField('externalReferenceEdit')
+            .getLinkedRecord('relationAdd', { input });
           const container = store.getRoot();
           sharedUpdater(store, container.getDataID(), entityPaginationOptions, payload);
         },
@@ -170,7 +170,6 @@ AddExternalReferencesLinesContainer.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
-  history: PropTypes.object,
 };
 
 export const addExternalReferencesLinesQuery = graphql`
@@ -224,6 +223,5 @@ const AddExternalReferencesLines = createPaginationContainer(AddExternalReferenc
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles),
 )(AddExternalReferencesLines);

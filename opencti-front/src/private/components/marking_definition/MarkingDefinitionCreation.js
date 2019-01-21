@@ -12,7 +12,6 @@ import { compose } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
-import { withRouter } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
@@ -108,7 +107,7 @@ class MarkingDefinitionCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     // TODO Fix this @sam
     values.level = parseInt(values.level, 10);
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: markingDefinitionMutation,
       variables: {
         input: values,
@@ -119,6 +118,7 @@ class MarkingDefinitionCreation extends Component {
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
       },
+      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -184,11 +184,9 @@ MarkingDefinitionCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles, { withTheme: true }),
 )(MarkingDefinitionCreation);
