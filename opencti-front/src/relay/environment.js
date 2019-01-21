@@ -18,8 +18,10 @@ import {
   map, isEmpty, difference, filter,
 } from 'ramda';
 
+const MESSENGER$ = new Subject().pipe(debounce(() => timer(500)));
 export const MESSAGING$ = {
-  errors: new Subject().pipe(debounce(() => timer(1000))),
+  messages: MESSENGER$,
+  notify: text => MESSENGER$.next([{ type: 'message', text }]),
   redirect: new Subject(),
 };
 const GRAPHQL_SUBSCRIPTION_ENDPOINT = 'ws://localhost:4000/graphql';
@@ -109,7 +111,8 @@ export const commitMutation = ({
       Cookies.remove('opencti_token');
       MESSAGING$.redirect.next('/login');
     } else {
-      MESSAGING$.errors.next(errors);
+      const messages = map(e => ({ type: 'error', text: e.message }), errors);
+      MESSAGING$.messages.next(messages);
       if (onError) onError(errors);
     }
   },

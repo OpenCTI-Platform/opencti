@@ -3,14 +3,13 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
-import { compose, head } from 'ramda';
+import { compose } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { commitMutation } from '../../../relay/environment';
+import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
-import Message from '../../../components/Message';
 
 const styles = theme => ({
   drawerPaper: {
@@ -58,7 +57,7 @@ class UserEditionPasswordComponent extends Component {
     this.state = { displayMessage: false };
   }
 
-  onSubmit(values, { setSubmitting, resetForm, setErrors }) {
+  onSubmit(values, { setSubmitting, resetForm }) {
     const field = { key: 'password', value: values.password };
     commitMutation({
       mutation: userMutationFieldPatch,
@@ -67,24 +66,13 @@ class UserEditionPasswordComponent extends Component {
         input: field,
       },
       setSubmitting,
-      onCompleted: (response, errors) => {
+      onCompleted: () => {
         setSubmitting(false);
-        if (errors) {
-          const error = this.props.t(head(errors).message);
-          setErrors({ name: error }); // Push the error in the name field
-        } else {
-          this.setState({ displayMessage: true });
-          resetForm();
-        }
+        MESSAGING$.notify('The password has been updated');
+        this.setState({ displayMessage: true });
+        resetForm();
       },
     });
-  }
-
-  handleCloseMessage(event, reason) {
-    if (reason === 'clickaway') {
-      return;
-    }
-    this.setState({ displayMessage: false });
   }
 
   render() {
@@ -109,7 +97,6 @@ class UserEditionPasswordComponent extends Component {
             </Form>
           )}
         />
-        <Message message={t('The password has been updated')} open={this.state.displayMessage} handleClose={this.handleCloseMessage.bind(this)} />
       </div>
     );
   }

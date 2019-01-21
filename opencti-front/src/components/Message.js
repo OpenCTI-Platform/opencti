@@ -5,6 +5,7 @@ import Snackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
 import IconButton from '@material-ui/core/IconButton';
 import CheckCircle from '@material-ui/icons/CheckCircle';
+import ErrorOutline from '@material-ui/icons/ErrorOutline';
 import Close from '@material-ui/icons/Close';
 import { compose, head } from 'ramda';
 import { MESSAGING$ } from '../relay/environment';
@@ -23,21 +24,23 @@ const styles = theme => ({
 class Message extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, message: '' };
+    this.state = { open: false, error: false, text: '' };
   }
 
   componentDidMount() {
-    MESSAGING$.errors.subscribe({
-      next: (errors) => {
-        const message = this.props.t(head(errors).message);
-        this.setState({ open: true, message });
+    MESSAGING$.messages.subscribe({
+      next: (messages) => {
+        const firstMessage = head(messages);
+        const text = this.props.t(firstMessage.text);
+        const error = firstMessage.type === 'error';
+        this.setState({ open: true, error, text });
       },
     });
   }
 
   // eslint-disable-next-line
   componentWillUnmount() {
-    MESSAGING$.errors.unsubscribe();
+    MESSAGING$.messages.unsubscribe();
   }
 
   handleCloseMessage(event, reason) {
@@ -56,8 +59,9 @@ class Message extends Component {
         <SnackbarContent
           message={
             <span className={classes.message}>
-              <CheckCircle className={classes.messageIcon}/>
-              {this.state.message}
+              {this.state.error ? <ErrorOutline className={classes.messageIcon}/>
+                : <CheckCircle className={classes.messageIcon}/>}
+              {this.state.text}
             </span>
           }
           action={[
