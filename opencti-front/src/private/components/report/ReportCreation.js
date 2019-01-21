@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { fetchQuery, commitMutation } from 'react-relay';
+import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -10,14 +9,15 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, head, pathOr, pipe, map, pluck, union,
+  compose, pathOr, pipe, map, pluck, union,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
+import { withRouter } from 'react-router-dom';
 import { parse } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
-import environment from '../../../relay/environment';
+import { fetchQuery, commitMutation } from '../../../relay/environment';
 import Autocomplete from '../../../components/Autocomplete';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import TextField from '../../../components/TextField';
@@ -123,7 +123,10 @@ class ReportCreation extends Component {
   }
 
   searchIdentities(event) {
-    fetchQuery(environment, reportCreationIdentitiesSearchQuery, { search: event.target.value, first: 10 }).then((data) => {
+    fetchQuery(reportCreationIdentitiesSearchQuery, {
+      search: event.target.value,
+      first: 10,
+    }).then((data) => {
       const identities = pipe(
         pathOr([], ['identities', 'edges']),
         map(n => ({ label: n.node.name, value: n.node.id })),
@@ -141,7 +144,9 @@ class ReportCreation extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(environment, markingDefinitionsLinesSearchQuery, { search: event.target.value }).then((data) => {
+    fetchQuery(markingDefinitionsLinesSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
         map(n => ({ label: n.node.definition, value: n.node.id })),
@@ -150,11 +155,12 @@ class ReportCreation extends Component {
     });
   }
 
-  onSubmit(values, { setSubmitting, resetForm, setErrors }) {
+  onSubmit(values, { setSubmitting, resetForm }) {
+    // TODO @sam fix me
     values.published = parse(values.published).format();
     values.createdByRef = values.createdByRef.value;
     values.markingDefinitions = pluck('value', values.markingDefinitions);
-    commitMutation(environment, {
+    commitMutation(this.props.history, {
       mutation: reportMutation,
       variables: {
         input: values,
@@ -165,27 +171,10 @@ class ReportCreation extends Component {
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
       },
-      /* optimisticUpdater: (store) => {
-        const root = store.getRoot();
-        const user = root.getLinkedRecord('me');
-        const id = Math.floor(Math.random() * 999999) + 100000;
-        const node = store.create(`client:newReport:V${id}`, 'Report');
-        node.setValue(`client:newReport:V${id}`, 'id');
-        node.setValue('YOOOOOOOOOOOOOOOOOOOO', 'name');
-        node.setValue(values.description, 'description');
-        const newEdge = store.create(`client:newEdge:V${id}`, 'reportEdge');
-        newEdge.setLinkedRecord(node, 'node');
-        sharedUpdater(store, user.getDataID(), this.props.orderBy, newEdge);
-      }, */
-      onCompleted: (response, errors) => {
+      onCompleted: () => {
         setSubmitting(false);
-        if (errors) {
-          const error = this.props.t(head(errors).message);
-          setErrors({ name: error }); // Push the error in the name field
-        } else {
-          resetForm();
-          this.handleClose();
-        }
+        resetForm();
+        this.handleClose();
       },
     });
   }
@@ -277,9 +266,11 @@ ReportCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles, { withTheme: true }),
 )(ReportCreation);

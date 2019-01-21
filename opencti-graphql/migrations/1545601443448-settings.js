@@ -1,4 +1,5 @@
 import { addSettings, settingsDelete } from '../src/domain/settings';
+import { addMarkingDefinition } from '../src/domain/markingDefinition';
 
 module.exports.up = async next => {
   await addSettings(
@@ -10,6 +11,42 @@ module.exports.up = async next => {
       platform_language: 'auto',
       platform_external_auth: true,
       platform_registration: false
+    }
+  );
+  await addMarkingDefinition(
+    {},
+    {
+      definition_type: 'TLP',
+      definition: 'TLP:WHITE',
+      color: '',
+      level: 1
+    }
+  );
+  await addMarkingDefinition(
+    {},
+    {
+      definition_type: 'TLP',
+      definition: 'TLP:GREEN',
+      color: '',
+      level: 2
+    }
+  );
+  await addMarkingDefinition(
+    {},
+    {
+      definition_type: 'TLP',
+      definition: 'TLP:AMBER',
+      color: '',
+      level: 3
+    }
+  );
+  await addMarkingDefinition(
+    {},
+    {
+      definition_type: 'TLP',
+      definition: 'TLP:RED',
+      color: '',
+      level: 4
     }
   );
   next();

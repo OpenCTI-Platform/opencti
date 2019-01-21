@@ -202,7 +202,6 @@ define
   # STIX SRO relationships
   "stix_relation" sub relationship
     is-abstract
-    plays "so"
     has "stix_id"
     has "created"
     has "modified"
@@ -213,7 +212,8 @@ define
     has "last_seen"
     has "description"
     has "created_at"
-    has "updated_at";
+    has "updated_at"
+    plays "so";
 
   # targets
   "targets" sub "stix_relation"

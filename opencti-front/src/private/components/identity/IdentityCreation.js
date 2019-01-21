@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { commitMutation } from 'react-relay';
+import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
-import { compose, head } from 'ramda';
+import { compose } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -17,8 +16,9 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
+import { withRouter } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
-import environment from '../../../relay/environment';
+import { commitMutation } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
 
@@ -95,25 +95,20 @@ class IdentityCreation extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm, setErrors }) {
-    commitMutation(environment, {
+  onSubmit(values, { setSubmitting, resetForm }) {
+    commitMutation(this.props.history, {
       mutation: identityMutation,
       variables: {
         input: values,
       },
-      onCompleted: (response, errors) => {
+      onCompleted: (response) => {
         setSubmitting(false);
-        if (errors) {
-          const error = this.props.t(head(errors).message);
-          setErrors({ name: error }); // Push the error in the name field
+        this.props.creationCallback(response);
+        resetForm();
+        if (this.props.contextual) {
+          this.props.handleClose();
         } else {
-          this.props.creationCallback(response);
-          resetForm();
-          if (this.props.contextual) {
-            this.props.handleClose();
-          } else {
-            this.handleClose();
-          }
+          this.handleClose();
         }
       },
     });
@@ -265,9 +260,11 @@ IdentityCreation.propTypes = {
   handleClose: PropTypes.func,
   inputValue: PropTypes.string,
   creationCallback: PropTypes.func,
+  history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles, { withTheme: true }),
 )(IdentityCreation);

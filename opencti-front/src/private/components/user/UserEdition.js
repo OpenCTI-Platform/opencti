@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer, requestSubscription } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import {
   compose, insert, find, propEq,
 } from 'ramda';
@@ -12,7 +12,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { Close } from '@material-ui/icons';
-import environment from '../../../relay/environment';
+import { requestSubscription } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { SubscriptionAvatars } from '../../../components/Subscription';
 import UserEditionOverview from './UserEditionOverview';
@@ -64,19 +64,14 @@ class UserEdition extends Component {
   }
 
   componentDidMount() {
-    const sub = requestSubscription(
-      environment,
-      {
-        subscription,
-        variables: {
-          // eslint-disable-next-line
+    const sub = requestSubscription({
+      subscription,
+      variables: {
+        // eslint-disable-next-line
           id: this.props.user.__id,
-        },
       },
-    );
-    this.setState({
-      sub,
     });
+    this.setState({ sub });
   }
 
   componentWillUnmount() {
@@ -115,9 +110,12 @@ class UserEdition extends Component {
               <Tab label={t('Groups')}/>
             </Tabs>
           </AppBar>
-          {this.state.currentTab === 0 && <UserEditionOverview user={this.props.user} editUsers={editUsers} me={me}/>}
-          {this.state.currentTab === 1 && <UserEditionPassword user={this.props.user} editUsers={editUsers} me={me}/>}
-          {this.state.currentTab === 2 && <UserEditionGroups user={this.props.user} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 0
+          && <UserEditionOverview user={this.props.user} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 1
+          && <UserEditionPassword user={this.props.user} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 2
+          && <UserEditionGroups user={this.props.user} editUsers={editUsers} me={me}/>}
         </div>
       </div>
     );

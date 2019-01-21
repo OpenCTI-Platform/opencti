@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, createFragmentContainer, requestSubscription } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import {
   compose, insert, find, propEq, pick,
@@ -11,8 +11,9 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
+import { withRouter } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
-import environment from '../../../relay/environment';
+import { commitMutation, requestSubscription } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../components/Subscription';
 
@@ -85,16 +86,13 @@ const externalReferenceValidation = t => Yup.object().shape({
 
 class ExternalReferenceEditionContainer extends Component {
   componentDidMount() {
-    const sub = requestSubscription(
-      environment,
-      {
-        subscription,
-        variables: {
-          // eslint-disable-next-line
+    const sub = requestSubscription({
+      subscription,
+      variables: {
+        // eslint-disable-next-line
           id: this.props.externalReference.id
-        },
       },
-    );
+    });
     this.setState({ sub });
   }
 
@@ -103,7 +101,7 @@ class ExternalReferenceEditionContainer extends Component {
   }
 
   handleChangeFocus(name) {
-    commitMutation(environment, {
+    commitMutation(this.props.history, {
       mutation: externalReferenceEditionFocus,
       variables: {
         id: this.props.externalReference.id,
@@ -116,7 +114,7 @@ class ExternalReferenceEditionContainer extends Component {
 
   handleSubmitField(name, value) {
     externalReferenceValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      commitMutation(environment, {
+      commitMutation(this.props.history, {
         mutation: externalReferenceMutationFieldPatch,
         variables: { id: this.props.externalReference.id, input: { key: name, value } },
       });
@@ -186,6 +184,7 @@ ExternalReferenceEditionContainer.propTypes = {
   me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  history: PropTypes.object,
 };
 
 const ExternalReferenceEditionFragment = createFragmentContainer(ExternalReferenceEditionContainer, {
@@ -211,5 +210,6 @@ const ExternalReferenceEditionFragment = createFragmentContainer(ExternalReferen
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles, { withTheme: true }),
 )(ExternalReferenceEditionFragment);

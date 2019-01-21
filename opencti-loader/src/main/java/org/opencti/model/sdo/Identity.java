@@ -22,6 +22,7 @@ public class Identity extends Domain {
             String identityCreation = format("insert $m isa Identity " +
                             "has stix_id %s " +
                             "has name %s " +
+                            "has identity_class %s " +
                             "has type %s " +
                             "has created %s " +
                             "has modified %s " +
@@ -29,6 +30,7 @@ public class Identity extends Domain {
                             "has updated_at %s;",
                     prepare(getId()),
                     prepare(getName()),
+                    prepare(getIdentity_class()),
                     prepare(getType()),
                     getCreated(),
                     getModified(),
@@ -40,6 +42,7 @@ public class Identity extends Domain {
     }
 
     private String name;
+    private String identity_class;
 
     public String getName() {
         return name;
@@ -47,5 +50,13 @@ public class Identity extends Domain {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    private String getIdentity_class() {
+        return identity_class;
+    }
+
+    public void setIdentity_class(String identity_class) {
+        this.identity_class = identity_class;
     }
 }

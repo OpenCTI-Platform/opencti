@@ -44,7 +44,6 @@ public class ExternalReference implements Stix {
             refBuilder.append(" has source_name ").append(prepare(getSource_name()));
             if (getDescription() != null)
                 refBuilder.append(" has description ").append(prepare(getDescription()));
-            refBuilder.append(" has type ").append("\"external-reference\"");
             refBuilder.append(" has url ").append(prepare(getUrl()));
             refBuilder.append(" has created ").append(getCurrentTime());
             refBuilder.append(" has modified ").append(getCurrentTime());

@@ -46,7 +46,7 @@ export const markingDefinitions = (reportId, args) =>
 
 export const objectRefs = (reportId, args) =>
   paginate(
-    `match $so isa Stix-Domain; 
+    `match $so isa Stix-Domain-Entity; 
     $rel(so:$so, knowledge_aggregation:$report) isa object_refs; 
     $report id ${reportId}`,
     args

@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { Graph } from 'react-d3-graph';
-import {
-  compose, pipe, map, assoc,
-} from 'ramda';
+import { compose, map, append } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -45,11 +43,17 @@ const graphConfig = {
 class ReportKnowledgeGraphComponent extends Component {
   render() {
     const { classes, report } = this.props;
-    const nodes = map(n => ({
+    const objectNodes = map(n => ({
       id: n.node.id,
       name: n.node.name,
       entity_type: n.node.type,
     }), report.objectRefs.edges);
+    const nodes = append({
+      id: report.id,
+      name: report.name,
+      entity_type: 'report',
+    }, objectNodes);
+
     const data = {
       nodes,
       links: [],
@@ -78,6 +82,7 @@ const ReportKnowledgeGraph = createFragmentContainer(ReportKnowledgeGraphCompone
   report: graphql`
       fragment ReportKnowledgeGraph_report on Report {
           id
+          name
           objectRefs {
               edges {
                   node {

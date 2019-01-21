@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { QueryRenderer, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import environment from '../../../relay/environment';
+import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import ReportHeader from './ReportHeader';
 import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
@@ -25,7 +25,6 @@ class ReportKnowledgeComponent extends Component {
       <div className={classes.container}>
         <ReportHeader report={report}/>
         <QueryRenderer
-          environment={environment}
           query={reportKnowledgeGraphQuery}
           variables={{ id: report.id }}
           render={({ props }) => {

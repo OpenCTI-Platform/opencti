@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles/index';
 import Drawer from '@material-ui/core/Drawer';
 import Menu from '@material-ui/core/Menu';
@@ -18,7 +17,7 @@ import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
-import environment, { QueryRenderer } from '../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import UserEdition from './UserEdition';
 
 const styles = theme => ({
@@ -101,7 +100,7 @@ class UserPopover extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    commitMutation(environment, {
+    commitMutation(this.props.history, {
       mutation: userPopoverDeletionMutation,
       variables: {
         id: this.props.userId,

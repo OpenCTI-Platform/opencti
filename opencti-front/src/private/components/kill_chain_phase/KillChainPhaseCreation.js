@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { commitMutation } from 'react-relay';
+import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -9,12 +8,13 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { compose, head } from 'ramda';
+import { compose } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
+import { withRouter } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
-import environment from '../../../relay/environment';
+import { commitMutation } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 
 const styles = theme => ({
@@ -99,9 +99,10 @@ class KillChainPhaseCreation extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm, setErrors }) {
+  onSubmit(values, { setSubmitting, resetForm }) {
+    // TODO Fix this @sam
     values.phase_order = parseInt(values.phase_order, 10);
-    commitMutation(environment, {
+    commitMutation(this.props.history, {
       mutation: killChainPhaseMutation,
       variables: {
         input: values,
@@ -112,27 +113,10 @@ class KillChainPhaseCreation extends Component {
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
       },
-      /* optimisticUpdater: (store) => {
-        const root = store.getRoot();
-        const user = root.getLinkedRecord('me');
-        const id = Math.floor(Math.random() * 999999) + 100000;
-        const node = store.create(`client:newKillChainPhase:V${id}`, 'KillChainPhase');
-        node.setValue(`client:newKillChainPhase:V${id}`, 'id');
-        node.setValue('YOOOOOOOOOOOOOOOOOOOO', 'name');
-        node.setValue(values.description, 'description');
-        const newEdge = store.create(`client:newEdge:V${id}`, 'killChainPhaseEdge');
-        newEdge.setLinkedRecord(node, 'node');
-        sharedUpdater(store, user.getDataID(), this.props.orderBy, newEdge);
-      }, */
-      onCompleted: (response, errors) => {
+      onCompleted: () => {
         setSubmitting(false);
-        if (errors) {
-          const error = this.props.t(head(errors).message);
-          setErrors({ name: error }); // Push the error in the name field
-        } else {
-          resetForm();
-          this.handleClose();
-        }
+        resetForm();
+        this.handleClose();
       },
     });
   }
@@ -193,9 +177,11 @@ KillChainPhaseCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles, { withTheme: true }),
 )(KillChainPhaseCreation);

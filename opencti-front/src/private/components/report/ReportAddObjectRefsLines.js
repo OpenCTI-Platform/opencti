@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { commitMutation, createPaginationContainer } from 'react-relay';
+import * as PropTypes from 'prop-types';
+import { createPaginationContainer } from 'react-relay';
+import graphql from 'babel-plugin-relay/macro';
 import {
-  map, filter, head, keys, groupBy, assoc,
-} from 'ramda';
+  map, filter, head, keys, groupBy, assoc, compose
+} from "ramda";
 import { withStyles } from '@material-ui/core/styles';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
@@ -14,11 +15,11 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { ExpandMore, CheckCircle } from '@material-ui/icons';
-import graphql from 'babel-plugin-relay/macro';
+import { commitMutation } from '../../../relay/environment';
 import truncate from '../../../utils/String';
 import ItemIcon from '../../../components/ItemIcon';
 import inject18n from '../../../components/i18n';
-import environment from '../../../relay/environment';
+import { withRouter } from "react-router-dom";
 
 const styles = theme => ({
   container: {
@@ -74,7 +75,7 @@ export const reportutationRelationDelete = graphql`
     }
 `;
 
-class ReportAddObjectRefsLines extends Component {
+class ReportAddObjectRefsLinesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedPanels: {} };
@@ -87,7 +88,7 @@ class ReportAddObjectRefsLines extends Component {
 
     if (alreadyAdded) {
       const existingStixDomain = head(filter(n => n.node.id === stixDomain.id, reportObjectRefs));
-      commitMutation(environment, {
+      commitMutation(this.props.history, {
         mutation: reportutationRelationDelete,
         variables: {
           id: reportId,
@@ -101,7 +102,7 @@ class ReportAddObjectRefsLines extends Component {
         toRole: 'knowledge_aggregation',
         through: 'object_refs',
       };
-      commitMutation(environment, {
+      commitMutation(this.props.history, {
         mutation: reportMutationRelationAdd,
         variables: {
           id: stixDomain.id,
@@ -174,7 +175,7 @@ class ReportAddObjectRefsLines extends Component {
   }
 }
 
-ReportAddObjectRefsLines.propTypes = {
+ReportAddObjectRefsLinesContainer.propTypes = {
   reportId: PropTypes.string,
   reportObjectRefs: PropTypes.array,
   data: PropTypes.object,
@@ -182,6 +183,7 @@ ReportAddObjectRefsLines.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  history: PropTypes.object,
 };
 
 export const reportAddObjectRefsLinesQuery = graphql`
@@ -190,8 +192,8 @@ export const reportAddObjectRefsLinesQuery = graphql`
     }
 `;
 
-export default inject18n(withStyles(styles)(createPaginationContainer(
-  ReportAddObjectRefsLines,
+const ReportAddObjectRefsLines = createPaginationContainer(
+  ReportAddObjectRefsLinesContainer,
   {
     data: graphql`
         fragment ReportAddObjectRefsLines_data on Query @argumentDefinitions(
@@ -235,4 +237,10 @@ export default inject18n(withStyles(styles)(createPaginationContainer(
     },
     query: reportAddObjectRefsLinesQuery,
   },
-)));
+);
+
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(ReportAddObjectRefsLines);

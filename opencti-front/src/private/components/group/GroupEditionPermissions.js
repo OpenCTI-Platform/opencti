@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer } from 'react-relay';
 import {
   compose, map, pathOr, pipe, propEq, find,
 } from 'ramda';
@@ -13,7 +13,8 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Checkbox from '@material-ui/core/Checkbox';
 import Avatar from '@material-ui/core/Avatar';
-import environment, { QueryRenderer } from '../../../relay/environment';
+import { withRouter } from 'react-router-dom';
+import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
 
@@ -55,7 +56,7 @@ const groupMutationRelationDelete = graphql`
 class GroupEditionPermissionsComponent extends Component {
   handleToggle(markingDefinitionId, groupMarkingDefinition, event) {
     if (event.target.checked) {
-      commitMutation(environment, {
+      commitMutation(this.props.history, {
         mutation: groupMutationRelationAdd,
         variables: {
           id: markingDefinitionId,
@@ -68,7 +69,7 @@ class GroupEditionPermissionsComponent extends Component {
         },
       });
     } else if (groupMarkingDefinition !== undefined) {
-      commitMutation(environment, {
+      commitMutation(this.props.history, {
         mutation: groupMutationRelationDelete,
         variables: {
           id: this.props.group.id,
@@ -140,6 +141,7 @@ GroupEditionPermissionsComponent.propTypes = {
   group: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
+  history: PropTypes.object,
 };
 
 const GroupEditionPermissions = createFragmentContainer(GroupEditionPermissionsComponent, {
@@ -164,5 +166,6 @@ const GroupEditionPermissions = createFragmentContainer(GroupEditionPermissionsC
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles, { withTheme: true }),
 )(GroupEditionPermissions);

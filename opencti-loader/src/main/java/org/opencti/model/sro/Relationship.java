@@ -72,25 +72,28 @@ public class Relationship extends Domain {
                 fromRole,
                 toRole,
                 getRelationship_type());
-        Object relation = null;
-        relation = driver.read(getRelation);
 
-        if (relation == null) {
-            String relationCreation = format("match $from isa %s " +
-                            "has stix_id %s; " +
-                            "$to isa %s has stix_id %s; " +
-                            "insert (%s: $from, %s: $to) " +
-                            "has stix_id %s" +
-                            "isa %s;",
-                    from.getEntityName(),
-                    prepare(from.getId()),
-                    to.getEntityName(),
-                    prepare(to.getId()),
-                    fromRole,
-                    toRole,
-                    prepare(getId()),
-                    getRelationship_type());
-            driver.write(relationCreation);
+        try {
+            Object relation = driver.read(getRelation);
+            if (relation == null) {
+                String relationCreation = format("match $from isa %s " +
+                                "has stix_id %s; " +
+                                "$to isa %s has stix_id %s; " +
+                                "insert (%s: $from, %s: $to) " +
+                                "has stix_id %s" +
+                                "isa %s;",
+                        from.getEntityName(),
+                        prepare(from.getId()),
+                        to.getEntityName(),
+                        prepare(to.getId()),
+                        fromRole,
+                        toRole,
+                        prepare(getId()),
+                        getRelationship_type());
+                driver.write(relationCreation);
+            }
+        } catch (Exception e) {
+
         }
     }
 
