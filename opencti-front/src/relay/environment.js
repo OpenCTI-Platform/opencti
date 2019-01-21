@@ -7,7 +7,8 @@ import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { execute } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
 import Cookies from 'js-cookie';
-import { Subject } from 'rxjs';
+import { Subject, timer } from 'rxjs';
+import { debounce } from 'rxjs/operators';
 import React, { Component } from 'react';
 import {
   commitMutation as CM, QueryRenderer as QR, requestSubscription as RS, fetchQuery as FQ,
@@ -18,7 +19,7 @@ import {
 } from 'ramda';
 
 export const MESSAGING$ = {
-  errors: new Subject(),
+  errors: new Subject().pipe(debounce(() => timer(1000))),
   redirect: new Subject(),
 };
 const GRAPHQL_SUBSCRIPTION_ENDPOINT = 'ws://localhost:4000/graphql';
