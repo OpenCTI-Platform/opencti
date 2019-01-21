@@ -16,7 +16,6 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { withRouter } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
@@ -96,11 +95,12 @@ class IdentityCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: identityMutation,
       variables: {
         input: values,
       },
+      setSubmitting,
       onCompleted: (response) => {
         setSubmitting(false);
         this.props.creationCallback(response);
@@ -260,11 +260,9 @@ IdentityCreation.propTypes = {
   handleClose: PropTypes.func,
   inputValue: PropTypes.string,
   creationCallback: PropTypes.func,
-  history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles, { withTheme: true }),
 )(IdentityCreation);

@@ -11,7 +11,6 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import * as Yup from 'yup';
-import { withRouter } from 'react-router-dom';
 import { SubscriptionFocus } from '../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
@@ -103,8 +102,9 @@ const settingsValidation = t => Yup.object().shape({
 });
 
 class Settings extends Component {
+  // eslint-disable-next-line
   handleChangeFocus(id, name) {
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: settingsFocus,
       variables: {
         id,
@@ -116,12 +116,13 @@ class Settings extends Component {
   }
 
   handleSubmitField(id, name, value) {
-    settingsValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      commitMutation(this.props.history, {
-        mutation: settingsMutationFieldPatch,
-        variables: { id, input: { key: name, value } },
-      });
-    }).catch(() => false);
+    settingsValidation(this.props.t)
+      .validateAt(name, { [name]: value }).then(() => {
+        commitMutation({
+          mutation: settingsMutationFieldPatch,
+          variables: { id, input: { key: name, value } },
+        });
+      }).catch(() => false);
   }
 
   render() {
@@ -225,11 +226,9 @@ Settings.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,
-  history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles),
 )(Settings);

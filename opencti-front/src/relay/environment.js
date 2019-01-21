@@ -7,6 +7,7 @@ import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { execute } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
 import Cookies from 'js-cookie';
+import { Subject } from 'rxjs';
 import React, { Component } from 'react';
 import {
   commitMutation as CM, QueryRenderer as QR, requestSubscription as RS, fetchQuery as FQ,
@@ -16,9 +17,15 @@ import {
   map, isEmpty, difference, filter,
 } from 'ramda';
 
+export const MESSAGING$ = {
+  errors: new Subject(),
+  redirect: new Subject(),
+};
 const GRAPHQL_SUBSCRIPTION_ENDPOINT = 'ws://localhost:4000/graphql';
 const IN_DEV_MODE = process.env.NODE_ENV === 'development';
 if (IN_DEV_MODE) installRelayDevTools();
+
+
 class ApplicationError extends Error {
   constructor(errors) {
     super();
@@ -86,8 +93,8 @@ QueryRenderer.propTypes = {
 };
 
 // Relay functions
-export const commitMutation = (history, {
-  mutation, variables, updater, optimisticUpdater, onCompleted,
+export const commitMutation = ({
+  mutation, variables, updater, optimisticUpdater, onCompleted, onError, setSubmitting,
 }) => CM(environment, {
   mutation,
   variables,
@@ -95,13 +102,14 @@ export const commitMutation = (history, {
   optimisticUpdater,
   onCompleted,
   onError: (errors) => {
+    if (setSubmitting) setSubmitting(false);
     const authRequired = filter(e => e.data.type === 'authentication', errors);
     if (!isEmpty(authRequired)) {
       Cookies.remove('opencti_token');
-      history.push('/login');
+      MESSAGING$.redirect.next('/login');
     } else {
-      // TODO Publish error to notification bus.
-      console.log('commitMutation error', errors);
+      MESSAGING$.errors.next(errors);
+      if (onError) onError(errors);
     }
   },
 });

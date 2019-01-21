@@ -14,7 +14,6 @@ import {
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
-import { withRouter } from 'react-router-dom';
 import { parse } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import { fetchQuery, commitMutation } from '../../../relay/environment';
@@ -160,7 +159,7 @@ class ReportCreation extends Component {
     values.published = parse(values.published).format();
     values.createdByRef = values.createdByRef.value;
     values.markingDefinitions = pluck('value', values.markingDefinitions);
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: reportMutation,
       variables: {
         input: values,
@@ -171,6 +170,7 @@ class ReportCreation extends Component {
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
       },
+      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -266,11 +266,9 @@ ReportCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles, { withTheme: true }),
 )(ReportCreation);

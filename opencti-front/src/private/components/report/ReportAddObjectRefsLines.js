@@ -3,8 +3,8 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  map, filter, head, keys, groupBy, assoc, compose
-} from "ramda";
+  map, filter, head, keys, groupBy, assoc, compose,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
@@ -19,7 +19,6 @@ import { commitMutation } from '../../../relay/environment';
 import truncate from '../../../utils/String';
 import ItemIcon from '../../../components/ItemIcon';
 import inject18n from '../../../components/i18n';
-import { withRouter } from "react-router-dom";
 
 const styles = theme => ({
   container: {
@@ -88,7 +87,7 @@ class ReportAddObjectRefsLinesContainer extends Component {
 
     if (alreadyAdded) {
       const existingStixDomain = head(filter(n => n.node.id === stixDomain.id, reportObjectRefs));
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: reportutationRelationDelete,
         variables: {
           id: reportId,
@@ -102,7 +101,7 @@ class ReportAddObjectRefsLinesContainer extends Component {
         toRole: 'knowledge_aggregation',
         through: 'object_refs',
       };
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: reportMutationRelationAdd,
         variables: {
           id: stixDomain.id,
@@ -139,7 +138,10 @@ class ReportAddObjectRefsLinesContainer extends Component {
     return (
       <div className={classes.container}>
         {stixDomainEntitiesTypes.map(type => (
-          <ExpansionPanel key={type} expanded={this.isExpanded(type, stixDomainEntities[type].length)} onChange={this.handleChangePanel.bind(this, type)} classes={{ root: classes.expansionPanel }}>
+          <ExpansionPanel key={type}
+                          expanded={this.isExpanded(type, stixDomainEntities[type].length)}
+                          onChange={this.handleChangePanel.bind(this, type)}
+                          classes={{ root: classes.expansionPanel }}>
             <ExpansionPanelSummary expandIcon={<ExpandMore/>}>
               <Typography className={classes.heading}>{t(`entity_${type}`)}</Typography>
               <Typography className={classes.secondaryHeading}>{stixDomainEntities[type].length} {t('entitie(s)')}</Typography>
@@ -154,10 +156,10 @@ class ReportAddObjectRefsLinesContainer extends Component {
                       classes={{ root: classes.menuItem }}
                       divider={true}
                       button={true}
-                      onClick={this.toggleStixDomain.bind(this, stixDomainEntity)}
-                    >
+                      onClick={this.toggleStixDomain.bind(this, stixDomainEntity)}>
                       <ListItemIcon>
-                        {alreadyAdded ? <CheckCircle classes={{ root: classes.icon }}/> : <ItemIcon type={type}/>}
+                        {alreadyAdded ? <CheckCircle classes={{ root: classes.icon }}/>
+                          : <ItemIcon type={type}/>}
                       </ListItemIcon>
                       <ListItemText
                         primary={stixDomainEntity.name}
@@ -183,7 +185,6 @@ ReportAddObjectRefsLinesContainer.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
-  history: PropTypes.object,
 };
 
 export const reportAddObjectRefsLinesQuery = graphql`
@@ -241,6 +242,5 @@ const ReportAddObjectRefsLines = createPaginationContainer(
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles),
 )(ReportAddObjectRefsLines);

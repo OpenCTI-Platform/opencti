@@ -16,7 +16,6 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { withRouter } from 'react-router-dom';
 import { commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
@@ -112,7 +111,7 @@ class ExternalReferenceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: externalReferenceCreationMutation,
       variables: {
         input: values,
@@ -123,6 +122,7 @@ class ExternalReferenceCreation extends Component {
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
       },
+      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -250,11 +250,9 @@ ExternalReferenceCreation.propTypes = {
   contextual: PropTypes.bool,
   display: PropTypes.bool,
   inputValue: PropTypes.string,
-  history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles, { withTheme: true }),
 )(ExternalReferenceCreation);

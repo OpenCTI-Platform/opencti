@@ -1,3 +1,22 @@
+### Directives
+directive @constraint(
+    # String constraints
+    minLength: Int
+    maxLength: Int
+    startsWith: String
+    endsWith: String
+    notContains: String
+    pattern: String
+    format: String
+
+    # Number constraints
+    min: Int
+    max: Int
+    exclusiveMin: Int
+    exclusiveMax: Int
+    multipleOf: Int
+) on INPUT_FIELD_DEFINITION
+
 ### Scalar
 scalar DateTime
 
@@ -171,14 +190,12 @@ type User implements GlobalObject & StixDomainEntity & Identity {
     updated_at: DateTime!
 }
 input UserAddInput {
+    email: String! @constraint(minLength: 5, format: "email")
     name: String!
     description: String
-    email: String
     firstname: String
     lastname: String
     language: String
-    created: DateTime
-    modified: DateTime
     grant: [UserRole]
 }
 input UserLoginInput {

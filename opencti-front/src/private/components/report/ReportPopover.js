@@ -64,7 +64,7 @@ class ReportPopover extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: ReportPopoverDeletionMutation,
       variables: {
         id: this.props.reportId,
@@ -88,8 +88,7 @@ class ReportPopover extends Component {
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
-        >
+          style={{ marginTop: 50 }}>
           <MenuItem>{t('Export')}</MenuItem>
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
         </Menu>
@@ -97,8 +96,7 @@ class ReportPopover extends Component {
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
-        >
+          onClose={this.handleCloseDelete.bind(this)}>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this report?')}

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -100,7 +99,7 @@ class MarkingDefinitionPopover extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: markingDefinitionPopoverDeletionMutation,
       variables: {
         id: this.props.markingDefinitionId,
@@ -134,8 +133,7 @@ class MarkingDefinitionPopover extends Component {
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
-        >
+          style={{ marginTop: 50 }}>
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
         </Menu>
@@ -184,11 +182,9 @@ MarkingDefinitionPopover.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles),
 )(MarkingDefinitionPopover);

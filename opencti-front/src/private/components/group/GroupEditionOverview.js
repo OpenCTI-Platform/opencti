@@ -6,7 +6,6 @@ import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
-import { withRouter } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
@@ -65,7 +64,7 @@ const groupValidation = t => Yup.object().shape({
 
 class GroupEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: groupEditionOverviewFocus,
       variables: {
         id: this.props.group.id,
@@ -78,7 +77,7 @@ class GroupEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     groupValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: groupMutationFieldPatch,
         variables: { id: this.props.group.id, input: { key: name, value } },
       });
@@ -122,7 +121,6 @@ GroupEditionOverviewComponent.propTypes = {
   group: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
-  history: PropTypes.object,
 };
 
 const GroupEditionOverview = createFragmentContainer(GroupEditionOverviewComponent, {
@@ -137,6 +135,5 @@ const GroupEditionOverview = createFragmentContainer(GroupEditionOverviewCompone
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles, { withTheme: true }),
 )(GroupEditionOverview);

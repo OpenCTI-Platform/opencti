@@ -7,7 +7,6 @@ import { compose, head } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { withRouter } from 'react-router-dom';
 import { commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
@@ -61,12 +60,13 @@ class UserEditionPasswordComponent extends Component {
 
   onSubmit(values, { setSubmitting, resetForm, setErrors }) {
     const field = { key: 'password', value: values.password };
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: userMutationFieldPatch,
       variables: {
         id: this.props.user.id,
         input: field,
       },
+      setSubmitting,
       onCompleted: (response, errors) => {
         setSubmitting(false);
         if (errors) {
@@ -122,7 +122,6 @@ UserEditionPasswordComponent.propTypes = {
   user: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
-  history: PropTypes.object,
 };
 
 const UserEditionPassword = createFragmentContainer(UserEditionPasswordComponent, {
@@ -135,6 +134,5 @@ const UserEditionPassword = createFragmentContainer(UserEditionPasswordComponent
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles, { withTheme: true }),
 )(UserEditionPassword);

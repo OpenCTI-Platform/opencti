@@ -11,7 +11,6 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
-import { withRouter } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
 import { commitMutation, requestSubscription } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
@@ -105,7 +104,7 @@ class MarkingDefinitionEditionContainer extends Component {
   }
 
   handleChangeFocus(name) {
-    commitMutation(this.props.history, {
+    commitMutation({
       mutation: markingDefinitionEditionFocus,
       variables: {
         id: this.props.markingDefinition.id,
@@ -118,7 +117,7 @@ class MarkingDefinitionEditionContainer extends Component {
 
   handleSubmitField(name, value) {
     markingDefinitionValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      commitMutation(this.props.history, {
+      commitMutation({
         mutation: markingDefinitionMutationFieldPatch,
         variables: { id: this.props.markingDefinition.id, input: { key: name, value } },
       });
@@ -188,7 +187,6 @@ MarkingDefinitionEditionContainer.propTypes = {
   me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
 };
 
 const MarkingDefinitionEditionFragment = createFragmentContainer(MarkingDefinitionEditionContainer, {
@@ -214,6 +212,5 @@ const MarkingDefinitionEditionFragment = createFragmentContainer(MarkingDefiniti
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles, { withTheme: true }),
 )(MarkingDefinitionEditionFragment);
