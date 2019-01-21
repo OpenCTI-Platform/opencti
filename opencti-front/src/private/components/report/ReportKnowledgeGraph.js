@@ -1,18 +1,35 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Graph } from 'react-d3-graph';
 import { compose, map, append } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
+import {
+  DiagramEngine,
+  DiagramModel,
+  DefaultNodeModel,
+  LinkModel,
+  DefaultPortModel,
+  DiagramWidget,
+} from 'storm-react-diagrams';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
-import GraphNode from '../../../components/GraphNode';
+import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
+import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
+import SimplePortFactory from '../../../components/graph_node/SimplePortFactory';
+import EntityPortModel from '../../../components/graph_node/EntityPortModel';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
 
 const styles = () => ({
   container: {
+    position: 'relative',
+    overflow: 'hidden',
+    margin: 0,
+    padding: 0,
+  },
+  canvas: {
     width: '100%',
     height: '100%',
+    minHeight: '100vh',
     margin: 0,
     padding: 0,
   },
@@ -26,47 +43,34 @@ export const reportKnowledgeGraphQuery = graphql`
     }
 `;
 
-const graphConfig = {
-  nodeHighlightBehavior: true,
-  node: {
-    renderLabel: false,
-    size: 700,
-    svg: '',
-    symbolType: '',
-    viewGenerator: node => <GraphNode node={node}/>,
-  },
-  link: {
-    highlightColor: 'lightblue',
-  },
-};
-
 class ReportKnowledgeGraphComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.engine = new DiagramEngine();
+    this.engine.installDefaultFactories();
+    this.engine.registerPortFactory(new SimplePortFactory('entity', new EntityPortModel()));
+    this.engine.registerNodeFactory(new EntityNodeFactory());
+  }
+
   render() {
     const { classes, report } = this.props;
-    const objectNodes = map(n => ({
+
+    const nodes = map(n => new EntityNodeModel({
       id: n.node.id,
       name: n.node.name,
-      entity_type: n.node.type,
+      type: n.node.type,
     }), report.objectRefs.edges);
-    const nodes = append({
-      id: report.id,
-      name: report.name,
-      entity_type: 'report',
-    }, objectNodes);
 
-    const data = {
-      nodes,
-      links: [],
-    };
+    const model = new DiagramModel();
+    console.log(nodes);
+    model.addAll(nodes);
+    console.log(model);
+    this.engine.setDiagramModel(model);
 
     return (
       <div className={classes.container}>
         <ReportAddObjectRefs reportId={report.id} reportObjectRefs={report.objectRefs.edges}/>
-        <Graph
-          id='ReportGraph'
-          data={data}
-          config={graphConfig}
-        />
+        <DiagramWidget className={classes.canvas} diagramEngine={this.engine} />
       </div>
     );
   }

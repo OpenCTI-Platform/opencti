@@ -11,7 +11,6 @@
     "babel-plugin-relay": "^1.7.0",
     "classnames": "^2.2.6",
     "countdown": "^2.6.0",
-    "d3": "^5.7.0",
     "formik": "^1.4.2",
     "formik-material-ui": "^0.0.16",
     "graphql": "^14.1.1",
@@ -23,7 +22,6 @@
     "prop-types": "^15.6.2",
     "ramda": "^0.26.1",
     "react": "^16.7.0",
-    "react-d3-graph": "^2.0.0-rc2",
     "react-document-title": "^2.0.3",
     "react-dom": "^16.7.0",
     "react-intl": "^2.8.0",
@@ -38,6 +36,7 @@
     "relay-compiler": "^1.7.0",
     "relay-runtime": "^1.7.0",
     "rxjs": "^6.3.3",
+    "storm-react-diagrams": "^5.2.1",
     "subscriptions-transport-ws": "^0.9.15",
     "typeface-roboto": "0.0.54",
     "yup": "^0.26.7"

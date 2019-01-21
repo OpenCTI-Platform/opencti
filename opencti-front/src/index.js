@@ -2,6 +2,7 @@ import 'typeface-roboto';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './resources/css/index.css';
+import 'storm-react-diagrams/dist/style.min.css';
 import { BrowserRouter, Route } from 'react-router-dom';
 import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
 import CssBaseline from '@material-ui/core/CssBaseline';

@@ -17,7 +17,7 @@ import {
   Fire,
 } from 'mdi-material-ui';
 
-const iconSelector = (type, variant, color) => {
+const iconSelector = (type, variant, fontSize, color) => {
   let style = {};
   switch (variant) {
     case 'inline':
@@ -37,41 +37,45 @@ const iconSelector = (type, variant, color) => {
 
   switch (type) {
     case 'sector':
-      return <Domain style={style}/>;
+      return <Domain style={style} fontSize={fontSize}/>;
     case 'threat-actor':
-      return <Public style={style}/>;
+      return <Public style={style} fontSize={fontSize}/>;
     case 'intrusion-set':
-      return <Diamond style={style}/>;
+      return <Diamond style={style} fontSize={fontSize}/>;
     case 'campaign':
-      return <ChessKnight style={style}/>;
+      return <ChessKnight style={style} fontSize={fontSize}/>;
     case 'incident':
-      return <Fire style={style}/>;
+      return <Fire style={style} fontSize={fontSize}/>;
     case 'user':
-      return <Person style={style}/>;
+      return <Person style={style} fontSize={fontSize}/>;
     case 'organization':
-      return <AccountBalance style={style}/>;
+      return <AccountBalance style={style} fontSize={fontSize}/>;
     case 'attack-pattern':
-      return <LockPattern style={style}/>;
+      return <LockPattern style={style} fontSize={fontSize}/>;
     case 'malware':
-      return <Biohazard style={style}/>;
+      return <Biohazard style={style} fontSize={fontSize}/>;
     case 'tool':
-      return <Application style={style}/>;
+      return <Application style={style} fontSize={fontSize}/>;
     case 'vulnerability':
-      return <BugReport style={style}/>;
+      return <BugReport style={style} fontSize={fontSize}/>;
     default:
-      return <Help style={style}/>;
+      return <Help style={style} fontSize={fontSize}/>;
   }
 };
 
 class ItemIcon extends Component {
   render() {
-    const { type, variant, color } = this.props;
-    return iconSelector(type, variant, color);
+    const {
+      type, size, variant, color,
+    } = this.props;
+    const fontSize = size || 'default';
+    return iconSelector(type, variant, fontSize, color);
   }
 }
 
 ItemIcon.propTypes = {
   type: PropTypes.string,
+  size: PropTypes.string,
   variant: PropTypes.string,
   color: PropTypes.string,
 };
