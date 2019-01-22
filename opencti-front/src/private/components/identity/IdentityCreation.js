@@ -153,7 +153,7 @@ class IdentityCreation extends Component {
                          fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
                   <Field name='type'
                          component={Select}
-                         label={t("Type d'entité")}
+                         label={t('Entity type')}
                          fullWidth={true}
                          inputProps={{
                            name: 'type',

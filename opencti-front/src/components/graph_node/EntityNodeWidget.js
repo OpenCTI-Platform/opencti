@@ -12,15 +12,21 @@ const styles = () => ({
   node: {
     position: 'relative',
     width: 180,
+    height: 80,
     borderRadius: 10,
+    zIndex: 20,
   },
   port: {
     position: 'absolute',
-    zIndex: 10,
+    width: 180,
+    height: 80,
+    top: 0,
+    left: 0,
+    borderRadius: 10,
   },
   header: {
     padding: '10px 0 10px 0',
-    borderBottom: '1px solid #AEAEAE',
+    borderBottom: '1px solid #ffffff',
   },
   icon: {
     position: 'absolute',
@@ -57,24 +63,23 @@ const styles = () => ({
 });
 
 class EntityNodeWidget extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
+  setSelected() {
+    this.props.node.setSelected(true);
+    this.forceUpdate();
   }
 
   render() {
     const {
       node, node: { extras }, classes, t,
     } = this.props;
-
     return (
       <div className={classes.node} style={{
-        backgroundColor: itemColor(extras.type, 0.7),
-        border: node.selected ? '2px solid #2d4b5b' : '2px solid #333333',
+        backgroundColor: itemColor(extras.type, true),
+        border: node.selected ? '2px solid #00c0ff' : '2px solid #333333',
       }}>
         <div className={classes.header}>
             <div className={classes.icon}>
-              <ItemIcon type={extras.type} color={itemColor(extras.type, 1)} size='small'/>
+              <ItemIcon type={extras.type} color={itemColor(extras.type, false)} size='small'/>
             </div>
             <div className={classes.type}>
               {t(`entity_${extras.type}`)}
@@ -86,17 +91,8 @@ class EntityNodeWidget extends Component {
         <div className={classes.content}>
           <span className={classes.name}>{extras.name}</span>
         </div>
-        <div className={classes.port} style={{ top: 35, left: -8 }}>
-          <PortWidget name='left' node={node} />
-        </div>
-        <div className={classes.port} style={{ top: 35, right: -8 }}>
-          <PortWidget name='right' node={node} />
-        </div>
-        <div className={classes.port} style={{ top: -8, left: 84 }}>
-          <PortWidget name='top' node={node} />
-        </div>
-        <div className={classes.port} style={{ bottom: -8, left: 84 }}>
-          <PortWidget name='bottom' node={node} />
+        <div className={classes.port} onClick={this.setSelected.bind(this)} style={{ display: node.selected ? 'none' : 'block' }}>
+          <PortWidget name='main' node={node} />
         </div>
       </div>
     );

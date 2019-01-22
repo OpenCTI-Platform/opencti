@@ -61,6 +61,7 @@ export const addReport = async (user, report) => {
     $report has description "${report.description}";
     $report has published ${prepareDate(report.published)};
     $report has report_class "${report.report_class}";
+    $report has graph_data "";
     $report has created ${now()};
     $report has modified ${now()};
     $report has revoked false;

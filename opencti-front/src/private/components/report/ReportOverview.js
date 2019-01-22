@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr, pathOr } from 'ramda';
+import { compose, pathOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
@@ -32,13 +32,17 @@ class ReportOverviewComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant='h3' gutterBottom={true}>
+            {t('Report type')}
+          </Typography>
+          {t(`report_${report.report_class}`)}
+          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
             {t('Publication date')}
           </Typography>
-          {fld(propOr(null, 'published', report))}
+          {fld(report.published)}
           <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
             {t('Modification date')}
           </Typography>
-          {fld(propOr(null, 'modified', report))}
+          {fld(report.modified)}
           <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
             {t('Author')}
           </Typography>
@@ -46,7 +50,7 @@ class ReportOverviewComponent extends Component {
           <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
             {t('Description')}
           </Typography>
-          <Markdown className='markdown' source={propOr('-', 'description', report)}/>
+          <Markdown className='markdown' source={report.description}/>
         </Paper>
       </div>
     );
@@ -68,10 +72,11 @@ const ReportOverview = createFragmentContainer(ReportOverviewComponent, {
           description
           published
           modified
+          report_class
           createdByRef {
-            node {
-                name
-            }
+              node {
+                  name
+              }
           }
       }
   `,

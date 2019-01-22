@@ -4,6 +4,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
+import MenuItem from '@material-ui/core/MenuItem';
 import {
   assoc, compose, map, pathOr, pipe, pick,
   difference, head, union,
@@ -14,6 +15,7 @@ import { commitMutation, fetchQuery } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import Autocomplete from '../../../components/Autocomplete';
 import TextField from '../../../components/TextField';
+import Select from '../../../components/Select';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import { reportCreationIdentitiesSearchQuery } from './ReportCreation';
@@ -45,7 +47,7 @@ const styles = theme => ({
   },
 });
 
-const reportMutationFieldPatch = graphql`
+export const reportMutationFieldPatch = graphql`
     mutation ReportEditionOverviewFieldPatchMutation($id: ID!, $input: EditInput!) {
         reportEdit(id: $id) {
             fieldPatch(input: $input) {
@@ -94,6 +96,8 @@ const reportValidation = t => Yup.object().shape({
     .required(t('This field is required')),
   published: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .required(t('This field is required')),
+  report_class: Yup.string()
     .required(t('This field is required')),
   description: Yup.string(),
 });
@@ -254,7 +258,7 @@ class ReportEditionOverviewComponent extends Component {
       assoc('createdByRef', createdByRef),
       assoc('markingDefinitions', markingDefinitions),
       assoc('published', dateFormat(report.published)),
-      pick(['name', 'published', 'description', 'createdByRef', 'markingDefinitions']),
+      pick(['name', 'published', 'description', 'report_class', 'createdByRef', 'markingDefinitions']),
     )(report);
 
     return (
@@ -275,6 +279,22 @@ class ReportEditionOverviewComponent extends Component {
                        onFocus={this.handleChangeFocus.bind(this)}
                        onSubmit={this.handleSubmitField.bind(this)}
                        helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='published'/>}/>
+                <Field name='report_class'
+                       component={Select}
+                       onFocus={this.handleChangeFocus.bind(this)}
+                       onChange={this.handleSubmitField.bind(this)}
+                       label={t('Report type')}
+                       fullWidth={true}
+                       inputProps={{
+                         name: 'report_class',
+                         id: 'report_class',
+                       }}
+                       containerstyle={{ marginTop: 10, width: '100%' }}
+                       helpertext={<SubscriptionFocus me={me} users={editUsers} fieldName='report_class'/>}
+                >
+                  <MenuItem value='internal'>{t('Internal report')}</MenuItem>
+                  <MenuItem value='external'>{t('External source')}</MenuItem>
+                </Field>
                 <Field name='description' component={TextField} label={t('Description')}
                        fullWidth={true} multiline={true} rows='4' style={{ marginTop: 10 }}
                        onFocus={this.handleChangeFocus.bind(this)}
@@ -337,6 +357,7 @@ const ReportEditionOverview = createFragmentContainer(ReportEditionOverviewCompo
           name
           published
           description
+          report_class
           createdByRef {
               node {
                   id

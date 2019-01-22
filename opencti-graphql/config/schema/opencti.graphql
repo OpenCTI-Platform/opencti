@@ -23,6 +23,7 @@ scalar DateTime
 ### Relations
 type RelationEmbedded {
     id: ID!
+    type: String!
 }
 
 type RelationData {
@@ -939,6 +940,7 @@ type Report implements GlobalObject & StixDomainEntity {
     name: String!
     description: String
     report_class: String
+    graph_data: String
     created: DateTime
     modified: DateTime
     published: DateTime
@@ -955,6 +957,7 @@ input ReportAddInput {
     description: String
     published: DateTime
     report_class: String
+    graph_data: String
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String

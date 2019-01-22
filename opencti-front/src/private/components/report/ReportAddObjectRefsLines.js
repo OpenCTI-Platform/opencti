@@ -62,7 +62,7 @@ const reportMutationRelationAdd = graphql`
     }
 `;
 
-export const reportutationRelationDelete = graphql`
+export const reportMutationRelationDelete = graphql`
     mutation ReportAddObjectRefsLinesRelationDeleteMutation($id: ID!, $relationId: ID!) {
         reportEdit(id: $id) {
             relationDelete(relationId: $relationId) {
@@ -88,7 +88,7 @@ class ReportAddObjectRefsLinesContainer extends Component {
     if (alreadyAdded) {
       const existingStixDomain = head(filter(n => n.node.id === stixDomain.id, reportObjectRefs));
       commitMutation({
-        mutation: reportutationRelationDelete,
+        mutation: reportMutationRelationDelete,
         variables: {
           id: reportId,
           relationId: existingStixDomain.relation.id,

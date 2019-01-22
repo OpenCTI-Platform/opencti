@@ -24,90 +24,77 @@ export const stringToColour = (str) => {
   return colour;
 };
 
-export const itemColor = (type, opacity) => {
+export const itemColor = (type, dark) => {
   switch (type) {
     case 'sector':
-      if (opacity === 1) {
-        return '#1565c0';
+      if (dark) {
+        return '#0d47a1';
       }
-      return `rgba(21, 101, 192, ${opacity})`;
-
+      return '#2196f3';
     case 'threat-actor':
-      if (opacity === 1) {
-        return '#ad1457';
+      if (dark) {
+        return '#880e4f';
       }
-      return `rgba(173, 20, 87, ${opacity})`;
-
+      return '#e91e63';
     case 'intrusion-set':
-      if (opacity === 1) {
-        return '#d84315';
+      if (dark) {
+        return '#bf360c';
       }
-      return `rgba(216, 67, 21, ${opacity})`;
-
+      return '#ff5722';
     case 'campaign':
-      if (opacity === 1) {
-        return '#9C27B0';
+      if (dark) {
+        return '#4a148c';
       }
-      return `rgba(156, 39, 176, ${opacity})`;
-
+      return '#9c27b0';
     case 'incident':
-      if (opacity === 1) {
-        return '#F44336';
+      if (dark) {
+        return '#f44336';
       }
-      return `rgba(244, 67, 54, ${opacity})`;
-
+      return '#b71c1c';
     case 'user':
-      if (opacity === 1) {
-        return '#00BCD4';
+      if (dark) {
+        return '#006064';
       }
-      return `rgba(0, 188, 212, ${opacity})`;
-
+      return '#00BCD4';
     case 'organization':
-      if (opacity === 1) {
-        return '#03A9F4';
+      if (dark) {
+        return '#01579b';
       }
-      return `rgba(3, 169, 244, ${opacity})`;
-
+      return '#03A9F4';
     case 'city':
-      if (opacity === 1) {
-        return '#009688';
+      if (dark) {
+        return '#004d40';
       }
-      return `rgba(0, 150, 136, ${opacity})`;
-
+      return '#009688';
     case 'country':
-      if (opacity === 1) {
-        return '#3F51B5';
+      if (dark) {
+        return '#3f51b5';
       }
-      return `rgba(63, 81, 181, ${opacity})`;
-
+      return '#3F51B5';
     case 'attack-pattern':
-      if (opacity === 1) {
-        return '#CDDC39';
+      if (dark) {
+        return '#827717';
       }
-      return `rgba(205, 220, 57, ${opacity})`;
-
+      return '#cddc39';
     case 'malware':
-      if (opacity === 1) {
-        return '#FFB300';
+      if (dark) {
+        return '#e65100';
       }
-      return `rgba(255, 179, 0, ${opacity})`;
-
+      return '#ff9800';
     case 'tool':
-      if (opacity === 1) {
-        return '#4CAF50';
+      if (dark) {
+        return '#1b5e20';
       }
-      return `rgba(76, 175, 80, ${opacity})`;
-
+      return '#4caf50';
     case 'vulnerability':
-      if (opacity === 1) {
-        return '#795548';
+      if (dark) {
+        return '#3e2723';
       }
-      return `rgba(121, 85, 72, ${opacity})`;
-
+      return '#795548';
     default:
-      if (opacity === 1) {
-        return '#FFFFFF';
+      if (dark) {
+        return '#607d8b';
       }
-      return `rgba(255, 255, 255, ${opacity})`;
+      return '#263238';
   }
 };

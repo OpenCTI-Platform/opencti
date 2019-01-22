@@ -132,6 +132,13 @@ div.srd-node {
     background: none !important;
 }
 
+div.srd-port {
+    z-index: 0 !important;
+    background-color: transparent !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
 div.srd-port:hover {
-    background-color: #00bcd4 !important;
+    background-color: transparent !important;
 }
