@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter } from 'react-router-dom';
+import { Route, Redirect, Switch } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import { compose, filter, isEmpty } from 'ramda';
-import Cookies from 'js-cookie';
-import { MESSAGING$, QueryRenderer } from '../relay/environment';
+import { compose } from 'ramda';
+import { QueryRenderer } from '../relay/environment';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedDocumentTitle } from '../components/AppDocumentTitle';
 import TopBar from './components/nav/TopBar';
@@ -24,34 +23,7 @@ import Groups from './components/Groups';
 import MarkingDefinitions from './components/MarkingDefinitions';
 import KillChainPhases from './components/KillChainPhases';
 import Message from '../components/Message';
-
-class PrivateErrorBoundaryComponent extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { error: null, errorInfo: null };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    this.setState({ error, errorInfo });
-  }
-
-  render() {
-    if (this.state.errorInfo) {
-      const authRequired = filter(e => e.data.type === 'authentication', this.state.error.data);
-      if (!isEmpty(authRequired)) {
-        Cookies.remove('opencti_token');
-        return this.props.history.push('/login');
-      }
-      return <div>ERROR</div>;
-    }
-    return this.props.children;
-  }
-}
-PrivateErrorBoundaryComponent.propTypes = {
-  history: PropTypes.object,
-  children: PropTypes.node,
-};
-const PrivateErrorBoundary = compose(withRouter)(PrivateErrorBoundaryComponent);
+import { NoMatch, BoundaryRoute } from './components/Error';
 
 const styles = theme => ({
   root: {
@@ -79,6 +51,7 @@ const rootQuery = graphql`
         me {
             ...AppIntlProvider_me
             ...TopBar_me
+            ...LeftBar_me
         }
         settings {
             ...AppIntlProvider_settings
@@ -88,57 +61,48 @@ const rootQuery = graphql`
 `;
 
 class Root extends Component {
-  componentDidMount() {
-    MESSAGING$.redirect.subscribe({
-      next: url => this.props.history.push(url),
-    });
-  }
-
-  // eslint-disable-next-line
-  componentWillUnmount() {
-    MESSAGING$.redirect.unsubscribe();
-  }
-
   render() {
     const { classes } = this.props;
     const paddingRight = 24;
-
     return (
       <QueryRenderer
         query={rootQuery}
         variables={{}}
-        render={({ props }) => (
-          <ConnectedIntlProvider me={props && props.me ? props.me : null}
-                                 settings={props && props.settings ? props.settings : null}>
-            <ConnectedDocumentTitle settings={props && props.settings ? props.settings : null}>
-              <div className={classes.root}>
-                <TopBar me={props && props.me ? props.me : null}/>
-                <LeftBar/>
-                <Message/>
-                <main className={classes.content} style={{ paddingRight }}>
-                  <div className={classes.toolbar}/>
-                  <PrivateErrorBoundary>
-                    <Route exact path='/dashboard' component={Dashboard}/>
-                    <Route exact path='/dashboard/knowledge' render={() => (<Redirect to='/dashboard/knowledge/threat_actors'/>)}/>
-                    <Route exact path='/dashboard/knowledge/threat_actors' component={ThreatActors}/>
-                    <Route exact path='/dashboard/knowledge/intrusion_sets' component={IntrusionSets}/>
-                    <Route exact path='/dashboard/knowledge/malwares' component={Malwares}/>
-                    <Route path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props && props.me ? props.me : null}/>}/>
-                    <Route exact path='/dashboard/reports' render={() => (<Redirect to='/dashboard/reports/all'/>)}/>
-                    <Route exact path='/dashboard/reports/all' component={Reports}/>
-                    <Route path='/dashboard/reports/all/:reportId' render={routeProps => <RootReport {...routeProps} me={props && props.me ? props.me : null}/>}/>
-                    <Route exact path='/dashboard/sources/references' component={ExternalReferences}/>
-                    <Route exact path='/dashboard/settings' component={Settings}/>
-                    <Route exact path='/dashboard/settings/users' component={Users}/>
-                    <Route exact path='/dashboard/settings/groups' component={Groups}/>
-                    <Route exact path='/dashboard/settings/marking' component={MarkingDefinitions}/>
-                    <Route exact path='/dashboard/settings/killchains' component={KillChainPhases}/>
-                  </PrivateErrorBoundary>
-                </main>
-              </div>
-            </ConnectedDocumentTitle>
-          </ConnectedIntlProvider>
-        )}
+        render={({ props }) => {
+          if (props) {
+            return (<ConnectedIntlProvider me={props.me} settings={ props.settings}>
+              <ConnectedDocumentTitle settings={props.settings}>
+                <div className={classes.root}>
+                  <TopBar me={props.me}/>
+                  <LeftBar me={props.me}/>
+                  <Message/>
+                  <main className={classes.content} style={{ paddingRight }}>
+                    <div className={classes.toolbar}/>
+                      <Switch>
+                          <BoundaryRoute exact path='/dashboard' component={Dashboard}/>
+                          <BoundaryRoute exact path='/dashboard/knowledge' render={() => (<Redirect to='/dashboard/knowledge/threat_actors'/>)}/>
+                          <BoundaryRoute exact path='/dashboard/knowledge/threat_actors' component={ThreatActors}/>
+                          <BoundaryRoute exact path='/dashboard/knowledge/intrusion_sets' component={IntrusionSets}/>
+                          <BoundaryRoute exact path='/dashboard/knowledge/malwares' component={Malwares}/>
+                          <BoundaryRoute path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props && props.me ? props.me : null}/>}/>
+                          <BoundaryRoute exact path='/dashboard/reports' render={() => (<Redirect to='/dashboard/reports/all'/>)}/>
+                          <BoundaryRoute exact path='/dashboard/reports/all' component={Reports}/>
+                          <BoundaryRoute path='/dashboard/reports/all/:reportId' render={routeProps => <RootReport {...routeProps} me={props && props.me ? props.me : null}/>}/>
+                          <BoundaryRoute exact path='/dashboard/sources/references' component={ExternalReferences}/>
+                          <BoundaryRoute exact path='/dashboard/settings' component={Settings}/>
+                          <BoundaryRoute exact path='/dashboard/settings/users' component={Users}/>
+                          <BoundaryRoute exact path='/dashboard/settings/groups' component={Groups}/>
+                          <BoundaryRoute exact path='/dashboard/settings/marking' component={MarkingDefinitions}/>
+                          <BoundaryRoute exact path='/dashboard/settings/killchains' component={KillChainPhases}/>
+                          <Route component={NoMatch} />
+                      </Switch>
+                  </main>
+                </div>
+              </ConnectedDocumentTitle>
+            </ConnectedIntlProvider>);
+          }
+          return <div>APPLICATION LOADER</div>;
+        }}
       />
     );
   }
@@ -147,10 +111,8 @@ class Root extends Component {
 Root.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  history: PropTypes.object,
 };
 
 export default compose(
-  withRouter,
   withStyles(styles),
 )(Root);

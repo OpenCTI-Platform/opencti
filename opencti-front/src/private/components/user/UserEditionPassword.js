@@ -68,7 +68,7 @@ class UserEditionPasswordComponent extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
-        MESSAGING$.notify('The password has been updated');
+        MESSAGING$.notifySuccess('The password has been updated');
         this.setState({ displayMessage: true });
         resetForm();
       },

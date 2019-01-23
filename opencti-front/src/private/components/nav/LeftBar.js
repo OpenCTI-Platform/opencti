@@ -15,7 +15,9 @@ import {
 import {
   Settings, ClipboardArrowDown, Gauge, Database,
 } from 'mdi-material-ui';
-import { compose } from 'ramda';
+import { compose, includes, propOr } from 'ramda';
+import { createFragmentContainer } from 'react-relay';
+import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
@@ -80,14 +82,15 @@ class LeftBar extends Component {
   }
 
   render() {
-    const { t, location, classes } = this.props;
+    const {
+      t, location, classes, me,
+    } = this.props;
     return (
       <ClickAwayListener onClickAway={this.handleClickAway.bind(this)}>
         <Drawer
           variant='permanent'
           open={this.state.open}
-          classes={{ paper: this.state.open ? classes.drawerPaperOpen : classes.drawerPaper }}
-        >
+          classes={{ paper: this.state.open ? classes.drawerPaperOpen : classes.drawerPaper }}>
           <div className={classes.toolbar}/>
           <MenuList component='nav'>
             <MenuItem component={Link} to='/dashboard' onClick={this.handleClickAway.bind(this)} selected={location.pathname === '/dashboard'} dense={false}>
@@ -137,7 +140,8 @@ class LeftBar extends Component {
             </MenuItem>
           </MenuList>
             <Divider/>
-          <MenuList component='nav'>
+          {includes('ROLE_ADMIN', propOr([], 'grant', me))
+          && <MenuList component='nav'>
             <MenuItem component={Link} to='/dashboard/catalogs' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/catalogs')} dense={false}>
               <ListItemIcon classes={{ root: classes.listIcon }}>
                 <ListAlt/>
@@ -150,7 +154,7 @@ class LeftBar extends Component {
               </ListItemIcon>
               {this.state.open ? <ListItemText primary={t('Settings')} classes={{ root: classes.listText }}/> : ''}
             </MenuItem>
-          </MenuList>
+          </MenuList>}
           <MenuList component='nav' classes={{ root: this.props.classes.menuList }}>
             <MenuItem onClick={this.toggle.bind(this)} dense={false} style={{ position: 'absolute', bottom: 10, width: '100%' }}>
               <ListItemIcon classes={{ root: classes.listIcon }}>
@@ -165,13 +169,22 @@ class LeftBar extends Component {
 }
 
 LeftBar.propTypes = {
+  me: PropTypes.object,
   location: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
+const LeftBarFragment = createFragmentContainer(LeftBar, {
+  me: graphql`
+    fragment LeftBar_me on User {
+      grant
+    }
+  `,
+});
+
 export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(LeftBar);
+)(LeftBarFragment);
