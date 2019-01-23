@@ -34,6 +34,7 @@ const styles = theme => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
+    zIndex: 100,
   },
   title: {
     float: 'left',

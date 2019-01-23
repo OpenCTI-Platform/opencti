@@ -5,6 +5,7 @@ const i18n = {
       'OpenCTI - Cyber threat intelligence platform': 'OpenCTI - Plateforme d\'analyse de la cybermenace',
       // Errors
       'Wrong name or password': 'Nom d\'utilisateur ou mot de passe incorrect',
+      'An unknown error has occurred!': 'Une erreur inconnue est survenue !',
       // Interface
       Search: 'Rechercher',
       'Do you want to delete this user?': 'Souahitez-vous supprimer cet utilisateur ?',
@@ -73,6 +74,8 @@ const i18n = {
       'Update a report': 'Modifier un rapport',
       'Create an external reference': 'Créer une référence externe',
       'Update an external reference': 'Modifier une référence externe',
+      'Create a relationship': 'Créer une relation',
+      'Update a relationship': 'Modifier une relation',
       'Add external references': 'Ajouter des références externes',
       'Add entities': 'Ajouter des entités',
       'The password has been updated': 'Le mot de passe a été modifié',
@@ -145,6 +148,9 @@ const i18n = {
       Author: 'Auteur',
       'Publication date': 'Date de publication',
       'Entity type': 'Type d\'entité',
+      'Report type': 'Type de rapport',
+      'Internal report': 'Rapport interne',
+      'External source': 'Source externe',
       Organization: 'Organisation',
       Sector: 'Secteur',
       Country: 'Pays',
@@ -170,6 +176,10 @@ const i18n = {
       entity_tool: 'Outil',
       entity_organization: 'Organisation',
       entity_user: 'Personne',
+      entity_report: 'Rapport',
+      'entity_course-of-action': 'Mesure de mitigation',
+      report_internal: 'Rapport interne',
+      report_external: 'Source externe',
     },
     en: {
       // Types

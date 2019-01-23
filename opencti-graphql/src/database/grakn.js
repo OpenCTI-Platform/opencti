@@ -186,6 +186,22 @@ export const deleteByID = id => {
 };
 
 /**
+ * Grakn generic function to delete an entity by id
+ * @param id
+ * @returns {Promise<AxiosResponse<any> | never | never>}
+ */
+export const deleteOneById = id => {
+  const deleteQuery = qk(`match $x id ${id}; delete $x;`);
+  return deleteQuery.then(result => {
+    if (isEmpty(result.data)) {
+      throw new MissingElement({ message: "Element doesn't exist" });
+    } else {
+      return id;
+    }
+  });
+};
+
+/**
  * Load the first
  * @param type
  * @returns {Promise<any[] | never>}

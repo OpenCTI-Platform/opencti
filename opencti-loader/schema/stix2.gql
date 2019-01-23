@@ -25,6 +25,7 @@ define
   "platform_url" sub attribute datatype string;
   "platform_external_auth" sub attribute datatype boolean;
   "platform_registration" sub attribute datatype boolean;
+  "graph_data" sub attribute datatype string;
 
   # STIX common properties
   "stix_id" sub attribute datatype string;
@@ -174,6 +175,10 @@ define
     relates "author"
     relates "so";
 
+  "owned_by" sub "relation_embedded"
+    relates "owner"
+    relates "to";
+
   # STIX embeded relationships
   "stix_relation_embedded" sub relationship
     is-abstract
@@ -301,6 +306,15 @@ define
     plays "allowed"
     plays "grouping";
 
+  "Workspace" sub entity
+    has "type"
+    has "name"
+    has "description"
+    has "graph_data"
+    has "created_at"
+    has "updated_at"
+    plays "to";
+
   "Token" sub entity
     has "uuid"
     has "type"
@@ -330,7 +344,8 @@ define
   "Stix-Domain-Entity" sub "Stix-Domain"
     is-abstract
     has "name"
-    has "description";
+    has "description"
+    has "graph_data";
 
   "External-Reference" sub "Stix-Domain"
     has "source_name"
@@ -421,6 +436,7 @@ define
     has "grant" # roles is a reserved word
     plays "client"
     plays "author"
+    plays "owner"
     plays "member"
     plays "allowed"
     plays "part_of";

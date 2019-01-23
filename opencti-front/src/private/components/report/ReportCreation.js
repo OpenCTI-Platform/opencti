@@ -6,6 +6,7 @@ import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
+import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
@@ -20,6 +21,7 @@ import { fetchQuery, commitMutation } from '../../../relay/environment';
 import Autocomplete from '../../../components/Autocomplete';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import TextField from '../../../components/TextField';
+import Select from '../../../components/Select';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
 import IdentityCreation from '../identity/IdentityCreation';
 
@@ -80,6 +82,9 @@ const reportValidation = t => Yup.object().shape({
   published: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
+  report_class: Yup.string()
+    .required(t('This field is required')),
+  description: Yup.string(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -202,7 +207,7 @@ class ReportCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
-                name: '', published: '', description: '', createdByRef: '', markingDefinitions: [],
+                name: '', published: '', description: '', report_class: '', createdByRef: '', markingDefinitions: [],
               }}
               validationSchema={reportValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -214,6 +219,20 @@ class ReportCreation extends Component {
                   <Form style={{ margin: '20px 0 20px 0' }}>
                     <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
                     <Field name='published' component={TextField} label={t('Publication date')} fullWidth={true} style={{ marginTop: 20 }}/>
+                    <Field name='report_class'
+                           component={Select}
+                           label={t('Report type')}
+                           fullWidth={true}
+                           displayEmpty={true}
+                           inputProps={{
+                             name: 'report_class',
+                             id: 'report_class',
+                           }}
+                           containerstyle={{ marginTop: 20, width: '100%' }}
+                    >
+                      <MenuItem value='internal'>{t('Internal report')}</MenuItem>
+                      <MenuItem value='external'>{t('External source')}</MenuItem>
+                    </Field>
                     <Field name='description' component={TextField} label={t('Description')}
                            fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
                     <Field

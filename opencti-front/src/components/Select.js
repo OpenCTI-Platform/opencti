@@ -6,8 +6,8 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import { fieldToSelect } from 'formik-material-ui';
 
 const Select = props => (
-  <FormControl style={props.containerstyle}>
-    <InputLabel shrink={true}>
+  <FormControl style={props.containerstyle} error={props.form.errors[props.field.name] !== undefined}>
+    <InputLabel>
       {props.label}
     </InputLabel>
     <MuiSelect
@@ -23,6 +23,7 @@ const Select = props => (
         }
       }}
       onFocus={() => {
+        console.log(props);
         if (typeof props.onFocus === 'function') {
           props.onFocus(props.field.name);
         }
@@ -30,7 +31,8 @@ const Select = props => (
       classes={props.classes}
       className={props.className}
     />
-    {props.helpertext ? <FormHelperText>{props.helpertext}</FormHelperText> : ''}
+    {props.helpertext && props.form.errors[props.field.name] === undefined ? <FormHelperText>{props.helpertext}</FormHelperText> : ''}
+    {props.form.errors[props.field.name] !== undefined ? <FormHelperText>{props.form.errors[props.field.name]}</FormHelperText> : ''}
   </FormControl>
 );
 

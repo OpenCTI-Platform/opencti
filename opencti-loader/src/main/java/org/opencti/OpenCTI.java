@@ -142,6 +142,6 @@ public class OpenCTI {
     public static void main(String[] args) throws Exception {
         GraknDriver driver = new GraknDriver(cp);
         loadStixSchema(driver);
-        filesToProcess(driver);
+        //filesToProcess(driver);
     }
 }

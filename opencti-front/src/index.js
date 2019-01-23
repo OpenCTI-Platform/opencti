@@ -5,6 +5,7 @@ import './resources/css/index.css';
 import {
   BrowserRouter, Redirect, Route, Switch, withRouter,
 } from 'react-router-dom';
+import 'storm-react-diagrams/dist/style.min.css';
 import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { createMuiTheme } from '@material-ui/core/styles';
