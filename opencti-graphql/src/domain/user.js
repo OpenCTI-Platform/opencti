@@ -42,7 +42,7 @@ export const setAuthenticationCookie = (token, res) => {
   const expires = creation.add(maxDuration).toDate();
   const signedToken = sign(token, conf.get('jwt:secret'));
   res.cookie('opencti_token', signedToken, {
-    httpOnly: false,
+    httpOnly: true,
     expires,
     secure: !DEV_MODE
   });
