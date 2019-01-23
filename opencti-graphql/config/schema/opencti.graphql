@@ -1030,7 +1030,7 @@ type Query {
     stixDomainEntities(first: Int, after: ID, orderBy: StixDomainEntitiesOrdering, orderMode: OrderingMode, search: String): StixDomainEntityConnection
     # StixRelations
     stixRelation(id: String!): StixRelation
-    stixRelations(fromId: String!, toId: String!, first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, search: String): StixRelationConnection
+    stixRelations(fromId: String, toId: String, first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, search: String): StixRelationConnection
     # Identities
     identity(id: String!): Identity
     identities(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): IdentityConnection

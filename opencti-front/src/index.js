@@ -46,7 +46,7 @@ const App = () => (<MuiThemeProvider theme={createMuiTheme(theme)}>
          <RedirectManager>
              <CssBaseline/>
              <Switch>
-                 <Redirect exact from="/" to="/dashboard"/>
+                 <Redirect exact from='/' to='/dashboard'/>
                  <Route exact path='/login' component={Login}/>
                  <BoundaryRoute component={RootPrivate} />
              </Switch>

@@ -23,7 +23,6 @@ const Select = props => (
         }
       }}
       onFocus={() => {
-        console.log(props);
         if (typeof props.onFocus === 'function') {
           props.onFocus(props.field.name);
         }

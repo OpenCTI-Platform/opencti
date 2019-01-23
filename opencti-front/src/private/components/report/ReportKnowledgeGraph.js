@@ -19,10 +19,12 @@ import inject18n from '../../../components/i18n';
 import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
 import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
 import EntityPortFactory from '../../../components/graph_node/EntityPortFactory';
+import EntityLabelFactory from '../../../components/graph_node/EntityLabelFactory';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
 import { reportMutationRelationDelete } from './ReportAddObjectRefsLines';
 import StixRelationCreation from '../stix_relation/StixRelationCreation';
+import EntityLabelModel from "../../../components/graph_node/EntityLabelModel";
 
 const styles = () => ({
   container: {
@@ -57,12 +59,14 @@ class ReportKnowledgeGraphComponent extends Component {
       openCreateRelation: false,
       createRelationFrom: null,
       createRelationTo: null,
+      currentLink: null,
     };
     this.saving = false;
     this.engine = new DiagramEngine();
     this.engine.installDefaultFactories();
     this.engine.registerPortFactory(new EntityPortFactory());
     this.engine.registerNodeFactory(new EntityNodeFactory());
+    this.engine.registerLabelFactory(new EntityLabelFactory());
   }
 
   componentDidMount() {
@@ -154,7 +158,6 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleMovesChange(event) {
     if (event instanceof MoveItemsAction) {
-      console.log('Register move');
       this.handleSaveGraph();
     }
     return true;
@@ -163,7 +166,6 @@ class ReportKnowledgeGraphComponent extends Component {
   handleNodeChanges(event) {
     if (event.node !== undefined) {
       if (event.isCreated === false) {
-        console.log('Register delete node');
         const nodeRelationId = pathOr(null, ['node', 'extras', 'relationId'], event);
         if (nodeRelationId !== null) {
           commitMutation({
@@ -175,8 +177,6 @@ class ReportKnowledgeGraphComponent extends Component {
           });
           this.handleSaveGraph();
         }
-      } else {
-        console.log('Register add node');
       }
       this.handleSaveGraph();
     }
@@ -206,11 +206,11 @@ class ReportKnowledgeGraphComponent extends Component {
       if (link.targetPort === null || (link.sourcePort === link.targetPort)) {
         model.removeLink(link);
       } else if (filteredCurrentLinks.length === 1) {
-        console.log('Register create link');
         this.setState({
           openCreateRelation: true,
           createRelationFrom: link.sourcePort.parent.extras,
           createRelationTo: link.targetPort.parent.extras,
+          currentLink: link,
         });
       }
     }
@@ -232,6 +232,7 @@ class ReportKnowledgeGraphComponent extends Component {
             || (n.source === linkPair.target && n.target === linkPair.source),
           currentLinksPairs);
           if (filteredCurrentLinks.length === 0) {
+            console.log(event);
             console.log('Register delete link');
           }
         }
@@ -241,27 +242,52 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleSelection(event) {
-    console.log(event);
+    //console.log(event);
     return true;
   }
 
   handleCloseRelationCreation() {
+    const model = this.engine.getDiagramModel();
+    const linkObject = model.getLink(this.state.currentLink);
+    linkObject.remove();
     this.setState({
       openCreateRelation: false,
       createRelationFrom: null,
       createRelationTo: null,
+      currentLink: null,
     });
   }
 
   handleResultRelationCreation(result) {
-    console.log(result);
+    const model = this.engine.getDiagramModel();
+    const linkObject = model.getLink(this.state.currentLink);
+    const label = new EntityLabelModel()
+    label.setLabel(result.relationship_type)
+    linkObject.addLabel(label);
+    this.setState({
+      openCreateRelation: false,
+      createRelationFrom: null,
+      createRelationTo: null,
+      currentLink: null,
+    });
+    this.handleSaveGraph();
   }
 
   render() {
     const { classes, report } = this.props;
-    const { openCreateRelation, createRelationFrom, createRelationTo } = this.state;
+    const {
+      openCreateRelation, createRelationFrom, createRelationTo,
+    } = this.state;
     return (
       <div className={classes.container}>
+        <DiagramWidget
+          className={classes.canvas}
+          diagramEngine={this.engine}
+          inverseZoom={true}
+          allowLooseLinks={false}
+          maxNumberPointsPerLink={0}
+          actionStoppedFiring={this.handleMovesChange.bind(this)}
+        />
         <ReportAddObjectRefs
           reportId={report.id}
           reportObjectRefs={report.objectRefs.edges}
@@ -272,14 +298,6 @@ class ReportKnowledgeGraphComponent extends Component {
           to={createRelationTo}
           handleClose={this.handleCloseRelationCreation.bind(this)}
           handleResult={this.handleResultRelationCreation.bind(this)}
-        />
-        <DiagramWidget
-          className={classes.canvas}
-          diagramEngine={this.engine}
-          inverseZoom={true}
-          allowLooseLinks={false}
-          maxNumberPointsPerLink={0}
-          actionStoppedFiring={this.handleMovesChange.bind(this)}
         />
       </div>
     );

@@ -459,7 +459,9 @@ export const paginateRelationships = (query, options) => {
   const offset = after ? cursorToOffset(after) : 0;
   const count = qkSingleValue(`${query}; aggregate count;`);
   const elements = qkRel(
-    `${query}; $from id ${fromId}; $to id ${toId}; offset ${offset}; limit ${first}; 
+    `${query}; ${fromId ? `$from id ${fromId};` : ''} ${
+      toId ? `$to id ${toId};` : ''
+    } offset ${offset}; limit ${first}; 
       get;`,
     'rel',
     'from',

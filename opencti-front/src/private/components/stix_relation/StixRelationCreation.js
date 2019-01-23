@@ -16,6 +16,8 @@ import { ArrowRightAlt } from '@material-ui/icons';
 import { environment, commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { itemColor } from '../../../utils/Colors';
+import resolveRoles from '../../../utils/Relation';
+import { parse } from '../../../utils/Time';
 import ItemIcon from '../../../components/ItemIcon';
 import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
@@ -66,7 +68,7 @@ const styles = theme => ({
     padding: '10px 20px 20px 20px',
   },
   item: {
-    position: 'relative',
+    position: 'absolute',
     width: 180,
     height: 80,
   },
@@ -106,6 +108,38 @@ const styles = theme => ({
     fontSize: 12,
     verticalAlign: 'middle',
   },
+  relation: {
+    position: 'relative',
+    height: 100,
+    transition: 'background-color 0.1s ease',
+    cursor: 'pointer',
+    '&:hover': {
+      background: 'rgba(0, 0, 0, 0.1)',
+    },
+    padding: 10,
+    marginBottom: 10,
+  },
+  relationCreation: {
+    position: 'relative',
+    height: 100,
+    transition: 'background-color 0.1s ease',
+    cursor: 'pointer',
+    '&:hover': {
+      background: 'rgba(0, 0, 0, 0.1)',
+    },
+    padding: 10,
+  },
+  relationCreate: {
+    position: 'relative',
+    height: 100,
+  },
+  middle: {
+    margin: '0 auto',
+    width: 200,
+    textAlign: 'center',
+    padding: 0,
+    color: '#ffffff',
+  },
 });
 
 const stixRelationCreationQuery = graphql`
@@ -138,14 +172,18 @@ const stixRelationCreationMutation = graphql`
 `;
 
 const stixRelationValidation = t => Yup.object().shape({
-  relationship_typ: Yup.number()
+  relationship_type: Yup.string()
     .required(t('This field is required')),
   weight: Yup.number()
+    .typeError(t('The value must be a number'))
+    .integer(t('The value must be a number'))
     .required(t('This field is required')),
   first_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .required(t('This field is required')),
   last_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .required(t('This field is required')),
   description: Yup.string(),
 });
 
@@ -156,7 +194,14 @@ class StixRelationCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log(values);
+    const roles = resolveRoles(values.relationship_type);
+    values.fromId = this.props.from.id;
+    values.fromRole = roles.fromRole;
+    values.toId = this.props.to.id;
+    values.toRole = roles.toRole;
+    values.first_seen = parse(values.first_seen).format();
+    values.last_seen = parse(values.last_seen).format();
+
     commitMutation({
       mutation: stixRelationCreationMutation,
       variables: {
@@ -166,7 +211,7 @@ class StixRelationCreation extends Component {
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
-        this.props.handleResult(response);
+        this.props.handleResult(response.stixRelationAdd);
       },
     });
   }
@@ -178,14 +223,21 @@ class StixRelationCreation extends Component {
         fromId: this.props.from.id,
         toId: this.props.to.id,
       }).then((data) => {
-        this.setState({ existingRelations: data.stixRelations.edges });
+        this.setState({
+          step: data.stixRelations.edges.length > 0 ? 1 : 2,
+          existingRelations: data.stixRelations.edges,
+        });
       });
     }
   }
 
+  handleSelectRelation(relation) {
+    this.props.handleResult(relation);
+  }
+
   renderForm() {
     const {
-      t, classes, handleClose, from, to,
+      t, classes, from, to,
     } = this.props;
     return (
       <Formik
@@ -195,46 +247,50 @@ class StixRelationCreation extends Component {
         }}
         validationSchema={stixRelationValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
-        onReset={handleClose.bind(this)}
+        onReset={this.handleClose.bind(this)}
         render={({ submitForm, handleReset, isSubmitting }) => (
           <Form>
             <DialogTitle>
               {t('Create a relationship')}
             </DialogTitle>
             <DialogContent>
-              <div className={classes.item} style={{
-                backgroundColor: itemColor(from.type, true),
-                float: 'left',
-              }}>
-                <div className={classes.itemHeader}>
-                  <div className={classes.icon}>
-                    <ItemIcon type={from.type} color={itemColor(from.type, false)} size='small'/>
+              <div className={classes.relationCreate}>
+                <div className={classes.item} style={{
+                  backgroundColor: itemColor(from.type, true),
+                  top: 10,
+                  left: 10,
+                }}>
+                  <div className={classes.itemHeader}>
+                    <div className={classes.icon}>
+                      <ItemIcon type={from.type} color={itemColor(from.type, false)} size='small'/>
+                    </div>
+                    <div className={classes.type}>
+                      {t(`entity_${from.type}`)}
+                    </div>
                   </div>
-                  <div className={classes.type}>
-                    {t(`entity_${from.type}`)}
-                  </div>
-                </div>
-                <div className={classes.content}>
-                  <span className={classes.name}>{from.name}</span>
-                </div>
-              </div>
-              <div style={{ float: 'left', padding: '26px 0 0 80px', color: '#ffffff' }}>
-                <ArrowRightAlt fontSize='large'/>
-              </div>
-              <div className={classes.item} style={{
-                backgroundColor: itemColor(to.type, true),
-                float: 'right',
-              }}>
-                <div className={classes.itemHeader}>
-                  <div className={classes.icon}>
-                    <ItemIcon type={to.type} color={itemColor(to.type, false)} size='small'/>
-                  </div>
-                  <div className={classes.type}>
-                    {t(`entity_${to.type}`)}
+                  <div className={classes.content}>
+                    <span className={classes.name}>{from.name}</span>
                   </div>
                 </div>
-                <div className={classes.content}>
-                  <span className={classes.name}>{to.name}</span>
+                <div className={classes.middle} style={{ paddingTop: 25 }}>
+                  <ArrowRightAlt fontSize='large'/>
+                </div>
+                <div className={classes.item} style={{
+                  backgroundColor: itemColor(to.type, true),
+                  top: 10,
+                  right: 10,
+                }}>
+                  <div className={classes.itemHeader}>
+                    <div className={classes.icon}>
+                      <ItemIcon type={to.type} color={itemColor(to.type, false)} size='small'/>
+                    </div>
+                    <div className={classes.type}>
+                      {t(`entity_${to.type}`)}
+                    </div>
+                  </div>
+                  <div className={classes.content}>
+                    <span className={classes.name}>{to.name}</span>
+                  </div>
                 </div>
               </div>
               <Field name='relationship_type'
@@ -252,7 +308,7 @@ class StixRelationCreation extends Component {
                 <MenuItem value='uses'>{t('Uses')}</MenuItem>
                 <MenuItem value='attributed-to'>{t('Attributed to')}</MenuItem>
                 <MenuItem value='variant-of'>{t('Variant of')}</MenuItem>
-                <MenuItem value='gathering'>{t('Gathers')}</MenuItem>
+                <MenuItem value='gathering'>{t('Part of')}</MenuItem>
                 <MenuItem value='related-to'>{t('Related to')}</MenuItem>
                 <MenuItem value='localization'>{t('Localized in')}</MenuItem>
               </Field>
@@ -291,13 +347,152 @@ class StixRelationCreation extends Component {
     );
   }
 
-  render() {
-    const { open, handleClose } = this.props;
-    const { existingRelations, step } = this.state;
+  handleChangeStep() {
+    this.setState({ step: 2 });
+  }
+
+  handleClose() {
+    this.setState({ step: 1 });
+    this.props.handleClose();
+  }
+
+  renderSelectRelation() {
+    const {
+      nsd, t, classes, from, to,
+    } = this.props;
+    const { existingRelations } = this.state;
     return (
-      <Dialog open={open} onClose={handleClose.bind(this)}>
-        {existingRelations.length === 0 || step === 2 ? this.renderForm() : this.renderForm()}
-      </Dialog>
+      <div>
+        <DialogTitle>
+          {t('Select a relationship')}
+        </DialogTitle>
+        <DialogContent>
+          {existingRelations.map(relation => (
+            <div
+              key={relation.node.id}
+              className={classes.relation}
+              onClick={this.handleSelectRelation.bind(this, relation.node)}
+            >
+              <div className={classes.item} style={{
+                backgroundColor: itemColor(from.type, true),
+                top: 10,
+                left: 10,
+              }}>
+                <div className={classes.itemHeader}>
+                  <div className={classes.icon}>
+                    <ItemIcon type={from.type} color={itemColor(from.type, false)} size='small'/>
+                  </div>
+                  <div className={classes.type}>
+                    {t(`entity_${from.type}`)}
+                  </div>
+                </div>
+                <div className={classes.content}>
+                  <span className={classes.name}>{from.name}</span>
+                </div>
+              </div>
+              <div className={classes.middle}>
+                <ArrowRightAlt fontSize='small'/><br/>
+                <div style={{
+                  padding: '5px 8px 5px 8px',
+                  backgroundColor: '#14262c',
+                  color: '#ffffff',
+                  fontSize: 12,
+                  display: 'inline-block',
+                }}>{t(`relation_${relation.node.relationship_type}`)}<br/>
+                  {t('First obs.')} {nsd(relation.node.first_seen)}<br/>
+                  {t('Last obs.')} {nsd(relation.node.last_seen)}
+                </div>
+              </div>
+              <div className={classes.item} style={{
+                backgroundColor: itemColor(to.type, true),
+                top: 10,
+                right: 10,
+              }}>
+                <div className={classes.itemHeader}>
+                  <div className={classes.icon}>
+                    <ItemIcon type={to.type} color={itemColor(to.type, false)} size='small'/>
+                  </div>
+                  <div className={classes.type}>
+                    {t(`entity_${to.type}`)}
+                  </div>
+                </div>
+                <div className={classes.content}>
+                  <span className={classes.name}>{to.name}</span>
+                </div>
+              </div>
+              <div className='clearfix'/>
+            </div>
+          ))}
+          <div className={classes.relationCreation} onClick={this.handleChangeStep.bind(this)}>
+            <div className={classes.item} style={{
+              backgroundColor: '#607d8b',
+              top: 10,
+              left: 10,
+            }}>
+              <div className={classes.itemHeader}>
+                <div className={classes.icon}>
+                  <ItemIcon type={from.type} color='#263238' size='small'/>
+                </div>
+                <div className={classes.type}>
+                  {t(`entity_${from.type}`)}
+                </div>
+              </div>
+              <div className={classes.content}>
+                <span className={classes.name}>{from.name}</span>
+              </div>
+            </div>
+            <div className={classes.middle} style={{ paddingTop: 15 }}>
+              <ArrowRightAlt fontSize='small'/><br />
+              <div style={{
+                padding: '5px 8px 5px 8px',
+                backgroundColor: '#607d8b',
+                color: '#ffffff',
+                fontSize: 12,
+                display: 'inline-block',
+              }}>{t('Create a relationship')}</div>
+            </div>
+            <div className={classes.item} style={{
+              backgroundColor: '#607d8b',
+              top: 10,
+              right: 10,
+            }}>
+              <div className={classes.itemHeader}>
+                <div className={classes.icon}>
+                  <ItemIcon type={to.type} color='#263238' size='small'/>
+                </div>
+                <div className={classes.type}>
+                  {t(`entity_${to.type}`)}
+                </div>
+              </div>
+              <div className={classes.content}>
+                <span className={classes.name}>{to.name}</span>
+              </div>
+            </div>
+            <div className='clearfix'/>
+          </div>
+        </DialogContent>
+      </div>
+    );
+  }
+
+  render() {
+    const { open } = this.props;
+    const { step } = this.state;
+    if (this.props.from !== null && this.props.to !== null) {
+      return (
+        <Dialog
+          open={open}
+          onClose={this.handleClose.bind(this)}
+          maxWidth='md'
+          fullWidth={true}
+        >
+          {step === 1 ? this.renderSelectRelation() : ''}
+          {step === 2 ? this.renderForm() : ''}
+        </Dialog>
+      );
+    }
+    return (
+      <div style={{ display: 'none' }}> &nbsp; </div>
     );
   }
 }
@@ -310,6 +505,7 @@ StixRelationCreation.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
+  nsd: PropTypes.func,
 };
 
 export default compose(
