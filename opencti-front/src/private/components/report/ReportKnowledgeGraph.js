@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, map, forEach, difference, values, pathOr,
+  compose, map, forEach, difference, values, pathOr, filter, last,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -62,10 +62,6 @@ class ReportKnowledgeGraphComponent extends Component {
   componentDidMount() {
     // create a new model, component is mounted!
     const model = new DiagramModel();
-    model.addListener({
-      nodesUpdated: this.handleGraphChange.bind(this),
-      linksUpdated: this.handleGraphChange.bind(this),
-    });
     // decode graph data if any
     if (this.props.report.graph_data.length > 0) {
       const graphData = Buffer.from(this.props.report.graph_data, 'base64').toString('ascii');
@@ -73,8 +69,14 @@ class ReportKnowledgeGraphComponent extends Component {
       model.deSerializeDiagram(decodedGraphData, this.engine);
     }
     // unselect all nodes
-    forEach((n) => { n.setSelected(false); }, values(model.getNodes()));
+    forEach((n) => {
+      n.setSelected(false);
+    }, values(model.getNodes()));
     // set the model
+    model.addListener({
+      nodesUpdated: this.handleNodeChanges.bind(this),
+      linksUpdated: this.handleLinksChange.bind(this),
+    });
     this.engine.setDiagramModel(model);
     // subscribe to grapher
     GRAPHER$.subscribe({
@@ -143,15 +145,18 @@ class ReportKnowledgeGraphComponent extends Component {
     GRAPHER$.next({ action: 'update' });
   }
 
-  handleGraphChange(event) {
-    console.log(event);
-    // if moveaction (drop), save graph for positions
+  handleMovesChange(event) {
     if (event instanceof MoveItemsAction) {
+      console.log('Register move');
       this.handleSaveGraph();
     }
-    // if deletion of object
-    if (event instanceof Object && event.entity !== undefined) {
+    return true;
+  }
+
+  handleNodeChanges(event) {
+    if (event.node !== undefined) {
       if (event.isCreated === false) {
+        console.log('Register delete node');
         const nodeRelationId = pathOr(null, ['node', 'extras', 'relationId'], event);
         if (nodeRelationId !== null) {
           commitMutation({
@@ -161,12 +166,71 @@ class ReportKnowledgeGraphComponent extends Component {
               relationId: nodeRelationId,
             },
           });
+          this.handleSaveGraph();
         }
+      } else {
+        console.log('Register add node');
       }
-      console.log(event);
       this.handleSaveGraph();
     }
     return true;
+  }
+
+  handleLinksChange(event) {
+    this.handleLinkDeletion(event);
+    event.link.addListener({
+      targetPortChanged: this.handleLinkCreation.bind(this),
+    });
+    return true;
+  }
+
+  handleLinkCreation(event) {
+    const model = this.engine.getDiagramModel();
+    const currentLinks = model.getLinks();
+    const currentLinksPairs = map(n => ({ source: n.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
+    if (event.port !== undefined) {
+      // ensure that the links are not circular on the same element
+      const link = last(values(event.port.links));
+      const linkPair = { source: link.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], link) };
+      const filteredCurrentLinks = filter(n => (
+        n.source === linkPair.source && n.target === linkPair.target)
+        || (n.source === linkPair.target && n.target === linkPair.source),
+      currentLinksPairs);
+      if (link.targetPort === null || (link.sourcePort === link.targetPort)) {
+        model.removeLink(link);
+      } else if (filteredCurrentLinks.length === 1) {
+        console.log(event);
+        console.log('Register create link');
+      }
+    }
+    return true;
+  }
+
+  handleLinkDeletion(event) {
+    const model = this.engine.getDiagramModel();
+    const currentLinks = model.getLinks();
+    const currentLinksPairs = map(n => ({ source: n.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
+    if (event.isCreated === false) {
+      if (event.link !== undefined) {
+        const { link } = event;
+        // ensure that the link is not circular on the same element
+        if (link.targetPort !== null && (link.sourcePort !== link.targetPort)) {
+          const linkPair = { source: link.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], link) };
+          const filteredCurrentLinks = filter(n => (
+            n.source === linkPair.source && n.target === linkPair.target)
+            || (n.source === linkPair.target && n.target === linkPair.source),
+            currentLinksPairs);
+          if (filteredCurrentLinks.length === 0) {
+            console.log('Register delete link');
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  handleSelection(event) {
+    console.log(event);
   }
 
   render() {
@@ -180,7 +244,7 @@ class ReportKnowledgeGraphComponent extends Component {
           inverseZoom={true}
           allowLooseLinks={false}
           maxNumberPointsPerLink={0}
-          actionStoppedFiring={this.handleGraphChange.bind(this)}
+          actionStoppedFiring={this.handleMovesChange.bind(this)}
         />
       </div>
     );
