@@ -1,6 +1,6 @@
 import { createError } from 'apollo-errors';
 
-const TYPE_AUTH = 'authentication';
+export const TYPE_AUTH = 'authentication';
 const TYPE_TECHNICAL = 'technical';
 const TYPE_BUSINESS = 'business';
 
@@ -29,13 +29,14 @@ export const AuthRequired = createError('AuthRequired', {
   data: { type: TYPE_AUTH }
 });
 
-export const AlreadyAuth = createError('AlreadyAuth', {
-  message: 'You are already authenticated',
+export const ForbiddenAccess = createError('ForbiddenAccess', {
+  message: 'You are not allowed to do this',
   data: { type: TYPE_AUTH }
 });
 
-export const Forbidden = createError('Forbidden', {
-  message: 'You are not allowed to do this',
+// TODO Remove
+export const AlreadyAuth = createError('AlreadyAuth', {
+  message: 'You are already authenticated',
   data: { type: TYPE_AUTH }
 });
 

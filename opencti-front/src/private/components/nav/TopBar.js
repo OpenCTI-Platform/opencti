@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
-import { propOr, contains, compose } from 'ramda';
+import { propOr, includes, compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Cookies from 'js-cookie';
@@ -121,10 +121,8 @@ class TopBar extends Component {
             open={this.state.menuOpen}
             onClose={this.handleCloseMenu.bind(this)}>
             <MenuItem component={Link} to='/dashboard/profile' onClick={this.handleCloseMenu.bind(this)}>{t('Profile')}</MenuItem>
-            {contains('ROLE_ADMIN', propOr([], 'grant', me))
-              ? <MenuItem component={Link} to='/admin' onClick={this.handleCloseMenu.bind(this)}>{t('Admin')}</MenuItem>
-              : ''
-            }
+            {includes('ROLE_ADMIN', propOr([], 'grant', me))
+              && <MenuItem component={Link} to='/admin' onClick={this.handleCloseMenu.bind(this)}>{t('Admin')}</MenuItem>}
             <MenuItem onClick={this.handleLogout.bind(this)}>{t('Logout')}</MenuItem>
           </Menu>
         </Toolbar>

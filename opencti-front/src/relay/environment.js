@@ -21,15 +21,15 @@ import {
 const MESSENGER$ = new Subject().pipe(debounce(() => timer(500)));
 export const MESSAGING$ = {
   messages: MESSENGER$,
-  notify: text => MESSENGER$.next([{ type: 'message', text }]),
+  notifyError: text => MESSENGER$.next([{ type: 'error', text }]),
+  notifySuccess: text => MESSENGER$.next([{ type: 'message', text }]),
   redirect: new Subject(),
 };
 const GRAPHQL_SUBSCRIPTION_ENDPOINT = 'ws://localhost:4000/graphql';
-const IN_DEV_MODE = process.env.NODE_ENV === 'development';
+export const IN_DEV_MODE = process.env.NODE_ENV === 'development';
 if (IN_DEV_MODE) installRelayDevTools();
 
-
-class ApplicationError extends Error {
+export class ApplicationError extends Error {
   constructor(errors) {
     super();
     this.data = errors;

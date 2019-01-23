@@ -9,13 +9,13 @@ import { formatError as apolloFormatError } from 'apollo-errors';
 import { GraphQLError } from 'graphql';
 import compression from 'compression';
 import helmet from 'helmet';
-import { dissocPath } from 'ramda';
+import { dissocPath, pipe, map, filter, isEmpty } from 'ramda';
 import path from 'path';
 import conf, { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/security';
 import { findByTokenId, setAuthenticationCookie } from './domain/user';
 import schema from './schema/schema';
-import { ConstraintFailure, Unknown } from './config/errors';
+import { ConstraintFailure, TYPE_AUTH, Unknown } from './config/errors';
 
 // Init the http server
 const app = express();
@@ -96,6 +96,19 @@ const server = new ApolloServer({
     // Remove the exception stack in production.
     return DEV_MODE ? e : dissocPath(['extensions', 'exception'], e);
   },
+  // After formatError
+  formatResponse: (response, { context }) => {
+    // If we have a auth failure, clear the user cookie
+    const isAuthFailure = response.errors
+      ? pipe(
+          map(e => apolloFormatError(e)),
+          filter(e => e.type === TYPE_AUTH),
+          isEmpty
+        )(response.errors)
+      : false;
+    if (isAuthFailure) context.res.clearCookie(OPENCTI_TOKEN);
+    return response;
+  },
   subscriptions: {
     // https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
     onConnect: async connectionParams => ({
@@ -107,6 +120,10 @@ const server = new ApolloServer({
 });
 
 server.applyMiddleware({ app });
+
+const indexPath = { root: `${__dirname}/../public` };
+app.all('*', (req, res) => res.sendFile('index.html', indexPath));
+
 const httpServer = http.createServer(app);
 server.installSubscriptionHandlers(httpServer);
 

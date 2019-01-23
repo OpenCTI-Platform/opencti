@@ -1,10 +1,6 @@
 import { contains } from 'ramda';
 import { ROLE_ADMIN } from '../config/conf';
-import {
-  AlreadyAuth,
-  AuthRequired,
-  Forbidden
-} from '../config/errors';
+import { AlreadyAuth, AuthRequired, ForbiddenAccess } from '../config/errors';
 
 export function withCancel(asyncIterator, onCancel) {
   const updatedAsyncIterator = {
@@ -45,6 +41,6 @@ export const auth = wrappedFunction => (_, args, context, error) => {
 export const admin = wrappedFunction => (_, args, context, error) => {
   const authFunction = auth(wrappedFunction)(_, args, context, error);
   if (!contains(ROLE_ADMIN, context.user.grant))
-    throw new Forbidden({ internalData: { user: context.user.email } });
+    throw new ForbiddenAccess({ internalData: { user: context.user.email } });
   return authFunction;
 };
