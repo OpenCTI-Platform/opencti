@@ -1,19 +1,24 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
-import { ConnectionHandler } from 'relay-runtime';
+import { fetchQuery } from 'relay-runtime';
+import graphql from 'babel-plugin-relay/macro';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
-import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
-import { commitMutation } from '../../../relay/environment';
+import MenuItem from '@material-ui/core/MenuItem';
+import { ArrowRightAlt } from '@material-ui/icons';
+import { environment, commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
+import { itemColor } from '../../../utils/Colors';
+import ItemIcon from '../../../components/ItemIcon';
 import TextField from '../../../components/TextField';
+import Select from '../../../components/Select';
 
 const styles = theme => ({
   drawerPaper: {
@@ -26,6 +31,9 @@ const styles = theme => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
+  },
+  dialogActions: {
+    padding: '0 17px 20px 0',
   },
   createButton: {
     position: 'fixed',
@@ -56,6 +64,47 @@ const styles = theme => ({
   },
   container: {
     padding: '10px 20px 20px 20px',
+  },
+  item: {
+    position: 'relative',
+    width: 180,
+    height: 80,
+  },
+  itemHeader: {
+    padding: '10px 0 10px 0',
+    borderBottom: '1px solid #ffffff',
+  },
+  icon: {
+    position: 'absolute',
+    top: 8,
+    left: 5,
+    fontSize: 8,
+  },
+  type: {
+    width: '100%',
+    textAlign: 'center',
+    color: '#ffffff',
+    fontSize: 11,
+  },
+  popover: {
+    position: 'absolute',
+    color: '#ffffff',
+    top: 8,
+    right: 5,
+  },
+  content: {
+    width: '100%',
+    height: 40,
+    maxHeight: 40,
+    lineHeight: '40px',
+    color: '#ffffff',
+    textAlign: 'center',
+  },
+  name: {
+    display: 'inline-block',
+    lineHeight: 1,
+    fontSize: 12,
+    verticalAlign: 'middle',
   },
 });
 
@@ -89,7 +138,7 @@ const stixRelationCreationMutation = graphql`
 `;
 
 const stixRelationValidation = t => Yup.object().shape({
-  type: Yup.number()
+  relationship_typ: Yup.number()
     .required(t('This field is required')),
   weight: Yup.number()
     .required(t('This field is required')),
@@ -101,7 +150,13 @@ const stixRelationValidation = t => Yup.object().shape({
 });
 
 class StixRelationCreation extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { step: 1, existingRelations: [] };
+  }
+
   onSubmit(values, { setSubmitting, resetForm }) {
+    console.log(values);
     commitMutation({
       mutation: stixRelationCreationMutation,
       variables: {
@@ -116,31 +171,114 @@ class StixRelationCreation extends Component {
     });
   }
 
+  componentDidUpdate(prevProps) {
+    if ((this.props.from !== prevProps.from && this.props.to !== prevProps.to)
+      && (this.props.from !== null && this.props.to !== null)) {
+      fetchQuery(environment, stixRelationCreationQuery, {
+        fromId: this.props.from.id,
+        toId: this.props.to.id,
+      }).then((data) => {
+        this.setState({ existingRelations: data.stixRelations.edges });
+      });
+    }
+  }
+
   renderForm() {
-    const { t, classes, handleClose } = this.props;
+    const {
+      t, classes, handleClose, from, to,
+    } = this.props;
     return (
       <Formik
         enableReinitialize={true}
         initialValues={{
-          type: '', weight: '', first_seen: '', last_seen: '', description: '',
+          relationship_type: '', weight: '', first_seen: '', last_seen: '', description: '',
         }}
         validationSchema={stixRelationValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
         onReset={handleClose.bind(this)}
         render={({ submitForm, handleReset, isSubmitting }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
+          <Form>
             <DialogTitle>
               {t('Create a relationship')}
             </DialogTitle>
             <DialogContent>
-              <Field name='source_name' component={TextField} label={t('Source name')} fullWidth={true}/>
-              <Field name='external_id' component={TextField} label={t('External ID')} fullWidth={true} style={{ marginTop: 20 }}/>
-              <Field name='url' component={TextField} label={t('URL')} fullWidth={true} style={{ marginTop: 20 }}/>
-              <Field name='description' component={TextField} label={t('Description')}
-                     fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
+              <div className={classes.item} style={{
+                backgroundColor: itemColor(from.type, true),
+                float: 'left',
+              }}>
+                <div className={classes.itemHeader}>
+                  <div className={classes.icon}>
+                    <ItemIcon type={from.type} color={itemColor(from.type, false)} size='small'/>
+                  </div>
+                  <div className={classes.type}>
+                    {t(`entity_${from.type}`)}
+                  </div>
+                </div>
+                <div className={classes.content}>
+                  <span className={classes.name}>{from.name}</span>
+                </div>
+              </div>
+              <div style={{ float: 'left', padding: '26px 0 0 80px', color: '#ffffff' }}>
+                <ArrowRightAlt fontSize='large'/>
+              </div>
+              <div className={classes.item} style={{
+                backgroundColor: itemColor(to.type, true),
+                float: 'right',
+              }}>
+                <div className={classes.itemHeader}>
+                  <div className={classes.icon}>
+                    <ItemIcon type={to.type} color={itemColor(to.type, false)} size='small'/>
+                  </div>
+                  <div className={classes.type}>
+                    {t(`entity_${to.type}`)}
+                  </div>
+                </div>
+                <div className={classes.content}>
+                  <span className={classes.name}>{to.name}</span>
+                </div>
+              </div>
+              <Field name='relationship_type'
+                     component={Select}
+                     label={t('Relationship type')}
+                     fullWidth={true}
+                     displayEmpty={true}
+                     inputProps={{
+                       name: 'relationship_type',
+                       id: 'relationship_type',
+                     }}
+                     containerstyle={{ marginTop: 20, width: '100%' }}
+              >
+                <MenuItem value='targets'>{t('Targets')}</MenuItem>
+                <MenuItem value='uses'>{t('Uses')}</MenuItem>
+                <MenuItem value='attributed-to'>{t('Attributed to')}</MenuItem>
+                <MenuItem value='variant-of'>{t('Variant of')}</MenuItem>
+                <MenuItem value='gathering'>{t('Gathers')}</MenuItem>
+                <MenuItem value='related-to'>{t('Related to')}</MenuItem>
+                <MenuItem value='localization'>{t('Localized in')}</MenuItem>
+              </Field>
+              <Field name='weight'
+                     component={Select}
+                     label={t('Confidence level')}
+                     fullWidth={true}
+                     displayEmpty={true}
+                     inputProps={{
+                       name: 'weight',
+                       id: 'weight',
+                     }}
+                     containerstyle={{ marginTop: 20, width: '100%' }}
+              >
+                <MenuItem value={1}>{t('Very low')}</MenuItem>
+                <MenuItem value={2}>{t('Low')}</MenuItem>
+                <MenuItem value={3}>{t('Medium')}</MenuItem>
+                <MenuItem value={4}>{t('High')}</MenuItem>
+                <MenuItem value={5}>{t('Very high')}</MenuItem>
+              </Field>
+              <Field name='first_seen' component={TextField} label={t('First seen')} fullWidth={true} style={{ marginTop: 20 }}/>
+              <Field name='last_seen' component={TextField} label={t('Last seen')} fullWidth={true} style={{ marginTop: 20 }}/>
+              <Field name='description' component={TextField} label={t('Description')} fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
             </DialogContent>
-            <DialogActions>
-              <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+            <DialogActions classes={{ root: classes.dialogActions }}>
+              <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                 {t('Cancel')}
               </Button>
               <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
@@ -154,10 +292,11 @@ class StixRelationCreation extends Component {
   }
 
   render() {
-    const { t, open, handleClose } = this.props;
+    const { open, handleClose } = this.props;
+    const { existingRelations, step } = this.state;
     return (
       <Dialog open={open} onClose={handleClose.bind(this)}>
-        {this.renderForm()}
+        {existingRelations.length === 0 || step === 2 ? this.renderForm() : this.renderForm()}
       </Dialog>
     );
   }
@@ -165,8 +304,8 @@ class StixRelationCreation extends Component {
 
 StixRelationCreation.propTypes = {
   open: PropTypes.bool,
-  fromId: PropTypes.string,
-  toId: PropTypes.string,
+  from: PropTypes.object,
+  to: PropTypes.object,
   handleResult: PropTypes.func,
   handleClose: PropTypes.func,
   classes: PropTypes.object,

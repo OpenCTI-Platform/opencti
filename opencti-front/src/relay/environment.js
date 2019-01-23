@@ -66,7 +66,7 @@ const networkSubscriptions = (operation, variables) => execute(subscriptionLink,
   query: operation.text,
   variables,
 });
-const environment = new Environment({
+export const environment = new Environment({
   network: Network.create(networkFetch, networkSubscriptions),
   store: new Store(new RecordSource()),
 });

@@ -220,7 +220,7 @@ class ExternalReferenceCreation extends Component {
                   <Field name='description' component={TextField} label={t('Description')}
                          fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
                 </DialogContent>
-                <DialogActions classes={{root: classes.dialogActions}}>
+                <DialogActions classes={{ root: classes.dialogActions }}>
                   <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                     {t('Cancel')}
                   </Button>

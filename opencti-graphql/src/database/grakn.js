@@ -150,6 +150,41 @@ export const qkObj = (queryDef, key = 'x', relationKey) =>
   });
 
 /**
+ * Grakn query that generate json objects for relations
+ * @param queryDef the query to process
+ * @param key the instance key to get id from.
+ * @param fromKey the key to bind relation result.
+ * @param toKey the key to bind relation result.
+ * @returns {Promise<AxiosResponse<any> | never | never>}
+ */
+export const qkRel = (queryDef, key = 'rel', fromKey = 'from', toKey = 'to') =>
+  qk(queryDef).then(result => {
+    if (result && result.data) {
+      return Promise.all(
+        map(line => {
+          const relationPromise = attrByID(line[key]['@id']).then(res =>
+            attrMap(line[key].id, res)
+          );
+          const fromPromise = attrByID(line[fromKey]['@id']).then(res =>
+            attrMap(line[fromKey].id, res)
+          );
+          const toPromise = attrByID(line[toKey]['@id']).then(res =>
+            attrMap(line[toKey].id, res)
+          );
+          return Promise.all([relationPromise, fromPromise, toPromise]).then(
+            ([node, from, to]) => ({
+              node,
+              from,
+              to
+            })
+          );
+        })(result.data)
+      );
+    }
+    return Promise.resolve([]);
+  });
+
+/**
  * Grakn query that generate json objects
  * @param queryDef the query to process
  * @param key the instance key to get id from.
@@ -372,6 +407,68 @@ export const paginate = (query, options) => {
     const globalCount = data ? head(data) : 0;
     const instances = data ? last(data) : [];
     return buildPagination(first, offset, instances, globalCount);
+  });
+};
+
+/**
+ * Pure building of pagination expected format.
+ * @param first
+ * @param offset
+ * @param instances
+ * @param globalCount
+ * @returns {{edges: *, pageInfo: *}}
+ */
+const buildPaginationRelationships = (
+  first,
+  offset,
+  instances,
+  globalCount
+) => {
+  const edges = pipe(
+    mapObjIndexed((record, key) => {
+      const { node } = record;
+      const { from } = record;
+      const { to } = record;
+      const nodeOffset = offset + parseInt(key, 10) + 1;
+      return { node, from, to, cursor: offsetToCursor(nodeOffset) };
+    }),
+    values
+  )(instances);
+  const hasNextPage = first + offset < globalCount;
+  const hasPreviousPage = offset > 0;
+  const startCursor = edges.length > 0 ? head(edges).cursor : '';
+  const endCursor = edges.length > 0 ? last(edges).cursor : '';
+  const pageInfo = {
+    startCursor,
+    endCursor,
+    hasNextPage,
+    hasPreviousPage,
+    globalCount
+  };
+  return { edges, pageInfo };
+};
+
+/**
+ * Grakn generic pagination query without ordering
+ * @param query
+ * @param options
+ * @returns Promise
+ */
+export const paginateRelationships = (query, options) => {
+  const { fromId, toId, first = 200, after } = options;
+  const offset = after ? cursorToOffset(after) : 0;
+  const count = qkSingleValue(`${query}; aggregate count;`);
+  const elements = qkRel(
+    `${query}; $from id ${fromId}; $to id ${toId}; offset ${offset}; limit ${first}; 
+      get;`,
+    'rel',
+    'from',
+    'to'
+  );
+  return Promise.all([count, elements]).then(data => {
+    const globalCount = data ? head(data) : 0;
+    const instances = data ? last(data) : [];
+    return buildPaginationRelationships(first, offset, instances, globalCount);
   });
 };
 

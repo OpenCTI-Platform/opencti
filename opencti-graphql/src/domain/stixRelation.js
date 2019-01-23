@@ -7,18 +7,20 @@ import {
   loadByID,
   notify,
   now,
+  paginateRelationships,
   paginate,
   qk,
   prepareDate
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa stix_relation', args);
+export const findAll = args =>
+  paginateRelationships('match $rel($from, $to) isa stix_relation', args);
 
 export const findById = stixRelationId => loadByID(stixRelationId);
 
 export const search = args =>
-  paginate(
+  paginateRelationships(
     `match $m isa Stix-Domain-Entity
     has name $name
     has description $desc;
@@ -36,7 +38,12 @@ export const markingDefinitions = (stixRelationId, args) =>
   );
 
 export const addStixRelation = async (user, stixRelation) => {
-  const createStixRelation = qk(`insert $stixRelation isa ${stixRelation.relationship_type} 
+  const createStixRelation = qk(`match $from id ${stixRelation.fromId}; 
+    $to id ${stixRelation.toId}; 
+    insert $stixRelation(${stixRelation.fromRole}: $from, ${
+    stixRelation.toRole
+  }: $to) 
+    isa ${stixRelation.relationship_type} 
     has relation_type "${stixRelation.relationship_type.toLowerCase()}";
     $stixRelation has stix_id "relationship--${uuid()}";
     $stixRelation has description "${stixRelation.description}";

@@ -2,9 +2,9 @@ const i18n = {
   messages: {
     fr: {
       // Titles
-      'OpenCTI - Cyber threat intelligence platform': 'OpenCTI - Plateforme d\'analyse de la cybermenace',
+      'OpenCTI - Cyber threat intelligence platform': "OpenCTI - Plateforme d'analyse de la cybermenace",
       // Errors
-      'Wrong name or password': 'Nom d\'utilisateur ou mot de passe incorrect',
+      'Wrong name or password': "Nom d'utilisateur ou mot de passe incorrect",
       'An unknown error has occurred!': 'Une erreur inconnue est survenue !',
       // Interface
       Search: 'Rechercher',
@@ -24,7 +24,7 @@ const i18n = {
       'Global parameters': 'Paramètres généraux',
       'External authentication': 'Authentification externe',
       Title: 'Titre',
-      'Sender email address': 'Adresse mail d\'expédition',
+      'Sender email address': "Adresse mail d'expédition",
       'Base URL': 'URL de base',
       Language: 'Langue',
       Automatic: 'Automatique',
@@ -112,7 +112,7 @@ const i18n = {
       'Internal productions': 'Productions internes',
       'External sources': 'Sources externes',
       // User
-      'Sign in': 'S\'identifier',
+      'Sign in': "S'identifier",
       Email: 'Email',
       Password: 'Mot de passe',
       Logout: 'Se déconnecter',
@@ -123,6 +123,8 @@ const i18n = {
       'Filter by': 'Filtrer par',
       Name: 'Nom',
       Description: 'Description',
+      'Relationship type': 'Type de relation',
+
       'Creation date': 'Date de création',
       'Modification date': 'Date de modification',
       'Updated the': 'Mis à jour le',
@@ -134,20 +136,22 @@ const i18n = {
       Color: 'Couleur',
       Type: 'Type',
       'Email address': 'Adresse email',
-      name: 'Nom d\'utilisateur',
+      name: "Nom d'utilisateur",
       Firstname: 'Prénom',
       Lastname: 'Nom',
       Permissions: 'Permissions',
       Members: 'Membres',
+      'First seen': 'Première observation',
+      'Last seen': 'Dernière observation',
       Confirmation: 'Confirmation',
       'Kill chain': 'Kill chain',
-      'Phase name': 'Nom de l\'étape',
+      'Phase name': "Nom de l'étape",
       'Kill chain name': 'Nom de la kill chain',
       Order: 'Ordre',
       Options: 'Options',
       Author: 'Auteur',
       'Publication date': 'Date de publication',
-      'Entity type': 'Type d\'entité',
+      'Entity type': "Type d'entité",
       'Report type': 'Type de rapport',
       'Internal report': 'Rapport interne',
       'External source': 'Source externe',
@@ -162,11 +166,17 @@ const i18n = {
       'External ID': 'ID externe',
       URL: 'URL',
       'entitie(s)': 'entité(s)',
+      'Confidence level': 'Niveau de confiance',
+      'Very low': 'Très faible',
+      Low: 'Faible',
+      Medium: 'Moyen',
+      High: 'Elevé',
+      'Very high': 'Très élevé',
       // Statistics
-      'Total entities': 'Nombre d\'entités',
-      'Total observables': 'Nombre d\'observables',
+      'Total entities': "Nombre d'entités",
+      'Total observables': "Nombre d'observables",
       'Total reports': 'Nombre de rapports',
-      'Total investigations': 'Nombre d\'investigations',
+      'Total investigations': "Nombre d'investigations",
       'Ingested entities': 'Entités stockées',
       'last 24h': 'dernières 24h',
       // Types
@@ -180,6 +190,14 @@ const i18n = {
       'entity_course-of-action': 'Mesure de mitigation',
       report_internal: 'Rapport interne',
       report_external: 'Source externe',
+      // Relations
+      Targets: 'Cible',
+      Uses: 'Utilise',
+      'Attributed to': 'Attribué à',
+      'Variant of': 'Variante de',
+      'Part of': 'Fait parti de',
+      'Localized in': 'Localisé dans/en',
+      'Related to': 'Lié à',
     },
     en: {
       // Types
@@ -189,7 +207,7 @@ const i18n = {
       entity_tool: 'Tool',
       entity_organization: 'Organization',
       entity_user: 'Person',
-    }
+    },
   },
 };
 

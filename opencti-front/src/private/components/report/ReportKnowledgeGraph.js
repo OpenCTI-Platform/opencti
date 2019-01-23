@@ -209,8 +209,8 @@ class ReportKnowledgeGraphComponent extends Component {
         console.log('Register create link');
         this.setState({
           openCreateRelation: true,
-          createRelationFrom: link.sourcePort.parent.extras.id,
-          createRelationTo: link.targetPort.parent.extras.id,
+          createRelationFrom: link.sourcePort.parent.extras,
+          createRelationTo: link.targetPort.parent.extras,
         });
       }
     }
@@ -268,8 +268,8 @@ class ReportKnowledgeGraphComponent extends Component {
         />
         <StixRelationCreation
           open={openCreateRelation}
-          fromId={createRelationFrom}
-          toId={createRelationTo}
+          from={createRelationFrom}
+          to={createRelationTo}
           handleClose={this.handleCloseRelationCreation.bind(this)}
           handleResult={this.handleResultRelationCreation.bind(this)}
         />
