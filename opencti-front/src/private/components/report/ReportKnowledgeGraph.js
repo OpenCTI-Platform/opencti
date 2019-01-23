@@ -22,6 +22,7 @@ import EntityPortFactory from '../../../components/graph_node/EntityPortFactory'
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
 import { reportMutationRelationDelete } from './ReportAddObjectRefsLines';
+import StixRelationCreation from '../stix_relation/StixRelationCreation';
 
 const styles = () => ({
   container: {
@@ -47,11 +48,16 @@ export const reportKnowledgeGraphQuery = graphql`
     }
 `;
 
-const GRAPHER$ = new Subject().pipe(debounce(() => timer(2000)));
+const GRAPHER$ = new Subject().pipe(debounce(() => timer(500)));
 
 class ReportKnowledgeGraphComponent extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      openCreateRelation: false,
+      createRelationFrom: null,
+      createRelationTo: null,
+    };
     this.saving = false;
     this.engine = new DiagramEngine();
     this.engine.installDefaultFactories();
@@ -76,6 +82,7 @@ class ReportKnowledgeGraphComponent extends Component {
     model.addListener({
       nodesUpdated: this.handleNodeChanges.bind(this),
       linksUpdated: this.handleLinksChange.bind(this),
+      selectionChanged: this.handleSelection.bind(this),
     });
     this.engine.setDiagramModel(model);
     // subscribe to grapher
@@ -199,8 +206,12 @@ class ReportKnowledgeGraphComponent extends Component {
       if (link.targetPort === null || (link.sourcePort === link.targetPort)) {
         model.removeLink(link);
       } else if (filteredCurrentLinks.length === 1) {
-        console.log(event);
         console.log('Register create link');
+        this.setState({
+          openCreateRelation: true,
+          createRelationFrom: link.sourcePort.parent.extras.id,
+          createRelationTo: link.targetPort.parent.extras.id,
+        });
       }
     }
     return true;
@@ -219,7 +230,7 @@ class ReportKnowledgeGraphComponent extends Component {
           const filteredCurrentLinks = filter(n => (
             n.source === linkPair.source && n.target === linkPair.target)
             || (n.source === linkPair.target && n.target === linkPair.source),
-            currentLinksPairs);
+          currentLinksPairs);
           if (filteredCurrentLinks.length === 0) {
             console.log('Register delete link');
           }
@@ -231,13 +242,37 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleSelection(event) {
     console.log(event);
+    return true;
+  }
+
+  handleCloseRelationCreation() {
+    this.setState({
+      openCreateRelation: false,
+      createRelationFrom: null,
+      createRelationTo: null,
+    });
+  }
+
+  handleResultRelationCreation(result) {
+    console.log(result);
   }
 
   render() {
     const { classes, report } = this.props;
+    const { openCreateRelation, createRelationFrom, createRelationTo } = this.state;
     return (
       <div className={classes.container}>
-        <ReportAddObjectRefs reportId={report.id} reportObjectRefs={report.objectRefs.edges}/>
+        <ReportAddObjectRefs
+          reportId={report.id}
+          reportObjectRefs={report.objectRefs.edges}
+        />
+        <StixRelationCreation
+          open={openCreateRelation}
+          fromId={createRelationFrom}
+          toId={createRelationTo}
+          handleClose={this.handleCloseRelationCreation.bind(this)}
+          handleResult={this.handleResultRelationCreation.bind(this)}
+        />
         <DiagramWidget
           className={classes.canvas}
           diagramEngine={this.engine}

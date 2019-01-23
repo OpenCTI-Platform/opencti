@@ -32,6 +32,9 @@ const styles = theme => ({
     }),
     padding: 0,
   },
+  dialogActions: {
+    padding: '0 17px 20px 0',
+  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -206,7 +209,7 @@ class ExternalReferenceCreation extends Component {
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
             render={({ submitForm, handleReset, isSubmitting }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
+              <Form>
                 <DialogTitle>
                   {t('Create an external reference')}
                 </DialogTitle>
@@ -217,8 +220,8 @@ class ExternalReferenceCreation extends Component {
                   <Field name='description' component={TextField} label={t('Description')}
                          fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
                 </DialogContent>
-                <DialogActions>
-                  <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                <DialogActions classes={{root: classes.dialogActions}}>
+                  <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                     {t('Cancel')}
                   </Button>
                   <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>

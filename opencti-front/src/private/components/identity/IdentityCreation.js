@@ -33,6 +33,9 @@ const styles = theme => ({
     }),
     padding: 0,
   },
+  dialogActions: {
+    padding: '0 17px 20px 0',
+  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -193,7 +196,7 @@ class IdentityCreation extends Component {
         <Formik
           enableReinitialize={true}
           initialValues={{
-            name: inputValue, description: '', type: 'Organization',
+            name: inputValue, description: '', type: '',
           }}
           validationSchema={identityValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
@@ -212,6 +215,7 @@ class IdentityCreation extends Component {
                          component={Select}
                          label={t('Entity type')}
                          fullWidth={true}
+                         displayEmpty={true}
                          inputProps={{
                            name: 'type',
                            id: 'type',
@@ -225,8 +229,8 @@ class IdentityCreation extends Component {
                     <MenuItem value='User'>{t('Person')}</MenuItem>
                   </Field>
                 </DialogContent>
-                <DialogActions>
-                  <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                <DialogActions classes={{root: classes.dialogActions}}>
+                  <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                     {t('Cancel')}
                   </Button>
                   <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>

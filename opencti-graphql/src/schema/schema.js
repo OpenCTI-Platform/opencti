@@ -8,6 +8,7 @@ import path from 'path';
 import settingsResolvers from '../resolvers/settings';
 import globalObjectResolvers from '../resolvers/globalObject';
 import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
+import stixRelationResolvers from '../resolvers/stixRelation';
 import identityResolvers from '../resolvers/identity';
 import userResolvers from '../resolvers/user';
 import organizationResolvers from '../resolvers/organization';
@@ -41,6 +42,7 @@ const resolvers = mergeResolvers([
   settingsResolvers,
   globalObjectResolvers,
   stixDomainEntityResolvers,
+  stixRelationResolvers,
   identityResolvers,
   userResolvers,
   organizationResolvers,

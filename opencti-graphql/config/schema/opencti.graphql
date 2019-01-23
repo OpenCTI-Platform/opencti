@@ -122,6 +122,50 @@ input StixDomainEntityAddInput  {
     clientMutationId: String
 }
 
+### STIX relations
+enum StixRelationsOrdering {
+    stix_id,
+    relationship_type,
+    weight,
+    first_seen,
+    last_seen,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type StixRelationConnection {
+    pageInfo: PageInfo!
+    edges: [StixRelationEdge]
+}
+type StixRelationEdge {
+    cursor: String!
+    node: StixRelation!
+}
+type StixRelation {
+    id: ID!
+    relationship_type: String!
+    weight: Int
+    description: String
+    first_seen: DateTime
+    last_seen: DateTime
+    created: DateTime!
+    modified: DateTime!
+    editContext: [EditUserContext]
+    markingDefinitions: MarkingDefinitionConnection
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+input StixRelationAddInput  {
+    relationship_type: String!
+    weight: Int
+    description: String
+    first_seen: DateTime
+    last_seen: DateTime
+    markingDefinitions: [String]
+    clientMutationId: String
+}
+
 ### Identities
 enum IdentitiesOrdering {
     stix_id,
@@ -978,6 +1022,9 @@ type Query {
     # StixDomainEntities
     stixDomainEntity(id: String!): StixDomainEntity
     stixDomainEntities(first: Int, after: ID, orderBy: StixDomainEntitiesOrdering, orderMode: OrderingMode, search: String): StixDomainEntityConnection
+    # StixRelations
+    stixRelation(id: String!): StixRelation
+    stixRelations(fromId: String!, toId: String!, first: Int, after: ID, orderBy: StixDomainEntitiesOrdering, orderMode: OrderingMode, search: String): StixRelationConnection
     # Identities
     identity(id: String!): Identity
     identities(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): IdentityConnection
@@ -1047,6 +1094,7 @@ type Query {
 type Subscription {
     settings(id: ID!): Settings
     stixDomainEntity(id: ID!): StixDomainEntity
+    stixRelation(id: ID!): StixRelation
     identity(id: ID!): Identity
     user(id: ID!): User
     organization(id: ID!): Organization
@@ -1084,6 +1132,13 @@ type StixDomainEntityEditMutations {
     contextPatch(input: EditContext): StixDomainEntity
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
+}
+
+# StixRelation
+type StixRelationEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): StixRelation
+    contextPatch(input: EditContext): StixRelation
 }
 
 # Identity
@@ -1277,6 +1332,9 @@ type Mutation {
     # StixDomainEntity
     stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity
     stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations
+    # StixRelation
+    stixRelationAdd(input: StixRelationAddInput): StixRelation
+    stixRelationEdit(id: ID!): StixRelationEditMutations
     # Identity
     identityAdd(input: IdentityAddInput): Identity
     identityEdit(id: ID!): IdentityEditMutations

@@ -245,7 +245,7 @@ class ReportEditionOverviewComponent extends Component {
     const {
       t, report, editUsers, me,
     } = this.props;
-    const createdByRef = {
+    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], report) === null ? '' :  {
       label: pathOr(null, ['createdByRef', 'node', 'name'], report),
       value: pathOr(null, ['createdByRef', 'node', 'id'], report),
       relation: pathOr(null, ['createdByRef', 'relation', 'id'], report),
@@ -260,7 +260,6 @@ class ReportEditionOverviewComponent extends Component {
       assoc('published', dateFormat(report.published)),
       pick(['name', 'published', 'description', 'report_class', 'createdByRef', 'markingDefinitions']),
     )(report);
-
     return (
       <div>
         <Formik

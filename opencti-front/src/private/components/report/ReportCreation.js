@@ -207,7 +207,7 @@ class ReportCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
-                name: '', published: '', description: '', report_class: 'external', createdByRef: '', markingDefinitions: [],
+                name: '', published: '', description: '', report_class: '', createdByRef: '', markingDefinitions: [],
               }}
               validationSchema={reportValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -223,6 +223,7 @@ class ReportCreation extends Component {
                            component={Select}
                            label={t('Report type')}
                            fullWidth={true}
+                           displayEmpty={true}
                            inputProps={{
                              name: 'report_class',
                              id: 'report_class',
