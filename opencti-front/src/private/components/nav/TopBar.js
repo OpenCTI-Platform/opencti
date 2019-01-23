@@ -77,7 +77,6 @@ class TopBar extends Component {
 
   handleLogout() {
     this.handleCloseMenu();
-    Cookies.remove('opencti_token');
     this.props.history.push('/login');
   }
 

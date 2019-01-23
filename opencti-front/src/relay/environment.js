@@ -57,9 +57,6 @@ function networkFetch(operation, variables) {
 }
 const subscriptionClient = new SubscriptionClient(GRAPHQL_SUBSCRIPTION_ENDPOINT, {
   reconnect: true,
-  connectionParams: {
-    authorization: `Bearer ${Cookies.get('opencti_token')}`,
-  },
 });
 const subscriptionLink = new WebSocketLink(subscriptionClient);
 const networkSubscriptions = (operation, variables) => execute(subscriptionLink, {
@@ -108,7 +105,6 @@ export const commitMutation = ({
     if (setSubmitting) setSubmitting(false);
     const authRequired = filter(e => e.data.type === 'authentication', errors);
     if (!isEmpty(authRequired)) {
-      Cookies.remove('opencti_token');
       MESSAGING$.redirect.next('/login');
     } else {
       const messages = map(e => ({ type: 'error', text: e.message }), errors);
