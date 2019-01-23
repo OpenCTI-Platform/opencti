@@ -26,7 +26,7 @@ class RedirectManagerComponent extends Component {
   }
 
   // eslint-disable-next-line
-    componentWillUnmount() {
+  componentWillUnmount() {
     MESSAGING$.redirect.unsubscribe();
   }
 

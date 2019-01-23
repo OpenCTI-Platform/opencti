@@ -2,6 +2,7 @@ import express from 'express';
 import http from 'http';
 import bodyParser from 'body-parser';
 import { createTerminus } from '@godaddy/terminus';
+import cookie from 'cookie';
 import { verify } from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import { ApolloServer } from 'apollo-server-express';
@@ -9,7 +10,7 @@ import { formatError as apolloFormatError } from 'apollo-errors';
 import { GraphQLError } from 'graphql';
 import compression from 'compression';
 import helmet from 'helmet';
-import { dissocPath, pipe, map, filter, isEmpty } from 'ramda';
+import { dissocPath, pipe, map, filter, isEmpty, not } from 'ramda';
 import path from 'path';
 import conf, { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/security';
@@ -48,33 +49,24 @@ app.get(
 );
 
 const authentication = async token => {
-  let authToken = token;
-  if (!authToken) {
-    // If no token in the request
-    if (DEV_MODE) {
-      authToken = conf.get('jwt:dev_token');
-    } else {
-      // If not in dev mode, you can't authenticate
-      return undefined;
-    }
-  }
+  if (!token) return undefined;
   try {
-    const decodedToken = verify(authToken, conf.get('jwt:secret'));
+    const decodedToken = verify(token, conf.get('jwt:secret'));
     return await findByTokenId(decodedToken.uuid);
   } catch (err) {
-    logger.error(err);
+    logger.error(token, err);
     return undefined;
   }
 };
 
 const extractTokenFromBearer = bearer =>
-  bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : undefined;
+  bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
 
 const server = new ApolloServer({
   schema,
   async context({ req, res, connection }) {
     if (connection) return { user: connection.context.user }; // For websocket connection.
-    let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : undefined;
+    let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
     token = token || extractTokenFromBearer(req.headers.authorization);
     const auth = await authentication(token);
     return { res, user: auth };
@@ -102,8 +94,9 @@ const server = new ApolloServer({
     const isAuthFailure = response.errors
       ? pipe(
           map(e => apolloFormatError(e)),
-          filter(e => e.type === TYPE_AUTH),
-          isEmpty
+          filter(e => e.data.type === TYPE_AUTH),
+          isEmpty,
+          not
         )(response.errors)
       : false;
     if (isAuthFailure) context.res.clearCookie(OPENCTI_TOKEN);
@@ -111,11 +104,13 @@ const server = new ApolloServer({
   },
   subscriptions: {
     // https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
-    onConnect: async connectionParams => ({
-      user: await authentication(
-        extractTokenFromBearer(connectionParams.authorization)
-      )
-    })
+    onConnect: async (connectionParams, webSocket) => {
+      const cookies = webSocket.upgradeReq.headers.cookie;
+      const parsedCookies = cookies ? cookie.parse(cookies) : null;
+      let token = parsedCookies ? parsedCookies[OPENCTI_TOKEN] : null;
+      token = token || extractTokenFromBearer(connectionParams.authorization);
+      return { user: await authentication(token) };
+    }
   }
 });
 
