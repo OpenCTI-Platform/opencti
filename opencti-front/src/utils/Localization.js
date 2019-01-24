@@ -121,6 +121,7 @@ const i18n = {
       Users: 'Utilisateurs',
       Groups: 'Groupes',
       Global: 'Global',
+      'Knowledge graph': 'Graph de connaissance',
       Configuration: 'Configuration',
       'TTPs frameworks': 'Frameworks de TTP',
       'All reports': 'Tous les rapports',

@@ -98,8 +98,9 @@ class Reports extends Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, reportClass } = this.props;
     const paginationOptions = {
+      reportClass: reportClass || '',
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
@@ -139,6 +140,7 @@ class Reports extends Component {
 
 Reports.propTypes = {
   classes: PropTypes.object,
+  reportClass: PropTypes.string,
   t: PropTypes.func,
   history: PropTypes.object,
 };

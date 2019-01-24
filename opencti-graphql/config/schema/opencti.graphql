@@ -1094,7 +1094,7 @@ type Query {
     vulnerabilities(first: Int, after: ID, orderBy: VulnerabilitiesOrdering, orderMode: OrderingMode, search: String): VulnerabilityConnection
     # Reports
     report(id: String!): Report
-    reports(first: Int, after: ID, orderBy: ReportsOrdering, orderMode: OrderingMode, search: String): ReportConnection
+    reports(reportClass: String, first: Int, after: ID, orderBy: ReportsOrdering, orderMode: OrderingMode, search: String): ReportConnection
     reportsOf(objectId: String!, first: Int, after: ID, orderBy: ReportsOrdering, orderMode: OrderingMode, search: String): ReportConnection
 }
 

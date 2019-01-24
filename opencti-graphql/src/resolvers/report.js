@@ -4,6 +4,7 @@ import {
   addReport,
   reportDelete,
   findAll,
+  findAllByClass,
   findAllBySo,
   findById,
   createdByRef,
@@ -21,7 +22,12 @@ import { auth, withCancel } from './wrapper';
 const reportResolvers = {
   Query: {
     report: auth((_, { id }) => findById(id)),
-    reports: auth((_, args) => findAll(args)),
+    reports: auth((_, args) => {
+      if (args.reportClass && args.reportClass.length > 0) {
+        return findAllByClass(args);
+      }
+      return findAll(args);
+    }),
     reportsOf: auth((_, args) => findAllBySo(args))
   },
   Report: {

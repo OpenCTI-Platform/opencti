@@ -24,6 +24,7 @@ import MarkingDefinitions from './components/MarkingDefinitions';
 import KillChainPhases from './components/KillChainPhases';
 import Message from '../components/Message';
 import { NoMatch, BoundaryRoute } from './components/Error';
+import Loader from './Loader';
 
 const styles = theme => ({
   root: {
@@ -87,6 +88,8 @@ class Root extends Component {
                           <BoundaryRoute path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props && props.me ? props.me : null}/>}/>
                           <BoundaryRoute exact path='/dashboard/reports' render={() => (<Redirect to='/dashboard/reports/all'/>)}/>
                           <BoundaryRoute exact path='/dashboard/reports/all' component={Reports}/>
+                          <BoundaryRoute exact path='/dashboard/reports/internal' render={routeProps => <Reports {...routeProps} reportClass='internal'/>}/>
+                          <BoundaryRoute exact path='/dashboard/reports/external' render={routeProps => <Reports {...routeProps} reportClass='external'/>}/>
                           <BoundaryRoute path='/dashboard/reports/all/:reportId' render={routeProps => <RootReport {...routeProps} me={props && props.me ? props.me : null}/>}/>
                           <BoundaryRoute exact path='/dashboard/sources/references' component={ExternalReferences}/>
                           <BoundaryRoute exact path='/dashboard/settings' component={Settings}/>
@@ -101,7 +104,7 @@ class Root extends Component {
               </ConnectedDocumentTitle>
             </ConnectedIntlProvider>);
           }
-          return <div>APPLICATION LOADER</div>;
+          return <Loader/>;
         }}
       />
     );

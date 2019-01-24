@@ -98,12 +98,6 @@ const styles = theme => ({
     color: '#ffffff',
     fontSize: 11,
   },
-  popover: {
-    position: 'absolute',
-    color: '#ffffff',
-    top: 8,
-    right: 5,
-  },
   content: {
     width: '100%',
     height: 40,

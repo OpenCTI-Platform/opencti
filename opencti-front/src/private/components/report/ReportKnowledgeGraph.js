@@ -23,10 +23,12 @@ import EntityPortFactory from '../../../components/graph_node/EntityPortFactory'
 import EntityLinkFactory from '../../../components/graph_node/EntityLinkFactory';
 import EntityLabelFactory from '../../../components/graph_node/EntityLabelFactory';
 import EntityLabelModel from '../../../components/graph_node/EntityLabelModel';
+import EntityLinkModel from '../../../components/graph_node/EntityLinkModel';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
 import { reportMutationRelationAdd, reportMutationRelationDelete } from './ReportAddObjectRefsLines';
 import StixRelationCreation, { stixRelationCreationQuery, stixRelationCreationDeleteMutation } from '../stix_relation/StixRelationCreation';
+import StixRelationEdition from '../stix_relation/StixRelationEdition';
 
 const styles = () => ({
   container: {
@@ -52,7 +54,7 @@ export const reportKnowledgeGraphQuery = graphql`
     }
 `;
 
-const GRAPHER$ = new Subject().pipe(debounce(() => timer(1000)));
+const GRAPHER$ = new Subject().pipe(debounce(() => timer(1500)));
 
 class ReportKnowledgeGraphComponent extends Component {
   constructor(props) {
@@ -61,6 +63,8 @@ class ReportKnowledgeGraphComponent extends Component {
       openCreateRelation: false,
       createRelationFrom: null,
       createRelationTo: null,
+      openEditRelation: false,
+      editRelationId: null,
       currentLink: null,
     };
     this.saving = false;
@@ -84,12 +88,15 @@ class ReportKnowledgeGraphComponent extends Component {
     // unselect all nodes
     forEach((n) => {
       n.setSelected(false);
+      n.addListener({ selectionChanged: this.handleSelection.bind(this) });
     }, values(model.getNodes()));
+    forEach((l) => {
+      l.addListener({ selectionChanged: this.handleSelection.bind(this) });
+    }, values(model.getLinks()));
     // set the model
     model.addListener({
       nodesUpdated: this.handleNodeChanges.bind(this),
       linksUpdated: this.handleLinksChange.bind(this),
-      selectionChanged: this.handleSelection.bind(this),
     });
     this.engine.setDiagramModel(model);
     // subscribe to grapher
@@ -122,6 +129,7 @@ class ReportKnowledgeGraphComponent extends Component {
         type: n.node.type,
       }), added);
       forEach((n) => {
+        n.addListener({ selectionChanged: this.handleSelection.bind(this) });
         model.addNode(n);
       }, newNodes);
       this.forceUpdate();
@@ -209,6 +217,7 @@ class ReportKnowledgeGraphComponent extends Component {
       if (link.targetPort === null || (link.sourcePort === link.targetPort)) {
         model.removeLink(link);
       } else if (filteredCurrentLinks.length === 1) {
+        link.addListener({ selectionChanged: this.handleSelection.bind(this) });
         this.setState({
           openCreateRelation: true,
           createRelationFrom: link.sourcePort.parent.extras,
@@ -267,6 +276,14 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleSelection(event) {
     console.log(event);
+    if (event.isSelected === true) {
+      if (event.entity instanceof EntityLinkModel) {
+        this.setState({
+          openEditRelation: true,
+          editRelationId: event.entity.extras.relation.id,
+        });
+      }
+    }
     return true;
   }
 
@@ -316,10 +333,17 @@ class ReportKnowledgeGraphComponent extends Component {
     this.handleSaveGraph();
   }
 
+  handleCloseRelationEdition() {
+    this.setState({
+      openEditRelation: false,
+      editRelationId: null,
+    });
+  }
+
   render() {
     const { classes, report } = this.props;
     const {
-      openCreateRelation, createRelationFrom, createRelationTo,
+      openCreateRelation, createRelationFrom, createRelationTo, openEditRelation, editRelationId,
     } = this.state;
     return (
       <div className={classes.container}>
@@ -342,6 +366,11 @@ class ReportKnowledgeGraphComponent extends Component {
           handleClose={this.handleCloseRelationCreation.bind(this)}
           handleResult={this.handleResultRelationCreation.bind(this)}
         />
+        <StixRelationEdition
+          open={openEditRelation}
+          stixRelationId={editRelationId}
+          handleClose={this.handleCloseRelationEdition.bind(this)}
+          />
       </div>
     );
   }

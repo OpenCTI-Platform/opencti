@@ -26,7 +26,7 @@ class TopMenuReports extends Component {
         <Button component={Link} to='/dashboard/reports/internal' variant={location.pathname === '/dashboard/reports/internal' ? 'contained' : 'text'} size="small" color={location.pathname === '/dashboard/reports/internal' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('Internal productions')}
         </Button>
-        <Button component={Link} to='/dashboard/reports/sources' variant={location.pathname === '/dashboard/reports/sources' ? 'contained' : 'text'} size="small" color={location.pathname === '/dashboard/reports/sources' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to='/dashboard/reports/external' variant={location.pathname === '/dashboard/reports/external' ? 'contained' : 'text'} size="small" color={location.pathname === '/dashboard/reports/external' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('External sources')}
         </Button>
       </div>

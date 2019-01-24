@@ -3,7 +3,9 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { PortWidget } from 'storm-react-diagrams';
 import { withStyles } from '@material-ui/core/styles';
-import { MoreVert } from '@material-ui/icons';
+import IconButton from '@material-ui/core/IconButton';
+import { Visibility } from '@material-ui/icons';
+import { Link } from 'react-router-dom';
 import { itemColor } from '../../utils/Colors';
 import inject18n from '../i18n';
 import ItemIcon from '../ItemIcon';
@@ -43,8 +45,9 @@ const styles = () => ({
   popover: {
     position: 'absolute',
     color: '#ffffff',
-    top: 8,
-    right: 5,
+    top: -5,
+    right: 0,
+    zIndex: 100,
   },
   content: {
     width: '100%',
@@ -85,7 +88,9 @@ class EntityNodeWidget extends Component {
               {t(`entity_${extras.type}`)}
             </div>
             <div className={classes.popover}>
-              <MoreVert fontSize='small' />
+              <IconButton component={Link} to={`/dashboard/knowledge/${extras.type.replace('-', '_')}s/${extras.id}`}>
+                <Visibility fontSize='small' />
+              </IconButton>
             </div>
         </div>
         <div className={classes.content}>
