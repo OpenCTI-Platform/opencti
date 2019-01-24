@@ -42,5 +42,3 @@ export const resolveRoles = (type) => {
       return { fromRole: '', toRole: '' };
   }
 };
-
-export default resolveRoles;
