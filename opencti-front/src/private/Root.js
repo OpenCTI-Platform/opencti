@@ -10,6 +10,7 @@ import { ConnectedDocumentTitle } from '../components/AppDocumentTitle';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
+import StixDomainEntities from './components/StixDomainEntities';
 import ThreatActors from './components/ThreatActors';
 import IntrusionSets from './components/IntrusionSets';
 import Malwares from './components/Malwares';
@@ -62,6 +63,15 @@ const rootQuery = graphql`
 `;
 
 class Root extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { keyword: '' };
+  }
+
+  handleSearch(keyword) {
+    this.setState({ keyword });
+  }
+
   render() {
     const { classes } = this.props;
     const paddingRight = 24;
@@ -71,38 +81,41 @@ class Root extends Component {
         variables={{}}
         render={({ props }) => {
           if (props) {
-            return (<ConnectedIntlProvider me={props.me} settings={ props.settings}>
-              <ConnectedDocumentTitle settings={props.settings}>
-                <div className={classes.root}>
-                  <TopBar me={props.me}/>
-                  <LeftBar me={props.me}/>
-                  <Message/>
-                  <main className={classes.content} style={{ paddingRight }}>
-                    <div className={classes.toolbar}/>
+            return (
+              <ConnectedIntlProvider me={props.me} settings={props.settings}>
+                <ConnectedDocumentTitle settings={props.settings}>
+                  <div className={classes.root}>
+                    <TopBar me={props.me} handleSearch={this.handleSearch.bind(this)}/>
+                    <LeftBar me={props.me}/>
+                    <Message/>
+                    <main className={classes.content} style={{ paddingRight }}>
+                      <div className={classes.toolbar}/>
                       <Switch>
-                          <BoundaryRoute exact path='/dashboard' component={Dashboard}/>
-                          <BoundaryRoute exact path='/dashboard/knowledge' render={() => (<Redirect to='/dashboard/knowledge/threat_actors'/>)}/>
-                          <BoundaryRoute exact path='/dashboard/knowledge/threat_actors' component={ThreatActors}/>
-                          <BoundaryRoute exact path='/dashboard/knowledge/intrusion_sets' component={IntrusionSets}/>
-                          <BoundaryRoute exact path='/dashboard/knowledge/malwares' component={Malwares}/>
-                          <BoundaryRoute path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props && props.me ? props.me : null}/>}/>
-                          <BoundaryRoute exact path='/dashboard/reports' render={() => (<Redirect to='/dashboard/reports/all'/>)}/>
-                          <BoundaryRoute exact path='/dashboard/reports/all' component={Reports}/>
-                          <BoundaryRoute exact path='/dashboard/reports/internal' render={routeProps => <Reports {...routeProps} reportClass='internal'/>}/>
-                          <BoundaryRoute exact path='/dashboard/reports/external' render={routeProps => <Reports {...routeProps} reportClass='external'/>}/>
-                          <BoundaryRoute path='/dashboard/reports/all/:reportId' render={routeProps => <RootReport {...routeProps} me={props && props.me ? props.me : null}/>}/>
-                          <BoundaryRoute exact path='/dashboard/sources/references' component={ExternalReferences}/>
-                          <BoundaryRoute exact path='/dashboard/settings' component={Settings}/>
-                          <BoundaryRoute exact path='/dashboard/settings/users' component={Users}/>
-                          <BoundaryRoute exact path='/dashboard/settings/groups' component={Groups}/>
-                          <BoundaryRoute exact path='/dashboard/settings/marking' component={MarkingDefinitions}/>
-                          <BoundaryRoute exact path='/dashboard/settings/killchains' component={KillChainPhases}/>
-                          <Route component={NoMatch} />
+                        <BoundaryRoute exact path='/dashboard' component={Dashboard}/>
+                        <BoundaryRoute exact path='/dashboard/search' render={routeProps => <StixDomainEntities {...routeProps} me={props.me} keyword={this.state.keyword}/>}/>
+                        <BoundaryRoute exact path='/dashboard/knowledge' render={() => (<Redirect to='/dashboard/knowledge/threat_actors'/>)}/>
+                        <BoundaryRoute exact path='/dashboard/knowledge/threat_actors' component={ThreatActors}/>
+                        <BoundaryRoute exact path='/dashboard/knowledge/intrusion_sets' component={IntrusionSets}/>
+                        <BoundaryRoute exact path='/dashboard/knowledge/malwares' component={Malwares}/>
+                        <BoundaryRoute path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props.me} handleSearch={this.handleSearch.bind(this)}/>}/>
+                        <BoundaryRoute exact path='/dashboard/reports' render={() => (<Redirect to='/dashboard/reports/all'/>)}/>
+                        <BoundaryRoute exact path='/dashboard/reports/all' component={Reports}/>
+                        <BoundaryRoute exact path='/dashboard/reports/internal' render={routeProps => <Reports {...routeProps} reportClass='internal'/>}/>
+                        <BoundaryRoute exact path='/dashboard/reports/external' render={routeProps => <Reports {...routeProps} reportClass='external'/>}/>
+                        <BoundaryRoute path='/dashboard/reports/all/:reportId' render={routeProps => <RootReport {...routeProps} me={props.me} handleSearch={this.handleSearch.bind(this)}/>}/>
+                        <BoundaryRoute exact path='/dashboard/sources/references' component={ExternalReferences}/>
+                        <BoundaryRoute exact path='/dashboard/settings' component={Settings}/>
+                        <BoundaryRoute exact path='/dashboard/settings/users' component={Users}/>
+                        <BoundaryRoute exact path='/dashboard/settings/groups' component={Groups}/>
+                        <BoundaryRoute exact path='/dashboard/settings/marking' component={MarkingDefinitions}/>
+                        <BoundaryRoute exact path='/dashboard/settings/killchains' component={KillChainPhases}/>
+                        <Route component={NoMatch}/>
                       </Switch>
-                  </main>
-                </div>
-              </ConnectedDocumentTitle>
-            </ConnectedIntlProvider>);
+                    </main>
+                  </div>
+                </ConnectedDocumentTitle>
+              </ConnectedIntlProvider>
+            );
           }
           return <Loader/>;
         }}

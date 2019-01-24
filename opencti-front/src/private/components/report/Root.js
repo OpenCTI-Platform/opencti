@@ -20,10 +20,10 @@ const reportQuery = graphql`
 
 class RootReport extends Component {
   render() {
-    const { me, match: { params: { reportId } } } = this.props;
+    const { me, handleSearch, match: { params: { reportId } } } = this.props;
     return (
       <div>
-        <TopBar me={me || null}/>
+        <TopBar me={me || null} handleSearch={handleSearch.bind(this)}/>
         <QueryRenderer
           query={reportQuery}
           variables={{ id: reportId }}
@@ -54,6 +54,7 @@ RootReport.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
   me: PropTypes.object,
+  handleSearch: PropTypes.func,
 };
 
 export default withRouter(RootReport);

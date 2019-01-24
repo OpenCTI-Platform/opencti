@@ -18,12 +18,23 @@ import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Report', args);
 export const findAllByClass = args =>
-  paginate(`match $m isa Report; $m has report_class "${args.reportClass}"  `, args);
+  paginate(
+    `match $m isa Report; $m has report_class "${args.reportClass}"`,
+    args
+  );
 export const findAllBySo = args =>
   paginate(
     `match $report isa Report; 
-    $rel(knowledge_aggregation:$report, so:$so) isa object_marking_refs; 
+    $rel(knowledge_aggregation:$report, so:$so) isa object_refs; 
     $so id ${args.objectId}`,
+    args
+  );
+export const findAllBySoAndClass = args =>
+  paginate(
+    `match $report isa Report; 
+    $rel(knowledge_aggregation:$report, so:$so) isa object_refs;
+    $so id ${args.objectId};
+    $report has report_class "${args.reportClass}"`,
     args
   );
 

@@ -6,6 +6,7 @@ import {
   findAll,
   findAllByClass,
   findAllBySo,
+  findAllBySoAndClass,
   findById,
   createdByRef,
   markingDefinitions,
@@ -23,12 +24,17 @@ const reportResolvers = {
   Query: {
     report: auth((_, { id }) => findById(id)),
     reports: auth((_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        if (args.reportClass && args.reportClass.length > 0) {
+          return findAllBySoAndClass(args);
+        }
+        return findAllBySo(args);
+      }
       if (args.reportClass && args.reportClass.length > 0) {
         return findAllByClass(args);
       }
       return findAll(args);
-    }),
-    reportsOf: auth((_, args) => findAllBySo(args))
+    })
   },
   Report: {
     createdByRef: (report, args) => createdByRef(report.id, args),

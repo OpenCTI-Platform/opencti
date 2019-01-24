@@ -30,11 +30,12 @@ const styles = theme => ({
 class SearchInput extends Component {
   render() {
     const {
-      t, classes, onChange, onSubmit, variant,
+      t, classes, onChange, onSubmit, variant, keyword
     } = this.props;
     return (
       <Input
         name='keyword'
+        defaultValue={keyword}
         placeholder={`${t('Search')}...`}
         onChange={(event) => {
           const { value } = event.target;
@@ -61,6 +62,7 @@ class SearchInput extends Component {
 }
 
 SearchInput.propTypes = {
+  keyword: PropTypes.string,
   t: PropTypes.func.isRequired,
   classes: PropTypes.object.isRequired,
   onChange: PropTypes.func,

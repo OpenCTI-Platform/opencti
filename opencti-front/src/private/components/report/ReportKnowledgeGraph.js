@@ -275,7 +275,6 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleSelection(event) {
-    console.log(event);
     if (event.isSelected === true) {
       if (event.entity instanceof EntityLinkModel) {
         this.setState({

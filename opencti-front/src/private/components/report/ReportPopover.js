@@ -7,6 +7,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
+import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -15,11 +16,25 @@ import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
-import { commitMutation } from '../../../relay/environment';
+import { QueryRenderer, commitMutation } from '../../../relay/environment';
+import { reportEditionQuery } from './ReportEdition';
+import ReportEditionContainer from './ReportEditionContainer';
 
-const styles = () => ({
+const styles = theme => ({
   container: {
     margin: 0,
+  },
+  drawerPaper: {
+    minHeight: '100vh',
+    width: '50%',
+    position: 'fixed',
+    overflow: 'auto',
+    backgroundColor: theme.palette.navAlt.background,
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    padding: 0,
   },
 });
 
@@ -41,6 +56,7 @@ class ReportPopover extends Component {
     this.state = {
       anchorEl: null,
       displayDelete: false,
+      displayEdit: false,
       deleting: false,
     };
   }
@@ -77,8 +93,17 @@ class ReportPopover extends Component {
     });
   }
 
+  handleOpenEdit() {
+    this.setState({ displayEdit: true });
+    this.handleClose();
+  }
+
+  handleCloseEdit() {
+    this.setState({ displayEdit: false });
+  }
+
   render() {
-    const { classes, t } = this.props;
+    const { classes, t, reportId } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
@@ -89,7 +114,7 @@ class ReportPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}>
-          <MenuItem>{t('Export')}</MenuItem>
+          <MenuItem onClick={this.handleOpenEdit.bind(this)}>{t('Update')}</MenuItem>
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
         </Menu>
         <Dialog
@@ -111,6 +136,20 @@ class ReportPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <Drawer open={this.state.displayEdit} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleCloseEdit.bind(this)}>
+          <QueryRenderer
+            query={reportEditionQuery}
+            variables={{ id: reportId }}
+            render={({ props }) => {
+              if (props) { // Done
+                return <ReportEditionContainer me={props.me} report={props.report}
+                                               handleClose={this.handleCloseEdit.bind(this)}/>;
+              }
+              // Loading
+              return <div> &nbsp; </div>;
+            }}
+          />
+        </Drawer>
       </div>
     );
   }

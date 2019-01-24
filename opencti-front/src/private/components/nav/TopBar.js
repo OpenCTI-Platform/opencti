@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
-import { propOr, includes, compose } from 'ramda';
+import { propOr, includes, compose, head } from "ramda";
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -80,7 +80,8 @@ class TopBar extends Component {
   }
 
   handleSearch(keyword) {
-    return false;
+    this.props.history.push('/dashboard/search');
+    this.props.handleSearch(keyword);
   }
 
   render() {
@@ -89,6 +90,7 @@ class TopBar extends Component {
       classes,
       location,
       me,
+      keyword,
     } = this.props;
     return (
       <AppBar position='fixed' className={classes.appBar}>
@@ -106,7 +108,7 @@ class TopBar extends Component {
             {location.pathname === '/dashboard/settings' || location.pathname.match('/dashboard/settings/[a-z_]+$') ? <TopMenuSettings/> : ''}
           </div>
           <div className={classes.searchContainer}>
-            <SearchInput onSubmit={this.handleSearch.bind(this)}/>
+            <SearchInput onSubmit={this.handleSearch.bind(this)} keyword={keyword}/>
           </div>
           <IconButton size='large' classes={{ root: classes.menuButton }} aria-owns={this.state.open ? 'menu-appbar' : null}
                       aria-haspopup='true' onClick={this.handleOpenMenu.bind(this)} color='inherit'>
@@ -130,6 +132,8 @@ class TopBar extends Component {
 }
 
 TopBar.propTypes = {
+  keyword: PropTypes.string,
+  handleSearch: PropTypes.func,
   me: PropTypes.object,
   classes: PropTypes.object,
   location: PropTypes.object,

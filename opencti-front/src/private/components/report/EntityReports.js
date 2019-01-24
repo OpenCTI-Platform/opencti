@@ -1,131 +1,125 @@
+/* eslint-disable no-nested-ternary */
+// TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { Description } from '@material-ui/icons';
-import inject18n from '../../../components/i18n';
-import ItemMarking from '../../../components/ItemMarking';
-import truncate from '../../../utils/String';
+import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import { QueryRenderer } from '../../../relay/environment';
+import ReportsLines, { reportsLinesQuery } from './ReportsLines';
+import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
-  paper: {
-    minHeight: '100%',
-    margin: '10px 0 0 0',
-    padding: 0,
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
-    borderRadius: 6,
+const styles = () => ({
+  linesContainer: {
+    marginTop: 0,
+    paddingTop: 0,
   },
   item: {
-    height: 60,
-    minHeight: 60,
-    maxHeight: 60,
-    transition: 'background-color 0.1s ease',
-    paddingRight: 0,
+    paddingLeft: 10,
+    textTransform: 'uppercase',
     cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
   },
-  itemIcon: {
-    marginRight: 0,
-    color: theme.palette.primary.main,
+  inputLabel: {
+    float: 'left',
+  },
+  sortIcon: {
+    float: 'left',
+    margin: '-5px 0 0 15px',
   },
 });
 
 const inlineStyles = {
-  itemDate: {
-    fontSize: 11,
-    width: 80,
-    minWidth: 80,
-    maxWidth: 80,
-    marginRight: 24,
-    textAlign: 'right',
-    color: '#ffffff',
+  iconSort: {
+    position: 'absolute',
+    margin: '-3px 0 0 5px',
+    padding: 0,
+    top: '0px',
+  },
+  name: {
+    float: 'left',
+    width: '40%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  author: {
+    float: 'left',
+    width: '20%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  published: {
+    float: 'left',
+    width: '15%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  marking: {
+    float: 'left',
+    fontSize: 12,
+    fontWeight: '700',
   },
 };
 
-const entityReportsQuery = graphql`
-    query EntityReportsQuery($objectId: String!, $first: Int) {
-        reportsOf(objectId: $objectId, first: $first) {
-            edges {
-                node {
-                    id
-                    name
-                    published
-                    createdByRef {
-                        node {
-                            name
-                        }
-                    }
-                    markingDefinitions {
-                        edges {
-                            node {
-                                definition
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-`;
-
 class EntityReports extends Component {
-  render() {
-    const { t, classes, entityId } = this.props;
+  constructor(props) {
+    super(props);
+    this.state = { sortBy: 'published', orderAsc: false };
+  }
+
+  reverseBy(field) {
+    this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
+  }
+
+  SortHeader(field, label) {
+    const { t } = this.props;
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
-          {t('Last reports')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+      <div style={inlineStyles[field]} onClick={this.reverseBy.bind(this, field)}>
+        <span>{t(label)}</span>
+        {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStyles.iconSort}/> : <ArrowDropUp style={inlineStyles.iconSort}/> : ''}
+      </div>
+    );
+  }
+
+  render() {
+    const { classes, entityId, reportClass } = this.props;
+    const paginationOptions = {
+      objectId: entityId,
+      reportClass: reportClass || '',
+      orderBy: this.state.sortBy,
+      orderMode: this.state.orderAsc ? 'asc' : 'desc',
+    };
+    return (
+      <div>
+        <List classes={{ root: classes.linesContainer }}>
+          <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
+            <ListItemIcon>
+              <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
+            </ListItemIcon>
+            <ListItemText primary={
+              <div>
+                {this.SortHeader('name', 'Name')}
+                {this.SortHeader('author', 'Author')}
+                {this.SortHeader('published', 'Publication date')}
+                {this.SortHeader('marking', 'Marking')}
+              </div>
+            }/>
+          </ListItem>
           <QueryRenderer
-            query={entityReportsQuery}
-            variables={{ objectId: entityId, first: 5 }}
+            query={reportsLinesQuery}
+            variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
-              if (props && props.reportsOf) {
-                return (
-                  <List>
-                    {props.reportsOf.edges.map((report) => {
-                      return (
-                        <ListItem
-                          dense={true}
-                          classes={{ default: classes.item }}
-                          divider={true}
-                          component={Link}
-                          to={'/dashboard/reports/'}
-                        >
-                          <ListItemIcon classes={{ root: classes.itemIcon }}>
-                            <Description/>
-                          </ListItemIcon>
-                          <ListItemText primary={truncate('dsqd sdqsd qsdqs dqsd qsd qsdqs ', 120)}
-                                        secondary={truncate('dfsfds fdsf sdf sdfsdfdsf sdf sdf sdf sdfsd fdsf sdfsdf sdfs fdsdf sdf', 150)}/>
-                          <div style={{ minWidth: 100 }}>
-                            <ItemMarking label='TLP:RED' position='normal'/>
-                          </div>
-                          <div style={inlineStyles.itemDate}>28 mai 2018</div>
-                        </ListItem>
-                      );
-                    })}
-                  </List>
-                );
+              if (props) { // Done
+                return <ReportsLines data={props} paginationOptions={paginationOptions}/>;
               }
-              return (
-                <div> &nbsp; </div>
-              );
+              // Loading
+              return <ReportsLines data={null} dummy={true}/>;
             }}
           />
-        </Paper>
+        </List>
       </div>
     );
   }
@@ -133,10 +127,10 @@ class EntityReports extends Component {
 
 EntityReports.propTypes = {
   entityId: PropTypes.string,
-  limit: PropTypes.number,
   classes: PropTypes.object,
+  reportClass: PropTypes.string,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  history: PropTypes.object,
 };
 
 export default compose(

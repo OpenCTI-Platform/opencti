@@ -30,7 +30,7 @@ const styles = theme => ({
   },
 });
 
-const reportEditionQuery = graphql`
+export const reportEditionQuery = graphql`
   query ReportEditionContainerQuery($id: String!) {
     report(id: $id) {
       ...ReportEditionContainer_report

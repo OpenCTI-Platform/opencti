@@ -9,6 +9,10 @@ const styles = () => ({
     width: '100vh',
     height: '100vh',
   },
+  containerInside: {
+    width: '100vh',
+    height: 'calc(100vh-180px)',
+  },
   particlesContainer: {
     position: 'absolute',
     top: 0,
@@ -34,9 +38,9 @@ const styles = () => ({
 
 class Loader extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, variant } = this.props;
     return (
-      <div className={classes.container}>
+      <div className={variant === 'inside' ? classes.containerInside: classes.container}>
         <Particles
           className={classes.particlesContainer}
           params={{
@@ -59,6 +63,7 @@ class Loader extends Component {
 }
 
 Loader.propTypes = {
+  variant: PropTypes.string,
   history: PropTypes.object,
   classes: PropTypes.object,
 };

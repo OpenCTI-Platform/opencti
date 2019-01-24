@@ -140,8 +140,8 @@ ReportsLines.propTypes = {
 };
 
 export const reportsLinesQuery = graphql`
-    query ReportsLinesPaginationQuery($reportClass: String, $count: Int!, $cursor: ID, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {
-        ...ReportsLines_data @arguments(reportClass: $reportClass, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
+    query ReportsLinesPaginationQuery($objectId: String, $reportClass: String, $count: Int!, $cursor: ID, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {
+        ...ReportsLines_data @arguments(objectId: $objectId, reportClass: $reportClass, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
     }
 `;
 
@@ -171,13 +171,14 @@ export default withStyles(styles)(createPaginationContainer(
   {
     data: graphql`
         fragment ReportsLines_data on Query @argumentDefinitions(
+            objectId: {type: "String"},
             reportClass: {type: "String"},
             count: {type: "Int", defaultValue: 25}
             cursor: {type: "ID"}
             orderBy: {type: "ReportsOrdering", defaultValue: ID}
             orderMode: {type: "OrderingMode", defaultValue: "asc"}
         ) {
-            reports(reportClass: $reportClass, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_reports") {
+            reports(objectId: $objectId, reportClass: $reportClass, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_reports") {
                 edges {
                     node {
                         ...ReportLine_report
@@ -200,6 +201,8 @@ export default withStyles(styles)(createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
+        objectId: fragmentVariables.objectId,
+        reportClass: fragmentVariables.reportClass,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,
