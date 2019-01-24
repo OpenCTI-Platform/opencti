@@ -50,12 +50,15 @@ const styles = theme => ({
   },
 });
 
-const reportMutationRelationAdd = graphql`
+export const reportMutationRelationAdd = graphql`
     mutation ReportAddObjectRefsLinesRelationAddMutation($id: ID!, $input: RelationAddInput!) {
         reportEdit(id: $id) {
             relationAdd(input: $input) {
                 node {
                     ...ReportKnowledgeGraph_report
+                }
+                relation {
+                    id
                 }
             }
         }

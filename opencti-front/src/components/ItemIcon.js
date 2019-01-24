@@ -7,6 +7,7 @@ import {
   Public,
   Help,
   BugReport,
+  Description,
 } from '@material-ui/icons';
 import {
   Biohazard,
@@ -58,6 +59,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <Application style={style} fontSize={fontSize}/>;
     case 'vulnerability':
       return <BugReport style={style} fontSize={fontSize}/>;
+    case 'report':
+      return <Description style={style} fontSize={fontSize}/>;
     default:
       return <Help style={style} fontSize={fontSize}/>;
   }

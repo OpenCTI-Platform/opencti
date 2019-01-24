@@ -1,4 +1,5 @@
-import { PortModel, DefaultLinkModel } from 'storm-react-diagrams';
+import { PortModel } from 'storm-react-diagrams';
+import EntityLinkModel from './EntityLinkModel';
 import { mergeRight } from 'ramda';
 
 export default class EntityPortModel extends PortModel {
@@ -19,6 +20,6 @@ export default class EntityPortModel extends PortModel {
   }
 
   createLinkModel() {
-    return new DefaultLinkModel();
+    return new EntityLinkModel();
   }
 }

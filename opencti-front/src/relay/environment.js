@@ -6,7 +6,6 @@ import { installRelayDevTools } from 'relay-devtools';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { execute } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
-import Cookies from 'js-cookie';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import React, { Component } from 'react';

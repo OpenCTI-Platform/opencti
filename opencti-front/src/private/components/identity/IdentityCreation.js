@@ -229,7 +229,7 @@ class IdentityCreation extends Component {
                     <MenuItem value='User'>{t('Person')}</MenuItem>
                   </Field>
                 </DialogContent>
-                <DialogActions classes={{root: classes.dialogActions}}>
+                <DialogActions classes={{ root: classes.dialogActions }}>
                   <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                     {t('Cancel')}
                   </Button>

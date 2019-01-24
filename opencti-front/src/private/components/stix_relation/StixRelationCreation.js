@@ -12,6 +12,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import MenuItem from '@material-ui/core/MenuItem';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { ArrowRightAlt } from '@material-ui/icons';
 import { environment, commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
@@ -23,6 +24,15 @@ import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
 
 const styles = theme => ({
+  loader: {
+    width: '100%',
+    height: 180,
+    paddingTop: 50,
+    textAlign: 'center',
+  },
+  loaderCircle: {
+    display: 'inline-block',
+  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -142,7 +152,7 @@ const styles = theme => ({
   },
 });
 
-const stixRelationCreationQuery = graphql`
+export const stixRelationCreationQuery = graphql`
     query StixRelationCreationQuery($fromId: String!, $toId: String!) {
         stixRelations(fromId: $fromId, toId: $toId) {
             edges {
@@ -171,6 +181,14 @@ const stixRelationCreationMutation = graphql`
     }
 `;
 
+export const stixRelationCreationDeleteMutation = graphql`
+    mutation StixRelationCreationDeleteMutation($id: ID!) {
+        stixRelationEdit(id: $id) {
+            delete
+        }
+    }
+`;
+
 const stixRelationValidation = t => Yup.object().shape({
   relationship_type: Yup.string()
     .required(t('This field is required')),
@@ -190,7 +208,7 @@ const stixRelationValidation = t => Yup.object().shape({
 class StixRelationCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = { step: 1, existingRelations: [] };
+    this.state = { step: 0, existingRelations: [] };
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -211,6 +229,7 @@ class StixRelationCreation extends Component {
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
+        this.setState({ existingRelations: [], step: 0 });
         this.props.handleResult(response.stixRelationAdd);
       },
     });
@@ -232,7 +251,17 @@ class StixRelationCreation extends Component {
   }
 
   handleSelectRelation(relation) {
+    this.setState({ existingRelations: [], step: 0 });
     this.props.handleResult(relation);
+  }
+
+  handleChangeStep() {
+    this.setState({ step: 2 });
+  }
+
+  handleClose() {
+    this.setState({ existingRelations: [], step: 0 });
+    this.props.handleClose();
   }
 
   renderForm() {
@@ -345,15 +374,6 @@ class StixRelationCreation extends Component {
         )}
       />
     );
-  }
-
-  handleChangeStep() {
-    this.setState({ step: 2 });
-  }
-
-  handleClose() {
-    this.setState({ step: 1 });
-    this.props.handleClose();
   }
 
   renderSelectRelation() {
@@ -475,6 +495,14 @@ class StixRelationCreation extends Component {
     );
   }
 
+  renderLoader() {
+    return (
+        <div className={this.props.classes.loader}>
+          <CircularProgress size={80} thickness={2} className={this.props.classes.loaderCircle}/>
+        </div>
+    );
+  }
+
   render() {
     const { open } = this.props;
     const { step } = this.state;
@@ -486,6 +514,7 @@ class StixRelationCreation extends Component {
           maxWidth='md'
           fullWidth={true}
         >
+          {step === 0 ? this.renderLoader() : '' }
           {step === 1 ? this.renderSelectRelation() : ''}
           {step === 2 ? this.renderForm() : ''}
         </Dialog>

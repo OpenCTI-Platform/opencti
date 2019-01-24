@@ -144,19 +144,21 @@ type StixRelationEdge {
     from: StixDomainEntity
     to: StixDomainEntity
 }
-type StixRelation {
+type StixRelation implements GlobalObject & StixDomainEntity {
     id: ID!
+    type: String!
+    name: String!
     relationship_type: String
     weight: Int
     description: String
     first_seen: DateTime
     last_seen: DateTime
-    created: DateTime
-    modified: DateTime
+    created: DateTime!
+    modified: DateTime!
     editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
-    created_at: DateTime
-    updated_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
 }
 input StixRelationAddInput  {
     fromId: String!

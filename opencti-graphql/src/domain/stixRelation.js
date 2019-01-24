@@ -45,7 +45,9 @@ export const addStixRelation = async (user, stixRelation) => {
   }: $to) 
     isa ${stixRelation.relationship_type} 
     has relationship_type "${stixRelation.relationship_type.toLowerCase()}";
+    $stixRelation has type "stix-relation";
     $stixRelation has stix_id "relationship--${uuid()}";
+    $stixRelation has name "";
     $stixRelation has description "${stixRelation.description}";
     $stixRelation has weight ${stixRelation.weight};
     $stixRelation has first_seen ${prepareDate(stixRelation.first_seen)};

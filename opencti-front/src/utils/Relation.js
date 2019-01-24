@@ -1,4 +1,28 @@
-const resolveRoles = (type) => {
+const relationsTypesMapping = {
+  'campaign_intrusion-set': ['attributed-to'],
+  'campaign_attack-pattern': ['uses'],
+  campaign_county: ['targets'],
+  campaign_city: ['targets'],
+  campaign_sector: ['targets'],
+  campaign_organization: ['targets', 'attributed-to'],
+  'campaign_threat-actor': ['attributed-to'],
+  campaign_user: ['attributed-to', 'targets'],
+  campaign_malware: ['uses'],
+  campaign_vulnerability: ['targets'],
+  'intrusion-set_attack-pattern': ['uses'],
+  'intrusion-set_country': ['targets', 'localization'],
+  'intrusion-set_city': ['targets', 'localization'],
+  'intrusion-set_sector': ['targets'],
+  'intrusion-set_organization': ['targets', 'attributed-to'],
+  'intrusion-set_threat-actor': ['targets', 'attributed-to'],
+  'intrusion-set_user': ['attributed-to'],
+  'intrusion-set_malware': ['uses'],
+  'intrusion-set_vulnerability': ['targets'],
+};
+
+export const resolveRelationsTypes = (fromType, toType) => relationsTypesMapping[`${fromType}_${toType}`];
+
+export const resolveRoles = (type) => {
   switch (type) {
     case 'targets':
       return { fromRole: 'source', toRole: 'target' };

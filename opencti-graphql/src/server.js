@@ -94,7 +94,7 @@ const server = new ApolloServer({
     const isAuthFailure = response.errors
       ? pipe(
           map(e => apolloFormatError(e)),
-          filter(e => e.data.type === TYPE_AUTH),
+          filter(e => e.data && e.data.type === TYPE_AUTH),
           isEmpty,
           not
         )(response.errors)

@@ -14,11 +14,13 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
+import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import { commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
+import Select from '../../../components/Select';
 
 const styles = theme => ({
   drawerPaper: {
@@ -31,6 +33,9 @@ const styles = theme => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
+  },
+  dialogActions: {
+    padding: '0 17px 20px 0',
   },
   createButton: {
     position: 'fixed',
@@ -68,26 +73,26 @@ const stixDomainEntityCreationMutation = graphql`
     mutation StixDomainEntityCreationMutation($input: StixDomainEntityAddInput!) {
         stixDomainEntityAdd(input: $input) {
             id
+            type
             name
             description
         }
     }
 `;
 
-const stixDomainValidation = t => Yup.object().shape({
-  source_name: Yup.string()
+const stixDomainEntityValidation = t => Yup.object().shape({
+  name: Yup.string()
     .required(t('This field is required')),
-  external_id: Yup.string(),
-  url: Yup.string()
-    .url(t('The value must be an URL')),
   description: Yup.string(),
+  type: Yup.string()
+    .required(t('This field is required')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_stixDomains',
+    'Pagination_stixDomainEntities',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -114,7 +119,7 @@ class StixDomainEntityCreation extends Component {
         input: values,
       },
       updater: (store) => {
-        const payload = store.getRootField('stixDomainAdd');
+        const payload = store.getRootField('stixDomainEntityAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
@@ -149,26 +154,44 @@ class StixDomainEntityCreation extends Component {
               <Close fontSize='small'/>
             </IconButton>
             <Typography variant='h6'>
-              {t('Create an external reference')}
+              {t('Create an entity')}
             </Typography>
           </div>
           <div className={classes.container}>
             <Formik
               initialValues={{
-                source_name: '', external_id: '', url: '', description: '',
+                name: '', description: '', type: '',
               }}
-              validationSchema={stixDomainValidation(t)}
+              validationSchema={stixDomainEntityValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
               render={({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field name='source_name' component={TextField} label={t('Source name')} fullWidth={true}/>
-                  <Field name='external_id' component={TextField} label={t('External ID')} fullWidth={true} style={{ marginTop: 20 }}/>
-                  <Field name='url' component={TextField} label={t('URL')} fullWidth={true} style={{ marginTop: 20 }}/>
+                  <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
                   <Field name='description' component={TextField} label={t('Description')}
                          fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
+                  <Field name='type'
+                         component={Select}
+                         label={t('Entity type')}
+                         fullWidth={true}
+                         displayEmpty={true}
+                         inputProps={{
+                           name: 'type',
+                           id: 'type',
+                         }}
+                         containerstyle={{ marginTop: 20, width: '100%' }}
+                  >
+                    <MenuItem value='Organization'>{t('Organization')}</MenuItem>
+                    <MenuItem value='Threat-Actor'>{t('Threat actor')}</MenuItem>
+                    <MenuItem value='Intrusion-Set'>{t('Intrusion set')}</MenuItem>
+                    <MenuItem value='Campaign'>{t('Campaign')}</MenuItem>
+                    <MenuItem value='Incident'>{t('Incident')}</MenuItem>
+                    <MenuItem value='Malware'>{t('Malware')}</MenuItem>
+                    <MenuItem value='Tool'>{t('Tool')}</MenuItem>
+                    <MenuItem value='Vulnerability'>{t('Vulnerability')}</MenuItem>
+                  </Field>
                   <div className={classes.buttons}>
-                    <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                    <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                       {t('Cancel')}
                     </Button>
                     <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
@@ -196,26 +219,44 @@ class StixDomainEntityCreation extends Component {
         <Formik
           enableReinitialize={true}
           initialValues={{
-            source_name: inputValue, external_id: '', url: '', description: '',
+            name: inputValue, description: '', type: '',
           }}
-          validationSchema={stixDomainValidation(t)}
+          validationSchema={stixDomainEntityValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onResetContextual.bind(this)}
           render={({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
                 <DialogTitle>
-                  {t('Create an external reference')}
+                  {t('Create an entity')}
                 </DialogTitle>
                 <DialogContent>
-                  <Field name='source_name' component={TextField} label={t('Source name')} fullWidth={true}/>
-                  <Field name='external_id' component={TextField} label={t('External ID')} fullWidth={true} style={{ marginTop: 20 }}/>
-                  <Field name='url' component={TextField} label={t('URL')} fullWidth={true} style={{ marginTop: 20 }}/>
+                  <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
                   <Field name='description' component={TextField} label={t('Description')}
                          fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
+                  <Field name='type'
+                         component={Select}
+                         label={t('Entity type')}
+                         fullWidth={true}
+                         displayEmpty={true}
+                         inputProps={{
+                           name: 'type',
+                           id: 'type',
+                         }}
+                         containerstyle={{ marginTop: 20, width: '100%' }}
+                  >
+                    <MenuItem value='Organization'>{t('Organization')}</MenuItem>
+                    <MenuItem value='Threat-Actor'>{t('Threat actor')}</MenuItem>
+                    <MenuItem value='Intrusion-Set'>{t('Intrusion set')}</MenuItem>
+                    <MenuItem value='Campaign'>{t('Campaign')}</MenuItem>
+                    <MenuItem value='Incident'>{t('Incident')}</MenuItem>
+                    <MenuItem value='Malware'>{t('Malware')}</MenuItem>
+                    <MenuItem value='Tool'>{t('Tool')}</MenuItem>
+                    <MenuItem value='Vulnerability'>{t('Vulnerability')}</MenuItem>
+                  </Field>
                 </DialogContent>
-                <DialogActions>
-                  <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                <DialogActions classes={{ root: classes.dialogActions }}>
+                  <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                     {t('Cancel')}
                   </Button>
                   <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>

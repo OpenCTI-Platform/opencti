@@ -4,7 +4,6 @@ import { withRouter, Link } from 'react-router-dom';
 import { propOr, includes, compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
-import Cookies from 'js-cookie';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import { AccountCircle } from '@material-ui/icons';

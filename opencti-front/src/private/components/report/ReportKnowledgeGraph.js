@@ -4,6 +4,7 @@ import {
   compose, map, forEach, difference, values, pathOr, filter, last,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
+import { fetchQuery } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import {
   DiagramEngine,
@@ -14,17 +15,18 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
-import { commitMutation } from '../../../relay/environment';
+import { commitMutation, environment } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
 import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
 import EntityPortFactory from '../../../components/graph_node/EntityPortFactory';
+import EntityLinkFactory from '../../../components/graph_node/EntityLinkFactory';
 import EntityLabelFactory from '../../../components/graph_node/EntityLabelFactory';
+import EntityLabelModel from '../../../components/graph_node/EntityLabelModel';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
-import { reportMutationRelationDelete } from './ReportAddObjectRefsLines';
-import StixRelationCreation from '../stix_relation/StixRelationCreation';
-import EntityLabelModel from "../../../components/graph_node/EntityLabelModel";
+import { reportMutationRelationAdd, reportMutationRelationDelete } from './ReportAddObjectRefsLines';
+import StixRelationCreation, { stixRelationCreationQuery, stixRelationCreationDeleteMutation } from '../stix_relation/StixRelationCreation';
 
 const styles = () => ({
   container: {
@@ -36,7 +38,7 @@ const styles = () => ({
   canvas: {
     width: '100%',
     height: '100%',
-    minHeight: '100vh',
+    minHeight: 'calc(100vh - 170px)',
     margin: 0,
     padding: 0,
   },
@@ -50,7 +52,7 @@ export const reportKnowledgeGraphQuery = graphql`
     }
 `;
 
-const GRAPHER$ = new Subject().pipe(debounce(() => timer(500)));
+const GRAPHER$ = new Subject().pipe(debounce(() => timer(1000)));
 
 class ReportKnowledgeGraphComponent extends Component {
   constructor(props) {
@@ -66,6 +68,7 @@ class ReportKnowledgeGraphComponent extends Component {
     this.engine.installDefaultFactories();
     this.engine.registerPortFactory(new EntityPortFactory());
     this.engine.registerNodeFactory(new EntityNodeFactory());
+    this.engine.registerLinkFactory(new EntityLinkFactory());
     this.engine.registerLabelFactory(new EntityLabelFactory());
   }
 
@@ -232,8 +235,29 @@ class ReportKnowledgeGraphComponent extends Component {
             || (n.source === linkPair.target && n.target === linkPair.source),
           currentLinksPairs);
           if (filteredCurrentLinks.length === 0) {
-            console.log(event);
-            console.log('Register delete link');
+            if (link.extras && link.extras.relation) {
+              commitMutation({
+                mutation: reportMutationRelationDelete,
+                variables: {
+                  id: this.props.report.id,
+                  relationId: link.extras.objectRefId,
+                },
+              });
+              fetchQuery(environment, stixRelationCreationQuery, {
+                fromId: link.sourcePort.parent.extras.id,
+                toId: link.targetPort.parent.extras.id,
+              }).then((data) => {
+                if (data.stixRelations.edges.length === 1) {
+                  commitMutation({
+                    mutation: stixRelationCreationDeleteMutation,
+                    variables: {
+                      id: link.extras.relation.id,
+                    },
+                  });
+                }
+              });
+            }
+            this.handleSaveGraph();
           }
         }
       }
@@ -242,7 +266,7 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleSelection(event) {
-    //console.log(event);
+    console.log(event);
     return true;
   }
 
@@ -261,9 +285,28 @@ class ReportKnowledgeGraphComponent extends Component {
   handleResultRelationCreation(result) {
     const model = this.engine.getDiagramModel();
     const linkObject = model.getLink(this.state.currentLink);
-    const label = new EntityLabelModel()
-    label.setLabel(result.relationship_type)
+    const label = new EntityLabelModel();
+    label.setLabel(result.relationship_type);
     linkObject.addLabel(label);
+    const input = {
+      fromRole: 'so',
+      toId: this.props.report.id,
+      toRole: 'knowledge_aggregation',
+      through: 'object_refs',
+    };
+    commitMutation({
+      mutation: reportMutationRelationAdd,
+      variables: {
+        id: result.id,
+        input,
+      },
+      onCompleted(data) {
+        linkObject.setExtras({
+          relation: result,
+          objectRefId: data.reportEdit.relationAdd.relation.id,
+        });
+      },
+    });
     this.setState({
       openCreateRelation: false,
       createRelationFrom: null,

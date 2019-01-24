@@ -6,7 +6,7 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import { fieldToSelect } from 'formik-material-ui';
 
 const Select = props => (
-  <FormControl style={props.containerstyle} error={props.form.errors[props.field.name] !== undefined}>
+  <FormControl style={props.containerstyle} error={props.form.errors[props.field.name] !== undefined && props.form.touched[props.field.name]}>
     <InputLabel>
       {props.label}
     </InputLabel>
@@ -31,7 +31,7 @@ const Select = props => (
       className={props.className}
     />
     {props.helpertext && props.form.errors[props.field.name] === undefined ? <FormHelperText>{props.helpertext}</FormHelperText> : ''}
-    {props.form.errors[props.field.name] !== undefined ? <FormHelperText>{props.form.errors[props.field.name]}</FormHelperText> : ''}
+    {props.form.errors[props.field.name] !== undefined && props.form.touched[props.field.name] ? <FormHelperText>{props.form.errors[props.field.name]}</FormHelperText> : ''}
   </FormControl>
 );
 
