@@ -19,6 +19,8 @@ directive @constraint(
 
 ### Scalar
 scalar DateTime
+scalar ConstraintString
+scalar ConstraintNumber
 
 ### Relations
 type RelationEmbedded {
