@@ -14,9 +14,14 @@ import {
 } from 'react-relay';
 import * as PropTypes from 'prop-types';
 import {
-  map, isEmpty, difference, filter,
+  map, isEmpty, difference, filter, split,
 } from 'ramda';
 
+// Dev tools
+export const IN_DEV_MODE = process.env.NODE_ENV === 'development';
+if (IN_DEV_MODE) installRelayDevTools();
+
+// Service bus
 const MESSENGER$ = new Subject().pipe(debounce(() => timer(500)));
 export const MESSAGING$ = {
   messages: MESSENGER$,
@@ -24,10 +29,8 @@ export const MESSAGING$ = {
   notifySuccess: text => MESSENGER$.next([{ type: 'message', text }]),
   redirect: new Subject(),
 };
-const GRAPHQL_SUBSCRIPTION_ENDPOINT = 'ws://localhost:4000/graphql';
-export const IN_DEV_MODE = process.env.NODE_ENV === 'development';
-if (IN_DEV_MODE) installRelayDevTools();
 
+// Default application exception.
 export class ApplicationError extends Error {
   constructor(errors) {
     super();
@@ -35,33 +38,40 @@ export class ApplicationError extends Error {
   }
 }
 
+// Get access providers from backend.
+export const ACCESS_PROVIDERS = split(',', IN_DEV_MODE
+  ? process.env.REACT_APP_ACCESS_PROVIDERS : window.ACCESS_PROVIDERS);
+
 // Network
-function networkFetch(operation, variables) {
-  return fetch('/graphql', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      query: operation.text,
-      variables,
-    }),
-  }).then(response => response.json())
-    .then((json) => {
-      if (json.errors) {
-        return Promise.reject(json.errors);
-      }
-      return Promise.resolve(json);
-    });
+const networkFetch = (operation, variables) => fetch('/graphql', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    query: operation.text,
+    variables,
+  }),
+}).then(response => response.json())
+  .then((json) => {
+    if (json.errors) {
+      return Promise.reject(json.errors);
+    }
+    return Promise.resolve(json);
+  });
+// Subscription
+let networkSubscriptions = null;
+const WS_ACTIVATED = IN_DEV_MODE ? (process.env.REACT_APP_WS_ACTIVATED === 'true') : window.WS_ACTIVATED === 'true';
+if (WS_ACTIVATED) {
+  const subscriptionClient = new SubscriptionClient(`ws://${window.location.host}/graphql`, {
+    reconnect: true,
+  });
+  const subscriptionLink = new WebSocketLink(subscriptionClient);
+  networkSubscriptions = (operation, variables) => execute(subscriptionLink, {
+    query: operation.text,
+    variables,
+  });
 }
-const subscriptionClient = new SubscriptionClient(GRAPHQL_SUBSCRIPTION_ENDPOINT, {
-  reconnect: true,
-});
-const subscriptionLink = new WebSocketLink(subscriptionClient);
-const networkSubscriptions = (operation, variables) => execute(subscriptionLink, {
-  query: operation.text,
-  variables,
-});
 export const environment = new Environment({
   network: Network.create(networkFetch, networkSubscriptions),
   store: new Store(new RecordSource()),
@@ -113,6 +123,8 @@ export const commitMutation = ({
   },
 });
 
-export const requestSubscription = args => RS(environment, args);
+const deactivateSubscription = { dispose: () => undefined };
+export const requestSubscription = args => (WS_ACTIVATED
+  ? RS(environment, args) : deactivateSubscription);
 
 export const fetchQuery = (query, args) => FQ(environment, query, args);

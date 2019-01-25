@@ -25,8 +25,10 @@ const attackPatternResolvers = {
   },
   AttackPattern: {
     createdByRef: (attackPattern, args) => createdByRef(attackPattern.id, args),
-    markingDefinitions: (attackPattern, args) => markingDefinitions(attackPattern.id, args),
-    killChainPhases: (attackPattern, args) => killChainPhases(attackPattern.id, args),
+    markingDefinitions: (attackPattern, args) =>
+      markingDefinitions(attackPattern.id, args),
+    killChainPhases: (attackPattern, args) =>
+      killChainPhases(attackPattern.id, args),
     reports: (attackPattern, args) => reports(attackPattern.id, args),
     editContext: auth(attackPattern => fetchEditContext(attackPattern.id))
   },
@@ -39,7 +41,9 @@ const attackPatternResolvers = {
       relationDelete: ({ relationId }) =>
         attackPatternDeleteRelation(user, id, relationId)
     })),
-    attackPatternAdd: auth((_, { input }, { user }) => addAttackPattern(user, input))
+    attackPatternAdd: auth((_, { input }, { user }) =>
+      addAttackPattern(user, input)
+    )
   },
   Subscription: {
     attackPattern: {

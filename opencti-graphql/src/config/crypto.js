@@ -4,7 +4,7 @@ import conf from './conf';
 const CRYPTO_ALGORITHM = 'aes-256-cbc';
 
 export const encrypt = data => {
-  const cipher = Crypto.createCipher(CRYPTO_ALGORITHM, conf.get('jwt:secret'));
+  const cipher = Crypto.createCipher(CRYPTO_ALGORITHM, conf.get('app:secret'));
   const encrypted = Buffer.concat([
     cipher.update(data.toString()),
     cipher.final()
@@ -15,7 +15,7 @@ export const encrypt = data => {
 export const decrypt = data => {
   const decipher = Crypto.createDecipher(
     CRYPTO_ALGORITHM,
-    conf.get('jwt:secret')
+    conf.get('app:secret')
   );
   const decrypted = Buffer.concat([
     decipher.update(Buffer.from(data, 'base64')),
