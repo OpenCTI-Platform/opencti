@@ -5,6 +5,7 @@ import {
   stixDomainEntityDelete,
   findAll,
   findById,
+  findByName,
   search,
   stixDomainEntityEditContext,
   stixDomainEntityEditField,
@@ -21,6 +22,9 @@ const stixDomainEntityResolvers = {
     stixDomainEntities: auth((_, args) => {
       if (args.search && args.search.length > 0) {
         return search(args);
+      }
+      if (args.name && args.name.length > 0) {
+        return findByName(args);
       }
       return findAll(args);
     })

@@ -55,7 +55,7 @@ export const addThreatActor = async (user, threatActor) => {
   return createThreatActor.then(result => {
     const { data } = result;
     return loadByID(head(data).threatActor.id).then(created =>
-      notify(BUS_TOPICS.ThreatActor.ADDED_TOPIC, created)
+      notify(BUS_TOPICS.ThreatActor.ADDED_TOPIC, created, user)
     );
   });
 };

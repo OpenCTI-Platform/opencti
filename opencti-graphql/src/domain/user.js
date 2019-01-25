@@ -68,6 +68,26 @@ export const groups = (userId, args) =>
     args
   );
 
+export const addPerson = async (user, newUser) => {
+  const createPerson = qk(`insert $user isa User 
+    has type "user";
+    $user has name "${newUser.name}";
+    $user has description "${newUser.description}";
+    $user has name_lowercase "${newUser.name.toLowerCase()}";
+    $user has description_lowercase "${
+      newUser.description ? newUser.description.toLowerCase() : ''
+    }";
+    $user has created_at ${now()};
+    $user has updated_at ${now()};
+  `);
+  return createPerson.then(result => {
+    const { data } = result;
+    return loadByID(head(data).user.id).then(created =>
+      notify(BUS_TOPICS.User.ADDED_TOPIC, created, user)
+    );
+  });
+};
+
 export const addUser = async (user, newUser) => {
   // const userPassword = await hashPassword(user.password);
   const token = generateOpenCTIWebToken(newUser.email);

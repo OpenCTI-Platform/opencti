@@ -132,21 +132,21 @@ class LeftBar extends Component {
               </ListItemIcon>
               {this.state.open ? <ListItemText primary={t('Reports')} classes={{ root: classes.listText }}/> : ''}
             </MenuItem>
-            <MenuItem component={Link} to='/dashboard/sources' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/sources')} dense={false}>
-              <ListItemIcon classes={{ root: classes.listIcon }}>
-                <ClipboardArrowDown/>
-              </ListItemIcon>
-              {this.state.open ? <ListItemText primary={t('Sources')} classes={{ root: classes.listText }}/> : ''}
-            </MenuItem>
-          </MenuList>
-            <Divider/>
-          {includes('ROLE_ADMIN', propOr([], 'grant', me))
-          && <MenuList component='nav'>
             <MenuItem component={Link} to='/dashboard/catalogs' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/catalogs')} dense={false}>
               <ListItemIcon classes={{ root: classes.listIcon }}>
                 <ListAlt/>
               </ListItemIcon>
               {this.state.open ? <ListItemText primary={t('Catalogs')} classes={{ root: classes.listText }}/> : ''}
+            </MenuItem>
+          </MenuList>
+            <Divider/>
+          {includes('ROLE_ADMIN', propOr([], 'grant', me))
+          && <MenuList component='nav'>
+            <MenuItem component={Link} to='/dashboard/sources' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/sources')} dense={false}>
+              <ListItemIcon classes={{ root: classes.listIcon }}>
+                <ClipboardArrowDown/>
+              </ListItemIcon>
+              {this.state.open ? <ListItemText primary={t('Sources')} classes={{ root: classes.listText }}/> : ''}
             </MenuItem>
             <MenuItem component={Link} to='/dashboard/settings' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/settings')} dense={false}>
               <ListItemIcon classes={{ root: classes.listIcon }}>

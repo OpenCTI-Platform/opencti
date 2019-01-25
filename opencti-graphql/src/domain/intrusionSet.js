@@ -45,7 +45,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   return createIntrusionSet.then(result => {
     const { data } = result;
     return loadByID(head(data).intrusionSet.id).then(created =>
-      notify(BUS_TOPICS.IntrusionSet.ADDED_TOPIC, created)
+      notify(BUS_TOPICS.IntrusionSet.ADDED_TOPIC, created, user)
     );
   });
 };

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import {
-  propOr, includes, compose, head,
+  propOr, includes, compose,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
@@ -21,6 +21,7 @@ import TopMenuKnowledge from './TopMenuKnowledge';
 import TopMenuMalware from './TopMenuMalware';
 import TopMenuReports from './TopMenuReports';
 import TopMenuReport from './TopMenuReport';
+import TopMenuCatalogs from './TopMenuCatalogs';
 import TopMenuSources from './TopMenuSources';
 import TopMenuSettings from './TopMenuSettings';
 
@@ -105,6 +106,7 @@ class TopBar extends Component {
             {location.pathname.includes('/dashboard/knowledge/malwares/') ? <TopMenuMalware/> : ''}
             {location.pathname === '/dashboard/reports' || location.pathname.match('/dashboard/reports/[a-z_]+$') ? <TopMenuReports/> : ''}
             {location.pathname.includes('/dashboard/reports/all/') ? <TopMenuReport/> : ''}
+            {location.pathname === '/dashboard/catalogs' || location.pathname.match('/dashboard/catalogs/[a-z_]+$') ? <TopMenuCatalogs/> : ''}
             {location.pathname === '/dashboard/sources' || location.pathname.match('/dashboard/sources/[a-z_]+$') ? <TopMenuSources/> : ''}
             {location.pathname === '/dashboard/settings' || location.pathname.match('/dashboard/settings/[a-z_]+$') ? <TopMenuSettings/> : ''}
           </div>

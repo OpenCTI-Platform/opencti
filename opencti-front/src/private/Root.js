@@ -17,6 +17,10 @@ import Malwares from './components/Malwares';
 import RootMalware from './components/malware/Root';
 import Reports from './components/Reports';
 import RootReport from './components/report/Root';
+import Countries from './components/Countries';
+import Cities from './components/Cities';
+import Organizations from './components/Organizations';
+import Persons from './components/Persons';
 import ExternalReferences from './components/ExternalReferences';
 import Settings from './components/Settings';
 import Users from './components/Users';
@@ -94,7 +98,12 @@ class Root extends Component {
                         <BoundaryRoute exact path='/dashboard/reports/internal' render={routeProps => <Reports {...routeProps} reportClass='internal'/>}/>
                         <BoundaryRoute exact path='/dashboard/reports/external' render={routeProps => <Reports {...routeProps} reportClass='external'/>}/>
                         <BoundaryRoute path='/dashboard/reports/all/:reportId' render={routeProps => <RootReport {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/sources/references' component={ExternalReferences}/>
+                        <BoundaryRoute exact path='/dashboard/catalogs' render={() => (<Redirect to='/dashboard/catalogs/countries'/>)}/>
+                        <BoundaryRoute exact path='/dashboard/catalogs/countries' component={Countries}/>
+                        <BoundaryRoute exact path='/dashboard/catalogs/cities' component={Cities}/>
+                        <BoundaryRoute exact path='/dashboard/catalogs/organizations' component={Organizations}/>
+                        <BoundaryRoute exact path='/dashboard/catalogs/persons' component={Persons}/>
+                        <BoundaryRoute exact path='/dashboard/catalogs/references' component={ExternalReferences}/>
                         <BoundaryRoute exact path='/dashboard/settings' component={Settings}/>
                         <BoundaryRoute exact path='/dashboard/settings/users' component={Users}/>
                         <BoundaryRoute exact path='/dashboard/settings/groups' component={Groups}/>

@@ -59,15 +59,15 @@ const styles = theme => ({
   },
 });
 
-const groupMutation = graphql`
-    mutation GroupCreationMutation($input: GroupAddInput!) {
-        groupAdd(input: $input) {
-            ...GroupLine_group
+const organizationMutation = graphql`
+    mutation OrganizationCreationMutation($input: OrganizationAddInput!) {
+        organizationAdd(input: $input) {
+            ...OrganizationLine_organization
         }
     }
 `;
 
-const groupValidation = t => Yup.object().shape({
+const organizationValidation = t => Yup.object().shape({
   name: Yup.string()
     .required(t('This field is required')),
   description: Yup.string(),
@@ -77,16 +77,16 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_groups',
+    'Pagination_organizations',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class GroupCreation extends Component {
+class OrganizationCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, groups: [] };
+    this.state = { open: false };
   }
 
   handleOpen() {
@@ -99,12 +99,12 @@ class GroupCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     commitMutation({
-      mutation: groupMutation,
+      mutation: organizationMutation,
       variables: {
         input: values,
       },
       updater: (store) => {
-        const payload = store.getRootField('groupAdd');
+        const payload = store.getRootField('organizationAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
@@ -135,13 +135,13 @@ class GroupCreation extends Component {
               <Close fontSize='small'/>
             </IconButton>
             <Typography variant='h6'>
-              {t('Create a group')}
+              {t('Create an organization')}
             </Typography>
           </div>
           <div className={classes.container}>
             <Formik
               initialValues={{ name: '', description: '' }}
-              validationSchema={groupValidation(t)}
+              validationSchema={organizationValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
               render={({ submitForm, handleReset, isSubmitting }) => (
@@ -166,7 +166,7 @@ class GroupCreation extends Component {
   }
 }
 
-GroupCreation.propTypes = {
+OrganizationCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -176,4 +176,4 @@ GroupCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(GroupCreation);
+)(OrganizationCreation);

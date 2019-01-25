@@ -7,6 +7,7 @@ import {
   deleteRelation,
   editInputTx,
   loadByID,
+  loadByName,
   notify,
   now,
   paginate,
@@ -18,6 +19,13 @@ export const findAll = args =>
   paginate('match $m isa Stix-Domain-Entity', args, false);
 
 export const findById = stixDomainEntityId => loadByID(stixDomainEntityId);
+
+export const findByName = args =>
+  paginate(
+    `match $m isa Stix-Domain-Entity; $m has name "${args.name}"`,
+    args,
+    false
+  );
 
 export const search = args =>
   paginate(

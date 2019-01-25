@@ -268,22 +268,6 @@ export const loadByID = (id, withType = false) =>
   );
 
 /**
- * Load any grakn instance with a name
- * @param name
- * @param withType
- * @returns {Promise<any[] | never>}
- */
-export const loadByName = (name, withType = false) =>
-  qk(`match $x; $x has name ${name}; get;`).then(
-    result =>
-      Promise.all(
-        map(line =>
-          attrByID(line.x['@id']).then(res => attrMap(id, res, withType))
-        )(result.data)
-      ).then(r => head(r)) // Return the unique result
-  );
-
-/**
  * Edit an attribute value.
  * @param id
  * @param input

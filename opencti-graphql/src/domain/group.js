@@ -48,7 +48,7 @@ export const addGroup = async (user, group) => {
   return createGroup.then(result => {
     const { data } = result;
     return loadByID(head(data).group.id).then(created =>
-      notify(BUS_TOPICS.Group.ADDED_TOPIC, created)
+      notify(BUS_TOPICS.Group.ADDED_TOPIC, created, user)
     );
   });
 };

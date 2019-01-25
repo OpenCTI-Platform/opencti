@@ -1,7 +1,7 @@
 export const resolveLink = (type) => {
   switch (type) {
     case 'organization':
-      return '';
+      return '/dashboard/';
     case 'uses':
       return { fromRole: 'user', toRole: 'usage' };
     case 'attributed-to':

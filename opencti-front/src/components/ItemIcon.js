@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
+  Flag,
   Person,
   AccountBalance,
   Domain,
@@ -37,6 +38,8 @@ const iconSelector = (type, variant, fontSize, color) => {
   }
 
   switch (type) {
+    case 'contry':
+      return <Flag style={style} fontSize={fontSize}/>;
     case 'sector':
       return <Domain style={style} fontSize={fontSize}/>;
     case 'threat-actor':

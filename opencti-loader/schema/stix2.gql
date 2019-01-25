@@ -308,7 +308,9 @@ define
   "Group" sub entity
     has "type"
     has "name"
+    has "name_lowercase"
     has "description"
+    has "description_lowercase"
     has "created_at"
     has "updated_at"
     plays "allowed"

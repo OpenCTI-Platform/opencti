@@ -95,6 +95,7 @@ class GroupEditionOverviewComponent extends Component {
           enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={groupValidation(t)}
+          onSubmit={() => { return true; }}
           render={() => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field name='name' component={TextField} label={t('Name')} fullWidth={true}

@@ -245,13 +245,19 @@ type User implements GlobalObject & StixDomainEntity & Identity {
     updated_at: DateTime!
 }
 input UserAddInput {
-    email: String! @constraint(minLength: 5, format: "email")
+    email: String @constraint(minLength: 5, format: "email")
     name: String!  @constraint(minLength: 3)
     description: String
     firstname: String
     lastname: String
     language: String
     grant: [UserRole]
+}
+input PersonAddInput {
+    name: String!  @constraint(minLength: 3)
+    description: String
+    firstname: String
+    lastname: String
 }
 input UserLoginInput {
     email: String!
@@ -1031,7 +1037,7 @@ type Query {
     settings: Settings
     # StixDomainEntities
     stixDomainEntity(id: String!): StixDomainEntity
-    stixDomainEntities(first: Int, after: ID, orderBy: StixDomainEntitiesOrdering, orderMode: OrderingMode, search: String): StixDomainEntityConnection
+    stixDomainEntities(first: Int, after: ID, orderBy: StixDomainEntitiesOrdering, orderMode: OrderingMode, name: String, search: String): StixDomainEntityConnection
     # StixRelations
     stixRelation(id: String!): StixRelation
     stixRelations(fromId: String, toId: String, first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, search: String): StixRelationConnection
@@ -1044,10 +1050,10 @@ type Query {
     users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
     # Organizations
     organization(id: String!): Organization
-    organizations(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): OrganizationConnection
+    organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, search: String): OrganizationConnection
     # Sectors
     sector(id: String!): Sector
-    sectors(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): SectorConnection
+    sectors(first: Int, after: ID, orderBy: SectorsOrdering, orderMode: OrderingMode, search: String): SectorConnection
     # Cities
     city(id: String!): City
     cities(first: Int, after: ID, orderBy: CitiesOrdering, orderMode: OrderingMode, search: String): CityConnection
@@ -1096,7 +1102,7 @@ type Query {
     vulnerabilities(first: Int, after: ID, orderBy: VulnerabilitiesOrdering, orderMode: OrderingMode, search: String): VulnerabilityConnection
     # Reports
     report(id: String!): Report
-    reports(objectId: String, reportClass: String, first: Int, after: ID, orderBy: ReportsOrdering, orderMode: OrderingMode, search: String): ReportConnection
+    reports(first: Int, after: ID, orderBy: ReportsOrdering, orderMode: OrderingMode, objectId: String, reportClass: String, search: String): ReportConnection
 }
 
 ### SUBSCRIPTIONS
@@ -1349,7 +1355,9 @@ type Mutation {
     identityEdit(id: ID!): IdentityEditMutations
     # User
     userAdd(input: UserAddInput): User
+    personAdd(input: PersonAddInput): User
     userEdit(id: ID!): UserEditMutations
+    logout: ID
     # Organization
     organizationAdd(input: OrganizationAddInput): Organization
     organizationEdit(id: ID!): OrganizationEditMutations

@@ -3,6 +3,7 @@ import { sign } from 'jsonwebtoken';
 import conf, { BUS_TOPICS } from '../config/conf';
 import {
   addUser,
+  addPerson,
   userDelete,
   findAll,
   findById,
@@ -45,6 +46,7 @@ const userResolvers = {
       relationDelete: ({ relationId }) =>
         userDeleteRelation(user, id, relationId)
     })),
+    personAdd: auth((_, { input }, { user }) => addPerson(user, input)),
     userAdd: admin((_, { input }, { user }) => addUser(user, input))
   },
   Subscription: {

@@ -27,10 +27,6 @@ class TopMenuSources extends Component {
                 color={location.pathname === '/dashboard/sources' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('Configuration')}
         </Button>
-        <Button component={Link} to='/dashboard/sources/references' variant={location.pathname.includes('/dashboard/sources/references') ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes('/dashboard/sources/references') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
-          {t('External references')}
-        </Button>
       </div>
     );
   }
