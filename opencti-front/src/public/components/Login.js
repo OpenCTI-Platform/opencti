@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
+import { pathOr, includes } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { Google, FacebookBox, GithubCircle } from 'mdi-material-ui';
-import { QueryRenderer } from '../../relay/environment';
+import { ACCESS_PROVIDERS, QueryRenderer } from '../../relay/environment';
 import { ConnectedIntlProvider } from '../../components/AppIntlProvider';
 import { ConnectedDocumentTitle } from '../../components/AppDocumentTitle';
 import logo from '../../resources/images/logo_opencti.png';
@@ -88,18 +88,23 @@ class Login extends Component {
     return (
       <div>
         <div style={{ marginTop: 20 }}>&nbsp;</div>
-        <Button className = { this.props.classes.buttonGoogle} variant='contained' size='small' component='a' href='/auth/google'>
-          <Google className={this.props.classes.iconSmall}/>
-          Google
+        { includes('google', ACCESS_PROVIDERS)
+        && <Button className = { this.props.classes.buttonGoogle} variant='contained' size='small' component='a' href='/auth/google'>
+          <Google className={this.props.classes.iconSmall}/>Google
         </Button>
-        <Button className={this.props.classes.buttonFacebook} variant='contained' size='small' component='a' href='/auth/facebook'>
-          <FacebookBox className={this.props.classes.iconSmall}/>
-          Facebook
+        }
+        {includes('facebook', ACCESS_PROVIDERS)
+        && <Button className={this.props.classes.buttonFacebook} variant='contained' size='small' component='a'
+                   href='/auth/facebook'>
+          <FacebookBox className={this.props.classes.iconSmall}/>Facebook
         </Button>
-        <Button className={this.props.classes.buttonGithub} variant='contained' size='small' component='a' href='/auth/github'>
-          <GithubCircle className={this.props.classes.iconSmall}/>
-          Github
+        }
+        {includes('github', ACCESS_PROVIDERS)
+        && <Button className={this.props.classes.buttonGithub} variant='contained' size='small' component='a'
+                   href='/auth/github'>
+          <GithubCircle className={this.props.classes.iconSmall}/>Github
         </Button>
+        }
       </div>
     );
   }

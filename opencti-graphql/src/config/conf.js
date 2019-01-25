@@ -1,8 +1,6 @@
 import nconf from 'nconf';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
-import dotenv from 'dotenv';
-// noinspection NodeJsCodingAssistanceForCoreModules
 import path from 'path';
 
 export const ROLE_ADMIN = 'ROLE_ADMIN';
@@ -99,13 +97,9 @@ export const BUS_TOPICS = {
   }
 };
 
-// Initialize the environment.
-dotenv.config();
-
 // Environment from NODE_ENV environment variable
-nconf.add('env', {
-  whitelist: ['NODE_ENV']
-});
+nconf.env({ separator: '__', lowerCase: true });
+
 // Environment from "-e" command line parameter
 nconf.add('argv', {
   e: {
@@ -121,7 +115,7 @@ nconf.add('argv', {
 // Priority to command line parameter and fallback to DEFAULT_ENV
 const DEFAULT_ENV = 'production';
 const DEFAULT_CONF_PATH = path.join(__dirname, '../../config/');
-const environment = nconf.get('env') || nconf.get('NODE_ENV') || DEFAULT_ENV;
+const environment = nconf.get('env') || nconf.get('node_env') || DEFAULT_ENV;
 const externalConfigurationFile = nconf.get('conf');
 let configurationFile;
 if (externalConfigurationFile) {
@@ -140,12 +134,12 @@ export const logger = winston.createLogger({
   transports: [
     new DailyRotateFile({
       filename: 'error.log',
-      dirname: nconf.get('app:logs_directory'),
+      dirname: nconf.get('app:logs'),
       level: 'error'
     }),
     new DailyRotateFile({
       filename: 'opencti.log',
-      dirname: nconf.get('app:logs_directory')
+      dirname: nconf.get('app:logs')
     })
   ]
 });
@@ -162,4 +156,6 @@ if (DEV_MODE) {
 
 // eslint-disable-next-line
 console.log(`🚀 OpenCTI started in ${environment} mode with ${externalConfigurationFile ? 'external' : 'embedded'} file`);
+export const isAppRealTime =
+  nconf.get('app:reactive') && JSON.parse(nconf.get('app:reactive'));
 export default nconf;

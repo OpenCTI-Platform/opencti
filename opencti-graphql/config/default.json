@@ -1,35 +1,13 @@
 {
   "app": {
     "port": 4000,
-    "logs_directory": "./logs"
+    "logs": "./logs",
+    "secret": "define your secret",
+    "reactive": false
   },
   "grakn": {
     "uri": "127.0.0.1:4567",
     "driver": "127.0.0.1:48555",
     "timeout": 20000
-  },
-  "redis": {
-    "host": "127.0.0.1",
-    "port": "6379"
-  },
-  "jwt": {
-    "secret": "define your secret"
-  },
-  "providers": {
-    "facebook": {
-      "client_id": "FACEBOOK_APP_ID",
-      "client_secret": "FACEBOOK_APP_SECRET",
-      "callback_uri": "http://www.example.com/auth/facebook/callback"
-    },
-    "google" : {
-      "client_id": "GOOGLE_CONSUMER_KEY",
-      "client_secret": "GOOGLE_CONSUMER_SECRET",
-      "callback_uri": "http://www.example.com/auth/google/callback"
-    },
-    "github" : {
-      "client_id": "GITHUB_CONSUMER_KEY",
-      "client_secret": "GITHUB_CONSUMER_SECRET",
-      "callback_uri": "http://www.example.com/github/google/callback"
-    }
   }
 }

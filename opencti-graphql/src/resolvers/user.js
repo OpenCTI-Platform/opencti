@@ -34,10 +34,10 @@ const userResolvers = {
     token: anonymous((_, { input }, context) =>
       login(input.email, input.password).then(token => {
         setAuthenticationCookie(token, context.res);
-        return sign(token, conf.get('jwt:secret'));
+        return sign(token, conf.get('app:secret'));
       })
     ),
-    logout: auth((_, args, { user }, context) => logout(user, context.res)),
+    logout: auth((_, args, context) => logout(context.user, context.res)),
     userEdit: admin((_, { id }, { user }) => ({
       delete: () => userDelete(id),
       fieldPatch: ({ input }) => userEditField(user, id, input),

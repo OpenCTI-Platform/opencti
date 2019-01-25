@@ -5,11 +5,11 @@ test('default configuration keys must exists', () => {
   expect(nodeEnv).toEqual('test');
   // App
   expect(nconf.get('app:port')).toEqual(4000);
-  expect(nconf.get('app:logs_directory')).toEqual('./logs');
+  expect(nconf.get('app:logs')).toEqual('./logs');
   // Db
   expect(nconf.get('db:uri')).toBeDefined();
   expect(nconf.get('db:user')).toBeDefined();
   expect(nconf.get('db:password')).toBeDefined();
   // Jwt
-  expect(nconf.get('jwt:secret')).toBeDefined();
+  expect(nconf.get('app:secret')).toBeDefined();
 });

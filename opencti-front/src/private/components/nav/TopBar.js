@@ -24,6 +24,7 @@ import TopMenuReport from './TopMenuReport';
 import TopMenuCatalogs from './TopMenuCatalogs';
 import TopMenuSources from './TopMenuSources';
 import TopMenuSettings from './TopMenuSettings';
+import { commitMutation } from '../../../relay/environment';
 
 const styles = theme => ({
   appBar: {
@@ -62,6 +63,12 @@ const styles = theme => ({
   },
 });
 
+const logoutMutation = graphql`
+  mutation TopBarLogoutMutation {
+    logout
+  }
+`;
+
 class TopBar extends Component {
   constructor(props) {
     super(props);
@@ -78,8 +85,13 @@ class TopBar extends Component {
   }
 
   handleLogout() {
-    this.handleCloseMenu();
-    this.props.history.push('/login');
+    commitMutation({
+      mutation: logoutMutation,
+      variables: {},
+      onCompleted: () => {
+        this.props.history.push('/login');
+      },
+    });
   }
 
   handleSearch(keyword) {

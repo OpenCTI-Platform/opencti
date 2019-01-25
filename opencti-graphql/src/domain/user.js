@@ -45,7 +45,7 @@ export const setAuthenticationCookie = (token, res) => {
   const creation = moment(token.created);
   const maxDuration = moment.duration(token.duration);
   const expires = creation.add(maxDuration).toDate();
-  const signedToken = sign(token, conf.get('jwt:secret'));
+  const signedToken = sign(token, conf.get('app:secret'));
   res.cookie('opencti_token', signedToken, {
     httpOnly: true,
     expires,
