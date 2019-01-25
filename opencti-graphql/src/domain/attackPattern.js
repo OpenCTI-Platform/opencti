@@ -58,6 +58,7 @@ export const addAttackPattern = async (user, attackPattern) => {
     has type "attackPattern";
     $attackPattern has stix_id "attackPattern--${uuid()}";
     $attackPattern has stix_label "";
+    $attackPattern has stix_label_lowercase "";
     $attackPattern has name "${attackPattern.name}";
     $attackPattern has description "${attackPattern.description}";
     $attackPattern has name_lowercase "${attackPattern.name.toLowerCase()}";

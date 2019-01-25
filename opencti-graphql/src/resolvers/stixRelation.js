@@ -21,6 +21,9 @@ const stixRelationResolvers = {
       if (args.search && args.search.length > 0) {
         return search(args);
       }
+      if (args.search && args.search.length > 0) {
+        return search(args);
+      }
       return findAll(args);
     })
   },

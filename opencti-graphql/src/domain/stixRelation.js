@@ -17,6 +17,12 @@ import { BUS_TOPICS } from '../config/conf';
 export const findAll = args =>
   paginateRelationships('match $rel($from, $to) isa stix_relation', args);
 
+export const findByType = args =>
+  paginateRelationships(
+    `match $rel($from, $to) isa ${args.relation_type}`,
+    args
+  );
+
 export const findById = stixRelationId => loadByID(stixRelationId);
 
 export const search = args =>

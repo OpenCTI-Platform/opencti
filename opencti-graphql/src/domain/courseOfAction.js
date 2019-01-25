@@ -50,6 +50,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     has type "courseOfAction";
     $courseOfAction has stix_id "courseOfAction--${uuid()}";
     $courseOfAction has stix_label "";
+    $courseOfAction has stix_label_lowercase "";
     $courseOfAction has name "${courseOfAction.name}";
     $courseOfAction has description "${courseOfAction.description}";
     $courseOfAction has name_lowercase "${courseOfAction.name.toLowerCase()}";

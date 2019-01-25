@@ -5,9 +5,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import { QueryRenderer } from '../../../relay/environment';
 import ReportsLines, { reportsLinesQuery } from './ReportsLines';
@@ -114,6 +111,7 @@ class EntityStixRelations extends Component {
 
 EntityStixRelations.propTypes = {
   entityId: PropTypes.string,
+  relationType: PropTypes.string,
   classes: PropTypes.object,
   reportClass: PropTypes.string,
   t: PropTypes.func,

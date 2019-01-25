@@ -74,6 +74,7 @@ export const addPerson = async (user, newUser) => {
     has type "user";
     $user has stix_id "user--${uuid()}";
     $user has stix_label "";
+    $user has stix_label_lowercase "";
     $user has name "${newUser.name}";
     $user has description "${newUser.description}";
     $user has name_lowercase "${newUser.name.toLowerCase()}";
@@ -98,6 +99,7 @@ export const addUser = async (user, newUser) => {
     has type "user";
     $user has stix_id "user--${uuid()}";
     $user has stix_label "";
+    $user has stix_label_lowercase "";
     $user has name "${newUser.name}";
     $user has description "${newUser.description}";
     $user has name_lowercase "${newUser.name.toLowerCase()}";

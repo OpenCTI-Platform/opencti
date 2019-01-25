@@ -51,6 +51,7 @@ export const addCampaign = async (user, campaign) => {
     has type "campaign";
     $campaign has stix_id "campaign--${uuid()}";
     $campaign has stix_label "";
+    $campaign has stix_label_lowercase "";
     $campaign has name "${campaign.name}";
     $campaign has description "${campaign.description}";
     $campaign has name_lowercase "${campaign.name.toLowerCase()}";

@@ -36,6 +36,14 @@ export const prepareDate = date => moment(date).format(gkDateFormat);
 
 // Attributes key that can contains multiple values.
 export const multipleAttributes = ['stix_label', 'alias', 'grant'];
+export const lowerCaseAttributes = [
+  'name',
+  'description',
+  'stix_label',
+  'alias',
+  'source_name',
+  'external_id'
+];
 
 // Instance of Axios to make Grakn API Calls.
 const client = new Grakn(conf.get('grakn:driver'));
@@ -296,6 +304,21 @@ export const editInputTx = async (id, input) => {
   )};`;
   logger.debug(`Grakn query: ${createQuery}`);
   await wTx.query(createQuery);
+
+  if (contains(key, lowerCaseAttributes)) {
+    // Delete the old value/values
+    const deleteQueryLowerCase = `match $m id ${id}; $m has ${key}_lowercase $del via $d; delete $d;`;
+    logger.debug(`Grakn query: ${deleteQueryLowerCase}`);
+    await wTx.query(deleteQueryLowerCase);
+    // Setup the new attribute
+    const createQueryLowerCase = `match $m id ${id}; insert $m ${join(
+      ' ',
+      map(val => `has ${key}_lowercase "${val.toLowerCase()}"`, value)
+    )};`;
+    logger.debug(`Grakn query: ${createQueryLowerCase}`);
+    await wTx.query(createQueryLowerCase);
+  }
+
   await wTx.commit();
   return loadByID(id);
 };
