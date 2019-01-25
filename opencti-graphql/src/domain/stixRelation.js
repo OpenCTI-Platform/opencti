@@ -19,7 +19,7 @@ export const findAll = args =>
 
 export const findByType = args =>
   paginateRelationships(
-    `match $rel($from, $to) isa ${args.relation_type}`,
+    `match $rel($from, $to) isa ${args.relationType}`,
     args
   );
 
@@ -39,6 +39,14 @@ export const markingDefinitions = (stixRelationId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
     $rel(marking:$marking, so:$stixRelation) isa object_marking_refs; 
+    $stixRelation id ${stixRelationId}`,
+    args
+  );
+
+export const reports = (stixRelationId, args) =>
+  paginate(
+    `match $report isa Report; 
+    $rel(knowledge_aggregation:$report, so:$stixRelation) isa object_refs; 
     $stixRelation id ${stixRelationId}`,
     args
   );

@@ -4,8 +4,10 @@ import {
   addStixRelation,
   stixRelationDelete,
   findAll,
+  findByType,
   findById,
   search,
+  reports,
   markingDefinitions,
   stixRelationEditContext,
   stixRelationEditField,
@@ -21,8 +23,8 @@ const stixRelationResolvers = {
       if (args.search && args.search.length > 0) {
         return search(args);
       }
-      if (args.search && args.search.length > 0) {
-        return search(args);
+      if (args.relationType && args.relationType.length > 0) {
+        return findByType(args);
       }
       return findAll(args);
     })
@@ -30,6 +32,7 @@ const stixRelationResolvers = {
   StixRelation: {
     markingDefinitions: (stixRelation, args) =>
       markingDefinitions(stixRelation.id, args),
+    reports: (stixRelation, args) => reports(stixRelation.id, args),
     editContext: auth(stixRelation => fetchEditContext(stixRelation.id))
   },
   Mutation: {

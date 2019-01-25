@@ -31,10 +31,8 @@ export const search = args =>
     `match $m isa Stix-Domain-Entity
     has name_lowercase $name
     has description_lowercase $desc;
-    has stix_label_lowercase $sl;
     { $name contains "${args.search.toLowerCase()}"; } or
-    { $desc contains "${args.search.toLowerCase()}"; } or 
-    { $sl contains "${args.search.toLowerCase()}"; }`,
+    { $desc contains "${args.search.toLowerCase()}"; }`,
     args,
     false
   );

@@ -5,9 +5,12 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import { QueryRenderer } from '../../../relay/environment';
-import ReportsLines, { reportsLinesQuery } from './ReportsLines';
+import EntityStixRelationsLines, { entityStixRelationsLinesQuery } from './EntityStixRelationsLines';
 import inject18n from '../../../components/i18n';
 
 const styles = () => ({
@@ -38,23 +41,29 @@ const inlineStyles = {
   },
   name: {
     float: 'left',
-    width: '40%',
+    width: '30%',
     fontSize: 12,
     fontWeight: '700',
   },
-  author: {
+  type: {
     float: 'left',
     width: '20%',
     fontSize: 12,
     fontWeight: '700',
   },
-  published: {
+  first_seen: {
     float: 'left',
     width: '15%',
     fontSize: 12,
     fontWeight: '700',
   },
-  marking: {
+  last_seen: {
+    float: 'left',
+    width: '15%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  weight: {
     float: 'left',
     fontSize: 12,
     fontWeight: '700',
@@ -64,43 +73,64 @@ const inlineStyles = {
 class EntityStixRelations extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'published', orderAsc: false };
+    this.state = { sortBy: 'first_seen', orderAsc: false };
   }
 
   reverseBy(field) {
     this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
   }
 
-  SortHeader(field, label) {
+  SortHeader(field, label, isSortable) {
     const { t } = this.props;
+    if (isSortable) {
+      return (
+        <div style={inlineStyles[field]} onClick={this.reverseBy.bind(this, field)}>
+          <span>{t(label)}</span>
+          {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStyles.iconSort}/> : <ArrowDropUp style={inlineStyles.iconSort}/> : ''}
+        </div>
+      );
+    }
     return (
-      <div style={inlineStyles[field]} onClick={this.reverseBy.bind(this, field)}>
-        <span>{t(label)}</span>
-        {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStyles.iconSort}/> : <ArrowDropUp style={inlineStyles.iconSort}/> : ''}
-      </div>
+        <div style={inlineStyles[field]}>
+          <span>{t(label)}</span>
+        </div>
     );
   }
 
   render() {
-    const { classes, entityId, reportClass } = this.props;
+    const { classes, entityId, relationType, entityLink } = this.props;
     const paginationOptions = {
-      objectId: entityId,
-      reportClass: reportClass || '',
+      fromId: entityId,
+      relationType,
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
     return (
       <div>
         <List classes={{ root: classes.linesContainer }}>
+          <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
+            <ListItemIcon>
+              <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
+            </ListItemIcon>
+            <ListItemText primary={
+              <div>
+                {this.SortHeader('name', 'Name', false)}
+                {this.SortHeader('type', 'Entity type', false)}
+                {this.SortHeader('first_seen', 'First obs.', true)}
+                {this.SortHeader('last_seen', 'Last obs.', true)}
+                {this.SortHeader('weight', 'Confidence level', true)}
+              </div>
+            }/>
+          </ListItem>
           <QueryRenderer
-            query={reportsLinesQuery}
+            query={entityStixRelationsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
               if (props) { // Done
-                return <ReportsLines data={props} paginationOptions={paginationOptions}/>;
+                return <EntityStixRelationsLines data={props} paginationOptions={paginationOptions} entityLink={entityLink}/>;
               }
               // Loading
-              return <ReportsLines data={null} dummy={true}/>;
+              return <EntityStixRelationsLines data={null} dummy={true}/>;
             }}
           />
         </List>
@@ -111,6 +141,7 @@ class EntityStixRelations extends Component {
 
 EntityStixRelations.propTypes = {
   entityId: PropTypes.string,
+  entityLink: PropTypes.string,
   relationType: PropTypes.string,
   classes: PropTypes.object,
   reportClass: PropTypes.string,

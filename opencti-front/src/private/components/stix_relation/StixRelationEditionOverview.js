@@ -56,7 +56,7 @@ const styles = theme => ({
       backgroundColor: '#c62828',
       borderColor: '#c62828',
     },
-  }
+  },
 });
 
 const subscription = graphql`
@@ -140,7 +140,7 @@ class StixRelationEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, handleDelete, stixRelation, me,
+      t, classes, handleClose, handleDelete, stixRelation, me, variant,
     } = this.props;
     const { editContext } = stixRelation;
     // Add current user to the context if is not available yet.
@@ -207,9 +207,10 @@ class StixRelationEditionContainer extends Component {
               </Form>
             )}
           />
-          <Button variant='contained' onClick={handleDelete.bind(this)} classes={{ root: classes.button }}>
+          {variant !== 'noGraph'
+            ? <Button variant='contained' onClick={handleDelete.bind(this)} classes={{ root: classes.button }}>
             {t('Delete')}
-          </Button>
+          </Button> : ''}
         </div>
       </div>
     );
@@ -217,6 +218,7 @@ class StixRelationEditionContainer extends Component {
 }
 
 StixRelationEditionContainer.propTypes = {
+  variant: PropTypes.string,
   handleClose: PropTypes.func,
   handleDelete: PropTypes.func,
   classes: PropTypes.object,

@@ -25,6 +25,7 @@ const i18n = {
       'Do you want to delete this city?': 'Souhaitez-vous supprimer cette ville ?',
       'Do you want to delete this organization?': 'Souhaitez-vous supprimer cette organisation ?',
       'Do you want to delete this person?': 'Souhaitez-vous supprimer cette personne ?',
+      'Do you want to delete this relation?': 'Souhaitez-vous supprimer cette relation ?',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
       'Global parameters': 'Paramètres généraux',

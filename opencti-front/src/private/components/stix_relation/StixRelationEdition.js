@@ -37,7 +37,7 @@ const stixRelationEditionQuery = graphql`
 class StixRelationEdition extends Component {
   render() {
     const {
-      classes, stixRelationId, open, handleClose, handleDelete,
+      classes, stixRelationId, open, handleClose, handleDelete, variant,
     } = this.props;
     return (
       <Drawer open={open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={handleClose.bind(this)}>
@@ -49,6 +49,7 @@ class StixRelationEdition extends Component {
             if (props) { // Done
               return (
                 <StixRelationEditionOverview
+                  variant={variant}
                   me={props.me}
                   stixRelation={props.stixRelation}
                   handleClose={handleClose.bind(this)}
@@ -66,6 +67,7 @@ class StixRelationEdition extends Component {
 }
 
 StixRelationEdition.propTypes = {
+  variant: PropTypes.string,
   stixRelationId: PropTypes.string,
   open: PropTypes.bool,
   handleClose: PropTypes.func,
