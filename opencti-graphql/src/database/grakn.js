@@ -268,6 +268,22 @@ export const loadByID = (id, withType = false) =>
   );
 
 /**
+ * Load any grakn instance with a name
+ * @param name
+ * @param withType
+ * @returns {Promise<any[] | never>}
+ */
+export const loadByName = (name, withType = false) =>
+  qk(`match $x; $x has name ${name}; get;`).then(
+    result =>
+      Promise.all(
+        map(line =>
+          attrByID(line.x['@id']).then(res => attrMap(id, res, withType))
+        )(result.data)
+      ).then(r => head(r)) // Return the unique result
+  );
+
+/**
  * Edit an attribute value.
  * @param id
  * @param input
@@ -382,7 +398,7 @@ const buildPagination = (first, offset, instances, globalCount) => {
  * @param options
  * @returns Promise
  */
-export const paginate = (query, options) => {
+export const paginate = (query, options, ordered = true) => {
   const {
     first = 200,
     after,
@@ -397,8 +413,12 @@ export const paginate = (query, options) => {
   const relationKey = findRelationVariable && findRelationVariable[1]; // Could be setup to get relation info
   const count = qkSingleValue(`${query}; aggregate count;`);
   const elements = qkObj(
-    `${query}; $${instanceKey} has ${orderBy} $o; 
-      order by $o ${orderMode}; offset ${offset}; limit ${first}; 
+    `${query}; ${
+      ordered
+        ? `$${instanceKey} has ${orderBy} $o; 
+      order by $o ${orderMode};`
+        : ''
+    } offset ${offset}; limit ${first}; 
       get $${instanceKey}${relationKey ? `, $${relationKey}` : ''};`,
     instanceKey,
     relationKey

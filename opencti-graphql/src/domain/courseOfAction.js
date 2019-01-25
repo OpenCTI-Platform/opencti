@@ -51,6 +51,10 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     $courseOfAction has stix_id "courseOfAction--${uuid()}";
     $courseOfAction has name "${courseOfAction.name}";
     $courseOfAction has description "${courseOfAction.description}";
+    $courseOfAction has name_lowercase "${courseOfAction.name.toLowerCase()}";
+    $courseOfAction has description_lowercase "${
+      courseOfAction.description ? courseOfAction.description.toLowerCase() : ''
+    }";
     $courseOfAction has created ${now()};
     $courseOfAction has modified ${now()};
     $courseOfAction has revoked false;
@@ -58,7 +62,9 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     $courseOfAction has updated_at ${now()};
   `);
   const createCourseOfAction = await courseOfActionIterator.next();
-  const createdCourseOfActionId = await createCourseOfAction.map().get('courseOfAction').id;
+  const createdCourseOfActionId = await createCourseOfAction
+    .map()
+    .get('courseOfAction').id;
 
   if (courseOfAction.createdByRef) {
     await wTx.query(`match $from id ${createdCourseOfActionId};
@@ -98,7 +104,8 @@ export const addCourseOfAction = async (user, courseOfAction) => {
   );
 };
 
-export const courseOfActionDelete = courseOfActionId => deleteByID(courseOfActionId);
+export const courseOfActionDelete = courseOfActionId =>
+  deleteByID(courseOfActionId);
 
 export const courseOfActionAddRelation = (user, courseOfActionId, input) =>
   createRelation(courseOfActionId, input).then(relationData => {
@@ -106,7 +113,11 @@ export const courseOfActionAddRelation = (user, courseOfActionId, input) =>
     return relationData;
   });
 
-export const courseOfActionDeleteRelation = (user, courseOfActionId, relationId) =>
+export const courseOfActionDeleteRelation = (
+  user,
+  courseOfActionId,
+  relationId
+) =>
   deleteRelation(courseOfActionId, relationId).then(relationData => {
     notify(BUS_TOPICS.CourseOfAction.EDIT_TOPIC, relationData.node, user);
     return relationData;

@@ -17,7 +17,7 @@ import { ArrowRightAlt } from '@material-ui/icons';
 import { environment, commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { itemColor } from '../../../utils/Colors';
-import resolveRoles from '../../../utils/Relation';
+import { resolveRoles } from '../../../utils/Relation';
 import { parse } from '../../../utils/Time';
 import ItemIcon from '../../../components/ItemIcon';
 import TextField from '../../../components/TextField';

@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
-import { propOr, includes, compose, head } from "ramda";
+import {
+  propOr, includes, compose, head,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -80,8 +82,7 @@ class TopBar extends Component {
   }
 
   handleSearch(keyword) {
-    this.props.history.push('/dashboard/search');
-    this.props.handleSearch(keyword);
+    this.props.history.push(`/dashboard/search/${keyword}`);
   }
 
   render() {
@@ -133,7 +134,6 @@ class TopBar extends Component {
 
 TopBar.propTypes = {
   keyword: PropTypes.string,
-  handleSearch: PropTypes.func,
   me: PropTypes.object,
   classes: PropTypes.object,
   location: PropTypes.object,

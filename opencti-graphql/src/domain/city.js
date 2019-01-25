@@ -32,6 +32,10 @@ export const addCity = async (user, city) => {
     $city has stix_id "city--${uuid()}";
     $city has name "${city.name}";
     $city has description "${city.description}";
+    $city has name_lowercase "${city.name.toLowerCase()}";
+    $city has description_lowercase "${
+      city.description ? city.description.toLowerCase() : ''
+    }";
     $city has created ${now()};
     $city has modified ${now()};
     $city has revoked false;

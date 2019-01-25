@@ -52,6 +52,10 @@ export const addIncident = async (user, incident) => {
     $incident has stix_id "incident--${uuid()}";
     $incident has name "${incident.name}";
     $incident has description "${incident.description}";
+    $incident has name_lowercase "${incident.name.toLowerCase()}";
+    $incident has description_lowercase "${
+      incident.description ? incident.description.toLowerCase() : ''
+    }";
     $incident has first_seen ${prepareDate(incident.first_seen)};
     $incident has last_seen ${prepareDate(incident.last_seen)};
     $incident has created ${now()};

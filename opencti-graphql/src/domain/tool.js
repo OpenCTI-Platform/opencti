@@ -59,6 +59,10 @@ export const addTool = async (user, tool) => {
     $tool has stix_id "tool--${uuid()}";
     $tool has name "${tool.name}";
     $tool has description "${tool.description}";
+    $tool has name_lowercase "${tool.name.toLowerCase()}";
+    $tool has description_lowercase "${
+      tool.description ? tool.description.toLowerCase() : ''
+    }";
     $tool has created ${now()};
     $tool has modified ${now()};
     $tool has revoked false;

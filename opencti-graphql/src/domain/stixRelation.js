@@ -22,10 +22,10 @@ export const findById = stixRelationId => loadByID(stixRelationId);
 export const search = args =>
   paginateRelationships(
     `match $m isa Stix-Domain-Entity
-    has name $name
-    has description $desc;
-    { $name contains "${args.search}"; } or
-    { $desc contains "${args.search}"; }`,
+    has name_lowercase $name
+    has description_lowercase $desc;
+    { $name contains "${args.search.toLowerCase()}"; } or
+    { $desc contains "${args.search.toLowerCase()}"; }`,
     args
   );
 
@@ -49,6 +49,10 @@ export const addStixRelation = async (user, stixRelation) => {
     $stixRelation has stix_id "relationship--${uuid()}";
     $stixRelation has name "";
     $stixRelation has description "${stixRelation.description}";
+    $stixRelation has name_lowercase "";
+    $stixRelation has description_lowercase "${
+      stixRelation.description ? stixRelation.description.toLowerCase() : ''
+    }";
     $stixRelation has weight ${stixRelation.weight};
     $stixRelation has first_seen ${prepareDate(stixRelation.first_seen)};
     $stixRelation has last_seen ${prepareDate(stixRelation.last_seen)};

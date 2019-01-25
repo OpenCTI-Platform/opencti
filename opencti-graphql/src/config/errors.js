@@ -25,23 +25,23 @@ export const ConstraintFailure = field => {
 
 // TYPE_AUTH
 export const AuthRequired = createError('AuthRequired', {
-  message: 'You must be logged in to do this',
+  message: 'You must be logged in to do this.',
   data: { type: TYPE_AUTH }
 });
 
 export const ForbiddenAccess = createError('ForbiddenAccess', {
-  message: 'You are not allowed to do this',
+  message: 'You are not allowed to do this.',
   data: { type: TYPE_AUTH }
 });
 
 // TODO Remove
 export const AlreadyAuth = createError('AlreadyAuth', {
-  message: 'You are already authenticated',
+  message: 'You are already authenticated.',
   data: { type: TYPE_AUTH }
 });
 
 // TYPE_TECHNICAL
 export const Unknown = createError('Unknown', {
-  message: 'An unknown error has occurred!  Please try again later',
+  message: 'An unknown error has occurred!  Please try again later.',
   data: { type: TYPE_TECHNICAL }
 });

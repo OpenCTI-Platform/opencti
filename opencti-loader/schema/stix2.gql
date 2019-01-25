@@ -36,10 +36,12 @@ define
   "revoked" sub attribute datatype boolean;
   "first_seen" sub attribute datatype date;
   "last_seen" sub attribute datatype date;
+  "name" sub attribute datatype string;
+  "name_lowercase" sub attribute datatype string;
   "description" sub attribute datatype string;
+  "description_lowercase" sub attribute datatype string;
 
   # STIX SDO
-  "name" sub attribute datatype string;
   "alias" sub attribute datatype string;
   "stix_role" sub attribute datatype string;
   "objective" sub attribute datatype string;
@@ -58,9 +60,11 @@ define
   "level" sub attribute datatype long;
   "color" sub attribute datatype string;
   "source_name" sub attribute datatype string;
+  "source_name_lowercase" sub attribute datatype string;
   "url" sub attribute datatype string;
   "hash" sub attribute datatype string;
   "external_id" sub attribute datatype string;
+  "external_id_lowercase" sub attribute datatype string;
   "published" sub attribute datatype date;
   "report_class" sub attribute datatype string;
   "pattern" sub attribute datatype string;
@@ -217,7 +221,9 @@ define
     has "first_seen"
     has "last_seen"
     has "name"
+    has "name_lowercase"
     has "description"
+    has "description_lowercase"
     has "created_at"
     has "updated_at"
     plays "so";
@@ -346,15 +352,20 @@ define
   "Stix-Domain-Entity" sub "Stix-Domain"
     is-abstract
     has "name"
+    has "name_lowercase"
     has "description"
+    has "description_lowercase"
     has "graph_data";
 
   "External-Reference" sub "Stix-Domain"
     has "source_name"
+    has "source_name_lowercase"
     has "description"
+    has "description_lowercase"
     has "url"
     has "hash"
     has "external_id"
+    has "external_id_lowercase"
     plays "external_reference";
 
   "Kill-Chain-Phase" sub "Stix-Domain"
@@ -385,7 +396,7 @@ define
     has "last_seen"
     has "objective"
     plays "attribution"
-    plays "usage"
+    plays "user"
     plays "source"
     plays "characterize";
 

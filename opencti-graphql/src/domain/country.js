@@ -32,6 +32,10 @@ export const addCountry = async (user, country) => {
     $country has stix_id "country--${uuid()}";
     $country has name "${country.name}";
     $country has description "${country.description}";
+    $country has name_lowercase "${country.name.toLowerCase()}";
+    $country has description_lowercase "${
+      country.description ? country.description.toLowerCase() : ''
+    }";
     $country has created ${now()};
     $country has modified ${now()};
     $country has revoked false;

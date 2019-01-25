@@ -7,7 +7,6 @@ import {
   findById,
   createdByRef,
   markingDefinitions,
-  killChainPhases,
   reports,
   campaignEditContext,
   campaignEditField,

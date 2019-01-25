@@ -32,6 +32,10 @@ export const addSector = async (user, sector) => {
     $sector has stix_id "sector--${uuid()}";
     $sector has name "${sector.name}";
     $sector has description "${sector.description}";
+    $sector has name_lowercase "${sector.name.toLowerCase()}";
+    $sector has description_lowercase "${
+      sector.description ? sector.description.toLowerCase() : ''
+    }";
     $sector has created ${now()};
     $sector has modified ${now()};
     $sector has revoked false;

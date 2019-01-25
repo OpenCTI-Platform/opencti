@@ -72,6 +72,10 @@ export const addReport = async (user, report) => {
     $report has stix_id "report--${uuid()}";
     $report has name "${report.name}";
     $report has description "${report.description}";
+    $report has name_lowercase "${report.name.toLowerCase()}";
+    $report has description_lowercase "${
+      report.description ? report.description.toLowerCase() : ''
+    }";
     $report has published ${prepareDate(report.published)};
     $report has report_class "${report.report_class}";
     $report has graph_data "";

@@ -21,10 +21,10 @@ export const findById = identityId => loadByID(identityId);
 export const search = args =>
   paginate(
     `match $m isa Identity
-    has name $name
-    has description $desc;
-    { $name contains "${args.search}"; } or
-    { $desc contains "${args.search}"; }`,
+    has name_lowercase $name
+    has description_lowercase $desc;
+    { $name contains "${args.search.toLowerCase()}"; } or
+    { $desc contains "${args.search.toLowerCase()}"; }`,
     args
   );
 
@@ -42,6 +42,10 @@ export const addIdentity = async (user, identity) => {
     $identity has stix_id "${identity.type.toLowerCase()}--${uuid()}";
     $identity has name "${identity.name}";
     $identity has description "${identity.description}";
+    $identity has name_lowercase "${identity.name.toLowerCase()}";
+    $identity has description_lowercase "${
+      identity.description ? identity.description.toLowerCase() : ''
+    }";
     $identity has created ${now()};
     $identity has modified ${now()};
     $identity has revoked false;

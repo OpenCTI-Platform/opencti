@@ -15,18 +15,19 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args =>
-  paginate('match $m isa Stix-Domain-Entity', args);
+  paginate('match $m isa Stix-Domain-Entity', args, false);
 
 export const findById = stixDomainEntityId => loadByID(stixDomainEntityId);
 
 export const search = args =>
   paginate(
     `match $m isa Stix-Domain-Entity
-    has name $name
-    has description $desc;
-    { $name contains "${args.search}"; } or
-    { $desc contains "${args.search}"; }`,
-    args
+    has name_lowercase $name
+    has description_lowercase $desc;
+    { $name contains "${args.search.toLowerCase()}"; } or
+    { $desc contains "${args.search.toLowerCase()}"; }`,
+    args,
+    false
   );
 
 export const markingDefinitions = (stixDomainEntityId, args) =>
@@ -45,6 +46,12 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     $stixDomainEntity has stix_id "${stixDomainEntity.type.toLowerCase()}--${uuid()}";
     $stixDomainEntity has name "${stixDomainEntity.name}";
     $stixDomainEntity has description "${stixDomainEntity.description}";
+    $stixDomainEntity has name_lowercase "${stixDomainEntity.name.toLowerCase()}";
+    $stixDomainEntity has description_lowercase "${
+      stixDomainEntity.description
+        ? stixDomainEntity.description.toLowerCase()
+        : ''
+    }";
     $stixDomainEntity has created ${now()};
     $stixDomainEntity has modified ${now()};
     $stixDomainEntity has revoked false;

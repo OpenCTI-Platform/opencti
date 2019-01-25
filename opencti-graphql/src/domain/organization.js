@@ -32,6 +32,10 @@ export const addOrganization = async (user, organization) => {
     $organization has stix_id "organization--${uuid()}";
     $organization has name "${organization.name}";
     $organization has description "${organization.description}";
+    $organization has name_lowercase "${organization.name.toLowerCase()}";
+    $organization has description_lowercase "${
+      organization.description ? organization.description.toLowerCase() : ''
+    }";
     $organization has created ${now()};
     $organization has modified ${now()};
     $organization has revoked false;

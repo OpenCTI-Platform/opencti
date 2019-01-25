@@ -38,6 +38,10 @@ export const addGroup = async (user, group) => {
     has type "group";
     $group has name "${group.name}";
     $group has description "${group.description}";
+    $group has name_lowercase "${group.name.toLowerCase()}";
+    $group has description_lowercase "${
+      group.description ? group.description.toLowerCase() : ''
+    }";
     $group has created_at ${now()};
     $group has updated_at ${now()};
   `);

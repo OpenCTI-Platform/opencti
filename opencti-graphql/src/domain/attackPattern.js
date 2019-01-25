@@ -59,6 +59,10 @@ export const addAttackPattern = async (user, attackPattern) => {
     $attackPattern has stix_id "attackPattern--${uuid()}";
     $attackPattern has name "${attackPattern.name}";
     $attackPattern has description "${attackPattern.description}";
+    $attackPattern has name_lowercase "${attackPattern.name.toLowerCase()}";
+    $attackPattern has description_lowercase "${
+      attackPattern.description ? attackPattern.description.toLowerCase() : ''
+    }";
     $attackPattern has created ${now()};
     $attackPattern has modified ${now()};
     $attackPattern has revoked false;
@@ -66,7 +70,9 @@ export const addAttackPattern = async (user, attackPattern) => {
     $attackPattern has updated_at ${now()};
   `);
   const createAttackPattern = await attackPatternIterator.next();
-  const createdAttackPatternId = await createAttackPattern.map().get('attackPattern').id;
+  const createdAttackPatternId = await createAttackPattern
+    .map()
+    .get('attackPattern').id;
 
   if (attackPattern.createdByRef) {
     await wTx.query(`match $from id ${createdAttackPatternId};
@@ -106,7 +112,8 @@ export const addAttackPattern = async (user, attackPattern) => {
   );
 };
 
-export const attackPatternDelete = attackPatternId => deleteByID(attackPatternId);
+export const attackPatternDelete = attackPatternId =>
+  deleteByID(attackPatternId);
 
 export const attackPatternAddRelation = (user, attackPatternId, input) =>
   createRelation(attackPatternId, input).then(relationData => {
@@ -114,7 +121,11 @@ export const attackPatternAddRelation = (user, attackPatternId, input) =>
     return relationData;
   });
 
-export const attackPatternDeleteRelation = (user, attackPatternId, relationId) =>
+export const attackPatternDeleteRelation = (
+  user,
+  attackPatternId,
+  relationId
+) =>
   deleteRelation(attackPatternId, relationId).then(relationData => {
     notify(BUS_TOPICS.AttackPattern.EDIT_TOPIC, relationData.node, user);
     return relationData;

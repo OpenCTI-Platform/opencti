@@ -1,6 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -19,7 +20,8 @@ const styles = () => ({
 
 class StixDomainEntities extends Component {
   render() {
-    const { t, me, keyword } = this.props;
+    const { t, me, match: { params: { keyword } } } = this.props;
+
     return (
       <div>
         <TopBar me={me || null} keyword={keyword}/>
@@ -30,7 +32,7 @@ class StixDomainEntities extends Component {
           query={stixDomainEntitiesLinesQuery}
           variables={{
             search: keyword,
-            count: 20,
+            count: 200,
             orderBy: 'created_at',
             orderMode: 'desc',
           }}
@@ -51,11 +53,13 @@ StixDomainEntities.propTypes = {
   keyword: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
+  match: PropTypes.object,
   history: PropTypes.object,
   me: PropTypes.object,
 };
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles),
 )(StixDomainEntities);

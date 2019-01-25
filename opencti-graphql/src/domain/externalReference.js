@@ -29,13 +29,14 @@ export const findById = externalReferenceId => loadByID(externalReferenceId);
 export const search = args =>
   paginate(
     `match $m isa External-Reference 
-    has source_name $sn
-    has description $desc
+    has source_name_lowercase $sn
+    has description_lowercase $desc
     has url $url;
-    { $sn contains "${args.search}"; } or
-    { $desc contains "${args.search}"; } or
-    { $url contains "${args.search}"; }`,
-    args
+    { $sn contains "${args.search.toLowerCase()}"; } or
+    { $desc contains "${args.search.toLowerCase()}"; } or
+    { $url contains "${args.search.toLowerCase()}"; }`,
+    args,
+    false
   );
 
 export const addExternalReference = async (user, externalReference) => {
@@ -43,10 +44,23 @@ export const addExternalReference = async (user, externalReference) => {
     has type "external-reference";
     $externalReference has stix_id "external-reference--${uuid()}";
     $externalReference has source_name "${externalReference.source_name}";
+    $externalReference has source_name_lowercase "${externalReference.source_name.toLowerCase()}";
     $externalReference has description "${externalReference.description}";
-    $externalReference has url "${externalReference.url}";
+    $externalReference has description_lowercase "${
+      externalReference.description
+        ? externalReference.description.toLowerCase()
+        : ''
+    }";
+    $externalReference has url "${
+      externalReference.url ? externalReference.url.toLowerCase() : ''
+    }";
     $externalReference has hash "${externalReference.hash}";
     $externalReference has external_id "${externalReference.external_id}";
+    $externalReference has external_id_lowercase "${
+      externalReference.external_id
+        ? externalReference.external_id.toLowerCase()
+        : ''
+    }";
     $externalReference has created ${now()};
     $externalReference has modified ${now()};
     $externalReference has revoked false;

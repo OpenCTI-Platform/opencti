@@ -70,6 +70,10 @@ export const addUser = async (user, newUser) => {
     has type "user";
     $user has name "${newUser.name}";
     $user has description "${newUser.description}";
+    $user has name_lowercase "${newUser.name.toLowerCase()}";
+    $user has description_lowercase "${
+      newUser.description ? newUser.description.toLowerCase() : ''
+    }";
     $user has email "${newUser.email}";
     $user has firstname "${newUser.firstname}";
     $user has lastname "${newUser.lastname}";
@@ -128,9 +132,7 @@ export const loginFromProvider = (email, name) => {
         password: null
       };
       // Create the user then restart the login
-      return addUser({}, newUser).then(() =>
-        loginFromProvider(email, name)
-      );
+      return addUser({}, newUser).then(() => loginFromProvider(email, name));
     }
     // We just need to return the current token
     const element = head(data);

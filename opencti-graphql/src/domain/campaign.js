@@ -52,6 +52,10 @@ export const addCampaign = async (user, campaign) => {
     $campaign has stix_id "campaign--${uuid()}";
     $campaign has name "${campaign.name}";
     $campaign has description "${campaign.description}";
+    $campaign has name_lowercase "${campaign.name.toLowerCase()}";
+    $campaign has description_lowercase "${
+      campaign.description ? campaign.description.toLowerCase() : ''
+    }";
     $campaign has first_seen ${prepareDate(campaign.first_seen)};
     $campaign has last_seen ${prepareDate(campaign.last_seen)};
     $campaign has created ${now()};
