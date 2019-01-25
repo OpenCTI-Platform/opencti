@@ -40,6 +40,7 @@ export const addIdentity = async (user, identity) => {
   const createIdentity = qk(`insert $identity isa ${identity.type} 
     has type "${identity.type.toLowerCase()}";
     $identity has stix_id "${identity.type.toLowerCase()}--${uuid()}";
+    $identity has stix_label "";
     $identity has name "${identity.name}";
     $identity has description "${identity.description}";
     $identity has name_lowercase "${identity.name.toLowerCase()}";

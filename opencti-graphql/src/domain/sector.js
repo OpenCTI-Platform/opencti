@@ -30,6 +30,7 @@ export const addSector = async (user, sector) => {
   const createSector = qk(`insert $sector isa Sector 
     has type "sector";
     $sector has stix_id "sector--${uuid()}";
+    $sector has stix_label "";
     $sector has name "${sector.name}";
     $sector has description "${sector.description}";
     $sector has name_lowercase "${sector.name.toLowerCase()}";

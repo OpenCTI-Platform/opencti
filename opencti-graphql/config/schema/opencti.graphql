@@ -587,7 +587,7 @@ enum AttackPatternsOrdering {
 }
 type AttackPatternConnection {
     pageInfo: PageInfo!
-    edges: [MalwareEdge]
+    edges: [AttackPatternEdge]
 }
 type AttackPatternEdge {
     cursor: String!
@@ -633,7 +633,7 @@ type CourseOfActionConnection {
 }
 type CourseOfActionEdge {
     cursor: String!
-    node: Malware!
+    node: CourseOfAction!
 }
 type CourseOfAction implements GlobalObject & StixDomainEntity {
     id: ID!
@@ -812,7 +812,7 @@ enum IncidentsOrdering {
 }
 type IncidentConnection {
     pageInfo: PageInfo!
-    edges: [MalwareEdge]
+    edges: [IncidentEdge]
 }
 type IncidentEdge {
     cursor: String!

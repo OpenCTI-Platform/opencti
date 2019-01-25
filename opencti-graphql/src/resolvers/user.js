@@ -22,8 +22,8 @@ import { admin, auth, anonymous, withCancel } from './wrapper';
 
 const userResolvers = {
   Query: {
-    user: admin((_, { id }) => findById(id)),
-    users: admin((_, args) => findAll(args)),
+    user: auth((_, { id }) => findById(id)),
+    users: auth((_, args) => findAll(args)),
     me: auth((_, args, { user }) => findById(user.id))
   },
   User: {

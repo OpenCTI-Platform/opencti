@@ -118,11 +118,14 @@ class ReportAddObjectRefsLinesContainer extends Component {
     this.setState({ expandedPanels: assoc(panelKey, expanded, this.state.expandedPanels) });
   }
 
-  isExpanded(type, numberOfEntities) {
+  isExpanded(type, numberOfEntities, numberOfTypes) {
     if (this.state.expandedPanels[type] !== undefined) {
       return this.state.expandedPanels[type];
     }
     if (numberOfEntities === 1) {
+      return true;
+    }
+    if (numberOfTypes === 1) {
       return true;
     }
     return false;
@@ -142,7 +145,7 @@ class ReportAddObjectRefsLinesContainer extends Component {
       <div className={classes.container}>
         {stixDomainEntitiesTypes.map(type => (
           <ExpansionPanel key={type}
-                          expanded={this.isExpanded(type, stixDomainEntities[type].length)}
+                          expanded={this.isExpanded(type, stixDomainEntities[type].length, stixDomainEntitiesTypes.length)}
                           onChange={this.handleChangePanel.bind(this, type)}
                           classes={{ root: classes.expansionPanel }}>
             <ExpansionPanelSummary expandIcon={<ExpandMore/>}>

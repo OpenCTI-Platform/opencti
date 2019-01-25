@@ -64,7 +64,7 @@ const inlineStyles = {
   },
 };
 
-class EntityReports extends Component {
+class EntityStixRelations extends Component {
   constructor(props) {
     super(props);
     this.state = { sortBy: 'published', orderAsc: false };
@@ -95,19 +95,6 @@ class EntityReports extends Component {
     return (
       <div>
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
-            <ListItemIcon>
-              <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
-            </ListItemIcon>
-            <ListItemText primary={
-              <div>
-                {this.SortHeader('name', 'Name')}
-                {this.SortHeader('author', 'Author')}
-                {this.SortHeader('published', 'Publication date')}
-                {this.SortHeader('marking', 'Marking')}
-              </div>
-            }/>
-          </ListItem>
           <QueryRenderer
             query={reportsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
@@ -125,7 +112,7 @@ class EntityReports extends Component {
   }
 }
 
-EntityReports.propTypes = {
+EntityStixRelations.propTypes = {
   entityId: PropTypes.string,
   classes: PropTypes.object,
   reportClass: PropTypes.string,
@@ -136,4 +123,4 @@ EntityReports.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityReports);
+)(EntityStixRelations);

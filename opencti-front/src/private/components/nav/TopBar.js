@@ -17,6 +17,7 @@ import logo from '../../../resources/images/logo.png';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
+import TopMenuSearch from './TopMenuSearch';
 import TopMenuKnowledge from './TopMenuKnowledge';
 import TopMenuMalware from './TopMenuMalware';
 import TopMenuReports from './TopMenuReports';
@@ -83,7 +84,9 @@ class TopBar extends Component {
   }
 
   handleSearch(keyword) {
-    this.props.history.push(`/dashboard/search/${keyword}`);
+    if (keyword.length > 0) {
+      this.props.history.push(`/dashboard/search/${keyword}`);
+    }
   }
 
   render() {
@@ -102,6 +105,7 @@ class TopBar extends Component {
           </IconButton>
           <div className={classes.menuContainer}>
             {location.pathname === '/dashboard' || location.pathname === '/dashboard/entities' ? <TopMenuDashboard/> : ''}
+            {location.pathname.includes('/dashboard/search/') ? <TopMenuSearch/> : ''}
             {location.pathname === '/dashboard/knowledge' || location.pathname.match('/dashboard/knowledge/[a-z_]+$') ? <TopMenuKnowledge/> : ''}
             {location.pathname.includes('/dashboard/knowledge/malwares/') ? <TopMenuMalware/> : ''}
             {location.pathname === '/dashboard/reports' || location.pathname.match('/dashboard/reports/[a-z_]+$') ? <TopMenuReports/> : ''}
@@ -125,7 +129,7 @@ class TopBar extends Component {
             onClose={this.handleCloseMenu.bind(this)}>
             <MenuItem component={Link} to='/dashboard/profile' onClick={this.handleCloseMenu.bind(this)}>{t('Profile')}</MenuItem>
             {includes('ROLE_ADMIN', propOr([], 'grant', me))
-              && <MenuItem component={Link} to='/admin' onClick={this.handleCloseMenu.bind(this)}>{t('Admin')}</MenuItem>}
+            && <MenuItem component={Link} to='/admin' onClick={this.handleCloseMenu.bind(this)}>{t('Admin')}</MenuItem>}
             <MenuItem onClick={this.handleLogout.bind(this)}>{t('Logout')}</MenuItem>
           </Menu>
         </Toolbar>
@@ -144,7 +148,7 @@ TopBar.propTypes = {
 };
 
 const TopBarFragment = createFragmentContainer(TopBar, {
-  me: graphql`    
+  me: graphql`
       fragment TopBar_me on User {
           grant
       }

@@ -139,9 +139,9 @@ class LeftBar extends Component {
               {this.state.open ? <ListItemText primary={t('Catalogs')} classes={{ root: classes.listText }}/> : ''}
             </MenuItem>
           </MenuList>
-            <Divider/>
           {includes('ROLE_ADMIN', propOr([], 'grant', me))
-          && <MenuList component='nav'>
+          && <div><Divider/>
+          <MenuList component='nav'>
             <MenuItem component={Link} to='/dashboard/sources' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/sources')} dense={false}>
               <ListItemIcon classes={{ root: classes.listIcon }}>
                 <ClipboardArrowDown/>
@@ -154,7 +154,7 @@ class LeftBar extends Component {
               </ListItemIcon>
               {this.state.open ? <ListItemText primary={t('Settings')} classes={{ root: classes.listText }}/> : ''}
             </MenuItem>
-          </MenuList>}
+          </MenuList></div>}
           <MenuList component='nav' classes={{ root: this.props.classes.menuList }}>
             <MenuItem onClick={this.toggle.bind(this)} dense={false} style={{ position: 'absolute', bottom: 10, width: '100%' }}>
               <ListItemIcon classes={{ root: classes.listIcon }}>

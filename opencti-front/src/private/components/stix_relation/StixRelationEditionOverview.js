@@ -10,6 +10,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import IconButton from '@material-ui/core/IconButton';
+import Button from '@material-ui/core/Button';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import { dateFormat } from '../../../utils/Time';
@@ -47,6 +48,15 @@ const styles = theme => ({
   title: {
     float: 'left',
   },
+  button: {
+    float: 'right',
+    backgroundColor: '#f44336',
+    borderColor: '#f44336',
+    '&:hover': {
+      backgroundColor: '#c62828',
+      borderColor: '#c62828',
+    },
+  }
 });
 
 const subscription = graphql`
@@ -130,7 +140,7 @@ class StixRelationEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, stixRelation, me,
+      t, classes, handleClose, handleDelete, stixRelation, me,
     } = this.props;
     const { editContext } = stixRelation;
     // Add current user to the context if is not available yet.
@@ -197,6 +207,9 @@ class StixRelationEditionContainer extends Component {
               </Form>
             )}
           />
+          <Button variant='contained' onClick={handleDelete.bind(this)} classes={{ root: classes.button }}>
+            {t('Delete')}
+          </Button>
         </div>
       </div>
     );
@@ -205,6 +218,7 @@ class StixRelationEditionContainer extends Component {
 
 StixRelationEditionContainer.propTypes = {
   handleClose: PropTypes.func,
+  handleDelete: PropTypes.func,
   classes: PropTypes.object,
   stixRelation: PropTypes.object,
   me: PropTypes.object,

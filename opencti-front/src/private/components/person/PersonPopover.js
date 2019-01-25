@@ -123,10 +123,12 @@ class PersonPopover extends Component {
   }
 
   render() {
-    const { classes, t, personId } = this.props;
+    const {
+      classes, t, disabled, personId,
+    } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
+        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true' disabled={disabled}>
           <MoreVert/>
         </IconButton>
         <Menu
@@ -179,6 +181,7 @@ class PersonPopover extends Component {
 
 PersonPopover.propTypes = {
   personId: PropTypes.string,
+  disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

@@ -30,6 +30,7 @@ export const addCountry = async (user, country) => {
   const createCountry = qk(`insert $country isa Country 
     has type "country";
     $country has stix_id "country--${uuid()}";
+    $country has stix_label "";
     $country has name "${country.name}";
     $country has description "${country.description}";
     $country has name_lowercase "${country.name.toLowerCase()}";

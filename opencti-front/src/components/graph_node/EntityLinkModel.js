@@ -5,7 +5,7 @@ import EntityLabelModel from './EntityLabelModel';
 export default class EntityLinkModel extends LinkModel {
   constructor(type = 'entity') {
     super(type);
-    this.color = 'rgba(255,255,255,0.5)';
+    this.color = '#00bcd4';
     this.width = 3;
     this.curvyness = 50;
   }

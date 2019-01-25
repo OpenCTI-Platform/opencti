@@ -52,6 +52,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   } 
     has type "${stixDomainEntity.type.toLowerCase()}";
     $stixDomainEntity has stix_id "${stixDomainEntity.type.toLowerCase()}--${uuid()}";
+    $stixDomainEntity has stix_label "";
     $stixDomainEntity has name "${stixDomainEntity.name}";
     $stixDomainEntity has description "${stixDomainEntity.description}";
     $stixDomainEntity has name_lowercase "${stixDomainEntity.name.toLowerCase()}";

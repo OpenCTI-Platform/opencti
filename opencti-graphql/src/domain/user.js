@@ -1,4 +1,5 @@
 import { includes, head, isEmpty, join, map } from 'ramda';
+import uuid from 'uuid/v4';
 import uuidv5 from 'uuid/v5';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
@@ -71,6 +72,8 @@ export const groups = (userId, args) =>
 export const addPerson = async (user, newUser) => {
   const createPerson = qk(`insert $user isa User 
     has type "user";
+    $user has stix_id "user--${uuid()}";
+    $user has stix_label "";
     $user has name "${newUser.name}";
     $user has description "${newUser.description}";
     $user has name_lowercase "${newUser.name.toLowerCase()}";
@@ -93,6 +96,8 @@ export const addUser = async (user, newUser) => {
   const token = generateOpenCTIWebToken(newUser.email);
   const createUser = qk(`insert $user isa User 
     has type "user";
+    $user has stix_id "user--${uuid()}";
+    $user has stix_label "";
     $user has name "${newUser.name}";
     $user has description "${newUser.description}";
     $user has name_lowercase "${newUser.name.toLowerCase()}";

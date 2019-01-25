@@ -49,6 +49,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
   const courseOfActionIterator = await wTx.query(`insert $courseOfAction isa CourseOfAction 
     has type "courseOfAction";
     $courseOfAction has stix_id "courseOfAction--${uuid()}";
+    $courseOfAction has stix_label "";
     $courseOfAction has name "${courseOfAction.name}";
     $courseOfAction has description "${courseOfAction.description}";
     $courseOfAction has name_lowercase "${courseOfAction.name.toLowerCase()}";

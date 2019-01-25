@@ -57,6 +57,7 @@ export const addAttackPattern = async (user, attackPattern) => {
   const attackPatternIterator = await wTx.query(`insert $attackPattern isa AttackPattern 
     has type "attackPattern";
     $attackPattern has stix_id "attackPattern--${uuid()}";
+    $attackPattern has stix_label "";
     $attackPattern has name "${attackPattern.name}";
     $attackPattern has description "${attackPattern.description}";
     $attackPattern has name_lowercase "${attackPattern.name.toLowerCase()}";
