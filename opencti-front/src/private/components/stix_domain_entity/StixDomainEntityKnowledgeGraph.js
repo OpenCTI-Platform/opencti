@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, map, pipe, forEach, difference, values,
+  compose, map, pipe, forEach, append, values,
   pathOr, filter, last, head, pluck, includes,
   indexBy, prop,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
-import { fetchQuery } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import {
   DiagramEngine,
@@ -17,7 +16,7 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
-import { commitMutation, environment } from '../../../relay/environment';
+import { commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
 import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
@@ -26,10 +25,9 @@ import EntityLinkFactory from '../../../components/graph_node/EntityLinkFactory'
 import EntityLabelFactory from '../../../components/graph_node/EntityLabelFactory';
 import EntityLabelModel from '../../../components/graph_node/EntityLabelModel';
 import EntityLinkModel from '../../../components/graph_node/EntityLinkModel';
-import { reportMutationFieldPatch } from './ReportEditionOverview';
-import ReportAddObjectRefs from './ReportAddObjectRefs';
-import { reportMutationRelationAdd, reportMutationRelationDelete } from './ReportAddObjectRefsLines';
-import StixRelationCreation, { stixRelationCreationQuery, stixRelationCreationDeleteMutation } from '../stix_relation/StixRelationCreation';
+import { stixDomainEntityMutationFieldPatch } from './StixDomainEntityEditionOverview';
+import StixDomainEntityAddObjectRefs from './StixDomainEntityAddObjectRefs';
+import StixRelationCreation, { stixRelationCreationDeleteMutation } from '../stix_relation/StixRelationCreation';
 import StixRelationEdition from '../stix_relation/StixRelationEdition';
 
 const styles = () => ({
@@ -48,17 +46,20 @@ const styles = () => ({
   },
 });
 
-export const reportKnowledgeGraphQuery = graphql`
-    query ReportKnowledgeGraphQuery($id: String!) {
-        report(id: $id) {
-            ...ReportKnowledgeGraph_report
+export const stixDomainEntityKnowledgeGraphQuery = graphql`
+    query StixDomainEntityKnowledgeGraphQuery($id: String!, $count: Int) {
+        stixDomainEntity(id: $id) {
+            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
+        }
+        stixRelations(fromId: $id, first: $count) {
+            ...StixDomainEntityKnowledgeGraph_stixRelations
         }
     }
 `;
 
 const GRAPHER$ = new Subject().pipe(debounce(() => timer(1500)));
 
-class ReportKnowledgeGraphComponent extends Component {
+class StixDomainEntityKnowledgeGraphComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -80,15 +81,15 @@ class ReportKnowledgeGraphComponent extends Component {
 
   componentDidMount() {
     // prepare actual nodes & relations
-    const actualNodes = this.props.report.objectRefs.edges;
-    const actualRelations = this.props.report.relationRefs.edges;
-    const actualNodesIds = pipe(map(n => n.node), pluck('id'))(actualNodes);
+    const actualNodes = append(this.props.stixDomainEntity, map(n => n.to, this.props.stixRelations.edges));
+    const actualRelations = this.props.stixRelations.edges;
+    const actualNodesIds = pluck('id', actualNodes);
     const actualRelationsIds = pipe(map(n => n.node), pluck('id'))(actualRelations);
     // create a new model, component is mounted!
     const model = new DiagramModel();
     // decode graph data if any
-    if (Array.isArray(this.props.report.graph_data) && head(this.props.report.graph_data).length > 0) {
-      const graphData = Buffer.from(head(this.props.report.graph_data), 'base64').toString('ascii');
+    if (Array.isArray(this.props.stixDomainEntity.graph_data) && head(this.props.stixDomainEntity.graph_data).length > 0) {
+      const graphData = Buffer.from(head(this.props.stixDomainEntity.graph_data), 'base64').toString('ascii');
       const decodedGraphData = JSON.parse(graphData);
       model.deSerializeDiagram(decodedGraphData, this.engine);
     }
@@ -106,13 +107,13 @@ class ReportKnowledgeGraphComponent extends Component {
     }, values(nodes));
     // check added nodes
     forEach((n) => {
-      if (!includes(n.node.id, nodesIds)) {
+      if (!includes(n.id, nodesIds)) {
         const newNode = new EntityNodeModel({
-          id: n.node.id,
-          relationId: n.relation.id,
-          name: n.node.name,
-          type: n.node.type,
+          id: n.id,
+          name: n.name,
+          type: n.type,
         });
+        console.log(newNode);
         newNode.addListener({ selectionChanged: this.handleSelection.bind(this) });
         model.addNode(newNode);
       }
@@ -134,12 +135,11 @@ class ReportKnowledgeGraphComponent extends Component {
     }, values(links));
     forEach((l) => {
       if (!includes(l.node.id, linksIds)) {
-        const fromPort = finalNodesObject[l.node.from.node.id] ? finalNodesObject[l.node.from.node.id].node.getPort('main') : null;
-        const toPort = finalNodesObject[l.node.to.node.id] ? finalNodesObject[l.node.to.node.id].node.getPort('main') : null;
+        const fromPort = finalNodesObject[this.props.stixDomainEntity.id] ? finalNodesObject[this.props.stixDomainEntity.id].node.getPort('main') : null;
+        const toPort = finalNodesObject[l.to.id] ? finalNodesObject[l.to.id].node.getPort('main') : null;
         const newLink = new EntityLinkModel();
         newLink.setExtras({
           relation: l.node,
-          objectRefId: l.relation.id,
         });
         newLink.setSourcePort(fromPort);
         newLink.setTargetPort(toPort);
@@ -152,7 +152,6 @@ class ReportKnowledgeGraphComponent extends Component {
     }, actualRelations);
     // set the model
     model.addListener({
-      nodesUpdated: this.handleNodeChanges.bind(this),
       linksUpdated: this.handleLinksChange.bind(this),
     });
     this.engine.setDiagramModel(model);
@@ -166,44 +165,6 @@ class ReportKnowledgeGraphComponent extends Component {
     });
   }
 
-  componentDidUpdate(prevProps) {
-    // component has been updated, check changes
-    const added = difference(
-      this.props.report.objectRefs.edges,
-      prevProps.report.objectRefs.edges,
-    );
-    const removed = difference(
-      prevProps.report.objectRefs.edges,
-      this.props.report.objectRefs.edges,
-    );
-    // if a node has been added, add in graph
-    if (added.length > 0) {
-      const model = this.engine.getDiagramModel();
-      const newNodes = map(n => new EntityNodeModel({
-        id: n.node.id,
-        relationId: n.relation.id,
-        name: n.node.name,
-        type: n.node.type,
-      }), added);
-      forEach((n) => {
-        n.addListener({ selectionChanged: this.handleSelection.bind(this) });
-        model.addNode(n);
-      }, newNodes);
-      this.forceUpdate();
-    }
-    // if a node has been removed, remove in graph
-    if (removed.length > 0) {
-      const model = this.engine.getDiagramModel();
-      const removedIds = map(n => n.node.id, removed);
-      forEach((n) => {
-        if (removedIds.includes(n.extras.id)) {
-          model.removeNode(n);
-        }
-      }, values(model.getNodes()));
-      this.forceUpdate();
-    }
-  }
-
   saveGraph() {
     if (this.saving === false) {
       this.saving = true;
@@ -211,8 +172,8 @@ class ReportKnowledgeGraphComponent extends Component {
       const graphData = JSON.stringify(model.serializeDiagram());
       const encodedGraphData = Buffer.from(graphData).toString('base64');
       commitMutation({
-        mutation: reportMutationFieldPatch,
-        variables: { id: this.props.report.id, input: { key: 'graph_data', value: encodedGraphData } },
+        mutation: stixDomainEntityMutationFieldPatch,
+        variables: { id: this.props.stixDomainEntity.id, input: { key: 'graph_data', value: encodedGraphData } },
         onCompleted: () => {
           this.saving = false;
         },
@@ -226,26 +187,6 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleMovesChange(event) {
     if (event instanceof MoveItemsAction) {
-      this.handleSaveGraph();
-    }
-    return true;
-  }
-
-  handleNodeChanges(event) {
-    if (event.node !== undefined) {
-      if (event.isCreated === false) {
-        const nodeRelationId = pathOr(null, ['node', 'extras', 'relationId'], event);
-        if (nodeRelationId !== null) {
-          commitMutation({
-            mutation: reportMutationRelationDelete,
-            variables: {
-              id: this.props.report.id,
-              relationId: nodeRelationId,
-            },
-          });
-          this.handleSaveGraph();
-        }
-      }
       this.handleSaveGraph();
     }
     return true;
@@ -303,29 +244,15 @@ class ReportKnowledgeGraphComponent extends Component {
           if (filteredCurrentLinks.length === 0) {
             if (link.extras && link.extras.relation) {
               commitMutation({
-                mutation: reportMutationRelationDelete,
+                mutation: stixRelationCreationDeleteMutation,
                 variables: {
-                  id: this.props.report.id,
-                  relationId: link.extras.objectRefId,
+                  id: link.extras.relation.id,
                 },
               });
-              fetchQuery(environment, stixRelationCreationQuery, {
-                fromId: link.sourcePort.parent.extras.id,
-                toId: link.targetPort.parent.extras.id,
-              }).then((data) => {
-                if (data.stixRelations.edges.length === 1) {
-                  commitMutation({
-                    mutation: stixRelationCreationDeleteMutation,
-                    variables: {
-                      id: link.extras.relation.id,
-                    },
-                  });
-                }
-              });
             }
-            this.handleSaveGraph();
           }
         }
+        this.handleSaveGraph();
       }
     }
     return true;
@@ -362,24 +289,8 @@ class ReportKnowledgeGraphComponent extends Component {
     const label = new EntityLabelModel();
     label.setLabel(result.relationship_type);
     linkObject.addLabel(label);
-    const input = {
-      fromRole: 'so',
-      toId: this.props.report.id,
-      toRole: 'knowledge_aggregation',
-      through: 'object_refs',
-    };
-    commitMutation({
-      mutation: reportMutationRelationAdd,
-      variables: {
-        id: result.id,
-        input,
-      },
-      onCompleted(data) {
-        linkObject.setExtras({
-          relation: result,
-          objectRefId: data.reportEdit.relationAdd.relation.id,
-        });
-      },
+    linkObject.setExtras({
+      relation: result,
     });
     this.setState({
       openCreateRelation: false,
@@ -410,7 +321,7 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   render() {
-    const { classes, report } = this.props;
+    const { classes, stixDomainEntity } = this.props;
     const {
       openCreateRelation, createRelationFrom, createRelationTo, openEditRelation, editRelationId,
     } = this.state;
@@ -424,9 +335,9 @@ class ReportKnowledgeGraphComponent extends Component {
           maxNumberPointsPerLink={0}
           actionStoppedFiring={this.handleMovesChange.bind(this)}
         />
-        <ReportAddObjectRefs
-          reportId={report.id}
-          reportObjectRefs={report.objectRefs.edges}
+        <StixDomainEntityAddObjectRefs
+          stixDomainEntityId={stixDomainEntity.id}
+          stixDomainEntityObjectRefs={map(n => n.to, this.props.stixRelations.edges)}
         />
         <StixRelationCreation
           open={openCreateRelation}
@@ -446,51 +357,37 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 }
 
-ReportKnowledgeGraphComponent.propTypes = {
-  report: PropTypes.object,
+StixDomainEntityKnowledgeGraphComponent.propTypes = {
+  stixDomainEntity: PropTypes.object,
+  stixRelations: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const ReportKnowledgeGraph = createFragmentContainer(ReportKnowledgeGraphComponent, {
-  report: graphql`
-      fragment ReportKnowledgeGraph_report on Report {
+const StixDomainEntityKnowledgeGraph = createFragmentContainer(StixDomainEntityKnowledgeGraphComponent, {
+  stixDomainEntity: graphql`
+      fragment StixDomainEntityKnowledgeGraph_stixDomainEntity on StixDomainEntity {
           id
+          type
           name
           graph_data
-          objectRefs {
-              edges {
-                  node {
-                      id
-                      type
-                      name
-                      description
-                  }
-                  relation {
-                      id
-                  }
+      }
+  `,
+  stixRelations: graphql`
+      fragment StixDomainEntityKnowledgeGraph_stixRelations on StixRelationConnection @argumentDefinitions(
+          fromId: {type: "String"}
+          first: {type: "Int", defaultValue: 50}
+      ) {
+          edges {
+              node {
+                  id
+                  relationship_type
+                  description
               }
-          }
-          relationRefs {
-              edges {
-                  node {
-                      id
-                      relationship_type
-                      name
-                      from {
-                          node {
-                              id
-                          }
-                      }
-                      to {
-                          node {
-                              id
-                          }
-                      }
-                  }
-                  relation {
-                      id
-                  }
+              to {
+                  id
+                  type
+                  name
               }
           }
       }
@@ -500,4 +397,4 @@ const ReportKnowledgeGraph = createFragmentContainer(ReportKnowledgeGraphCompone
 export default compose(
   inject18n,
   withStyles(styles),
-)(ReportKnowledgeGraph);
+)(StixDomainEntityKnowledgeGraph);

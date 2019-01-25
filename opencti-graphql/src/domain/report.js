@@ -65,6 +65,14 @@ export const objectRefs = (reportId, args) =>
     args
   );
 
+export const relationRefs = (reportId, args) =>
+  paginate(
+    `match $so isa stix_relation; 
+    $rel(so:$so, knowledge_aggregation:$report) isa object_refs; 
+    $report id ${reportId}`,
+    args
+  );
+
 export const addReport = async (user, report) => {
   const wTx = await takeTx();
   const reportIterator = await wTx.query(`insert $report isa Report 

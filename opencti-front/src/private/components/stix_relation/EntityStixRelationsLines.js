@@ -148,8 +148,8 @@ EntityStixRelationsLines.propTypes = {
 };
 
 export const entityStixRelationsLinesQuery = graphql`
-    query EntityStixRelationsLinesPaginationQuery($fromId: String, $relationType: String, $count: Int!, $cursor: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
-        ...EntityStixRelationsLines_data @arguments(fromId: $fromId, relationType: $relationType, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
+    query EntityStixRelationsLinesPaginationQuery($fromId: String, $toType: String, $relationType: String, $count: Int!, $cursor: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
+        ...EntityStixRelationsLines_data @arguments(fromId: $fromId, toType: $toType, relationType: $relationType, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
     }
 `;
 
@@ -159,13 +159,14 @@ export default withStyles(styles)(createPaginationContainer(
     data: graphql`
         fragment EntityStixRelationsLines_data on Query @argumentDefinitions(
             fromId: {type: "String"},
+            toType: {type: "String"},
             relationType: {type: "String"},
             count: {type: "Int", defaultValue: 25}
             cursor: {type: "ID"}
             orderBy: {type: "StixRelationsOrdering", defaultValue: ID}
             orderMode: {type: "OrderingMode", defaultValue: "asc"}
         ) {
-            stixRelations(fromId: $fromId, relationType: $relationType, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_stixRelations") {
+            stixRelations(fromId: $fromId, toType: $toType relationType: $relationType, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_stixRelations") {
                 edges {
                     node {
                         ...EntityStixRelationLine_stixRelation
@@ -192,6 +193,7 @@ export default withStyles(styles)(createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         fromId: fragmentVariables.fromId,
+        toType: fragmentVariables.toType,
         relationType: fragmentVariables.relationType,
         count,
         cursor,

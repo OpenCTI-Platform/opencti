@@ -166,7 +166,6 @@ const i18n = {
       Name: 'Nom',
       Description: 'Description',
       'Relationship type': 'Type de relation',
-
       'Creation date': 'Date de création',
       'Modification date': 'Date de modification',
       'Updated the': 'Mis à jour le',
@@ -195,6 +194,7 @@ const i18n = {
       Options: 'Options',
       Author: 'Auteur',
       'Publication date': 'Date de publication',
+      Publication: 'Publication',
       'Entity type': "Type d'entité",
       'Report type': 'Type de rapport',
       'Internal report': 'Rapport interne',
@@ -255,7 +255,7 @@ const i18n = {
       'relation_attributed-to': 'attribué à',
       'relation_variant-of': 'variante de',
       'relation_part-of': 'fait parti de',
-      'relation_localized-in': 'localisé dans/en',
+      relation_localization: 'localisé dans/en',
       'relation_related-to': 'lié à',
     },
     en: {

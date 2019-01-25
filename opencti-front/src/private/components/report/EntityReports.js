@@ -15,7 +15,6 @@ import inject18n from '../../../components/i18n';
 
 const styles = () => ({
   linesContainer: {
-    marginTop: 20,
     paddingTop: 0,
   },
   item: {
@@ -41,13 +40,13 @@ const inlineStyles = {
   },
   name: {
     float: 'left',
-    width: '40%',
+    width: '45%',
     fontSize: 12,
     fontWeight: '700',
   },
   author: {
     float: 'left',
-    width: '20%',
+    width: '25%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -103,7 +102,7 @@ class EntityReports extends Component {
               <div>
                 {this.SortHeader('name', 'Name')}
                 {this.SortHeader('author', 'Author')}
-                {this.SortHeader('published', 'Publication date')}
+                {this.SortHeader('published', 'Publication')}
                 {this.SortHeader('marking', 'Marking')}
               </div>
             }/>

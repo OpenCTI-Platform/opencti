@@ -46,7 +46,7 @@ const styles = theme => ({
 const inlineStyles = {
   name: {
     float: 'left',
-    width: '40%',
+    width: '45%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -54,7 +54,7 @@ const inlineStyles = {
   },
   author: {
     float: 'left',
-    width: '20%',
+    width: '25%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -98,7 +98,7 @@ class ReportLineComponent extends Component {
               {fd(report.published)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.marking}>
-              {take(2, pathOr([], ['markingDefinitions', 'edges'], report)).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} variant='inList'
+              {take(1, pathOr([], ['markingDefinitions', 'edges'], report)).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} variant='inList'
                                                                                                                   label={markingDefinition.node.definition}/>)}
             </div>
           </div>

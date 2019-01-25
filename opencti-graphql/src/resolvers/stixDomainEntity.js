@@ -13,7 +13,7 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityCleanContext
 } from '../domain/stixDomainEntity';
-import { pubsub } from '../database/redis';
+import { fetchEditContext, pubsub } from '../database/redis';
 import { auth, withCancel } from './wrapper';
 
 const stixDomainEntityResolvers = {
@@ -37,7 +37,8 @@ const stixDomainEntityResolvers = {
         );
       }
       return 'Unknown';
-    }
+    },
+    editContext: auth(stixDomainEntity => fetchEditContext(stixDomainEntity.id))
   },
   Mutation: {
     stixDomainEntityEdit: auth((_, { id }, { user }) => ({

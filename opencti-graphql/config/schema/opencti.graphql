@@ -114,6 +114,8 @@ interface StixDomainEntity {
     type: String!
     name: String!
     description: String
+    graph_data: [String]
+    editContext: [EditUserContext]
     created_at: DateTime!
     updated_at: DateTime!
 }
@@ -146,6 +148,7 @@ type StixRelationEdge {
     node: StixRelation!
     from: StixDomainEntity
     to: StixDomainEntity
+    relation: RelationEmbedded
 }
 type StixRelation implements GlobalObject & StixDomainEntity {
     id: ID!
@@ -158,11 +161,12 @@ type StixRelation implements GlobalObject & StixDomainEntity {
     last_seen: DateTime
     created: DateTime!
     modified: DateTime!
+    graph_data: [String]
     editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
     reports: ReportConnection
-    from: StixDomainEntity
-    to: StixDomainEntity
+    from: StixDomainEntityEdge
+    to: StixDomainEntityEdge
     created_at: DateTime!
     updated_at: DateTime!
 }
@@ -243,6 +247,7 @@ type User implements GlobalObject & StixDomainEntity & Identity {
     grant: [String]
     created: DateTime
     modified: DateTime
+    graph_data: [String]
     editContext: [EditUserContext]
     groups: GroupConnection
     created_at: DateTime!
@@ -294,6 +299,7 @@ type Organization implements GlobalObject & StixDomainEntity & Identity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    graph_data: [String]
     editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
     created_at: DateTime!
@@ -332,6 +338,7 @@ type Sector implements GlobalObject & StixDomainEntity & Identity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    graph_data: [String]
     editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
     created_at: DateTime!
@@ -370,6 +377,7 @@ type City implements GlobalObject & StixDomainEntity & Identity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    graph_data: [String]
     editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
     created_at: DateTime!
@@ -408,6 +416,7 @@ type Country implements GlobalObject & StixDomainEntity & Identity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    graph_data: [String]
     editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
     created_at: DateTime!
@@ -440,6 +449,7 @@ type Group implements GlobalObject & StixDomainEntity {
     type: String!
     name: String!
     description: String
+    graph_data: [String]
     editContext: [EditUserContext]
     members: UserConnection
     permissions: MarkingDefinitionConnection
@@ -606,6 +616,7 @@ type AttackPattern implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    graph_data: [String]
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -648,6 +659,7 @@ type CourseOfAction implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    graph_data: [String]
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -679,7 +691,7 @@ type ThreatActorEdge {
     cursor: String!
     node: ThreatActor!
 }
-type ThreatActor implements GlobalObject & StixDomainEntity {
+type ThreatActor implements GlobalObject & StixDomainEntity & Identity {
     id: ID!
     type: String!
     name: String!
@@ -696,6 +708,7 @@ type ThreatActor implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    graph_data: [String]
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -742,6 +755,7 @@ type IntrusionSet implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    graph_data: [String]
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -786,6 +800,7 @@ type Campaign implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    graph_data: [String]
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -833,6 +848,7 @@ type Incident implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    graph_data: [String]
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -875,6 +891,7 @@ type Malware implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    graph_data: [String]
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -918,6 +935,7 @@ type Tool implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    graph_data: [String]
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -961,6 +979,7 @@ type Vulnerability implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
+    graph_data: [String]
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -1004,7 +1023,7 @@ type Report implements GlobalObject & StixDomainEntity {
     name: String!
     description: String
     report_class: String
-    graph_data: String
+    graph_data: [String]
     created: DateTime
     modified: DateTime
     published: DateTime
@@ -1013,6 +1032,7 @@ type Report implements GlobalObject & StixDomainEntity {
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
     objectRefs: StixDomainEntityConnection
+    relationRefs: StixRelationConnection
     created_at: DateTime!
     updated_at: DateTime!
 }
@@ -1044,7 +1064,7 @@ type Query {
     stixDomainEntities(first: Int, after: ID, orderBy: StixDomainEntitiesOrdering, orderMode: OrderingMode, name: String, search: String): StixDomainEntityConnection
     # StixRelations
     stixRelation(id: String!): StixRelation
-    stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, toId: String, relationType: String, search: String): StixRelationConnection
+    stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromType: String, toType: String, relationType: String, search: String): StixRelationConnection
     # Identities
     identity(id: String!): Identity
     identities(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): IdentityConnection

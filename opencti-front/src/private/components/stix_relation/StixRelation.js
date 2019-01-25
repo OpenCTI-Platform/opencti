@@ -5,7 +5,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
-import StixRelationOverView from './StixRelationOverView';
+import StixRelationOverview from './StixRelationOverview';
 
 const styles = () => ({
   container: {
@@ -23,16 +23,18 @@ const stixRelationQuery = graphql`
 
 class StixRelation extends Component {
   render() {
-    const { classes, stixRelationId } = this.props;
+    const {
+      classes, entityId, inversedRelations, match: { params: { relationId } },
+    } = this.props;
     return (
       <div className={classes.container}>
         <QueryRenderer
           query={stixRelationQuery}
-          variables={{ id: stixRelationId }}
+          variables={{ id: relationId }}
           render={({ props }) => {
             if (props) { // Done
               return (
-                <StixRelationOverView stixRelation={props.stixRelation}/>
+                <StixRelationOverview entityId={entityId} stixRelation={props.stixRelation} inversedRelations={inversedRelations}/>
               );
             }
             // Loading
@@ -45,9 +47,11 @@ class StixRelation extends Component {
 }
 
 StixRelation.propTypes = {
-  stixRelationId: PropTypes.string,
+  entityId: PropTypes.string,
+  inversedRelations: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
+  match: PropTypes.object,
   history: PropTypes.object,
 };
 

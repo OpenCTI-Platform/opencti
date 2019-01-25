@@ -4,21 +4,17 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import {
-  compose, insert, find, propEq, pick, assoc, pipe,
+  compose, insert, find, propEq, pick,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import MenuItem from '@material-ui/core/MenuItem';
 import IconButton from '@material-ui/core/IconButton';
-import Button from '@material-ui/core/Button';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
-import { dateFormat } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import { commitMutation, requestSubscription } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../components/Subscription';
-import Select from '../../../components/Select';
 
 const styles = theme => ({
   header: {
@@ -61,54 +57,46 @@ const styles = theme => ({
 });
 
 const subscription = graphql`
-    subscription StixRelationEditionOverviewSubscription($id: ID!) {
-        stixRelation(id: $id) {
-            ...StixRelationEditionOverview_stixRelation
+    subscription StixDomainEntityEditionOverviewSubscription($id: ID!) {
+        stixDomainEntity(id: $id) {
+            ...StixDomainEntityEditionOverview_stixDomainEntity
         }
     }
 `;
 
-const stixRelationMutationFieldPatch = graphql`
-    mutation StixRelationEditionOverviewFieldPatchMutation($id: ID!, $input: EditInput!) {
-        stixRelationEdit(id: $id) {
+export const stixDomainEntityMutationFieldPatch = graphql`
+    mutation StixDomainEntityEditionOverviewFieldPatchMutation($id: ID!, $input: EditInput!) {
+        stixDomainEntityEdit(id: $id) {
             fieldPatch(input: $input) {
-                ...StixRelationEditionOverview_stixRelation
+                ...StixDomainEntityEditionOverview_stixDomainEntity
             }
         }
     }
 `;
 
-const stixRelationEditionFocus = graphql`
-    mutation StixRelationEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
-        stixRelationEdit(id: $id) {
+const stixDomainEntityEditionFocus = graphql`
+    mutation StixDomainEntityEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
+        stixDomainEntityEdit(id: $id) {
             contextPatch(input : $input) {
-                ...StixRelationEditionOverview_stixRelation
+                ...StixDomainEntityEditionOverview_stixDomainEntity
             }
         }
     }
 `;
 
-const stixRelationValidation = t => Yup.object().shape({
-  weight: Yup.number()
-    .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number'))
-    .required(t('This field is required')),
-  first_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
-  last_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+const stixDomainEntityValidation = t => Yup.object().shape({
+  name: Yup.string()
     .required(t('This field is required')),
   description: Yup.string(),
 });
 
-class StixRelationEditionContainer extends Component {
+class StixDomainEntityEditionContainer extends Component {
   componentDidMount() {
     const sub = requestSubscription({
       subscription,
       variables: {
         // eslint-disable-next-line
-        id: this.props.stixRelation.id
+        id: this.props.stixDomainEntity.id
       },
     });
     this.setState({ sub });
@@ -120,9 +108,9 @@ class StixRelationEditionContainer extends Component {
 
   handleChangeFocus(name) {
     commitMutation({
-      mutation: stixRelationEditionFocus,
+      mutation: stixDomainEntityEditionFocus,
       variables: {
-        id: this.props.stixRelation.id,
+        id: this.props.stixDomainEntity.id,
         input: {
           focusOn: name,
         },
@@ -131,27 +119,23 @@ class StixRelationEditionContainer extends Component {
   }
 
   handleSubmitField(name, value) {
-    stixRelationValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
+    stixDomainEntityValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
       commitMutation({
-        mutation: stixRelationMutationFieldPatch,
-        variables: { id: this.props.stixRelation.id, input: { key: name, value } },
+        mutation: stixDomainEntityMutationFieldPatch,
+        variables: { id: this.props.stixDomainEntity.id, input: { key: name, value } },
       });
     }).catch(() => false);
   }
 
   render() {
     const {
-      t, classes, handleClose, handleDelete, stixRelation, me, variant,
+      t, classes, handleClose, stixDomainEntity, me,
     } = this.props;
-    const { editContext } = stixRelation;
+    const { editContext } = stixDomainEntity;
     // Add current user to the context if is not available yet.
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
     const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
-    const initialValues = pipe(
-      assoc('first_seen', dateFormat(stixRelation.first_seen)),
-      assoc('last_seen', dateFormat(stixRelation.last_seen)),
-      pick(['weight', 'first_seen', 'last_seen', 'description']),
-    )(stixRelation);
+    const initialValues = pick(['name', 'description'], stixDomainEntity);
     return (
       <div>
         <div className={classes.header}>
@@ -159,7 +143,7 @@ class StixRelationEditionContainer extends Component {
             <Close fontSize='small'/>
           </IconButton>
           <Typography variant='h6' classes={{ root: classes.title }}>
-            {t('Update a relationship')}
+            {t('Update an entity')}
           </Typography>
           <SubscriptionAvatars users={editUsers}/>
           <div className='clearfix'/>
@@ -168,34 +152,10 @@ class StixRelationEditionContainer extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
-            validationSchema={stixRelationValidation(t)}
+            validationSchema={stixDomainEntityValidation(t)}
             render={() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field name='weight'
-                       component={Select}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onChange={this.handleSubmitField.bind(this)}
-                       label={t('Confidence level')}
-                       fullWidth={true}
-                       inputProps={{
-                         name: 'weight',
-                         id: 'weight',
-                       }}
-                       containerstyle={{ marginTop: 10, width: '100%' }}
-                       helpertext={<SubscriptionFocus me={me} users={editUsers} fieldName='weight'/>}
-                >
-                  <MenuItem value='1'>{t('Very low')}</MenuItem>
-                  <MenuItem value='2'>{t('Low')}</MenuItem>
-                  <MenuItem value='3'>{t('Medium')}</MenuItem>
-                  <MenuItem value='4'>{t('High')}</MenuItem>
-                  <MenuItem value='5'>{t('Very high')}</MenuItem>
-                </Field>
-                <Field name='first_seen' component={TextField} label={t('First seen')}
-                       fullWidth={true} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='first_seen'/>}/>
-                <Field name='last_seen' component={TextField} label={t('Last seen')}
+                <Field name='name' component={TextField} label={t('Last seen')}
                        fullWidth={true} style={{ marginTop: 10 }}
                        onFocus={this.handleChangeFocus.bind(this)}
                        onSubmit={this.handleSubmitField.bind(this)}
@@ -208,34 +168,26 @@ class StixRelationEditionContainer extends Component {
               </Form>
             )}
           />
-          {variant !== 'noGraph'
-            ? <Button variant='contained' onClick={handleDelete.bind(this)} classes={{ root: classes.button }}>
-            {t('Delete')}
-          </Button> : ''}
         </div>
       </div>
     );
   }
 }
 
-StixRelationEditionContainer.propTypes = {
-  variant: PropTypes.string,
+StixDomainEntityEditionContainer.propTypes = {
   handleClose: PropTypes.func,
-  handleDelete: PropTypes.func,
   classes: PropTypes.object,
-  stixRelation: PropTypes.object,
+  stixDomainEntity: PropTypes.object,
   me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
 
-const StixRelationEditionFragment = createFragmentContainer(StixRelationEditionContainer, {
-  stixRelation: graphql`
-      fragment StixRelationEditionOverview_stixRelation on StixRelation {
+const StixDomainEntityEditionFragment = createFragmentContainer(StixDomainEntityEditionContainer, {
+  stixDomainEntity: graphql`
+      fragment StixDomainEntityEditionOverview_stixDomainEntity on StixDomainEntity {
           id
-          weight
-          first_seen
-          last_seen
+          name
           description
           editContext {
               name
@@ -244,7 +196,7 @@ const StixRelationEditionFragment = createFragmentContainer(StixRelationEditionC
       }
   `,
   me: graphql`
-      fragment StixRelationEditionOverview_me on User {
+      fragment StixDomainEntityEditionOverview_me on User {
           email
       }
   `,
@@ -253,4 +205,4 @@ const StixRelationEditionFragment = createFragmentContainer(StixRelationEditionC
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(StixRelationEditionFragment);
+)(StixDomainEntityEditionFragment);

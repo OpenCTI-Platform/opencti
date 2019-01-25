@@ -35,7 +35,12 @@ export const now = () =>
 export const prepareDate = date => moment(date).format(gkDateFormat);
 
 // Attributes key that can contains multiple values.
-export const multipleAttributes = ['stix_label', 'alias', 'grant'];
+export const multipleAttributes = [
+  'stix_label',
+  'alias',
+  'grant',
+  'graph_data'
+];
 export const lowerCaseAttributes = [
   'name',
   'description',

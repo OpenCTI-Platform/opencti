@@ -11,6 +11,7 @@ import {
   createdByRef,
   markingDefinitions,
   objectRefs,
+  relationRefs,
   reportEditContext,
   reportEditField,
   reportAddRelation,
@@ -40,6 +41,7 @@ const reportResolvers = {
     createdByRef: (report, args) => createdByRef(report.id, args),
     markingDefinitions: (report, args) => markingDefinitions(report.id, args),
     objectRefs: (report, args) => objectRefs(report.id, args),
+    relationRefs: (report, args) => relationRefs(report.id, args),
     editContext: auth(report => fetchEditContext(report.id))
   },
   Mutation: {

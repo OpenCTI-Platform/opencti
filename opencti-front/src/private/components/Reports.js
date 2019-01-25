@@ -42,13 +42,13 @@ const inlineStyles = {
   },
   name: {
     float: 'left',
-    width: '40%',
+    width: '45%',
     fontSize: 12,
     fontWeight: '700',
   },
   author: {
     float: 'left',
-    width: '20%',
+    width: '25%',
     fontSize: 12,
     fontWeight: '700',
   },

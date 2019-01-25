@@ -99,8 +99,11 @@ class EntityStixRelations extends Component {
   }
 
   render() {
-    const { classes, entityId, relationType, entityLink } = this.props;
+    const {
+      classes, entityId, relationType, entityLink, targetEntityType,
+    } = this.props;
     const paginationOptions = {
+      toType: targetEntityType || '',
       fromId: entityId,
       relationType,
       orderBy: this.state.sortBy,
@@ -145,6 +148,7 @@ class EntityStixRelations extends Component {
 
 EntityStixRelations.propTypes = {
   entityId: PropTypes.string,
+  targetEntityType: PropTypes.string,
   entityLink: PropTypes.string,
   relationType: PropTypes.string,
   classes: PropTypes.object,

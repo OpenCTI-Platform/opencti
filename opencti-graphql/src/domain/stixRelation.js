@@ -10,6 +10,7 @@ import {
   paginateRelationships,
   paginate,
   qk,
+  qkObjUnique,
   prepareDate
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -23,6 +24,12 @@ export const findByType = args =>
     args
   );
 
+export const findByToTypeAndType = args =>
+  paginateRelationships(
+    `match $rel($from, $to) isa ${args.relationType}; $to isa ${args.toType}`,
+    args
+  );
+
 export const findById = stixRelationId => loadByID(stixRelationId);
 
 export const search = args =>
@@ -33,6 +40,22 @@ export const search = args =>
     { $name contains "${args.search.toLowerCase()}"; } or
     { $desc contains "${args.search.toLowerCase()}"; }`,
     args
+  );
+
+export const getFrom = stixRelationId =>
+  qkObjUnique(
+    `match $x isa Stix-Domain-Entity; 
+    $rel($x, $y) isa stix_relation; 
+    $rel id ${stixRelationId}; offset 0; limit 1; get $x;`,
+    'x'
+  );
+
+export const getTo = stixRelationId =>
+  qkObjUnique(
+    `match $x isa Stix-Domain-Entity; 
+    $rel($x, $y) isa stix_relation; 
+    $rel id ${stixRelationId}; offset 0; limit 1; get $y;`,
+    'y'
   );
 
 export const markingDefinitions = (stixRelationId, args) =>
