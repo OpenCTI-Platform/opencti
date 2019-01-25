@@ -280,6 +280,7 @@ class ReportKnowledgeGraphComponent extends Component {
         this.setState({
           openEditRelation: true,
           editRelationId: event.entity.extras.relation.id,
+          currentLink: event.entity,
         });
       }
     }
@@ -336,6 +337,18 @@ class ReportKnowledgeGraphComponent extends Component {
     this.setState({
       openEditRelation: false,
       editRelationId: null,
+      currentLink: null,
+    });
+  }
+
+  handleDeleteRelation() {
+    const model = this.engine.getDiagramModel();
+    const linkObject = model.getLink(this.state.currentLink);
+    linkObject.remove();
+    this.setState({
+      openEditRelation: false,
+      editRelationId: null,
+      currentLink: null,
     });
   }
 
@@ -369,6 +382,7 @@ class ReportKnowledgeGraphComponent extends Component {
           open={openEditRelation}
           stixRelationId={editRelationId}
           handleClose={this.handleCloseRelationEdition.bind(this)}
+          handleDelete={this.handleDeleteRelation.bind(this)}
           />
       </div>
     );

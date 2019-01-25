@@ -587,7 +587,7 @@ enum AttackPatternsOrdering {
 }
 type AttackPatternConnection {
     pageInfo: PageInfo!
-    edges: [MalwareEdge]
+    edges: [AttackPatternEdge]
 }
 type AttackPatternEdge {
     cursor: String!
@@ -633,7 +633,7 @@ type CourseOfActionConnection {
 }
 type CourseOfActionEdge {
     cursor: String!
-    node: Malware!
+    node: CourseOfAction!
 }
 type CourseOfAction implements GlobalObject & StixDomainEntity {
     id: ID!
@@ -812,7 +812,7 @@ enum IncidentsOrdering {
 }
 type IncidentConnection {
     pageInfo: PageInfo!
-    edges: [MalwareEdge]
+    edges: [IncidentEdge]
 }
 type IncidentEdge {
     cursor: String!
@@ -1040,7 +1040,7 @@ type Query {
     stixDomainEntities(first: Int, after: ID, orderBy: StixDomainEntitiesOrdering, orderMode: OrderingMode, name: String, search: String): StixDomainEntityConnection
     # StixRelations
     stixRelation(id: String!): StixRelation
-    stixRelations(fromId: String, toId: String, first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, search: String): StixRelationConnection
+    stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, toId: String, type: String, search: String): StixRelationConnection
     # Identities
     identity(id: String!): Identity
     identities(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): IdentityConnection

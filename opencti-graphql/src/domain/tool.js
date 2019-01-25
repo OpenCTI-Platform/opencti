@@ -57,6 +57,8 @@ export const addTool = async (user, tool) => {
   const toolIterator = await wTx.query(`insert $tool isa Tool 
     has type "tool";
     $tool has stix_id "tool--${uuid()}";
+    $tool has stix_label "";
+    $tool has stix_label_lowercase "";
     $tool has name "${tool.name}";
     $tool has description "${tool.description}";
     $tool has name_lowercase "${tool.name.toLowerCase()}";

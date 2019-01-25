@@ -17,6 +17,7 @@ import {
   LockPattern,
   Application,
   Fire,
+  CityVariant,
 } from 'mdi-material-ui';
 
 const iconSelector = (type, variant, fontSize, color) => {
@@ -42,6 +43,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <Flag style={style} fontSize={fontSize}/>;
     case 'sector':
       return <Domain style={style} fontSize={fontSize}/>;
+    case 'city':
+      return <CityVariant style={style} fontSize={fontSize}/>;
     case 'threat-actor':
       return <Public style={style} fontSize={fontSize}/>;
     case 'intrusion-set':

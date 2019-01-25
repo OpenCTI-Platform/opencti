@@ -50,6 +50,8 @@ export const addIncident = async (user, incident) => {
   const incidentIterator = await wTx.query(`insert $incident isa Incident 
     has type "incident";
     $incident has stix_id "incident--${uuid()}";
+    $incident has stix_label "";
+    $incident has stix_label_lowercase "";
     $incident has name "${incident.name}";
     $incident has description "${incident.description}";
     $incident has name_lowercase "${incident.name.toLowerCase()}";

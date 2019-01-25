@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
+import { pathOr, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer, InfiniteLoader, List, WindowScroller,
@@ -82,7 +82,7 @@ class PersonsLines extends Component {
     }
     const person = personNode.node;
     return <div key={key} style={style}>
-      <PersonLine key={person.id} person={person} paginationOptions={this.props.paginationOptions}/>
+      <PersonLine key={person.id} person={person} me={propOr({}, 'me', this.props.data)} paginationOptions={this.props.paginationOptions}/>
     </div>;
   }
 
@@ -177,6 +177,9 @@ export default withStyles(styles)(createPaginationContainer(
                         ...PersonLine_person
                     }
                 }
+            }
+            me {
+                ...PersonLine_me
             }
         }
     `,

@@ -17,6 +17,7 @@ import Typography from '@material-ui/core/Typography';
 import { ExpandMore } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
 import truncate from '../../../utils/String';
+import { resolveLink } from '../../../utils/Entity';
 import ItemIcon from '../../../components/ItemIcon';
 import inject18n from '../../../components/i18n';
 
@@ -26,6 +27,9 @@ const styles = theme => ({
   },
   expansionPanel: {
     backgroundColor: '#444444',
+  },
+  itemIcon: {
+    color: theme.palette.primary.main,
   },
   heading: {
     fontSize: theme.typography.pxToRem(15),
@@ -48,6 +52,10 @@ const styles = theme => ({
   icon: {
     color: theme.palette.primary.main,
   },
+  noResult: {
+    color: '#ffffff',
+    fontSize: 15,
+  },
 });
 
 class StixDomainEntitiesContainer extends Component {
@@ -60,11 +68,14 @@ class StixDomainEntitiesContainer extends Component {
     this.setState({ expandedPanels: assoc(panelKey, expanded, this.state.expandedPanels) });
   }
 
-  isExpanded(type, numberOfEntities) {
+  isExpanded(type, numberOfEntities, numberOfTypes) {
     if (this.state.expandedPanels[type] !== undefined) {
       return this.state.expandedPanels[type];
     }
     if (numberOfEntities === 1) {
+      return true;
+    }
+    if (numberOfTypes === 1) {
       return true;
     }
     return false;
@@ -82,7 +93,7 @@ class StixDomainEntitiesContainer extends Component {
       <div className={classes.container}>
         {stixDomainEntitiesTypes.map(type => (
           <ExpansionPanel key={type}
-                          expanded={this.isExpanded(type, stixDomainEntities[type].length)}
+                          expanded={this.isExpanded(type, stixDomainEntities[type].length, stixDomainEntitiesTypes.length)}
                           onChange={this.handleChangePanel.bind(this, type)}
                           classes={{ root: classes.expansionPanel }}>
             <ExpansionPanelSummary expandIcon={<ExpandMore/>} className={classes.summary}>
@@ -91,28 +102,50 @@ class StixDomainEntitiesContainer extends Component {
             </ExpansionPanelSummary>
             <ExpansionPanelDetails classes={{ root: classes.expansionPanelContent }}>
               <List classes={{ root: classes.list }}>
-                {stixDomainEntities[type].map(stixDomainEntity => (
-                    <ListItem
-                      key={stixDomainEntity.id}
-                      classes={{ root: classes.menuItem }}
-                      divider={true}
-                      button={true}
-                      component={Link}
-                      to={`/dashboard/knowledge/${stixDomainEntity.type.replace('-', '_')}s/${stixDomainEntity.id}`}
+                {stixDomainEntities[type].map((stixDomainEntity) => {
+                  const link = resolveLink(stixDomainEntity.type);
+                  if (link) {
+                    return (
+                      <ListItem
+                        key={stixDomainEntity.id}
+                        classes={{ root: classes.menuItem }}
+                        divider={true}
+                        button={true}
+                        component={Link}
+                        to={`${link}/${stixDomainEntity.id}`}
                       >
-                      <ListItemIcon>
-                        <ItemIcon type={type}/>
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={stixDomainEntity.name}
-                        secondary={truncate(stixDomainEntity.description, 100)}
-                      />
-                    </ListItem>
-                ))}
+                        <ListItemIcon classes={{ root: classes.itemIcon }}>
+                          <ItemIcon type={type}/>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={stixDomainEntity.name}
+                          secondary={truncate(stixDomainEntity.description, 200)}
+                        />
+                      </ListItem>
+                    );
+                  }
+                  return (
+                      <ListItem
+                        key={stixDomainEntity.id}
+                        classes={{ root: classes.menuItem }}
+                        divider={true}
+                        button={false}
+                      >
+                        <ListItemIcon classes={{ root: classes.itemIcon }}>
+                          <ItemIcon type={type}/>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={stixDomainEntity.name}
+                          secondary={truncate(stixDomainEntity.description, 200)}
+                        />
+                      </ListItem>
+                  );
+                })}
               </List>
             </ExpansionPanelDetails>
           </ExpansionPanel>
         ))}
+        {stixDomainEntitiesTypes.length === 0 ? <div className={classes.noResult}>{t('No entity was found for this search.')}</div> : ''}
       </div>
     );
   }

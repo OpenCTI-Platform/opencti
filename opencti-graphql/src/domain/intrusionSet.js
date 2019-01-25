@@ -30,6 +30,8 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   const createIntrusionSet = qk(`insert $intrusionSet isa Intrusion-Set 
     has type "intrusion-set";
     $intrusionSet has stix_id "intrusion-set--${uuid()}";
+    $intrusionSet has stix_label "";
+    $intrusionSet has stix_label_lowercase "";
     $intrusionSet has name "${intrusionSet.name}";
     $intrusionSet has description "${intrusionSet.description}";
     $intrusionSet has name_lowercase "${intrusionSet.name.toLowerCase()}";

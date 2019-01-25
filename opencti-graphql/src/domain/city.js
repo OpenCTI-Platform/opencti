@@ -30,6 +30,8 @@ export const addCity = async (user, city) => {
   const createCity = qk(`insert $city isa City 
     has type "city";
     $city has stix_id "city--${uuid()}";
+    $city has stix_label "";
+    $city has stix_label_lowercase "";
     $city has name "${city.name}";
     $city has description "${city.description}";
     $city has name_lowercase "${city.name.toLowerCase()}";

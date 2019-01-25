@@ -19,6 +19,13 @@ const styles = theme => ({
   messageIcon: {
     marginRight: theme.spacing.unit,
   },
+  error: {
+    backgroundColor: '#f44336',
+    color: '#ffffff',
+  },
+  normal: {
+    backgroundColor: '#e0e0e0',
+  },
 });
 
 class Message extends Component {
@@ -57,6 +64,7 @@ class Message extends Component {
         onClose={this.handleCloseMessage.bind(this)}
         autoHideDuration={3000}>
         <SnackbarContent
+          className={this.state.error ? classes.error : classes.normal}
           message={
             <span className={classes.message}>
               {this.state.error ? <ErrorOutline className={classes.messageIcon}/>

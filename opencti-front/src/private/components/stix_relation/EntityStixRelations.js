@@ -5,9 +5,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import { QueryRenderer } from '../../../relay/environment';
 import ReportsLines, { reportsLinesQuery } from './ReportsLines';
@@ -64,7 +61,7 @@ const inlineStyles = {
   },
 };
 
-class EntityReports extends Component {
+class EntityStixRelations extends Component {
   constructor(props) {
     super(props);
     this.state = { sortBy: 'published', orderAsc: false };
@@ -95,19 +92,6 @@ class EntityReports extends Component {
     return (
       <div>
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
-            <ListItemIcon>
-              <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
-            </ListItemIcon>
-            <ListItemText primary={
-              <div>
-                {this.SortHeader('name', 'Name')}
-                {this.SortHeader('author', 'Author')}
-                {this.SortHeader('published', 'Publication date')}
-                {this.SortHeader('marking', 'Marking')}
-              </div>
-            }/>
-          </ListItem>
           <QueryRenderer
             query={reportsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
@@ -125,8 +109,9 @@ class EntityReports extends Component {
   }
 }
 
-EntityReports.propTypes = {
+EntityStixRelations.propTypes = {
   entityId: PropTypes.string,
+  relationType: PropTypes.string,
   classes: PropTypes.object,
   reportClass: PropTypes.string,
   t: PropTypes.func,
@@ -136,4 +121,4 @@ EntityReports.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityReports);
+)(EntityStixRelations);

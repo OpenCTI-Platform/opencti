@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, includes, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -69,28 +69,34 @@ const inlineStyles = {
 class PersonLineComponent extends Component {
   render() {
     const {
-      fd, classes, person, paginationOptions,
+      fd, classes, person, me, paginationOptions,
     } = this.props;
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Person/>
+          <Person />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {person.name}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {person.name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+                {fd(person.created_at)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.updated_at}>
+                {fd(person.updated_at)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              {fd(person.created_at)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-              {fd(person.updated_at)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <PersonPopover personId={person.id} paginationOptions={paginationOptions}/>
+          <PersonPopover
+            personId={person.id}
+            paginationOptions={paginationOptions}
+            disabled={!includes('ROLE_ADMIN', propOr([], 'grant', me))}
+          />
         </ListItemIcon>
       </ListItem>
     );
@@ -107,12 +113,17 @@ PersonLineComponent.propTypes = {
 
 const PersonLineFragment = createFragmentContainer(PersonLineComponent, {
   person: graphql`
-      fragment PersonLine_person on User {
-          id
-          name
-          created_at
-          updated_at
-      }
+    fragment PersonLine_person on User {
+      id
+      name
+      created_at
+      updated_at
+    }
+  `,
+  me: graphql`
+    fragment PersonLine_me on User {
+      grant
+    }
   `,
 });
 
@@ -127,23 +138,25 @@ class PersonLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Person/>
+          <Person />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className={classes.placeholder} style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className={classes.placeholder} style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+                <div className={classes.placeholder} style={{ width: 80 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.updated_at}>
+                <div className={classes.placeholder} style={{ width: 80 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              <div className={classes.placeholder} style={{ width: 80 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-              <div className={classes.placeholder} style={{ width: 80 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <MoreVert/>
+          <MoreVert />
         </ListItemIcon>
       </ListItem>
     );
