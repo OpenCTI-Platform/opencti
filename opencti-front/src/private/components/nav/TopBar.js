@@ -142,7 +142,7 @@ TopBar.propTypes = {
 };
 
 const TopBarFragment = createFragmentContainer(TopBar, {
-  me: graphql`
+  me: graphql`    
       fragment TopBar_me on User {
           grant
       }

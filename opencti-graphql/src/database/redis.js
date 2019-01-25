@@ -18,12 +18,39 @@ const client = new Redis(redisOptions);
 
 /**
  * Delete the user context for a specific edition
- * @param user
+ * @param user the user
  * @param instanceId
  * @returns {*}
  */
 export const delEditContext = (user, instanceId) =>
   client.del(`edit:${instanceId}:${user.id}`);
+
+/**
+ * Delete the user context
+ * @param user the user
+ * @returns {Promise<>}
+ */
+export const delUserContext = user =>
+  new Promise((resolve, reject) => {
+    const stream = client.scanStream({
+      match: `*:*:${user.id}`,
+      count: 100
+    });
+    const keys = [];
+    stream.on('data', resultKeys => {
+      for (let index = 0; index < resultKeys.length; index += 1) {
+        keys.push(resultKeys[index]);
+      }
+    });
+    stream.on('error', error => {
+      reject(error);
+    });
+    stream.on('end', () => {
+      console.log('deleting user redis keys', keys);
+      client.del(keys);
+      resolve();
+    });
+  });
 
 /**
  * Set the user edition context in redis

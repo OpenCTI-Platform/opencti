@@ -1,15 +1,20 @@
-import { contains, head, isEmpty, join, map } from 'ramda';
+import { includes, head, isEmpty, join, map } from 'ramda';
 import uuidv5 from 'uuid/v5';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
-import { delEditContext, setEditContext } from '../database/redis';
+import {
+  delEditContext,
+  delUserContext,
+  setEditContext
+} from '../database/redis';
 import { MissingElement, AuthenticationFailure } from '../config/errors';
 import conf, {
   BUS_TOPICS,
   DEV_MODE,
   OPENCTI_DEFAULT_DURATION,
   OPENCTI_ISSUER,
+  OPENCTI_TOKEN,
   OPENCTI_WEB_TOKEN,
   ROLE_USER
 } from '../config/conf';
@@ -128,9 +133,7 @@ export const loginFromProvider = (email, name) => {
         password: null
       };
       // Create the user then restart the login
-      return addUser({}, newUser).then(() =>
-        loginFromProvider(email, name)
-      );
+      return addUser({}, newUser).then(() => loginFromProvider(email, name));
     }
     // We just need to return the current token
     const element = head(data);
@@ -156,6 +159,12 @@ export const login = (email, password) => {
     }
     return loadByID(element.token.id);
   });
+};
+
+export const logout = async (user, res) => {
+  res.clearCookie(OPENCTI_TOKEN);
+  await delUserContext(user);
+  return user.id;
 };
 
 export const userDelete = userId => deleteByID(userId);
@@ -191,7 +200,7 @@ export const userEditField = (user, userId, input) => {
   const value =
     key === 'password' ? bcrypt.hashSync(head(input.value), 10) : input.value;
   let finalInput = { key, value: [value] };
-  if (contains(key, multipleAttributes)) {
+  if (includes(key, multipleAttributes)) {
     finalInput = { key, value };
   }
   return editInputTx(userId, finalInput).then(userToEdit =>

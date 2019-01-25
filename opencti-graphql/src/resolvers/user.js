@@ -13,6 +13,7 @@ import {
   userDeleteRelation,
   userCleanContext,
   login,
+  logout,
   setAuthenticationCookie
 } from '../domain/user';
 import { fetchEditContext, pubsub } from '../database/redis';
@@ -35,6 +36,7 @@ const userResolvers = {
         return sign(token, conf.get('jwt:secret'));
       })
     ),
+    logout: auth((_, args, { user }, context) => logout(user, context.res)),
     userEdit: admin((_, { id }, { user }) => ({
       delete: () => userDelete(id),
       fieldPatch: ({ input }) => userEditField(user, id, input),

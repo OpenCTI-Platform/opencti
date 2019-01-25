@@ -21,8 +21,7 @@ const cityResolvers = {
     cities: auth((_, args) => findAll(args))
   },
   City: {
-    markingDefinitions: (city, args) =>
-      markingDefinitions(city.id, args),
+    markingDefinitions: (city, args) => markingDefinitions(city.id, args),
     editContext: auth(city => fetchEditContext(city.id))
   },
   Mutation: {

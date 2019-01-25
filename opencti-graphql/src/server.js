@@ -64,6 +64,8 @@ const extractTokenFromBearer = bearer =>
 
 const server = new ApolloServer({
   schema,
+  introspection: true,
+  playground: true,
   async context({ req, res, connection }) {
     if (connection) return { user: connection.context.user }; // For websocket connection.
     let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
