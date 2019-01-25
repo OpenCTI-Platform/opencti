@@ -161,6 +161,8 @@ type StixRelation implements GlobalObject & StixDomainEntity {
     editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
     reports: ReportConnection
+    from: StixDomainEntity
+    to: StixDomainEntity
     created_at: DateTime!
     updated_at: DateTime!
 }

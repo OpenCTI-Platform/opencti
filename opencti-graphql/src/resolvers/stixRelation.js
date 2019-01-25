@@ -4,6 +4,8 @@ import {
   addStixRelation,
   stixRelationDelete,
   findAll,
+  from,
+  to,
   findByType,
   findById,
   search,
@@ -33,6 +35,8 @@ const stixRelationResolvers = {
     markingDefinitions: (stixRelation, args) =>
       markingDefinitions(stixRelation.id, args),
     reports: (stixRelation, args) => reports(stixRelation.id, args),
+    from: (stixRelation, args) => from(stixRelation.id, args),
+    to: (stixRelation, args) => to(stixRelation.id, args),
     editContext: auth(stixRelation => fetchEditContext(stixRelation.id))
   },
   Mutation: {

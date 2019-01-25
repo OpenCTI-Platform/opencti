@@ -8,6 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert, Help } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
@@ -121,9 +122,9 @@ class ReportLineComponent extends Component {
             </div>
           </div>
         }/>
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemSecondaryAction>
           <StixRelationPopover stixRelationId={stixRelation.id} paginationOptions={paginationOptions}/>
-        </ListItemIcon>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
@@ -147,14 +148,6 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
           first_seen
           last_seen
           description
-          reports {
-              edges {
-                  node {
-                      name
-                      published
-                  }
-              }
-          }
       }
   `,
   stixDomainEntity: graphql`

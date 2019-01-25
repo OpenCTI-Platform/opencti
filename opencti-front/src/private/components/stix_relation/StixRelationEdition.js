@@ -24,7 +24,7 @@ const styles = theme => ({
 });
 
 const stixRelationEditionQuery = graphql`
-    query StixRelationEditionEditionQuery($id: String!) {
+    query StixRelationEditionQuery($id: String!) {
         stixRelation(id: $id) {
             ...StixRelationEditionOverview_stixRelation
         }
