@@ -30,6 +30,7 @@ define
   # STIX common properties
   "stix_id" sub attribute datatype string;
   "stix_label" sub attribute datatype string;
+  "stix_label_lowercase" sub attribute datatype string;
   "type" sub attribute datatype string;
   "created" sub attribute datatype date;
   "modified" sub attribute datatype date;
@@ -341,6 +342,7 @@ define
     is-abstract
     has "stix_id"
     has "stix_label"
+    has "stix_label_lowercase"
     has "type"
     has "created"
     has "modified"

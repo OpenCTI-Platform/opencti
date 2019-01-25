@@ -17,6 +17,7 @@ import Typography from '@material-ui/core/Typography';
 import { ExpandMore } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
 import truncate from '../../../utils/String';
+import { resolveLink } from '../../../utils/Entity';
 import ItemIcon from '../../../components/ItemIcon';
 import inject18n from '../../../components/i18n';
 
@@ -54,7 +55,7 @@ const styles = theme => ({
   noResult: {
     color: '#ffffff',
     fontSize: 15,
-  }
+  },
 });
 
 class StixDomainEntitiesContainer extends Component {
@@ -101,24 +102,45 @@ class StixDomainEntitiesContainer extends Component {
             </ExpansionPanelSummary>
             <ExpansionPanelDetails classes={{ root: classes.expansionPanelContent }}>
               <List classes={{ root: classes.list }}>
-                {stixDomainEntities[type].map(stixDomainEntity => (
-                    <ListItem
-                      key={stixDomainEntity.id}
-                      classes={{ root: classes.menuItem }}
-                      divider={true}
-                      button={true}
-                      component={Link}
-                      to={`/dashboard/knowledge/${stixDomainEntity.type.replace('-', '_')}s/${stixDomainEntity.id}`}
+                {stixDomainEntities[type].map((stixDomainEntity) => {
+                  const link = resolveLink(stixDomainEntity.type);
+                  if (link) {
+                    return (
+                      <ListItem
+                        key={stixDomainEntity.id}
+                        classes={{ root: classes.menuItem }}
+                        divider={true}
+                        button={true}
+                        component={Link}
+                        to={`${link}/${stixDomainEntity.id}`}
                       >
-                      <ListItemIcon classes={{ root: classes.itemIcon }}>
-                        <ItemIcon type={type}/>
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={stixDomainEntity.name}
-                        secondary={truncate(stixDomainEntity.description, 200)}
-                      />
-                    </ListItem>
-                ))}
+                        <ListItemIcon classes={{ root: classes.itemIcon }}>
+                          <ItemIcon type={type}/>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={stixDomainEntity.name}
+                          secondary={truncate(stixDomainEntity.description, 200)}
+                        />
+                      </ListItem>
+                    );
+                  }
+                  return (
+                      <ListItem
+                        key={stixDomainEntity.id}
+                        classes={{ root: classes.menuItem }}
+                        divider={true}
+                        button={false}
+                      >
+                        <ListItemIcon classes={{ root: classes.itemIcon }}>
+                          <ItemIcon type={type}/>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={stixDomainEntity.name}
+                          secondary={truncate(stixDomainEntity.description, 200)}
+                        />
+                      </ListItem>
+                  );
+                })}
               </List>
             </ExpansionPanelDetails>
           </ExpansionPanel>

@@ -311,10 +311,10 @@ export const editInputTx = async (id, input) => {
     logger.debug(`Grakn query: ${deleteQueryLowerCase}`);
     await wTx.query(deleteQueryLowerCase);
     // Setup the new attribute
-    const createQueryLowerCase = `match $m id ${id}; insert $m ${join(
+    const createQueryLowerCase = `match $m id ${id}; insert $m has ${key}_lowercase "${join(
       ' ',
-      map(val => `has ${key}_lowercase "${val.toLowerCase()}"`, value)
-    )};`;
+      map(val => val.toLowerCase(), value)
+    )}";`;
     logger.debug(`Grakn query: ${createQueryLowerCase}`);
     await wTx.query(createQueryLowerCase);
   }
