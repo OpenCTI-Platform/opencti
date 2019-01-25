@@ -1,22 +1,26 @@
 export const resolveLink = (type) => {
   switch (type) {
+    case 'country':
+    case 'city':
     case 'organization':
-      return '/dashboard/';
-    case 'uses':
-      return { fromRole: 'user', toRole: 'usage' };
-    case 'attributed-to':
-      return { fromRole: 'attribution', toRole: 'origin' };
-    case 'variant-of':
-      return { fromRole: 'variation', toRole: 'original' };
-    case 'gathering':
-      return { fromRole: 'part_of', toRole: 'gather' };
-    case 'related-to':
-      return { fromRole: 'relate_from', toRole: 'relate_to' };
-    case 'localization':
-      return { fromRole: 'localized', toRole: 'location' };
+      return null;
+    case 'threat-actor':
+      return '/dashboard/knowledge/threat_actors';
+    case 'sector':
+      return '/dashboard/knowledge/sectors';
+    case 'intrusion-set':
+      return '/dashboard/knowledge/intrusion_sets';
+    case 'campaign':
+      return '/dashboard/knowledge/campaigns';
+    case 'incident':
+      return '/dashboard/knowledge/incidents';
+    case 'malware':
+      return '/dashboard/knowledge/malwares';
+    case 'tool':
+      return '/dashboard/knowledge/tools';
+    case 'vulnerability':
+      return '/dashboard/knowledge/vulnerabilities';
     default:
-      return { fromRole: '', toRole: '' };
+      return null;
   }
 };
-
-export default resolveRoles;

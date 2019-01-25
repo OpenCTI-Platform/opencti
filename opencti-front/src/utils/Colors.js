@@ -68,9 +68,9 @@ export const itemColor = (type, dark) => {
       return '#009688';
     case 'country':
       if (dark) {
-        return '#3f51b5';
+        return '#1a237e';
       }
-      return '#3F51B5';
+      return '#3f51b5';
     case 'attack-pattern':
       if (dark) {
         return '#827717';

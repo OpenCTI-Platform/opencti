@@ -4,9 +4,10 @@ import { compose } from 'ramda';
 import { PortWidget } from 'storm-react-diagrams';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
-import { Visibility } from '@material-ui/icons';
+import { Info } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
 import { itemColor } from '../../utils/Colors';
+import { resolveLink } from '../../utils/Entity';
 import inject18n from '../i18n';
 import ItemIcon from '../ItemIcon';
 
@@ -75,6 +76,7 @@ class EntityNodeWidget extends Component {
     const {
       node, node: { extras }, classes, t,
     } = this.props;
+    const link = resolveLink(extras.type);
     return (
       <div className={classes.node} style={{
         backgroundColor: itemColor(extras.type, true),
@@ -88,9 +90,12 @@ class EntityNodeWidget extends Component {
               {t(`entity_${extras.type}`)}
             </div>
             <div className={classes.popover}>
-              <IconButton component={Link} to={`/dashboard/knowledge/${extras.type.replace('-', '_')}s/${extras.id}`}>
-                <Visibility fontSize='small' />
-              </IconButton>
+              {link
+                ? <IconButton component={Link} to={`${link}/${extras.id}`}>
+                  <Info fontSize='small' />
+                </IconButton>
+                : <Info fontSize='small' style={{ margin: '10px 10px 0 0', color: '#A3A3A3' }} />
+              }
             </div>
         </div>
         <div className={classes.content}>

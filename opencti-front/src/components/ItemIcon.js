@@ -38,7 +38,7 @@ const iconSelector = (type, variant, fontSize, color) => {
   }
 
   switch (type) {
-    case 'contry':
+    case 'country':
       return <Flag style={style} fontSize={fontSize}/>;
     case 'sector':
       return <Domain style={style} fontSize={fontSize}/>;
