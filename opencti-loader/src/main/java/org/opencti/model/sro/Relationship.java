@@ -79,18 +79,30 @@ public class Relationship extends Domain {
                 String relationCreation = format("match $from isa %s " +
                                 "has stix_id %s; " +
                                 "$to isa %s has stix_id %s; " +
-                                "insert (%s: $from, %s: $to) " +
-                                "has stix_id %s" +
-                                "isa %s;",
+                                "insert $rel(%s: $from, %s: $to) " +
+                                "isa %s " +
+                                "has stix_id %s; " +
+                                "$rel has name \"\"; " +
+                                "$rel has description \"\"; " +
+                                "$rel has name_lowercase \"\"; " +
+                                "$rel has description_lowercase \"\"; " +
+                                "$rel has weight 3; " +
+                                "$rel has first_seen 2016-05-05; " +
+                                "$rel has last_seen 2018-05-05; " +
+                                "$rel has created 2018-05-05; " +
+                                "$rel has modified 2018-05-05; " +
+                                "$rel has type \"stix-relation\"; " +
+                                "$rel has relationship_type \"%s\";",
                         from.getEntityName(),
                         prepare(from.getId()),
                         to.getEntityName(),
                         prepare(to.getId()),
                         fromRole,
                         toRole,
+                        getRelationship_type(),
                         prepare(getId()),
                         getRelationship_type());
-                driver.write(relationCreation);
+                        driver.write(relationCreation);
             }
         } catch (Exception e) {
 

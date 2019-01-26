@@ -4,6 +4,7 @@
   "author": "Luatix",
   "license": "MIT",
   "dependencies": {
+    "@date-io/moment": "^1.0.1",
     "@material-ui/core": "^3.9.0",
     "@material-ui/icons": "^3.0.2",
     "@material-ui/lab": "^3.0.0-alpha.28",
@@ -18,7 +19,9 @@
     "http-proxy-middleware": "^0.19.1",
     "js-cookie": "^2.2.0",
     "jsonwebtoken": "^8.4.0",
+    "material-ui-pickers": "^2.1.2",
     "mdi-material-ui": "^5.8.0",
+    "moment": "^2.24.0",
     "moment-timezone": "^0.5.23",
     "prop-types": "^15.6.2",
     "ramda": "^0.26.1",

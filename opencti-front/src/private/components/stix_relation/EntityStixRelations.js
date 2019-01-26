@@ -2,10 +2,13 @@
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, head, map } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import Slider from '@material-ui/lab/Slider';
+import Input from '@material-ui/core/Input';
+import Select from '@material-ui/core/Select';
+import Chip from '@material-ui/core/Chip';
+import MenuItem from '@material-ui/core/MenuItem';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -15,6 +18,7 @@ import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import { QueryRenderer, fetchQuery } from '../../../relay/environment';
 import EntityStixRelationsLines, { entityStixRelationsLinesQuery } from './EntityStixRelationsLines';
 import inject18n from '../../../components/i18n';
+import { currentYear, yearFormat } from '../../../utils/Time';
 
 const styles = () => ({
   container: {
@@ -22,7 +26,7 @@ const styles = () => ({
   },
   filters: {
     position: 'absolute',
-    top: -10,
+    top: -60,
     right: 0,
   },
   linesContainer: {
@@ -81,12 +85,24 @@ const inlineStyles = {
   },
 };
 
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+
 const firstStixRelationQuery = graphql`
-    query EntityStixRelationfirstStixRelationQuery($first: Int, $orderBy: String, $orderMode: String) {
-        stixRelations(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
+    query EntityStixRelationsFirstStixRelationQuery($toType: String, $fromId: String, $relationType: String, $first: Int, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
+        stixRelations(toType: $toType, fromId: $fromId, relationType: $relationType, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
             edges {
                 node {
                     id
+                    first_seen
                 }
             }
         }
@@ -99,6 +115,8 @@ class EntityStixRelations extends Component {
     this.state = {
       sortBy: 'first_seen',
       orderAsc: false,
+      firstSeen: ['All years'],
+      firstSeenFirstYear: currentYear(),
       firstSeenStart: null,
       firstSeenStop: null,
       weight: null,
@@ -106,10 +124,19 @@ class EntityStixRelations extends Component {
   }
 
   componentDidMount() {
-    fetchQuery(firstStixRelationQuery, { first: 1, orderBy: 'first_seen', orderMode: 'asc' })
-      .then((data) => {
-        console.log(data);
-      });
+    const { entityId, relationType, targetEntityType } = this.props;
+    fetchQuery(firstStixRelationQuery, {
+      toType: targetEntityType || '',
+      fromId: entityId,
+      relationType,
+      first: 1,
+      orderBy: 'first_seen',
+      orderMode: 'asc',
+    }).then((data) => {
+      if (data.stixRelations.edges.length > 0) {
+        this.setState({ firstSeenFirstYear: yearFormat(head(data.stixRelations.edges).node.first_seen) });
+      }
+    });
   }
 
   reverseBy(field) {
@@ -127,16 +154,26 @@ class EntityStixRelations extends Component {
       );
     }
     return (
-        <div style={inlineStyles[field]}>
-          <span>{t(label)}</span>
-        </div>
+      <div style={inlineStyles[field]}>
+        <span>{t(label)}</span>
+      </div>
     );
+  }
+
+  handleChangeYear(event) {
+    console.log(event.target.value);
   }
 
   render() {
     const {
-      classes, entityId, relationType, entityLink, targetEntityType,
+      t, classes, entityId, relationType, entityLink, targetEntityType,
     } = this.props;
+    const startYear = this.state.firstSeenFirstYear === currentYear() ? this.state.firstSeenFirstYear - 1 : this.state.firstSeenFirstYear;
+    const yearsList = [];
+    for (let i = startYear; i <= currentYear(); i++) {
+      yearsList.push(i);
+    }
+
     const paginationOptions = {
       toType: targetEntityType || '',
       fromId: entityId,
@@ -150,14 +187,23 @@ class EntityStixRelations extends Component {
     return (
       <div className={classes.container}>
         <div className={classes.filters}>
-          <Slider
-            classes={{ container: classes.slider }}
-            value={value}
-            min={0}
-            max={6}
-            step={1}
-            onChange={this.handleChange}
-          />
+          <Select
+            multiple
+            value={this.state.firstSeen}
+            onChange={this.handleChangeYear.bind(this)}
+            input={<Input id='first_seen'/>}
+            renderValue={selected => (
+              <div className={classes.chips}>
+                {map(value => (
+                  <Chip key={value} label={t(value)} className={classes.chip}/>
+                ), selected)}
+              </div>
+            )}
+            MenuProps={MenuProps}
+          >
+            <MenuItem value='All years'>{t('All years')}</MenuItem>
+            {map(year => (<MenuItem key={year} value={year}>{year}</MenuItem>), yearsList)}
+          </Select>
         </div>
         <List classes={{ root: classes.linesContainer }}>
           <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>

@@ -160,6 +160,7 @@ const i18n = {
       Logout: 'Se déconnecter',
       Profile: 'Profil',
       Admin: 'Admin',
+      'All years': 'Toutes les années',
       // Properties
       'Sort by': 'Trier par',
       'Filter by': 'Filtrer par',

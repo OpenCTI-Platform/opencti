@@ -498,26 +498,28 @@ export const paginateRelationships = (query, options) => {
     lastSeenStop,
     weight,
     first = 200,
-    after
+    after,
+    orderBy,
+    orderMode = 'asc'
   } = options;
   const offset = after ? cursorToOffset(after) : 0;
-  const count = qkSingleValue(`${query}; aggregate count;`);
-  const elements = qkRel(
-    `${query}; ${fromId ? `$from id ${fromId};` : ''} ${
-      toId ? `$to id ${toId};` : ''
-    } ${fromType ? `$from isa ${fromType};` : ''} 
+  const finalQuery = `${query}; ${fromId ? `$from id ${fromId};` : ''} ${
+    toId ? `$to id ${toId};` : ''
+  } ${fromType ? `$from isa ${fromType};` : ''} 
     ${toType ? `$to isa ${toType};` : ''} ${
-      firstSeenStart
-        ? `$rel has first_seen $fs; $fs > ${firstSeenStart}; $fs < ${firstSeenEnd};`
-        : ''
-    } ${
-      lastSeenStart
-        ? `$rel has last_seen $ls; $ls > ${lastSeenStart}; $ls < ${lastSeenStop};`
-        : ''
-    } ${
-      weight ? `$rel has weight $weight; $weight == ${weight};` : ''
-    } offset ${offset}; limit ${first}; 
-      get;`,
+    firstSeenStart
+      ? `$rel has first_seen $fs; $fs > ${firstSeenStart}; $fs < ${firstSeenEnd};`
+      : ''
+  } ${
+    lastSeenStart
+      ? `$rel has last_seen $ls; $ls > ${lastSeenStart}; $ls < ${lastSeenStop};`
+      : ''
+  } ${weight ? `$rel has weight $weight; $weight == ${weight};` : ''}`;
+  const count = qkSingleValue(`${finalQuery} aggregate count;`);
+  const elements = qkRel(
+    `${finalQuery} ${
+      orderBy ? `$rel has ${orderBy} $o; order by $o ${orderMode};` : ''
+    } offset ${offset}; limit ${first}; get;`,
     'rel',
     'from',
     'to'

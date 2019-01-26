@@ -22,8 +22,10 @@ public class Tool extends Domain {
             query.append("insert $m isa Tool has stix_id ").append(prepare(getId()));
             query.append(" has name ").append(prepare(getName()));
             query.append(" has type ").append(prepare(getType()));
+            query.append(" has name_lowercase ").append(prepare(getName().toLowerCase()));
             if (getLabelChain() != null) query.append(getLabelChain());
             if (getDescription() != null) query.append(" has description ").append(prepare(getDescription()));
+            if (getDescription() != null) query.append(" has description_lowercase ").append(prepare(getDescription().toLowerCase()));
             if (getTool_version() != null) query.append(" has tool_version ").append(prepare(getTool_version()));
             query.append(" has revoked ").append(getRevoked());
             query.append(" has created ").append(getCreated());

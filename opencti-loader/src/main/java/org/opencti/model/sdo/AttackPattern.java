@@ -31,9 +31,11 @@ public class AttackPattern extends Domain {
             StringBuilder query = new StringBuilder();
             query.append("insert $m isa Attack-Pattern has stix_id ").append(prepare(getId()));
             query.append(" has name ").append(prepare(getName()));
+            query.append(" has name_lowercase ").append(prepare(getName().toLowerCase()));
             query.append(" has type ").append(prepare(getType()));
             if (getLabelChain() != null) query.append(getLabelChain());
             if (getDescription() != null) query.append(" has description ").append(prepare(getDescription()));
+            if (getDescription() != null) query.append(" has description_lowercase ").append(prepare(getDescription().toLowerCase()));
             query.append(" has revoked ").append(getRevoked());
             query.append(" has created ").append(getCreated());
             query.append(" has modified ").append(getModified());

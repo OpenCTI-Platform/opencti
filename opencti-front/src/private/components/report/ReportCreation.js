@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import MomentUtils from '@date-io/moment';
 import { Formik, Field, Form } from 'formik';
+import { MuiPickersUtilsProvider } from 'material-ui-pickers';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -22,6 +24,7 @@ import Autocomplete from '../../../components/Autocomplete';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
+import DatePickerField from '../../../components/DatePickerField';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
 import IdentityCreation from '../identity/IdentityCreation';
 
@@ -216,51 +219,53 @@ class ReportCreation extends Component {
                 submitForm, handleReset, isSubmitting, setFieldValue,
               }) => (
                 <div>
-                  <Form style={{ margin: '20px 0 20px 0' }}>
-                    <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
-                    <Field name='published' component={TextField} label={t('Publication date')} fullWidth={true} style={{ marginTop: 20 }}/>
-                    <Field name='report_class'
-                           component={Select}
-                           label={t('Report type')}
-                           fullWidth={true}
-                           displayEmpty={true}
-                           inputProps={{
-                             name: 'report_class',
-                             id: 'report_class',
-                           }}
-                           containerstyle={{ marginTop: 20, width: '100%' }}
-                    >
-                      <MenuItem value='internal'>{t('Internal report')}</MenuItem>
-                      <MenuItem value='external'>{t('External source')}</MenuItem>
-                    </Field>
-                    <Field name='description' component={TextField} label={t('Description')}
-                           fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
-                    <Field
-                      name='createdByRef'
-                      component={AutocompleteCreate}
-                      multiple={false}
-                      handleCreate={this.handleOpenIdentityCreation.bind(this)}
-                      label={t('Author')}
-                      options={this.state.identities}
-                      onInputChange={this.searchIdentities.bind(this)}
-                    />
-                    <Field
-                      name='markingDefinitions'
-                      component={Autocomplete}
-                      multiple={true}
-                      label={t('Marking')}
-                      options={this.state.markingDefinitions}
-                      onInputChange={this.searchMarkingDefinitions.bind(this)}
-                    />
-                    <div className={classes.buttons}>
-                      <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
-                        {t('Cancel')}
-                      </Button>
-                      <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
-                        {t('Create')}
-                      </Button>
-                    </div>
-                  </Form>
+                  <MuiPickersUtilsProvider utils={MomentUtils}>
+                    <Form style={{ margin: '20px 0 20px 0' }}>
+                      <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
+                      <Field name='published' component={DatePickerField} label={t('Publication date')} fullWidth={true} style={{ marginTop: 20 }}/>
+                      <Field name='report_class'
+                             component={Select}
+                             label={t('Report type')}
+                             fullWidth={true}
+                             displayEmpty={true}
+                             inputProps={{
+                               name: 'report_class',
+                               id: 'report_class',
+                             }}
+                             containerstyle={{ marginTop: 20, width: '100%' }}
+                      >
+                        <MenuItem value='internal'>{t('Internal report')}</MenuItem>
+                        <MenuItem value='external'>{t('External source')}</MenuItem>
+                      </Field>
+                      <Field name='description' component={TextField} label={t('Description')}
+                             fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
+                      <Field
+                        name='createdByRef'
+                        component={AutocompleteCreate}
+                        multiple={false}
+                        handleCreate={this.handleOpenIdentityCreation.bind(this)}
+                        label={t('Author')}
+                        options={this.state.identities}
+                        onInputChange={this.searchIdentities.bind(this)}
+                      />
+                      <Field
+                        name='markingDefinitions'
+                        component={Autocomplete}
+                        multiple={true}
+                        label={t('Marking')}
+                        options={this.state.markingDefinitions}
+                        onInputChange={this.searchMarkingDefinitions.bind(this)}
+                      />
+                      <div className={classes.buttons}>
+                        <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                          {t('Cancel')}
+                        </Button>
+                        <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
+                          {t('Create')}
+                        </Button>
+                      </div>
+                    </Form>
+                  </MuiPickersUtilsProvider>
                   <IdentityCreation
                     contextual={true}
                     inputValue={this.state.identityInput}
