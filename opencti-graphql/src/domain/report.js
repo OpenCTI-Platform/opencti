@@ -12,6 +12,8 @@ import {
   paginate,
   qkObjUnique,
   prepareDate,
+  yearFormat,
+  monthFormat,
   takeTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -87,6 +89,8 @@ export const addReport = async (user, report) => {
       report.description ? report.description.toLowerCase() : ''
     }";
     $report has published ${prepareDate(report.published)};
+    $report has published_month "${monthFormat(report.published)}";
+    $report has published_year "${yearFormat(report.published)}";
     $report has report_class "${report.report_class}";
     $report has graph_data "";
     $report has created ${now()};

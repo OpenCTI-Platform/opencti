@@ -33,6 +33,8 @@ export const now = () =>
     .utc()
     .format(gkDateFormat); // Format that accept grakn
 export const prepareDate = date => moment(date).format(gkDateFormat);
+export const yearFormat = date => moment(date).format('YYYY');
+export const monthFormat = date => moment(date).format('YYYY-MM');
 
 // Attributes key that can contains multiple values.
 export const multipleAttributes = [

@@ -36,7 +36,11 @@ define
   "modified" sub attribute datatype date;
   "revoked" sub attribute datatype boolean;
   "first_seen" sub attribute datatype date;
+  "first_seen_year" sub attribute datatype string;
+  "first_seen_month" sub attribute datatype string;
   "last_seen" sub attribute datatype date;
+  "last_seen_year" sub attribute datatype string;
+  "last_seen_month" sub attribute datatype string;
   "name" sub attribute datatype string;
   "name_lowercase" sub attribute datatype string;
   "description" sub attribute datatype string;
@@ -67,6 +71,8 @@ define
   "external_id" sub attribute datatype string;
   "external_id_lowercase" sub attribute datatype string;
   "published" sub attribute datatype date;
+  "published_year" sub attribute datatype string;
+  "published_month" sub attribute datatype string;
   "report_class" sub attribute datatype string;
   "pattern" sub attribute datatype string;
   "valid_from" sub attribute datatype date;
@@ -220,7 +226,11 @@ define
     has "relationship_type"
     has "weight"
     has "first_seen"
+    has "first_seen_month"
+    has "first_seen_year"
     has "last_seen"
+    has "last_seen_month"
+    has "last_seen_month"
     has "name"
     has "name_lowercase"
     has "description"
@@ -397,7 +407,11 @@ define
   "Campaign" sub "Stix-Domain-Entity"
     has "alias"
     has "first_seen"
+    has "first_seen_month"
+    has "first_seen_year"
     has "last_seen"
+    has "last_seen_month"
+    has "last_seen_year"
     has "objective"
     plays "attribution"
     plays "user"
@@ -468,7 +482,11 @@ define
 
   "Incident" sub "Stix-Domain-Entity"
     has "first_seen"
+    has "first_seen_month"
+    has "first_seen_year"
     has "last_seen"
+    has "last_seen_month"
+    has "last_seen_year"
     plays "attribution"
     plays "usage"
     plays "source"
@@ -477,7 +495,11 @@ define
   "Intrusion-Set" sub "Stix-Domain-Entity"
     has "alias"
     has "first_seen"
+    has "first_seen_month"
+    has "first_seen_year"
     has "last_seen"
+    has "last_seen_month"
+    has "last_seen_year"
     has "goal"
     has "resource_level"
     has "primary_motivation"
@@ -500,6 +522,8 @@ define
 
   "Report" sub "Stix-Domain-Entity"
     has "published"
+    has "published_year"
+    has "published_month"
     has "report_class"
     plays "knowledge_aggregation";
 

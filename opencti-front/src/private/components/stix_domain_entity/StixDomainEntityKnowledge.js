@@ -140,8 +140,8 @@ class StixDomainEntityKnowledge extends Component {
       id: stixDomainEntityId,
       count: 100,
       toTypes: includes('All', this.state.toTypes) ? null : this.state.toTypes,
-      firstSeenStart: this.state.firstSeenStart || null,
-      firstSeenStop: this.state.firstSeenStop || null,
+      firstSeenStart: null,
+      firstSeenStop: null,
       weights: includes(0, this.state.weights) ? null : this.state.weights,
     };
 
@@ -222,6 +222,7 @@ class StixDomainEntityKnowledge extends Component {
                   variables={variables}
                   stixDomainEntity={props.stixDomainEntity}
                   stixRelations={props.stixRelations}
+                  firstSeenYear={this.state.firstSeenStart ? yearFormat(this.state.firstSeenStart) : 'all'}
                 />
               );
             }

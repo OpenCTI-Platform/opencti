@@ -26,7 +26,7 @@ import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
 import DatePickerField from '../../../components/DatePickerField';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
-import IdentityCreation from '../identity/IdentityCreation';
+import IdentityCreation, { identityCreationIdentitiesSearchQuery } from '../identity/IdentityCreation';
 
 const styles = theme => ({
   drawerPaper: {
@@ -100,19 +100,6 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-export const reportCreationIdentitiesSearchQuery = graphql`
-    query ReportCreationIdentitiesSearchQuery($search: String, $first: Int) {
-        identities(search: $search, first: $first) {
-            edges {
-                node {
-                    id
-                    name
-                }
-            }
-        }
-    }
-`;
-
 class ReportCreation extends Component {
   constructor(props) {
     super(props);
@@ -130,7 +117,7 @@ class ReportCreation extends Component {
   }
 
   searchIdentities(event) {
-    fetchQuery(reportCreationIdentitiesSearchQuery, {
+    fetchQuery(identityCreationIdentitiesSearchQuery, {
       search: event.target.value,
       first: 10,
     }).then((data) => {

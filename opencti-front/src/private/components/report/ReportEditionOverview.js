@@ -18,9 +18,8 @@ import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
-import { reportCreationIdentitiesSearchQuery } from './ReportCreation';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
-import IdentityCreation from '../identity/IdentityCreation';
+import IdentityCreation, { identityCreationIdentitiesSearchQuery } from '../identity/IdentityCreation';
 
 const styles = theme => ({
   drawerPaper: {
@@ -109,7 +108,7 @@ class ReportEditionOverviewComponent extends Component {
   }
 
   searchIdentities(event) {
-    fetchQuery(reportCreationIdentitiesSearchQuery, {
+    fetchQuery(identityCreationIdentitiesSearchQuery, {
       search: event.target.value,
       first: 10,
     }).then((data) => {

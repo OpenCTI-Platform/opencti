@@ -67,6 +67,19 @@ const styles = theme => ({
   },
 });
 
+export const identityCreationIdentitiesSearchQuery = graphql`
+    query IdentityCreationIdentitiesSearchQuery($search: String, $first: Int) {
+        identities(search: $search, first: $first) {
+            edges {
+                node {
+                    id
+                    name
+                }
+            }
+        }
+    }
+`;
+
 const identityMutation = graphql`
     mutation IdentityCreationMutation($input: IdentityAddInput!) {
         identityAdd(input: $input) {

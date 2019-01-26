@@ -145,6 +145,8 @@ class ReportKnowledgeGraphComponent extends Component {
         newLink.setTargetPort(toPort);
         const label = new EntityLabelModel();
         label.setLabel(l.node.relationship_type);
+        label.setFirstSeen(l.node.first_seen);
+        label.setLastSeen(l.node.last_seen);
         newLink.addLabel(label);
         newLink.addListener({ selectionChanged: this.handleSelection.bind(this) });
         model.addLink(newLink);
@@ -333,7 +335,7 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleSelection(event) {
-    if (event.isSelected === true) {
+    if (event.isSelected === true && event.openEdit === true) {
       if (event.entity instanceof EntityLinkModel) {
         this.setState({
           openEditRelation: true,
@@ -362,7 +364,10 @@ class ReportKnowledgeGraphComponent extends Component {
     const linkObject = model.getLink(this.state.currentLink);
     const label = new EntityLabelModel();
     label.setLabel(result.relationship_type);
+    label.setFirstSeen(result.first_seen);
+    label.setLastSeen(result.last_seen);
     linkObject.addLabel(label);
+
     const input = {
       fromRole: 'so',
       toId: this.props.report.id,
@@ -477,7 +482,8 @@ const ReportKnowledgeGraph = createFragmentContainer(ReportKnowledgeGraphCompone
                   node {
                       id
                       relationship_type
-                      name
+                      first_seen
+                      last_seen
                       from {
                           node {
                               id

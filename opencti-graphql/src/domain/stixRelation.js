@@ -11,7 +11,9 @@ import {
   paginate,
   qk,
   qkObjUnique,
-  prepareDate
+  prepareDate,
+  yearFormat,
+  monthFormat,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -86,7 +88,11 @@ export const addStixRelation = async (user, stixRelation) => {
     }";
     $stixRelation has weight ${stixRelation.weight};
     $stixRelation has first_seen ${prepareDate(stixRelation.first_seen)};
+    $stixRelation has first_seen_month "${monthFormat(report.published)}";
+    $stixRelation has first_seen_year "${yearFormat(report.published)}";
     $stixRelation has last_seen ${prepareDate(stixRelation.last_seen)};
+    $stixRelation has last_seen_month "${monthFormat(report.published)}";
+    $stixRelation has last_seen_year "${yearFormat(report.published)}";
     $stixRelation has created ${now()};
     $stixRelation has modified ${now()};
     $stixRelation has revoked false;

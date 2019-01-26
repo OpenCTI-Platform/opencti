@@ -16,6 +16,7 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
+import { yearFormat } from '../../../utils/Time';
 import { commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
@@ -144,6 +145,8 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
         newLink.setTargetPort(toPort);
         const label = new EntityLabelModel();
         label.setLabel(l.node.relationship_type);
+        label.setFirstSeen(l.node.first_seen);
+        label.setLastSeen(l.node.last_seen);
         newLink.addLabel(label);
         newLink.addListener({ selectionChanged: this.handleSelection.bind(this) });
         model.addLink(newLink);
@@ -163,6 +166,21 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
         }
       },
     });
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.firstSeenYear !== prevProps.firstSeenYear) {
+      const model = this.engine.getDiagramModel();
+      const links = model.getLinks();
+      forEach((l) => {
+        if (yearFormat(pathOr('1970-01-01', ['extras', 'relation', 'first_seen'], l)) === this.props.firstSeenYear ) {
+          l.setColor('#ff3d00');
+        } else {
+          l.setColor('#00bcd4');
+        }
+      }, values(links));
+      this.forceUpdate();
+    }
   }
 
   saveGraph() {
@@ -259,8 +277,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
   }
 
   handleSelection(event) {
-    if (event.isSelected === true) {
-      console.log(event);
+    if (event.isSelected === true && event.openEdit === true) {
       if (event.entity instanceof EntityLinkModel) {
         this.setState({
           openEditRelation: true,
@@ -289,6 +306,8 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
     const linkObject = model.getLink(this.state.currentLink);
     const label = new EntityLabelModel();
     label.setLabel(result.relationship_type);
+    label.setFirstSeen(result.first_seen);
+    label.setLastSeen(result.last_seen);
     linkObject.addLabel(label);
     linkObject.setExtras({
       relation: result,
@@ -361,6 +380,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
 StixDomainEntityKnowledgeGraphComponent.propTypes = {
   stixDomainEntity: PropTypes.object,
   stixRelations: PropTypes.object,
+  firstSeenYear: PropTypes.string,
   isSavable: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -391,6 +411,8 @@ const StixDomainEntityKnowledgeGraph = createFragmentContainer(StixDomainEntityK
                   id
                   relationship_type
                   description
+                  first_seen
+                  last_seen
               }
               to {
                   id

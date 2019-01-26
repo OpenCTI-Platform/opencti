@@ -45,11 +45,11 @@ const styles = theme => ({
 });
 
 const subscription = graphql`
-  subscription ReportEditionContainerSubscription($id: ID!) {
-    report(id: $id) {
-      ...ReportEditionContainer_report
+    subscription ReportEditionContainerSubscription($id: ID!) {
+        report(id: $id) {
+            ...ReportEditionContainer_report
+        }
     }
-  }
 `;
 
 class ReportEditionContainer extends Component {
@@ -58,7 +58,7 @@ class ReportEditionContainer extends Component {
       subscription,
       variables: {
         // eslint-disable-next-line
-          id: this.props.report.__id,
+        id: this.props.report.id
       },
     });
     this.setState({ sub });
@@ -107,18 +107,19 @@ ReportEditionContainer.propTypes = {
 
 const ReportEditionFragment = createFragmentContainer(ReportEditionContainer, {
   report: graphql`
-    fragment ReportEditionContainer_report on Report {
-      ...ReportEditionOverview_report
-      editContext {
-        name
-        focusOn
+      fragment ReportEditionContainer_report on Report {
+          id
+          ...ReportEditionOverview_report
+          editContext {
+              name
+              focusOn
+          }
       }
-    }
   `,
   me: graphql`
-    fragment ReportEditionContainer_me on User {
-      email
-    }
+      fragment ReportEditionContainer_me on User {
+          email
+      }
   `,
 });
 

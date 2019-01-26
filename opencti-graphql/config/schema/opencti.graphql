@@ -180,6 +180,7 @@ input StixRelationAddInput  {
     description: String
     first_seen: DateTime
     last_seen: DateTime
+    createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
 }
@@ -261,6 +262,7 @@ input UserAddInput {
     lastname: String
     language: String
     grant: [UserRole]
+    createdByRef: String
 }
 input PersonAddInput {
     name: String!  @constraint(minLength: 3)
@@ -308,6 +310,7 @@ type Organization implements GlobalObject & StixDomainEntity & Identity {
 input OrganizationAddInput  {
     name: String!
     description: String
+    createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
 }
@@ -347,6 +350,7 @@ type Sector implements GlobalObject & StixDomainEntity & Identity {
 input SectorAddInput  {
     name: String!
     description: String
+    createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
 }
@@ -386,6 +390,7 @@ type City implements GlobalObject & StixDomainEntity & Identity {
 input CityAddInput  {
     name: String!
     description: String
+    createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
 }
@@ -425,6 +430,7 @@ type Country implements GlobalObject & StixDomainEntity & Identity {
 input CountryAddInput  {
     name: String!
     description: String
+    createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
 }
@@ -628,6 +634,7 @@ type AttackPattern implements GlobalObject & StixDomainEntity {
 input AttackPatternAddInput {
     name: String!
     description: String!
+    createdByRef: String
     markingDefinitions: [String]
     killChainPhases: [String]
     clientMutationId: String
@@ -718,6 +725,7 @@ type ThreatActor implements GlobalObject & StixDomainEntity & Identity {
 input ThreatActorAddInput {
     name: String!
     description: String!
+    createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
 }
@@ -765,6 +773,7 @@ type IntrusionSet implements GlobalObject & StixDomainEntity {
 input IntrusionSetAddInput {
     name: String!
     description: String!
+    createdByRef: String
     clientMutationId: String
 }
 
@@ -814,6 +823,7 @@ input CampaignAddInput {
     first_seen: DateTime
     last_seen: DateTime
     objective: String
+    createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
 }
@@ -861,6 +871,7 @@ input IncidentAddInput {
     description: String!
     first_seen: DateTime
     last_seen: DateTime
+    createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
 }
@@ -902,7 +913,8 @@ type Malware implements GlobalObject & StixDomainEntity {
 }
 input MalwareAddInput {
     name: String!
-    description: String!
+    description: String
+    createdByRef: String
     markingDefinitions: [String]
     killChainPhases: [String]
     clientMutationId: String
@@ -948,6 +960,7 @@ input ToolAddInput {
     name: String!
     description: String!
     tool_version: String
+    createdByRef: String
     markingDefinitions: [String]
     killChainPhases: [String]
     clientMutationId: String
@@ -990,6 +1003,7 @@ type Vulnerability implements GlobalObject & StixDomainEntity {
 input VulnerabilityAddInput {
     name: String!
     description: String!
+    createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
 }
