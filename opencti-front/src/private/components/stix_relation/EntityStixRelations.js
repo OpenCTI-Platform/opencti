@@ -2,11 +2,13 @@
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, head, map } from 'ramda';
+import {
+  compose, head, map, includes, filter,
+} from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import Input from '@material-ui/core/Input';
 import Select from '@material-ui/core/Select';
+import Input from '@material-ui/core/Input';
 import Chip from '@material-ui/core/Chip';
 import MenuItem from '@material-ui/core/MenuItem';
 import List from '@material-ui/core/List';
@@ -16,17 +18,17 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import { QueryRenderer, fetchQuery } from '../../../relay/environment';
-import EntityStixRelationsLines, { entityStixRelationsLinesQuery } from './EntityStixRelationsLines';
+import { currentYear, parse, yearFormat } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
-import { currentYear, yearFormat } from '../../../utils/Time';
+import EntityStixRelationsLines, { entityStixRelationsLinesQuery } from './EntityStixRelationsLines';
 
-const styles = () => ({
+const styles = theme => ({
   container: {
     position: 'relative',
   },
   filters: {
     position: 'absolute',
-    top: -60,
+    top: -75,
     right: 0,
   },
   linesContainer: {
@@ -44,6 +46,13 @@ const styles = () => ({
   sortIcon: {
     float: 'left',
     margin: '-5px 0 0 15px',
+  },
+  chips: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  chip: {
+    margin: theme.spacing.unit / 4,
   },
 });
 
@@ -85,20 +94,9 @@ const inlineStyles = {
   },
 };
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250,
-    },
-  },
-};
-
 const firstStixRelationQuery = graphql`
-    query EntityStixRelationsFirstStixRelationQuery($toType: String, $fromId: String, $relationType: String, $first: Int, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
-        stixRelations(toType: $toType, fromId: $fromId, relationType: $relationType, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
+    query EntityStixRelationsFirstStixRelationQuery($toTypes: [String], $fromId: String, $relationType: String, $first: Int, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
+        stixRelations(toTypes: $toTypes, fromId: $fromId, relationType: $relationType, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
             edges {
                 node {
                     id
@@ -115,18 +113,18 @@ class EntityStixRelations extends Component {
     this.state = {
       sortBy: 'first_seen',
       orderAsc: false,
-      firstSeen: ['All years'],
+      firstSeen: 'All years',
       firstSeenFirstYear: currentYear(),
       firstSeenStart: null,
       firstSeenStop: null,
-      weight: null,
+      weights: [0],
     };
   }
 
   componentDidMount() {
     const { entityId, relationType, targetEntityType } = this.props;
     fetchQuery(firstStixRelationQuery, {
-      toType: targetEntityType || '',
+      toTypes: targetEntityType || null,
       fromId: entityId,
       relationType,
       first: 1,
@@ -161,7 +159,33 @@ class EntityStixRelations extends Component {
   }
 
   handleChangeYear(event) {
-    console.log(event.target.value);
+    const { value } = event.target;
+    if (value !== 'All years') {
+      const startDate = `${value}-01-01`;
+      const endDate = `${value}-12-31`;
+      this.setState({
+        firstSeen: value,
+        firstSeenStart: parse(startDate).format(),
+        firstSeenStop: parse(endDate).format(),
+      });
+    } else {
+      this.setState({
+        firstSeen: value,
+        firstSeenStart: null,
+        firstSeenStop: null,
+      });
+    }
+  }
+
+  handleChangeWeights(event) {
+    const { value } = event.target;
+    if (includes(0, this.state.weights) || !includes(0, value)) {
+      const weights = filter(v => v !== 0, value);
+      if (weights.length > 0) {
+        return this.setState({ weights });
+      }
+    }
+    return this.setState({ weights: [0] });
   }
 
   render() {
@@ -175,12 +199,12 @@ class EntityStixRelations extends Component {
     }
 
     const paginationOptions = {
-      toType: targetEntityType || '',
+      toTypes: [targetEntityType] || null,
       fromId: entityId,
       relationType,
-      firstSeenStart: this.state.firstSeenStart || '',
-      firstSeenStop: this.state.firstSeenStop || '',
-      weight: this.state.weight || '',
+      firstSeenStart: this.state.firstSeenStart || null,
+      firstSeenStop: this.state.firstSeenStop || null,
+      weights: includes(0, this.state.weights) ? null : this.state.weights,
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
@@ -188,18 +212,35 @@ class EntityStixRelations extends Component {
       <div className={classes.container}>
         <div className={classes.filters}>
           <Select
-            multiple
-            value={this.state.firstSeen}
-            onChange={this.handleChangeYear.bind(this)}
-            input={<Input id='first_seen'/>}
+            style={{ height: 50 }}
+            multiple={true}
+            value={this.state.weights}
+            onChange={this.handleChangeWeights.bind(this)}
+            input={<Input id='weights'/>}
             renderValue={selected => (
               <div className={classes.chips}>
-                {map(value => (
-                  <Chip key={value} label={t(value)} className={classes.chip}/>
-                ), selected)}
+                {selected.map(value => (
+                  <Chip key={value} label={t(`confidence_${value}`)} className={classes.chip}/>
+                ))}
               </div>
             )}
-            MenuProps={MenuProps}
+          >
+            <MenuItem value={0}>{t('All confidence levels')}</MenuItem>
+            <MenuItem value={1}>{t('Very low')}</MenuItem>
+            <MenuItem value={2}>{t('Low')}</MenuItem>
+            <MenuItem value={3}>{t('Medium')}</MenuItem>
+            <MenuItem value={4}>{t('High')}</MenuItem>
+            <MenuItem value={5}>{t('Very high')}</MenuItem>
+          </Select>
+          <Select
+            style={{ width: 170, height: 52, marginLeft: 20 }}
+            value={this.state.firstSeen}
+            onChange={this.handleChangeYear.bind(this)}
+            renderValue={selected => (
+              <div className={classes.chips}>
+                <Chip key={selected} label={t(selected)} className={classes.chip}/>
+              </div>
+            )}
           >
             <MenuItem value='All years'>{t('All years')}</MenuItem>
             {map(year => (<MenuItem key={year} value={year}>{year}</MenuItem>), yearsList)}

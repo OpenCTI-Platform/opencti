@@ -148,8 +148,8 @@ EntityStixRelationsLines.propTypes = {
 };
 
 export const entityStixRelationsLinesQuery = graphql`
-    query EntityStixRelationsLinesPaginationQuery($fromId: String, $toType: String, $relationType: String, $count: Int!, $cursor: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
-        ...EntityStixRelationsLines_data @arguments(fromId: $fromId, toType: $toType, relationType: $relationType, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
+    query EntityStixRelationsLinesPaginationQuery($fromId: String, $toTypes: [String], $relationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $weights: [Int], $count: Int!, $cursor: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
+        ...EntityStixRelationsLines_data @arguments(fromId: $fromId, toTypes: $toTypes, relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
     }
 `;
 
@@ -159,14 +159,19 @@ export default withStyles(styles)(createPaginationContainer(
     data: graphql`
         fragment EntityStixRelationsLines_data on Query @argumentDefinitions(
             fromId: {type: "String"},
-            toType: {type: "String"},
+            toTypes: {type: "[String]"},
             relationType: {type: "String"},
+            firstSeenStart: {type: "DateTime"},
+            firstSeenStop: {type: "DateTime"},
+            lastSeenStart: {type: "DateTime"},
+            lastSeenStop: {type: "DateTime"},
+            weights: {type: "[Int]"},
             count: {type: "Int", defaultValue: 25}
             cursor: {type: "ID"}
             orderBy: {type: "StixRelationsOrdering", defaultValue: ID}
             orderMode: {type: "OrderingMode", defaultValue: "asc"}
         ) {
-            stixRelations(fromId: $fromId, toType: $toType relationType: $relationType, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_stixRelations") {
+            stixRelations(fromId: $fromId, toTypes: $toTypes relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_stixRelations") {
                 edges {
                     node {
                         ...EntityStixRelationLine_stixRelation
@@ -193,8 +198,13 @@ export default withStyles(styles)(createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         fromId: fragmentVariables.fromId,
-        toType: fragmentVariables.toType,
+        toTypes: fragmentVariables.toTypes,
         relationType: fragmentVariables.relationType,
+        firstSeenStart: fragmentVariables.firstSeenStart,
+        firstSeenStop: fragmentVariables.firstSeenStop,
+        lastSeenStart: fragmentVariables.lastSeenStart,
+        lastSeenStop: fragmentVariables.lastSeenStop,
+        weights: fragmentVariables.weights,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,

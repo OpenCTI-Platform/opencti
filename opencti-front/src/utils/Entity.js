@@ -1,9 +1,11 @@
 export const resolveLink = (type) => {
   switch (type) {
     case 'country':
+      return '/dashboard/catalogs/countries';
     case 'city':
+      return '/dashboard/catalogs/cities';
     case 'organization':
-      return null;
+      return '/dashboard/catalogs/organizations';
     case 'threat-actor':
       return '/dashboard/knowledge/threat_actors';
     case 'sector':

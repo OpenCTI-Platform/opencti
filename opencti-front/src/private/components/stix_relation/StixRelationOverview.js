@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import { compose, includes } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
@@ -9,6 +10,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { ArrowRightAlt } from '@material-ui/icons';
 import { itemColor } from '../../../utils/Colors';
+import { resolveLink } from '../../../utils/Entity';
 import inject18n from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
@@ -92,26 +94,30 @@ class StixRelationContainer extends Component {
     const linkedEntity = stixRelation.to.node;
     const from = linkedEntity.id === entityId ? stixRelation.to.node : stixRelation.from.node;
     const to = linkedEntity.id === entityId ? stixRelation.from.node : stixRelation.to.node;
+    const linkTo = resolveLink(to.type);
+    const linkFrom = resolveLink(from.type);
 
     return (
       <div className={classes.container}>
-        <div className={classes.item} style={{
-          backgroundColor: itemColor(from.type, true),
-          top: 10,
-          left: 0,
-        }}>
-          <div className={classes.itemHeader}>
-            <div className={classes.icon}>
-              <ItemIcon type={from.type} color={itemColor(from.type, false)} size='small'/>
+        <Link to={`${linkFrom}/${from.id}`}>
+          <div className={classes.item} style={{
+            backgroundColor: itemColor(from.type, true),
+            top: 10,
+            left: 0,
+          }}>
+            <div className={classes.itemHeader}>
+              <div className={classes.icon}>
+                <ItemIcon type={from.type} color={itemColor(from.type, false)} size='small'/>
+              </div>
+              <div className={classes.type}>
+                {t(`entity_${from.type}`)}
+              </div>
             </div>
-            <div className={classes.type}>
-              {t(`entity_${from.type}`)}
+            <div className={classes.content}>
+              <span className={classes.name}>{from.name}</span>
             </div>
           </div>
-          <div className={classes.content}>
-            <span className={classes.name}>{from.name}</span>
-          </div>
-        </div>
+        </Link>
         <div className={classes.middle}>
           {includes(to.type, inversedRelations) ? <ArrowRightAlt fontSize='large' style={{ transform: 'rotate(180deg)' }}/> : <ArrowRightAlt fontSize='large'/>}<br/>
           <div style={{
@@ -124,23 +130,25 @@ class StixRelationContainer extends Component {
             {t(`relation_${stixRelation.relationship_type}`)}
           </div>
         </div>
-        <div className={classes.item} style={{
-          backgroundColor: itemColor(to.type, true),
-          top: 10,
-          right: 0,
-        }}>
-          <div className={classes.itemHeader}>
-            <div className={classes.icon}>
-              <ItemIcon type={to.type} color={itemColor(to.type, false)} size='small'/>
+        <Link to={`${linkTo}/${to.id}`}>
+          <div className={classes.item} style={{
+            backgroundColor: itemColor(to.type, true),
+            top: 10,
+            right: 0,
+          }}>
+            <div className={classes.itemHeader}>
+              <div className={classes.icon}>
+                <ItemIcon type={to.type} color={itemColor(to.type, false)} size='small'/>
+              </div>
+              <div className={classes.type}>
+                {t(`entity_${to.type}`)}
+              </div>
             </div>
-            <div className={classes.type}>
-              {t(`entity_${to.type}`)}
+            <div className={classes.content}>
+              <span className={classes.name}>{to.name}</span>
             </div>
           </div>
-          <div className={classes.content}>
-            <span className={classes.name}>{to.name}</span>
-          </div>
-        </div>
+        </Link>
         <div className='clearfix'/>
         <div className={classes.data}>
           <div className={classes.information}>

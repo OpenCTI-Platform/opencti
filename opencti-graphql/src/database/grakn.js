@@ -490,13 +490,13 @@ export const paginateRelationships = (query, options) => {
   const {
     fromId,
     toId,
-    fromType,
-    toType,
+    fromTypes,
+    toTypes,
     firstSeenStart,
-    firstSeenEnd,
+    firstSeenStop,
     lastSeenStart,
     lastSeenStop,
-    weight,
+    weights,
     first = 200,
     after,
     orderBy,
@@ -505,16 +505,40 @@ export const paginateRelationships = (query, options) => {
   const offset = after ? cursorToOffset(after) : 0;
   const finalQuery = `${query}; ${fromId ? `$from id ${fromId};` : ''} ${
     toId ? `$to id ${toId};` : ''
-  } ${fromType ? `$from isa ${fromType};` : ''} 
-    ${toType ? `$to isa ${toType};` : ''} ${
+  } ${
+    fromTypes
+      ? `${join(
+          ' ',
+          map(fromType => `{ $from isa ${fromType}; } or`, fromTypes)
+        )} { $from isa ${head(fromTypes)}; };`
+      : ''
+  } ${
+    toTypes
+      ? `${join(
+          ' ',
+          map(toType => `{ $to isa ${toType}; } or`, toTypes)
+        )} { $to isa ${head(toTypes)}; };`
+      : ''
+  } ${
     firstSeenStart
-      ? `$rel has first_seen $fs; $fs > ${firstSeenStart}; $fs < ${firstSeenEnd};`
+      ? `$rel has first_seen $fs; $fs > ${prepareDate(
+          firstSeenStart
+        )}; $fs < ${prepareDate(firstSeenStop)};`
       : ''
   } ${
     lastSeenStart
-      ? `$rel has last_seen $ls; $ls > ${lastSeenStart}; $ls < ${lastSeenStop};`
+      ? `$rel has last_seen $ls; $ls > ${prepareDate(
+          lastSeenStart
+        )}; $ls < ${prepareDate(lastSeenStop)};`
       : ''
-  } ${weight ? `$rel has weight $weight; $weight == ${weight};` : ''}`;
+  } ${
+    weights
+      ? `$rel has weight $weight; ${join(
+          ' ',
+          map(weight => `{ $weight == ${weight}; } or`, weights)
+        )} { $weight == 0; };`
+      : ''
+  }`;
   const count = qkSingleValue(`${finalQuery} aggregate count;`);
   const elements = qkRel(
     `${finalQuery} ${

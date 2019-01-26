@@ -222,7 +222,7 @@ class ReportCreation extends Component {
                   <MuiPickersUtilsProvider utils={MomentUtils}>
                     <Form style={{ margin: '20px 0 20px 0' }}>
                       <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
-                      <Field name='published' component={DatePickerField} label={t('Publication date')} fullWidth={true} style={{ marginTop: 20 }}/>
+                      <Field name='published' component={TextField} label={t('Publication date')} fullWidth={true} style={{ marginTop: 20 }}/>
                       <Field name='report_class'
                              component={Select}
                              label={t('Report type')}

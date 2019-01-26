@@ -47,11 +47,11 @@ const styles = () => ({
 });
 
 export const stixDomainEntityKnowledgeGraphQuery = graphql`
-    query StixDomainEntityKnowledgeGraphQuery($id: String!, $count: Int) {
+    query StixDomainEntityKnowledgeGraphQuery($id: String!, $count: Int, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $weights: [Int]) {
         stixDomainEntity(id: $id) {
             ...StixDomainEntityKnowledgeGraph_stixDomainEntity
         }
-        stixRelations(fromId: $id, first: $count) {
+        stixRelations(fromId: $id, toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, first: $count) {
             ...StixDomainEntityKnowledgeGraph_stixRelations
         }
     }
@@ -113,7 +113,6 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
           name: n.name,
           type: n.type,
         });
-        console.log(newNode);
         newNode.addListener({ selectionChanged: this.handleSelection.bind(this) });
         model.addNode(newNode);
       }
@@ -152,6 +151,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
     }, actualRelations);
     // set the model
     model.addListener({
+      zoomUpdated: this.handleSaveGraph.bind(this),
       linksUpdated: this.handleLinksChange.bind(this),
     });
     this.engine.setDiagramModel(model);
@@ -166,7 +166,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
   }
 
   saveGraph() {
-    if (this.saving === false) {
+    if (this.saving === false && this.props.isSavable()) {
       this.saving = true;
       const model = this.engine.getDiagramModel();
       const graphData = JSON.stringify(model.serializeDiagram());
@@ -260,6 +260,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
 
   handleSelection(event) {
     if (event.isSelected === true) {
+      console.log(event);
       if (event.entity instanceof EntityLinkModel) {
         this.setState({
           openEditRelation: true,
@@ -360,6 +361,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
 StixDomainEntityKnowledgeGraphComponent.propTypes = {
   stixDomainEntity: PropTypes.object,
   stixRelations: PropTypes.object,
+  isSavable: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
@@ -376,6 +378,12 @@ const StixDomainEntityKnowledgeGraph = createFragmentContainer(StixDomainEntityK
   stixRelations: graphql`
       fragment StixDomainEntityKnowledgeGraph_stixRelations on StixRelationConnection @argumentDefinitions(
           fromId: {type: "String"}
+          toTypes: {type: "[String]"},
+          firstSeenStart: {type: "DateTime"},
+          firstSeenStop: {type: "DateTime"},
+          lastSeenStart: {type: "DateTime"},
+          lastSeenStop: {type: "DateTime"},
+          weights: {type: "[Int]"},
           first: {type: "Int", defaultValue: 50}
       ) {
           edges {

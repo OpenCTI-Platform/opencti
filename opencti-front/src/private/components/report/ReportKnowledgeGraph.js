@@ -154,6 +154,7 @@ class ReportKnowledgeGraphComponent extends Component {
     model.addListener({
       nodesUpdated: this.handleNodeChanges.bind(this),
       linksUpdated: this.handleLinksChange.bind(this),
+      zoomUpdated: this.handleSaveGraph.bind(this),
     });
     this.engine.setDiagramModel(model);
     // subscribe to grapher

@@ -81,6 +81,7 @@ class EntityNodeWidget extends Component {
       <div className={classes.node} style={{
         backgroundColor: itemColor(extras.type, true),
         border: node.selected ? '2px solid #00c0ff' : '2px solid #333333',
+        display: node.hidden ? 'none' : 'block',
       }}>
         <div className={classes.header}>
             <div className={classes.icon}>
