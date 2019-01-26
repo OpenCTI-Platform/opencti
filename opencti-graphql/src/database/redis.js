@@ -24,7 +24,7 @@ if (client) {
     logger.error(error);
   });
 }
-const isActive = client && client.status === 'ready';
+const isActive = () => client && client.status === 'ready';
 /**
  * Delete the user context for a specific edition
  * @param user the user
@@ -32,7 +32,7 @@ const isActive = client && client.status === 'ready';
  * @returns {*}
  */
 export const delEditContext = (user, instanceId) =>
-  isActive && client.del(`edit:${instanceId}:${user.id}`);
+  isActive() && client.del(`edit:${instanceId}:${user.id}`);
 
 /**
  * Delete the user context
@@ -40,7 +40,7 @@ export const delEditContext = (user, instanceId) =>
  * @returns {Promise<>}
  */
 export const delUserContext = user =>
-  isActive
+  isActive()
     ? new Promise((resolve, reject) => {
         const stream = client.scanStream({
           match: `*:*:${user.id}`,
@@ -72,7 +72,7 @@ export const delUserContext = user =>
  */
 export const setEditContext = (user, instanceId, input) => {
   const data = assoc('name', user.email, input);
-  if (isActive) {
+  if (isActive()) {
     client.set(
       `edit:${instanceId}:${user.id}`,
       JSON.stringify(data),
@@ -88,7 +88,7 @@ export const setEditContext = (user, instanceId, input) => {
  * @returns {Promise<any>}
  */
 export const fetchEditContext = instanceId =>
-  isActive
+  isActive()
     ? new Promise((resolve, reject) => {
         const elementsPromise = [];
         const stream = client.scanStream({
