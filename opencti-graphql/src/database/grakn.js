@@ -487,12 +487,35 @@ const buildPaginationRelationships = (
  * @returns Promise
  */
 export const paginateRelationships = (query, options) => {
-  const { fromId, toId, first = 200, after } = options;
+  const {
+    fromId,
+    toId,
+    fromType,
+    toType,
+    firstSeenStart,
+    firstSeenEnd,
+    lastSeenStart,
+    lastSeenStop,
+    weight,
+    first = 200,
+    after
+  } = options;
   const offset = after ? cursorToOffset(after) : 0;
   const count = qkSingleValue(`${query}; aggregate count;`);
   const elements = qkRel(
     `${query}; ${fromId ? `$from id ${fromId};` : ''} ${
       toId ? `$to id ${toId};` : ''
+    } ${fromType ? `$from isa ${fromType};` : ''} 
+    ${toType ? `$to isa ${toType};` : ''} ${
+      firstSeenStart
+        ? `$rel has first_seen $fs; $fs > ${firstSeenStart}; $fs < ${firstSeenEnd};`
+        : ''
+    } ${
+      lastSeenStart
+        ? `$rel has last_seen $ls; $ls > ${lastSeenStart}; $ls < ${lastSeenStop};`
+        : ''
+    } ${
+      weight ? `$rel has weight $weight; $weight == ${weight};` : ''
     } offset ${offset}; limit ${first}; 
       get;`,
     'rel',

@@ -18,6 +18,8 @@ export const dayFormat = data => (data && data !== '-' ? parse(data).format(dayD
 
 export const yearFormat = data => (data && data !== '-' ? parse(data).format(yearDateFormat) : '');
 
+export const currentYear = yearFormat(now());
+
 export const timeDiff = (start, end) => parse(start).diff(parse(end));
 
 export const timeFormat = data => (data && data !== '-' ? parse(data).format(timeDateFormat) : '');

@@ -3,18 +3,28 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
+import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
+import Slider from '@material-ui/lab/Slider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
-import { QueryRenderer } from '../../../relay/environment';
+import { QueryRenderer, fetchQuery } from '../../../relay/environment';
 import EntityStixRelationsLines, { entityStixRelationsLinesQuery } from './EntityStixRelationsLines';
 import inject18n from '../../../components/i18n';
 
 const styles = () => ({
+  container: {
+    position: 'relative',
+  },
+  filters: {
+    position: 'absolute',
+    top: -10,
+    right: 0,
+  },
   linesContainer: {
     marginTop: 20,
     paddingTop: 0,
@@ -71,10 +81,35 @@ const inlineStyles = {
   },
 };
 
+const firstStixRelationQuery = graphql`
+    query EntityStixRelationfirstStixRelationQuery($first: Int, $orderBy: String, $orderMode: String) {
+        stixRelations(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
+            edges {
+                node {
+                    id
+                }
+            }
+        }
+    }
+`;
+
 class EntityStixRelations extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'first_seen', orderAsc: false };
+    this.state = {
+      sortBy: 'first_seen',
+      orderAsc: false,
+      firstSeenStart: null,
+      firstSeenStop: null,
+      weight: null,
+    };
+  }
+
+  componentDidMount() {
+    fetchQuery(firstStixRelationQuery, { first: 1, orderBy: 'first_seen', orderMode: 'asc' })
+      .then((data) => {
+        console.log(data);
+      });
   }
 
   reverseBy(field) {
@@ -106,11 +141,24 @@ class EntityStixRelations extends Component {
       toType: targetEntityType || '',
       fromId: entityId,
       relationType,
+      firstSeenStart: this.state.firstSeenStart || '',
+      firstSeenStop: this.state.firstSeenStop || '',
+      weight: this.state.weight || '',
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div>
+      <div className={classes.container}>
+        <div className={classes.filters}>
+          <Slider
+            classes={{ container: classes.slider }}
+            value={value}
+            min={0}
+            max={6}
+            step={1}
+            onChange={this.handleChange}
+          />
+        </div>
         <List classes={{ root: classes.linesContainer }}>
           <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
             <ListItemIcon>

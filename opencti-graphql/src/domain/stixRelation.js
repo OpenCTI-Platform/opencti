@@ -24,12 +24,6 @@ export const findByType = args =>
     args
   );
 
-export const findByToTypeAndType = args =>
-  paginateRelationships(
-    `match $rel($from, $to) isa ${args.relationType}; $to isa ${args.toType}`,
-    args
-  );
-
 export const findById = stixRelationId => loadByID(stixRelationId);
 
 export const search = args =>

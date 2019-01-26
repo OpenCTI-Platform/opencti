@@ -1064,7 +1064,7 @@ type Query {
     stixDomainEntities(first: Int, after: ID, orderBy: StixDomainEntitiesOrdering, orderMode: OrderingMode, name: String, search: String): StixDomainEntityConnection
     # StixRelations
     stixRelation(id: String!): StixRelation
-    stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromType: String, toType: String, relationType: String, search: String): StixRelationConnection
+    stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, toId: String, fromType: String, toType: String, relationType: String, firstSeenStart: DateTime, lastSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weight: Int, search: String): StixRelationConnection
     # Identities
     identity(id: String!): Identity
     identities(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): IdentityConnection

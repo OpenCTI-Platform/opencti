@@ -6,6 +6,7 @@
   "dependencies": {
     "@material-ui/core": "^3.9.0",
     "@material-ui/icons": "^3.0.2",
+    "@material-ui/lab": "^3.0.0-alpha.28",
     "apollo-link": "^1.2.6",
     "apollo-link-ws": "^1.0.12",
     "babel-plugin-relay": "^1.7.0",

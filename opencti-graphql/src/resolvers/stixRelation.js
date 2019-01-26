@@ -7,7 +7,6 @@ import {
   getFrom,
   getTo,
   findByType,
-  findByToTypeAndType,
   findById,
   search,
   reports,
@@ -27,9 +26,6 @@ const stixRelationResolvers = {
         return search(args);
       }
       if (args.relationType && args.relationType.length > 0) {
-        if( args.toType && args.toType.length > 0 ) {
-          return findByToTypeAndType(args);
-        }
         return findByType(args);
       }
       return findAll(args);

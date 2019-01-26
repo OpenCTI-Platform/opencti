@@ -190,13 +190,13 @@ class EntityStixRelationLineDummyComponent extends Component {
               <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.weight}>
-              <div className={classes.placeholder} style={{ width: '90%' }}/>
+              <div className={classes.placeholder} style={{ width: 100 }}/>
             </div>
           </div>
         }/>
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemSecondaryAction classes={{root: classes.itemIconDisabled}}>
           <MoreVert/>
-        </ListItemIcon>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
