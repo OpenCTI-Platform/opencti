@@ -35,7 +35,7 @@ const settingsResolvers = {
           () => pubsub.asyncIterator(BUS_TOPICS.Settings.EDIT_TOPIC),
           payload => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id;
+            return payload.user.id !== user.id && payload.instance.id === id;
           }
         )(_, { id }, { user });
         return withCancel(filtering, () => {

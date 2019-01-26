@@ -8,7 +8,7 @@ const globalObjectResolvers = {
       }
       return 'Unknown';
     }
-  },
+  }
 };
 
 export default globalObjectResolvers;

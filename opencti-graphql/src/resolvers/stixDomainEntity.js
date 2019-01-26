@@ -60,7 +60,7 @@ const stixDomainEntityResolvers = {
           () => pubsub.asyncIterator(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC),
           payload => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id;
+            return payload.user.id !== user.id && payload.instance.id === id;
           }
         )(_, { id }, { user });
         return withCancel(filtering, () => {

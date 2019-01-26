@@ -314,7 +314,6 @@ export const editInputTx = async (id, input, transaction) => {
     const oldValue = await oldValuesConcept[i].value();
     const typedOldValue = attrType === String ? `"${oldValue}"` : oldValue;
     // If the attribute is alone we can delete it, if not we need to remove the relation to it (via)
-    // match $x isa name; $x == "Briba"; $rel($x); offset 0; limit 30; get;
     const countRemainQuery = `match $x isa ${key}; $x == ${typedOldValue}; $rel($x); aggregate count;`;
     const countRemainIterator = await wTx.query(countRemainQuery);
     const countRemain = await countRemainIterator.next();

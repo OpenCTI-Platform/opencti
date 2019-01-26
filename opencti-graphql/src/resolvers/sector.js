@@ -45,7 +45,7 @@ const sectorResolvers = {
           () => pubsub.asyncIterator(BUS_TOPICS.Sector.EDIT_TOPIC),
           payload => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id;
+            return payload.user.id !== user.id && payload.instance.id === id;
           }
         )(_, { id }, { user });
         return withCancel(filtering, () => {
