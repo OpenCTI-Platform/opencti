@@ -229,12 +229,10 @@ export const userEditContext = (user, userId, input) => {
 export const userEditField = (user, userId, input) => {
   const { key } = input;
   const value =
-    key === 'password' ? bcrypt.hashSync(head(input.value), 10) : input.value;
-  let finalInput = { key, value: [value] };
-  if (includes(key, multipleAttributes)) {
-    finalInput = { key, value };
-  }
-  return editInputTx(userId, finalInput).then(userToEdit =>
+    key === 'password' // If special case of password
+      ? [bcrypt.hashSync(head(input.value), 10)] // Encrypt the password
+      : input.value; // Else just keep the value untouched
+  return editInputTx(userId, { key, value }).then(userToEdit =>
     notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit, user)
   );
 };

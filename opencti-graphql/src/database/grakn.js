@@ -1,8 +1,9 @@
+/* eslint-disable no-await-in-loop */
 import axios from 'axios';
 import {
   assoc,
   chain,
-  contains,
+  includes,
   groupBy,
   head,
   isEmpty,
@@ -43,13 +44,14 @@ export const multipleAttributes = [
   'grant',
   'graph_data'
 ];
+// TODO Remove this after https://github.com/graknlabs/grakn/issues/4828
 export const lowerCaseAttributes = [
-  'name',
-  'description',
-  'stix_label',
-  'alias',
-  'source_name',
-  'external_id'
+  'name', // Standard
+  'description', // Standard
+  'stix_label', // Standard
+  'alias', // TODO Remove
+  'source_name', // External Reference
+  'external_id' // External Reference
 ];
 
 // Instance of Axios to make Grakn API Calls.
@@ -107,7 +109,7 @@ const attrMap = (id, res, withType = false) => {
     groupBy(head), // Group by key
     map(pluck(1)), // Remove grouping boilerplate
     mapObjIndexed((num, key, obj) =>
-      obj[key].length === 1 && !contains(key, multipleAttributes)
+      obj[key].length === 1 && !includes(key, multipleAttributes)
         ? head(obj[key])
         : obj[key]
     ) // Remove extra list then contains only 1 element
@@ -120,9 +122,9 @@ const attrMap = (id, res, withType = false) => {
  * @param queryDef
  * @returns {Promise<AxiosResponse<any> | never>}
  */
-export const qk = queryDef => {
-  logger.debug(`Grakn query: ${queryDef}`);
-  return axiosInstance({
+export const qk = queryDef =>
+  // logger.debug(`Grakn query: ${queryDef}`);
+  axiosInstance({
     method: 'post',
     url: '/kb/grakn/graql',
     data: queryDef
@@ -130,7 +132,6 @@ export const qk = queryDef => {
     logger.error(`Grakn query error: ${queryDef}`, error.response);
     // throw new FunctionalError({ message: error.response.data.exception });
   });
-};
 
 /**
  * Grakn query that generate json objects
@@ -286,46 +287,67 @@ export const loadByID = (id, withType = false) =>
  * Edit an attribute value.
  * @param id
  * @param input
+ * @param transaction
  * @returns the complete instance
  */
-export const editInputTx = async (id, input) => {
-  const { key, value } = input;
-  const session = await client.session('grakn');
-  const wTx = await session.transaction(Grakn.txType.WRITE);
-  const labelIterator = await wTx.query(
-    `match $x label "${key}" sub attribute; get;`
-  );
-  const labelAnswer = await labelIterator.next();
-  const type = await labelAnswer
-    .map()
-    .get('x')
-    .dataType();
-  // Delete the old value/values
-  const deleteQuery = `match $m id ${id}; $m has ${key} $del via $d; delete $d;`;
-  logger.debug(`Grakn query: ${deleteQuery}`);
-  await wTx.query(deleteQuery);
-  // Setup the new attribute
-  const createQuery = `match $m id ${id}; insert $m ${join(
-    ' ',
-    map(val => `has ${key} ${type === String ? `"${val}"` : val}`, value)
-  )};`;
-  logger.debug(`Grakn query: ${createQuery}`);
-  await wTx.query(createQuery);
-
-  if (contains(key, lowerCaseAttributes)) {
-    // Delete the old value/values
-    const deleteQueryLowerCase = `match $m id ${id}; $m has ${key}_lowercase $del via $d; delete $d;`;
-    logger.debug(`Grakn query: ${deleteQueryLowerCase}`);
-    await wTx.query(deleteQueryLowerCase);
-    // Setup the new attribute
-    const createQueryLowerCase = `match $m id ${id}; insert $m has ${key}_lowercase "${join(
-      ' ',
-      map(val => val.toLowerCase(), value)
-    )}";`;
-    logger.debug(`Grakn query: ${createQueryLowerCase}`);
-    await wTx.query(createQueryLowerCase);
+export const editInputTx = async (id, input, transaction) => {
+  const { key, value } = input; // value can be multi valued
+  // 00. If the transaction already exist, just continue the process
+  let wTx = transaction;
+  if (!wTx) {
+    const session = await client.session('grakn');
+    wTx = await session.transaction(Grakn.txType.WRITE);
   }
 
+  // 01. We need to fetch the type to quote the string if needed.
+  const labelTypeQuery = `match $x label "${key}" sub attribute; get;`;
+  const labelIterator = await wTx.query(labelTypeQuery);
+  const labelAnswer = await labelIterator.next();
+  // eslint-disable-next-line prettier/prettier
+  const attrType = await labelAnswer.map().get('x').dataType();
+
+  // 02. For each old values
+  const getOldValueQuery = `match $x id ${id}; $x has ${key} $old; get $old;`;
+  const oldValIterator = await wTx.query(getOldValueQuery);
+  const oldValuesConcept = await oldValIterator.collectConcepts();
+  for (let i = 0; i < oldValuesConcept.length; i += 1) {
+    const oldValue = await oldValuesConcept[i].value();
+    const typedOldValue = attrType === String ? `"${oldValue}"` : oldValue;
+    // If the attribute is alone we can delete it, if not we need to remove the relation to it (via)
+    // match $x isa name; $x == "Briba"; $rel($x); offset 0; limit 30; get;
+    const countRemainQuery = `match $x isa ${key}; $x == ${typedOldValue}; $rel($x); aggregate count;`;
+    const countRemainIterator = await wTx.query(countRemainQuery);
+    const countRemain = await countRemainIterator.next();
+    const oldNumOfRef = await countRemain.number();
+    // Start the delete phase
+    let deleteQuery;
+    if (oldNumOfRef > 1) {
+      // In this case we need to remove the reference to the value
+      deleteQuery = `match $m id ${id}; $m has ${key} $del via $d; $del == ${typedOldValue}; delete $d;`;
+    } else {
+      // In this case the instance of the attribute can be removed
+      const attrGetQuery = `match $x isa ${key}; $x == ${typedOldValue}; $rel($x); get $x;`;
+      const attrIterator = await wTx.query(attrGetQuery);
+      const attrAnswer = await attrIterator.next();
+      const attrId = await attrAnswer.map().get('x').id;
+      deleteQuery = `match $attr id ${attrId}; delete $attr;`;
+    }
+    await wTx.query(deleteQuery);
+  }
+
+  // Setup the new attribute
+  const typedValues = map(v => (attrType === String ? `"${v}"` : v), value);
+  const graknValues = join(' ', map(val => `has ${key} ${val}`, typedValues));
+  const createQuery = `match $m id ${id}; insert $m ${graknValues};`;
+  await wTx.query(createQuery);
+
+  // TODO Remove this after https://github.com/graknlabs/grakn/issues/4828
+  if (includes(key, lowerCaseAttributes)) {
+    const lowerValues = map(v => v.toLowerCase(), value);
+    const joinedValues = join(' ', lowerValues);
+    const newInput = { key: `${key}_lowercase`, value: [joinedValues] };
+    return editInputTx(id, newInput, wTx);
+  }
   await wTx.commit();
   return loadByID(id);
 };
