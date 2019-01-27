@@ -126,7 +126,7 @@ class Root extends Component {
                         <BoundaryRoute exact path='/dashboard/settings/groups' component={Groups}/>
                         <BoundaryRoute exact path='/dashboard/settings/marking' component={MarkingDefinitions}/>
                         <BoundaryRoute exact path='/dashboard/settings/killchains' component={KillChainPhases}/>
-                        <BoundaryRoute exact path='/dashboard/profile' component={Profile}/>
+                        <BoundaryRoute exact path='/dashboard/profile' render={routeProps => <Profile {...routeProps} me={props.me}/>}/>
                         <Route component={NoMatch}/>
                       </Switch>
                     </main>

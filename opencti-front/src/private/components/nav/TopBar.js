@@ -28,6 +28,7 @@ import TopMenuReport from './TopMenuReport';
 import TopMenuCatalogs from './TopMenuCatalogs';
 import TopMenuSources from './TopMenuSources';
 import TopMenuSettings from './TopMenuSettings';
+import TopMenuProfile from './TopMenuProfile';
 import { commitMutation } from '../../../relay/environment';
 
 const styles = theme => ({
@@ -132,6 +133,7 @@ class TopBar extends Component {
             {location.pathname === '/dashboard/catalogs' || location.pathname.match('/dashboard/catalogs/[a-z_]+$') ? <TopMenuCatalogs/> : ''}
             {location.pathname === '/dashboard/sources' || location.pathname.match('/dashboard/sources/[a-z_]+$') ? <TopMenuSources/> : ''}
             {location.pathname === '/dashboard/settings' || location.pathname.match('/dashboard/settings/[a-z_]+$') ? <TopMenuSettings/> : ''}
+            {location.pathname === '/dashboard/profile' ? <TopMenuProfile/> : ''}
           </div>
           <div className={classes.searchContainer}>
             <SearchInput onSubmit={this.handleSearch.bind(this)} keyword={keyword}/>

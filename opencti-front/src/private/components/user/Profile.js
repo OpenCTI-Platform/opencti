@@ -5,6 +5,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles/index';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
+import TopBar from '../nav/TopBar';
 import ProfileOverview from './ProfileOverview';
 
 const styles = () => ({
@@ -23,9 +24,10 @@ const profileQuery = graphql`
 
 class Profile extends Component {
   render() {
-    const { classes } = this.props;
+    const { me, classes } = this.props;
     return (
       <div className={classes.container}>
+        <TopBar me={me || null}/>
         <QueryRenderer
           query={profileQuery}
           render={({ props }) => {
@@ -41,8 +43,7 @@ class Profile extends Component {
 }
 
 Profile.propTypes = {
-  markingDefinitionId: PropTypes.string,
-  paginationOptions: PropTypes.object,
+  me: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

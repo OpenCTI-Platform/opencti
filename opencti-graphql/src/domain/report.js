@@ -34,15 +34,6 @@ export const findByEntity = args =>
 
 export const findById = reportId => loadByID(reportId);
 
-export const createdByRef = reportId =>
-  qkObjUnique(
-    `match $x isa Identity; 
-    $rel(creator:$x, so:$report) isa created_by_ref; 
-    $report id ${reportId};  offset 0; limit 1; get $x,$rel;`,
-    'x',
-    'rel'
-  );
-
 export const objectRefs = (reportId, args) =>
   paginate(
     `match $so isa Stix-Domain-Entity; 

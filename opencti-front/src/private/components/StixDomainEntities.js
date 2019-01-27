@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
@@ -21,7 +20,6 @@ const styles = () => ({
 class StixDomainEntities extends Component {
   render() {
     const { t, me, match: { params: { keyword } } } = this.props;
-
     return (
       <div>
         <TopBar me={me || null} keyword={keyword}/>
@@ -37,10 +35,9 @@ class StixDomainEntities extends Component {
             orderMode: 'desc',
           }}
           render={({ props }) => {
-            if (props) { // Done
+            if (props) {
               return <StixDomainEntitiesLines data={props}/>;
             }
-            // Loading
             return <Loader variant='inside' />;
           }}
         />

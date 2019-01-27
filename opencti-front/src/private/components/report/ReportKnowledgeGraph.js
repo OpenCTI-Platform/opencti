@@ -79,6 +79,52 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   componentDidMount() {
+    this.initialize();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.report.graph_data !== prevProps.report.graph_data) {
+      this.initialize();
+      this.forceUpdate();
+    }
+    // component has been updated, check changes
+    const added = difference(
+      this.props.report.objectRefs.edges,
+      prevProps.report.objectRefs.edges,
+    );
+    const removed = difference(
+      prevProps.report.objectRefs.edges,
+      this.props.report.objectRefs.edges,
+    );
+    // if a node has been added, add in graph
+    if (added.length > 0) {
+      const model = this.engine.getDiagramModel();
+      const newNodes = map(n => new EntityNodeModel({
+        id: n.node.id,
+        relationId: n.relation.id,
+        name: n.node.name,
+        type: n.node.type,
+      }), added);
+      forEach((n) => {
+        n.addListener({ selectionChanged: this.handleSelection.bind(this) });
+        model.addNode(n);
+      }, newNodes);
+      this.forceUpdate();
+    }
+    // if a node has been removed, remove in graph
+    if (removed.length > 0) {
+      const model = this.engine.getDiagramModel();
+      const removedIds = map(n => n.node.id, removed);
+      forEach((n) => {
+        if (removedIds.includes(n.extras.id)) {
+          model.removeNode(n);
+        }
+      }, values(model.getNodes()));
+      this.forceUpdate();
+    }
+  }
+
+  initialize() {
     // prepare actual nodes & relations
     const actualNodes = this.props.report.objectRefs.edges;
     const actualRelations = this.props.report.relationRefs.edges;
@@ -167,44 +213,6 @@ class ReportKnowledgeGraphComponent extends Component {
         }
       },
     });
-  }
-
-  componentDidUpdate(prevProps) {
-    // component has been updated, check changes
-    const added = difference(
-      this.props.report.objectRefs.edges,
-      prevProps.report.objectRefs.edges,
-    );
-    const removed = difference(
-      prevProps.report.objectRefs.edges,
-      this.props.report.objectRefs.edges,
-    );
-    // if a node has been added, add in graph
-    if (added.length > 0) {
-      const model = this.engine.getDiagramModel();
-      const newNodes = map(n => new EntityNodeModel({
-        id: n.node.id,
-        relationId: n.relation.id,
-        name: n.node.name,
-        type: n.node.type,
-      }), added);
-      forEach((n) => {
-        n.addListener({ selectionChanged: this.handleSelection.bind(this) });
-        model.addNode(n);
-      }, newNodes);
-      this.forceUpdate();
-    }
-    // if a node has been removed, remove in graph
-    if (removed.length > 0) {
-      const model = this.engine.getDiagramModel();
-      const removedIds = map(n => n.node.id, removed);
-      forEach((n) => {
-        if (removedIds.includes(n.extras.id)) {
-          model.removeNode(n);
-        }
-      }, values(model.getNodes()));
-      this.forceUpdate();
-    }
   }
 
   saveGraph() {

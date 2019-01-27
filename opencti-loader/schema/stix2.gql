@@ -230,7 +230,7 @@ define
     has "first_seen_year"
     has "last_seen"
     has "last_seen_month"
-    has "last_seen_month"
+    has "last_seen_year"
     has "name"
     has "name_lowercase"
     has "description"
@@ -488,6 +488,7 @@ define
     has "last_seen_month"
     has "last_seen_year"
     plays "attribution"
+    plays "user"
     plays "usage"
     plays "source"
     plays "characterize";
