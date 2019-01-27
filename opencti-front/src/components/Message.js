@@ -35,7 +35,7 @@ class Message extends Component {
   }
 
   componentDidMount() {
-    MESSAGING$.messages.subscribe({
+    this.subscription = MESSAGING$.messages.subscribe({
       next: (messages) => {
         const firstMessage = head(messages);
         const text = this.props.t(firstMessage.text);
@@ -47,7 +47,7 @@ class Message extends Component {
 
   // eslint-disable-next-line
   componentWillUnmount() {
-    MESSAGING$.messages.unsubscribe();
+    this.subscription.unsubscribe();
   }
 
   handleCloseMessage(event, reason) {

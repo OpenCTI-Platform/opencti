@@ -71,14 +71,17 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
 
   componentDidMount() {
     this.initialize();
-    // subscribe to grapher
-    GRAPHER$.subscribe({
+    this.subscription = GRAPHER$.subscribe({
       next: (message) => {
         if (message.action === 'update') {
           this.saveGraph();
         }
       },
     });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
   }
 
   componentDidUpdate(prevProps) {

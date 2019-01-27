@@ -20,14 +20,14 @@ import { MESSAGING$ } from './relay/environment';
 
 class RedirectManagerComponent extends Component {
   componentDidMount() {
-    MESSAGING$.redirect.subscribe({
+    this.subscription = MESSAGING$.redirect.subscribe({
       next: url => this.props.history.push(url),
     });
   }
 
   // eslint-disable-next-line
   componentWillUnmount() {
-    MESSAGING$.redirect.unsubscribe();
+    this.subscription.unsubscribe();
   }
 
   render() {

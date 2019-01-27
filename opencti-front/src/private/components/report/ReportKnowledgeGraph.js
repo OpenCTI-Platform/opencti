@@ -17,7 +17,7 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
-import { commitMutation, environment } from '../../../relay/environment';
+import {commitMutation, environment, MESSAGING$} from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
 import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
@@ -80,14 +80,17 @@ class ReportKnowledgeGraphComponent extends Component {
 
   componentDidMount() {
     this.initialize();
-    // subscribe to grapher
-    GRAPHER$.subscribe({
+    this.subscription = GRAPHER$.subscribe({
       next: (message) => {
         if (message.action === 'update') {
           this.saveGraph();
         }
       },
     });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
   }
 
   componentDidUpdate(prevProps) {
