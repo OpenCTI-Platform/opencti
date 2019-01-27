@@ -12,7 +12,7 @@ const subscription = graphql`
         stixDomainEntity(id: $id) {
             ...on Report {
                 ...Report_report
-                ...ReportKnowledge_report
+                ...ReportKnowledgeGraph_report
                 ...ReportEditionContainer_report
             }
         }
