@@ -492,6 +492,7 @@ type Group implements GlobalObject & StixDomainEntity {
 input GroupAddInput {
     name: String!
     description: String
+    markingDefinitions: [String]
     clientMutationId: String
 }
 
@@ -621,6 +622,8 @@ input KillChainPhaseAddInput {
     kill_chain_name: String!
     phase_name: String!
     phase_order: Int!
+    markingDefinitions: [String]
+    clientMutationId: String
 }
 
 ### AttackPattern
@@ -807,6 +810,7 @@ input IntrusionSetAddInput {
     name: String!
     description: String!
     createdByRef: String
+    markingDefinitions: [String]
     clientMutationId: String
 }
 

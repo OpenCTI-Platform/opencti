@@ -53,7 +53,7 @@ class TopMenuIntrusionSet extends Component {
                 color={location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/reports` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('Reports')}
         </Button>
-        <Button component={Link} to={`/dashboard/knowledge/intrusionSets/${intrusionSetId}/knowledge`} variant={location.pathname.includes(`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge`) ? 'contained' : 'text'} size="small"
+        <Button component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge`} variant={location.pathname.includes(`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge`) ? 'contained' : 'text'} size="small"
                 color={location.pathname.includes(`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge`) ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('Knowledge')}
         </Button>

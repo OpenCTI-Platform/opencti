@@ -45,19 +45,19 @@ class TopMenuThreatActor extends Component {
           {t('Threat actors')}
         </Button>
         <ArrowForwardIos color='inherit' classes={{ root: classes.arrow }}/>
-        <Button component={Link} to={`/dashboard/knowledge/threatActors/${threatActorId}`} variant={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}` ? 'contained' : 'text'} size="small"
+        <Button component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}`} variant={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}` ? 'contained' : 'text'} size="small"
                 color={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('Overview')}
         </Button>
-        <Button component={Link} to={`/dashboard/knowledge/threatActors/${threatActorId}/reports`} variant={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/reports` ? 'contained' : 'text'} size="small"
+        <Button component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/reports`} variant={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/reports` ? 'contained' : 'text'} size="small"
                 color={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/reports` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('Reports')}
         </Button>
-        <Button component={Link} to={`/dashboard/knowledge/threatActors/${threatActorId}/knowledge`} variant={location.pathname.includes(`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge`) ? 'contained' : 'text'} size="small"
+        <Button component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge`} variant={location.pathname.includes(`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge`) ? 'contained' : 'text'} size="small"
                 color={location.pathname.includes(`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge`) ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('Knowledge')}
         </Button>
-        <Button component={Link} to={`/dashboard/knowledge/threatActors/${threatActorId}/observables`} variant={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/observables` ? 'contained' : 'text'} size="small"
+        <Button component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/observables`} variant={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/observables` ? 'contained' : 'text'} size="small"
                 color={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/observables` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('Observables')}
         </Button>

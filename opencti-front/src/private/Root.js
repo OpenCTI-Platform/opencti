@@ -17,6 +17,8 @@ import Sectors from './components/Sectors';
 import RootSector from './components/sector/Root';
 import IntrusionSets from './components/IntrusionSets';
 import RootIntrusionSet from './components/intrusion_set/Root';
+import Campaigns from './components/Campaigns';
+import RootCampaign from './components/campaign/Root';
 import Malwares from './components/Malwares';
 import RootMalware from './components/malware/Root';
 import Reports from './components/Reports';
@@ -96,10 +98,12 @@ class Root extends Component {
                         <BoundaryRoute exact path='/dashboard/knowledge' render={() => (<Redirect to='/dashboard/knowledge/threat_actors'/>)}/>
                         <BoundaryRoute exact path='/dashboard/knowledge/threat_actors' component={ThreatActors}/>
                         <BoundaryRoute path='/dashboard/knowledge/threat_actors/:threatActorId' render={routeProps => <RootThreatActor {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/knowledge/intrusion_sets' component={IntrusionSets}/>
-                        <BoundaryRoute path='/dashboard/knowledge/intrusion_sets/:intrusionSetId' render={routeProps => <RootIntrusionSet {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/knowledge/sectors' component={Sectors}/>
                         <BoundaryRoute path='/dashboard/knowledge/sectors/:sectorId' render={routeProps => <RootSector {...routeProps} me={props.me}/>}/>
+                        <BoundaryRoute exact path='/dashboard/knowledge/intrusion_sets' component={IntrusionSets}/>
+                        <BoundaryRoute path='/dashboard/knowledge/intrusion_sets/:intrusionSetId' render={routeProps => <RootIntrusionSet {...routeProps} me={props.me}/>}/>
+                        <BoundaryRoute exact path='/dashboard/knowledge/campaigns' component={Campaigns}/>
+                        <BoundaryRoute path='/dashboard/knowledge/campaigns/:campaignId' render={routeProps => <RootCampaign {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/knowledge/malwares' component={Malwares}/>
                         <BoundaryRoute path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/reports' render={() => (<Redirect to='/dashboard/reports/all'/>)}/>

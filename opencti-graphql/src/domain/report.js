@@ -1,11 +1,7 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
-import { setEditContext } from '../database/redis';
 import {
-  createRelation,
   deleteByID,
-  deleteRelation,
-  editInputTx,
   loadByID,
   notify,
   now,
@@ -18,25 +14,21 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa Report', args);
-export const findAllByClass = args =>
+export const findAll = args =>
   paginate(
-    `match $m isa Report; $m has report_class "${args.reportClass}"`,
+    `match $m isa Report ${
+      args.reportClass ? `; $m has report_class "${args.reportClass}"` : ''
+    }`,
     args
   );
-export const findAllBySo = args =>
+
+export const findByEntity = args =>
   paginate(
     `match $report isa Report; 
     $rel(knowledge_aggregation:$report, so:$so) isa object_refs; 
-    $so id ${args.objectId}`,
-    args
-  );
-export const findAllBySoAndClass = args =>
-  paginate(
-    `match $report isa Report; 
-    $rel(knowledge_aggregation:$report, so:$so) isa object_refs;
-    $so id ${args.objectId};
-    $report has report_class "${args.reportClass}"`,
+    $so id ${args.objectId} ${
+      args.reportClass ? `; $report has report_class "${args.reportClass}"` : ''
+    }`,
     args
   );
 
@@ -49,14 +41,6 @@ export const createdByRef = reportId =>
     $report id ${reportId};  offset 0; limit 1; get $x,$rel;`,
     'x',
     'rel'
-  );
-
-export const markingDefinitions = (reportId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(marking:$marking, so:$report) isa object_marking_refs; 
-    $report id ${reportId}`,
-    args
   );
 
 export const objectRefs = (reportId, args) =>
@@ -129,27 +113,3 @@ export const addReport = async (user, report) => {
 };
 
 export const reportDelete = reportId => deleteByID(reportId);
-
-export const reportAddRelation = (user, reportId, input) =>
-  createRelation(reportId, input).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const reportDeleteRelation = (user, reportId, relationId) =>
-  deleteRelation(reportId, relationId).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const reportEditContext = (user, reportId, input) => {
-  setEditContext(user, reportId, input);
-  return loadByID(reportId).then(report =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, report, user)
-  );
-};
-
-export const reportEditField = (user, reportId, input) =>
-  editInputTx(reportId, input).then(report =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, report, user)
-  );

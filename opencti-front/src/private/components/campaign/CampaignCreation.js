@@ -65,15 +65,15 @@ const styles = theme => ({
   },
 });
 
-const intrusionSetMutation = graphql`
-    mutation IntrusionSetCreationMutation($input: IntrusionSetAddInput!) {
-        intrusionSetAdd(input: $input) {
-            ...IntrusionSetCard_intrusionSet
+const campaignMutation = graphql`
+    mutation CampaignCreationMutation($input: CampaignAddInput!) {
+        campaignAdd(input: $input) {
+            ...CampaignCard_campaign
         }
     }
 `;
 
-const intrusionSetValidation = t => Yup.object().shape({
+const campaignValidation = t => Yup.object().shape({
   name: Yup.string()
     .required(t('This field is required')),
   description: Yup.string()
@@ -86,13 +86,13 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_intrusionSets',
+    'Pagination_campaigns',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class IntrusionSetCreation extends Component {
+class CampaignCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -148,12 +148,12 @@ class IntrusionSetCreation extends Component {
     values.createdByRef = values.createdByRef.value;
     values.markingDefinitions = pluck('value', values.markingDefinitions);
     commitMutation({
-      mutation: intrusionSetMutation,
+      mutation: campaignMutation,
       variables: {
         input: values,
       },
       updater: (store) => {
-        const payload = store.getRootField('intrusionSetAdd');
+        const payload = store.getRootField('campaignAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
         sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
@@ -184,7 +184,7 @@ class IntrusionSetCreation extends Component {
               <Close fontSize='small'/>
             </IconButton>
             <Typography variant='h6'>
-              {t('Create a intrusionSet')}
+              {t('Create a campaign')}
             </Typography>
           </div>
           <div className={classes.container}>
@@ -192,7 +192,7 @@ class IntrusionSetCreation extends Component {
               initialValues={{
                 name: '', description: '', createdByRef: '', markingDefinitions: [],
               }}
-              validationSchema={intrusionSetValidation(t)}
+              validationSchema={campaignValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
               render={({
@@ -248,7 +248,7 @@ class IntrusionSetCreation extends Component {
   }
 }
 
-IntrusionSetCreation.propTypes = {
+CampaignCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -258,4 +258,4 @@ IntrusionSetCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(IntrusionSetCreation);
+)(CampaignCreation);

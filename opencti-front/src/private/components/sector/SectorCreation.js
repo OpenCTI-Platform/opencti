@@ -147,7 +147,6 @@ class SectorCreation extends Component {
     // TODO @sam, fix that
     values.createdByRef = values.createdByRef.value;
     values.markingDefinitions = pluck('value', values.markingDefinitions);
-    values.killChainPhases = pluck('value', values.killChainPhases);
     commitMutation({
       mutation: sectorMutation,
       variables: {
@@ -191,7 +190,7 @@ class SectorCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
-                name: '', description: '', createdByRef: '', markingDefinitions: [], killChainPhases: [],
+                name: '', description: '', createdByRef: '', markingDefinitions: [],
               }}
               validationSchema={sectorValidation(t)}
               onSubmit={this.onSubmit.bind(this)}

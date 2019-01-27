@@ -9,6 +9,7 @@ import {
   stixDomainEntityAddRelation,
   stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
+
 import { fetchEditContext } from '../database/redis';
 import { auth } from './wrapper';
 

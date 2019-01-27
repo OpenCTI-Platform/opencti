@@ -2,12 +2,12 @@ import {
   addCampaign,
   campaignDelete,
   findAll,
-  findById,
-  createdByRef,
-  markingDefinitions,
-  reports
+  findById
 } from '../domain/campaign';
 import {
+  createdByRef,
+  markingDefinitions,
+  reports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityEditField,

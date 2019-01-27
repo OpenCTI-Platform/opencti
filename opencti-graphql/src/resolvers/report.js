@@ -2,19 +2,19 @@ import {
   addReport,
   reportDelete,
   findAll,
-  findAllByClass,
-  findAllBySo,
-  findAllBySoAndClass,
+  findByEntity,
   findById,
+  objectRefs,
+  relationRefs
+} from '../domain/report';
+import {
   createdByRef,
   markingDefinitions,
-  objectRefs,
-  relationRefs,
-  reportEditContext,
-  reportEditField,
-  reportAddRelation,
-  reportDeleteRelation,
-} from '../domain/report';
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField,
+  stixDomainEntityAddRelation,
+  stixDomainEntityDeleteRelation
+} from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 import { auth } from './wrapper';
 
@@ -23,13 +23,7 @@ const reportResolvers = {
     report: auth((_, { id }) => findById(id)),
     reports: auth((_, args) => {
       if (args.objectId && args.objectId.length > 0) {
-        if (args.reportClass && args.reportClass.length > 0) {
-          return findAllBySoAndClass(args);
-        }
-        return findAllBySo(args);
-      }
-      if (args.reportClass && args.reportClass.length > 0) {
-        return findAllByClass(args);
+        return findByEntity(args);
       }
       return findAll(args);
     })
@@ -44,11 +38,11 @@ const reportResolvers = {
   Mutation: {
     reportEdit: auth((_, { id }, { user }) => ({
       delete: () => reportDelete(id),
-      fieldPatch: ({ input }) => reportEditField(user, id, input),
-      contextPatch: ({ input }) => reportEditContext(user, id, input),
-      relationAdd: ({ input }) => reportAddRelation(user, id, input),
+      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
+      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
-        reportDeleteRelation(user, id, relationId)
+        stixDomainEntityDeleteRelation(user, id, relationId)
     })),
     reportAdd: auth((_, { input }, { user }) => addReport(user, input))
   }

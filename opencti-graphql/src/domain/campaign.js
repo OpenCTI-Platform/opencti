@@ -6,7 +6,6 @@ import {
   notify,
   now,
   paginate,
-  qkObjUnique,
   prepareDate,
   takeTx
 } from '../database/grakn';
@@ -15,31 +14,6 @@ import { BUS_TOPICS } from '../config/conf';
 export const findAll = args => paginate('match $m isa Campaign', args);
 
 export const findById = campaignId => loadByID(campaignId);
-
-export const createdByRef = campaignId =>
-  qkObjUnique(
-    `match $x isa Identity; 
-    $rel(creator:$x, so:$campaign) isa created_by_ref; 
-    $campaign id ${campaignId}; offset 0; limit 1; get $x,$rel;`,
-    'x',
-    'rel'
-  );
-
-export const markingDefinitions = (campaignId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(marking:$marking, so:$campaign) isa object_marking_refs; 
-    $campaign id ${campaignId}`,
-    args
-  );
-
-export const reports = (campaignId, args) =>
-  paginate(
-    `match $report isa Report; 
-    $rel(knowledge_aggregation:$report, so:$campaign) isa object_refs; 
-    $campaign id ${campaignId}`,
-    args
-  );
 
 export const addCampaign = async (user, campaign) => {
   const wTx = await takeTx();

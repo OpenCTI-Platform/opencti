@@ -85,6 +85,8 @@ const i18n = {
       'Update a report': 'Modifier un rapport',
       'Create a country': 'Créer un pays',
       'Update a country': 'Modifier un pays',
+      'Create a sector': 'Créer un secteur',
+      'Update a sector': 'Modifier un secteur',
       'Create a city': 'Créer une ville',
       'Update a city': 'Modifier une ville',
       'Create an organization': 'Créer une organisation',

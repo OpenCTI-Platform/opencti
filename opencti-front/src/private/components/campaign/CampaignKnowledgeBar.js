@@ -67,15 +67,15 @@ const styles = theme => ({
   },
 });
 
-class IntrusionSetKnowledgeBar extends Component {
+class CampaignKnowledgeBar extends Component {
   render() {
     const {
-      t, location, classes, intrusionSetId,
+      t, location, classes, campaignId,
     } = this.props;
     return (
       <Drawer variant='permanent' anchor='right' classes={{ paper: classes.drawerPaper }}>
         <div className={classes.toolbar}/>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/overview` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/overview`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/overview` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/overview`}>
           <div className={classes.icon}>
             <DeviceHub fontSize='default'/>
           </div>
@@ -84,7 +84,7 @@ class IntrusionSetKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Knowledge graph')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/attribution` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/attribution`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/attribution` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/attribution`}>
           <div className={classes.icon}>
             <SourcePull fontSize='default'/>
           </div>
@@ -93,7 +93,7 @@ class IntrusionSetKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Entities using')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/campaigns` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/campaigns`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/campaigns` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/campaigns`}>
           <div className={classes.icon}>
             <ChessKnight fontSize='default'/>
           </div>
@@ -102,7 +102,7 @@ class IntrusionSetKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Malicious activities')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/incidents` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/incidents`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/incidents` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/incidents`}>
           <div className={classes.icon}>
             <Fire fontSize='default'/>
           </div>
@@ -111,7 +111,7 @@ class IntrusionSetKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Seen in attacks')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/victimology` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/victimology`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/victimology` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/victimology`}>
           <div className={classes.icon}>
             <Target fontSize='default'/>
           </div>
@@ -120,7 +120,7 @@ class IntrusionSetKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Targeted entities')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/ttp` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/ttp`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/ttp` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/ttp`}>
           <div className={classes.icon}>
             <LockPattern fontSize='default'/>
           </div>
@@ -129,7 +129,7 @@ class IntrusionSetKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Techniques & procedures')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/tools` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/tools`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/tools` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/tools`}>
           <div className={classes.icon}>
             <Application fontSize='default'/>
           </div>
@@ -138,7 +138,7 @@ class IntrusionSetKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Legitimate libs and apps')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/vulnerabilities` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/vulnerabilities`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/vulnerabilities` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/vulnerabilities`}>
           <div className={classes.icon}>
             <BugReport fontSize='default'/>
           </div>
@@ -152,8 +152,8 @@ class IntrusionSetKnowledgeBar extends Component {
   }
 }
 
-IntrusionSetKnowledgeBar.propTypes = {
-  intrusionSetId: PropTypes.string,
+CampaignKnowledgeBar.propTypes = {
+  campaignId: PropTypes.string,
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,
@@ -163,4 +163,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(IntrusionSetKnowledgeBar);
+)(CampaignKnowledgeBar);

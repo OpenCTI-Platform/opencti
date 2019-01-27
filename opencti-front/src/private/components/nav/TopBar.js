@@ -17,6 +17,11 @@ import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
 import TopMenuSearch from './TopMenuSearch';
 import TopMenuKnowledge from './TopMenuKnowledge';
+import TopMenuThreatActor from './TopMenuThreatActor';
+import TopMenuSector from './TopMenuSector';
+import TopMenuIntrusionSet from './TopMenuIntrusionSet';
+import TopMenuCampaign from './TopMenuCampaign';
+import TopMenuIncident from './TopMenuIncident';
 import TopMenuMalware from './TopMenuMalware';
 import TopMenuReports from './TopMenuReports';
 import TopMenuReport from './TopMenuReport';
@@ -116,6 +121,11 @@ class TopBar extends Component {
             {location.pathname === '/dashboard' || location.pathname === '/dashboard/entities' ? <TopMenuDashboard/> : ''}
             {location.pathname.includes('/dashboard/search/') ? <TopMenuSearch/> : ''}
             {location.pathname === '/dashboard/knowledge' || location.pathname.match('/dashboard/knowledge/[a-z_]+$') ? <TopMenuKnowledge/> : ''}
+            {location.pathname.includes('/dashboard/knowledge/threat_actors/') ? <TopMenuThreatActor/> : ''}
+            {location.pathname.includes('/dashboard/knowledge/sectors/') ? <TopMenuSector/> : ''}
+            {location.pathname.includes('/dashboard/knowledge/intrusion_sets/') ? <TopMenuIntrusionSet/> : ''}
+            {location.pathname.includes('/dashboard/knowledge/campaigns/') ? <TopMenuCampaign/> : ''}
+            {location.pathname.includes('/dashboard/knowledge/incidents/') ? <TopMenuIncident/> : ''}
             {location.pathname.includes('/dashboard/knowledge/malwares/') ? <TopMenuMalware/> : ''}
             {location.pathname === '/dashboard/reports' || location.pathname.match('/dashboard/reports/[a-z_]+$') ? <TopMenuReports/> : ''}
             {location.pathname.includes('/dashboard/reports/all/') ? <TopMenuReport/> : ''}
