@@ -3,10 +3,10 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import BarChart from 'recharts/lib/chart/BarChart';
+import LineChart from 'recharts/lib/chart/LineChart';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
-import Bar from 'recharts/lib/cartesian/Bar';
+import Line from 'recharts/lib/cartesian/Line';
 import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
 import { withStyles } from '@material-ui/core/styles';
@@ -31,11 +31,15 @@ class EntityReportsChartComponent extends Component {
     super(props);
     this.state = {
       chartData: [
-        { date: '2018-08', value: 8 },
-        { date: '2018-09', value: 12 },
-        { date: '2018-10', value: 45 },
-        { date: '2018-11', value: 42 },
-        { date: '2018-12', value: 12 },
+        { date: '2018-04', value: 0 },
+        { date: '2018-05', value: 2 },
+        { date: '2018-06', value: 4 },
+        { date: '2018-07', value: 2 },
+        { date: '2018-08', value: 4 },
+        { date: '2018-09', value: 3 },
+        { date: '2018-10', value: 2 },
+        { date: '2018-11', value: 4 },
+        { date: '2018-12', value: 5 },
       ],
     };
   }
@@ -45,18 +49,18 @@ class EntityReportsChartComponent extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant='h4' gutterBottom={true}>
-          {t('Reports')}
+          {t('Campaigns')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <ResponsiveContainer height={330} width='100%'>
-            <BarChart data={this.state.chartData} margin={{
+            <LineChart data={this.state.chartData} margin={{
               top: 20, right: 50, bottom: 20, left: -10,
             }}>
               <CartesianGrid strokeDasharray='3 3'/>
               <XAxis dataKey='date' stroke='#ffffff' interval={0} angle={-45} textAnchor='end'/>
               <YAxis stroke='#ffffff'/>
-              <Bar fill={Theme.palette.primary.main} dataKey='value' barSize={10}/>
-            </BarChart>
+              <Line type='monotone' stroke={Theme.palette.primary.main} dataKey='value'/>
+            </LineChart>
           </ResponsiveContainer>
         </Paper>
       </div>
@@ -73,7 +77,7 @@ EntityReportsChartComponent.propTypes = {
 
 const EntityReportsChart = createFragmentContainer(EntityReportsChartComponent, {
   observablesStats: graphql`
-      fragment EntityReportsChart_observablesStats on Malware {
+      fragment EntityCampaignsChart_observablesStats on Malware {
           id,
           name,
           description,

@@ -11,8 +11,8 @@ import {
   LockPattern,
   Application,
   Target,
-  Fire,
   SourcePull,
+  Biohazard,
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
@@ -90,61 +90,52 @@ class IncidentKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Attribution')}</span><br />
-            <span className={classes.subtitle}>{t('Entities using')}</span>
+            <span className={classes.subtitle}>{t('Origins of this incident')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/incidents/${incidentId}/knowledge/incidents` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/incidents`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/incidents/${incidentId}/knowledge/malwares` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/malwares`}>
           <div className={classes.icon}>
-            <ChessKnight fontSize='default'/>
+            <Biohazard fontSize='default'/>
           </div>
           <div className={classes.content}>
-            <span className={classes.title}>{t('Incidents')}</span><br />
-            <span className={classes.subtitle}>{t('Malicious activities')}</span>
+            <span className={classes.title}>{t('Malwares')}</span><br />
+            <span className={classes.subtitle}>{t('Used in this incident')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/incidents/${incidentId}/knowledge/incidents` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/incidents`}>
-          <div className={classes.icon}>
-            <Fire fontSize='default'/>
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Incidents')}</span><br />
-            <span className={classes.subtitle}>{t('Seen in attacks')}</span>
-          </div>
-        </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/incidents/${incidentId}/knowledge/victimology` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/victimology`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/incidents/${incidentId}/knowledge/victimology` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/victimology`}>
           <div className={classes.icon}>
             <Target fontSize='default'/>
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Victimology')}</span><br />
-            <span className={classes.subtitle}>{t('Targeted entities')}</span>
+            <span className={classes.subtitle}>{t('Targeted in this incident')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/incidents/${incidentId}/knowledge/ttp` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/ttp`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/incidents/${incidentId}/knowledge/ttp` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/ttp`}>
           <div className={classes.icon}>
             <LockPattern fontSize='default'/>
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Tactics')}</span><br />
-            <span className={classes.subtitle}>{t('Techniques & procedures')}</span>
+            <span className={classes.subtitle}>{t('Used in this incident')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/incidents/${incidentId}/knowledge/tools` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/tools`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/incidents/${incidentId}/knowledge/tools` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/tools`}>
           <div className={classes.icon}>
             <Application fontSize='default'/>
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Tools')}</span><br />
-            <span className={classes.subtitle}>{t('Legitimate libs and apps')}</span>
+            <span className={classes.subtitle}>{t('Used in this incident')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/incidents/${incidentId}/knowledge/vulnerabilities` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/vulnerabilities`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/incidents/${incidentId}/knowledge/vulnerabilities` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/vulnerabilities`}>
           <div className={classes.icon}>
             <BugReport fontSize='default'/>
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Vulnerabilities')}</span><br />
-            <span className={classes.subtitle}>{t('Used security holes')}</span>
+            <span className={classes.subtitle}>{t('Targeted in this incident')}</span>
           </div>
         </Paper>
       </Drawer>

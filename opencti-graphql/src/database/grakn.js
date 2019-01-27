@@ -120,13 +120,14 @@ const attrMap = (id, res, withType = false) => {
 /**
  * Basic grakn query function
  * @param queryDef
+ * @param infer
  * @returns {Promise<AxiosResponse<any> | never>}
  */
-export const qk = queryDef => {
+export const qk = (queryDef, infer = false) => {
   logger.debug(`Grakn query: ${queryDef}`);
   return axiosInstance({
     method: 'post',
-    url: '/kb/grakn/graql',
+    url: `/kb/grakn/graql${infer ? '?infer=true' : ''}`,
     data: queryDef
   }).catch(error => {
     logger.error(`Grakn query error: ${queryDef}`, error.response);
@@ -142,7 +143,7 @@ export const qk = queryDef => {
  * @returns {Promise<AxiosResponse<any> | never | never>}
  */
 export const qkObj = (queryDef, key = 'x', relationKey) =>
-  qk(queryDef).then(result => {
+  qk(queryDef, false).then(result => {
     if (result && result.data) {
       return Promise.all(
         map(line => {
@@ -172,16 +173,30 @@ export const qkObj = (queryDef, key = 'x', relationKey) =>
  * @param key the instance key to get id from.
  * @param fromKey the key to bind relation result.
  * @param toKey the key to bind relation result.
+ * @param infer (get inferred relationships)
  * @returns {Promise<AxiosResponse<any> | never | never>}
  */
-export const qkRel = (queryDef, key = 'rel', fromKey = 'from', toKey = 'to') =>
-  qk(queryDef).then(result => {
+export const qkRel = (
+  queryDef,
+  key = 'rel',
+  fromKey = 'from',
+  toKey = 'to',
+  infer
+) =>
+  qk(queryDef, infer).then(result => {
     if (result && result.data) {
       return Promise.all(
         map(line => {
-          const relationPromise = attrByID(line[key]['@id']).then(res =>
-            attrMap(line[key].id, res)
-          );
+          const relationPromise = line[key].inferred
+            ? Promise.resolve({
+                id: line[key]['@id'],
+                type: 'stix_relation',
+                relationship_type: line[key].type.label,
+                inferred: true
+              })
+            : attrByID(line[key]['@id'])
+                .then(res => attrMap(line[key].id, res))
+                .then(data => assoc('inferred', false, data));
           const fromPromise = attrByID(line[fromKey]['@id']).then(res =>
             attrMap(line[fromKey].id, res)
           );
@@ -521,6 +536,7 @@ export const paginateRelationships = (query, options) => {
     lastSeenStart,
     lastSeenStop,
     weights,
+    inferred,
     first = 200,
     after,
     orderBy,
@@ -544,19 +560,19 @@ export const paginateRelationships = (query, options) => {
         )} { $to isa ${head(toTypes)}; };`
       : ''
   } ${
-    firstSeenStart
+    firstSeenStart && !inferred
       ? `$rel has first_seen $fs; $fs > ${prepareDate(
           firstSeenStart
         )}; $fs < ${prepareDate(firstSeenStop)};`
       : ''
   } ${
-    lastSeenStart
+    lastSeenStart && !inferred
       ? `$rel has last_seen $ls; $ls > ${prepareDate(
           lastSeenStart
         )}; $ls < ${prepareDate(lastSeenStop)};`
       : ''
   } ${
-    weights
+    weights && !inferred
       ? `$rel has weight $weight; ${join(
           ' ',
           map(weight => `{ $weight == ${weight}; } or`, weights)
@@ -566,11 +582,14 @@ export const paginateRelationships = (query, options) => {
   const count = qkSingleValue(`${finalQuery} aggregate count;`);
   const elements = qkRel(
     `${finalQuery} ${
-      orderBy ? `$rel has ${orderBy} $o; order by $o ${orderMode};` : ''
+      orderBy && !inferred
+        ? `$rel has ${orderBy} $o; order by $o ${orderMode};`
+        : ''
     } offset ${offset}; limit ${first}; get;`,
     'rel',
     'from',
-    'to'
+    'to',
+    inferred
   );
   return Promise.all([count, elements]).then(data => {
     const globalCount = data ? head(data) : 0;

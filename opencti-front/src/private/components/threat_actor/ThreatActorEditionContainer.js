@@ -6,12 +6,16 @@ import {
   compose, insert, find, propEq,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import { SubscriptionAvatars } from '../../../components/Subscription';
 import ThreatActorEditionOverview from './ThreatActorEditionOverview';
+import ThreatActorEditionIdentity from './ThreatActorEditionIdentity';
 
 const styles = theme => ({
   header: {
@@ -44,6 +48,15 @@ const styles = theme => ({
 });
 
 class ThreatActorEditionContainer extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { currentTab: 0 };
+  }
+
+  handleChangeTab(event, value) {
+    this.setState({ currentTab: value });
+  }
+
   render() {
     const {
       t, classes, handleClose, threatActor, me,
@@ -65,7 +78,16 @@ class ThreatActorEditionContainer extends Component {
           <div className='clearfix'/>
         </div>
         <div className={classes.container}>
-          <ThreatActorEditionOverview threatActor={this.props.threatActor} editUsers={editUsers} me={me}/>
+          <AppBar position='static' elevation={0} className={classes.appBar}>
+            <Tabs value={this.state.currentTab} onChange={this.handleChangeTab.bind(this)}>
+              <Tab label={t('Overview')}/>
+              <Tab label={t('Identity')}/>
+            </Tabs>
+          </AppBar>
+          {this.state.currentTab === 0
+          && <ThreatActorEditionOverview threatActor={this.props.threatActor} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 1
+          && <ThreatActorEditionIdentity threatActor={this.props.threatActor} editUsers={editUsers} me={me}/>}
         </div>
       </div>
     );
@@ -86,6 +108,7 @@ const ThreatActorEditionFragment = createFragmentContainer(ThreatActorEditionCon
       fragment ThreatActorEditionContainer_threatActor on ThreatActor {
           id
           ...ThreatActorEditionOverview_threatActor
+          ...ThreatActorEditionIdentity_threatActor
           editContext {
               name
               focusOn

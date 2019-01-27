@@ -21,28 +21,29 @@ const styles = () => ({
   },
 });
 
-const inversedRelations = ['campaign', 'incident', 'intrusion-set'];
+const inversedRelations = ['campaign', 'incident', 'malware', 'attack-pattern', 'tool', 'vulnerability'];
 
 class IntrusionSetKnowledgeComponent extends Component {
   render() {
     const { classes, intrusionSet, location } = this.props;
-    const link = `/dashboard/knowledge/intrusionSets/${intrusionSet.id}/knowledge`;
+    const link = `/dashboard/knowledge/intrusion_sets/${intrusionSet.id}/knowledge`;
     return (
       <div className={classes.container}>
         <IntrusionSetHeader intrusionSet={intrusionSet} variant='noalias'/>
         <IntrusionSetKnowledgeBar intrusionSetId={intrusionSet.id}/>
         <div className={classes.content}>
-          <Route exact path='/dashboard/knowledge/intrusionSets/:intrusionSetId/knowledge/relations/:relationId' render={
+          <Route exact path='/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge/relations/:relationId' render={
             routeProps => <StixRelation entityId={intrusionSet.id} {...routeProps} inversedRelations={inversedRelations}/>
           }/>
           {location.pathname.includes('overview') ? <StixDomainEntityKnowledge stixDomainEntityId={intrusionSet.id}/> : ''}
-          {location.pathname.includes('attribution') ? <EntityStixRelations entityId={intrusionSet.id} relationType='uses' targetEntityType='Intrusion-Set' entityLink={link}/> : ''}
-          {location.pathname.includes('campaigns') ? <EntityStixRelations entityId={intrusionSet.id} relationType='uses' targetEntityType='Campaign' entityLink={link}/> : ''}
-          {location.pathname.includes('incidents') ? <EntityStixRelations entityId={intrusionSet.id} relationType='uses' targetEntityType='Incident' entityLink={link}/> : ''}
-          {location.pathname.includes('victimology') ? <EntityStixRelations entityId={intrusionSet.id} relationType='targets' targetEntityType='Identity' entityLink={link}/> : ''}
-          {location.pathname.includes('ttp') ? <EntityStixRelations entityId={intrusionSet.id} relationType='uses' targetEntityType='Attack-Pattern' entityLink={link}/> : ''}
-          {location.pathname.includes('tools') ? <EntityStixRelations entityId={intrusionSet.id} relationType='uses' targetEntityType='Tool' entityLink={link}/> : ''}
-          {location.pathname.includes('vulnerabilities') ? <EntityStixRelations entityId={intrusionSet.id} relationType='targets' targetEntityType='Vulnerability' entityLink={link}/> : ''}
+          {location.pathname.includes('attribution') ? <EntityStixRelations entityId={intrusionSet.id} relationType='attributed-to' targetEntityTypes={['Identity']} entityLink={link}/> : ''}
+          {location.pathname.includes('campaigns') ? <EntityStixRelations entityId={intrusionSet.id} relationType='attributed-to' targetEntityTypes={['Campaign']} entityLink={link}/> : ''}
+          {location.pathname.includes('incidents') ? <EntityStixRelations entityId={intrusionSet.id} relationType='attributed-to' targetEntityTypes={['Incident']} entityLink={link}/> : ''}
+          {location.pathname.includes('malwares') ? <EntityStixRelations entityId={intrusionSet.id} relationType='uses' targetEntityTypes={['Malware']} entityLink={link}/> : ''}
+          {location.pathname.includes('victimology') ? <EntityStixRelations entityId={intrusionSet.id} relationType='targets' targetEntityTypes={['Identity']} entityLink={link}/> : ''}
+          {location.pathname.includes('ttp') ? <EntityStixRelations entityId={intrusionSet.id} relationType='uses' targetEntityTypes={['Attack-Pattern']} entityLink={link}/> : ''}
+          {location.pathname.includes('tools') ? <EntityStixRelations entityId={intrusionSet.id} relationType='uses' targetEntityTypes={['Tool']} entityLink={link}/> : ''}
+          {location.pathname.includes('vulnerabilities') ? <EntityStixRelations entityId={intrusionSet.id} relationType='targets' targetEntityTypes={['Vulnerability']} entityLink={link}/> : ''}
         </div>
       </div>
     );

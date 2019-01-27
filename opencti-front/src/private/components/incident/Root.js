@@ -9,7 +9,7 @@ import IncidentReports from './IncidentReports';
 import IncidentKnowledge from './IncidentKnowledge';
 
 const subscription = graphql`
-    subscription RootIncidentSetSubscription($id: ID!) {
+    subscription RootIncidentSubscription($id: ID!) {
         stixDomainEntity(id: $id) {
             ...on Incident {
                 ...Incident_incident

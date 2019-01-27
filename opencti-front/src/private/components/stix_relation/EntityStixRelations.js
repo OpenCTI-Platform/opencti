@@ -15,6 +15,8 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import { QueryRenderer, fetchQuery } from '../../../relay/environment';
@@ -118,13 +120,15 @@ class EntityStixRelations extends Component {
       firstSeenStart: null,
       firstSeenStop: null,
       weights: [0],
+      openWeights: false,
+      inferred: false,
     };
   }
 
   componentDidMount() {
-    const { entityId, relationType, targetEntityType } = this.props;
+    const { entityId, relationType, targetEntityTypes } = this.props;
     fetchQuery(firstStixRelationQuery, {
-      toTypes: targetEntityType || null,
+      toTypes: targetEntityTypes || null,
       fromId: entityId,
       relationType,
       first: 1,
@@ -177,20 +181,32 @@ class EntityStixRelations extends Component {
     }
   }
 
+  handleOpenWeights() {
+    this.setState({ openWeights: true });
+  }
+
+  handleCloseWeights() {
+    this.setState({ openWeights: false });
+  }
+
   handleChangeWeights(event) {
     const { value } = event.target;
     if (includes(0, this.state.weights) || !includes(0, value)) {
       const weights = filter(v => v !== 0, value);
       if (weights.length > 0) {
-        return this.setState({ weights });
+        return this.setState({ openWeights: false, weights });
       }
     }
-    return this.setState({ weights: [0] });
+    return this.setState({ openWeights: false, weights: [0] });
+  }
+
+  handleChangeInferred() {
+    this.setState({ inferred: !this.state.inferred });
   }
 
   render() {
     const {
-      t, classes, entityId, relationType, entityLink, targetEntityType,
+      t, classes, entityId, relationType, entityLink, targetEntityTypes,
     } = this.props;
     const startYear = this.state.firstSeenFirstYear === currentYear() ? this.state.firstSeenFirstYear - 1 : this.state.firstSeenFirstYear;
     const yearsList = [];
@@ -199,7 +215,8 @@ class EntityStixRelations extends Component {
     }
 
     const paginationOptions = {
-      toTypes: [targetEntityType] || null,
+      inferred: this.state.inferred,
+      toTypes: targetEntityTypes || null,
       fromId: entityId,
       relationType,
       firstSeenStart: this.state.firstSeenStart || null,
@@ -211,10 +228,24 @@ class EntityStixRelations extends Component {
     return (
       <div className={classes.container}>
         <div className={classes.filters}>
+          <FormControlLabel
+            style={{ paddingTop: 5 }}
+            control={
+              <Switch
+                checked={this.state.inferred}
+                onChange={this.handleChangeInferred.bind(this)}
+                color='primary'
+              />
+            }
+            label={t('Inferences')}
+          />
           <Select
             style={{ height: 50 }}
             multiple={true}
             value={this.state.weights}
+            open={this.state.openWeights}
+            onClose={this.handleCloseWeights.bind(this)}
+            onOpen={this.handleOpenWeights.bind(this)}
             onChange={this.handleChangeWeights.bind(this)}
             input={<Input id='weights'/>}
             renderValue={selected => (
@@ -255,9 +286,9 @@ class EntityStixRelations extends Component {
               <div>
                 {this.SortHeader('name', 'Name', false)}
                 {this.SortHeader('type', 'Entity type', false)}
-                {this.SortHeader('first_seen', 'First obs.', true)}
-                {this.SortHeader('last_seen', 'Last obs.', true)}
-                {this.SortHeader('weight', 'Confidence level', true)}
+                {this.SortHeader('first_seen', 'First obs.', !this.state.inferred)}
+                {this.SortHeader('last_seen', 'Last obs.', !this.state.inferred)}
+                {this.SortHeader('weight', 'Confidence level', !this.state.inferred)}
               </div>
             }/>
             <ListItemSecondaryAction>
@@ -268,10 +299,13 @@ class EntityStixRelations extends Component {
             query={entityStixRelationsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
-              if (props) { // Done
-                return <EntityStixRelationsLines data={props} paginationOptions={paginationOptions} entityLink={entityLink}/>;
+              if (props) {
+                return <EntityStixRelationsLines
+                  data={props}
+                  paginationOptions={paginationOptions}
+                  entityLink={entityLink}
+                />;
               }
-              // Loading
               return <EntityStixRelationsLines data={null} dummy={true}/>;
             }}
           />
@@ -283,7 +317,7 @@ class EntityStixRelations extends Component {
 
 EntityStixRelations.propTypes = {
   entityId: PropTypes.string,
-  targetEntityType: PropTypes.string,
+  targetEntityTypes: PropTypes.array,
   entityLink: PropTypes.string,
   relationType: PropTypes.string,
   classes: PropTypes.object,

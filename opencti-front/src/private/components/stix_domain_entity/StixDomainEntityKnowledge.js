@@ -8,6 +8,8 @@ import Select from '@material-ui/core/Select';
 import Input from '@material-ui/core/Input';
 import Chip from '@material-ui/core/Chip';
 import MenuItem from '@material-ui/core/MenuItem';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer, fetchQuery } from '../../../relay/environment';
 import { currentYear, parse, yearFormat } from '../../../utils/Time';
@@ -50,9 +52,9 @@ const firstStixRelationQuery = graphql`
 `;
 
 const stixDomainEntityKnowledgeQuery = graphql`
-    query StixDomainEntityKnowledgeQuery($id: String!, $count: Int, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $weights: [Int]) {
+    query StixDomainEntityKnowledgeQuery($id: String!, $count: Int, $inferred: Boolean, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $weights: [Int]) {
         stixDomainEntity(id: $id) {
-            ...StixDomainEntityKnowledgeGraph_stixDomainEntity @arguments(toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, first: $count)
+            ...StixDomainEntityKnowledgeGraph_stixDomainEntity @arguments(toTypes: $toTypes, inferred: $inferred, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, first: $count)
         }
     }
 `;
@@ -61,6 +63,9 @@ class StixDomainEntityKnowledge extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      inferred: false,
+      openToTypes: false,
+      openWeights: false,
       toTypes: ['All'],
       firstSeen: 'All years',
       firstSeenFirstYear: currentYear(),
@@ -73,6 +78,7 @@ class StixDomainEntityKnowledge extends Component {
   componentDidMount() {
     const { stixDomainEntityId } = this.props;
     fetchQuery(firstStixRelationQuery, {
+      inferred: false,
       fromId: stixDomainEntityId,
       first: 1,
       orderBy: 'first_seen',
@@ -86,9 +92,10 @@ class StixDomainEntityKnowledge extends Component {
 
   isSavable() {
     const {
-      firstSeenStart, firstSeenStop, weights, toTypes,
+      firstSeenStart, firstSeenStop, weights, toTypes, inferred,
     } = this.state;
-    if (firstSeenStart === null
+    if (inferred === false
+      && firstSeenStart === null
       && firstSeenStop === null
       && includes(0, weights)
       && includes('All', toTypes)) {
@@ -96,15 +103,31 @@ class StixDomainEntityKnowledge extends Component {
     }
   }
 
+  handleOpenToTypes() {
+    this.setState({ openToTypes: true });
+  }
+
+  handleCloseToTypes() {
+    this.setState({ openToTypes: false });
+  }
+
+  handleOpenWeights() {
+    this.setState({ openWeights: true });
+  }
+
+  handleCloseWeights() {
+    this.setState({ openWeights: false });
+  }
+
   handleChangeEntities(event) {
     const { value } = event.target;
     if (includes('All', this.state.toTypes) || !includes('All', value)) {
       const toTypes = filter(v => v !== 'All', value);
       if (toTypes.length > 0) {
-        return this.setState({ toTypes });
+        return this.setState({ openToTypes: false, toTypes });
       }
     }
-    return this.setState({ toTypes: ['All'] });
+    return this.setState({ openToTypes: false, toTypes: ['All'] });
   }
 
   handleChangeYear(event) {
@@ -131,11 +154,14 @@ class StixDomainEntityKnowledge extends Component {
     if (includes(0, this.state.weights) || !includes(0, value)) {
       const weights = filter(v => v !== 0, value);
       if (weights.length > 0) {
-        this.setState({ weights });
-      } else {
-        this.setState({ weights: [0] });
+        return this.setState({ openWeights: false, weights });
       }
     }
+    return this.setState({ openWeights: false, weights: [0] });
+  }
+
+  handleChangeInferred() {
+    this.setState({ inferred: !this.state.inferred });
   }
 
   render() {
@@ -148,6 +174,7 @@ class StixDomainEntityKnowledge extends Component {
     const variables = {
       id: stixDomainEntityId,
       count: 100,
+      inferred: this.state.inferred,
       toTypes: includes('All', this.state.toTypes) ? null : this.state.toTypes,
       firstSeenStart: null,
       firstSeenStop: null,
@@ -157,10 +184,24 @@ class StixDomainEntityKnowledge extends Component {
     return (
       <div className={classes.container}>
         <div className={classes.filters}>
+          <FormControlLabel
+            style={{ paddingTop: 5 }}
+            control={
+              <Switch
+                checked={this.state.inferred}
+                onChange={this.handleChangeInferred.bind(this)}
+                color='primary'
+              />
+            }
+            label={t('Inferences')}
+          />
           <Select
             style={{ height: 50 }}
             multiple={true}
             value={this.state.toTypes}
+            open={this.state.openToTypes}
+            onClose={this.handleCloseToTypes.bind(this)}
+            onOpen={this.handleOpenToTypes.bind(this)}
             onChange={this.handleChangeEntities.bind(this)}
             input={<Input id='entities'/>}
             renderValue={selected => (
@@ -189,6 +230,9 @@ class StixDomainEntityKnowledge extends Component {
             style={{ height: 50, marginLeft: 20 }}
             multiple={true}
             value={this.state.weights}
+            open={this.state.openWeights}
+            onClose={this.handleCloseWeights.bind(this)}
+            onOpen={this.handleOpenWeights.bind(this)}
             onChange={this.handleChangeWeights.bind(this)}
             input={<Input id='weights'/>}
             renderValue={selected => (

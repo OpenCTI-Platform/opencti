@@ -10,9 +10,9 @@ import {
   ChessKnight,
   LockPattern,
   Application,
-  Target,
+  Biohazard,
   Fire,
-  SourcePull,
+  Diamond,
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
@@ -84,13 +84,13 @@ class SectorKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Knowledge graph')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/attribution` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/attribution`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/intrusion_sets` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/intrusion_sets`}>
           <div className={classes.icon}>
-            <SourcePull fontSize='default'/>
+            <Diamond fontSize='default'/>
           </div>
           <div className={classes.content}>
-            <span className={classes.title}>{t('Attribution')}</span><br />
-            <span className={classes.subtitle}>{t('Entities using')}</span>
+            <span className={classes.title}>{t('Intrusion sets')}</span><br />
+            <span className={classes.subtitle}>{t('Targeting this sector')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/campaigns` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/campaigns`}>
@@ -99,7 +99,7 @@ class SectorKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Campaigns')}</span><br />
-            <span className={classes.subtitle}>{t('Malicious activities')}</span>
+            <span className={classes.subtitle}>{t('Targeting this sector')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/incidents` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/incidents`}>
@@ -108,43 +108,16 @@ class SectorKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Incidents')}</span><br />
-            <span className={classes.subtitle}>{t('Seen in attacks')}</span>
+            <span className={classes.subtitle}>{t('Affecting this sector')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/victimology` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/victimology`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/malwares` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/malwares`}>
           <div className={classes.icon}>
-            <Target fontSize='default'/>
+            <Biohazard fontSize='default'/>
           </div>
           <div className={classes.content}>
-            <span className={classes.title}>{t('Victimology')}</span><br />
-            <span className={classes.subtitle}>{t('Targeted entities')}</span>
-          </div>
-        </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/ttp` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/ttp`}>
-          <div className={classes.icon}>
-            <LockPattern fontSize='default'/>
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Tactics')}</span><br />
-            <span className={classes.subtitle}>{t('Techniques & procedures')}</span>
-          </div>
-        </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/tools` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/tools`}>
-          <div className={classes.icon}>
-            <Application fontSize='default'/>
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Tools')}</span><br />
-            <span className={classes.subtitle}>{t('Legitimate libs and apps')}</span>
-          </div>
-        </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/vulnerabilities` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/vulnerabilities`}>
-          <div className={classes.icon}>
-            <BugReport fontSize='default'/>
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Vulnerabilities')}</span><br />
-            <span className={classes.subtitle}>{t('Used security holes')}</span>
+            <span className={classes.title}>{t('Malwares')}</span><br />
+            <span className={classes.subtitle}>{t('Targeting this sector')}</span>
           </div>
         </Paper>
       </Drawer>

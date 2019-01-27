@@ -165,6 +165,9 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
         newLink.setExtras({
           relation: l.node,
         });
+        if (l.node.inferred) {
+          newLink.setColor('#607d8b');
+        }
         newLink.setSourcePort(fromPort);
         newLink.setTargetPort(toPort);
         const label = new EntityLabelModel();
@@ -389,6 +392,7 @@ StixDomainEntityKnowledgeGraphComponent.propTypes = {
 const StixDomainEntityKnowledgeGraph = createFragmentContainer(StixDomainEntityKnowledgeGraphComponent, {
   stixDomainEntity: graphql`
       fragment StixDomainEntityKnowledgeGraph_stixDomainEntity on StixDomainEntity @argumentDefinitions(
+          inferred: {type: "Boolean"},
           toTypes: {type: "[String]"},
           firstSeenStart: {type: "DateTime"},
           firstSeenStop: {type: "DateTime"},
@@ -401,12 +405,13 @@ const StixDomainEntityKnowledgeGraph = createFragmentContainer(StixDomainEntityK
           type
           name
           graph_data
-          stixRelations(toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, first: $count)
+          stixRelations(inferred: $inferred, toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, first: $count)
           {
               edges {
                   node {
                       id
                       relationship_type
+                      inferred
                       description
                       first_seen
                       last_seen

@@ -17,7 +17,7 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
-import {commitMutation, environment, MESSAGING$} from '../../../relay/environment';
+import { commitMutation, environment } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
 import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
@@ -373,7 +373,6 @@ class ReportKnowledgeGraphComponent extends Component {
     label.setFirstSeen(result.first_seen);
     label.setLastSeen(result.last_seen);
     linkObject.addLabel(label);
-
     const input = {
       fromRole: 'so',
       toId: this.props.report.id,

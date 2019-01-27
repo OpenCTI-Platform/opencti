@@ -25,6 +25,7 @@ const threatActorQuery = graphql`
             ...ThreatActor_threatActor
             ...ThreatActorHeader_threatActor
             ...ThreatActorOverview_threatActor
+            ...ThreatActorIdentity_threatActor
             ...ThreatActorReports_threatActor
             ...ThreatActorKnowledge_threatActor
         }

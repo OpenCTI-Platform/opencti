@@ -21,7 +21,7 @@ const styles = () => ({
   },
 });
 
-const inversedRelations = ['campaign', 'incident', 'intrusion-set'];
+const inversedRelations = ['incident', 'malware', 'attack-pattern', 'tool', 'vulnerability'];
 
 class CampaignKnowledgeComponent extends Component {
   render() {
@@ -36,13 +36,13 @@ class CampaignKnowledgeComponent extends Component {
             routeProps => <StixRelation entityId={campaign.id} {...routeProps} inversedRelations={inversedRelations}/>
           }/>
           {location.pathname.includes('overview') ? <StixDomainEntityKnowledge stixDomainEntityId={campaign.id}/> : ''}
-          {location.pathname.includes('attribution') ? <EntityStixRelations entityId={campaign.id} relationType='uses' targetEntityType='Intrusion-Set' entityLink={link}/> : ''}
-          {location.pathname.includes('campaigns') ? <EntityStixRelations entityId={campaign.id} relationType='uses' targetEntityType='Campaign' entityLink={link}/> : ''}
-          {location.pathname.includes('incidents') ? <EntityStixRelations entityId={campaign.id} relationType='uses' targetEntityType='Incident' entityLink={link}/> : ''}
-          {location.pathname.includes('victimology') ? <EntityStixRelations entityId={campaign.id} relationType='targets' targetEntityType='Identity' entityLink={link}/> : ''}
-          {location.pathname.includes('ttp') ? <EntityStixRelations entityId={campaign.id} relationType='uses' targetEntityType='Attack-Pattern' entityLink={link}/> : ''}
-          {location.pathname.includes('tools') ? <EntityStixRelations entityId={campaign.id} relationType='uses' targetEntityType='Tool' entityLink={link}/> : ''}
-          {location.pathname.includes('vulnerabilities') ? <EntityStixRelations entityId={campaign.id} relationType='targets' targetEntityType='Vulnerability' entityLink={link}/> : ''}
+          {location.pathname.includes('attribution') ? <EntityStixRelations entityId={campaign.id} relationType='attributed-to' targetEntityTypes={['Identity']} entityLink={link}/> : ''}
+          {location.pathname.includes('incidents') ? <EntityStixRelations entityId={campaign.id} relationType='attributed-to' targetEntityTypes={['Incident']} entityLink={link}/> : ''}
+          {location.pathname.includes('malwares') ? <EntityStixRelations entityId={campaign.id} relationType='uses' targetEntityTypes={['Campaign']} entityLink={link}/> : ''}
+          {location.pathname.includes('victimology') ? <EntityStixRelations entityId={campaign.id} relationType='targets' targetEntityTypes={['Identity']} entityLink={link}/> : ''}
+          {location.pathname.includes('ttp') ? <EntityStixRelations entityId={campaign.id} relationType='uses' targetEntityTypes={['Attack-Pattern']} entityLink={link}/> : ''}
+          {location.pathname.includes('tools') ? <EntityStixRelations entityId={campaign.id} relationType='uses' targetEntityTypes={['Tool']} entityLink={link}/> : ''}
+          {location.pathname.includes('vulnerabilities') ? <EntityStixRelations entityId={campaign.id} relationType='targets' targetEntityTypes={['Vulnerability']} entityLink={link}/> : ''}
         </div>
       </div>
     );

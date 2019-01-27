@@ -8,11 +8,11 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import ThreatActorHeader from './ThreatActorHeader';
 import ThreatActorOverview from './ThreatActorOverview';
+import ThreatActorIdentity from './ThreatActorIdentity';
 import ThreatActorEdition from './ThreatActorEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import EntityObservablesChart from '../observable/EntityObservablesChart';
 import EntityReportsChart from '../report/EntityReportsChart';
-import EntityKillChainPhasesChart from '../kill_chain_phase/EntityKillChainPhasesChart';
+import EntityCampaignsChart from '../campaign/EntityCampaignsChart';
 
 const styles = () => ({
   container: {
@@ -39,13 +39,13 @@ class ThreatActorComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart threatActor={threatActor}/>
+            <ThreatActorIdentity threatActor={threatActor}/>
+          </Grid>
+          <Grid item={true} xs={4}>
+            <EntityCampaignsChart threatActor={threatActor}/>
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart threatActor={threatActor}/>
-          </Grid>
-          <Grid item={true} xs={4}>
-            <EntityKillChainPhasesChart threatActor={threatActor}/>
           </Grid>
         </Grid>
         <ThreatActorEdition threatActorId={threatActor.id}/>
@@ -66,6 +66,7 @@ const ThreatActor = createFragmentContainer(ThreatActorComponent, {
           id
           ...ThreatActorHeader_threatActor
           ...ThreatActorOverview_threatActor
+          ...ThreatActorIdentity_threatActor
       }
   `,
 });

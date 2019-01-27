@@ -13,6 +13,7 @@ import {
   Target,
   Fire,
   SourcePull,
+  Biohazard
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
@@ -90,7 +91,7 @@ class IntrusionSetKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Attribution')}</span><br />
-            <span className={classes.subtitle}>{t('Entities using')}</span>
+            <span className={classes.subtitle}>{t('Origins of this intrusion set')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/campaigns` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/campaigns`}>
@@ -99,7 +100,7 @@ class IntrusionSetKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Campaigns')}</span><br />
-            <span className={classes.subtitle}>{t('Malicious activities')}</span>
+            <span className={classes.subtitle}>{t('Attributed to this intrusion set')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/incidents` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/incidents`}>
@@ -108,7 +109,16 @@ class IntrusionSetKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Incidents')}</span><br />
-            <span className={classes.subtitle}>{t('Seen in attacks')}</span>
+            <span className={classes.subtitle}>{t('Attributed to this intrusion set')}</span>
+          </div>
+        </Paper>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/malwares` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/malwares`}>
+          <div className={classes.icon}>
+            <Biohazard fontSize='default'/>
+          </div>
+          <div className={classes.content}>
+            <span className={classes.title}>{t('Malwares')}</span><br />
+            <span className={classes.subtitle}>{t('Used by this intrusion set')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/victimology` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/victimology`}>
@@ -117,7 +127,7 @@ class IntrusionSetKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Victimology')}</span><br />
-            <span className={classes.subtitle}>{t('Targeted entities')}</span>
+            <span className={classes.subtitle}>{t('Targeted by this intrusion set')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/ttp` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/ttp`}>
@@ -126,7 +136,7 @@ class IntrusionSetKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Tactics')}</span><br />
-            <span className={classes.subtitle}>{t('Techniques & procedures')}</span>
+            <span className={classes.subtitle}>{t('Used by this intrusion set')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/tools` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/tools`}>
@@ -135,7 +145,7 @@ class IntrusionSetKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Tools')}</span><br />
-            <span className={classes.subtitle}>{t('Legitimate libs and apps')}</span>
+            <span className={classes.subtitle}>{t('Used by this intrusion set')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/vulnerabilities` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/vulnerabilities`}>
@@ -144,7 +154,7 @@ class IntrusionSetKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Vulnerabilities')}</span><br />
-            <span className={classes.subtitle}>{t('Used security holes')}</span>
+            <span className={classes.subtitle}>{t('Targeted by this intrusion set')}</span>
           </div>
         </Paper>
       </Drawer>

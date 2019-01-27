@@ -12,7 +12,8 @@ import {
   Application,
   Target,
   Fire,
-  SourcePull,
+  Diamond,
+  Biohazard,
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
@@ -75,7 +76,7 @@ class ThreatActorKnowledgeBar extends Component {
     return (
       <Drawer variant='permanent' anchor='right' classes={{ paper: classes.drawerPaper }}>
         <div className={classes.toolbar}/>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threatActors/${threatActorId}/knowledge/overview` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/overview`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/overview` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/overview`}>
           <div className={classes.icon}>
             <DeviceHub fontSize='default'/>
           </div>
@@ -84,13 +85,13 @@ class ThreatActorKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Knowledge graph')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/attribution` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/attribution`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/intrusion_sets` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/intrusion_sets`}>
           <div className={classes.icon}>
-            <SourcePull fontSize='default'/>
+            <Diamond fontSize='default'/>
           </div>
           <div className={classes.content}>
-            <span className={classes.title}>{t('Attribution')}</span><br />
-            <span className={classes.subtitle}>{t('Entities using')}</span>
+            <span className={classes.title}>{t('Intrusion sets')}</span><br />
+            <span className={classes.subtitle}>{t('Attributed to this actor')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/campaigns` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/campaigns`}>
@@ -99,7 +100,7 @@ class ThreatActorKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Campaigns')}</span><br />
-            <span className={classes.subtitle}>{t('Malicious activities')}</span>
+            <span className={classes.subtitle}>{t('Attributed to this actor')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/incidents` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/incidents`}>
@@ -108,7 +109,7 @@ class ThreatActorKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Incidents')}</span><br />
-            <span className={classes.subtitle}>{t('Seen in attacks')}</span>
+            <span className={classes.subtitle}>{t('Attributed to this actor')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/victimology` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/victimology`}>
@@ -117,7 +118,16 @@ class ThreatActorKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Victimology')}</span><br />
-            <span className={classes.subtitle}>{t('Targeted entities')}</span>
+            <span className={classes.subtitle}>{t('Targeted by this actor')}</span>
+          </div>
+        </Paper>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/malwares` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/malwares`}>
+          <div className={classes.icon}>
+            <Biohazard fontSize='default'/>
+          </div>
+          <div className={classes.content}>
+            <span className={classes.title}>{t('Malwares')}</span><br />
+            <span className={classes.subtitle}>{t('Used by this actor')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/ttp` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/ttp`}>
@@ -126,7 +136,7 @@ class ThreatActorKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Tactics')}</span><br />
-            <span className={classes.subtitle}>{t('Techniques & procedures')}</span>
+            <span className={classes.subtitle}>{t('Used by this actor')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/tools` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/tools`}>
@@ -135,7 +145,7 @@ class ThreatActorKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Tools')}</span><br />
-            <span className={classes.subtitle}>{t('Legitimate libs and apps')}</span>
+            <span className={classes.subtitle}>{t('Used by this actor')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/vulnerabilities` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/vulnerabilities`}>
@@ -144,7 +154,7 @@ class ThreatActorKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Vulnerabilities')}</span><br />
-            <span className={classes.subtitle}>{t('Used security holes')}</span>
+            <span className={classes.subtitle}>{t('Targeted by this actor')}</span>
           </div>
         </Paper>
       </Drawer>

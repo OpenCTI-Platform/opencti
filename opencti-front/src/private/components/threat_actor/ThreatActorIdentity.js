@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
@@ -20,59 +20,59 @@ const styles = theme => ({
   },
 });
 
-class ThreatActorOverviewComponent extends Component {
+class ThreatActorIdentityComponent extends Component {
   render() {
     const {
-      t, fld, classes, threatActor,
+      t, classes, threatActor,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant='h4' gutterBottom={true}>
-          {t('Information')}
+          {t('Identity')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant='h3' gutterBottom={true}>
-            {t('Creation date')}
+            {t('Sophistication')}
           </Typography>
-          {fld(threatActor.created)}
+          {t(`${threatActor.sophistication ? `sophistication_${threatActor.sophistication}` : 'sophistication_unkown'}`)}
           <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
-            {t('Modification date')}
+            {t('Resource level')}
           </Typography>
-          {fld(threatActor.modified)}
+          {t(`${threatActor.resource_level ? `resource_${threatActor.resource_level}` : 'resource_unkown'}`)}
           <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
-            {t('Creator')}
+            {t('Primary motivation')}
           </Typography>
-          {pathOr('-', ['createdByRef', 'node', 'name'], threatActor)}
+          {t(`${threatActor.primary_motivation ? `motivation_${threatActor.primary_motivation}` : 'motivation_unpredictable'}`)}
           <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
-            {t('Description')}
+            {t('Secondary motivation')}
           </Typography>
-          <Markdown className='markdown' source={threatActor.description}/>
-        </Paper>
+          {t(`${threatActor.secondary_motivation ? `motivation_${threatActor.secondary_motivation}` : 'motivation_unknown'}`)}
+          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+            {t('Goal')}
+          </Typography>
+          <Markdown className='markdown' source={threatActor.goal}/>
+          </Paper>
       </div>
     );
   }
 }
 
-ThreatActorOverviewComponent.propTypes = {
+ThreatActorIdentityComponent.propTypes = {
   threatActor: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const ThreatActorOverview = createFragmentContainer(ThreatActorOverviewComponent, {
+const ThreatActorIdentity = createFragmentContainer(ThreatActorIdentityComponent, {
   threatActor: graphql`
-      fragment ThreatActorOverview_threatActor on ThreatActor {
+      fragment ThreatActorIdentity_threatActor on ThreatActor {
           id
-          name
-          description
-          created
-          modified
-          createdByRef {
-              node {
-                  name
-              }
-          }
+          sophistication
+          resource_level
+          primary_motivation
+          secondary_motivation
+          goal
       }
   `,
 });
@@ -80,4 +80,4 @@ const ThreatActorOverview = createFragmentContainer(ThreatActorOverviewComponent
 export default compose(
   inject18n,
   withStyles(styles),
-)(ThreatActorOverview);
+)(ThreatActorIdentity);

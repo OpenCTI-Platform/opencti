@@ -414,6 +414,7 @@ define
     has "last_seen_year"
     has "objective"
     plays "attribution"
+    plays "origin"
     plays "user"
     plays "source"
     plays "characterize";
@@ -542,7 +543,7 @@ define
     plays "problem";
 
     ## RULES
-    # Access rules
+    # Access rule
     "UserPermissionRule" sub rule
     when {
       ("member": $user, "grouping": $group) isa membership;
@@ -553,4 +554,16 @@ define
       $markingDefinitionLevel <= $markingLevel;
     } then {
       ("allowed": $user, "allow": $markingDefinition) isa "user_permission";
+    };
+
+    # Threat Actors => Malwares rule
+    "ThreatActorUsesMalwareRule" sub rule
+    when {
+      $intrusionSet isa "Intrusion-Set";
+      $malware isa "Malware";
+      $threatActor isa "Threat-Actor";
+      ("user": $intrusionSet, "usage": $malware) isa uses;
+      ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
+    } then {
+      ("user": $threatActor, "usage": $malware) isa "uses";
     };

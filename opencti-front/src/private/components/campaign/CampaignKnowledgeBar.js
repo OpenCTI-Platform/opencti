@@ -7,12 +7,12 @@ import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
 import { BugReport, DeviceHub } from '@material-ui/icons';
 import {
-  ChessKnight,
   LockPattern,
   Application,
   Target,
   Fire,
   SourcePull,
+  Biohazard,
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
@@ -90,16 +90,7 @@ class CampaignKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Attribution')}</span><br />
-            <span className={classes.subtitle}>{t('Entities using')}</span>
-          </div>
-        </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/campaigns` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/campaigns`}>
-          <div className={classes.icon}>
-            <ChessKnight fontSize='default'/>
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Campaigns')}</span><br />
-            <span className={classes.subtitle}>{t('Malicious activities')}</span>
+            <span className={classes.subtitle}>{t('Origins of this campaign')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/incidents` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/incidents`}>
@@ -108,7 +99,16 @@ class CampaignKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Incidents')}</span><br />
-            <span className={classes.subtitle}>{t('Seen in attacks')}</span>
+            <span className={classes.subtitle}>{t('Attributed to this campaign')}</span>
+          </div>
+        </Paper>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/campaigns` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/campaigns`}>
+          <div className={classes.icon}>
+            <Biohazard fontSize='default'/>
+          </div>
+          <div className={classes.content}>
+            <span className={classes.title}>{t('Malwares')}</span><br />
+            <span className={classes.subtitle}>{t('Used in this campaign')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/victimology` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/victimology`}>
@@ -117,7 +117,7 @@ class CampaignKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Victimology')}</span><br />
-            <span className={classes.subtitle}>{t('Targeted entities')}</span>
+            <span className={classes.subtitle}>{t('Targeted in this campaign')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/ttp` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/ttp`}>
@@ -126,7 +126,7 @@ class CampaignKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Tactics')}</span><br />
-            <span className={classes.subtitle}>{t('Techniques & procedures')}</span>
+            <span className={classes.subtitle}>{t('Used in this campaign')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/tools` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/tools`}>
@@ -135,7 +135,7 @@ class CampaignKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Tools')}</span><br />
-            <span className={classes.subtitle}>{t('Legitimate libs and apps')}</span>
+            <span className={classes.subtitle}>{t('Used in this campaign')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/vulnerabilities` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/vulnerabilities`}>
@@ -144,7 +144,7 @@ class CampaignKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Vulnerabilities')}</span><br />
-            <span className={classes.subtitle}>{t('Used security holes')}</span>
+            <span className={classes.subtitle}>{t('Targeted in this campaign')}</span>
           </div>
         </Paper>
       </Drawer>
