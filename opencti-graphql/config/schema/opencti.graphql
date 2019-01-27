@@ -38,6 +38,11 @@ type createdByRef {
     relation: RelationEmbedded
 }
 
+type ownedBy {
+    node: User
+    relation: RelationEmbedded
+}
+
 ### Relay
 type PageInfo {
     startCursor: String!,
@@ -184,6 +189,42 @@ input StixRelationAddInput  {
     first_seen: DateTime
     last_seen: DateTime
     createdByRef: String
+    markingDefinitions: [String]
+    clientMutationId: String
+}
+
+### Workspace
+enum WorkspacesOrdering {
+    name,
+    created_at,
+    updated_at
+}
+type WorkspaceConnection {
+    pageInfo: PageInfo!
+    edges: [WorkspaceEdge]
+}
+type WorkspaceEdge {
+    cursor: String!
+    node: Workspace!
+    relation: RelationEmbedded!
+}
+type Workspace implements GlobalObject {
+    id: ID!
+    type: String!
+    name: String!
+    description: String
+    graph_data: [String]
+    editContext: [EditUserContext]
+    ownedBy: ownedBy
+    markingDefinitions: MarkingDefinitionConnection
+    objectRefs: StixDomainEntityConnection
+    relationRefs: StixRelationConnection
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+input WorkspaceAddInput {
+    name: String!
+    description: String
     markingDefinitions: [String]
     clientMutationId: String
 }
@@ -1128,6 +1169,9 @@ type Query {
     # StixRelations
     stixRelation(id: String!): StixRelation
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, inferred: Boolean, toId: String,fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
+    # Workspaces
+    workspace(id: String!): Workspace
+    workspaces(first: Int, after: ID, orderBy: WorkspacesOrdering, orderMode: OrderingMode, search: String): WorkspaceConnection
     # Identities
     identity(id: String!): Identity
     identities(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): IdentityConnection
@@ -1197,6 +1241,7 @@ type Subscription {
     settings(id: ID!): Settings
     stixDomainEntity(id: ID!): StixDomainEntity
     stixRelation(id: ID!): StixRelation
+    workspace(id: ID!): Workspace
     markingDefinition(id: ID!): MarkingDefinition
     externalReference(id: ID!): ExternalReference
     killChainPhase(id: ID!): KillChainPhase
@@ -1227,6 +1272,16 @@ type StixRelationEditMutations {
     fieldPatch(input: EditInput): StixRelation
     contextPatch(input: EditContext): StixRelation
     contextClean: StixRelation
+}
+
+# Workspace
+type WorkspaceEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): Workspace
+    contextPatch(input: EditContext): Workspace
+    contextClean: Workspace
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId: ID!): RelationData
 }
 
 # Identity
@@ -1443,6 +1498,9 @@ type Mutation {
     # StixRelation
     stixRelationAdd(input: StixRelationAddInput): StixRelation
     stixRelationEdit(id: ID!): StixRelationEditMutations
+    # Workspace
+    workspaceAdd(input: WorkspaceAddInput): Workspace
+    workspaceEdit(id: ID!): WorkspaceEditMutations
     # Identity
     identityAdd(input: IdentityAddInput): Identity
     identityEdit(id: ID!): IdentityEditMutations

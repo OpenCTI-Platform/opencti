@@ -330,11 +330,15 @@ define
   "Workspace" sub entity
     has "type"
     has "name"
+    has "name_lowercase"
     has "description"
+    has "description_lowercase"
     has "graph_data"
     has "created_at"
     has "updated_at"
-    plays "to";
+    plays "to"
+    plays "so"
+    plays "knowledge_aggregation";
 
   "Token" sub entity
     has "uuid"

@@ -17,8 +17,8 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../relay/environment';
-import { intrusionSetEditionQuery } from './IntrusionSetEdition';
-import IntrusionSetEditionContainer from './IntrusionSetEditionContainer';
+import { workspaceEditionQuery } from './WorkspaceEdition';
+import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 
 const styles = theme => ({
   container: {
@@ -42,15 +42,15 @@ function Transition(props) {
   return <Slide direction="up" {...props} />;
 }
 
-const IntrusionSetPopoverDeletionMutation = graphql`
-    mutation IntrusionSetPopoverDeletionMutation($id: ID!) {
-        intrusionSetEdit(id: $id) {
+const WorkspacePopoverDeletionMutation = graphql`
+    mutation WorkspacePopoverDeletionMutation($id: ID!) {
+        workspaceEdit(id: $id) {
             delete
         }
     }
 `;
 
-class IntrusionSetPopover extends Component {
+class WorkspacePopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -81,14 +81,14 @@ class IntrusionSetPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: IntrusionSetPopoverDeletionMutation,
+      mutation: WorkspacePopoverDeletionMutation,
       variables: {
-        id: this.props.intrusionSetId,
+        id: this.props.workspaceId,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/knowledge/intrusion_sets');
+        this.props.history.push('/dashboard/explore');
       },
     });
   }
@@ -103,7 +103,7 @@ class IntrusionSetPopover extends Component {
   }
 
   render() {
-    const { classes, t, intrusionSetId } = this.props;
+    const { classes, t, workspaceId } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
@@ -113,8 +113,7 @@ class IntrusionSetPopover extends Component {
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
-        >
+          style={{ marginTop: 50 }}>
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>{t('Update')}</MenuItem>
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
         </Menu>
@@ -122,31 +121,30 @@ class IntrusionSetPopover extends Component {
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
-        >
+          onClose={this.handleCloseDelete.bind(this)}>
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this intrusion set?')}
+              {t('Do you want to delete this workspace?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseDelete.bind(this)} color='primary' disabled={this.state.deleting}>
+            <Button onClick={this.handleCloseDelete.bind(this)} color="primary" disabled={this.state.deleting}>
               {t('Cancel')}
             </Button>
-            <Button onClick={this.submitDelete.bind(this)} color='primary' disabled={this.state.deleting}>
+            <Button onClick={this.submitDelete.bind(this)} color="primary" disabled={this.state.deleting}>
               {t('Delete')}
             </Button>
           </DialogActions>
         </Dialog>
         <Drawer open={this.state.displayEdit} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleCloseEdit.bind(this)}>
           <QueryRenderer
-            query={intrusionSetEditionQuery}
-            variables={{ id: intrusionSetId }}
+            query={workspaceEditionQuery}
+            variables={{ id: workspaceId }}
             render={({ props }) => {
               if (props) {
-                return <IntrusionSetEditionContainer
+                return <WorkspaceEditionContainer
                   me={props.me}
-                  intrusionSet={props.intrusionSet}
+                  workspace={props.workspace}
                   handleClose={this.handleCloseEdit.bind(this)}
                 />;
               }
@@ -159,8 +157,8 @@ class IntrusionSetPopover extends Component {
   }
 }
 
-IntrusionSetPopover.propTypes = {
-  intrusionSetId: PropTypes.string,
+WorkspacePopover.propTypes = {
+  workspaceId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
@@ -170,4 +168,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(IntrusionSetPopover);
+)(WorkspacePopover);

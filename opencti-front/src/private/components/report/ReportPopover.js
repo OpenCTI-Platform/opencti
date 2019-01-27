@@ -141,11 +141,13 @@ class ReportPopover extends Component {
             query={reportEditionQuery}
             variables={{ id: reportId }}
             render={({ props }) => {
-              if (props) { // Done
-                return <ReportEditionContainer me={props.me} report={props.report}
-                                               handleClose={this.handleCloseEdit.bind(this)}/>;
+              if (props) {
+                return <ReportEditionContainer
+                  me={props.me}
+                  report={props.report}
+                  handleClose={this.handleCloseEdit.bind(this)}
+                />;
               }
-              // Loading
               return <div> &nbsp; </div>;
             }}
           />
