@@ -106,7 +106,6 @@ class TopBar extends Component {
       t,
       classes,
       location,
-      me,
       keyword,
     } = this.props;
     return (
@@ -140,8 +139,6 @@ class TopBar extends Component {
             open={this.state.menuOpen}
             onClose={this.handleCloseMenu.bind(this)}>
             <MenuItem component={Link} to='/dashboard/profile' onClick={this.handleCloseMenu.bind(this)}>{t('Profile')}</MenuItem>
-            {includes('ROLE_ADMIN', propOr([], 'grant', me))
-            && <MenuItem component={Link} to='/admin' onClick={this.handleCloseMenu.bind(this)}>{t('Admin')}</MenuItem>}
             <MenuItem onClick={this.handleLogout.bind(this)}>{t('Logout')}</MenuItem>
           </Menu>
         </Toolbar>
@@ -162,7 +159,7 @@ TopBar.propTypes = {
 const TopBarFragment = createFragmentContainer(TopBar, {
   me: graphql`
       fragment TopBar_me on User {
-          grant
+          email
       }
   `,
 });

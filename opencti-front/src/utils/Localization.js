@@ -231,6 +231,10 @@ const i18n = {
       'Ingested entities': 'Entités stockées',
       'last 24h': 'dernières 24h',
       'No entity was found for this search.': 'Aucune entité n\'a été trouvée pour cette recherche.',
+      'API access': 'Accès à l\'API',
+      Example: 'Exemple',
+      'API key': 'Clé d\'API',
+      Playground: 'Playground',
       // Types
       'entity_threat-actor': 'Acteur',
       'entity_attack-pattern': 'TTP',

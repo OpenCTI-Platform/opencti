@@ -8,6 +8,7 @@ import {
   findAll,
   findById,
   groups,
+  token,
   userEditContext,
   userEditField,
   userAddRelation,
@@ -28,6 +29,7 @@ const userResolvers = {
   },
   User: {
     groups: (user, args) => groups(user.id, args),
+    token: (user, args) => token(user.id, args),
     editContext: admin(user => fetchEditContext(user.id))
   },
   Mutation: {
@@ -46,6 +48,9 @@ const userResolvers = {
       relationDelete: ({ relationId }) =>
         userDeleteRelation(user, id, relationId)
     })),
+    meEdit: auth((_, { input }, { user }) =>
+      userEditField(user, user.id, input)
+    ),
     personAdd: auth((_, { input }, { user }) => addPerson(user, input)),
     userAdd: admin((_, { input }, { user }) => addUser(user, input))
   },

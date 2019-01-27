@@ -47,17 +47,6 @@ const styles = () => ({
   },
 });
 
-export const stixDomainEntityKnowledgeGraphQuery = graphql`
-    query StixDomainEntityKnowledgeGraphQuery($id: String!, $count: Int, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $weights: [Int]) {
-        stixDomainEntity(id: $id) {
-            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
-        }
-        stixRelations(fromId: $id, toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, first: $count) {
-            ...StixDomainEntityKnowledgeGraph_stixRelations
-        }
-    }
-`;
-
 const GRAPHER$ = new Subject().pipe(debounce(() => timer(1500)));
 
 class StixDomainEntityKnowledgeGraphComponent extends Component {
@@ -81,16 +70,17 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
   }
 
   componentDidMount() {
+    const { stixDomainEntity, stixDomainEntity: { stixRelations } } = this.props;
     // prepare actual nodes & relations
-    const actualNodes = append(this.props.stixDomainEntity, map(n => n.to, this.props.stixRelations.edges));
-    const actualRelations = this.props.stixRelations.edges;
+    const actualNodes = append(stixDomainEntity, map(n => n.to, stixRelations.edges));
+    const actualRelations = stixRelations.edges;
     const actualNodesIds = pluck('id', actualNodes);
     const actualRelationsIds = pipe(map(n => n.node), pluck('id'))(actualRelations);
     // create a new model, component is mounted!
     const model = new DiagramModel();
     // decode graph data if any
-    if (Array.isArray(this.props.stixDomainEntity.graph_data) && head(this.props.stixDomainEntity.graph_data).length > 0) {
-      const graphData = Buffer.from(head(this.props.stixDomainEntity.graph_data), 'base64').toString('ascii');
+    if (Array.isArray(stixDomainEntity.graph_data) && head(stixDomainEntity.graph_data).length > 0) {
+      const graphData = Buffer.from(head(stixDomainEntity.graph_data), 'base64').toString('ascii');
       const decodedGraphData = JSON.parse(graphData);
       model.deSerializeDiagram(decodedGraphData, this.engine);
     }
@@ -173,7 +163,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
       const model = this.engine.getDiagramModel();
       const links = model.getLinks();
       forEach((l) => {
-        if (yearFormat(pathOr('1970-01-01', ['extras', 'relation', 'first_seen'], l)) === this.props.firstSeenYear ) {
+        if (yearFormat(pathOr('1970-01-01', ['extras', 'relation', 'first_seen'], l)) === this.props.firstSeenYear) {
           l.setColor('#ff3d00');
         } else {
           l.setColor('#00bcd4');
@@ -357,7 +347,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
         />
         <StixDomainEntityAddObjectRefs
           stixDomainEntityId={stixDomainEntity.id}
-          stixDomainEntityObjectRefs={map(n => n.to, this.props.stixRelations.edges)}
+          stixDomainEntityObjectRefs={map(n => n.to, stixDomainEntity.stixRelations.edges)}
         />
         <StixRelationCreation
           open={openCreateRelation}
@@ -379,7 +369,6 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
 
 StixDomainEntityKnowledgeGraphComponent.propTypes = {
   stixDomainEntity: PropTypes.object,
-  stixRelations: PropTypes.object,
   firstSeenYear: PropTypes.string,
   isSavable: PropTypes.func,
   classes: PropTypes.object,
@@ -388,36 +377,34 @@ StixDomainEntityKnowledgeGraphComponent.propTypes = {
 
 const StixDomainEntityKnowledgeGraph = createFragmentContainer(StixDomainEntityKnowledgeGraphComponent, {
   stixDomainEntity: graphql`
-      fragment StixDomainEntityKnowledgeGraph_stixDomainEntity on StixDomainEntity {
-          id
-          type
-          name
-          graph_data
-      }
-  `,
-  stixRelations: graphql`
-      fragment StixDomainEntityKnowledgeGraph_stixRelations on StixRelationConnection @argumentDefinitions(
-          fromId: {type: "String"}
+      fragment StixDomainEntityKnowledgeGraph_stixDomainEntity on StixDomainEntity @argumentDefinitions(
           toTypes: {type: "[String]"},
           firstSeenStart: {type: "DateTime"},
           firstSeenStop: {type: "DateTime"},
           lastSeenStart: {type: "DateTime"},
           lastSeenStop: {type: "DateTime"},
           weights: {type: "[Int]"},
-          first: {type: "Int", defaultValue: 50}
+          count: {type: "Int", defaultValue: 50}
       ) {
-          edges {
-              node {
-                  id
-                  relationship_type
-                  description
-                  first_seen
-                  last_seen
-              }
-              to {
-                  id
-                  type
-                  name
+          id
+          type
+          name
+          graph_data
+          stixRelations(toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, first: $count)
+          {
+              edges {
+                  node {
+                      id
+                      relationship_type
+                      description
+                      first_seen
+                      last_seen
+                  }
+                  to {
+                      id
+                      type
+                      name
+                  }
               }
           }
       }

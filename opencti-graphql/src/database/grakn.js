@@ -122,9 +122,9 @@ const attrMap = (id, res, withType = false) => {
  * @param queryDef
  * @returns {Promise<AxiosResponse<any> | never>}
  */
-export const qk = queryDef =>
-  // logger.debug(`Grakn query: ${queryDef}`);
-  axiosInstance({
+export const qk = queryDef => {
+  logger.debug(`Grakn query: ${queryDef}`);
+  return axiosInstance({
     method: 'post',
     url: '/kb/grakn/graql',
     data: queryDef
@@ -132,6 +132,7 @@ export const qk = queryDef =>
     logger.error(`Grakn query error: ${queryDef}`, error.response);
     // throw new FunctionalError({ message: error.response.data.exception });
   });
+};
 
 /**
  * Grakn query that generate json objects

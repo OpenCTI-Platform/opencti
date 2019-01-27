@@ -9,10 +9,10 @@ import Input from '@material-ui/core/Input';
 import Chip from '@material-ui/core/Chip';
 import MenuItem from '@material-ui/core/MenuItem';
 import { withStyles } from '@material-ui/core/styles';
-import { QueryRenderer, fetchQuery } from '../../../relay/environment';
+import { QueryRenderer, fetchQuery, requestSubscription } from "../../../relay/environment";
 import { currentYear, parse, yearFormat } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
-import StixDomainEntityKnowledgeGraph, { stixDomainEntityKnowledgeGraphQuery } from './StixDomainEntityKnowledgeGraph';
+import StixDomainEntityKnowledgeGraph from './StixDomainEntityKnowledgeGraph';
 
 const styles = theme => ({
   container: {
@@ -36,6 +36,14 @@ const styles = theme => ({
   },
 });
 
+const subscription = graphql`
+    subscription StixDomainEntityKnowledgeSubscription($id: ID!) {
+        stixDomainEntity(id: $id) {
+            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
+        }
+    }
+`;
+
 const firstStixRelationQuery = graphql`
     query StixDomainEntityKnowledgeFirstStixRelationQuery($fromId: String, $first: Int, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
         stixRelations(fromId: $fromId, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
@@ -45,6 +53,14 @@ const firstStixRelationQuery = graphql`
                     first_seen
                 }
             }
+        }
+    }
+`;
+
+const stixDomainEntityKnowledgeQuery = graphql`
+    query StixDomainEntityKnowledgeQuery($id: String!, $count: Int, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $weights: [Int]) {
+        stixDomainEntity(id: $id) {
+            ...StixDomainEntityKnowledgeGraph_stixDomainEntity @arguments(toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, first: $count)
         }
     }
 `;
@@ -64,6 +80,15 @@ class StixDomainEntityKnowledge extends Component {
 
   componentDidMount() {
     const { stixDomainEntityId } = this.props;
+    const sub = requestSubscription({
+      subscription,
+      variables: {
+        id: stixDomainEntityId,
+      },
+    });
+    this.setState({
+      sub,
+    });
     fetchQuery(firstStixRelationQuery, {
       fromId: stixDomainEntityId,
       first: 1,
@@ -74,6 +99,10 @@ class StixDomainEntityKnowledge extends Component {
         this.setState({ firstSeenFirstYear: yearFormat(head(data.stixRelations.edges).node.first_seen) });
       }
     });
+  }
+
+  componentWillUnmount() {
+    this.state.sub.dispose();
   }
 
   isSavable() {
@@ -93,10 +122,11 @@ class StixDomainEntityKnowledge extends Component {
     if (includes('All', this.state.toTypes) || !includes('All', value)) {
       const toTypes = filter(v => v !== 'All', value);
       if (toTypes.length > 0) {
-        return this.setState({ toTypes });
+        this.setState({ toTypes });
+      } else {
+        this.setState({ toTypes: ['All'] });
       }
     }
-    return this.setState({ toTypes: ['All'] });
   }
 
   handleChangeYear(event) {
@@ -123,10 +153,11 @@ class StixDomainEntityKnowledge extends Component {
     if (includes(0, this.state.weights) || !includes(0, value)) {
       const weights = filter(v => v !== 0, value);
       if (weights.length > 0) {
-        return this.setState({ weights });
+        this.setState({ weights });
+      } else {
+        this.setState({ weights: [0] });
       }
     }
-    return this.setState({ weights: [0] });
   }
 
   render() {
@@ -212,16 +243,15 @@ class StixDomainEntityKnowledge extends Component {
           </Select>
         </div>
         <QueryRenderer
-          query={stixDomainEntityKnowledgeGraphQuery}
+          query={stixDomainEntityKnowledgeQuery}
           variables={variables}
           render={({ props }) => {
-            if (props && props.stixDomainEntity && props.stixRelations) {
+            if (props && props.stixDomainEntity ) {
               return (
                 <StixDomainEntityKnowledgeGraph
                   isSavable={this.isSavable.bind(this)}
                   variables={variables}
                   stixDomainEntity={props.stixDomainEntity}
-                  stixRelations={props.stixRelations}
                   firstSeenYear={this.state.firstSeenStart ? yearFormat(this.state.firstSeenStart) : 'all'}
                 />
               );

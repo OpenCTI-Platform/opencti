@@ -20,7 +20,7 @@ import conf, {
   ROLE_USER
 } from '../config/conf';
 import {
-  multipleAttributes,
+  qkObjUnique,
   createRelation,
   deleteByID,
   deleteRelation,
@@ -69,6 +69,15 @@ export const groups = (userId, args) =>
     args
   );
 
+export const token = userId =>
+  qkObjUnique(
+    `match $x isa Token; 
+    $rel(authorization:$x, client:$client) isa authorize; 
+    $client id ${userId}; offset 0; limit 1; get $x,$rel;`,
+    'x',
+    'rel'
+  ).then(result => sign(result.node, conf.get('app:secret')));
+
 export const addPerson = async (user, newUser) => {
   const createPerson = qk(`insert $user isa User 
     has type "user";
@@ -94,7 +103,7 @@ export const addPerson = async (user, newUser) => {
 
 export const addUser = async (user, newUser) => {
   // const userPassword = await hashPassword(user.password);
-  const token = generateOpenCTIWebToken(newUser.email);
+  const newToken = generateOpenCTIWebToken(newUser.email);
   const createUser = qk(`insert $user isa User 
     has type "user";
     $user has stix_id "user--${uuid()}";
@@ -120,12 +129,12 @@ export const addUser = async (user, newUser) => {
   `);
   const createToken = qk(`insert $token isa Token 
     has type "token"; 
-    $token has uuid "${token.uuid}";
-    $token has name "${token.name}";
-    $token has created ${token.created};
-    $token has issuer "${token.issuer}";
-    $token has revoked ${token.revoked};
-    $token has duration "${token.duration}";
+    $token has uuid "${newToken.uuid}";
+    $token has name "${newToken.name}";
+    $token has created ${newToken.created};
+    $token has issuer "${newToken.issuer}";
+    $token has revoked ${newToken.revoked};
+    $token has duration "${newToken.duration}";
     $token has created_at ${now()};
     $token has updated_at ${now()};
   `);
@@ -134,7 +143,7 @@ export const addUser = async (user, newUser) => {
   return createPromise.then(([resultUser]) =>
     // Create the relation
     qk(`match $user isa User has email "${newUser.email}"; 
-                   $token isa Token has uuid "${token.uuid}"; 
+                   $token isa Token has uuid "${newToken.uuid}"; 
                    insert (client: $user, authorization: $token) isa authorize;`).then(
       () => {
         const { data } = resultUser;

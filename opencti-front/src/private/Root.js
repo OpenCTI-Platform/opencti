@@ -27,6 +27,7 @@ import Users from './components/Users';
 import Groups from './components/Groups';
 import MarkingDefinitions from './components/MarkingDefinitions';
 import KillChainPhases from './components/KillChainPhases';
+import Profile from './components/user/Profile';
 import Message from '../components/Message';
 import { NoMatch, BoundaryRoute } from './components/Error';
 import Loader from './Loader';
@@ -109,6 +110,7 @@ class Root extends Component {
                         <BoundaryRoute exact path='/dashboard/settings/groups' component={Groups}/>
                         <BoundaryRoute exact path='/dashboard/settings/marking' component={MarkingDefinitions}/>
                         <BoundaryRoute exact path='/dashboard/settings/killchains' component={KillChainPhases}/>
+                        <BoundaryRoute exact path='/dashboard/profile' component={Profile}/>
                         <Route component={NoMatch}/>
                       </Switch>
                     </main>
