@@ -49,7 +49,6 @@ class CampaignEditionContainer extends Component {
       t, classes, handleClose, campaign, me,
     } = this.props;
     const { editContext } = campaign;
-    // Add current user to the context if is not available yet.
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
     const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
     return (

@@ -2,11 +2,23 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Redirect, withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer } from '../../../relay/environment';
+import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import Campaign from './Campaign';
 import CampaignReports from './CampaignReports';
 import CampaignKnowledge from './CampaignKnowledge';
+
+const subscription = graphql`
+    subscription RootCampaignSubscription($id: ID!) {
+        stixDomainEntity(id: $id) {
+            ...on Campaign {
+                ...Campaign_campaign
+                ...CampaignEditionContainer_campaign
+            }
+            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
+        }
+    }
+`;
 
 const campaignQuery = graphql`
     query RootCampaignQuery($id: String!) {
@@ -21,6 +33,23 @@ const campaignQuery = graphql`
 `;
 
 class RootCampaign extends Component {
+  componentDidMount() {
+    const { match: { params: { campaignId } } } = this.props;
+    const sub = requestSubscription({
+      subscription,
+      variables: {
+        id: campaignId,
+      },
+    });
+    this.setState({
+      sub,
+    });
+  }
+
+  componentWillUnmount() {
+    this.state.sub.dispose();
+  }
+
   render() {
     const { me, match: { params: { campaignId } } } = this.props;
     return (

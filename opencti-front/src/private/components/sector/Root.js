@@ -2,11 +2,23 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Redirect, withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer } from '../../../relay/environment';
+import { QueryRenderer, requestSubscription } from "../../../relay/environment";
 import TopBar from '../nav/TopBar';
 import Sector from './Sector';
 import SectorReports from './SectorReports';
 import SectorKnowledge from './SectorKnowledge';
+
+const subscription = graphql`
+    subscription RootSectorSubscription($id: ID!) {
+        stixDomainEntity(id: $id) {
+            ...on Sector {
+                ...Sector_sector
+                ...SectorEditionContainer_sector
+            }
+            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
+        }
+    }
+`;
 
 const sectorQuery = graphql`
     query RootSectorQuery($id: String!) {
@@ -21,6 +33,19 @@ const sectorQuery = graphql`
 `;
 
 class RootSector extends Component {
+  componentDidMount() {
+    const { match: { params: { sectorId } } } = this.props;
+    const sub = requestSubscription({
+      subscription,
+      variables: { id: sectorId },
+    });
+    this.setState({ sub });
+  }
+
+  componentWillUnmount() {
+    this.state.sub.dispose();
+  }
+
   render() {
     const { me, match: { params: { sectorId } } } = this.props;
     return (

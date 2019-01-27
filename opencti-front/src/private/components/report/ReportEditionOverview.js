@@ -11,7 +11,7 @@ import {
 } from 'ramda';
 import * as Yup from 'yup';
 import { dateFormat } from '../../../utils/Time';
-import { commitMutation, fetchQuery } from '../../../relay/environment';
+import { commitMutation, fetchQuery, WS_ACTIVATED } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import Autocomplete from '../../../components/Autocomplete';
 import TextField from '../../../components/TextField';
@@ -140,15 +140,17 @@ class ReportEditionOverviewComponent extends Component {
   }
 
   handleChangeFocus(name) {
-    commitMutation({
-      mutation: reportEditionOverviewFocus,
-      variables: {
-        id: this.props.report.id,
-        input: {
-          focusOn: name,
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: reportEditionOverviewFocus,
+        variables: {
+          id: this.props.report.id,
+          input: {
+            focusOn: name,
+          },
         },
-      },
-    });
+      });
+    }
   }
 
   handleSubmitField(name, value) {
@@ -244,7 +246,7 @@ class ReportEditionOverviewComponent extends Component {
     const {
       t, report, editUsers, me,
     } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], report) === null ? '' :  {
+    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], report) === null ? '' : {
       label: pathOr(null, ['createdByRef', 'node', 'name'], report),
       value: pathOr(null, ['createdByRef', 'node', 'id'], report),
       relation: pathOr(null, ['createdByRef', 'relation', 'id'], report),

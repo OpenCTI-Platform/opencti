@@ -16,7 +16,7 @@ import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../relay/environment';
+import { commitMutation, QueryRenderer, WS_ACTIVATED } from "../../../relay/environment";
 import CountryEdition from './CountryEdition';
 
 const styles = theme => ({
@@ -40,6 +40,16 @@ const styles = theme => ({
 function Transition(props) {
   return <Slide direction="up" {...props} />;
 }
+
+const countryPopoverCleanContext = graphql`
+    mutation CountryPopoverCleanContextMutation($id: ID!) {
+        countryEdit(id: $id) {
+            contextClean {
+                ...CountryEdition_country
+            }
+        }
+    }
+`;
 
 const countryPopoverDeletionMutation = graphql`
     mutation CountryPopoverDeletionMutation($id: ID!) {
@@ -85,6 +95,12 @@ class CountryPopover extends Component {
   }
 
   handleCloseUpdate() {
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: countryPopoverCleanContext,
+        variables: { id: this.props.countryId },
+      });
+    }
     this.setState({ displayUpdate: false });
   }
 

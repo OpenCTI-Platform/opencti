@@ -6,7 +6,7 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer } from '../../../relay/environment';
+import { commitMutation, QueryRenderer, WS_ACTIVATED } from "../../../relay/environment";
 import inject18n from '../../../components/i18n';
 import ThreatActorEditionContainer from './ThreatActorEditionContainer';
 
@@ -30,6 +30,16 @@ const styles = theme => ({
   },
 });
 
+const threatActorEditionCleanContext = graphql`
+    mutation ThreatActorEditionCleanContextMutation($id: ID!) {
+        threatActorEdit(id: $id) {
+            contextClean {
+                ...ThreatActorEditionContainer_threatActor
+            }
+        }
+    }
+`;
+
 export const threatActorEditionQuery = graphql`
   query ThreatActorEditionContainerQuery($id: String!) {
     threatActor(id: $id) {
@@ -52,6 +62,12 @@ class ThreatActorEdition extends Component {
   }
 
   handleClose() {
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: threatActorEditionCleanContext,
+        variables: { id: this.props.threatActorId },
+      });
+    }
     this.setState({ open: false });
   }
 

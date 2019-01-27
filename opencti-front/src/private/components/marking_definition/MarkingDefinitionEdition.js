@@ -12,7 +12,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../components/i18n';
-import { commitMutation, requestSubscription } from '../../../relay/environment';
+import { commitMutation, requestSubscription, WS_ACTIVATED } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../components/Subscription';
 
@@ -91,10 +91,7 @@ class MarkingDefinitionEditionContainer extends Component {
   componentDidMount() {
     const sub = requestSubscription({
       subscription,
-      variables: {
-        // eslint-disable-next-line
-          id: this.props.markingDefinition.id
-      },
+      variables: { id: this.props.markingDefinition.id },
     });
     this.setState({ sub });
   }
@@ -104,15 +101,17 @@ class MarkingDefinitionEditionContainer extends Component {
   }
 
   handleChangeFocus(name) {
-    commitMutation({
-      mutation: markingDefinitionEditionFocus,
-      variables: {
-        id: this.props.markingDefinition.id,
-        input: {
-          focusOn: name,
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: markingDefinitionEditionFocus,
+        variables: {
+          id: this.props.markingDefinition.id,
+          input: {
+            focusOn: name,
+          },
         },
-      },
-    });
+      });
+    }
   }
 
   handleSubmitField(name, value) {

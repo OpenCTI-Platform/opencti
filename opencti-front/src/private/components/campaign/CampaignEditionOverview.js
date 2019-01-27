@@ -13,7 +13,7 @@ import inject18n from '../../../components/i18n';
 import Autocomplete from '../../../components/Autocomplete';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
-import { commitMutation, fetchQuery } from '../../../relay/environment';
+import { commitMutation, fetchQuery, WS_ACTIVATED } from '../../../relay/environment';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import IdentityCreation, { identityCreationIdentitiesSearchQuery } from '../identity/IdentityCreation';
@@ -139,15 +139,17 @@ class CampaignEditionOverviewComponent extends Component {
   }
 
   handleChangeFocus(name) {
-    commitMutation({
-      mutation: campaignEditionOverviewFocus,
-      variables: {
-        id: this.props.campaign.id,
-        input: {
-          focusOn: name,
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: campaignEditionOverviewFocus,
+        variables: {
+          id: this.props.campaign.id,
+          input: {
+            focusOn: name,
+          },
         },
-      },
-    });
+      });
+    }
   }
 
   handleSubmitField(name, value) {

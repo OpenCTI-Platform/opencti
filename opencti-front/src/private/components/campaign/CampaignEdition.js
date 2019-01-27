@@ -6,7 +6,7 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer } from '../../../relay/environment';
+import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import CampaignEditionContainer from './CampaignEditionContainer';
 
@@ -30,6 +30,16 @@ const styles = theme => ({
   },
 });
 
+const campaignEditionCleanContext = graphql`
+    mutation CampaignEditionCleanContextMutation($id: ID!) {
+        campaignEdit(id: $id) {
+            contextClean {
+                ...CampaignEditionContainer_campaign
+            }
+        }
+    }
+`;
+
 export const campaignEditionQuery = graphql`
   query CampaignEditionContainerQuery($id: String!) {
     campaign(id: $id) {
@@ -52,6 +62,12 @@ class CampaignEdition extends Component {
   }
 
   handleClose() {
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: campaignEditionCleanContext,
+        variables: { id: this.props.campaignId },
+      });
+    }
     this.setState({ open: false });
   }
 

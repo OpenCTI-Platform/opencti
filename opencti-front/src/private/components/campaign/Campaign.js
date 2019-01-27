@@ -13,7 +13,6 @@ import EntityLastReports from '../report/EntityLastReports';
 import EntityObservablesChart from '../observable/EntityObservablesChart';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityKillChainPhasesChart from '../kill_chain_phase/EntityKillChainPhasesChart';
-import { requestSubscription } from '../../../relay/environment';
 
 const styles = () => ({
   container: {
@@ -24,33 +23,7 @@ const styles = () => ({
   },
 });
 
-const subscription = graphql`
-    subscription CampaignSubscription($id: ID!) {
-        stixDomainEntity(id: $id) {
-            ...on Campaign {
-                ...Campaign_campaign   
-            }
-        }
-    }
-`;
-
 class CampaignComponent extends Component {
-  componentDidMount() {
-    const sub = requestSubscription({
-      subscription,
-      variables: {
-        id: this.props.campaign.id,
-      },
-    });
-    this.setState({
-      sub,
-    });
-  }
-
-  componentWillUnmount() {
-    this.state.sub.dispose();
-  }
-
   render() {
     const { classes, campaign } = this.props;
     return (

@@ -16,7 +16,7 @@ import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../relay/environment';
+import { commitMutation, QueryRenderer, WS_ACTIVATED } from "../../../relay/environment";
 import CityEdition from './CityEdition';
 
 const styles = theme => ({
@@ -40,6 +40,16 @@ const styles = theme => ({
 function Transition(props) {
   return <Slide direction="up" {...props} />;
 }
+
+const cityPopoverCleanContext = graphql`
+    mutation CityPopoverCleanContextMutation($id: ID!) {
+        cityEdit(id: $id) {
+            contextClean {
+                ...CityEdition_city
+            }
+        }
+    }
+`;
 
 const cityPopoverDeletionMutation = graphql`
     mutation CityPopoverDeletionMutation($id: ID!) {
@@ -85,6 +95,12 @@ class CityPopover extends Component {
   }
 
   handleCloseUpdate() {
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: cityPopoverCleanContext,
+        variables: { id: this.props.cityId },
+      });
+    }
     this.setState({ displayUpdate: false });
   }
 

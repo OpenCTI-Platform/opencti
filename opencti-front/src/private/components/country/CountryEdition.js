@@ -12,7 +12,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../components/i18n';
-import { commitMutation, requestSubscription } from '../../../relay/environment';
+import { commitMutation, requestSubscription, WS_ACTIVATED } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../components/Subscription';
 
@@ -96,15 +96,17 @@ class CountryEditionContainer extends Component {
   }
 
   handleChangeFocus(name) {
-    commitMutation({
-      mutation: countryEditionFocus,
-      variables: {
-        id: this.props.country.id,
-        input: {
-          focusOn: name,
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: countryEditionFocus,
+        variables: {
+          id: this.props.country.id,
+          input: {
+            focusOn: name,
+          },
         },
-      },
-    });
+      });
+    }
   }
 
   handleSubmitField(name, value) {
@@ -121,7 +123,6 @@ class CountryEditionContainer extends Component {
       t, classes, handleClose, country, me,
     } = this.props;
     const { editContext } = country;
-    // Add current user to the context if is not available yet.
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
     const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
     const initialValues = pick(['name', 'description'], country);
