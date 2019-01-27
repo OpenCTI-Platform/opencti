@@ -6,7 +6,7 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
+import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import IncidentEditionContainer from './IncidentEditionContainer';
 
@@ -30,16 +30,6 @@ const styles = theme => ({
   },
 });
 
-const incidentEditionCleanContext = graphql`
-    mutation IncidentEditionCleanContextMutation($id: ID!) {
-        incidentEdit(id: $id) {
-            contextClean {
-                ...IncidentEditionContainer_incident
-            }
-        }
-    }
-`;
-
 export const incidentEditionQuery = graphql`
   query IncidentEditionContainerQuery($id: String!) {
     incident(id: $id) {
@@ -62,12 +52,6 @@ class IncidentEdition extends Component {
   }
 
   handleClose() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: incidentEditionCleanContext,
-        variables: { id: this.props.incidentId },
-      });
-    }
     this.setState({ open: false });
   }
 

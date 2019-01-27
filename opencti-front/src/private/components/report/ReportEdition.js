@@ -8,7 +8,7 @@ import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
 import ReportEditionContainer from './ReportEditionContainer';
-import { commitMutation, QueryRenderer, WS_ACTIVATED } from "../../../relay/environment";
+import { QueryRenderer } from '../../../relay/environment';
 
 const styles = theme => ({
   editButton: {
@@ -29,16 +29,6 @@ const styles = theme => ({
     padding: 0,
   },
 });
-
-const reportEditionCleanContext = graphql`
-    mutation ReportEditionCleanContextMutation($id: ID!) {
-        reportEdit(id: $id) {
-            contextClean {
-                ...ReportEditionContainer_report
-            }
-        }
-    }
-`;
 
 export const reportEditionQuery = graphql`
   query ReportEditionContainerQuery($id: String!) {
@@ -62,12 +52,6 @@ class ReportEdition extends Component {
   }
 
   handleClose() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: reportEditionCleanContext,
-        variables: { id: this.props.reportId },
-      });
-    }
     this.setState({ open: false });
   }
 

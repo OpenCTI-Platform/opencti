@@ -85,7 +85,6 @@ class GroupEdition extends Component {
       t, classes, handleClose, group, me,
     } = this.props;
     const { editContext } = group;
-    // Add current group to the context if is not available yet.
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
     const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
     return (

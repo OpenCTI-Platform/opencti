@@ -14,7 +14,7 @@ import {
   stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
 import { fetchEditContext, pubsub } from '../database/redis';
-import { auth } from './wrapper';
+import { auth, withCancel } from './wrapper';
 
 const stixDomainEntityResolvers = {
   Query: {
@@ -59,13 +59,16 @@ const stixDomainEntityResolvers = {
       resolve: payload => payload.instance,
       subscribe: auth((_, { id }, { user }) => {
         stixDomainEntityEditContext(user, id);
-        return withFilter(
+        const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC),
           payload => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;
           }
         )(_, { id }, { user });
+        return withCancel(filtering, () => {
+          stixDomainEntityCleanContext(user, id);
+        });
       })
     }
   }

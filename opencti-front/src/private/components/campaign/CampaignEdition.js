@@ -6,7 +6,7 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
+import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import CampaignEditionContainer from './CampaignEditionContainer';
 
@@ -30,16 +30,6 @@ const styles = theme => ({
   },
 });
 
-const campaignEditionCleanContext = graphql`
-    mutation CampaignEditionCleanContextMutation($id: ID!) {
-        campaignEdit(id: $id) {
-            contextClean {
-                ...CampaignEditionContainer_campaign
-            }
-        }
-    }
-`;
-
 export const campaignEditionQuery = graphql`
   query CampaignEditionContainerQuery($id: String!) {
     campaign(id: $id) {
@@ -62,12 +52,6 @@ class CampaignEdition extends Component {
   }
 
   handleClose() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: campaignEditionCleanContext,
-        variables: { id: this.props.campaignId },
-      });
-    }
     this.setState({ open: false });
   }
 
@@ -83,11 +67,12 @@ class CampaignEdition extends Component {
               query={campaignEditionQuery}
               variables={{ id: campaignId }}
               render={({ props }) => {
-                if (props) { // Done
-                  return <CampaignEditionContainer me={props.me} campaign={props.campaign}
-                                                  handleClose={this.handleClose.bind(this)}/>;
+                if (props) {
+                  return <CampaignEditionContainer
+                    me={props.me}
+                    campaign={props.campaign}
+                    handleClose={this.handleClose.bind(this)}/>;
                 }
-                // Loading
                 return <div> &nbsp; </div>;
               }}
           />

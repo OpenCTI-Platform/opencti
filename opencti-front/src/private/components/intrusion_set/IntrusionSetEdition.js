@@ -6,7 +6,7 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
+import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import IntrusionSetEditionContainer from './IntrusionSetEditionContainer';
 
@@ -30,16 +30,6 @@ const styles = theme => ({
   },
 });
 
-const intrusionSetEditionCleanContext = graphql`
-    mutation IntrusionSetEditionCleanContextMutation($id: ID!) {
-        intrusionSetEdit(id: $id) {
-            contextClean {
-                ...IntrusionSetEditionContainer_intrusionSet
-            }
-        }
-    }
-`;
-
 export const intrusionSetEditionQuery = graphql`
   query IntrusionSetEditionContainerQuery($id: String!) {
     intrusionSet(id: $id) {
@@ -62,12 +52,6 @@ class IntrusionSetEdition extends Component {
   }
 
   handleClose() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: intrusionSetEditionCleanContext,
-        variables: { id: this.props.intrusionSetId },
-      });
-    }
     this.setState({ open: false });
   }
 

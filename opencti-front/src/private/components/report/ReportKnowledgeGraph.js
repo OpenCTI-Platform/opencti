@@ -83,10 +83,6 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.report.graph_data !== prevProps.report.graph_data) {
-      this.initialize();
-      this.forceUpdate();
-    }
     // component has been updated, check changes
     const added = difference(
       this.props.report.objectRefs.edges,

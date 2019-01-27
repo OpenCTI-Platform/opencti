@@ -29,13 +29,9 @@ class ReportKnowledgeComponent extends Component {
           variables={{ id: report.id }}
           render={({ props }) => {
             if (props && props.report) {
-              return (
-                <ReportKnowledgeGraph report={props.report}/>
-              );
+              return <ReportKnowledgeGraph report={props.report}/>
             }
-            return (
-              <div> &nbsp; </div>
-            );
+            return <div> &nbsp; </div>
           }}
         />
       </div>
