@@ -37,13 +37,9 @@ class RootCampaign extends Component {
     const { match: { params: { campaignId } } } = this.props;
     const sub = requestSubscription({
       subscription,
-      variables: {
-        id: campaignId,
-      },
+      variables: { id: campaignId },
     });
-    this.setState({
-      sub,
-    });
+    this.setState({ sub });
   }
 
   componentWillUnmount() {

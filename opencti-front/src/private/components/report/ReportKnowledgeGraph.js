@@ -80,6 +80,14 @@ class ReportKnowledgeGraphComponent extends Component {
 
   componentDidMount() {
     this.initialize();
+    // subscribe to grapher
+    GRAPHER$.subscribe({
+      next: (message) => {
+        if (message.action === 'update') {
+          this.saveGraph();
+        }
+      },
+    });
   }
 
   componentDidUpdate(prevProps) {
@@ -201,14 +209,6 @@ class ReportKnowledgeGraphComponent extends Component {
       zoomUpdated: this.handleSaveGraph.bind(this),
     });
     this.engine.setDiagramModel(model);
-    // subscribe to grapher
-    GRAPHER$.subscribe({
-      next: (message) => {
-        if (message.action === 'update') {
-          this.saveGraph();
-        }
-      },
-    });
   }
 
   saveGraph() {
@@ -250,7 +250,6 @@ class ReportKnowledgeGraphComponent extends Component {
               relationId: nodeRelationId,
             },
           });
-          this.handleSaveGraph();
         }
       }
       this.handleSaveGraph();

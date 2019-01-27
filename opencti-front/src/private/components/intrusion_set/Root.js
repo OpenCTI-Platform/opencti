@@ -37,13 +37,9 @@ class RootIntrusionSet extends Component {
     const { match: { params: { intrusionSetId } } } = this.props;
     const sub = requestSubscription({
       subscription,
-      variables: {
-        id: intrusionSetId,
-      },
+      variables: { id: intrusionSetId },
     });
-    this.setState({
-      sub,
-    });
+    this.setState({ sub });
   }
 
   componentWillUnmount() {

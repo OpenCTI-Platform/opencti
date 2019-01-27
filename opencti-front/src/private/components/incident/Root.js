@@ -2,11 +2,23 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Redirect, withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer } from '../../../relay/environment';
+import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import Incident from './Incident';
 import IncidentReports from './IncidentReports';
 import IncidentKnowledge from './IncidentKnowledge';
+
+const subscription = graphql`
+    subscription RootIncidentSetSubscription($id: ID!) {
+        stixDomainEntity(id: $id) {
+            ...on Incident {
+                ...Incident_incident
+                ...IncidentEditionContainer_incident
+            }
+            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
+        }
+    }
+`;
 
 const incidentQuery = graphql`
     query RootIncidentQuery($id: String!) {
@@ -21,6 +33,19 @@ const incidentQuery = graphql`
 `;
 
 class RootIncident extends Component {
+  componentDidMount() {
+    const { match: { params: { reportId } } } = this.props;
+    const sub = requestSubscription({
+      subscription,
+      variables: { id: reportId },
+    });
+    this.setState({ sub });
+  }
+
+  componentWillUnmount() {
+    this.state.sub.dispose();
+  }
+
   render() {
     const { me, match: { params: { incidentId } } } = this.props;
     return (

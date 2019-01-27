@@ -71,6 +71,14 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
 
   componentDidMount() {
     this.initialize();
+    // subscribe to grapher
+    GRAPHER$.subscribe({
+      next: (message) => {
+        if (message.action === 'update') {
+          this.saveGraph();
+        }
+      },
+    });
   }
 
   componentDidUpdate(prevProps) {
@@ -171,14 +179,6 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
       linksUpdated: this.handleLinksChange.bind(this),
     });
     this.engine.setDiagramModel(model);
-    // subscribe to grapher
-    GRAPHER$.subscribe({
-      next: (message) => {
-        if (message.action === 'update') {
-          this.saveGraph();
-        }
-      },
-    });
   }
 
   saveGraph() {
