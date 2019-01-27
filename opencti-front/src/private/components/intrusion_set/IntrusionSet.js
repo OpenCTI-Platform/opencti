@@ -13,7 +13,6 @@ import EntityLastReports from '../report/EntityLastReports';
 import EntityObservablesChart from '../observable/EntityObservablesChart';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityKillChainPhasesChart from '../kill_chain_phase/EntityKillChainPhasesChart';
-import { requestSubscription } from '../../../relay/environment';
 
 const styles = () => ({
   container: {

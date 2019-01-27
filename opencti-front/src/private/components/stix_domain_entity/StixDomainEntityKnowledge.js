@@ -9,7 +9,7 @@ import Input from '@material-ui/core/Input';
 import Chip from '@material-ui/core/Chip';
 import MenuItem from '@material-ui/core/MenuItem';
 import { withStyles } from '@material-ui/core/styles';
-import { QueryRenderer, fetchQuery, requestSubscription } from '../../../relay/environment';
+import { QueryRenderer, fetchQuery } from '../../../relay/environment';
 import { currentYear, parse, yearFormat } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import StixDomainEntityKnowledgeGraph from './StixDomainEntityKnowledgeGraph';
@@ -35,14 +35,6 @@ const styles = theme => ({
     margin: theme.spacing.unit / 4,
   },
 });
-
-const subscription = graphql`
-    subscription StixDomainEntityKnowledgeSubscription($id: ID!) {
-        stixDomainEntity(id: $id) {
-            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
-        }
-    }
-`;
 
 const firstStixRelationQuery = graphql`
     query StixDomainEntityKnowledgeFirstStixRelationQuery($fromId: String, $first: Int, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {

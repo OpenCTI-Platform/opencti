@@ -8,7 +8,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
-import { Biohazard } from 'mdi-material-ui';
+import { Diamond } from 'mdi-material-ui';
 import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
 
@@ -74,7 +74,7 @@ class IntrusionSetLineComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSet.id}`}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Biohazard/>
+          <Diamond/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
@@ -125,7 +125,7 @@ class IntrusionSetLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Biohazard/>
+          <Diamond/>
         </ListItemIcon>
         <ListItemText primary={
           <div>

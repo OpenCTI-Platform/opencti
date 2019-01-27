@@ -5,7 +5,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { ArrowForwardIos } from '@material-ui/icons';
-import { Biohazard } from 'mdi-material-ui';
+import { ChessKnight } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
@@ -41,7 +41,7 @@ class TopMenuCampaign extends Component {
       <div>
         <Button component={Link} to='/dashboard/knowledge/campaigns' variant='contained' size="small"
                 color='inherit' classes={{ root: classes.buttonHome }}>
-          <Biohazard className={classes.icon} fontSize='small'/>
+          <ChessKnight className={classes.icon} fontSize='small'/>
           {t('Campaigns')}
         </Button>
         <ArrowForwardIos color='inherit' classes={{ root: classes.arrow }}/>

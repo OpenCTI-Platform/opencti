@@ -11,7 +11,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
 import { compose } from 'ramda';
-import { Biohazard } from 'mdi-material-ui';
+import { Domain } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
@@ -91,7 +91,7 @@ class SectorCardComponent extends Component {
             avatar={<Avatar className={classes.avatar}>{sector.name.charAt(0)}</Avatar>}
             title={sector.name}
             subheader={`${t('Updated the')} ${fsd(sector.modified)}`}
-            action={<Biohazard className={classes.icon}/>}
+            action={<Domain className={classes.icon}/>}
           />
           <CardContent classes={{ root: classes.content }}>
             <Markdown source={sector.description} disallowedTypes={['link']} unwrapDisallowed={true}/>
@@ -139,7 +139,7 @@ class SectorCardDummyComponent extends Component {
             title={<div className={classes.placeholderHeader} style={{ width: '85%' }}/>}
             titleTypographyProps={{ color: 'inherit' }}
             subheader={<div className={classes.placeholderHeaderDark} style={{ width: '70%' }}/>}
-            action={<Biohazard className={classes.icon}/>}
+            action={<Domain className={classes.icon}/>}
           />
           <CardContent classes={{ root: classes.contentDummy }}>
             <div className={classes.placeholder} style={{ width: '90%' }}/>

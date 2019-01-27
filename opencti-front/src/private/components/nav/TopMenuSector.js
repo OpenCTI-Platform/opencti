@@ -4,8 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos } from '@material-ui/icons';
-import { Domain } from '@material-ui/icons';
+import { ArrowForwardIos, Domain } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({

@@ -1,5 +1,7 @@
 export const resolveLink = (type) => {
   switch (type) {
+    case 'attack-pattern':
+      return '/dashboard/catalogs/attack_patterns';
     case 'country':
       return '/dashboard/catalogs/countries';
     case 'city':

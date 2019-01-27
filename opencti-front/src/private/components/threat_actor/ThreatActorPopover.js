@@ -88,7 +88,7 @@ class ThreatActorPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/knowledge/threatActors');
+        this.props.history.push('/dashboard/knowledge/threat_actors');
       },
     });
   }
@@ -126,7 +126,7 @@ class ThreatActorPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this threatActor?')}
+              {t('Do you want to delete this threat actor?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -143,11 +143,13 @@ class ThreatActorPopover extends Component {
             query={threatActorEditionQuery}
             variables={{ id: threatActorId }}
             render={({ props }) => {
-              if (props) { // Done
-                return <ThreatActorEditionContainer me={props.me} threatActor={props.threatActor}
-                                                handleClose={this.handleCloseEdit.bind(this)}/>;
+              if (props) {
+                return <ThreatActorEditionContainer
+                  me={props.me}
+                  threatActor={props.threatActor}
+                  handleClose={this.handleCloseEdit.bind(this)}
+                />;
               }
-              // Loading
               return <div> &nbsp; </div>;
             }}
           />

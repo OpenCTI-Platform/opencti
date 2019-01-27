@@ -5,7 +5,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { ArrowForwardIos } from '@material-ui/icons';
-import { Biohazard } from 'mdi-material-ui';
+import { Diamond } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
@@ -39,9 +39,9 @@ class TopMenuIntrusionSet extends Component {
     } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/knowledge/intrusionSets' variant='contained' size="small"
+        <Button component={Link} to='/dashboard/knowledge/intrusion_sets' variant='contained' size="small"
                 color='inherit' classes={{ root: classes.buttonHome }}>
-          <Biohazard className={classes.icon} fontSize='small'/>
+          <Diamond className={classes.icon} fontSize='small'/>
           {t('Intrusion sets')}
         </Button>
         <ArrowForwardIos color='inherit' classes={{ root: classes.arrow }}/>

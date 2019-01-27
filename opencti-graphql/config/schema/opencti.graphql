@@ -207,6 +207,10 @@ interface Identity {
     type: String!
     name: String!
     description: String
+    createdByRef: createdByRef
+    markingDefinitions: MarkingDefinitionConnection
+    reports: ReportConnection
+    stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, toId: String, fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
 }
 input IdentityAddInput  {
     name: String!
@@ -254,6 +258,7 @@ type User implements GlobalObject & StixDomainEntity & Identity {
     graph_data: [String]
     editContext: [EditUserContext]
     createdByRef: createdByRef
+    markingDefinitions: MarkingDefinitionConnection
     token: String
     groups: GroupConnection
     reports: ReportConnection
