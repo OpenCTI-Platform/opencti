@@ -12,8 +12,8 @@ import {
   reports,
   markingDefinitions,
   stixRelationEditContext,
-  stixRelationEditField,
-  stixRelationCleanContext
+  stixRelationCleanContext,
+  stixRelationEditField
 } from '../domain/stixRelation';
 import { fetchEditContext, pubsub } from '../database/redis';
 import { auth, withCancel } from './wrapper';
@@ -44,6 +44,7 @@ const stixRelationResolvers = {
       delete: () => stixRelationDelete(id),
       fieldPatch: ({ input }) => stixRelationEditField(user, id, input),
       contextPatch: ({ input }) => stixRelationEditContext(user, id, input),
+      contextClean: () => stixRelationCleanContext(user, id),
     })),
     stixRelationAdd: auth((_, { input }, { user }) => addStixRelation(user, input))
   },

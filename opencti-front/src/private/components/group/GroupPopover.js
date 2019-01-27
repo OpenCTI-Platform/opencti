@@ -16,7 +16,7 @@ import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../relay/environment';
+import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
 import GroupEdition from './GroupEdition';
 
 const styles = theme => ({
@@ -40,6 +40,16 @@ const styles = theme => ({
 function Transition(props) {
   return <Slide direction="up" {...props} />;
 }
+
+const groupPopoverCleanContext = graphql`
+    mutation GroupPopoverCleanContextMutation($id: ID!) {
+        groupEdit(id: $id) {
+            contextClean {
+                ...GroupEdition_group
+            }
+        }
+    }
+`;
 
 const groupPopoverDeletionMutation = graphql`
     mutation GroupPopoverDeletionMutation($id: ID!) {
@@ -85,6 +95,12 @@ class GroupPopover extends Component {
   }
 
   handleCloseUpdate() {
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: groupPopoverCleanContext,
+        variables: { id: this.props.groupId },
+      });
+    }
     this.setState({ displayUpdate: false });
   }
 
@@ -143,11 +159,13 @@ class GroupPopover extends Component {
             query={groupEditionQuery}
             variables={{ id: groupId }}
             render={({ props }) => {
-              if (props) { // Done
-                return <GroupEdition me={props.me} group={props.group}
-                                     handleClose={this.handleCloseUpdate.bind(this)}/>;
+              if (props) {
+                return <GroupEdition
+                  me={props.me}
+                  group={props.group}
+                  handleClose={this.handleCloseUpdate.bind(this)}
+                />;
               }
-              // Loading
               return <div> &nbsp; </div>;
             }}
           />

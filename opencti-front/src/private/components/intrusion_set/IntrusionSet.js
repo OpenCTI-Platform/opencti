@@ -24,33 +24,7 @@ const styles = () => ({
   },
 });
 
-const subscription = graphql`
-    subscription IntrusionSetSubscription($id: ID!) {
-        stixDomainEntity(id: $id) {
-            ...on IntrusionSet {
-                ...IntrusionSet_intrusionSet   
-            }
-        }
-    }
-`;
-
 class IntrusionSetComponent extends Component {
-  componentDidMount() {
-    const sub = requestSubscription({
-      subscription,
-      variables: {
-        id: this.props.intrusionSet.id,
-      },
-    });
-    this.setState({
-      sub,
-    });
-  }
-
-  componentWillUnmount() {
-    this.state.sub.dispose();
-  }
-
   render() {
     const { classes, intrusionSet } = this.props;
     return (

@@ -11,9 +11,10 @@ import {
   reports,
   stixRelations,
   stixDomainEntityEditContext,
+  stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 import { auth } from './wrapper';
@@ -39,6 +40,7 @@ const attackPatternResolvers = {
       delete: () => attackPatternDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
+      contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)

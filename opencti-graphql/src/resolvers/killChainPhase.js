@@ -30,6 +30,7 @@ const killChainPhaseResolvers = {
       delete: () => killChainPhaseDelete(id),
       fieldPatch: ({ input }) => killChainPhaseEditField(user, id, input),
       contextPatch: ({ input }) => killChainPhaseEditContext(user, id, input),
+      contextClean: () => killChainPhaseCleanContext(user, id),
       relationAdd: ({ input }) => killChainPhaseAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         killChainPhaseDeleteRelation(user, id, relationId)

@@ -8,13 +8,13 @@ import {
   findByName,
   search,
   stixDomainEntityEditContext,
+  stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation,
-  stixDomainEntityCleanContext
+  stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
 import { fetchEditContext, pubsub } from '../database/redis';
-import { auth, withCancel } from './wrapper';
+import { auth } from './wrapper';
 
 const stixDomainEntityResolvers = {
   Query: {
@@ -45,27 +45,27 @@ const stixDomainEntityResolvers = {
       delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
+      contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)
     })),
-    stixDomainEntityAdd: auth((_, { input }, { user }) => addStixDomainEntity(user, input))
+    stixDomainEntityAdd: auth((_, { input }, { user }) =>
+      addStixDomainEntity(user, input)
+    )
   },
   Subscription: {
     stixDomainEntity: {
       resolve: payload => payload.instance,
       subscribe: auth((_, { id }, { user }) => {
         stixDomainEntityEditContext(user, id);
-        const filtering = withFilter(
+        return withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC),
           payload => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;
           }
         )(_, { id }, { user });
-        return withCancel(filtering, () => {
-          stixDomainEntityCleanContext(user, id);
-        });
       })
     }
   }

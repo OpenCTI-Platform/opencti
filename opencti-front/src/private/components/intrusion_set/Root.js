@@ -2,11 +2,23 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Redirect, withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer } from '../../../relay/environment';
+import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import IntrusionSet from './IntrusionSet';
 import IntrusionSetReports from './IntrusionSetReports';
 import IntrusionSetKnowledge from './IntrusionSetKnowledge';
+
+const subscription = graphql`
+    subscription RootIntrusionSetSubscription($id: ID!) {
+        stixDomainEntity(id: $id) {
+            ...on IntrusionSet {
+                ...IntrusionSet_intrusionSet
+                ...IntrusionSetEditionContainer_intrusionSet
+            }
+            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
+        }
+    }
+`;
 
 const intrusionSetQuery = graphql`
     query RootIntrusionSetQuery($id: String!) {
@@ -21,6 +33,23 @@ const intrusionSetQuery = graphql`
 `;
 
 class RootIntrusionSet extends Component {
+  componentDidMount() {
+    const { match: { params: { intrusionSetId } } } = this.props;
+    const sub = requestSubscription({
+      subscription,
+      variables: {
+        id: intrusionSetId,
+      },
+    });
+    this.setState({
+      sub,
+    });
+  }
+
+  componentWillUnmount() {
+    this.state.sub.dispose();
+  }
+
   render() {
     const { me, match: { params: { intrusionSetId } } } = this.props;
     return (

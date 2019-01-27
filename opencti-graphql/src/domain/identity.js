@@ -1,16 +1,12 @@
-import { head } from 'ramda';
+import { map } from 'ramda';
 import uuid from 'uuid/v4';
-import { setEditContext } from '../database/redis';
 import {
-  createRelation,
   deleteByID,
-  deleteRelation,
-  editInputTx,
   loadByID,
   notify,
   now,
   paginate,
-  qk
+  takeTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -28,16 +24,11 @@ export const search = args =>
     args
   );
 
-export const markingDefinitions = (identityId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(marking:$marking, so:$identity) isa object_marking_refs; 
-    $identity id ${identityId}`,
-    args
-  );
-
 export const addIdentity = async (user, identity) => {
-  const createIdentity = qk(`insert $identity isa ${identity.type} 
+  const wTx = await takeTx();
+  const identityIterator = await wTx.query(`insert $identity isa ${
+    identity.type
+  } 
     has type "${identity.type.toLowerCase()}";
     $identity has stix_id "${identity.type.toLowerCase()}--${uuid()}";
     $identity has stix_label "";
@@ -54,36 +45,33 @@ export const addIdentity = async (user, identity) => {
     $identity has created_at ${now()};
     $identity has updated_at ${now()};
   `);
-  return createIdentity.then(result => {
-    const { data } = result;
-    return loadByID(head(data).identity.id).then(created =>
-      notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
+  const createIdentity = await identityIterator.next();
+  const createdIdentityId = await createIdentity.map().get('identity').id;
+
+  if (identity.createdByRef) {
+    await wTx.query(`match $from id ${createdIdentityId};
+         $to id ${identity.createdByRef};
+         insert (so: $from, creator: $to)
+         isa created_by_ref;`);
+  }
+
+  if (identity.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.query(
+        `match $from id ${createdIdentityId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      identity.markingDefinitions
     );
-  });
+    await Promise.all(markingDefinitionsPromises);
+  }
+
+  await wTx.commit();
+
+  return loadByID(createdIdentityId).then(created =>
+    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
+  );
 };
 
 export const identityDelete = identityId => deleteByID(identityId);
-
-export const identityAddRelation = (user, identityId, input) =>
-  createRelation(identityId, input).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const identityDeleteRelation = (user, identityId, relationId) =>
-  deleteRelation(identityId, relationId).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const identityEditContext = (user, identityId, input) => {
-  setEditContext(user, identityId, input);
-  return loadByID(identityId).then(identity =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, identity, user)
-  );
-};
-
-export const identityEditField = (user, identityId, input) =>
-  editInputTx(identityId, input).then(identity =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, identity, user)
-  );

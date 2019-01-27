@@ -48,8 +48,10 @@ const styles = theme => ({
 
 const subscription = graphql`
     subscription CountryEditionSubscription($id: ID!) {
-        country(id: $id) {
-            ...CountryEdition_country
+        stixDomainEntity(id: $id) {
+            ... on Country {
+                ...CountryEdition_country
+            }
         }
     }
 `;
@@ -84,10 +86,7 @@ class CountryEditionContainer extends Component {
   componentDidMount() {
     const sub = requestSubscription({
       subscription,
-      variables: {
-        // eslint-disable-next-line
-          id: this.props.country.id
-      },
+      variables: { id: this.props.country.id },
     });
     this.setState({ sub });
   }

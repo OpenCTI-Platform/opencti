@@ -19,39 +19,6 @@ export const findAll = args => paginate('match $m isa Tool', args);
 
 export const findById = toolId => loadByID(toolId);
 
-export const createdByRef = toolId =>
-  qkObjUnique(
-    `match $x isa Identity; 
-    $rel(creator:$x, so:$tool) isa created_by_ref; 
-    $tool id ${toolId}; offset 0; limit 1; get $x,$rel;`,
-    'x',
-    'rel'
-  );
-
-export const markingDefinitions = (toolId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(marking:$marking, so:$tool) isa object_marking_refs; 
-    $tool id ${toolId}`,
-    args
-  );
-
-export const killChainPhases = (toolId, args) =>
-  paginate(
-    `match $kc isa Kill-Chain-Phase; 
-    $rel(kill_chain_phase:$kc, phase_belonging:$tool) isa kill_chain_phases; 
-    $tool id ${toolId}`,
-    args
-  );
-
-export const reports = (toolId, args) =>
-  paginate(
-    `match $report isa Report; 
-    $rel(knowledge_aggregation:$report, so:$tool) isa object_refs; 
-    $tool id ${toolId}`,
-    args
-  );
-
 export const addTool = async (user, tool) => {
   const wTx = await takeTx();
   const toolIterator = await wTx.query(`insert $tool isa Tool 
@@ -113,27 +80,3 @@ export const addTool = async (user, tool) => {
 };
 
 export const toolDelete = toolId => deleteByID(toolId);
-
-export const toolAddRelation = (user, toolId, input) =>
-  createRelation(toolId, input).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const toolDeleteRelation = (user, toolId, relationId) =>
-  deleteRelation(toolId, relationId).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const toolEditContext = (user, toolId, input) => {
-  setEditContext(user, toolId, input);
-  return loadByID(toolId).then(tool =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, tool, user)
-  );
-};
-
-export const toolEditField = (user, toolId, input) =>
-  editInputTx(toolId, input).then(tool =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, tool, user)
-  );

@@ -2,15 +2,19 @@ import {
   addCourseOfAction,
   courseOfActionDelete,
   findAll,
-  findById,
+  findById
+} from '../domain/courseOfAction';
+import {
   createdByRef,
   markingDefinitions,
   reports,
-  courseOfActionEditContext,
-  courseOfActionEditField,
-  courseOfActionAddRelation,
-  courseOfActionDeleteRelation
-} from '../domain/courseOfAction';
+  stixRelations,
+  stixDomainEntityEditContext,
+  stixDomainEntityCleanContext,
+  stixDomainEntityEditField,
+  stixDomainEntityAddRelation,
+  stixDomainEntityDeleteRelation
+} from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 import { auth } from './wrapper';
 
@@ -29,11 +33,12 @@ const courseOfActionResolvers = {
   Mutation: {
     courseOfActionEdit: auth((_, { id }, { user }) => ({
       delete: () => courseOfActionDelete(id),
-      fieldPatch: ({ input }) => courseOfActionEditField(user, id, input),
-      contextPatch: ({ input }) => courseOfActionEditContext(user, id, input),
-      relationAdd: ({ input }) => courseOfActionAddRelation(user, id, input),
+      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
+      contextClean: () => stixDomainEntityCleanContext(user, id),
+      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
-        courseOfActionDeleteRelation(user, id, relationId)
+        stixDomainEntityDeleteRelation(user, id, relationId)
     })),
     courseOfActionAdd: auth((_, { input }, { user }) => addCourseOfAction(user, input))
   }

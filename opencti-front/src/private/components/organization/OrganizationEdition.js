@@ -48,8 +48,10 @@ const styles = theme => ({
 
 const subscription = graphql`
     subscription OrganizationEditionSubscription($id: ID!) {
-        organization(id: $id) {
-            ...OrganizationEdition_organization
+        stixDomainEntity(id: $id) {
+            ... on Organization {
+                ...OrganizationEdition_organization
+            }
         }
     }
 `;
@@ -84,10 +86,7 @@ class OrganizationEditionContainer extends Component {
   componentDidMount() {
     const sub = requestSubscription({
       subscription,
-      variables: {
-        // eslint-disable-next-line
-          id: this.props.organization.id
-      },
+      variables: { id: this.props.organization.id },
     });
     this.setState({ sub });
   }

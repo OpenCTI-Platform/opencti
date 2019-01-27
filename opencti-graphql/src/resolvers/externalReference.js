@@ -38,6 +38,7 @@ const externalReferenceResolvers = {
       fieldPatch: ({ input }) => externalReferenceEditField(user, id, input),
       contextPatch: ({ input }) =>
         externalReferenceEditContext(user, id, input),
+      contextClean: () => externalReferenceCleanContext(user, id),
       relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         externalReferenceDeleteRelation(user, id, relationId)

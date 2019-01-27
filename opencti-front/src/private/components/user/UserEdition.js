@@ -50,11 +50,13 @@ const styles = theme => ({
 });
 
 const subscription = graphql`
-  subscription UserEditionSubscription($id: ID!) {
-    user(id: $id) {
-      ...UserEdition_user
+    subscription UserEditionSubscription($id: ID!) {
+        stixDomainEntity(id: $id) {
+            ... on User {
+                ...UserEdition_user
+            }
+        }
     }
-  }
 `;
 
 class UserEdition extends Component {
@@ -66,10 +68,7 @@ class UserEdition extends Component {
   componentDidMount() {
     const sub = requestSubscription({
       subscription,
-      variables: {
-        // eslint-disable-next-line
-          id: this.props.user.__id,
-      },
+      variables: { id: this.props.user.id },
     });
     this.setState({ sub });
   }
@@ -87,7 +86,6 @@ class UserEdition extends Component {
       t, classes, handleClose, user, me,
     } = this.props;
     const { editContext } = user;
-    // Add current user to the context if is not available yet.
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
     const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
     return (
@@ -133,20 +131,21 @@ UserEdition.propTypes = {
 
 const UserEditionFragment = createFragmentContainer(UserEdition, {
   user: graphql`
-    fragment UserEdition_user on User {
-      ...UserEditionOverview_user,
-      ...UserEditionPassword_user,
-      ...UserEditionGroups_user,
-      editContext {
-        name,
-        focusOn
+      fragment UserEdition_user on User {
+          id
+          ...UserEditionOverview_user,
+          ...UserEditionPassword_user,
+          ...UserEditionGroups_user,
+          editContext {
+              name,
+              focusOn
+          }
       }
-    }
   `,
   me: graphql`
-    fragment UserEdition_me on User {
-      email
-    }
+      fragment UserEdition_me on User {
+          email
+      }
   `,
 });
 

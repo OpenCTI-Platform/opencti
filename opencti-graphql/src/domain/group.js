@@ -1,10 +1,6 @@
 import { head } from 'ramda';
-import { setEditContext } from '../database/redis';
 import {
-  createRelation,
   deleteByID,
-  deleteRelation,
-  editInputTx,
   loadByID,
   notify,
   now,
@@ -54,27 +50,3 @@ export const addGroup = async (user, group) => {
 };
 
 export const groupDelete = groupId => deleteByID(groupId);
-
-export const groupAddRelation = (user, groupId, input) =>
-  createRelation(groupId, input).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const groupDeleteRelation = (user, groupId, relationId) =>
-  deleteRelation(groupId, relationId).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const groupEditContext = (user, groupId, input) => {
-  setEditContext(user, groupId, input);
-  return loadByID(groupId).then(group =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, group, user)
-  );
-};
-
-export const groupEditField = (user, groupId, input) =>
-  editInputTx(groupId, input).then(group =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, group, user)
-  );

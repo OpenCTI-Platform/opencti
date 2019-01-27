@@ -2,11 +2,22 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Redirect, withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer } from '../../../relay/environment';
+import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import ThreatActor from './ThreatActor';
 import ThreatActorReports from './ThreatActorReports';
 import ThreatActorKnowledge from './ThreatActorKnowledge';
+
+const subscription = graphql`
+    subscription RootThreatActorSubscription($id: ID!) {
+        stixDomainEntity(id: $id) {
+            ...on ThreatActor {
+                ...ThreatActor_threatActor
+            }
+            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
+        }
+    }
+`;
 
 const threatActorQuery = graphql`
     query RootThreatActorQuery($id: String!) {
@@ -21,6 +32,19 @@ const threatActorQuery = graphql`
 `;
 
 class RootThreatActor extends Component {
+  componentDidMount() {
+    const { match: { params: { threatActorId } } } = this.props;
+    const sub = requestSubscription({
+      subscription,
+      variables: { id: threatActorId },
+    });
+    this.setState({ sub });
+  }
+
+  componentWillUnmount() {
+    this.state.sub.dispose();
+  }
+
   render() {
     const { me, match: { params: { threatActorId } } } = this.props;
     return (

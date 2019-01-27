@@ -1,16 +1,11 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
-import { setEditContext } from '../database/redis';
 import {
-  createRelation,
   deleteByID,
-  deleteRelation,
-  editInputTx,
   loadByID,
   notify,
   now,
   paginate,
-  qkObjUnique,
   takeTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -18,31 +13,6 @@ import { BUS_TOPICS } from '../config/conf';
 export const findAll = args => paginate('match $m isa CourseOfAction', args);
 
 export const findById = courseOfActionId => loadByID(courseOfActionId);
-
-export const createdByRef = courseOfActionId =>
-  qkObjUnique(
-    `match $x isa Identity; 
-    $rel(creator:$x, so:$courseOfAction) isa created_by_ref; 
-    $courseOfAction id ${courseOfActionId}; offset 0; limit 1; get $x,$rel;`,
-    'x',
-    'rel'
-  );
-
-export const markingDefinitions = (courseOfActionId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(marking:$marking, so:$courseOfAction) isa object_marking_refs; 
-    $courseOfAction id ${courseOfActionId}`,
-    args
-  );
-
-export const reports = (courseOfActionId, args) =>
-  paginate(
-    `match $report isa Report; 
-    $rel(knowledge_aggregation:$report, so:$courseOfAction) isa object_refs; 
-    $courseOfAction id ${courseOfActionId}`,
-    args
-  );
 
 export const addCourseOfAction = async (user, courseOfAction) => {
   const wTx = await takeTx();
@@ -108,31 +78,3 @@ export const addCourseOfAction = async (user, courseOfAction) => {
 
 export const courseOfActionDelete = courseOfActionId =>
   deleteByID(courseOfActionId);
-
-export const courseOfActionAddRelation = (user, courseOfActionId, input) =>
-  createRelation(courseOfActionId, input).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const courseOfActionDeleteRelation = (
-  user,
-  courseOfActionId,
-  relationId
-) =>
-  deleteRelation(courseOfActionId, relationId).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const courseOfActionEditContext = (user, courseOfActionId, input) => {
-  setEditContext(user, courseOfActionId, input);
-  return loadByID(courseOfActionId).then(courseOfAction =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, courseOfAction, user)
-  );
-};
-
-export const courseOfActionEditField = (user, courseOfActionId, input) =>
-  editInputTx(courseOfActionId, input).then(courseOfAction =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, courseOfAction, user)
-  );

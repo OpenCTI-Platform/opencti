@@ -1191,26 +1191,9 @@ type Subscription {
     settings(id: ID!): Settings
     stixDomainEntity(id: ID!): StixDomainEntity
     stixRelation(id: ID!): StixRelation
-    identity(id: ID!): Identity
-    user(id: ID!): User
-    organization(id: ID!): Organization
-    sector(id: ID!): Sector
-    city(id: ID!): City
-    country(id: ID!): Country
-    group(id: ID!): Group
     markingDefinition(id: ID!): MarkingDefinition
     externalReference(id: ID!): ExternalReference
     killChainPhase(id: ID!): KillChainPhase
-    attackPattern(id: ID!): AttackPattern
-    courseOfAction(id: ID!): CourseOfAction
-    threatActor(id: ID!): ThreatActor
-    intrusionSet(id: ID!): IntrusionSet
-    campaign(id: ID!): Campaign
-    incident(id: ID!): Incident
-    malware(id: ID!): Malware
-    tool(id: ID!): Tool
-    vulnerability(id: ID!): Vulnerability
-    report(id: ID!): Report
 }
 
 ### MUTATIONS
@@ -1219,6 +1202,7 @@ type SettingsEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Settings
     contextPatch(input: EditContext): Settings
+    contextClean: Settings
 }
 
 # StixDomain
@@ -1226,6 +1210,7 @@ type StixDomainEntityEditMutations {
     delete: ID
     fieldPatch(input: EditInput): StixDomainEntity
     contextPatch(input: EditContext): StixDomainEntity
+    contextClean: StixDomainEntity
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1235,6 +1220,7 @@ type StixRelationEditMutations {
     delete: ID
     fieldPatch(input: EditInput): StixRelation
     contextPatch(input: EditContext): StixRelation
+    contextClean: StixRelation
 }
 
 # Identity
@@ -1242,6 +1228,7 @@ type IdentityEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Identity
     contextPatch(input: EditContext): Identity
+    contextClean: Identity
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1251,6 +1238,7 @@ type UserEditMutations {
     delete: ID
     fieldPatch(input: EditInput): User
     contextPatch(input: EditContext): User
+    contextClean: User
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1260,6 +1248,7 @@ type OrganizationEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Organization
     contextPatch(input: EditContext): Organization
+    contextClean: Organization
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1269,6 +1258,7 @@ type SectorEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Sector
     contextPatch(input: EditContext): Sector
+    contextClean: Sector
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1278,6 +1268,7 @@ type CityEditMutations {
     delete: ID
     fieldPatch(input: EditInput): City
     contextPatch(input: EditContext): City
+    contextClean: City
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1287,6 +1278,7 @@ type CountryEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Country
     contextPatch(input: EditContext): Country
+    contextClean: Country
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1296,6 +1288,7 @@ type GroupEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Group
     contextPatch(input: EditContext): Group
+    contextClean: Group
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1305,6 +1298,7 @@ type MarkingDefinitionEditMutations {
     delete: ID
     fieldPatch(input: EditInput): MarkingDefinition
     contextPatch(input: EditContext): MarkingDefinition
+    contextClean: MarkingDefinition
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1314,6 +1308,7 @@ type ExternalReferenceEditMutations {
     delete: ID
     fieldPatch(input: EditInput): ExternalReference
     contextPatch(input: EditContext): ExternalReference
+    contextClean: ExternalReference
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1323,6 +1318,7 @@ type KillChainPhaseEditMutations {
     delete: ID
     fieldPatch(input: EditInput): KillChainPhase
     contextPatch(input: EditContext): KillChainPhase
+    contextClean: KillChainPhase
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1332,6 +1328,7 @@ type AttackPatternEditMutations {
     delete: ID
     fieldPatch(input: EditInput): AttackPattern
     contextPatch(input: EditContext): AttackPattern
+    contextClean: AttackPattern
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId:ID!): RelationData
 }
@@ -1341,6 +1338,7 @@ type CourseOfActionEditMutations {
     delete: ID
     fieldPatch(input: EditInput): CourseOfAction
     contextPatch(input: EditContext): CourseOfAction
+    contextClean: CourseOfAction
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId:ID!): RelationData
 }
@@ -1350,6 +1348,7 @@ type ThreatActorEditMutations {
     delete: ID
     fieldPatch(input: EditInput): ThreatActor
     contextPatch(input: EditContext): ThreatActor
+    contextClean: ThreatActor
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1359,6 +1358,7 @@ type IntrusionSetEditMutations {
     delete: ID
     fieldPatch(input: EditInput): IntrusionSet
     contextPatch(input: EditContext): IntrusionSet
+    contextClean: IntrusionSet
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1368,6 +1368,7 @@ type CampaignEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Campaign
     contextPatch(input: EditContext): Campaign
+    contextClean: Campaign
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId:ID!): RelationData
 }
@@ -1377,6 +1378,7 @@ type IncidentEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Incident
     contextPatch(input: EditContext): Incident
+    contextClean: Incident
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId:ID!): RelationData
 }
@@ -1386,6 +1388,7 @@ type MalwareEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Malware
     contextPatch(input: EditContext): Malware
+    contextClean: Malware
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId:ID!): RelationData
 }
@@ -1395,6 +1398,7 @@ type ToolEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Tool
     contextPatch(input: EditContext): Tool
+    contextClean: Tool
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId:ID!): RelationData
 }
@@ -1404,6 +1408,7 @@ type VulnerabilityEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Vulnerability
     contextPatch(input: EditContext): Vulnerability
+    contextClean: Vulnerability
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId:ID!): RelationData
 }
@@ -1413,6 +1418,7 @@ type ReportEditMutations {
     delete: ID
     fieldPatch(input: EditInput): Report
     contextPatch(input: EditContext): Report
+    contextClean: Report
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId:ID!): RelationData
 }

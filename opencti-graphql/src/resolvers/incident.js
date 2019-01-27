@@ -10,6 +10,7 @@ import {
   reports,
   stixRelations,
   stixDomainEntityEditContext,
+  stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
   stixDomainEntityDeleteRelation
@@ -34,6 +35,7 @@ const incidentResolvers = {
       delete: () => incidentDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
+      contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)

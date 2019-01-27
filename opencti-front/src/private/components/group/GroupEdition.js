@@ -50,8 +50,10 @@ const styles = theme => ({
 
 const subscription = graphql`
     subscription GroupEditionSubscription($id: ID!) {
-        group(id: $id) {
-            ...GroupEdition_group
+        stixDomainEntity(id: $id) {
+            ... on Group {
+                ...GroupEdition_group
+            }
         }
     }
 `;
@@ -65,14 +67,9 @@ class GroupEdition extends Component {
   componentDidMount() {
     const sub = requestSubscription({
       subscription,
-      variables: {
-        // eslint-disable-next-line
-          id: this.props.group.__id
-      },
+      variables: { id: this.props.group.id },
     });
-    this.setState({
-      sub,
-    });
+    this.setState({ sub });
   }
 
   componentWillUnmount() {
@@ -132,6 +129,7 @@ GroupEdition.propTypes = {
 const GroupEditionFragment = createFragmentContainer(GroupEdition, {
   group: graphql`
       fragment GroupEdition_group on Group {
+          id
           ...GroupEditionOverview_group
           ...GroupEditionPermissions_group
           editContext {

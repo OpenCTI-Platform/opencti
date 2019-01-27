@@ -48,8 +48,10 @@ const styles = theme => ({
 
 const subscription = graphql`
     subscription CityEditionSubscription($id: ID!) {
-        city(id: $id) {
-            ...CityEdition_city
+        stixDomainEntity(id: $id) {
+            ... on City {
+                ...CityEdition_city
+            }
         }
     }
 `;
@@ -86,7 +88,7 @@ class CityEditionContainer extends Component {
       subscription,
       variables: {
         // eslint-disable-next-line
-          id: this.props.city.id
+        id: this.props.city.id
       },
     });
     this.setState({ sub });

@@ -4,7 +4,7 @@ import uuidv5 from 'uuid/v5';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
-import { delUserContext, setEditContext } from '../database/redis';
+import { delUserContext } from '../database/redis';
 import { MissingElement, AuthenticationFailure } from '../config/errors';
 import conf, {
   BUS_TOPICS,
@@ -17,10 +17,7 @@ import conf, {
 } from '../config/conf';
 import {
   qkObjUnique,
-  createRelation,
   deleteByID,
-  deleteRelation,
-  editInputTx,
   loadByID,
   notify,
   now,
@@ -204,36 +201,6 @@ export const logout = async (user, res) => {
 };
 
 export const userDelete = userId => deleteByID(userId);
-
-export const userAddRelation = (user, userId, input) =>
-  createRelation(userId, input).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const userDeleteRelation = (user, userId, relationId) =>
-  deleteRelation(userId, relationId).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const userEditContext = (user, userId, input) => {
-  setEditContext(user, userId, input);
-  return loadByID(userId).then(userToEdit =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user)
-  );
-};
-
-export const userEditField = (user, userId, input) => {
-  const { key } = input;
-  const value =
-    key === 'password' // If special case of password
-      ? [bcrypt.hashSync(head(input.value), 10)] // Encrypt the password
-      : input.value; // Else just keep the value untouched
-  return editInputTx(userId, { key, value }).then(userToEdit =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user)
-  );
-};
 
 export const deleteUserByEmail = email => {
   const delUser = qk(`match $x has email "${email}"; delete $x;`);

@@ -9,7 +9,6 @@ import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
-import { requestSubscription } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { SubscriptionAvatars } from '../../../components/Subscription';
 import ReportEditionOverview from './ReportEditionOverview';
@@ -44,30 +43,7 @@ const styles = theme => ({
   },
 });
 
-const subscription = graphql`
-    subscription ReportEditionContainerSubscription($id: ID!) {
-        report(id: $id) {
-            ...ReportEditionContainer_report
-        }
-    }
-`;
-
 class ReportEditionContainer extends Component {
-  componentDidMount() {
-    const sub = requestSubscription({
-      subscription,
-      variables: {
-        // eslint-disable-next-line
-        id: this.props.report.id
-      },
-    });
-    this.setState({ sub });
-  }
-
-  componentWillUnmount() {
-    this.state.sub.dispose();
-  }
-
   render() {
     const {
       t, classes, handleClose, report, me,

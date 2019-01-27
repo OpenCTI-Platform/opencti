@@ -3,12 +3,19 @@ import {
   identityDelete,
   findAll,
   findById,
-  search,
-  identityEditContext,
-  identityEditField,
-  identityAddRelation,
-  identityDeleteRelation
+  search
 } from '../domain/identity';
+import {
+  createdByRef,
+  markingDefinitions,
+  reports,
+  stixRelations,
+  stixDomainEntityEditContext,
+  stixDomainEntityCleanContext,
+  stixDomainEntityEditField,
+  stixDomainEntityAddRelation,
+  stixDomainEntityDeleteRelation
+} from '../domain/stixDomainEntity';
 import { auth } from './wrapper';
 
 const identityResolvers = {
@@ -29,16 +36,21 @@ const identityResolvers = {
         );
       }
       return 'Unknown';
-    }
+    },
+    createdByRef: (identity, args) => createdByRef(identity.id, args),
+    markingDefinitions: (identity, args) => markingDefinitions(identity.id, args),
+    reports: (identity, args) => reports(identity.id, args),
+    stixRelations: (identity, args) => stixRelations(identity.id, args),
   },
   Mutation: {
     identityEdit: auth((_, { id }, { user }) => ({
       delete: () => identityDelete(id),
-      fieldPatch: ({ input }) => identityEditField(user, id, input),
-      contextPatch: ({ input }) => identityEditContext(user, id, input),
-      relationAdd: ({ input }) => identityAddRelation(user, id, input),
+      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
+      contextClean: () => stixDomainEntityCleanContext(user, id),
+      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
-        identityDeleteRelation(user, id, relationId)
+        stixDomainEntityDeleteRelation(user, id, relationId)
     })),
     identityAdd: auth((_, { input }, { user }) => addIdentity(user, input))
   }

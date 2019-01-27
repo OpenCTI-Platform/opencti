@@ -67,11 +67,13 @@ class ReportEdition extends Component {
               query={reportEditionQuery}
               variables={{ id: reportId }}
               render={({ props }) => {
-                if (props) { // Done
-                  return <ReportEditionContainer me={props.me} report={props.report}
-                                                  handleClose={this.handleClose.bind(this)}/>;
+                if (props) {
+                  return <ReportEditionContainer
+                    me={props.me}
+                    report={props.report}
+                    handleClose={this.handleClose.bind(this)}
+                  />;
                 }
-                // Loading
                 return <div> &nbsp; </div>;
               }}
           />
