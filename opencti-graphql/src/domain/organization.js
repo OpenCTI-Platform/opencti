@@ -1,6 +1,6 @@
 import { head } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
+import { setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
@@ -47,7 +47,7 @@ export const addOrganization = async (user, organization) => {
   return createOrganization.then(result => {
     const { data } = result;
     return loadByID(head(data).organization.id).then(created =>
-      notify(BUS_TOPICS.Organization.ADDED_TOPIC, created, user)
+      notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
     );
   });
 };
@@ -56,31 +56,24 @@ export const organizationDelete = organizationId => deleteByID(organizationId);
 
 export const organizationAddRelation = (user, organizationId, input) =>
   createRelation(organizationId, input).then(relationData => {
-    notify(BUS_TOPICS.Organization.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
 
 export const organizationDeleteRelation = (user, organizationId, relationId) =>
   deleteRelation(organizationId, relationId).then(relationData => {
-    notify(BUS_TOPICS.Organization.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
-
-export const organizationCleanContext = (user, organizationId) => {
-  delEditContext(user, organizationId);
-  return loadByID(organizationId).then(organization =>
-    notify(BUS_TOPICS.Organization.EDIT_TOPIC, organization, user)
-  );
-};
 
 export const organizationEditContext = (user, organizationId, input) => {
   setEditContext(user, organizationId, input);
   return loadByID(organizationId).then(organization =>
-    notify(BUS_TOPICS.Organization.EDIT_TOPIC, organization, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, organization, user)
   );
 };
 
 export const organizationEditField = (user, organizationId, input) =>
   editInputTx(organizationId, input).then(organization =>
-    notify(BUS_TOPICS.Organization.EDIT_TOPIC, organization, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, organization, user)
   );

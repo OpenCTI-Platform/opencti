@@ -1,5 +1,5 @@
 import { head } from 'ramda';
-import { delEditContext, setEditContext } from '../database/redis';
+import { setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
@@ -48,7 +48,7 @@ export const addGroup = async (user, group) => {
   return createGroup.then(result => {
     const { data } = result;
     return loadByID(head(data).group.id).then(created =>
-      notify(BUS_TOPICS.Group.ADDED_TOPIC, created, user)
+      notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
     );
   });
 };
@@ -57,31 +57,24 @@ export const groupDelete = groupId => deleteByID(groupId);
 
 export const groupAddRelation = (user, groupId, input) =>
   createRelation(groupId, input).then(relationData => {
-    notify(BUS_TOPICS.Group.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
 
 export const groupDeleteRelation = (user, groupId, relationId) =>
   deleteRelation(groupId, relationId).then(relationData => {
-    notify(BUS_TOPICS.Group.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
-
-export const groupCleanContext = (user, groupId) => {
-  delEditContext(user, groupId);
-  return loadByID(groupId).then(group =>
-    notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user)
-  );
-};
 
 export const groupEditContext = (user, groupId, input) => {
   setEditContext(user, groupId, input);
   return loadByID(groupId).then(group =>
-    notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, group, user)
   );
 };
 
 export const groupEditField = (user, groupId, input) =>
   editInputTx(groupId, input).then(group =>
-    notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, group, user)
   );

@@ -9,7 +9,6 @@ import PolarGrid from 'recharts/lib/polar/PolarGrid';
 import PolarAngleAxis from 'recharts/lib/polar/PolarAngleAxis';
 import PolarRadiusAxis from 'recharts/lib/polar/PolarRadiusAxis';
 import Radar from 'recharts/lib/polar/Radar';
-import Legend from 'recharts/lib/component/Legend';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';

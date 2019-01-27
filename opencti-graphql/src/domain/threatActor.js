@@ -1,17 +1,12 @@
-import { head } from 'ramda';
+import { map } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
 import {
-  createRelation,
+  takeTx,
   deleteByID,
-  deleteRelation,
-  editInputTx,
   loadByID,
   notify,
   now,
-  paginate,
-  qkObjUnique,
-  qk
+  paginate
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -27,17 +22,9 @@ export const markingDefinitions = (threatActorId, args) =>
 
 export const findById = threatActorId => loadByID(threatActorId);
 
-export const createdByRef = threatActorId =>
-  qkObjUnique(
-    `match $x isa Identity; 
-    $rel(creator:$x, so:$report) isa created_by_ref; 
-    $report id ${threatActorId};  offset 0; limit 1; get $x,$rel;`,
-    'x',
-    'rel'
-  );
-
 export const addThreatActor = async (user, threatActor) => {
-  const createThreatActor = qk(`insert $threatActor isa Threat-Actor 
+  const wTx = await takeTx();
+  const threatActorIterator = await wTx.query(`insert $threatActor isa Threat-Actor 
     has type "threat-actor";
     $threatActor has stix_id "threat-actor--${uuid()}";
     $threatActor has stix_label "";
@@ -54,43 +41,33 @@ export const addThreatActor = async (user, threatActor) => {
     $threatActor has created_at ${now()};
     $threatActor has updated_at ${now()};
   `);
-  return createThreatActor.then(result => {
-    const { data } = result;
-    return loadByID(head(data).threatActor.id).then(created =>
-      notify(BUS_TOPICS.ThreatActor.ADDED_TOPIC, created, user)
+  const createThreatActor = await threatActorIterator.next();
+  const createThreatActorId = await createThreatActor.map().get('threatActor').id;
+
+  if (threatActor.createdByRef) {
+    await wTx.query(`match $from id ${createThreatActorId};
+         $to id ${threatActor.createdByRef};
+         insert (so: $from, creator: $to)
+         isa created_by_ref;`);
+  }
+
+  if (threatActor.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.query(
+        `match $from id ${createThreatActorId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      threatActor.markingDefinitions
     );
-  });
+    await Promise.all(markingDefinitionsPromises);
+  }
+
+  await wTx.commit();
+
+  return loadByID(createThreatActorId).then(created =>
+    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
+  );
 };
 
 export const threatActorDelete = threatActorId => deleteByID(threatActorId);
-
-export const threatActorAddRelation = (user, threatActorId, input) =>
-  createRelation(threatActorId, input).then(relationData => {
-    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const threatActorDeleteRelation = (user, threatActorId, relationId) =>
-  deleteRelation(threatActorId, relationId).then(relationData => {
-    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const threatActorCleanContext = (user, threatActorId) => {
-  delEditContext(user, threatActorId);
-  return loadByID(threatActorId).then(threatActor =>
-    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, threatActor)
-  );
-};
-
-export const threatActorEditContext = (user, threatActorId, input) => {
-  setEditContext(user, threatActorId, input);
-  return loadByID(threatActorId).then(threatActor =>
-    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, threatActor, user)
-  );
-};
-
-export const threatActorEditField = (user, threatActorId, input) =>
-  editInputTx(threatActorId, input).then(threatActor =>
-    notify(BUS_TOPICS.ThreatActor.EDIT_TOPIC, threatActor, user)
-  );

@@ -17,9 +17,10 @@ import {
   ArrowDropDown, ArrowDropUp, ArrowUpward, ArrowDownward, Dashboard, TableChart,
 } from '@material-ui/icons';
 import { QueryRenderer } from '../../relay/environment';
+import inject18n from '../../components/i18n';
 import ThreatActorsLines, { threatActorsLinesQuery } from './threat_actor/ThreatActorsLines';
 import ThreatActorsCards, { threatActorsCardsQuery, nbCardsToLoad } from './threat_actor/ThreatActorsCards';
-import inject18n from '../../components/i18n';
+import ThreatActorCreation from './threat_actor/ThreatActorCreation';
 
 const styles = () => ({
   linesContainer: {
@@ -187,7 +188,10 @@ class ThreatActors extends Component {
         <QueryRenderer
           query={threatActorsLinesQuery}
           variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
-          render={({ props }) => {
+          render={({ error, props }) => {
+            if (error) { // Errors
+              return <ThreatActorsLines data={null} dummy={true}/>;
+            }
             if (props) { // Done
               return <ThreatActorsLines data={props}/>;
             }
@@ -222,6 +226,11 @@ class ThreatActors extends Component {
         <div className='clearfix'/>
         {this.state.view === 'cards' ? this.renderCards() : ''}
         {this.state.view === 'lines' ? this.renderLines() : ''}
+        <ThreatActorCreation
+            paginationOptions={{
+              orderBy: this.state.sortBy,
+              orderMode: this.state.orderAsc ? 'asc' : 'desc',
+            }}/>
       </div>
     );
   }

@@ -164,6 +164,7 @@ type StixRelation implements GlobalObject {
     modified: DateTime!
     graph_data: [String]
     editContext: [EditUserContext]
+    createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
     reports: ReportConnection
     from: StixDomainEntityEdge
@@ -241,6 +242,7 @@ type User implements GlobalObject & StixDomainEntity & Identity {
     id: ID!
     type: String!
     name: String!
+    stix_label: [String]
     description: String
     firstname: String
     lastname: String
@@ -251,8 +253,10 @@ type User implements GlobalObject & StixDomainEntity & Identity {
     modified: DateTime
     graph_data: [String]
     editContext: [EditUserContext]
+    createdByRef: createdByRef
     token: String
     groups: GroupConnection
+    reports: ReportConnection
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, toId: String, fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
     created_at: DateTime!
     updated_at: DateTime!
@@ -300,13 +304,16 @@ type Organization implements GlobalObject & StixDomainEntity & Identity {
     id: ID!
     type: String!
     name: String!
+    stix_label: [String]
     description: String
     created: DateTime
     modified: DateTime
     revoked: Boolean
     graph_data: [String]
     editContext: [EditUserContext]
+    createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
+    reports: ReportConnection
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, toId: String, fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
     created_at: DateTime!
     updated_at: DateTime!
@@ -341,13 +348,16 @@ type Sector implements GlobalObject & StixDomainEntity & Identity {
     id: ID!
     type: String!
     name: String!
+    stix_label: [String]
     description: String
     created: DateTime
     modified: DateTime
     revoked: Boolean
     graph_data: [String]
     editContext: [EditUserContext]
+    createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
+    reports: ReportConnection
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, toId: String, fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
     created_at: DateTime!
     updated_at: DateTime!
@@ -382,13 +392,16 @@ type City implements GlobalObject & StixDomainEntity & Identity {
     id: ID!
     type: String!
     name: String!
+    stix_label: [String]
     description: String
     created: DateTime
     modified: DateTime
     revoked: Boolean
     graph_data: [String]
     editContext: [EditUserContext]
+    createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
+    reports: ReportConnection
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, toId: String, fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
     created_at: DateTime!
     updated_at: DateTime!
@@ -423,13 +436,16 @@ type Country implements GlobalObject & StixDomainEntity & Identity {
     id: ID!
     type: String!
     name: String!
+    stix_label: [String]
     description: String
     created: DateTime
     modified: DateTime
     revoked: Boolean
     graph_data: [String]
     editContext: [EditUserContext]
+    createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
+    reports: ReportConnection
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, toId: String, fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
     created_at: DateTime!
     updated_at: DateTime!
@@ -461,11 +477,14 @@ type Group implements GlobalObject & StixDomainEntity {
     id: ID!
     type: String!
     name: String!
+    stix_label: [String]
     description: String
     graph_data: [String]
     editContext: [EditUserContext]
+    createdByRef: createdByRef
     members: UserConnection
     permissions: MarkingDefinitionConnection
+    reports: ReportConnection
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, toId: String, fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
     created_at: DateTime!
     updated_at: DateTime!
@@ -729,6 +748,7 @@ type ThreatActor implements GlobalObject & StixDomainEntity & Identity {
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
+    reports: ReportConnection
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, toId: String, fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
     created_at: DateTime!
     updated_at: DateTime!
@@ -778,6 +798,7 @@ type IntrusionSet implements GlobalObject & StixDomainEntity {
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
+    reports: ReportConnection
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, toId: String, fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
     created_at: DateTime!
     updated_at: DateTime!

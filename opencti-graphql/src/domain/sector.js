@@ -1,16 +1,12 @@
-import { head } from 'ramda';
+import { map } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
 import {
-  createRelation,
   deleteByID,
-  deleteRelation,
-  editInputTx,
   loadByID,
   notify,
   now,
   paginate,
-  qk
+  takeTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -27,7 +23,8 @@ export const markingDefinitions = (sectorId, args) =>
   );
 
 export const addSector = async (user, sector) => {
-  const createSector = qk(`insert $sector isa Sector 
+  const wTx = await takeTx();
+  const sectorIterator = await wTx.query(`insert $sector isa Sector 
     has type "sector";
     $sector has stix_id "sector--${uuid()}";
     $sector has stix_label "";
@@ -44,43 +41,33 @@ export const addSector = async (user, sector) => {
     $sector has created_at ${now()};
     $sector has updated_at ${now()};
   `);
-  return createSector.then(result => {
-    const { data } = result;
-    return loadByID(head(data).sector.id).then(created =>
-      notify(BUS_TOPICS.Sector.ADDED_TOPIC, created, user)
+  const createSector = await sectorIterator.next();
+  const createdSectorId = await createSector.map().get('sector').id;
+
+  if (sector.createdByRef) {
+    await wTx.query(`match $from id ${createdSectorId};
+         $to id ${sector.createdByRef};
+         insert (so: $from, creator: $to)
+         isa created_by_ref;`);
+  }
+
+  if (sector.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.query(
+        `match $from id ${createdSectorId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      sector.markingDefinitions
     );
-  });
+    await Promise.all(markingDefinitionsPromises);
+  }
+
+  await wTx.commit();
+
+  return loadByID(createdSectorId).then(created =>
+    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
+  );
 };
 
 export const sectorDelete = sectorId => deleteByID(sectorId);
-
-export const sectorAddRelation = (user, sectorId, input) =>
-  createRelation(sectorId, input).then(relationData => {
-    notify(BUS_TOPICS.Sector.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const sectorDeleteRelation = (user, sectorId, relationId) =>
-  deleteRelation(sectorId, relationId).then(relationData => {
-    notify(BUS_TOPICS.Sector.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const sectorCleanContext = (user, sectorId) => {
-  delEditContext(user, sectorId);
-  return loadByID(sectorId).then(sector =>
-    notify(BUS_TOPICS.Sector.EDIT_TOPIC, sector, user)
-  );
-};
-
-export const sectorEditContext = (user, sectorId, input) => {
-  setEditContext(user, sectorId, input);
-  return loadByID(sectorId).then(sector =>
-    notify(BUS_TOPICS.Sector.EDIT_TOPIC, sector, user)
-  );
-};
-
-export const sectorEditField = (user, sectorId, input) =>
-  editInputTx(sectorId, input).then(sector =>
-    notify(BUS_TOPICS.Sector.EDIT_TOPIC, sector, user)
-  );

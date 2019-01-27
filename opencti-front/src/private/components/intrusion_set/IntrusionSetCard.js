@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
@@ -11,7 +11,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
 import { compose } from 'ramda';
-import { Diamond } from 'mdi-material-ui';
+import { Biohazard } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
@@ -91,7 +91,7 @@ class IntrusionSetCardComponent extends Component {
             avatar={<Avatar className={classes.avatar}>{intrusionSet.name.charAt(0)}</Avatar>}
             title={intrusionSet.name}
             subheader={`${t('Updated the')} ${fsd(intrusionSet.modified)}`}
-            action={<Diamond className={classes.icon}/>}
+            action={<Biohazard className={classes.icon}/>}
           />
           <CardContent classes={{ root: classes.content }}>
             <Markdown source={intrusionSet.description} disallowedTypes={['link']} unwrapDisallowed={true}/>
@@ -112,10 +112,10 @@ IntrusionSetCardComponent.propTypes = {
 const IntrusionSetCardFragment = createFragmentContainer(IntrusionSetCardComponent, {
   intrusionSet: graphql`
       fragment IntrusionSetCard_intrusionSet on IntrusionSet {
-          id,
-          name,
-          description,
-          created,
+          id
+          name
+          description
+          created
           modified
       }
   `,
@@ -139,7 +139,7 @@ class IntrusionSetCardDummyComponent extends Component {
             title={<div className={classes.placeholderHeader} style={{ width: '85%' }}/>}
             titleTypographyProps={{ color: 'inherit' }}
             subheader={<div className={classes.placeholderHeaderDark} style={{ width: '70%' }}/>}
-            action={<Diamond className={classes.icon}/>}
+            action={<Biohazard className={classes.icon}/>}
           />
           <CardContent classes={{ root: classes.contentDummy }}>
             <div className={classes.placeholder} style={{ width: '90%' }}/>

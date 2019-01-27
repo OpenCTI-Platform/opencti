@@ -1,6 +1,5 @@
-import { withFilter } from 'graphql-subscriptions';
 import { sign } from 'jsonwebtoken';
-import conf, { BUS_TOPICS } from '../config/conf';
+import conf from '../config/conf';
 import {
   addUser,
   addPerson,
@@ -13,13 +12,12 @@ import {
   userEditField,
   userAddRelation,
   userDeleteRelation,
-  userCleanContext,
   login,
   logout,
   setAuthenticationCookie
 } from '../domain/user';
-import { fetchEditContext, pubsub } from '../database/redis';
-import { admin, auth, anonymous, withCancel } from './wrapper';
+import { fetchEditContext } from '../database/redis';
+import { admin, auth, anonymous } from './wrapper';
 
 const userResolvers = {
   Query: {
@@ -53,24 +51,6 @@ const userResolvers = {
     ),
     personAdd: auth((_, { input }, { user }) => addPerson(user, input)),
     userAdd: admin((_, { input }, { user }) => addUser(user, input))
-  },
-  Subscription: {
-    user: {
-      resolve: payload => payload.instance,
-      subscribe: admin((_, { id }, { user }) => {
-        userEditContext(user, id);
-        const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.User.EDIT_TOPIC),
-          payload => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
-          }
-        )(_, { id }, { user });
-        return withCancel(filtering, () => {
-          userCleanContext(user, id);
-        });
-      })
-    }
   }
 };
 

@@ -1,6 +1,6 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
+import { setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
@@ -102,7 +102,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
   await wTx.commit();
 
   return loadByID(createdCourseOfActionId).then(created =>
-    notify(BUS_TOPICS.CourseOfAction.ADDED_TOPIC, created, user)
+    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
@@ -111,7 +111,7 @@ export const courseOfActionDelete = courseOfActionId =>
 
 export const courseOfActionAddRelation = (user, courseOfActionId, input) =>
   createRelation(courseOfActionId, input).then(relationData => {
-    notify(BUS_TOPICS.CourseOfAction.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
 
@@ -121,25 +121,18 @@ export const courseOfActionDeleteRelation = (
   relationId
 ) =>
   deleteRelation(courseOfActionId, relationId).then(relationData => {
-    notify(BUS_TOPICS.CourseOfAction.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
-
-export const courseOfActionCleanContext = (user, courseOfActionId) => {
-  delEditContext(user, courseOfActionId);
-  return loadByID(courseOfActionId).then(courseOfAction =>
-    notify(BUS_TOPICS.CourseOfAction.EDIT_TOPIC, courseOfAction, user)
-  );
-};
 
 export const courseOfActionEditContext = (user, courseOfActionId, input) => {
   setEditContext(user, courseOfActionId, input);
   return loadByID(courseOfActionId).then(courseOfAction =>
-    notify(BUS_TOPICS.CourseOfAction.EDIT_TOPIC, courseOfAction, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, courseOfAction, user)
   );
 };
 
 export const courseOfActionEditField = (user, courseOfActionId, input) =>
   editInputTx(courseOfActionId, input).then(courseOfAction =>
-    notify(BUS_TOPICS.CourseOfAction.EDIT_TOPIC, courseOfAction, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, courseOfAction, user)
   );

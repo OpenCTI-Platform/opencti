@@ -1,4 +1,4 @@
-import { head } from 'ramda';
+import { assoc, head } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
@@ -10,9 +10,15 @@ import {
   notify,
   now,
   paginate,
-  qk
+  qk,
+  qkObjUnique
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import {
+  findAll as relationFindAll,
+  findByType as relationFindByType,
+  search as relationSearch
+} from './stixRelation';
 
 export const findAll = args =>
   paginate('match $m isa Stix-Domain-Entity', args, false);
@@ -37,6 +43,23 @@ export const search = args =>
     false
   );
 
+export const createdByRef = stixDomainEntityId =>
+  qkObjUnique(
+    `match $x isa Identity; 
+    $rel(creator:$x, so:$stixDomainEntity) isa created_by_ref; 
+    $stixDomainEntity id ${stixDomainEntityId}; offset 0; limit 1; get $x,$rel;`,
+    'x',
+    'rel'
+  );
+
+export const killChainPhases = (stixDomainEntityId, args) =>
+  paginate(
+    `match $kc isa Kill-Chain-Phase; 
+    $rel(kill_chain_phase:$kc, phase_belonging:$stixDomainEntity) isa kill_chain_phases; 
+    $stixDomainEntity id ${stixDomainEntityId}`,
+    args
+  );
+
 export const markingDefinitions = (stixDomainEntityId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
@@ -44,6 +67,25 @@ export const markingDefinitions = (stixDomainEntityId, args) =>
     $stixDomainEntity id ${stixDomainEntityId}`,
     args
   );
+
+export const reports = (stixDomainEntityId, args) =>
+  paginate(
+    `match $report isa Report; 
+    $rel(knowledge_aggregation:$report, so:$stixDomainEntity) isa object_refs; 
+    $stixDomainEntity id ${stixDomainEntityId}`,
+    args
+  );
+
+export const stixRelations = (stixDomainEntityId, args) => {
+  const finalArgs = assoc('fromId', stixDomainEntityId, args);
+  if (finalArgs.search && finalArgs.search.length > 0) {
+    return relationSearch(finalArgs);
+  }
+  if (finalArgs.relationType && finalArgs.relationType.length > 0) {
+    return relationFindByType(finalArgs);
+  }
+  return relationFindAll(finalArgs);
+};
 
 export const addStixDomainEntity = async (user, stixDomainEntity) => {
   const createStixDomainEntity = qk(`insert $stixDomainEntity isa ${

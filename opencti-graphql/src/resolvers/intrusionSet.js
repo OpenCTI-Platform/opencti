@@ -1,19 +1,19 @@
-import { withFilter } from 'graphql-subscriptions';
-import { BUS_TOPICS } from '../config/conf';
 import {
   addIntrusionSet,
   intrusionSetDelete,
   findAll,
   findById,
-  markingDefinitions,
-  intrusionSetEditContext,
-  intrusionSetEditField,
-  intrusionSetAddRelation,
-  intrusionSetDeleteRelation,
-  intrusionSetCleanContext
+  markingDefinitions
 } from '../domain/intrusionSet';
-import { fetchEditContext, pubsub } from '../database/redis';
-import { auth, withCancel } from './wrapper';
+import {
+  stixRelations,
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField,
+  stixDomainEntityAddRelation,
+  stixDomainEntityDeleteRelation
+} from '../domain/stixDomainEntity';
+import { fetchEditContext } from '../database/redis';
+import { auth } from './wrapper';
 
 const intrusionSetResolvers = {
   Query: {
@@ -23,38 +23,21 @@ const intrusionSetResolvers = {
   IntrusionSet: {
     markingDefinitions: (intrusionSet, args) =>
       markingDefinitions(intrusionSet.id, args),
+    stixRelations: (intrusionSet, args) => stixRelations(intrusionSet.id, args),
     editContext: auth(intrusionSet => fetchEditContext(intrusionSet.id))
   },
   Mutation: {
     intrusionSetEdit: auth((_, { id }, { user }) => ({
       delete: () => intrusionSetDelete(id),
-      fieldPatch: ({ input }) => intrusionSetEditField(user, id, input),
-      contextPatch: ({ input }) => intrusionSetEditContext(user, id, input),
-      relationAdd: ({ input }) => intrusionSetAddRelation(user, id, input),
+      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
+      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
-        intrusionSetDeleteRelation(user, id, relationId)
+        stixDomainEntityDeleteRelation(user, id, relationId)
     })),
     intrusionSetAdd: auth((_, { input }, { user }) =>
       addIntrusionSet(user, input)
     )
-  },
-  Subscription: {
-    intrusionSet: {
-      resolve: payload => payload.instance,
-      subscribe: auth((_, { id }, { user }) => {
-        intrusionSetEditContext(user, id);
-        const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.IntrusionSet.EDIT_TOPIC),
-          payload => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
-          }
-        )(_, { id }, { user });
-        return withCancel(filtering, () => {
-          intrusionSetCleanContext(user, id);
-        });
-      })
-    }
   }
 };
 

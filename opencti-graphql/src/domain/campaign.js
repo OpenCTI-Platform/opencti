@@ -1,11 +1,7 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
 import {
-  createRelation,
   deleteByID,
-  deleteRelation,
-  editInputTx,
   loadByID,
   notify,
   now,
@@ -91,39 +87,8 @@ export const addCampaign = async (user, campaign) => {
   await wTx.commit();
 
   return loadByID(createdCampaignId).then(created =>
-    notify(BUS_TOPICS.Campaign.ADDED_TOPIC, created, user)
+    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
 export const campaignDelete = campaignId => deleteByID(campaignId);
-
-export const campaignAddRelation = (user, campaignId, input) =>
-  createRelation(campaignId, input).then(relationData => {
-    notify(BUS_TOPICS.Campaign.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const campaignDeleteRelation = (user, campaignId, relationId) =>
-  deleteRelation(campaignId, relationId).then(relationData => {
-    notify(BUS_TOPICS.Campaign.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const campaignCleanContext = (user, campaignId) => {
-  delEditContext(user, campaignId);
-  return loadByID(campaignId).then(campaign =>
-    notify(BUS_TOPICS.Campaign.EDIT_TOPIC, campaign, user)
-  );
-};
-
-export const campaignEditContext = (user, campaignId, input) => {
-  setEditContext(user, campaignId, input);
-  return loadByID(campaignId).then(campaign =>
-    notify(BUS_TOPICS.Campaign.EDIT_TOPIC, campaign, user)
-  );
-};
-
-export const campaignEditField = (user, campaignId, input) =>
-  editInputTx(campaignId, input).then(campaign =>
-    notify(BUS_TOPICS.Campaign.EDIT_TOPIC, campaign, user)
-  );

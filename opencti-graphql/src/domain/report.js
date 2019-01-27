@@ -1,6 +1,6 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
+import { setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
@@ -124,7 +124,7 @@ export const addReport = async (user, report) => {
   await wTx.commit();
 
   return loadByID(createdReportId).then(created =>
-    notify(BUS_TOPICS.Report.ADDED_TOPIC, created, user)
+    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
@@ -132,31 +132,24 @@ export const reportDelete = reportId => deleteByID(reportId);
 
 export const reportAddRelation = (user, reportId, input) =>
   createRelation(reportId, input).then(relationData => {
-    notify(BUS_TOPICS.Report.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
 
 export const reportDeleteRelation = (user, reportId, relationId) =>
   deleteRelation(reportId, relationId).then(relationData => {
-    notify(BUS_TOPICS.Report.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
-
-export const reportCleanContext = (user, reportId) => {
-  delEditContext(user, reportId);
-  return loadByID(reportId).then(report =>
-    notify(BUS_TOPICS.Report.EDIT_TOPIC, report, user)
-  );
-};
 
 export const reportEditContext = (user, reportId, input) => {
   setEditContext(user, reportId, input);
   return loadByID(reportId).then(report =>
-    notify(BUS_TOPICS.Report.EDIT_TOPIC, report, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, report, user)
   );
 };
 
 export const reportEditField = (user, reportId, input) =>
   editInputTx(reportId, input).then(report =>
-    notify(BUS_TOPICS.Report.EDIT_TOPIC, report, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, report, user)
   );

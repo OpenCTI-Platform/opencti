@@ -1,11 +1,7 @@
 import { head } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
 import {
-  createRelation,
   deleteByID,
-  deleteRelation,
-  editInputTx,
   loadByID,
   notify,
   now,
@@ -47,40 +43,9 @@ export const addCity = async (user, city) => {
   return createCity.then(result => {
     const { data } = result;
     return loadByID(head(data).city.id).then(created =>
-      notify(BUS_TOPICS.City.ADDED_TOPIC, created, user)
+      notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
     );
   });
 };
 
 export const cityDelete = cityId => deleteByID(cityId);
-
-export const cityAddRelation = (user, cityId, input) =>
-  createRelation(cityId, input).then(relationData => {
-    notify(BUS_TOPICS.City.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const cityDeleteRelation = (user, cityId, relationId) =>
-  deleteRelation(cityId, relationId).then(relationData => {
-    notify(BUS_TOPICS.City.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const cityCleanContext = (user, cityId) => {
-  delEditContext(user, cityId);
-  return loadByID(cityId).then(city =>
-    notify(BUS_TOPICS.City.EDIT_TOPIC, city, user)
-  );
-};
-
-export const cityEditContext = (user, cityId, input) => {
-  setEditContext(user, cityId, input);
-  return loadByID(cityId).then(city =>
-    notify(BUS_TOPICS.City.EDIT_TOPIC, city, user)
-  );
-};
-
-export const cityEditField = (user, cityId, input) =>
-  editInputTx(cityId, input).then(city =>
-    notify(BUS_TOPICS.City.EDIT_TOPIC, city, user)
-  );

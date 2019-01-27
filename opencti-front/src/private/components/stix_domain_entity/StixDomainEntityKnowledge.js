@@ -9,7 +9,7 @@ import Input from '@material-ui/core/Input';
 import Chip from '@material-ui/core/Chip';
 import MenuItem from '@material-ui/core/MenuItem';
 import { withStyles } from '@material-ui/core/styles';
-import { QueryRenderer, fetchQuery, requestSubscription } from "../../../relay/environment";
+import { QueryRenderer, fetchQuery, requestSubscription } from '../../../relay/environment';
 import { currentYear, parse, yearFormat } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import StixDomainEntityKnowledgeGraph from './StixDomainEntityKnowledgeGraph';
@@ -122,11 +122,10 @@ class StixDomainEntityKnowledge extends Component {
     if (includes('All', this.state.toTypes) || !includes('All', value)) {
       const toTypes = filter(v => v !== 'All', value);
       if (toTypes.length > 0) {
-        this.setState({ toTypes });
-      } else {
-        this.setState({ toTypes: ['All'] });
+        return this.setState({ toTypes });
       }
     }
+    return this.setState({ toTypes: ['All'] });
   }
 
   handleChangeYear(event) {
@@ -246,7 +245,7 @@ class StixDomainEntityKnowledge extends Component {
           query={stixDomainEntityKnowledgeQuery}
           variables={variables}
           render={({ props }) => {
-            if (props && props.stixDomainEntity ) {
+            if (props && props.stixDomainEntity) {
               return (
                 <StixDomainEntityKnowledgeGraph
                   isSavable={this.isSavable.bind(this)}

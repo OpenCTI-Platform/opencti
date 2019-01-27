@@ -17,9 +17,10 @@ import {
   ArrowDropDown, ArrowDropUp, ArrowUpward, ArrowDownward, Dashboard, TableChart,
 } from '@material-ui/icons';
 import { QueryRenderer } from '../../relay/environment';
+import inject18n from '../../components/i18n';
 import IntrusionSetsLines, { intrusionSetsLinesQuery } from './intrusion_set/IntrusionSetsLines';
 import IntrusionSetsCards, { intrusionSetsCardsQuery, nbCardsToLoad } from './intrusion_set/IntrusionSetsCards';
-import inject18n from '../../components/i18n';
+import IntrusionSetCreation from './intrusion_set/IntrusionSetCreation';
 
 const styles = () => ({
   linesContainer: {
@@ -187,7 +188,10 @@ class IntrusionSets extends Component {
         <QueryRenderer
           query={intrusionSetsLinesQuery}
           variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
-          render={({ props }) => {
+          render={({ error, props }) => {
+            if (error) { // Errors
+              return <IntrusionSetsLines data={null} dummy={true}/>;
+            }
             if (props) { // Done
               return <IntrusionSetsLines data={props}/>;
             }
@@ -222,6 +226,11 @@ class IntrusionSets extends Component {
         <div className='clearfix'/>
         {this.state.view === 'cards' ? this.renderCards() : ''}
         {this.state.view === 'lines' ? this.renderLines() : ''}
+        <IntrusionSetCreation
+            paginationOptions={{
+              orderBy: this.state.sortBy,
+              orderMode: this.state.orderAsc ? 'asc' : 'desc',
+            }}/>
       </div>
     );
   }

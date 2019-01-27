@@ -1,16 +1,12 @@
-import { head } from 'ramda';
+import { map } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
 import {
-  createRelation,
+  takeTx,
   deleteByID,
-  deleteRelation,
-  editInputTx,
   loadByID,
   notify,
   now,
-  paginate,
-  qk
+  paginate
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -27,7 +23,8 @@ export const markingDefinitions = (intrusionSetId, args) =>
 export const findById = intrusionSetId => loadByID(intrusionSetId);
 
 export const addIntrusionSet = async (user, intrusionSet) => {
-  const createIntrusionSet = qk(`insert $intrusionSet isa Intrusion-Set 
+  const wTx = await takeTx();
+  const intrusionSetIterator = await wTx.query(`insert $intrusionSet isa Intrusion-Set 
     has type "intrusion-set";
     $intrusionSet has stix_id "intrusion-set--${uuid()}";
     $intrusionSet has stix_label "";
@@ -44,43 +41,35 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     $intrusionSet has created_at ${now()};
     $intrusionSet has updated_at ${now()};
   `);
-  return createIntrusionSet.then(result => {
-    const { data } = result;
-    return loadByID(head(data).intrusionSet.id).then(created =>
-      notify(BUS_TOPICS.IntrusionSet.ADDED_TOPIC, created, user)
+  const createIntrusionSet = await intrusionSetIterator.next();
+  const createIntrusionSetId = await createIntrusionSet
+    .map()
+    .get('intrusionSet').id;
+
+  if (intrusionSet.createdByRef) {
+    await wTx.query(`match $from id ${createIntrusionSetId};
+         $to id ${intrusionSet.createdByRef};
+         insert (so: $from, creator: $to)
+         isa created_by_ref;`);
+  }
+
+  if (intrusionSet.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.query(
+        `match $from id ${createIntrusionSetId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      intrusionSet.markingDefinitions
     );
-  });
+    await Promise.all(markingDefinitionsPromises);
+  }
+
+  await wTx.commit();
+
+  return loadByID(createIntrusionSetId).then(created =>
+    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
+  );
 };
 
 export const intrusionSetDelete = intrusionSetId => deleteByID(intrusionSetId);
-
-export const intrusionSetAddRelation = (user, intrusionSetId, input) =>
-  createRelation(intrusionSetId, input).then(relationData => {
-    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const intrusionSetDeleteRelation = (user, intrusionSetId, relationId) =>
-  deleteRelation(intrusionSetId, relationId).then(relationData => {
-    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const intrusionSetCleanContext = (user, intrusionSetId) => {
-  delEditContext(user, intrusionSetId);
-  return loadByID(intrusionSetId).then(intrusionSet =>
-    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet, user)
-  );
-};
-
-export const intrusionSetEditContext = (user, intrusionSetId, input) => {
-  setEditContext(user, intrusionSetId, input);
-  return loadByID(intrusionSetId).then(intrusionSet =>
-    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet, user)
-  );
-};
-
-export const intrusionSetEditField = (user, intrusionSetId, input) =>
-  editInputTx(intrusionSetId, input).then(intrusionSet =>
-    notify(BUS_TOPICS.IntrusionSet.EDIT_TOPIC, intrusionSet, user)
-  );

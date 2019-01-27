@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
-import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardActionArea from '@material-ui/core/CardActionArea';
@@ -112,10 +112,10 @@ ThreatActorCardComponent.propTypes = {
 const ThreatActorCardFragment = createFragmentContainer(ThreatActorCardComponent, {
   threatActor: graphql`
       fragment ThreatActorCard_threatActor on ThreatActor {
-          id,
-          name,
-          description,
-          created,
+          id
+          name
+          description
+          created
           modified
       }
   `,

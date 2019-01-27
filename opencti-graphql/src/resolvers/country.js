@@ -1,5 +1,3 @@
-import { withFilter } from 'graphql-subscriptions';
-import { BUS_TOPICS } from '../config/conf';
 import {
   addCountry,
   countryDelete,
@@ -9,11 +7,10 @@ import {
   countryEditContext,
   countryEditField,
   countryAddRelation,
-  countryDeleteRelation,
-  countryCleanContext
+  countryDeleteRelation
 } from '../domain/country';
-import { fetchEditContext, pubsub } from '../database/redis';
-import { auth, withCancel } from './wrapper';
+import { fetchEditContext } from '../database/redis';
+import { auth } from './wrapper';
 
 const countryResolvers = {
   Query: {
@@ -21,8 +18,8 @@ const countryResolvers = {
     countries: auth((_, args) => findAll(args))
   },
   Country: {
-    markingDefinitions: (country, args) =>
-      markingDefinitions(country.id, args),
+    markingDefinitions: (country, args) => markingDefinitions(country.id, args),
+    stixRelations: (country, args) => stixRelations(country.id, args),
     editContext: auth(country => fetchEditContext(country.id))
   },
   Mutation: {
@@ -35,24 +32,6 @@ const countryResolvers = {
         countryDeleteRelation(user, id, relationId)
     })),
     countryAdd: auth((_, { input }, { user }) => addCountry(user, input))
-  },
-  Subscription: {
-    country: {
-      resolve: payload => payload.instance,
-      subscribe: auth((_, { id }, { user }) => {
-        countryEditContext(user, id);
-        const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.Country.EDIT_TOPIC),
-          payload => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
-          }
-        )(_, { id }, { user });
-        return withCancel(filtering, () => {
-          countryCleanContext(user, id);
-        });
-      })
-    }
   }
 };
 

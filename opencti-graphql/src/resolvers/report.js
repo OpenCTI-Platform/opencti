@@ -1,5 +1,3 @@
-import { withFilter } from 'graphql-subscriptions';
-import { BUS_TOPICS } from '../config/conf';
 import {
   addReport,
   reportDelete,
@@ -16,10 +14,9 @@ import {
   reportEditField,
   reportAddRelation,
   reportDeleteRelation,
-  reportCleanContext
 } from '../domain/report';
-import { fetchEditContext, pubsub } from '../database/redis';
-import { auth, withCancel } from './wrapper';
+import { fetchEditContext } from '../database/redis';
+import { auth } from './wrapper';
 
 const reportResolvers = {
   Query: {
@@ -54,24 +51,6 @@ const reportResolvers = {
         reportDeleteRelation(user, id, relationId)
     })),
     reportAdd: auth((_, { input }, { user }) => addReport(user, input))
-  },
-  Subscription: {
-    report: {
-      resolve: payload => payload.instance,
-      subscribe: auth((_, { id }, { user }) => {
-        reportEditContext(user, id);
-        const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.Report.EDIT_TOPIC),
-          payload => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
-          }
-        )(_, { id }, { user });
-        return withCancel(filtering, () => {
-          reportCleanContext(user, id);
-        });
-      })
-    }
   }
 };
 

@@ -1,6 +1,6 @@
 import { head } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
+import { setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
@@ -47,7 +47,7 @@ export const addCountry = async (user, country) => {
   return createCountry.then(result => {
     const { data } = result;
     return loadByID(head(data).country.id).then(created =>
-      notify(BUS_TOPICS.Country.ADDED_TOPIC, created, user)
+      notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
     );
   });
 };
@@ -56,31 +56,24 @@ export const countryDelete = countryId => deleteByID(countryId);
 
 export const countryAddRelation = (user, countryId, input) =>
   createRelation(countryId, input).then(relationData => {
-    notify(BUS_TOPICS.Country.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
 
 export const countryDeleteRelation = (user, countryId, relationId) =>
   deleteRelation(countryId, relationId).then(relationData => {
-    notify(BUS_TOPICS.Country.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
-
-export const countryCleanContext = (user, countryId) => {
-  delEditContext(user, countryId);
-  return loadByID(countryId).then(country =>
-    notify(BUS_TOPICS.Country.EDIT_TOPIC, country, user)
-  );
-};
 
 export const countryEditContext = (user, countryId, input) => {
   setEditContext(user, countryId, input);
   return loadByID(countryId).then(country =>
-    notify(BUS_TOPICS.Country.EDIT_TOPIC, country, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, country, user)
   );
 };
 
 export const countryEditField = (user, countryId, input) =>
   editInputTx(countryId, input).then(country =>
-    notify(BUS_TOPICS.Country.EDIT_TOPIC, country, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, country, user)
   );

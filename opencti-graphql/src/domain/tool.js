@@ -1,6 +1,6 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
+import { setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
@@ -108,7 +108,7 @@ export const addTool = async (user, tool) => {
   await wTx.commit();
 
   return loadByID(createdToolId).then(created =>
-    notify(BUS_TOPICS.Tool.ADDED_TOPIC, created, user)
+    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
@@ -116,31 +116,24 @@ export const toolDelete = toolId => deleteByID(toolId);
 
 export const toolAddRelation = (user, toolId, input) =>
   createRelation(toolId, input).then(relationData => {
-    notify(BUS_TOPICS.Tool.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
 
 export const toolDeleteRelation = (user, toolId, relationId) =>
   deleteRelation(toolId, relationId).then(relationData => {
-    notify(BUS_TOPICS.Tool.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
-
-export const toolCleanContext = (user, toolId) => {
-  delEditContext(user, toolId);
-  return loadByID(toolId).then(tool =>
-    notify(BUS_TOPICS.Tool.EDIT_TOPIC, tool, user)
-  );
-};
 
 export const toolEditContext = (user, toolId, input) => {
   setEditContext(user, toolId, input);
   return loadByID(toolId).then(tool =>
-    notify(BUS_TOPICS.Tool.EDIT_TOPIC, tool, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, tool, user)
   );
 };
 
 export const toolEditField = (user, toolId, input) =>
   editInputTx(toolId, input).then(tool =>
-    notify(BUS_TOPICS.Tool.EDIT_TOPIC, tool, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, tool, user)
   );

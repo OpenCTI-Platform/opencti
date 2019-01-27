@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { compose, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight, Public } from '@material-ui/icons';
+import { KeyboardArrowRight } from '@material-ui/icons';
+import { Biohazard } from 'mdi-material-ui';
+import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
@@ -45,6 +46,7 @@ const inlineStyles = {
   name: {
     float: 'left',
     width: '70%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -52,12 +54,14 @@ const inlineStyles = {
   created: {
     float: 'left',
     width: '15%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   modified: {
     float: 'left',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -70,18 +74,18 @@ class ThreatActorLineComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActor.id}`}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Public/>
+          <Biohazard/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
-                {propOr('-', 'name', threatActor)}
+              {threatActor.name}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(propOr(null, 'created', threatActor))}
+              {fd(threatActor.created)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.modified}>
-                {fd(propOr(null, 'modified', threatActor))}
+              {fd(threatActor.modified)}
             </div>
           </div>
         }/>
@@ -101,13 +105,13 @@ ThreatActorLineComponent.propTypes = {
 
 const ThreatActorLineFragment = createFragmentContainer(ThreatActorLineComponent, {
   threatActor: graphql`
-        fragment ThreatActorLine_threatActor on ThreatActor {
-            id,
-            name,
-            created,
-            modified
-        }
-    `,
+      fragment ThreatActorLine_threatActor on ThreatActor {
+          id
+          name
+          created
+          modified
+      }
+  `,
 });
 
 export const ThreatActorLine = compose(
@@ -121,18 +125,18 @@ class ThreatActorLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Public/>
+          <Biohazard/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
-                <div className={classes.placeholder} style={{ width: '80%' }}/>
+              <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-                <div className={classes.placeholder} style={{ width: 140 }}/>
+              <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.modified}>
-                <div className={classes.placeholder} style={{ width: 140 }}/>
+              <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
           </div>
         }/>

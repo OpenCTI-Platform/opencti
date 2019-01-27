@@ -1,5 +1,3 @@
-import { withFilter } from 'graphql-subscriptions';
-import { BUS_TOPICS } from '../config/conf';
 import {
   addGroup,
   groupDelete,
@@ -11,10 +9,9 @@ import {
   groupEditField,
   groupAddRelation,
   groupDeleteRelation,
-  groupCleanContext
 } from '../domain/group';
-import { fetchEditContext, pubsub } from '../database/redis';
-import { admin, auth, withCancel } from './wrapper';
+import { fetchEditContext } from '../database/redis';
+import { admin, auth } from './wrapper';
 
 const groupResolvers = {
   Query: {
@@ -36,24 +33,6 @@ const groupResolvers = {
         groupDeleteRelation(user, id, relationId)
     })),
     groupAdd: admin((_, { input }, { user }) => addGroup(user, input))
-  },
-  Subscription: {
-    group: {
-      resolve: payload => payload.instance,
-      subscribe: admin((_, { id }, { user }) => {
-        groupEditContext(user, id);
-        const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.Group.EDIT_TOPIC),
-          payload => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
-          }
-        )(_, { id }, { user });
-        return withCancel(filtering, () => {
-          groupCleanContext(user, id);
-        });
-      })
-    }
   }
 };
 

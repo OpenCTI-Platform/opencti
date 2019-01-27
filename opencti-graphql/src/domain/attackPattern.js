@@ -1,11 +1,7 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
 import {
-  createRelation,
   deleteByID,
-  deleteRelation,
-  editInputTx,
   loadByID,
   notify,
   now,
@@ -116,38 +112,3 @@ export const addAttackPattern = async (user, attackPattern) => {
 
 export const attackPatternDelete = attackPatternId =>
   deleteByID(attackPatternId);
-
-export const attackPatternAddRelation = (user, attackPatternId, input) =>
-  createRelation(attackPatternId, input).then(relationData => {
-    notify(BUS_TOPICS.AttackPattern.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const attackPatternDeleteRelation = (
-  user,
-  attackPatternId,
-  relationId
-) =>
-  deleteRelation(attackPatternId, relationId).then(relationData => {
-    notify(BUS_TOPICS.AttackPattern.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const attackPatternCleanContext = (user, attackPatternId) => {
-  delEditContext(user, attackPatternId);
-  return loadByID(attackPatternId).then(attackPattern =>
-    notify(BUS_TOPICS.AttackPattern.EDIT_TOPIC, attackPattern, user)
-  );
-};
-
-export const attackPatternEditContext = (user, attackPatternId, input) => {
-  setEditContext(user, attackPatternId, input);
-  return loadByID(attackPatternId).then(attackPattern =>
-    notify(BUS_TOPICS.AttackPattern.EDIT_TOPIC, attackPattern, user)
-  );
-};
-
-export const attackPatternEditField = (user, attackPatternId, input) =>
-  editInputTx(attackPatternId, input).then(attackPattern =>
-    notify(BUS_TOPICS.AttackPattern.EDIT_TOPIC, attackPattern, user)
-  );

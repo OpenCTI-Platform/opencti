@@ -1,19 +1,21 @@
-import { withFilter } from 'graphql-subscriptions';
-import { BUS_TOPICS } from '../config/conf';
 import {
   addThreatActor,
   threatActorDelete,
   findAll,
-  findById,
-  markingDefinitions,
-  threatActorEditContext,
-  threatActorEditField,
-  threatActorAddRelation,
-  threatActorDeleteRelation,
-  threatActorCleanContext
+  findById
 } from '../domain/threatActor';
-import { fetchEditContext, pubsub } from '../database/redis';
-import { auth, withCancel } from './wrapper';
+import {
+  createdByRef,
+  markingDefinitions,
+  reports,
+  stixRelations,
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField,
+  stixDomainEntityAddRelation,
+  stixDomainEntityDeleteRelation
+} from '../domain/stixDomainEntity';
+import { fetchEditContext } from '../database/redis';
+import { auth } from './wrapper';
 
 const threatActorResolvers = {
   Query: {
@@ -21,40 +23,24 @@ const threatActorResolvers = {
     threatActors: auth((_, args) => findAll(args))
   },
   ThreatActor: {
-    markingDefinitions: (threatActor, args) =>
-      markingDefinitions(threatActor.id, args),
+    createdByRef: (threatActor, args) => createdByRef(threatActor.id, args),
+    markingDefinitions: (threatActor, args) => markingDefinitions(threatActor.id, args),
+    reports: (threatActor, args) => reports(threatActor.id, args),
+    stixRelations: (threatActor, args) => stixRelations(threatActor.id, args),
     editContext: auth(threatActor => fetchEditContext(threatActor.id))
   },
   Mutation: {
     threatActorEdit: auth((_, { id }, { user }) => ({
       delete: () => threatActorDelete(id),
-      fieldPatch: ({ input }) => threatActorEditField(user, id, input),
-      contextPatch: ({ input }) => threatActorEditContext(user, id, input),
-      relationAdd: ({ input }) => threatActorAddRelation(user, id, input),
+      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
+      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
-        threatActorDeleteRelation(user, id, relationId)
+        stixDomainEntityDeleteRelation(user, id, relationId)
     })),
     threatActorAdd: auth((_, { input }, { user }) =>
       addThreatActor(user, input)
     )
-  },
-  Subscription: {
-    threatActor: {
-      resolve: payload => payload.instance,
-      subscribe: auth((_, { id }, { user }) => {
-        threatActorEditContext(user, id);
-        const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.ThreatActor.EDIT_TOPIC),
-          payload => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
-          }
-        )(_, { id }, { user });
-        return withCancel(filtering, () => {
-          threatActorCleanContext(user, id);
-        });
-      })
-    }
   }
 };
 

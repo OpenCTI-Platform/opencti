@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
-import { Diamond } from 'mdi-material-ui';
+import { Biohazard } from 'mdi-material-ui';
+import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
@@ -46,6 +46,7 @@ const inlineStyles = {
   name: {
     float: 'left',
     width: '70%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -53,12 +54,14 @@ const inlineStyles = {
   created: {
     float: 'left',
     width: '15%',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   modified: {
     float: 'left',
+    height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -71,18 +74,18 @@ class IntrusionSetLineComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSet.id}`}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Diamond/>
+          <Biohazard/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
-                {intrusionSet.name}
+              {intrusionSet.name}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(intrusionSet.created)}
+              {fd(intrusionSet.created)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.modified}>
-                {fd(intrusionSet.modified)}
+              {fd(intrusionSet.modified)}
             </div>
           </div>
         }/>
@@ -102,13 +105,13 @@ IntrusionSetLineComponent.propTypes = {
 
 const IntrusionSetLineFragment = createFragmentContainer(IntrusionSetLineComponent, {
   intrusionSet: graphql`
-        fragment IntrusionSetLine_intrusionSet on IntrusionSet {
-            id
-            name
-            created
-            modified
-        }
-    `,
+      fragment IntrusionSetLine_intrusionSet on IntrusionSet {
+          id
+          name
+          created
+          modified
+      }
+  `,
 });
 
 export const IntrusionSetLine = compose(
@@ -122,18 +125,18 @@ class IntrusionSetLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Diamond/>
+          <Biohazard/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
-                <div className={classes.placeholder} style={{ width: '80%' }}/>
+              <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-                <div className={classes.placeholder} style={{ width: 140 }}/>
+              <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.modified}>
-                <div className={classes.placeholder} style={{ width: 140 }}/>
+              <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
           </div>
         }/>

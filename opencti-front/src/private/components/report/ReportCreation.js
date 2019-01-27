@@ -24,7 +24,6 @@ import Autocomplete from '../../../components/Autocomplete';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
-import DatePickerField from '../../../components/DatePickerField';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
 import IdentityCreation, { identityCreationIdentitiesSearchQuery } from '../identity/IdentityCreation';
 

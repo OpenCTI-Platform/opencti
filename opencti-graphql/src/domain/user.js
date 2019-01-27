@@ -4,11 +4,7 @@ import uuidv5 from 'uuid/v5';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
-import {
-  delEditContext,
-  delUserContext,
-  setEditContext
-} from '../database/redis';
+import { delUserContext, setEditContext } from '../database/redis';
 import { MissingElement, AuthenticationFailure } from '../config/errors';
 import conf, {
   BUS_TOPICS,
@@ -211,27 +207,20 @@ export const userDelete = userId => deleteByID(userId);
 
 export const userAddRelation = (user, userId, input) =>
   createRelation(userId, input).then(relationData => {
-    notify(BUS_TOPICS.User.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
 
 export const userDeleteRelation = (user, userId, relationId) =>
   deleteRelation(userId, relationId).then(relationData => {
-    notify(BUS_TOPICS.User.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
-
-export const userCleanContext = (user, userId) => {
-  delEditContext(user, userId);
-  return loadByID(userId).then(userToEdit =>
-    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit, user)
-  );
-};
 
 export const userEditContext = (user, userId, input) => {
   setEditContext(user, userId, input);
   return loadByID(userId).then(userToEdit =>
-    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user)
   );
 };
 
@@ -242,7 +231,7 @@ export const userEditField = (user, userId, input) => {
       ? [bcrypt.hashSync(head(input.value), 10)] // Encrypt the password
       : input.value; // Else just keep the value untouched
   return editInputTx(userId, { key, value }).then(userToEdit =>
-    notify(BUS_TOPICS.User.EDIT_TOPIC, userToEdit, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user)
   );
 };
 

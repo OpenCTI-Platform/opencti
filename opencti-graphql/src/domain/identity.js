@@ -1,6 +1,6 @@
 import { head } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
+import { setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteByID,
@@ -57,7 +57,7 @@ export const addIdentity = async (user, identity) => {
   return createIdentity.then(result => {
     const { data } = result;
     return loadByID(head(data).identity.id).then(created =>
-      notify(BUS_TOPICS.Identity.ADDED_TOPIC, created, user)
+      notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
     );
   });
 };
@@ -66,31 +66,24 @@ export const identityDelete = identityId => deleteByID(identityId);
 
 export const identityAddRelation = (user, identityId, input) =>
   createRelation(identityId, input).then(relationData => {
-    notify(BUS_TOPICS.Identity.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
 
 export const identityDeleteRelation = (user, identityId, relationId) =>
   deleteRelation(identityId, relationId).then(relationData => {
-    notify(BUS_TOPICS.Identity.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
-
-export const identityCleanContext = (user, identityId) => {
-  delEditContext(user, identityId);
-  return loadByID(identityId).then(identity =>
-    notify(BUS_TOPICS.Identity.EDIT_TOPIC, identity, user)
-  );
-};
 
 export const identityEditContext = (user, identityId, input) => {
   setEditContext(user, identityId, input);
   return loadByID(identityId).then(identity =>
-    notify(BUS_TOPICS.Identity.EDIT_TOPIC, identity, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, identity, user)
   );
 };
 
 export const identityEditField = (user, identityId, input) =>
   editInputTx(identityId, input).then(identity =>
-    notify(BUS_TOPICS.Identity.EDIT_TOPIC, identity, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, identity, user)
   );

@@ -70,6 +70,29 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
   }
 
   componentDidMount() {
+    this.initialize();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.stixDomainEntity.graph_data !== prevProps.stixDomainEntity.graph_data) {
+      this.initialize();
+      this.forceUpdate();
+    }
+    if (this.props.firstSeenYear !== prevProps.firstSeenYear) {
+      const model = this.engine.getDiagramModel();
+      const links = model.getLinks();
+      forEach((l) => {
+        if (yearFormat(pathOr('1970-01-01', ['extras', 'relation', 'first_seen'], l)) === this.props.firstSeenYear) {
+          l.setColor('#ff3d00');
+        } else {
+          l.setColor('#00bcd4');
+        }
+      }, values(links));
+      this.forceUpdate();
+    }
+  }
+
+  initialize() {
     const { stixDomainEntity, stixDomainEntity: { stixRelations } } = this.props;
     // prepare actual nodes & relations
     const actualNodes = append(stixDomainEntity, map(n => n.to, stixRelations.edges));
@@ -156,21 +179,6 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
         }
       },
     });
-  }
-
-  componentDidUpdate(prevProps) {
-    if (this.props.firstSeenYear !== prevProps.firstSeenYear) {
-      const model = this.engine.getDiagramModel();
-      const links = model.getLinks();
-      forEach((l) => {
-        if (yearFormat(pathOr('1970-01-01', ['extras', 'relation', 'first_seen'], l)) === this.props.firstSeenYear) {
-          l.setColor('#ff3d00');
-        } else {
-          l.setColor('#00bcd4');
-        }
-      }, values(links));
-      this.forceUpdate();
-    }
   }
 
   saveGraph() {

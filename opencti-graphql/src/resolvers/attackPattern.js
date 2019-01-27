@@ -1,5 +1,3 @@
-import { withFilter } from 'graphql-subscriptions';
-import { BUS_TOPICS } from '../config/conf';
 import {
   addAttackPattern,
   attackPatternDelete,
@@ -9,14 +7,16 @@ import {
   markingDefinitions,
   killChainPhases,
   reports,
-  attackPatternEditContext,
-  attackPatternEditField,
-  attackPatternAddRelation,
-  attackPatternDeleteRelation,
-  attackPatternCleanContext
 } from '../domain/attackPattern';
-import { fetchEditContext, pubsub } from '../database/redis';
-import { auth, withCancel } from './wrapper';
+import {
+  stixRelations,
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField,
+  stixDomainEntityAddRelation,
+  stixDomainEntityDeleteRelation
+} from '../domain/stixDomainEntity';
+import { fetchEditContext } from '../database/redis';
+import { auth } from './wrapper';
 
 const attackPatternResolvers = {
   Query: {
@@ -30,38 +30,22 @@ const attackPatternResolvers = {
     killChainPhases: (attackPattern, args) =>
       killChainPhases(attackPattern.id, args),
     reports: (attackPattern, args) => reports(attackPattern.id, args),
+    stixRelations: (attackPattern, args) =>
+      stixRelations(attackPattern.id, args),
     editContext: auth(attackPattern => fetchEditContext(attackPattern.id))
   },
   Mutation: {
     attackPatternEdit: auth((_, { id }, { user }) => ({
       delete: () => attackPatternDelete(id),
-      fieldPatch: ({ input }) => attackPatternEditField(user, id, input),
-      contextPatch: ({ input }) => attackPatternEditContext(user, id, input),
-      relationAdd: ({ input }) => attackPatternAddRelation(user, id, input),
+      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
+      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
-        attackPatternDeleteRelation(user, id, relationId)
+        stixDomainEntityDeleteRelation(user, id, relationId)
     })),
     attackPatternAdd: auth((_, { input }, { user }) =>
       addAttackPattern(user, input)
     )
-  },
-  Subscription: {
-    attackPattern: {
-      resolve: payload => payload.instance,
-      subscribe: auth((_, { id }, { user }) => {
-        attackPatternEditContext(user, id);
-        const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.AttackPattern.EDIT_TOPIC),
-          payload => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
-          }
-        )(_, { id }, { user });
-        return withCancel(filtering, () => {
-          attackPatternCleanContext(user, id);
-        });
-      })
-    }
   }
 };
 

@@ -1,5 +1,3 @@
-import { withFilter } from 'graphql-subscriptions';
-import { BUS_TOPICS } from '../config/conf';
 import {
   addTool,
   toolDelete,
@@ -13,10 +11,9 @@ import {
   toolEditField,
   toolAddRelation,
   toolDeleteRelation,
-  toolCleanContext
 } from '../domain/tool';
-import { fetchEditContext, pubsub } from '../database/redis';
-import { auth, withCancel } from './wrapper';
+import { fetchEditContext } from '../database/redis';
+import { auth } from './wrapper';
 
 const toolResolvers = {
   Query: {
@@ -40,24 +37,6 @@ const toolResolvers = {
         toolDeleteRelation(user, id, relationId)
     })),
     toolAdd: auth((_, { input }, { user }) => addTool(user, input))
-  },
-  Subscription: {
-    tool: {
-      resolve: payload => payload.instance,
-      subscribe: auth((_, { id }, { user }) => {
-        toolEditContext(user, id);
-        const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.Tool.EDIT_TOPIC),
-          payload => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== user.id && payload.instance.id === id;
-          }
-        )(_, { id }, { user });
-        return withCancel(filtering, () => {
-          toolCleanContext(user, id);
-        });
-      })
-    }
   }
 };
 

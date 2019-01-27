@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle,no-nested-ternary */
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
@@ -111,7 +111,7 @@ class IntrusionSetsLines extends Component {
                       onScroll={onChildScroll}
                       overscanRowCount={2}
                       rowCount={rowCount}
-                      rowHeight={45}
+                      rowHeight={50}
                       rowRenderer={this._rowRenderer}
                       scrollToIndex={scrollToIndex}
                       scrollTop={scrollTop}
