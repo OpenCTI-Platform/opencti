@@ -1,16 +1,11 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
-import { setEditContext } from '../database/redis';
 import {
-  createRelation,
   deleteByID,
-  deleteRelation,
-  editInputTx,
   loadByID,
   notify,
   now,
   paginate,
-  qkObjUnique,
   prepareDate,
   takeTx
 } from '../database/grakn';
@@ -19,31 +14,6 @@ import { BUS_TOPICS } from '../config/conf';
 export const findAll = args => paginate('match $m isa Incident', args);
 
 export const findById = incidentId => loadByID(incidentId);
-
-export const createdByRef = incidentId =>
-  qkObjUnique(
-    `match $x isa Identity; 
-    $rel(creator:$x, so:$incident) isa created_by_ref; 
-    $incident id ${incidentId}; offset 0; limit 1; get $x,$rel;`,
-    'x',
-    'rel'
-  );
-
-export const markingDefinitions = (incidentId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(marking:$marking, so:$incident) isa object_marking_refs; 
-    $incident id ${incidentId}`,
-    args
-  );
-
-export const reports = (incidentId, args) =>
-  paginate(
-    `match $report isa Report; 
-    $rel(knowledge_aggregation:$report, so:$incident) isa object_refs; 
-    $incident id ${incidentId}`,
-    args
-  );
 
 export const addIncident = async (user, incident) => {
   const wTx = await takeTx();
@@ -96,27 +66,3 @@ export const addIncident = async (user, incident) => {
 };
 
 export const incidentDelete = incidentId => deleteByID(incidentId);
-
-export const incidentAddRelation = (user, incidentId, input) =>
-  createRelation(incidentId, input).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const incidentDeleteRelation = (user, incidentId, relationId) =>
-  deleteRelation(incidentId, relationId).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const incidentEditContext = (user, incidentId, input) => {
-  setEditContext(user, incidentId, input);
-  return loadByID(incidentId).then(incident =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, incident, user)
-  );
-};
-
-export const incidentEditField = (user, incidentId, input) =>
-  editInputTx(incidentId, input).then(incident =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, incident, user)
-  );

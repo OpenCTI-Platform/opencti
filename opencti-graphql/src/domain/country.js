@@ -1,11 +1,7 @@
 import { head } from 'ramda';
 import uuid from 'uuid/v4';
-import { setEditContext } from '../database/redis';
 import {
-  createRelation,
   deleteByID,
-  deleteRelation,
-  editInputTx,
   loadByID,
   notify,
   now,
@@ -53,27 +49,3 @@ export const addCountry = async (user, country) => {
 };
 
 export const countryDelete = countryId => deleteByID(countryId);
-
-export const countryAddRelation = (user, countryId, input) =>
-  createRelation(countryId, input).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const countryDeleteRelation = (user, countryId, relationId) =>
-  deleteRelation(countryId, relationId).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
-    return relationData;
-  });
-
-export const countryEditContext = (user, countryId, input) => {
-  setEditContext(user, countryId, input);
-  return loadByID(countryId).then(country =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, country, user)
-  );
-};
-
-export const countryEditField = (user, countryId, input) =>
-  editInputTx(countryId, input).then(country =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, country, user)
-  );

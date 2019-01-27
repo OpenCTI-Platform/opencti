@@ -2,15 +2,18 @@ import {
   addIncident,
   incidentDelete,
   findAll,
-  findById,
+  findById
+} from '../domain/incident';
+import {
   createdByRef,
   markingDefinitions,
   reports,
-  incidentEditContext,
-  incidentEditField,
-  incidentAddRelation,
-  incidentDeleteRelation,
-} from '../domain/incident';
+  stixRelations,
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField,
+  stixDomainEntityAddRelation,
+  stixDomainEntityDeleteRelation
+} from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 import { auth } from './wrapper';
 
@@ -23,16 +26,17 @@ const incidentResolvers = {
     createdByRef: (incident, args) => createdByRef(incident.id, args),
     markingDefinitions: (incident, args) => markingDefinitions(incident.id, args),
     reports: (incident, args) => reports(incident.id, args),
+    stixRelations: (incident, args) => stixRelations(incident.id, args),
     editContext: auth(incident => fetchEditContext(incident.id))
   },
   Mutation: {
     incidentEdit: auth((_, { id }, { user }) => ({
       delete: () => incidentDelete(id),
-      fieldPatch: ({ input }) => incidentEditField(user, id, input),
-      contextPatch: ({ input }) => incidentEditContext(user, id, input),
-      relationAdd: ({ input }) => incidentAddRelation(user, id, input),
+      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
+      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
-        incidentDeleteRelation(user, id, relationId)
+        stixDomainEntityDeleteRelation(user, id, relationId)
     })),
     incidentAdd: auth((_, { input }, { user }) => addIncident(user, input))
   }

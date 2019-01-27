@@ -2,10 +2,12 @@ import {
   addCity,
   cityDelete,
   findAll,
-  findById,
-  markingDefinitions
+  findById
 } from '../domain/city';
 import {
+  createdByRef,
+  markingDefinitions,
+  reports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityEditField,
@@ -21,7 +23,10 @@ const cityResolvers = {
     cities: auth((_, args) => findAll(args))
   },
   City: {
-    markingDefinitions: (city, args) => markingDefinitions(city.id, args),
+    createdByRef: (city, args) => createdByRef(city.id, args),
+    markingDefinitions: (city, args) =>
+      markingDefinitions(city.id, args),
+    reports: (city, args) => reports(city.id, args),
     stixRelations: (city, args) => stixRelations(city.id, args),
     editContext: auth(city => fetchEditContext(city.id))
   },

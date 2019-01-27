@@ -2,13 +2,13 @@ import {
   addAttackPattern,
   attackPatternDelete,
   findAll,
-  findById,
-  createdByRef,
-  markingDefinitions,
-  killChainPhases,
-  reports,
+  findById
 } from '../domain/attackPattern';
 import {
+  createdByRef,
+  killChainPhases,
+  markingDefinitions,
+  reports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityEditField,

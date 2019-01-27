@@ -19,6 +19,8 @@ import IntrusionSets from './components/IntrusionSets';
 import RootIntrusionSet from './components/intrusion_set/Root';
 import Campaigns from './components/Campaigns';
 import RootCampaign from './components/campaign/Root';
+import Incidents from './components/Incidents';
+import RootIncident from './components/incident/Root';
 import Malwares from './components/Malwares';
 import RootMalware from './components/malware/Root';
 import Reports from './components/Reports';
@@ -104,6 +106,8 @@ class Root extends Component {
                         <BoundaryRoute path='/dashboard/knowledge/intrusion_sets/:intrusionSetId' render={routeProps => <RootIntrusionSet {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/knowledge/campaigns' component={Campaigns}/>
                         <BoundaryRoute path='/dashboard/knowledge/campaigns/:campaignId' render={routeProps => <RootCampaign {...routeProps} me={props.me}/>}/>
+                        <BoundaryRoute exact path='/dashboard/knowledge/incidents' component={Incidents}/>
+                        <BoundaryRoute path='/dashboard/knowledge/incidents/:incidentId' render={routeProps => <RootIncident {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/knowledge/malwares' component={Malwares}/>
                         <BoundaryRoute path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/reports' render={() => (<Redirect to='/dashboard/reports/all'/>)}/>

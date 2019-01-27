@@ -80,15 +80,6 @@ class StixDomainEntityKnowledge extends Component {
 
   componentDidMount() {
     const { stixDomainEntityId } = this.props;
-    const sub = requestSubscription({
-      subscription,
-      variables: {
-        id: stixDomainEntityId,
-      },
-    });
-    this.setState({
-      sub,
-    });
     fetchQuery(firstStixRelationQuery, {
       fromId: stixDomainEntityId,
       first: 1,
@@ -99,10 +90,6 @@ class StixDomainEntityKnowledge extends Component {
         this.setState({ firstSeenFirstYear: yearFormat(head(data.stixRelations.edges).node.first_seen) });
       }
     });
-  }
-
-  componentWillUnmount() {
-    this.state.sub.dispose();
   }
 
   isSavable() {

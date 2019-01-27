@@ -1,4 +1,4 @@
-import { head } from 'ramda';
+import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   deleteByID,
@@ -6,7 +6,7 @@ import {
   notify,
   now,
   paginate,
-  qk
+  takeTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -14,16 +14,9 @@ export const findAll = args => paginate('match $m isa City', args);
 
 export const findById = cityId => loadByID(cityId);
 
-export const markingDefinitions = (cityId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(marking:$marking, so:$city) isa object_marking_refs; 
-    $city id ${cityId}`,
-    args
-  );
-
 export const addCity = async (user, city) => {
-  const createCity = qk(`insert $city isa City 
+  const wTx = await takeTx();
+  const cityIterator = await wTx.query(`insert $city isa City 
     has type "city";
     $city has stix_id "city--${uuid()}";
     $city has stix_label "";
@@ -40,12 +33,33 @@ export const addCity = async (user, city) => {
     $city has created_at ${now()};
     $city has updated_at ${now()};
   `);
-  return createCity.then(result => {
-    const { data } = result;
-    return loadByID(head(data).city.id).then(created =>
-      notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
+  const createCity = await cityIterator.next();
+  const createdCityId = await createCity.map().get('city').id;
+
+  if (city.createdByRef) {
+    await wTx.query(`match $from id ${createdCityId};
+         $to id ${city.createdByRef};
+         insert (so: $from, creator: $to)
+         isa created_by_ref;`);
+  }
+
+  if (city.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.query(
+        `match $from id ${createdCityId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      city.markingDefinitions
     );
-  });
+    await Promise.all(markingDefinitionsPromises);
+  }
+
+  await wTx.commit();
+
+  return loadByID(createdCityId).then(created =>
+    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
+  );
 };
 
 export const cityDelete = cityId => deleteByID(cityId);

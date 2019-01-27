@@ -6,7 +6,6 @@ import {
   notify,
   now,
   paginate,
-  qkObjUnique,
   takeTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -14,39 +13,6 @@ import { BUS_TOPICS } from '../config/conf';
 export const findAll = args => paginate('match $m isa AttackPattern', args);
 
 export const findById = attackPatternId => loadByID(attackPatternId);
-
-export const createdByRef = attackPatternId =>
-  qkObjUnique(
-    `match $x isa Identity; 
-    $rel(creator:$x, so:$attackPattern) isa created_by_ref; 
-    $attackPattern id ${attackPatternId}; offset 0; limit 1; get $x,$rel;`,
-    'x',
-    'rel'
-  );
-
-export const markingDefinitions = (attackPatternId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(marking:$marking, so:$attackPattern) isa object_marking_refs; 
-    $attackPattern id ${attackPatternId}`,
-    args
-  );
-
-export const killChainPhases = (attackPatternId, args) =>
-  paginate(
-    `match $kc isa Kill-Chain-Phase; 
-    $rel(kill_chain_phase:$kc, phase_belonging:$attackPattern) isa kill_chain_phases; 
-    $attackPattern id ${attackPatternId}`,
-    args
-  );
-
-export const reports = (attackPatternId, args) =>
-  paginate(
-    `match $report isa Report; 
-    $rel(knowledge_aggregation:$report, so:$attackPattern) isa object_refs; 
-    $attackPattern id ${attackPatternId}`,
-    args
-  );
 
 export const addAttackPattern = async (user, attackPattern) => {
   const wTx = await takeTx();
