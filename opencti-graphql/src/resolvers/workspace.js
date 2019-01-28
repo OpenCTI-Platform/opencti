@@ -11,6 +11,7 @@ import {
   workspaceEditContext,
   workspaceEditField,
   workspaceAddRelation,
+  workspaceAddRelations,
   workspaceDeleteRelation,
   workspaceCleanContext
 } from '../domain/workspace';
@@ -37,6 +38,7 @@ const workspaceResolvers = {
       fieldPatch: ({ input }) => workspaceEditField(user, id, input),
       contextPatch: ({ input }) => workspaceEditContext(user, id, input),
       relationAdd: ({ input }) => workspaceAddRelation(user, id, input),
+      relationsAdd: ({ input }) => workspaceAddRelations(user, id, input),
       relationDelete: ({ relationId }) =>
         workspaceDeleteRelation(user, id, relationId)
     })),

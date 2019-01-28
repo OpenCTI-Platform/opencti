@@ -61,13 +61,13 @@ class CampaignHeaderComponent extends Component {
   }
 
   onSubmitCreateAlias(data) {
-    if (this.props.campaign.stix_label === null
-      || !this.props.campaign.stix_label.includes(data.new_alias)) {
+    if (this.props.campaign.alias === null
+      || !this.props.campaign.alias.includes(data.new_alias)) {
       commitMutation({
         mutation: campaignMutation,
         variables: {
           id: this.props.campaign.id,
-          input: { key: 'stix_label', value: append(data.new_alias, this.props.campaign.stix_label) },
+          input: { key: 'alias', value: append(data.new_alias, this.props.campaign.alias) },
         },
       });
     }
@@ -75,12 +75,12 @@ class CampaignHeaderComponent extends Component {
   }
 
   deleteAlias(alias) {
-    const aliases = filter(a => a !== alias, this.props.campaign.stix_label);
+    const aliases = filter(a => a !== alias, this.props.campaign.alias);
     commitMutation({
       mutation: campaignMutation,
       variables: {
         id: this.props.campaign.id,
-        input: { key: 'stix_label', value: aliases },
+        input: { key: 'alias', value: aliases },
       },
     });
   }
@@ -99,7 +99,7 @@ class CampaignHeaderComponent extends Component {
         </div>
         {variant !== 'noalias'
           ? <div className={classes.aliases}>
-            {propOr([], 'stix_label', campaign).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
+            {propOr([], 'alias', campaign).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
             <IconButton color='secondary' aria-label='Alias' onClick={this.handleToggleCreateAlias.bind(this)}>
               {this.state.openAlias ? <Close fontSize='small'/> : <Add fontSize='small'/>}
             </IconButton>
@@ -135,7 +135,7 @@ const CampaignHeader = createFragmentContainer(CampaignHeaderComponent, {
       fragment CampaignHeader_campaign on Campaign {
           id,
           name,
-          stix_label,
+          alias,
       }
   `,
 });

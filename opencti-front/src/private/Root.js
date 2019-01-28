@@ -99,8 +99,8 @@ class Root extends Component {
                       <Switch>
                         <BoundaryRoute exact path='/dashboard' component={Dashboard}/>
                         <BoundaryRoute exact path='/dashboard/search/:keyword' render={routeProps => <StixDomainEntities {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/explore' component={Workspaces}/>
-                        <BoundaryRoute path='/dashboard/explore/:workspaceId' render={routeProps => <RootWorkspace {...routeProps} me={props.me}/>}/>
+                        <BoundaryRoute exact path='/dashboard/investigate' component={Workspaces}/>
+                        <BoundaryRoute path='/dashboard/investigate/:workspaceId' render={routeProps => <RootWorkspace {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/knowledge' render={() => (<Redirect to='/dashboard/knowledge/threat_actors'/>)}/>
                         <BoundaryRoute exact path='/dashboard/knowledge/threat_actors' component={ThreatActors}/>
                         <BoundaryRoute path='/dashboard/knowledge/threat_actors/:threatActorId' render={routeProps => <RootThreatActor {...routeProps} me={props.me}/>}/>

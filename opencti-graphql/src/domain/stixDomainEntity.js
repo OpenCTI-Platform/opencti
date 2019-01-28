@@ -35,10 +35,12 @@ export const findByName = args =>
 export const search = args =>
   paginate(
     `match $m isa Stix-Domain-Entity
-    has name_lowercase $name
-    has description_lowercase $desc;
+    has name_lowercase $name;
+    $m has description_lowercase $desc;
+    $m has alias_lowercase $alias;
     { $name contains "${args.search.toLowerCase()}"; } or
-    { $desc contains "${args.search.toLowerCase()}"; }`,
+    { $desc contains "${args.search.toLowerCase()}"; } or 
+    { $alias contains "${args.search.toLowerCase()}"; }`,
     args,
     false
   );
@@ -95,6 +97,8 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     $stixDomainEntity has stix_id "${stixDomainEntity.type.toLowerCase()}--${uuid()}";
     $stixDomainEntity has stix_label "";
     $stixDomainEntity has stix_label_lowercase "";
+    $stixDomainEntity has alias "";
+    $stixDomainEntity has alias_lowercase "";
     $stixDomainEntity has name "${stixDomainEntity.name}";
     $stixDomainEntity has description "${stixDomainEntity.description}";
     $stixDomainEntity has name_lowercase "${stixDomainEntity.name.toLowerCase()}";

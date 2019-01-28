@@ -44,7 +44,7 @@ export const getFrom = stixRelationId =>
     $rel($x, $y) isa stix_relation; 
     $rel id ${stixRelationId}; offset 0; limit 1; get $x;`,
     'x'
-  );
+  ).then(result => result.node);
 
 export const getTo = stixRelationId =>
   qkObjUnique(
@@ -52,7 +52,7 @@ export const getTo = stixRelationId =>
     $rel($x, $y) isa stix_relation; 
     $rel id ${stixRelationId}; offset 0; limit 1; get $y;`,
     'y'
-  );
+  ).then(result => result.node);
 
 export const markingDefinitions = (stixRelationId, args) =>
   paginate(

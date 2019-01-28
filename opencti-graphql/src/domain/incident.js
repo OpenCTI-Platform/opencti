@@ -22,6 +22,8 @@ export const addIncident = async (user, incident) => {
     $incident has stix_id "incident--${uuid()}";
     $incident has stix_label "";
     $incident has stix_label_lowercase "";
+    $incident has alias "";
+    $incident has alias_lowercase "";
     $incident has name "${incident.name}";
     $incident has description "${incident.description}";
     $incident has name_lowercase "${incident.name.toLowerCase()}";

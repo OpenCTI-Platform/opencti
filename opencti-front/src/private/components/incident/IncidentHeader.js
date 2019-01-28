@@ -61,13 +61,13 @@ class IncidentHeaderComponent extends Component {
   }
 
   onSubmitCreateAlias(data) {
-    if (this.props.incident.stix_label === null
-      || !this.props.incident.stix_label.includes(data.new_alias)) {
+    if (this.props.incident.alias === null
+      || !this.props.incident.alias.includes(data.new_alias)) {
       commitMutation({
         mutation: incidentMutation,
         variables: {
           id: this.props.incident.id,
-          input: { key: 'stix_label', value: append(data.new_alias, this.props.incident.stix_label) },
+          input: { key: 'alias', value: append(data.new_alias, this.props.incident.alias) },
         },
       });
     }
@@ -75,12 +75,12 @@ class IncidentHeaderComponent extends Component {
   }
 
   deleteAlias(alias) {
-    const aliases = filter(a => a !== alias, this.props.incident.stix_label);
+    const aliases = filter(a => a !== alias, this.props.incident.alias);
     commitMutation({
       mutation: incidentMutation,
       variables: {
         id: this.props.incident.id,
-        input: { key: 'stix_label', value: aliases },
+        input: { key: 'alias', value: aliases },
       },
     });
   }
@@ -99,7 +99,7 @@ class IncidentHeaderComponent extends Component {
         </div>
         {variant !== 'noalias'
           ? <div className={classes.aliases}>
-            {propOr([], 'stix_label', incident).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
+            {propOr([], 'alias', incident).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
             <IconButton color='secondary' aria-label='Alias' onClick={this.handleToggleCreateAlias.bind(this)}>
               {this.state.openAlias ? <Close fontSize='small'/> : <Add fontSize='small'/>}
             </IconButton>
@@ -135,7 +135,7 @@ const IncidentHeader = createFragmentContainer(IncidentHeaderComponent, {
       fragment IncidentHeader_incident on Incident {
           id,
           name,
-          stix_label,
+          alias,
       }
   `,
 });

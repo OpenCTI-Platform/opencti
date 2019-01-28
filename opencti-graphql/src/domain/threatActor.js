@@ -29,6 +29,8 @@ export const addThreatActor = async (user, threatActor) => {
     $threatActor has stix_id "threat-actor--${uuid()}";
     $threatActor has stix_label "";
     $threatActor has stix_label_lowercase "";
+    $threatActor has alias "";
+    $threatActor has alias_lowercase "";
     $threatActor has name "${threatActor.name}";
     $threatActor has description "${threatActor.description}";
     $threatActor has name_lowercase "${threatActor.name.toLowerCase()}";

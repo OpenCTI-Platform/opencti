@@ -61,13 +61,13 @@ class ThreatActorHeaderComponent extends Component {
   }
 
   onSubmitCreateAlias(data) {
-    if (this.props.threatActor.stix_label === null
-      || !this.props.threatActor.stix_label.includes(data.new_alias)) {
+    if (this.props.threatActor.alias === null
+      || !this.props.threatActor.alias.includes(data.new_alias)) {
       commitMutation({
         mutation: threatActorMutation,
         variables: {
           id: this.props.threatActor.id,
-          input: { key: 'stix_label', value: append(data.new_alias, this.props.threatActor.stix_label) },
+          input: { key: 'alias', value: append(data.new_alias, this.props.threatActor.alias) },
         },
       });
     }
@@ -75,12 +75,12 @@ class ThreatActorHeaderComponent extends Component {
   }
 
   deleteAlias(alias) {
-    const aliases = filter(a => a !== alias, this.props.threatActor.stix_label);
+    const aliases = filter(a => a !== alias, this.props.threatActor.alias);
     commitMutation({
       mutation: threatActorMutation,
       variables: {
         id: this.props.threatActor.id,
-        input: { key: 'stix_label', value: aliases },
+        input: { key: 'alias', value: aliases },
       },
     });
   }
@@ -99,7 +99,7 @@ class ThreatActorHeaderComponent extends Component {
         </div>
         {variant !== 'noalias'
           ? <div className={classes.aliases}>
-            {propOr([], 'stix_label', threatActor).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
+            {propOr([], 'alias', threatActor).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
             <IconButton color='secondary' aria-label='Alias' onClick={this.handleToggleCreateAlias.bind(this)}>
               {this.state.openAlias ? <Close fontSize='small'/> : <Add fontSize='small'/>}
             </IconButton>
@@ -135,7 +135,7 @@ const ThreatActorHeader = createFragmentContainer(ThreatActorHeaderComponent, {
       fragment ThreatActorHeader_threatActor on ThreatActor {
           id,
           name,
-          stix_label,
+          alias,
       }
   `,
 });

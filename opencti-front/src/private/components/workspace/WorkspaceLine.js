@@ -82,7 +82,7 @@ class WorkspaceLineComponent extends Component {
     const { fd, classes, workspace } = this.props;
 
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} component={Link} to={`/dashboard/explore/${workspace.id}`}>
+      <ListItem classes={{ root: classes.item }} divider={true} component={Link} to={`/dashboard/investigate/${workspace.id}`}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Work/>
         </ListItemIcon>

@@ -6,6 +6,7 @@ import {
   notify,
   now,
   paginate,
+  paginateRelationships,
   prepareDate,
   yearFormat,
   monthFormat,
@@ -42,9 +43,9 @@ export const objectRefs = (reportId, args) =>
   );
 
 export const relationRefs = (reportId, args) =>
-  paginate(
-    `match $so isa stix_relation; 
-    $rel(so:$so, knowledge_aggregation:$report) isa object_refs; 
+  paginateRelationships(
+    `match $rel($from, $to) isa stix_relation;
+    (so:$rel, knowledge_aggregation:$report) isa object_refs; 
     $report id ${reportId}`,
     args
   );
@@ -56,6 +57,8 @@ export const addReport = async (user, report) => {
     $report has stix_id "report--${uuid()}";
     $report has stix_label "";
     $report has stix_label_lowercase "";
+    $report has alias "";
+    $report has alias_lowercase "";
     $report has name "${report.name}";
     $report has description "${report.description}";
     $report has name_lowercase "${report.name.toLowerCase()}";

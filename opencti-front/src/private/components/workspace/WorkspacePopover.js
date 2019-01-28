@@ -88,7 +88,7 @@ class WorkspacePopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/explore');
+        this.props.history.push('/dashboard/investigate');
       },
     });
   }

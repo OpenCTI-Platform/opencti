@@ -49,7 +49,7 @@ export const lowerCaseAttributes = [
   'name', // Standard
   'description', // Standard
   'stix_label', // Standard
-  'alias', // TODO Remove
+  'alias', // Standard
   'source_name', // External Reference
   'external_id' // External Reference
 ];

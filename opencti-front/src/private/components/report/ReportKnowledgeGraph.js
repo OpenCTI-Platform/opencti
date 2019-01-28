@@ -6,7 +6,6 @@ import {
   indexBy, prop,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
-import { fetchQuery } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import {
   DiagramEngine,
@@ -17,7 +16,7 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
-import { commitMutation, environment } from '../../../relay/environment';
+import { commitMutation, fetchQuery, environment } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
 import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
@@ -94,7 +93,6 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    // component has been updated, check changes
     const added = difference(
       this.props.report.objectRefs.edges,
       prevProps.report.objectRefs.edges,
@@ -103,30 +101,10 @@ class ReportKnowledgeGraphComponent extends Component {
       prevProps.report.objectRefs.edges,
       this.props.report.objectRefs.edges,
     );
-    // if a node has been added, add in graph
-    if (added.length > 0) {
-      const model = this.engine.getDiagramModel();
-      const newNodes = map(n => new EntityNodeModel({
-        id: n.node.id,
-        relationId: n.relation.id,
-        name: n.node.name,
-        type: n.node.type,
-      }), added);
-      forEach((n) => {
-        n.addListener({ selectionChanged: this.handleSelection.bind(this) });
-        model.addNode(n);
-      }, newNodes);
-      this.forceUpdate();
-    }
-    // if a node has been removed, remove in graph
-    if (removed.length > 0) {
-      const model = this.engine.getDiagramModel();
-      const removedIds = map(n => n.node.id, removed);
-      forEach((n) => {
-        if (removedIds.includes(n.extras.id)) {
-          model.removeNode(n);
-        }
-      }, values(model.getNodes()));
+    if ((this.props.report.graph_data !== prevProps.report.graph_data)
+      || added.length > 0
+      || removed.length > 0) {
+      this.initialize();
       this.forceUpdate();
     }
   }
@@ -187,8 +165,8 @@ class ReportKnowledgeGraphComponent extends Component {
     }, values(links));
     forEach((l) => {
       if (!includes(l.node.id, linksIds)) {
-        const fromPort = finalNodesObject[l.node.from.node.id] ? finalNodesObject[l.node.from.node.id].node.getPort('main') : null;
-        const toPort = finalNodesObject[l.node.to.node.id] ? finalNodesObject[l.node.to.node.id].node.getPort('main') : null;
+        const fromPort = finalNodesObject[l.node.from.id] ? finalNodesObject[l.node.from.id].node.getPort('main') : null;
+        const toPort = finalNodesObject[l.node.to.id] ? finalNodesObject[l.node.to.id].node.getPort('main') : null;
         const newLink = new EntityLinkModel();
         newLink.setExtras({
           relation: l.node,
@@ -490,14 +468,14 @@ const ReportKnowledgeGraph = createFragmentContainer(ReportKnowledgeGraphCompone
                       first_seen
                       last_seen
                       from {
-                          node {
-                              id
-                          }
+                          id
+                          type
+                          name
                       }
                       to {
-                          node {
-                              id
-                          }
+                          id
+                          type
+                          name
                       }
                   }
                   relation {

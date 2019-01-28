@@ -61,13 +61,13 @@ class SectorHeaderComponent extends Component {
   }
 
   onSubmitCreateAlias(data) {
-    if (this.props.sector.stix_label === null
-      || !this.props.sector.stix_label.includes(data.new_alias)) {
+    if (this.props.sector.alias === null
+      || !this.props.sector.alias.includes(data.new_alias)) {
       commitMutation({
         mutation: sectorMutation,
         variables: {
           id: this.props.sector.id,
-          input: { key: 'stix_label', value: append(data.new_alias, this.props.sector.stix_label) },
+          input: { key: 'alias', value: append(data.new_alias, this.props.sector.alias) },
         },
       });
     }
@@ -75,12 +75,12 @@ class SectorHeaderComponent extends Component {
   }
 
   deleteAlias(alias) {
-    const aliases = filter(a => a !== alias, this.props.sector.stix_label);
+    const aliases = filter(a => a !== alias, this.props.sector.alias);
     commitMutation({
       mutation: sectorMutation,
       variables: {
         id: this.props.sector.id,
-        input: { key: 'stix_label', value: aliases },
+        input: { key: 'alias', value: aliases },
       },
     });
   }
@@ -99,7 +99,7 @@ class SectorHeaderComponent extends Component {
         </div>
         {variant !== 'noalias'
           ? <div className={classes.aliases}>
-            {propOr([], 'stix_label', sector).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
+            {propOr([], 'alias', sector).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
             <IconButton color='secondary' aria-label='Alias' onClick={this.handleToggleCreateAlias.bind(this)}>
               {this.state.openAlias ? <Close fontSize='small'/> : <Add fontSize='small'/>}
             </IconButton>
@@ -135,7 +135,7 @@ const SectorHeader = createFragmentContainer(SectorHeaderComponent, {
       fragment SectorHeader_sector on Sector {
           id,
           name,
-          stix_label,
+          alias,
       }
   `,
 });

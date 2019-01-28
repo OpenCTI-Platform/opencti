@@ -48,6 +48,7 @@ define
 
   # STIX SDO
   "alias" sub attribute datatype string;
+  "alias_lowercase" sub attribute datatype string;
   "stix_role" sub attribute datatype string;
   "objective" sub attribute datatype string;
   "goal" sub attribute datatype string;
@@ -373,6 +374,8 @@ define
     has "name_lowercase"
     has "description"
     has "description_lowercase"
+    has "alias"
+    has "alias_lowercase"
     has "graph_data";
 
   "External-Reference" sub "Stix-Domain"
@@ -409,7 +412,6 @@ define
     plays "characterize";
 
   "Campaign" sub "Stix-Domain-Entity"
-    has "alias"
     has "first_seen"
     has "first_seen_month"
     has "first_seen_year"
@@ -450,7 +452,6 @@ define
     plays "gather";
 
   "Threat-Actor" sub "Identity"
-    has "alias"
     has "stix_role"
     has "goal"
     has "sophistication"
@@ -499,7 +500,6 @@ define
     plays "characterize";
 
   "Intrusion-Set" sub "Stix-Domain-Entity"
-    has "alias"
     has "first_seen"
     has "first_seen_month"
     has "first_seen_year"

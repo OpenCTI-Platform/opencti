@@ -51,7 +51,7 @@ class RootWorkspace extends Component {
             if (props && props.workspace) {
               return (
                 <div>
-                  <Route exact path='/dashboard/explore/:workspaceId' render={
+                  <Route exact path='/dashboard/investigate/:workspaceId' render={
                     routeProps => <Workspace {...routeProps} workspace={props.workspace}/>
                   }/>
                 </div>

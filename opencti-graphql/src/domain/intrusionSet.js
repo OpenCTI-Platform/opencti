@@ -29,6 +29,8 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     $intrusionSet has stix_id "intrusion-set--${uuid()}";
     $intrusionSet has stix_label "";
     $intrusionSet has stix_label_lowercase "";
+    $intrusionSet has alias "";
+    $intrusionSet has alias_lowercase "";
     $intrusionSet has name "${intrusionSet.name}";
     $intrusionSet has description "${intrusionSet.description}";
     $intrusionSet has name_lowercase "${intrusionSet.name.toLowerCase()}";

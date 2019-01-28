@@ -6,7 +6,6 @@ import {
   indexBy, prop,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
-import { fetchQuery } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import {
   DiagramEngine,
@@ -17,7 +16,7 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
-import { commitMutation, environment } from '../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
 import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
@@ -29,7 +28,7 @@ import EntityLinkModel from '../../../components/graph_node/EntityLinkModel';
 import { workspaceMutationFieldPatch } from './WorkspaceEditionOverview';
 import WorkspaceAddObjectRefs from './WorkspaceAddObjectRefs';
 import { workspaceMutationRelationAdd, workspaceMutationRelationDelete } from './WorkspaceAddObjectRefsLines';
-import StixRelationCreation, { stixRelationCreationQuery, stixRelationCreationDeleteMutation } from '../stix_relation/StixRelationCreation';
+import StixRelationCreation from '../stix_relation/StixRelationCreation';
 import StixRelationEdition from '../stix_relation/StixRelationEdition';
 
 const styles = () => ({
@@ -52,6 +51,31 @@ export const workspaceGraphQuery = graphql`
     query WorkspaceGraphQuery($id: String!) {
         workspace(id: $id) {
             ...WorkspaceGraph_workspace
+        }
+    }
+`;
+
+const workspaceGraphResolveRelationsQuery = graphql`
+    query WorkspaceGraphResolveRelationsQuery($fromId: String, $inferred: Boolean) {
+        stixRelations(fromId: $fromId, inferred: $inferred) {
+            edges {
+                node {
+                    id
+                }
+                to {
+                    id
+                }
+            }
+        }
+    }
+`;
+
+export const workspaceGraphMutationRelationsAdd = graphql`
+    mutation WorkspaceGraphRelationsAddMutation($id: ID!, $input: RelationsAddInput!) {
+        workspaceEdit(id: $id) {
+            relationsAdd(input: $input) {
+                ...WorkspaceGraph_workspace
+            }
         }
     }
 `;
@@ -94,7 +118,6 @@ class WorkspaceGraphComponent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    // component has been updated, check changes
     const added = difference(
       this.props.workspace.objectRefs.edges,
       prevProps.workspace.objectRefs.edges,
@@ -103,30 +126,10 @@ class WorkspaceGraphComponent extends Component {
       prevProps.workspace.objectRefs.edges,
       this.props.workspace.objectRefs.edges,
     );
-    // if a node has been added, add in graph
-    if (added.length > 0) {
-      const model = this.engine.getDiagramModel();
-      const newNodes = map(n => new EntityNodeModel({
-        id: n.node.id,
-        relationId: n.relation.id,
-        name: n.node.name,
-        type: n.node.type,
-      }), added);
-      forEach((n) => {
-        n.addListener({ selectionChanged: this.handleSelection.bind(this) });
-        model.addNode(n);
-      }, newNodes);
-      this.forceUpdate();
-    }
-    // if a node has been removed, remove in graph
-    if (removed.length > 0) {
-      const model = this.engine.getDiagramModel();
-      const removedIds = map(n => n.node.id, removed);
-      forEach((n) => {
-        if (removedIds.includes(n.extras.id)) {
-          model.removeNode(n);
-        }
-      }, values(model.getNodes()));
+    if ((this.props.workspace.graph_data !== prevProps.workspace.graph_data)
+      || added.length > 0
+      || removed.length > 0) {
+      this.initialize();
       this.forceUpdate();
     }
   }
@@ -187,8 +190,8 @@ class WorkspaceGraphComponent extends Component {
     }, values(links));
     forEach((l) => {
       if (!includes(l.node.id, linksIds)) {
-        const fromPort = finalNodesObject[l.node.from.node.id] ? finalNodesObject[l.node.from.node.id].node.getPort('main') : null;
-        const toPort = finalNodesObject[l.node.to.node.id] ? finalNodesObject[l.node.to.node.id].node.getPort('main') : null;
+        const fromPort = finalNodesObject[l.node.from.id] ? finalNodesObject[l.node.from.id].node.getPort('main') : null;
+        const toPort = finalNodesObject[l.node.to.id] ? finalNodesObject[l.node.to.id].node.getPort('main') : null;
         const newLink = new EntityLinkModel();
         newLink.setExtras({
           relation: l.node,
@@ -318,19 +321,6 @@ class WorkspaceGraphComponent extends Component {
                   relationId: link.extras.objectRefId,
                 },
               });
-              fetchQuery(environment, stixRelationCreationQuery, {
-                fromId: link.sourcePort.parent.extras.id,
-                toId: link.targetPort.parent.extras.id,
-              }).then((data) => {
-                if (data.stixRelations.edges.length === 1) {
-                  commitMutation({
-                    mutation: stixRelationCreationDeleteMutation,
-                    variables: {
-                      id: link.extras.relation.id,
-                    },
-                  });
-                }
-              });
             }
             this.handleSaveGraph();
           }
@@ -349,6 +339,45 @@ class WorkspaceGraphComponent extends Component {
           currentLink: event.entity,
         });
       }
+    }
+    if (event.isSelected === true && event.expand === true) {
+      fetchQuery(workspaceGraphResolveRelationsQuery, {
+        inferred: true,
+        fromId: event.entity.extras.id,
+      }).then((data) => {
+        if (data && data.stixRelations) {
+          // prepare actual nodes & relations
+          const actualNodes = this.props.workspace.objectRefs.edges;
+          const actualRelations = this.props.workspace.relationRefs.edges;
+          const actualNodesIds = pipe(map(n => n.node), pluck('id'))(actualNodes);
+          const actualRelationsIds = pipe(map(n => n.node), pluck('id'))(actualRelations);
+          // check added nodes
+          const relationsToAdd = [];
+          forEach((n) => {
+            if (!includes(n.to.id, actualNodesIds)) {
+              relationsToAdd.push(n.to.id);
+            }
+          }, data.stixRelations.edges);
+          forEach((n) => {
+            if (!includes(n.node.id, actualRelationsIds)) {
+              relationsToAdd.push(n.node.id);
+            }
+          }, data.stixRelations.edges);
+          const input = {
+            fromRole: 'knowledge_aggregation',
+            toIds: relationsToAdd,
+            toRole: 'so',
+            through: 'object_refs',
+          };
+          commitMutation({
+            mutation: workspaceGraphMutationRelationsAdd,
+            variables: {
+              id: this.props.workspace.id,
+              input,
+            },
+          });
+        }
+      });
     }
     return true;
   }
@@ -490,14 +519,10 @@ const WorkspaceGraph = createFragmentContainer(WorkspaceGraphComponent, {
                       first_seen
                       last_seen
                       from {
-                          node {
-                              id
-                          }
+                          id
                       }
                       to {
-                          node {
-                              id
-                          }
+                          id
                       }
                   }
                   relation {

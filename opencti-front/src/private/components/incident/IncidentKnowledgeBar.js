@@ -7,7 +7,6 @@ import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
 import { BugReport, DeviceHub } from '@material-ui/icons';
 import {
-  ChessKnight,
   LockPattern,
   Application,
   Target,

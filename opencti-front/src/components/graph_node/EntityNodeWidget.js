@@ -72,6 +72,10 @@ class EntityNodeWidget extends Component {
     this.forceUpdate();
   }
 
+  handleExpand() {
+    this.props.node.setSelected(true, true);
+  }
+
   render() {
     const {
       node, node: { extras }, classes, t,
@@ -82,7 +86,7 @@ class EntityNodeWidget extends Component {
         backgroundColor: itemColor(extras.type, true),
         border: node.selected ? '2px solid #00c0ff' : '2px solid #333333',
         display: node.hidden ? 'none' : 'block',
-      }}>
+      }} onDoubleClick={this.handleExpand.bind(this)}>
         <div className={classes.header}>
             <div className={classes.icon}>
               <ItemIcon type={extras.type} color={itemColor(extras.type, false)} size='small'/>

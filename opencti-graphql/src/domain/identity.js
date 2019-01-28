@@ -33,6 +33,8 @@ export const addIdentity = async (user, identity) => {
     $identity has stix_id "${identity.type.toLowerCase()}--${uuid()}";
     $identity has stix_label "";
     $identity has stix_label_lowercase "";
+    $identity has alias "";
+    $identity has alias_lowercase "";
     $identity has name "${identity.name}";
     $identity has description "${identity.description}";
     $identity has name_lowercase "${identity.name.toLowerCase()}";

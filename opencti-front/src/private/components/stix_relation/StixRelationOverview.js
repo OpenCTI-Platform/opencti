@@ -92,8 +92,8 @@ class StixRelationContainer extends Component {
       t, fld, classes, entityId, stixRelation, inversedRelations,
     } = this.props;
     const linkedEntity = stixRelation.to.node;
-    const from = linkedEntity.id === entityId ? stixRelation.to.node : stixRelation.from.node;
-    const to = linkedEntity.id === entityId ? stixRelation.from.node : stixRelation.to.node;
+    const from = linkedEntity.id === entityId ? stixRelation.to : stixRelation.from;
+    const to = linkedEntity.id === entityId ? stixRelation.from : stixRelation.to;
     const linkTo = resolveLink(to.type);
     const linkFrom = resolveLink(from.type);
 
@@ -213,20 +213,16 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
           last_seen
           description
           from {
-              node {
-                  id
-                  type
-                  name
-                  description
-              }
+              id
+              type
+              name
+              description
           }
           to {
-              node {
-                  id
-                  type
-                  name
-                  description
-              }
+              id
+              type
+              name
+              description
           }
           reports {
               edges {

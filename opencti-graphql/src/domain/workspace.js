@@ -8,7 +8,9 @@ import {
   loadByID,
   notify,
   now,
-  paginate, qkObjUnique,
+  paginate,
+  paginateRelationships,
+  qkObjUnique,
   takeTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -43,9 +45,9 @@ export const objectRefs = (workspaceId, args) =>
   );
 
 export const relationRefs = (workspaceId, args) =>
-  paginate(
-    `match $so isa stix_relation; 
-    $rel(so:$so, knowledge_aggregation:$workspace) isa object_refs; 
+  paginateRelationships(
+    `match $rel($from, $to) isa stix_relation;
+    $rel(so:$rel, knowledge_aggregation:$workspace) isa object_refs; 
     $workspace id ${workspaceId}`,
     args
   );
@@ -97,6 +99,36 @@ export const workspaceAddRelation = (user, workspaceId, input) =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
+
+export const workspaceAddRelations = async (user, workspaceId, input) => {
+  const finalInput = map(
+    n => ({
+      toId: n,
+      fromRole: input.fromRole,
+      toRole: input.toRole,
+      through: input.through
+    }),
+    input.toIds
+  );
+
+  const wTx = await takeTx();
+  const createRelationPromise = relationInput =>
+    wTx.query(`match $from id ${workspaceId}; 
+         $to id ${relationInput.toId}; 
+         insert $rel(${relationInput.fromRole}: $from, ${
+      relationInput.toRole
+    }: $to) 
+         isa ${relationInput.through};`);
+
+  const relationsPromises = map(createRelationPromise, finalInput);
+  await Promise.all(relationsPromises);
+
+  await wTx.commit();
+
+  return loadByID(workspaceId).then(workspace =>
+    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
+  );
+};
 
 export const workspaceDeleteRelation = (user, workspaceId, relationId) =>
   deleteRelation(workspaceId, relationId).then(relationData => {

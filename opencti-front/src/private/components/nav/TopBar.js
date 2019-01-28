@@ -123,8 +123,8 @@ class TopBar extends Component {
           <div className={classes.menuContainer}>
             {location.pathname === '/dashboard' || location.pathname === '/dashboard/entities' ? <TopMenuDashboard/> : ''}
             {location.pathname.includes('/dashboard/search/') ? <TopMenuSearch/> : ''}
-            {location.pathname === '/dashboard/explore' ? <TopMenuWorkspaces/> : ''}
-            {location.pathname.includes('/dashboard/explore/') ? <TopMenuWorkspace/> : ''}
+            {location.pathname === '/dashboard/investigate' ? <TopMenuWorkspaces/> : ''}
+            {location.pathname.includes('/dashboard/investigate/') ? <TopMenuWorkspace/> : ''}
             {location.pathname === '/dashboard/knowledge' || location.pathname.match('/dashboard/knowledge/[a-z_]+$') ? <TopMenuKnowledge/> : ''}
             {location.pathname.includes('/dashboard/knowledge/threat_actors/') ? <TopMenuThreatActor/> : ''}
             {location.pathname.includes('/dashboard/knowledge/sectors/') ? <TopMenuSector/> : ''}

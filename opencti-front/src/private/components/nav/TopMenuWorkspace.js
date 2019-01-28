@@ -38,14 +38,14 @@ class TopMenuWorkspace extends Component {
     } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/explore' variant='contained' size="small"
+        <Button component={Link} to='/dashboard/investigate' variant='contained' size="small"
                 color='inherit' classes={{ root: classes.buttonHome }}>
           <Work className={classes.icon} fontSize='small'/>
           {t('Workspaces')}
         </Button>
         <ArrowForwardIos color='inherit' classes={{ root: classes.arrow }}/>
-        <Button component={Link} to={`/dashboard/explore/${workspaceId}`} variant={location.pathname === `/dashboard/explore/${workspaceId}` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/explore/${workspaceId}` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to={`/dashboard/investigate/${workspaceId}`} variant={location.pathname === `/dashboard/investigate/${workspaceId}` ? 'contained' : 'text'} size="small"
+                color={location.pathname === `/dashboard/investigate/${workspaceId}` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('Knowledge')}
         </Button>
       </div>

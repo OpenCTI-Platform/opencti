@@ -30,7 +30,7 @@ type RelationEmbedded {
 
 type RelationData {
     node: GlobalObject
-    relation: RelationEmbedded
+    relation: [RelationEmbedded]
 }
 
 type createdByRef {
@@ -173,8 +173,8 @@ type StixRelation implements GlobalObject {
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
     reports: ReportConnection
-    from: StixDomainEntityEdge
-    to: StixDomainEntityEdge
+    from: StixDomainEntity
+    to: StixDomainEntity
     created_at: DateTime!
     updated_at: DateTime!
 }
@@ -289,6 +289,7 @@ type User implements GlobalObject & StixDomainEntity & Identity {
     type: String!
     name: String!
     stix_label: [String]
+    alias: [String]
     description: String
     firstname: String
     lastname: String
@@ -352,6 +353,7 @@ type Organization implements GlobalObject & StixDomainEntity & Identity {
     type: String!
     name: String!
     stix_label: [String]
+    alias: [String]
     description: String
     created: DateTime
     modified: DateTime
@@ -396,6 +398,7 @@ type Sector implements GlobalObject & StixDomainEntity & Identity {
     type: String!
     name: String!
     stix_label: [String]
+    alias: [String]
     description: String
     created: DateTime
     modified: DateTime
@@ -440,6 +443,7 @@ type City implements GlobalObject & StixDomainEntity & Identity {
     type: String!
     name: String!
     stix_label: [String]
+    alias: [String]
     description: String
     created: DateTime
     modified: DateTime
@@ -484,6 +488,7 @@ type Country implements GlobalObject & StixDomainEntity & Identity {
     type: String!
     name: String!
     stix_label: [String]
+    alias: [String]
     description: String
     created: DateTime
     modified: DateTime
@@ -525,6 +530,7 @@ type Group implements GlobalObject & StixDomainEntity {
     type: String!
     name: String!
     stix_label: [String]
+    alias: [String]
     description: String
     graph_data: [String]
     editContext: [EditUserContext]
@@ -695,6 +701,7 @@ type AttackPattern implements GlobalObject & StixDomainEntity {
     type: String!
     name: String!
     stix_label: [String]
+    alias: [String]
     description: String
     created: DateTime
     modified: DateTime
@@ -740,6 +747,7 @@ type CourseOfAction implements GlobalObject & StixDomainEntity {
     type: String!
     name: String!
     stix_label: [String]
+    alias: [String]
     description: String
     created: DateTime
     modified: DateTime
@@ -937,6 +945,7 @@ type Incident implements GlobalObject & StixDomainEntity {
     type: String!
     name: String!
     stix_label: [String]
+    alias: [String]
     description: String
     first_seen: DateTime
     last_seen: DateTime
@@ -984,6 +993,7 @@ type Malware implements GlobalObject & StixDomainEntity {
     type: String!
     name: String!
     stix_label: [String]
+    alias: [String]
     description: String
     created: DateTime
     modified: DateTime
@@ -1029,6 +1039,7 @@ type Tool implements GlobalObject & StixDomainEntity {
     type: String!
     name: String!
     stix_label: [String]
+    alias: [String]
     description: String
     tool_version: String
     created: DateTime
@@ -1076,6 +1087,7 @@ type Vulnerability implements GlobalObject & StixDomainEntity {
     type: String!
     name: String!
     stix_label: [String]
+    alias: [String]
     description: String
     created: DateTime
     modified: DateTime
@@ -1155,6 +1167,12 @@ input ReportAddInput {
 input RelationAddInput {
     fromRole: String!
     toId: ID!
+    toRole: String!
+    through: String!
+}
+input RelationsAddInput {
+    fromRole: String!
+    toIds: [ID]!
     toRole: String!
     through: String!
 }
@@ -1281,6 +1299,7 @@ type WorkspaceEditMutations {
     contextPatch(input: EditContext): Workspace
     contextClean: Workspace
     relationAdd(input: RelationAddInput): RelationData
+    relationsAdd(input: RelationsAddInput): Workspace
     relationDelete(relationId: ID!): RelationData
 }
 
