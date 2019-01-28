@@ -274,16 +274,16 @@ class WorkspaceGraphComponent extends Component {
   handleLinkCreation(event) {
     const model = this.engine.getDiagramModel();
     const currentLinks = model.getLinks();
-    const currentLinksPairs = map(n => ({ source: n.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
+    const currentLinksPairs = map(n => ({ source: pathOr(null, ['sourcePort', 'id'], n), target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
     if (event.port !== undefined) {
       // ensure that the links are not circular on the same element
       const link = last(values(event.port.links));
-      const linkPair = { source: link.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], link) };
+      const linkPair = { source: pathOr(null, ['sourcePort', 'id'], link), target: pathOr(null, ['targetPort', 'id'], link) };
       const filteredCurrentLinks = filter(n => (
         n.source === linkPair.source && n.target === linkPair.target)
         || (n.source === linkPair.target && n.target === linkPair.source),
       currentLinksPairs);
-      if (link.targetPort === null || (link.sourcePort === link.targetPort)) {
+      if (link.sourcePort === null || link.targetPort === null || (link.sourcePort === link.targetPort)) {
         model.removeLink(link);
       } else if (filteredCurrentLinks.length === 1) {
         link.addListener({ selectionChanged: this.handleSelection.bind(this) });
