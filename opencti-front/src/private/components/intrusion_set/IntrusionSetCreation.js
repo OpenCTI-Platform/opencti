@@ -184,7 +184,7 @@ class IntrusionSetCreation extends Component {
               <Close fontSize='small'/>
             </IconButton>
             <Typography variant='h6'>
-              {t('Create a intrusionSet')}
+              {t('Create an intrusion set')}
             </Typography>
           </div>
           <div className={classes.container}>

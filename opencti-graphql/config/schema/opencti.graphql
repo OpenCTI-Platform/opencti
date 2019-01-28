@@ -30,7 +30,7 @@ type RelationEmbedded {
 
 type RelationData {
     node: GlobalObject
-    relation: [RelationEmbedded]
+    relation: RelationEmbedded
 }
 
 type createdByRef {
@@ -152,8 +152,6 @@ type StixRelationConnection {
 type StixRelationEdge {
     cursor: String!
     node: StixRelation!
-    from: StixDomainEntity
-    to: StixDomainEntity
     relation: RelationEmbedded
 }
 type StixRelation implements GlobalObject {

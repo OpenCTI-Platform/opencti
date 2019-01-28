@@ -34,10 +34,10 @@ const incidentQuery = graphql`
 
 class RootIncident extends Component {
   componentDidMount() {
-    const { match: { params: { reportId } } } = this.props;
+    const { match: { params: { incidentId } } } = this.props;
     const sub = requestSubscription({
       subscription,
-      variables: { id: reportId },
+      variables: { id: incidentId },
     });
     this.setState({ sub });
   }

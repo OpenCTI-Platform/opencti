@@ -81,7 +81,7 @@ class EntityStixRelationsLines extends Component {
       return <div key={key}>&nbsp;</div>;
     }
     const stixRelation = stixRelationNode.node;
-    const stixDomainEntity = stixRelationNode.to;
+    const stixDomainEntity = stixRelationNode.node.to;
     return <div key={key} style={style}>
         <EntityStixRelationLine
           key={stixRelation.id}
@@ -176,9 +176,9 @@ export default withStyles(styles)(createPaginationContainer(
                 edges {
                     node {
                         ...EntityStixRelationLine_stixRelation
-                    }
-                    to {
-                        ...EntityStixRelationLine_stixDomainEntity
+                        to {
+                            ...EntityStixRelationLine_stixDomainEntity
+                        }
                     }
                 }
             }

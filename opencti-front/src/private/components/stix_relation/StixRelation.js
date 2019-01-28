@@ -32,12 +32,13 @@ class StixRelation extends Component {
           query={stixRelationQuery}
           variables={{ id: relationId }}
           render={({ props }) => {
-            if (props) { // Done
-              return (
-                <StixRelationOverview entityId={entityId} stixRelation={props.stixRelation} inversedRelations={inversedRelations}/>
-              );
+            if (props && props.stixRelation) {
+              return <StixRelationOverview
+                entityId={entityId}
+                stixRelation={props.stixRelation}
+                inversedRelations={inversedRelations}
+              />;
             }
-            // Loading
             return <div> &nbsp; </div>;
           }}
         />

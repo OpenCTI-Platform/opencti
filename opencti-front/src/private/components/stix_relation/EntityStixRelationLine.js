@@ -92,6 +92,7 @@ class ReportLineComponent extends Component {
     const {
       nsd, t, classes, stixRelation, stixDomainEntity, paginationOptions, entityLink,
     } = this.props;
+    console.log(stixDomainEntity);
     return (
       <ListItem
         classes={{ root: classes.item }}

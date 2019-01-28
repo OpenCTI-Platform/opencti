@@ -44,10 +44,11 @@ export const objectRefs = (reportId, args) =>
 
 export const relationRefs = (reportId, args) =>
   paginateRelationships(
-    `match $rel($from, $to) isa stix_relation;
-    (so:$rel, knowledge_aggregation:$report) isa object_refs; 
+    `match $rel($from, $to) isa stix_relation; 
+    $extraRel(so:$rel, knowledge_aggregation:$report) isa object_refs; 
     $report id ${reportId}`,
-    args
+    args,
+    'extraRel'
   );
 
 export const addReport = async (user, report) => {

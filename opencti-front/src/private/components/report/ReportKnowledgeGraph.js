@@ -16,7 +16,7 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
-import { commitMutation, fetchQuery, environment } from '../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
 import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
@@ -93,6 +93,12 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    if (this.props.report.graph_data !== prevProps.report.graph_data) {
+      this.initialize();
+      this.forceUpdate();
+      return;
+    }
+
     const added = difference(
       this.props.report.objectRefs.edges,
       prevProps.report.objectRefs.edges,
@@ -101,10 +107,30 @@ class ReportKnowledgeGraphComponent extends Component {
       prevProps.report.objectRefs.edges,
       this.props.report.objectRefs.edges,
     );
-    if ((this.props.report.graph_data !== prevProps.report.graph_data)
-      || added.length > 0
-      || removed.length > 0) {
-      this.initialize();
+    // if a node has been added, add in graph
+    if (added.length > 0) {
+      const model = this.engine.getDiagramModel();
+      const newNodes = map(n => new EntityNodeModel({
+        id: n.node.id,
+        relationId: n.relation.id,
+        name: n.node.name,
+        type: n.node.type,
+      }), added);
+      forEach((n) => {
+        n.addListener({ selectionChanged: this.handleSelection.bind(this) });
+        model.addNode(n);
+      }, newNodes);
+      this.forceUpdate();
+    }
+    // if a node has been removed, remove in graph
+    if (removed.length > 0) {
+      const model = this.engine.getDiagramModel();
+      const removedIds = map(n => n.node.id, removed);
+      forEach((n) => {
+        if (removedIds.includes(n.extras.id)) {
+          model.removeNode(n);
+        }
+      }, values(model.getNodes()));
       this.forceUpdate();
     }
   }
@@ -296,7 +322,7 @@ class ReportKnowledgeGraphComponent extends Component {
                   relationId: link.extras.objectRefId,
                 },
               });
-              fetchQuery(environment, stixRelationCreationQuery, {
+              fetchQuery(stixRelationCreationQuery, {
                 fromId: link.sourcePort.parent.extras.id,
                 toId: link.targetPort.parent.extras.id,
               }).then((data) => {

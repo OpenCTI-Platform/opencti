@@ -91,7 +91,7 @@ class StixRelationContainer extends Component {
     const {
       t, fld, classes, entityId, stixRelation, inversedRelations,
     } = this.props;
-    const linkedEntity = stixRelation.to.node;
+    const linkedEntity = stixRelation.to;
     const from = linkedEntity.id === entityId ? stixRelation.to : stixRelation.from;
     const to = linkedEntity.id === entityId ? stixRelation.from : stixRelation.to;
     const linkTo = resolveLink(to.type);

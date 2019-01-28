@@ -36,8 +36,8 @@ class IncidentKnowledgeComponent extends Component {
             routeProps => <StixRelation entityId={incident.id} {...routeProps} inversedRelations={inversedRelations}/>
           }/>
           {location.pathname.includes('overview') ? <StixDomainEntityKnowledge stixDomainEntityId={incident.id}/> : ''}
-          {location.pathname.includes('attribution') ? <EntityStixRelations entityId={incident.id} relationType='attributed-to' targetEntityTypes={['Identity', 'Campaign']} entityLink={link}/> : ''}
-          {location.pathname.includes('malwares') ? <EntityStixRelations entityId={incident.id} relationType='uses' targetEntityTypes={['Incident']} entityLink={link}/> : ''}
+          {location.pathname.includes('attribution') ? <EntityStixRelations entityId={incident.id} relationType='attributed-to' targetEntityTypes={['Identity', 'Intrusion-Set', 'Campaign']} entityLink={link}/> : ''}
+          {location.pathname.includes('malwares') ? <EntityStixRelations entityId={incident.id} relationType='uses' targetEntityTypes={['Malware']} entityLink={link}/> : ''}
           {location.pathname.includes('victimology') ? <EntityStixRelations entityId={incident.id} relationType='targets' targetEntityTypes={['Identity']} entityLink={link}/> : ''}
           {location.pathname.includes('ttp') ? <EntityStixRelations entityId={incident.id} relationType='uses' targetEntityTypes={['Attack-Pattern']} entityLink={link}/> : ''}
           {location.pathname.includes('tools') ? <EntityStixRelations entityId={incident.id} relationType='uses' targetEntityTypes={['Tool']} entityLink={link}/> : ''}

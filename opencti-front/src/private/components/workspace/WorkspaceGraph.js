@@ -61,9 +61,9 @@ const workspaceGraphResolveRelationsQuery = graphql`
             edges {
                 node {
                     id
-                }
-                to {
-                    id
+                    to {
+                        id
+                    }
                 }
             }
         }
@@ -301,13 +301,13 @@ class WorkspaceGraphComponent extends Component {
   handleLinkDeletion(event) {
     const model = this.engine.getDiagramModel();
     const currentLinks = model.getLinks();
-    const currentLinksPairs = map(n => ({ source: n.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
+    const currentLinksPairs = map(n => ({ source: pathOr(null, ['sourcePort', 'id'], n), target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
     if (event.isCreated === false) {
       if (event.link !== undefined) {
         const { link } = event;
         // ensure that the link is not circular on the same element
         if (link.targetPort !== null && (link.sourcePort !== link.targetPort)) {
-          const linkPair = { source: link.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], link) };
+          const linkPair = { source: pathOr(null, ['sourcePort', 'id'], link), target: pathOr(null, ['targetPort', 'id'], link) };
           const filteredCurrentLinks = filter(n => (
             n.source === linkPair.source && n.target === linkPair.target)
             || (n.source === linkPair.target && n.target === linkPair.source),
@@ -354,8 +354,8 @@ class WorkspaceGraphComponent extends Component {
           // check added nodes
           const relationsToAdd = [];
           forEach((n) => {
-            if (!includes(n.to.id, actualNodesIds)) {
-              relationsToAdd.push(n.to.id);
+            if (!includes(n.node.to.id, actualNodesIds)) {
+              relationsToAdd.push(n.node.to.id);
             }
           }, data.stixRelations.edges);
           forEach((n) => {

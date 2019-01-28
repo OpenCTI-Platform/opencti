@@ -181,6 +181,7 @@ export const qkRel = (
   key = 'rel',
   fromKey = 'from',
   toKey = 'to',
+  extraRelKey,
   infer
 ) =>
   qk(queryDef, infer).then(result => {
@@ -203,13 +204,23 @@ export const qkRel = (
           const toPromise = attrByID(line[toKey]['@id']).then(res =>
             attrMap(line[toKey].id, res)
           );
-          return Promise.all([relationPromise, fromPromise, toPromise]).then(
-            ([node, from, to]) => ({
-              node,
-              from,
-              to
-            })
-          );
+          const extraRelationPromise = !extraRelKey
+            ? Promise.resolve(null)
+            : attrByID(line[extraRelKey]['@id']).then(res =>
+                attrMap(line[extraRelKey].id, res)
+              );
+          return Promise.all([
+            relationPromise,
+            fromPromise,
+            toPromise,
+            extraRelationPromise
+          ]).then(([node, from, to, relation]) => ({
+            node: pipe(
+              assoc('from', from),
+              assoc('to', to)
+            )(node),
+            relation
+          }));
         })(result.data)
       );
     }
@@ -393,10 +404,13 @@ export const createRelation = (id, input) => {
 /**
  * Grakn generic function to delete a relationship
  * @param id
+ * @param relationID
  * @returns {Promise<AxiosResponse<any> | never | never>}
  */
 export const deleteRelation = (id, relationId) => {
-  const deleteQuery = qk(`match $x id ${relationId}; delete $x;`);
+  const deleteQuery = qk(
+    `match $x id ${relationId}; $z($x, $y); delete $z, $x;`
+  );
   return deleteQuery.then(result => {
     if (isEmpty(result.data)) {
       throw new MissingElement({
@@ -498,10 +512,9 @@ const buildPaginationRelationships = (
   const edges = pipe(
     mapObjIndexed((record, key) => {
       const { node } = record;
-      const { from } = record;
-      const { to } = record;
+      const { relation } = record;
       const nodeOffset = offset + parseInt(key, 10) + 1;
-      return { node, from, to, cursor: offsetToCursor(nodeOffset) };
+      return { node, relation, cursor: offsetToCursor(nodeOffset) };
     }),
     values
   )(instances);
@@ -525,7 +538,7 @@ const buildPaginationRelationships = (
  * @param options
  * @returns Promise
  */
-export const paginateRelationships = (query, options) => {
+export const paginateRelationships = (query, options, extraRel = null) => {
   const {
     fromId,
     toId,
@@ -589,6 +602,7 @@ export const paginateRelationships = (query, options) => {
     'rel',
     'from',
     'to',
+    extraRel,
     inferred
   );
   return Promise.all([count, elements]).then(data => {

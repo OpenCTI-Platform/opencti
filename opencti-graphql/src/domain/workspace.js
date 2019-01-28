@@ -46,10 +46,11 @@ export const objectRefs = (workspaceId, args) =>
 
 export const relationRefs = (workspaceId, args) =>
   paginateRelationships(
-    `match $rel($from, $to) isa stix_relation;
-    $rel(so:$rel, knowledge_aggregation:$workspace) isa object_refs; 
+    `match $rel($from, $to) isa stix_relation; 
+    $extraRel(so:$rel, knowledge_aggregation:$workspace) isa object_refs; 
     $workspace id ${workspaceId}`,
-    args
+    args,
+    'extraRel'
   );
 
 export const addWorkspace = async (user, workspace) => {

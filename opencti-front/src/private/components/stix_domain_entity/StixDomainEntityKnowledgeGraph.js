@@ -106,7 +106,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
   initialize() {
     const { stixDomainEntity, stixDomainEntity: { stixRelations } } = this.props;
     // prepare actual nodes & relations
-    const actualNodes = append(stixDomainEntity, map(n => n.to, stixRelations.edges));
+    const actualNodes = append(stixDomainEntity, map(n => n.node.to, stixRelations.edges));
     const actualRelations = stixRelations.edges;
     const actualNodesIds = pluck('id', actualNodes);
     const actualRelationsIds = pipe(map(n => n.node), pluck('id'))(actualRelations);
@@ -160,7 +160,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
     forEach((l) => {
       if (!includes(l.node.id, linksIds)) {
         const fromPort = finalNodesObject[this.props.stixDomainEntity.id] ? finalNodesObject[this.props.stixDomainEntity.id].node.getPort('main') : null;
-        const toPort = finalNodesObject[l.to.id] ? finalNodesObject[l.to.id].node.getPort('main') : null;
+        const toPort = finalNodesObject[l.node.to.id] ? finalNodesObject[l.node.to.id].node.getPort('main') : null;
         const newLink = new EntityLinkModel();
         newLink.setExtras({
           relation: l.node,
@@ -361,7 +361,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
         />
         <StixDomainEntityAddObjectRefs
           stixDomainEntityId={stixDomainEntity.id}
-          stixDomainEntityObjectRefs={map(n => n.to, stixDomainEntity.stixRelations.edges)}
+          stixDomainEntityObjectRefs={map(n => n.node.to, stixDomainEntity.stixRelations.edges)}
         />
         <StixRelationCreation
           open={openCreateRelation}
@@ -415,11 +415,11 @@ const StixDomainEntityKnowledgeGraph = createFragmentContainer(StixDomainEntityK
                       description
                       first_seen
                       last_seen
-                  }
-                  to {
-                      id
-                      type
-                      name
+                      to {
+                          id
+                          type
+                          name
+                      }
                   }
               }
           }

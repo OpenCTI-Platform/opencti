@@ -30,6 +30,8 @@ public class IntrusionSet extends Domain {
             query.append("insert $m isa Intrusion-Set has stix_id ").append(prepare(getId()));
             query.append(" has name ").append(prepare(getName()));
             query.append(" has name_lowercase ").append(prepare(getName().toLowerCase()));
+            query.append(" has alias ").append(prepare(""));
+            query.append(" has alias_lowercase").append(prepare(""));
             if (getDescription() != null) query.append(" has description ").append(prepare(getDescription()));
             if (getDescription() != null) query.append(" has description_lowercase ").append(prepare(getDescription().toLowerCase()));
             if (getLabelChain() != null) query.append(getLabelChain());
