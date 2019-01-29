@@ -5,12 +5,12 @@ import {
   deleteOneById,
   editInputTx,
   loadByID,
+  loadRelationById,
   notify,
   now,
   paginateRelationships,
   paginate,
   qk,
-  qkObjUnique,
   prepareDate,
   yearFormat,
   monthFormat
@@ -26,7 +26,7 @@ export const findByType = args =>
     args
   );
 
-export const findById = stixRelationId => loadByID(stixRelationId);
+export const findById = stixRelationId => loadRelationById(stixRelationId);
 
 export const search = args =>
   paginateRelationships(
@@ -37,22 +37,6 @@ export const search = args =>
     { $desc contains "${args.search.toLowerCase()}"; }`,
     args
   );
-
-export const getFrom = stixRelationId =>
-  qkObjUnique(
-    `match $x isa Stix-Domain-Entity; 
-    $rel($x, $y) isa stix_relation; 
-    $rel id ${stixRelationId}; offset 0; limit 1; get $x;`,
-    'x'
-  ).then(result => result.node);
-
-export const getTo = stixRelationId =>
-  qkObjUnique(
-    `match $x isa Stix-Domain-Entity; 
-    $rel($x, $y) isa stix_relation; 
-    $rel id ${stixRelationId}; offset 0; limit 1; get $y;`,
-    'y'
-  ).then(result => result.node);
 
 export const markingDefinitions = (stixRelationId, args) =>
   paginate(

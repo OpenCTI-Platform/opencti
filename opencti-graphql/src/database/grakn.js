@@ -214,13 +214,16 @@ export const qkRel = (
             fromPromise,
             toPromise,
             extraRelationPromise
-          ]).then(([node, from, to, relation]) => ({
-            node: pipe(
-              assoc('from', from),
-              assoc('to', to)
-            )(node),
-            relation
-          }));
+          ]).then(([node, from, to, relation]) => {
+            const finalResult = {
+              node: pipe(
+                assoc('from', from),
+                assoc('to', to)
+              )(node),
+              relation
+            };
+            return finalResult;
+          });
         })(result.data)
       );
     }
@@ -309,6 +312,42 @@ export const loadByID = (id, withType = false) =>
         )(result.data)
       ).then(r => head(r)) // Return the unique result
   );
+
+/**
+ * Load any grakn relation with internal grakn ID.
+ * @param id
+ * @returns {Promise<any[] | never>}
+ */
+export const loadRelationById = id =>
+  qk(`match $x($from, $to); $x id ${id}; get;`).then(result => {
+    if (result && result.data) {
+      const line = head(result.data);
+      const relationPromise = line.x.inferred
+        ? Promise.resolve({
+            id: line.x['@id'],
+            type: 'stix_relation',
+            relationship_type: line.x.type.label,
+            inferred: true
+          })
+        : attrByID(line.x['@id'])
+            .then(res => attrMap(line.x.id, res))
+            .then(data => assoc('inferred', false, data));
+      const fromPromise = attrByID(line.from['@id']).then(res =>
+        attrMap(line.from.id, res)
+      );
+      const toPromise = attrByID(line.to['@id']).then(res =>
+        attrMap(line.to.id, res)
+      );
+      return Promise.all([relationPromise, fromPromise, toPromise]).then(
+        ([node, from, to]) =>
+          pipe(
+            assoc('from', from),
+            assoc('to', to)
+          )(node)
+      );
+    }
+    return Promise.resolve(null);
+  });
 
 /**
  * Edit an attribute value.
