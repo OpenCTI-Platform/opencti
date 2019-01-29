@@ -46,7 +46,7 @@ const inlineStyles = {
     fontSize: 12,
     fontWeight: '700',
   },
-  author: {
+  createdByRef: {
     float: 'left',
     width: '25%',
     fontSize: 12,
@@ -62,6 +62,7 @@ const inlineStyles = {
     float: 'left',
     fontSize: 12,
     fontWeight: '700',
+    cursor: 'default',
   },
 };
 
@@ -75,12 +76,19 @@ class Reports extends Component {
     this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
   }
 
-  SortHeader(field, label) {
+  SortHeader(field, label, isSortable) {
     const { t } = this.props;
+    if (isSortable) {
+      return (
+        <div style={inlineStyles[field]} onClick={this.reverseBy.bind(this, field)}>
+          <span>{t(label)}</span>
+          {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStyles.iconSort}/> : <ArrowDropUp style={inlineStyles.iconSort}/> : ''}
+        </div>
+      );
+    }
     return (
-      <div style={inlineStyles[field]} onClick={this.reverseBy.bind(this, field)}>
+      <div style={inlineStyles[field]}>
         <span>{t(label)}</span>
-        {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStyles.iconSort}/> : <ArrowDropUp style={inlineStyles.iconSort}/> : ''}
       </div>
     );
   }
@@ -101,10 +109,10 @@ class Reports extends Component {
             </ListItemIcon>
             <ListItemText primary={
               <div>
-                {this.SortHeader('name', 'Name')}
-                {this.SortHeader('author', 'Author')}
-                {this.SortHeader('published', 'Publication date')}
-                {this.SortHeader('marking', 'Marking')}
+                {this.SortHeader('name', 'Name', true)}
+                {this.SortHeader('createdByRef', 'Author', true)}
+                {this.SortHeader('published', 'Publication date', true)}
+                {this.SortHeader('marking', 'Marking', false)}
               </div>
             }/>
           </ListItem>

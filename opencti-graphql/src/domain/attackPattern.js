@@ -10,15 +10,15 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa AttackPattern', args);
+export const findAll = args => paginate('match $m isa Attack-Pattern', args);
 
 export const findById = attackPatternId => loadByID(attackPatternId);
 
 export const addAttackPattern = async (user, attackPattern) => {
   const wTx = await takeTx();
-  const attackPatternIterator = await wTx.query(`insert $attackPattern isa AttackPattern 
-    has type "attackPattern";
-    $attackPattern has stix_id "attackPattern--${uuid()}";
+  const attackPatternIterator = await wTx.query(`insert $attackPattern isa Attack-Pattern 
+    has type "attack-pattern";
+    $attackPattern has stix_id "attack-patern--${uuid()}";
     $attackPattern has stix_label "";
     $attackPattern has stix_label_lowercase "";
     $attackPattern has alias "";

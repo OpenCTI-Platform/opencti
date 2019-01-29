@@ -41,7 +41,7 @@ class TopMenuSettings extends Component {
         </Button>
         <Button component={Link} to='/dashboard/settings/killchains' variant={location.pathname.includes('/dashboard/settings/killchains') ? 'contained' : 'text'} size="small"
                 color={location.pathname.includes('/dashboard/settings/killchains') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
-          {t('TTPs frameworks')}
+          {t('Kill chain phases')}
         </Button>
       </div>
     );

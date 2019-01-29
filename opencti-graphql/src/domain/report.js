@@ -1,4 +1,4 @@
-import { map } from 'ramda';
+import { map, assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   deleteByID,
@@ -14,23 +14,49 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args =>
-  paginate(
-    `match $m isa Report ${
-      args.reportClass ? `; $m has report_class "${args.reportClass}"` : ''
+export const findAll = args => {
+  if (args.orderBy === 'createdByRef') {
+    const finalArgs = assoc('orderBy', 'name', args);
+    return paginate(
+      `match $r isa Report; ${
+        args.reportClass ? `$m has report_class "${args.reportClass}"` : ''
+      } $rel(creator:$x, so:$r) isa created_by_ref`,
+      finalArgs,
+      true,
+      'x'
+    );
+  }
+  return paginate(
+    `match $r isa Report ${
+      args.reportClass ? `; $r has report_class "${args.reportClass}"` : ''
     }`,
     args
   );
+};
 
-export const findByEntity = args =>
-  paginate(
-    `match $report isa Report; 
-    $rel(knowledge_aggregation:$report, so:$so) isa object_refs; 
+export const findByEntity = args => {
+  if (args.orderBy === 'createdByRef') {
+    const finalArgs = assoc('orderBy', 'name', args);
+    return paginate(
+      `match $r isa Report; ${
+        args.reportClass ? `$r has report_class "${args.reportClass}"` : ''
+      } $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
+        $so id ${args.objectId};
+        $relCreatedByRef(creator:$x, so:$r) isa created_by_ref`,
+      finalArgs,
+      true,
+      'x'
+    );
+  }
+  return paginate(
+    `match $r isa Report; 
+    $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
     $so id ${args.objectId} ${
-      args.reportClass ? `; $report has report_class "${args.reportClass}"` : ''
+      args.reportClass ? `; $r has report_class "${args.reportClass}"` : ''
     }`,
     args
   );
+};
 
 export const findById = reportId => loadByID(reportId);
 

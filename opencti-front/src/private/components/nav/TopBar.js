@@ -28,6 +28,7 @@ import TopMenuMalware from './TopMenuMalware';
 import TopMenuReports from './TopMenuReports';
 import TopMenuReport from './TopMenuReport';
 import TopMenuCatalogs from './TopMenuCatalogs';
+import TopMenuAttackPattern from './TopMenuAttackPattern';
 import TopMenuSources from './TopMenuSources';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
@@ -135,6 +136,7 @@ class TopBar extends Component {
             {location.pathname === '/dashboard/reports' || location.pathname.match('/dashboard/reports/[a-z_]+$') ? <TopMenuReports/> : ''}
             {location.pathname.includes('/dashboard/reports/all/') ? <TopMenuReport/> : ''}
             {location.pathname === '/dashboard/catalogs' || location.pathname.match('/dashboard/catalogs/[a-z_]+$') ? <TopMenuCatalogs/> : ''}
+            {location.pathname.includes('/dashboard/catalogs/attack_patterns/') ? <TopMenuAttackPattern/> : ''}
             {location.pathname === '/dashboard/sources' || location.pathname.match('/dashboard/sources/[a-z_]+$') ? <TopMenuSources/> : ''}
             {location.pathname === '/dashboard/settings' || location.pathname.match('/dashboard/settings/[a-z_]+$') ? <TopMenuSettings/> : ''}
             {location.pathname === '/dashboard/profile' ? <TopMenuProfile/> : ''}

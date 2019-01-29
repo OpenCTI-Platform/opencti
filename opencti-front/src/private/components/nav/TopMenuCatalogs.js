@@ -7,10 +7,10 @@ import Button from '@material-ui/core/Button';
 import {
   Person,
   AccountBalance,
-  LocalLibrary,
   Flag,
+  BugReport,
 } from '@material-ui/icons';
-import { CityVariant } from 'mdi-material-ui';
+import { Application, CityVariant, LockPattern } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
@@ -30,6 +30,22 @@ class TopMenuSources extends Component {
     const { t, location, classes } = this.props;
     return (
       <div>
+        <Button component={Link} to='/dashboard/catalogs/attack_patterns' variant={location.pathname === '/dashboard/catalogs/attack_patterns' ? 'contained' : 'text'} size='small'
+                color={location.pathname === '/dashboard/catalogs/attack_patterns' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+          <LockPattern className={classes.icon} fontSize='small'/>
+          {t('TTPs')}
+        </Button>
+        <Button component={Link} to='/dashboard/catalogs/tools' variant={location.pathname === '/dashboard/catalogs/tools' ? 'contained' : 'text'} size='small'
+                color={location.pathname === '/dashboard/catalogs/tools' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+          <Application className={classes.icon} fontSize='small'/>
+          {t('Tools')}
+        </Button>
+        <Button component={Link} to='/dashboard/catalogs/vulnerabilities' variant={location.pathname === '/dashboard/catalogs/vulnerabilities' ? 'contained' : 'text'} size='small'
+                color={location.pathname === '/dashboard/catalogs/vulnerabilities' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+          <BugReport className={classes.icon} fontSize='small'/>
+          {t('Vulnerabilities')}
+        </Button>
+        <div style={{ paddingRight: 20, display: 'inline-block' }}>|</div>
         <Button component={Link} to='/dashboard/catalogs/countries' variant={location.pathname === '/dashboard/catalogs/countries' ? 'contained' : 'text'} size='small'
                 color={location.pathname === '/dashboard/catalogs/countries' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <Flag className={classes.icon} fontSize='small'/>
@@ -49,11 +65,6 @@ class TopMenuSources extends Component {
                 color={location.pathname === '/dashboard/catalogs/persons' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <Person className={classes.icon} fontSize='small'/>
           {t('Persons')}
-        </Button>
-        <Button component={Link} to='/dashboard/catalogs/references' variant={location.pathname === '/dashboard/catalogs/references' ? 'contained' : 'text'} size='small'
-                color={location.pathname === '/dashboard/catalogs/references' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
-          <LocalLibrary className={classes.icon} fontSize='small'/>
-          {t('External references')}
         </Button>
       </div>
     );

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -7,10 +7,10 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight, Description } from '@material-ui/icons';
-import { compose, pathOr, take } from 'ramda';
+import { KeyboardArrowRight } from '@material-ui/icons';
+import { Application } from 'mdi-material-ui';
+import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
-import ItemMarking from '../../../components/ItemMarking';
 
 const styles = theme => ({
   item: {
@@ -25,7 +25,6 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: '100%',
     fontSize: 13,
   },
   goIcon: {
@@ -46,21 +45,13 @@ const styles = theme => ({
 const inlineStyles = {
   name: {
     float: 'left',
-    width: '45%',
+    width: '70%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  createdByRef: {
-    float: 'left',
-    width: '25%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  published: {
+  created: {
     float: 'left',
     width: '15%',
     height: 20,
@@ -68,7 +59,7 @@ const inlineStyles = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  marking: {
+  modified: {
     float: 'left',
     height: 20,
     whiteSpace: 'nowrap',
@@ -77,29 +68,24 @@ const inlineStyles = {
   },
 };
 
-class ReportLineComponent extends Component {
+class ToolLineComponent extends Component {
   render() {
-    const { fd, classes, report } = this.props;
-
+    const { fd, classes, tool } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} component={Link} to={`/dashboard/reports/all/${report.id}`}>
+      <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/catalogs/tools/${tool.id}`}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Description/>
+          <Application/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
-              {report.name}
+              {tool.name}
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.createdByRef}>
-              {pathOr('', ['createdByRef', 'node', 'name'], report)}
+            <div className={classes.bodyItem} style={inlineStyles.created}>
+              {fd(tool.created)}
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.published}>
-              {fd(report.published)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.marking}>
-              {take(1, pathOr([], ['markingDefinitions', 'edges'], report)).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} variant='inList'
-                                                                                                                  label={markingDefinition.node.definition}/>)}
+            <div className={classes.bodyItem} style={inlineStyles.modified}>
+              {fd(tool.modified)}
             </div>
           </div>
         }/>
@@ -111,61 +97,46 @@ class ReportLineComponent extends Component {
   }
 }
 
-ReportLineComponent.propTypes = {
-  report: PropTypes.object,
+ToolLineComponent.propTypes = {
+  tool: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
 
-const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
-  report: graphql`
-      fragment ReportLine_report on Report {
+const ToolLineFragment = createFragmentContainer(ToolLineComponent, {
+  tool: graphql`
+      fragment ToolLine_tool on Tool {
           id
           name
-          createdByRef {
-              node {
-                  name
-              }
-          }
-          published
-          markingDefinitions {
-              edges {
-                  node {
-                      id
-                      definition
-                  }
-              }
-          }
+          created
+          modified
       }
   `,
 });
 
-export const ReportLine = compose(
+export const ToolLine = compose(
   inject18n,
   withStyles(styles),
-)(ReportLineFragment);
+)(ToolLineFragment);
 
-class ReportLineDummyComponent extends Component {
+class ToolLineDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Description/>
+          <Application/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
               <div className={classes.placeholder} style={{ width: '80%' }}/>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.createdByRef}>
-              <div className={classes.placeholder} style={{ width: '70%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.published}>
+            <div className={classes.bodyItem} style={inlineStyles.created}>
               <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.marking}>
-              <div className={classes.placeholder} style={{ width: '90%' }}/>
+            <div className={classes.bodyItem} style={inlineStyles.modified}>
+              <div className={classes.placeholder} style={{ width: 140 }}/>
             </div>
           </div>
         }/>
@@ -177,11 +148,11 @@ class ReportLineDummyComponent extends Component {
   }
 }
 
-ReportLineDummyComponent.propTypes = {
+ToolLineDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const ReportLineDummy = compose(
+export const ToolLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(ReportLineDummyComponent);
+)(ToolLineDummyComponent);

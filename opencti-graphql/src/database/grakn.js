@@ -504,7 +504,12 @@ const buildPagination = (first, offset, instances, globalCount) => {
  * @param options
  * @returns Promise
  */
-export const paginate = (query, options, ordered = true) => {
+export const paginate = (
+  query,
+  options,
+  ordered = true,
+  relationOrderingKey = null
+) => {
   const {
     first = 200,
     after,
@@ -518,14 +523,15 @@ export const paginate = (query, options, ordered = true) => {
   );
   const relationKey = findRelationVariable && findRelationVariable[1]; // Could be setup to get relation info
   const count = qkSingleValue(`${query}; aggregate count;`);
+  const ordering = relationOrderingKey
+    ? `$${relationOrderingKey} has ${orderBy} $o; order by $o ${orderMode};`
+    : `$${instanceKey} has ${orderBy} $o; order by $o ${orderMode};`;
   const elements = qkObj(
     `${query}; ${
-      ordered
-        ? `$${instanceKey} has ${orderBy} $o; 
-      order by $o ${orderMode};`
-        : ''
-    } offset ${offset}; limit ${first}; 
-      get $${instanceKey}${relationKey ? `, $${relationKey}` : ''};`,
+      ordered ? ordering : ''
+    } offset ${offset}; limit ${first}; get $${instanceKey}${
+      relationKey ? `, $${relationKey}` : ''
+    };`,
     instanceKey,
     relationKey
   );
