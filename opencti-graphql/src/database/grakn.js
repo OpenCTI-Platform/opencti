@@ -339,11 +339,13 @@ export const loadRelationById = id =>
         attrMap(line.to.id, res)
       );
       return Promise.all([relationPromise, fromPromise, toPromise]).then(
-        ([node, from, to]) =>
-          pipe(
-            assoc('from', from),
-            assoc('to', to)
-          )(node)
+        ([node, from, to]) => {
+          const finalResult = pipe(
+            assoc('from', to),
+            assoc('to', from)
+          )(node);
+          return finalResult;
+        }
       );
     }
     return Promise.resolve(null);

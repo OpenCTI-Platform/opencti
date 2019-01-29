@@ -21,7 +21,7 @@ const styles = () => ({
   },
 });
 
-const inversedRelations = ['intrusion-set', 'campaign', 'incident', 'malware', 'attack-pattern', 'tool', 'vulnerability'];
+const inversedRelations = ['intrusion-set', 'campaign', 'incident'];
 
 class ThreatActorKnowledgeComponent extends Component {
   render() {

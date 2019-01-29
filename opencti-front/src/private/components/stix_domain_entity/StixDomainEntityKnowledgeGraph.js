@@ -149,7 +149,6 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
       indexBy(prop('id')),
     )(finalNodes);
     const links = model.getLinks();
-    console.log(links);
     const linksIds = map(l => pathOr(null, ['extras', 'relation', 'id'], l), values(links));
     forEach((l) => {
       if (includes(pathOr(null, ['extras', 'relation', 'id'], l), actualRelationsIds)) {
