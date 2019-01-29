@@ -449,9 +449,8 @@ export const createRelation = (id, input) => {
  * @returns {Promise<AxiosResponse<any> | never | never>}
  */
 export const deleteRelation = (id, relationId) => {
-  const deleteQuery = qk(
-    `match $x id ${relationId}; $z($x, $y); delete $z, $x;`
-  );
+  // TODO : `match $x id ${relationId}; $z($x, $y); delete $z, $x;` is not working if $z doest not exists at all
+  const deleteQuery = qk(`match $x id ${relationId}; delete $x;`);
   return deleteQuery.then(result => {
     if (isEmpty(result.data)) {
       throw new MissingElement({

@@ -4,6 +4,8 @@ import {
   compose, filter, head, includes, map,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
+import Drawer from '@material-ui/core/Drawer';
+import Grid from '@material-ui/core/Grid';
 import Select from '@material-ui/core/Select';
 import Input from '@material-ui/core/Input';
 import Chip from '@material-ui/core/Chip';
@@ -24,10 +26,11 @@ const styles = theme => ({
     padding: 0,
     position: 'relative',
   },
-  filters: {
-    position: 'absolute',
-    top: -50,
-    right: 0,
+  bottomNav: {
+    zIndex: 1000,
+    padding: '10px 274px 10px 84px',
+    backgroundColor: theme.palette.navBottom.background,
+    display: 'flex',
   },
   chips: {
     display: 'flex',
@@ -183,87 +186,97 @@ class StixDomainEntityKnowledge extends Component {
 
     return (
       <div className={classes.container}>
-        <div className={classes.filters}>
-          <FormControlLabel
-            style={{ paddingTop: 5 }}
-            control={
-              <Switch
-                checked={this.state.inferred}
-                onChange={this.handleChangeInferred.bind(this)}
-                color='primary'
+        <Drawer anchor='bottom' variant='permanent' classes={{ paper: classes.bottomNav }}>
+          <Grid container={true} spacing={8} justify='center' alignItems='center'>
+            <Grid item={true} xs='auto'>
+              <FormControlLabel
+                style={{ paddingTop: 5 }}
+                control={
+                  <Switch
+                    checked={this.state.inferred}
+                    onChange={this.handleChangeInferred.bind(this)}
+                    color='primary'
+                  />
+                }
+                label={t('Inferences')}
               />
-            }
-            label={t('Inferences')}
-          />
-          <Select
-            style={{ height: 50 }}
-            multiple={true}
-            value={this.state.toTypes}
-            open={this.state.openToTypes}
-            onClose={this.handleCloseToTypes.bind(this)}
-            onOpen={this.handleOpenToTypes.bind(this)}
-            onChange={this.handleChangeEntities.bind(this)}
-            input={<Input id='entities'/>}
-            renderValue={selected => (
-              <div className={classes.chips}>
-                {selected.map(value => (
-                  <Chip key={value} label={t(`entity_${value.toLowerCase()}`)} className={classes.chip}/>
-                ))}
-              </div>
-            )}
-          >
-            <MenuItem value='All'>{t('All entities')}</MenuItem>
-            <MenuItem value='Country'>{t('Country')}</MenuItem>
-            <MenuItem value='Sector'>{t('Sector')}</MenuItem>
-            <MenuItem value='Organization'>{t('Organization')}</MenuItem>
-            <MenuItem value='User'>{t('Person')}</MenuItem>
-            <MenuItem value='Threat-Actor'>{t('Threat actor')}</MenuItem>
-            <MenuItem value='Intrusion-Set'>{t('Intrusion set')}</MenuItem>
-            <MenuItem value='Campaign'>{t('Campaign')}</MenuItem>
-            <MenuItem value='Incident'>{t('Incident')}</MenuItem>
-            <MenuItem value='Malware'>{t('Malware')}</MenuItem>
-            <MenuItem value='Tool'>{t('Tool')}</MenuItem>
-            <MenuItem value='Vulnerability'>{t('Vulnerability')}</MenuItem>
-            <MenuItem value='Attack-Pattern'>{t('Attack pattern')}</MenuItem>
-          </Select>
-          <Select
-            style={{ height: 50, marginLeft: 20 }}
-            multiple={true}
-            value={this.state.weights}
-            open={this.state.openWeights}
-            onClose={this.handleCloseWeights.bind(this)}
-            onOpen={this.handleOpenWeights.bind(this)}
-            onChange={this.handleChangeWeights.bind(this)}
-            input={<Input id='weights'/>}
-            renderValue={selected => (
-              <div className={classes.chips}>
-                {selected.map(value => (
-                  <Chip key={value} label={t(`confidence_${value}`)} className={classes.chip}/>
-                ))}
-              </div>
-            )}
-          >
-            <MenuItem value={0}>{t('All confidence levels')}</MenuItem>
-            <MenuItem value={1}>{t('Very low')}</MenuItem>
-            <MenuItem value={2}>{t('Low')}</MenuItem>
-            <MenuItem value={3}>{t('Medium')}</MenuItem>
-            <MenuItem value={4}>{t('High')}</MenuItem>
-            <MenuItem value={5}>{t('Very high')}</MenuItem>
-          </Select>
-          <Select
-            style={{ width: 170, height: 50, marginLeft: 20 }}
-            value={this.state.firstSeen}
-            onChange={this.handleChangeYear.bind(this)}
-            renderValue={selected => (
-              <div className={classes.chips}>
-                <Chip key={selected} label={t(selected)} className={classes.chip}/>
-              </div>
-            )}
-          >
-            <MenuItem value='All years'>{t('All years')}</MenuItem>
-            {map(year => (<MenuItem key={year} value={year}>{year}</MenuItem>), yearsList)}
-          </Select>
-        </div>
+            </Grid>
+            <Grid item={true} xs='auto'>
+              <Select
+                style={{ height: 50 }}
+                multiple={true}
+                value={this.state.toTypes}
+                open={this.state.openToTypes}
+                onClose={this.handleCloseToTypes.bind(this)}
+                onOpen={this.handleOpenToTypes.bind(this)}
+                onChange={this.handleChangeEntities.bind(this)}
+                input={<Input id='entities'/>}
+                renderValue={selected => (
+                  <div className={classes.chips}>
+                    {selected.map(value => (
+                      <Chip key={value} label={t(`entity_${value.toLowerCase()}`)} className={classes.chip}/>
+                    ))}
+                  </div>
+                )}
+              >
+                <MenuItem value='All'>{t('All entities')}</MenuItem>
+                <MenuItem value='Country'>{t('Country')}</MenuItem>
+                <MenuItem value='Sector'>{t('Sector')}</MenuItem>
+                <MenuItem value='Organization'>{t('Organization')}</MenuItem>
+                <MenuItem value='User'>{t('Person')}</MenuItem>
+                <MenuItem value='Threat-Actor'>{t('Threat actor')}</MenuItem>
+                <MenuItem value='Intrusion-Set'>{t('Intrusion set')}</MenuItem>
+                <MenuItem value='Campaign'>{t('Campaign')}</MenuItem>
+                <MenuItem value='Incident'>{t('Incident')}</MenuItem>
+                <MenuItem value='Malware'>{t('Malware')}</MenuItem>
+                <MenuItem value='Tool'>{t('Tool')}</MenuItem>
+                <MenuItem value='Vulnerability'>{t('Vulnerability')}</MenuItem>
+                <MenuItem value='Attack-Pattern'>{t('Attack pattern')}</MenuItem>
+              </Select>
+            </Grid>
+            <Grid item={true} xs='auto'>
+              <Select
+                style={{ height: 50, marginLeft: 20 }}
+                multiple={true}
+                value={this.state.weights}
+                open={this.state.openWeights}
+                onClose={this.handleCloseWeights.bind(this)}
+                onOpen={this.handleOpenWeights.bind(this)}
+                onChange={this.handleChangeWeights.bind(this)}
+                input={<Input id='weights'/>}
+                renderValue={selected => (
+                  <div className={classes.chips}>
+                    {selected.map(value => (
+                      <Chip key={value} label={t(`confidence_${value}`)} className={classes.chip}/>
+                    ))}
+                  </div>
+                )}
+              >
+                <MenuItem value={0}>{t('All confidence levels')}</MenuItem>
+                <MenuItem value={1}>{t('Very low')}</MenuItem>
+                <MenuItem value={2}>{t('Low')}</MenuItem>
+                <MenuItem value={3}>{t('Medium')}</MenuItem>
+                <MenuItem value={4}>{t('High')}</MenuItem>
+                <MenuItem value={5}>{t('Very high')}</MenuItem>
+              </Select>
+            </Grid>
+            <Grid item={true} xs='auto'>
+              <Select
+                style={{ width: 170, height: 50, marginLeft: 20 }}
+                value={this.state.firstSeen}
+                onChange={this.handleChangeYear.bind(this)}
+                renderValue={selected => (
+                  <div className={classes.chips}>
+                    <Chip key={selected} label={t(selected)} className={classes.chip}/>
+                  </div>
+                )}
+              >
+                <MenuItem value='All years'>{t('All years')}</MenuItem>
+                {map(year => (<MenuItem key={year} value={year}>{year}</MenuItem>), yearsList)}
+              </Select>
+            </Grid>
+          </Grid>
+        </Drawer>
         <QueryRenderer
           query={stixDomainEntityKnowledgeQuery}
           variables={variables}

@@ -38,7 +38,7 @@ class TopMenuThreatActor extends Component {
     } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/knowledge/threatActors' variant='contained' size="small"
+        <Button component={Link} to='/dashboard/knowledge/threat_actors' variant='contained' size="small"
                 color='inherit' classes={{ root: classes.buttonHome }}>
           <Public className={classes.icon} fontSize='small'/>
           {t('Threat actors')}

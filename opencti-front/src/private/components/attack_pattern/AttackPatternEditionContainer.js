@@ -59,7 +59,7 @@ class AttackPatternEditionContainer extends Component {
             <Close fontSize='small'/>
           </IconButton>
           <Typography variant='h6' classes={{ root: classes.title }}>
-            {t('Update a attackPattern')}
+            {t('Update an attack pattern')}
           </Typography>
           <SubscriptionAvatars users={editUsers}/>
           <div className='clearfix'/>

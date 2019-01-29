@@ -126,7 +126,7 @@ class AttackPatternPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this attackPattern?')}
+              {t('Do you want to delete this attack pattern?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>

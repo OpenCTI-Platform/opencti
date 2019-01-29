@@ -58,16 +58,16 @@ class RootTool extends Component {
             if (props && props.tool) {
               return (
                 <div>
-                  <Route exact path='/dashboard/catalogs/attack_patterns/:toolId' render={
+                  <Route exact path='/dashboard/catalogs/tools/:toolId' render={
                     routeProps => <Tool {...routeProps} tool={props.tool}/>
                   }/>
-                  <Route exact path='/dashboard/catalogs/attack_patterns/:toolId/reports' render={
+                  <Route exact path='/dashboard/catalogs/tools/:toolId/reports' render={
                     routeProps => <ToolReports {...routeProps} tool={props.tool}/>
                   }/>
-                  <Route exact path='/dashboard/catalogs/attack_patterns/:toolId/knowledge' render={
-                    () => (<Redirect to={`/dashboard/catalogs/attack_patterns/${toolId}/knowledge/overview`}/>)
+                  <Route exact path='/dashboard/catalogs/tools/:toolId/knowledge' render={
+                    () => (<Redirect to={`/dashboard/catalogs/tools/${toolId}/knowledge/overview`}/>)
                   }/>
-                  <Route path='/dashboard/catalogs/attack_patterns/:toolId/knowledge' render={
+                  <Route path='/dashboard/catalogs/tools/:toolId/knowledge' render={
                     routeProps => <ToolKnowledge {...routeProps} tool={props.tool}/>
                   }/>
                 </div>

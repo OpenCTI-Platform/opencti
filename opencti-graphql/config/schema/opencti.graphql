@@ -683,6 +683,7 @@ input KillChainPhaseAddInput {
 enum AttackPatternsOrdering {
     stix_id,
     name,
+    killChainPhases,
     created,
     modified,
     created_at,

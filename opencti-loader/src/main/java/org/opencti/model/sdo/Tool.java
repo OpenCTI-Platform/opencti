@@ -16,7 +16,7 @@ public class Tool extends Domain {
 
     @Override
     public void load(GraknDriver driver, Map<String, Stix> stixElements) {
-        Object tool = driver.read(format("match $m isa Marking-Definition has stix_id %s; get;", prepare(getId())));
+        Object tool = driver.read(format("match $m isa Tool has stix_id %s; get;", prepare(getId())));
         if (tool == null) {
             StringBuilder query = new StringBuilder();
             query.append("insert $m isa Tool has stix_id ").append(prepare(getId()));

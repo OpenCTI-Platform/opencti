@@ -1,4 +1,4 @@
-import { map } from 'ramda';
+import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   deleteByID,
@@ -10,7 +10,18 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa Attack-Pattern', args);
+export const findAll = args => {
+  if (args.orderBy === 'killChainPhases') {
+    const finalArgs = assoc('orderBy', 'phase_name', args);
+    return paginate(
+      `match $a isa Attack-Pattern; $rel(kill_chain_phase:$x, phase_belonging:$a) isa kill_chain_phases`,
+      finalArgs,
+      true,
+      'x'
+    );
+  }
+  return paginate('match $r isa Attack-Pattern', args);
+};
 
 export const findById = attackPatternId => loadByID(attackPatternId);
 

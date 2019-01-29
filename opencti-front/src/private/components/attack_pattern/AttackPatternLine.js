@@ -89,7 +89,7 @@ class AttackPatternLineComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.killChainPhases}>
-              {pathOr('-', ['node', 'name'], head(pathOr([], ['killChainPhases', 'edges'], attackPattern)))}
+              {pathOr('-', ['node', 'phase_name'], head(pathOr([], ['killChainPhases', 'edges'], attackPattern)))}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
               {attackPattern.name}
@@ -128,6 +128,7 @@ const AttackPatternLineFragment = createFragmentContainer(AttackPatternLineCompo
                   node {
                       id
                       kill_chain_name
+                      phase_name
                   }
               }
           }

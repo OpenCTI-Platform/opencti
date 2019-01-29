@@ -28,7 +28,7 @@ import EntityLinkModel from '../../../components/graph_node/EntityLinkModel';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
 import { reportMutationRelationAdd, reportMutationRelationDelete } from './ReportAddObjectRefsLines';
-import StixRelationCreation, { stixRelationCreationQuery, stixRelationCreationDeleteMutation } from '../stix_relation/StixRelationCreation';
+import StixRelationCreation, { stixRelationCreationDeleteMutation } from '../stix_relation/StixRelationCreation';
 import StixRelationEdition from '../stix_relation/StixRelationEdition';
 
 const styles = () => ({
@@ -51,6 +51,21 @@ export const reportKnowledgeGraphQuery = graphql`
     query ReportKnowledgeGraphQuery($id: String!) {
         report(id: $id) {
             ...ReportKnowledgeGraph_report
+        }
+    }
+`;
+
+const reportKnowledgeGraphCheckRelationQuery = graphql`
+    query ReportKnowledgeGraphCheckRelationQuery($id: String!) {
+        stixRelation(id: $id) {
+            id
+            reports {
+                edges {
+                    node {
+                        id
+                    }
+                }
+            }
         }
     }
 `;
@@ -322,11 +337,8 @@ class ReportKnowledgeGraphComponent extends Component {
                   relationId: link.extras.objectRefId,
                 },
               });
-              fetchQuery(stixRelationCreationQuery, {
-                fromId: link.sourcePort.parent.extras.id,
-                toId: link.targetPort.parent.extras.id,
-              }).then((data) => {
-                if (data.stixRelations.edges.length === 1) {
+              fetchQuery(reportKnowledgeGraphCheckRelationQuery, { id: link.extras.relation.id }).then((data) => {
+                if (data.stixRelation.reports.edges.length === 0) {
                   commitMutation({
                     mutation: stixRelationCreationDeleteMutation,
                     variables: {
@@ -414,6 +426,7 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleDeleteRelation() {
+    console.log(this.state.currentLink);
     const model = this.engine.getDiagramModel();
     const linkObject = model.getLink(this.state.currentLink);
     linkObject.remove();

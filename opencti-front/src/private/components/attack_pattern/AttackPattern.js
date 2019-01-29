@@ -10,7 +10,7 @@ import AttackPatternHeader from './AttackPatternHeader';
 import AttackPatternOverview from './AttackPatternOverview';
 import AttackPatternEdition from './AttackPatternEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import EntityObservablesChart from '../observable/EntityObservablesChart';
+import EntityRelationsChart from '../stix_relation/EntityRelationsChart';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityKillChainPhasesChart from '../kill_chain_phase/EntityKillChainPhasesChart';
 
@@ -39,7 +39,7 @@ class AttackPatternComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart attackPattern={attackPattern}/>
+            <EntityRelationsChart attackPattern={attackPattern}/>
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart attackPattern={attackPattern}/>

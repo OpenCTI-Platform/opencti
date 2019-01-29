@@ -39,7 +39,7 @@ class TopMenuAttackPattern extends Component {
     } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/catalogs/attackPatterns' variant='contained' size="small"
+        <Button component={Link} to='/dashboard/catalogs/attack_patterns' variant='contained' size="small"
                 color='inherit' classes={{ root: classes.buttonHome }}>
           <LockPattern className={classes.icon} fontSize='small'/>
           {t('Attack patterns')}
