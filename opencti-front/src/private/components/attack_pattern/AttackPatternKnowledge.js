@@ -26,6 +26,7 @@ const inversedRelations = [
   'campaign',
   'incident',
   'malware',
+  'tool',
 ];
 
 class AttackPatternKnowledgeComponent extends Component {
@@ -45,6 +46,7 @@ class AttackPatternKnowledgeComponent extends Component {
           {location.pathname.includes('campaigns') ? <EntityStixRelations entityId={attackPattern.id} relationType='uses' targetEntityTypes={['Campaign']} entityLink={link}/> : ''}
           {location.pathname.includes('incidents') ? <EntityStixRelations entityId={attackPattern.id} relationType='uses' targetEntityTypes={['Incident']} entityLink={link}/> : ''}
           {location.pathname.includes('malwares') ? <EntityStixRelations entityId={attackPattern.id} relationType='uses' targetEntityTypes={['Malware']} entityLink={link}/> : ''}
+          {location.pathname.includes('tools') ? <EntityStixRelations entityId={attackPattern.id} relationType='uses' targetEntityTypes={['Tools']} entityLink={link}/> : ''}
         </div>
       </div>
     );

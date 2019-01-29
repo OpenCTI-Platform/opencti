@@ -21,10 +21,7 @@ class TopMenuDashboard extends Component {
     return (
       <div>
         <Button component={Link} to='/dashboard' variant={location.pathname === '/dashboard' ? 'contained' : 'text'} size="small" color={location.pathname === '/dashboard' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
-          {t('Global')}
-        </Button>
-        <Button component={Link} to='/dashboard/entities' variant={location.pathname === '/dashboard/entities' ? 'contained' : 'text'} size="small" color={location.pathname === '/dashboard/entities' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
-          {t('Entities')}
+          {t('Dashboard')}
         </Button>
       </div>
     );

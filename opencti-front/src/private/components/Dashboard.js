@@ -1,12 +1,20 @@
 import React, { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { Link } from 'react-router-dom';
+import { compose, head, pathOr } from 'ramda';
+import graphql from 'babel-plugin-relay/macro';
+import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import Typography from '@material-ui/core/Typography';
 import CardContent from '@material-ui/core/CardContent';
 import {
-  ArrowUpward, Assignment, Layers, DeviceHub,
+  ArrowUpward, Assignment, Layers, DeviceHub, Description,
 } from '@material-ui/icons';
 import {
   Database,
@@ -16,17 +24,44 @@ import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import Bar from 'recharts/lib/cartesian/Bar';
 import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
+import { QueryRenderer } from '../../relay/environment';
 import Theme from '../../components/Theme';
 import inject18n from '../../components/i18n';
+import ItemIcon from '../../components/ItemIcon';
+import ItemMarking from '../../components/ItemMarking';
+import truncate from '../../utils/String';
 
 const styles = theme => ({
   card: {
     width: '100%',
-    height: '100%',
+    marginBottom: 20,
     backgroundColor: theme.palette.paper.background,
     color: theme.palette.text.main,
     borderRadius: 6,
     position: 'relative',
+  },
+  paper: {
+    minHeight: '100%',
+    margin: '10px 0 20px 0',
+    padding: 0,
+    backgroundColor: theme.palette.paper.background,
+    color: theme.palette.text.main,
+    borderRadius: 6,
+  },
+  item: {
+    height: 60,
+    minHeight: 60,
+    maxHeight: 60,
+    transition: 'background-color 0.1s ease',
+    paddingRight: 0,
+    cursor: 'pointer',
+    '&:hover': {
+      background: 'rgba(0, 0, 0, 0.1)',
+    },
+  },
+  itemIcon: {
+    marginRight: 0,
+    color: theme.palette.primary.main,
   },
   number: {
     float: 'left',
@@ -67,6 +102,63 @@ const styles = theme => ({
   },
 });
 
+const inlineStyles = {
+  itemDate: {
+    fontSize: 11,
+    width: 80,
+    minWidth: 80,
+    maxWidth: 80,
+    marginRight: 24,
+    textAlign: 'right',
+    color: '#ffffff',
+  },
+};
+
+const dashboardLastReportsQuery = graphql`
+    query DashboardLastReportsQuery($first: Int, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {
+        reports(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
+            edges {
+                node {
+                    id
+                    name
+                    description
+                    published
+                    markingDefinitions {
+                        edges {
+                            node {
+                                definition
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+`;
+
+const dashboardLastStixDomainEntitiesQuery = graphql`
+    query DashboardLastStixDomainEntitiesQuery($first: Int, $orderBy: StixDomainEntitiesOrdering, $orderMode: OrderingMode) {
+        stixDomainEntities(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
+            edges {
+                node {
+                    id
+                    type
+                    name
+                    description
+                    updated_at
+                    markingDefinitions {
+                        edges {
+                            node {
+                                definition
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+`;
+
 class Dashboard extends Component {
   constructor(props) {
     super(props);
@@ -91,10 +183,10 @@ class Dashboard extends Component {
   render() {
     const { t, nsd, classes } = this.props;
     return (
-      <Grid container={true}>
-        <Grid container={true} xs={6} spacing={16}>
-          <Grid item={true} xs={6}>
-            <Card raised={true} classes={{ root: classes.card }}>
+      <div>
+        <Grid container={true} spacing={16}>
+          <Grid item={true} xs={3}>
+            <Card raised={true} classes={{ root: classes.card }} style={{ height: 120 }}>
               <CardContent>
                 <div className={classes.number}>
                   5 456
@@ -117,34 +209,7 @@ class Dashboard extends Component {
                 </div>
               </CardContent>
             </Card>
-          </Grid>
-          <Grid item={true} xs={6}>
-            <Card raised={true} classes={{ root: classes.card }}>
-              <CardContent>
-                <div className={classes.number}>
-                  12 568
-                </div>
-                <div className={classes.diff}>
-                  <ArrowUpward color='inherit' classes={{ root: classes.diffIcon }}/>
-                  <div className={classes.diffNumber}>
-                    889
-                  </div>
-                  <div className={classes.diffDescription}>
-                    ({t('last 24h')})
-                  </div>
-                </div>
-                <div className='clearfix'/>
-                <div className={classes.title}>
-                  {t('Total observables')}
-                </div>
-                <div className={classes.icon}>
-                  <Layers color='inherit' fontSize='large'/>
-                </div>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item={true} xs={6}>
-            <Card raised={true} classes={{ root: classes.card }}>
+            <Card raised={true} classes={{ root: classes.card }} style={{ height: 120 }}>
               <CardContent>
                 <div className={classes.number}>
                   849
@@ -168,8 +233,31 @@ class Dashboard extends Component {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item={true} xs={6}>
-            <Card raised={true} classes={{ root: classes.card }}>
+          <Grid item={true} xs={3}>
+            <Card raised={true} classes={{ root: classes.card }} style={{ height: 120 }}>
+              <CardContent>
+                <div className={classes.number}>
+                  12 568
+                </div>
+                <div className={classes.diff}>
+                  <ArrowUpward color='inherit' classes={{ root: classes.diffIcon }}/>
+                  <div className={classes.diffNumber}>
+                    889
+                  </div>
+                  <div className={classes.diffDescription}>
+                    ({t('last 24h')})
+                  </div>
+                </div>
+                <div className='clearfix'/>
+                <div className={classes.title}>
+                  {t('Total observables')}
+                </div>
+                <div className={classes.icon}>
+                  <Layers color='inherit' fontSize='large'/>
+                </div>
+              </CardContent>
+            </Card>
+            <Card raised={true} classes={{ root: classes.card }} style={{ height: 120 }}>
               <CardContent>
                 <div className={classes.number}>
                   156
@@ -193,10 +281,8 @@ class Dashboard extends Component {
               </CardContent>
             </Card>
           </Grid>
-        </Grid>
-        <Grid container={true} xs={6}>
-          <Grid item={true} xs={12} spacing={16}>
-            <Card raised={true} classes={{ root: classes.card }} style={{ marginLeft: 16 }}>
+          <Grid item={true} xs={6}>
+            <Card raised={true} classes={{ root: classes.card }} style={{ height: 260 }}>
               <CardContent>
                 <div className={classes.title}>
                   {t('Ingested entities')}
@@ -216,7 +302,99 @@ class Dashboard extends Component {
             </Card>
           </Grid>
         </Grid>
-      </Grid>
+        <Grid container={true} spacing={16}>
+          <Grid item={true} xs={6}>
+            <Typography variant='h2' gutterBottom={true}>
+              {t('Last reports')}
+            </Typography>
+            <Paper classes={{ root: classes.paper }} elevation={2}>
+              <QueryRenderer
+                query={dashboardLastReportsQuery}
+                variables={{ first: 15, orderBy: 'published', orderMode: 'desc' }}
+                render={({ props }) => {
+                  if (props && props.reports) {
+                    return (
+                      <List>
+                        {props.reports.edges.map((reportEdge) => {
+                          const report = reportEdge.node;
+                          const markingDefinition = head(pathOr([], ['markingDefinitions', 'edges'], report));
+                          return (
+                            <ListItem
+                              key={report.id}
+                              dense={true}
+                              classes={{ default: classes.item }}
+                              divider={true}
+                              component={Link}
+                              to={`/dashboard/reports/all/${report.id}`}
+                            >
+                              <ListItemIcon classes={{ root: classes.itemIcon }}>
+                                <Description/>
+                              </ListItemIcon>
+                              <ListItemText primary={truncate(report.name, 70)} secondary={truncate(report.description, 70)}/>
+                              <div style={{ minWidth: 100 }}>
+                                {markingDefinition ? <ItemMarking key={markingDefinition.node.id} label={markingDefinition.node.definition}/> : ''}
+                              </div>
+                              <div style={inlineStyles.itemDate}>{nsd(report.published)}</div>
+                            </ListItem>
+                          );
+                        })}
+                      </List>
+                    );
+                  }
+                  return (
+                    <div> &nbsp; </div>
+                  );
+                }}
+              />
+            </Paper>
+          </Grid>
+          <Grid item={true} xs={6}>
+            <Typography variant='h2' gutterBottom={true}>
+              {t('Last modified entities')}
+            </Typography>
+            <Paper classes={{ root: classes.paper }} elevation={2}>
+              <QueryRenderer
+                query={dashboardLastStixDomainEntitiesQuery}
+                variables={{ first: 15, orderBy: 'updated_at', orderMode: 'desc' }}
+                render={({ props }) => {
+                  if (props && props.stixDomainEntities) {
+                    return (
+                      <List>
+                        {props.stixDomainEntities.edges.map((stixDomainEntityEdge) => {
+                          const stixDomainEntity = stixDomainEntityEdge.node;
+                          const markingDefinition = head(pathOr([], ['markingDefinitions', 'edges'], stixDomainEntity));
+                          return (
+                            <ListItem
+                              key={stixDomainEntity.id}
+                              dense={true}
+                              classes={{ default: classes.item }}
+                              divider={true}
+                              component={Link}
+                              to={`/dashboard/reports/all/${stixDomainEntity.id}`}
+                            >
+                              <ListItemIcon classes={{ root: classes.itemIcon }}>
+                                <ItemIcon type={stixDomainEntity.type}/>
+                              </ListItemIcon>
+                              <ListItemText primary={truncate(stixDomainEntity.name, 70)} secondary={truncate(stixDomainEntity.description, 70)}/>
+                              <div style={{ minWidth: 100 }}>
+                                {markingDefinition ? <ItemMarking key={markingDefinition.node.id} label={markingDefinition.node.definition}/> : ''}
+                              </div>
+                              <div style={inlineStyles.itemDate}>{nsd(stixDomainEntity.updated_at)}</div>
+                            </ListItem>
+                          );
+                        })}
+                      </List>
+                    );
+                  }
+                  return (
+                    <div> &nbsp; </div>
+                  );
+                }}
+              />
+            </Paper>
+          </Grid>
+        </Grid>
+      </div>
     );
   }
 }

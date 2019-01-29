@@ -29,6 +29,7 @@ const i18n = {
       'Do you want to delete this workspace?': 'Souhaitez-vous supprimer cet espace de travail ?',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
+      'Last modified entities': 'Dernières entités modifiées',
       'Global parameters': 'Paramètres généraux',
       'External authentication': 'Authentification externe',
       Title: 'Titre',
