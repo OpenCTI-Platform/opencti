@@ -26,7 +26,7 @@ const styles = theme => ({
   },
 });
 
-class EntityIncidentsChartComponent extends Component {
+class ToolUsageChartComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -49,7 +49,7 @@ class EntityIncidentsChartComponent extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant='h4' gutterBottom={true}>
-          {t('Incidents')}
+          {t('Tool usage')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <ResponsiveContainer height={330} width='100%'>
@@ -68,16 +68,16 @@ class EntityIncidentsChartComponent extends Component {
   }
 }
 
-EntityIncidentsChartComponent.propTypes = {
+ToolUsageChartComponent.propTypes = {
   observablesStats: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const EntityIncidentsChart = createFragmentContainer(EntityIncidentsChartComponent, {
+const ToolUsageChart = createFragmentContainer(ToolUsageChartComponent, {
   observablesStats: graphql`
-      fragment EntityIncidentsChart_observablesStats on Malware {
+      fragment ToolUsageChart_observablesStats on Malware {
           id,
           name,
           description,
@@ -90,4 +90,4 @@ const EntityIncidentsChart = createFragmentContainer(EntityIncidentsChartCompone
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityIncidentsChart);
+)(ToolUsageChart);

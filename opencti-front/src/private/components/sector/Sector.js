@@ -10,9 +10,9 @@ import SectorHeader from './SectorHeader';
 import SectorOverview from './SectorOverview';
 import SectorEdition from './SectorEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import EntityObservablesChart from '../observable/EntityObservablesChart';
+import EntityCampaignsChart from '../campaign/EntityCampaignsChart';
 import EntityReportsChart from '../report/EntityReportsChart';
-import EntityKillChainPhasesChart from '../kill_chain_phase/EntityKillChainPhasesChart';
+import EntityIncidentsChart from '../incident/EntityIncidentsChart';
 
 const styles = () => ({
   container: {
@@ -39,13 +39,13 @@ class SectorComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart sector={sector}/>
+            <EntityCampaignsChart sector={sector}/>
+          </Grid>
+          <Grid item={true} xs={4}>
+            <EntityIncidentsChart sector={sector}/>
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart sector={sector}/>
-          </Grid>
-          <Grid item={true} xs={4}>
-            <EntityKillChainPhasesChart sector={sector}/>
           </Grid>
         </Grid>
         <SectorEdition sectorId={sector.id}/>

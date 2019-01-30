@@ -10,7 +10,7 @@ import ToolHeader from './ToolHeader';
 import ToolOverview from './ToolOverview';
 import ToolEdition from './ToolEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import EntityObservablesChart from '../observable/EntityObservablesChart';
+import ToolUsageChart from './ToolUsageChart';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityKillChainPhasesChart from '../kill_chain_phase/EntityKillChainPhasesChart';
 
@@ -39,7 +39,7 @@ class ToolComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart tool={tool}/>
+            <ToolUsageChart tool={tool}/>
           </Grid>
           <Grid item={true} xs={4}>
             <EntityKillChainPhasesChart tool={tool}/>

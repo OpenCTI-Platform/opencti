@@ -30,7 +30,7 @@ const inversedRelations = [
 class ToolKnowledgeComponent extends Component {
   render() {
     const { classes, tool, location } = this.props;
-    const link = `/dashboard/knowledge/tools/${tool.id}/knowledge`;
+    const link = `/dashboard/catalogs/tools/${tool.id}/knowledge`;
     return (
       <div className={classes.container}>
         <ToolHeader tool={tool} variant='noalias'/>
@@ -43,6 +43,7 @@ class ToolKnowledgeComponent extends Component {
           {location.pathname.includes('intrusion_sets') ? <EntityStixRelations entityId={tool.id} relationType='uses' targetEntityTypes={['Intrusion-Set']} entityLink={link}/> : ''}
           {location.pathname.includes('campaigns') ? <EntityStixRelations entityId={tool.id} relationType='uses' targetEntityTypes={['Campaign']} entityLink={link}/> : ''}
           {location.pathname.includes('incidents') ? <EntityStixRelations entityId={tool.id} relationType='uses' targetEntityTypes={['Incident']} entityLink={link}/> : ''}
+          {location.pathname.includes('malwares') ? <EntityStixRelations entityId={tool.id} relationType='uses' targetEntityTypes={['Malware']} entityLink={link}/> : ''}
         </div>
       </div>
     );

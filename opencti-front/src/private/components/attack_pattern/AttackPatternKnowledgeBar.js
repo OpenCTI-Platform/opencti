@@ -88,7 +88,7 @@ class AttackPatternKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Intrusion sets')}</span><br />
-            <span className={classes.subtitle}>{t('This TTP has been used')}</span>
+            <span className={classes.subtitle}>{t('Using this TTP')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge/campaigns` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge/campaigns`}>
@@ -97,7 +97,7 @@ class AttackPatternKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Campaigns')}</span><br />
-            <span className={classes.subtitle}>{t('This TTP has been used')}</span>
+            <span className={classes.subtitle}>{t('Using this TTP')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge/incidents` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge/incidents`}>
@@ -106,7 +106,7 @@ class AttackPatternKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Incidents')}</span><br />
-            <span className={classes.subtitle}>{t('This TTP has been used')}</span>
+            <span className={classes.subtitle}>{t('Using this TTP')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge/malwares` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge/malwares`}>
@@ -115,7 +115,7 @@ class AttackPatternKnowledgeBar extends Component {
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Malwares')}</span><br />
-            <span className={classes.subtitle}>{t('This TTP has been used')}</span>
+            <span className={classes.subtitle}>{t('Using this TTP')}</span>
           </div>
         </Paper>
       </Drawer>
