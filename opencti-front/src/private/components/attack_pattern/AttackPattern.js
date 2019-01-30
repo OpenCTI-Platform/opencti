@@ -12,7 +12,7 @@ import AttackPatternEdition from './AttackPatternEdition';
 import EntityLastReports from '../report/EntityLastReports';
 import EntityRelationsChart from '../stix_relation/EntityRelationsChart';
 import EntityReportsChart from '../report/EntityReportsChart';
-import EntityKillChainPhasesChart from '../kill_chain_phase/EntityKillChainPhasesChart';
+import AttackPatternUsageChart from './AttackPatternUsageChart';
 
 const styles = () => ({
   container: {
@@ -42,10 +42,10 @@ class AttackPatternComponent extends Component {
             <EntityRelationsChart attackPattern={attackPattern}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart attackPattern={attackPattern}/>
+            <AttackPatternUsageChart attackPattern={attackPattern}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityKillChainPhasesChart attackPattern={attackPattern}/>
+            <EntityReportsChart attackPattern={attackPattern}/>
           </Grid>
         </Grid>
         <AttackPatternEdition attackPatternId={attackPattern.id}/>

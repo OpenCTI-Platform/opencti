@@ -3,7 +3,8 @@
     "port": 4000,
     "logs": "./logs",
     "secret": "define your secret",
-    "reactive": false
+    "reactive": false,
+    "cookie_secure": false
   },
   "grakn": {
     "uri": "127.0.0.1:4567",

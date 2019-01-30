@@ -85,7 +85,7 @@ export const addAttackPattern = async (user, attackPattern) => {
   await wTx.commit();
 
   return loadByID(createdAttackPatternId).then(created =>
-    notify(BUS_TOPICS.AttackPattern.ADDED_TOPIC, created, user)
+    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 

@@ -6,12 +6,16 @@ import {
   compose, insert, find, propEq,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import { SubscriptionAvatars } from '../../../components/Subscription';
 import CampaignEditionOverview from './CampaignEditionOverview';
+import CampaignEditionIdentity from './CampaignEditionIdentity';
 
 const styles = theme => ({
   header: {
@@ -44,6 +48,15 @@ const styles = theme => ({
 });
 
 class CampaignEditionContainer extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { currentTab: 0 };
+  }
+
+  handleChangeTab(event, value) {
+    this.setState({ currentTab: value });
+  }
+
   render() {
     const {
       t, classes, handleClose, campaign, me,
@@ -64,7 +77,16 @@ class CampaignEditionContainer extends Component {
           <div className='clearfix'/>
         </div>
         <div className={classes.container}>
-          <CampaignEditionOverview campaign={this.props.campaign} editUsers={editUsers} me={me}/>
+          <AppBar position='static' elevation={0} className={classes.appBar}>
+            <Tabs value={this.state.currentTab} onChange={this.handleChangeTab.bind(this)}>
+              <Tab label={t('Overview')}/>
+              <Tab label={t('Identity')}/>
+            </Tabs>
+          </AppBar>
+          {this.state.currentTab === 0
+          && <CampaignEditionOverview campaign={campaign} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 1
+          && <CampaignEditionIdentity campaign={campaign} editUsers={editUsers} me={me}/>}
         </div>
       </div>
     );
@@ -85,6 +107,7 @@ const CampaignEditionFragment = createFragmentContainer(CampaignEditionContainer
       fragment CampaignEditionContainer_campaign on Campaign {
           id
           ...CampaignEditionOverview_campaign
+          ...CampaignEditionIdentity_campaign
           editContext {
               name
               focusOn

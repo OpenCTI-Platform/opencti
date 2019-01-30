@@ -847,6 +847,7 @@ type IntrusionSet implements GlobalObject & StixDomainEntity {
     first_seen: DateTime
     last_seen: DateTime
     goal: String
+    sophistication: String
     resource_level: String
     primary_motivation: String
     secondary_motivation: String
@@ -950,6 +951,7 @@ type Incident implements GlobalObject & StixDomainEntity {
     description: String
     first_seen: DateTime
     last_seen: DateTime
+    objective: String
     created: DateTime
     modified: DateTime
     revoked: Boolean
@@ -1248,7 +1250,7 @@ type Query {
     tool(id: String!): Tool
     tools(first: Int, after: ID, orderBy: ToolsOrdering, orderMode: OrderingMode, search: String): ToolConnection
     # Vulnerabilities
-    vulnerability(id: String!): Tool
+    vulnerability(id: String!): Vulnerability
     vulnerabilities(first: Int, after: ID, orderBy: VulnerabilitiesOrdering, orderMode: OrderingMode, search: String): VulnerabilityConnection
     # Reports
     report(id: String!): Report

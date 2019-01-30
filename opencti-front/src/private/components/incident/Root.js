@@ -26,6 +26,7 @@ const incidentQuery = graphql`
             ...Incident_incident
             ...IncidentHeader_incident
             ...IncidentOverview_incident
+            ...IncidentIdentity_incident
             ...IncidentReports_incident
             ...IncidentKnowledge_incident
         }

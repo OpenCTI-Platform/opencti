@@ -487,6 +487,7 @@ define
     plays "indicator";
 
   "Incident" sub "Stix-Domain-Entity"
+    has "objective"
     has "first_seen"
     has "first_seen_month"
     has "first_seen_year"
@@ -507,6 +508,7 @@ define
     has "last_seen_month"
     has "last_seen_year"
     has "goal"
+    has "sophistication"
     has "resource_level"
     has "primary_motivation"
     has "secondary_motivation"

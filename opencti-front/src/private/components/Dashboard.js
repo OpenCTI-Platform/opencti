@@ -302,7 +302,7 @@ class Dashboard extends Component {
             </Card>
           </Grid>
         </Grid>
-        <Grid container={true} spacing={16}>
+        <Grid container={true} spacing={16} style={{ marginTop: 20 }}>
           <Grid item={true} xs={6}>
             <Typography variant='h2' gutterBottom={true}>
               {t('Last reports')}

@@ -55,7 +55,7 @@ class EntityReportsChartComponent extends Component {
               <CartesianGrid strokeDasharray='3 3'/>
               <XAxis dataKey='date' stroke='#ffffff' interval={0} angle={-45} textAnchor='end'/>
               <YAxis stroke='#ffffff'/>
-              <Bar fill={Theme.palette.primary.main} dataKey='value' barSize={10}/>
+              <Bar fill={Theme.palette.primary.main} dataKey='value' barSize={5}/>
             </BarChart>
           </ResponsiveContainer>
         </Paper>

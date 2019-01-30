@@ -8,6 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import IntrusionSetHeader from './IntrusionSetHeader';
 import IntrusionSetOverview from './IntrusionSetOverview';
+import IntrusionSetIdentity from './IntrusionSetIdentity';
 import IntrusionSetEdition from './IntrusionSetEdition';
 import EntityLastReports from '../report/EntityLastReports';
 import EntityObservablesChart from '../observable/EntityObservablesChart';
@@ -30,8 +31,11 @@ class IntrusionSetComponent extends Component {
       <div className={classes.container}>
         <IntrusionSetHeader intrusionSet={intrusionSet}/>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={3}>
             <IntrusionSetOverview intrusionSet={intrusionSet}/>
+          </Grid>
+          <Grid item={true} xs={3}>
+            <IntrusionSetIdentity intrusionSet={intrusionSet}/>
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={intrusionSet.id}/>
@@ -42,10 +46,10 @@ class IntrusionSetComponent extends Component {
             <EntityObservablesChart intrusionSet={intrusionSet}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart intrusionSet={intrusionSet}/>
+            <EntityKillChainPhasesChart intrusionSet={intrusionSet}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityKillChainPhasesChart intrusionSet={intrusionSet}/>
+            <EntityReportsChart intrusionSet={intrusionSet}/>
           </Grid>
         </Grid>
         <IntrusionSetEdition intrusionSetId={intrusionSet.id}/>
@@ -66,6 +70,7 @@ const IntrusionSet = createFragmentContainer(IntrusionSetComponent, {
           id
           ...IntrusionSetHeader_intrusionSet
           ...IntrusionSetOverview_intrusionSet
+          ...IntrusionSetIdentity_intrusionSet
       }
   `,
 });

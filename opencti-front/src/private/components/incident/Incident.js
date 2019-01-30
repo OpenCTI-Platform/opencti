@@ -8,6 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import IncidentHeader from './IncidentHeader';
 import IncidentOverview from './IncidentOverview';
+import IncidentIdentity from './IncidentIdentity';
 import IncidentEdition from './IncidentEdition';
 import EntityLastReports from '../report/EntityLastReports';
 import EntityObservablesChart from '../observable/EntityObservablesChart';
@@ -30,8 +31,11 @@ class IncidentComponent extends Component {
       <div className={classes.container}>
         <IncidentHeader incident={incident}/>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={3}>
             <IncidentOverview incident={incident}/>
+          </Grid>
+          <Grid item={true} xs={3}>
+            <IncidentIdentity incident={incident}/>
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={incident.id}/>
@@ -42,10 +46,10 @@ class IncidentComponent extends Component {
             <EntityObservablesChart incident={incident}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart incident={incident}/>
+            <EntityKillChainPhasesChart incident={incident}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityKillChainPhasesChart incident={incident}/>
+            <EntityReportsChart incident={incident}/>
           </Grid>
         </Grid>
         <IncidentEdition incidentId={incident.id}/>
@@ -66,6 +70,7 @@ const Incident = createFragmentContainer(IncidentComponent, {
           id
           ...IncidentHeader_incident
           ...IncidentOverview_incident
+          ...IncidentIdentity_incident
       }
   `,
 });

@@ -11,6 +11,7 @@ import ThreatActorOverview from './ThreatActorOverview';
 import ThreatActorIdentity from './ThreatActorIdentity';
 import ThreatActorEdition from './ThreatActorEdition';
 import EntityLastReports from '../report/EntityLastReports';
+import EntityObservablesChart from '../observable/EntityObservablesChart';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityCampaignsChart from '../campaign/EntityCampaignsChart';
 
@@ -30,8 +31,11 @@ class ThreatActorComponent extends Component {
       <div className={classes.container}>
         <ThreatActorHeader threatActor={threatActor}/>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={3}>
             <ThreatActorOverview threatActor={threatActor}/>
+          </Grid>
+          <Grid item={true} xs={3}>
+            <ThreatActorIdentity threatActor={threatActor}/>
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={threatActor.id}/>
@@ -39,7 +43,7 @@ class ThreatActorComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <ThreatActorIdentity threatActor={threatActor}/>
+            <EntityObservablesChart threatActor={threatActor}/>
           </Grid>
           <Grid item={true} xs={4}>
             <EntityCampaignsChart threatActor={threatActor}/>

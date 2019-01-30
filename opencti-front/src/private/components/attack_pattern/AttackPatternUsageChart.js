@@ -3,10 +3,10 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import LineChart from 'recharts/lib/chart/LineChart';
+import AreaChart from 'recharts/lib/chart/AreaChart';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
-import Line from 'recharts/lib/cartesian/Line';
+import Area from 'recharts/lib/cartesian/Area';
 import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
 import { withStyles } from '@material-ui/core/styles';
@@ -26,7 +26,7 @@ const styles = theme => ({
   },
 });
 
-class EntityCampaignsChartComponent extends Component {
+class AttackPatternUsageChartComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -49,18 +49,18 @@ class EntityCampaignsChartComponent extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant='h4' gutterBottom={true}>
-          {t('Campaigns')}
+          {t('Attack pattern usage')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <ResponsiveContainer height={330} width='100%'>
-            <LineChart data={this.state.chartData} margin={{
+            <AreaChart data={this.state.chartData} margin={{
               top: 20, right: 50, bottom: 20, left: -10,
             }}>
               <CartesianGrid strokeDasharray='3 3'/>
               <XAxis dataKey='date' stroke='#ffffff' interval={0} angle={-45} textAnchor='end'/>
               <YAxis stroke='#ffffff'/>
-              <Line type='monotone' stroke={Theme.palette.primary.main} dataKey='value'/>
-            </LineChart>
+              <Area type='monotone' stroke={Theme.palette.primary.main} dataKey='value'/>
+            </AreaChart>
           </ResponsiveContainer>
         </Paper>
       </div>
@@ -68,16 +68,16 @@ class EntityCampaignsChartComponent extends Component {
   }
 }
 
-EntityCampaignsChartComponent.propTypes = {
+AttackPatternUsageChartComponent.propTypes = {
   observablesStats: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const EntityCampaignsChart = createFragmentContainer(EntityCampaignsChartComponent, {
+const AttackPatternUsageChart = createFragmentContainer(AttackPatternUsageChartComponent, {
   observablesStats: graphql`
-      fragment EntityCampaignsChart_observablesStats on Malware {
+      fragment AttackPatternUsageChart_observablesStats on Malware {
           id,
           name,
           description,
@@ -90,4 +90,4 @@ const EntityCampaignsChart = createFragmentContainer(EntityCampaignsChartCompone
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityCampaignsChart);
+)(AttackPatternUsageChart);

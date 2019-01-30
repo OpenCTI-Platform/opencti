@@ -29,13 +29,18 @@ const gkDateFormat = 'YYYY-MM-DDTHH:mm:ss';
 const gkDate = 'java.time.LocalDateTime';
 const gkBoolean = 'java.lang.Boolean';
 const String = 'String';
+const Date = 'Date';
 export const now = () =>
   moment()
     .utc()
     .format(gkDateFormat); // Format that accept grakn
-export const prepareDate = date => moment(date).format(gkDateFormat);
+export const prepareDate = date =>
+  moment(date)
+    .utc()
+    .format(gkDateFormat);
 export const yearFormat = date => moment(date).format('YYYY');
 export const monthFormat = date => moment(date).format('YYYY-MM');
+export const dayFormat = date => moment(date).format('YYYY-MM-DD');
 
 // Attributes key that can contains multiple values.
 export const multipleAttributes = [
@@ -380,7 +385,12 @@ export const editInputTx = async (id, input, transaction) => {
   const oldValuesConcept = await oldValIterator.collectConcepts();
   for (let i = 0; i < oldValuesConcept.length; i += 1) {
     const oldValue = await oldValuesConcept[i].value();
-    const typedOldValue = attrType === String ? `"${oldValue}"` : oldValue;
+    const typedOldValue =
+      attrType === String
+        ? `"${oldValue}"`
+        : attrType === Date
+        ? prepareDate(oldValue)
+        : oldValue;
     // If the attribute is alone we can delete it, if not we need to remove the relation to it (via)
     const countRemainQuery = `match $x isa ${key}; $x == ${typedOldValue}; $rel($x); aggregate count;`;
     const countRemainIterator = await wTx.query(countRemainQuery);
@@ -391,6 +401,7 @@ export const editInputTx = async (id, input, transaction) => {
     if (oldNumOfRef > 1) {
       // In this case we need to remove the reference to the value
       deleteQuery = `match $m id ${id}; $m has ${key} $del via $d; $del == ${typedOldValue}; delete $d;`;
+      await wTx.query(deleteQuery);
     } else {
       // In this case the instance of the attribute can be removed
       const attrGetQuery = `match $x isa ${key}; $x == ${typedOldValue}; $rel($x); get $x;`;

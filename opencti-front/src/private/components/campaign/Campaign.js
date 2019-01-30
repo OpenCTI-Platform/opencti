@@ -8,11 +8,12 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import CampaignHeader from './CampaignHeader';
 import CampaignOverview from './CampaignOverview';
+import CampaignIdentity from './CampaignIdentity';
 import CampaignEdition from './CampaignEdition';
 import EntityLastReports from '../report/EntityLastReports';
 import EntityObservablesChart from '../observable/EntityObservablesChart';
 import EntityReportsChart from '../report/EntityReportsChart';
-import EntityKillChainPhasesChart from '../kill_chain_phase/EntityKillChainPhasesChart';
+import EntityIncidentsChart from '../incident/EntityIncidentsChart';
 
 const styles = () => ({
   container: {
@@ -30,8 +31,11 @@ class CampaignComponent extends Component {
       <div className={classes.container}>
         <CampaignHeader campaign={campaign}/>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={3}>
             <CampaignOverview campaign={campaign}/>
+          </Grid>
+          <Grid item={true} xs={3}>
+            <CampaignIdentity campaign={campaign}/>
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={campaign.id}/>
@@ -39,13 +43,13 @@ class CampaignComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
+            <EntityIncidentsChart campaign={campaign}/>
+          </Grid>
+          <Grid item={true} xs={4}>
             <EntityObservablesChart campaign={campaign}/>
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart campaign={campaign}/>
-          </Grid>
-          <Grid item={true} xs={4}>
-            <EntityKillChainPhasesChart campaign={campaign}/>
           </Grid>
         </Grid>
         <CampaignEdition campaignId={campaign.id}/>
@@ -66,6 +70,7 @@ const Campaign = createFragmentContainer(CampaignComponent, {
           id
           ...CampaignHeader_campaign
           ...CampaignOverview_campaign
+          ...CampaignIdentity_campaign
       }
   `,
 });

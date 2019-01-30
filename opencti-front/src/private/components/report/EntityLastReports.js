@@ -89,7 +89,7 @@ class EntityLastReports extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
             query={entityLastReportsQuery}
-            variables={{ objectId: entityId, first: 5 }}
+            variables={{ objectId: entityId, first: 10 }}
             render={({ props }) => {
               if (props && props.reports) {
                 return (

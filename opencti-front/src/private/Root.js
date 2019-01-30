@@ -32,6 +32,8 @@ import AttackPatterns from './components/AttackPatterns';
 import RootAttackPattern from './components/attack_pattern/Root';
 import Tools from './components/Tools';
 import RootTool from './components/tool/Root';
+import Vulnerabilities from './components/Vulnerabilities';
+import RootVulnerabilities from './components/vulnerability/Root';
 import Countries from './components/Countries';
 import Cities from './components/Cities';
 import Organizations from './components/Organizations';
@@ -129,6 +131,8 @@ class Root extends Component {
                         <BoundaryRoute path='/dashboard/catalogs/attack_patterns/:attackPatternId' render={routeProps => <RootAttackPattern {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/catalogs/tools' component={Tools}/>
                         <BoundaryRoute path='/dashboard/catalogs/tools/:toolId' render={routeProps => <RootTool {...routeProps} me={props.me}/>}/>
+                        <BoundaryRoute exact path='/dashboard/catalogs/vulnerabilities' component={Vulnerabilities}/>
+                        <BoundaryRoute path='/dashboard/catalogs/vulnerabilities/:vulnerabilityId' render={routeProps => <RootVulnerabilities {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/catalogs/countries' component={Countries}/>
                         <BoundaryRoute exact path='/dashboard/catalogs/cities' component={Cities}/>
                         <BoundaryRoute exact path='/dashboard/catalogs/organizations' component={Organizations}/>

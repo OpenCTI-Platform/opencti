@@ -5,6 +5,9 @@ import { createFragmentContainer } from 'react-relay';
 import {
   compose, insert, find, propEq,
 } from 'ramda';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -12,6 +15,7 @@ import { Close } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import { SubscriptionAvatars } from '../../../components/Subscription';
 import IntrusionSetEditionOverview from './IntrusionSetEditionOverview';
+import IntrusionSetEditionIdentity from './IntrusionSetEditionIdentity';
 
 const styles = theme => ({
   header: {
@@ -44,12 +48,20 @@ const styles = theme => ({
 });
 
 class IntrusionSetEditionContainer extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { currentTab: 0 };
+  }
+
+  handleChangeTab(event, value) {
+    this.setState({ currentTab: value });
+  }
+
   render() {
     const {
       t, classes, handleClose, intrusionSet, me,
     } = this.props;
     const { editContext } = intrusionSet;
-    // Add current user to the context if is not available yet.
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
     const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
     return (
@@ -59,13 +71,22 @@ class IntrusionSetEditionContainer extends Component {
             <Close fontSize='small'/>
           </IconButton>
           <Typography variant='h6' classes={{ root: classes.title }}>
-            {t('Update a intrusion set')}
+            {t('Update an intrusion set')}
           </Typography>
           <SubscriptionAvatars users={editUsers}/>
           <div className='clearfix'/>
         </div>
         <div className={classes.container}>
-          <IntrusionSetEditionOverview intrusionSet={this.props.intrusionSet} editUsers={editUsers} me={me}/>
+          <AppBar position='static' elevation={0} className={classes.appBar}>
+            <Tabs value={this.state.currentTab} onChange={this.handleChangeTab.bind(this)}>
+              <Tab label={t('Overview')}/>
+              <Tab label={t('Identity')}/>
+            </Tabs>
+          </AppBar>
+          {this.state.currentTab === 0
+          && <IntrusionSetEditionOverview intrusionSet={intrusionSet} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 1
+          && <IntrusionSetEditionIdentity intrusionSet={intrusionSet} editUsers={editUsers} me={me}/>}
         </div>
       </div>
     );
@@ -86,6 +107,7 @@ const IntrusionSetEditionFragment = createFragmentContainer(IntrusionSetEditionC
       fragment IntrusionSetEditionContainer_intrusionSet on IntrusionSet {
           id
           ...IntrusionSetEditionOverview_intrusionSet
+          ...IntrusionSetEditionIdentity_intrusionSet
           editContext {
               name
               focusOn

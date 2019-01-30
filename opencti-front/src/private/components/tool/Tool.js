@@ -42,10 +42,10 @@ class ToolComponent extends Component {
             <EntityObservablesChart tool={tool}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart tool={tool}/>
+            <EntityKillChainPhasesChart tool={tool}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityKillChainPhasesChart tool={tool}/>
+            <EntityReportsChart tool={tool}/>
           </Grid>
         </Grid>
         <ToolEdition toolId={tool.id}/>

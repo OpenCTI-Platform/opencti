@@ -1,4 +1,4 @@
-import { includes, head, isEmpty, join, map } from 'ramda';
+import { head, isEmpty, join, map } from 'ramda';
 import uuid from 'uuid/v4';
 import uuidv5 from 'uuid/v5';
 import moment from 'moment';
@@ -8,7 +8,6 @@ import { delUserContext } from '../database/redis';
 import { MissingElement, AuthenticationFailure } from '../config/errors';
 import conf, {
   BUS_TOPICS,
-  DEV_MODE,
   OPENCTI_DEFAULT_DURATION,
   OPENCTI_ISSUER,
   OPENCTI_TOKEN,
@@ -43,7 +42,7 @@ export const setAuthenticationCookie = (token, res) => {
   res.cookie('opencti_token', signedToken, {
     httpOnly: true,
     expires,
-    secure: !DEV_MODE
+    secure: conf.get('app:cookie_secure')
   });
 };
 
@@ -91,7 +90,7 @@ export const addPerson = async (user, newUser) => {
   return createPerson.then(result => {
     const { data } = result;
     return loadByID(head(data).user.id).then(created =>
-      notify(BUS_TOPICS.User.ADDED_TOPIC, created, user)
+      notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
     );
   });
 };
@@ -143,7 +142,7 @@ export const addUser = async (user, newUser) => {
       () => {
         const { data } = resultUser;
         return loadByID(head(data).user.id).then(created =>
-          notify(BUS_TOPICS.User.ADDED_TOPIC, created, user)
+          notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
         );
       }
     )
