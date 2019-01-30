@@ -21,7 +21,8 @@ import {
   notify,
   now,
   paginate,
-  qk
+  qk,
+  editInputTx
 } from '../database/grakn';
 
 // Security related
@@ -109,7 +110,11 @@ export const addUser = async (user, newUser) => {
     $user has description_lowercase "${
       newUser.description ? newUser.description.toLowerCase() : ''
     }";
-    $user has email "${newUser.email}";
+    $user has email "${newUser.email}"; ${
+    newUser.password
+      ? `$user has password ${bcrypt.hashSync(newUser.password)};`
+      : ''
+  }
     $user has firstname "${newUser.firstname}";
     $user has lastname "${newUser.lastname}";
     ${
@@ -202,6 +207,16 @@ export const logout = async (user, res) => {
 };
 
 export const userDelete = userId => deleteByID(userId);
+
+export const userEditField = (user, userId, input) => {
+  const { key } = input;
+  const value =
+    key === 'password' ? [bcrypt.hashSync(head(input.value), 10)] : input.value;
+  const finalInput = { key, value };
+  return editInputTx(userId, finalInput).then(userToEdit =>
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user)
+  );
+};
 
 export const deleteUserByEmail = email => {
   const delUser = qk(`match $x has email "${email}"; delete $x;`);

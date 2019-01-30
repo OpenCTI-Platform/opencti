@@ -10,6 +10,7 @@ import {
   token,
   login,
   logout,
+  userEditField,
   setAuthenticationCookie
 } from '../domain/user';
 import {
@@ -19,7 +20,6 @@ import {
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
   stixDomainEntityAddRelation,
   stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
@@ -51,7 +51,7 @@ const userResolvers = {
     logout: auth((_, args, context) => logout(context.user, context.res)),
     userEdit: admin((_, { id }, { user }) => ({
       delete: () => userDelete(id),
-      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
+      fieldPatch: ({ input }) => userEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
@@ -59,7 +59,7 @@ const userResolvers = {
         stixDomainEntityDeleteRelation(user, id, relationId)
     })),
     meEdit: auth((_, { input }, { user }) =>
-      stixDomainEntityEditField(user, user.id, input)
+      userEditField(user, user.id, input)
     ),
     personAdd: auth((_, { input }, { user }) => addPerson(user, input)),
     userAdd: admin((_, { input }, { user }) => addUser(user, input))
