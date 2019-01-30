@@ -30,9 +30,8 @@ import EntityLabelModel from '../../../components/graph_node/EntityLabelModel';
 import EntityLinkModel from '../../../components/graph_node/EntityLinkModel';
 import { distributeElements } from '../../../utils/DagreHelper';
 import { workspaceMutationFieldPatch } from './WorkspaceEditionOverview';
-import WorkspaceAddObjectRefs from './WorkspaceAddObjectRefs';
 import { workspaceMutationRelationAdd, workspaceMutationRelationDelete } from './WorkspaceAddObjectRefsLines';
-import StixRelationCreation, { stixRelationCreationDeleteMutation } from '../stix_relation/StixRelationCreation';
+import StixRelationCreation  from '../stix_relation/StixRelationCreation';
 import StixRelationEdition from '../stix_relation/StixRelationEdition';
 
 const styles = () => ({
@@ -512,7 +511,7 @@ class WorkspaceGraphComponent extends Component {
   }
 
   render() {
-    const { classes, workspace } = this.props;
+    const { classes } = this.props;
     const {
       openCreateRelation, createRelationFrom, createRelationTo, openEditRelation, editRelationId,
     } = this.state;
