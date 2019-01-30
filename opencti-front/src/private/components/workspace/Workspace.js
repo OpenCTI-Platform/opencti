@@ -3,18 +3,26 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
+import Drawer from '@material-ui/core/Drawer';
 import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import WorkspaceHeader from './WorkspaceHeader';
 import WorkspaceGraph, { workspaceGraphQuery } from './WorkspaceGraph';
 
-const styles = () => ({
+const styles = theme => ({
   container: {
     width: '100%',
     height: '100%',
     margin: 0,
     padding: 0,
+  },
+  bottomNav: {
+    zIndex: 1000,
+    padding: '10px 274px 10px 84px',
+    backgroundColor: theme.palette.navBottom.background,
+    display: 'flex',
+    height: 75,
   },
 });
 
@@ -23,6 +31,9 @@ class WorkspaceKnowledgeComponent extends Component {
     const { classes, workspace } = this.props;
     return (
       <div className={classes.container}>
+        <Drawer anchor='bottom' variant='permanent' classes={{ paper: classes.bottomNav }}>
+          <div> &nbsp; </div>
+        </Drawer>
         <WorkspaceHeader workspace={workspace}/>
         <QueryRenderer
           query={workspaceGraphQuery}

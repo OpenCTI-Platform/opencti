@@ -394,7 +394,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
 
   distribute() {
     this.autoDistribute();
-    this.autoDistribute();
+    this.initialize();
     this.handleSaveGraph();
   }
 

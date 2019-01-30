@@ -44,22 +44,13 @@ export const objectRefs = (workspaceId, args) =>
     args
   );
 
-/* export const relationRefs = (workspaceId, args) =>
+export const relationRefs = (workspaceId, args) =>
   paginateRelationships(
-    `match $rel($from, $to) isa stix_relation;
-    $extraRel(so:$rel, knowledge_aggregation:$workspace) isa object_refs;
+    `match $rel($from, $to) isa stix_relation; 
+    $extraRel(so:$rel, knowledge_aggregation:$workspace) isa object_refs; 
     $workspace id ${workspaceId}`,
     args,
     'extraRel'
-  ); */
-
-export const relationRefs = (workspaceId, args) =>
-  paginate(
-    `match $so isa stix_relation; 
-    $rel(so:$so, knowledge_aggregation:$workspace) isa object_refs; 
-    $workspace id ${workspaceId}`,
-    args,
-    false
   );
 
 export const addWorkspace = async (user, workspace) => {

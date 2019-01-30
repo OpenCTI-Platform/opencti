@@ -189,6 +189,8 @@ class StixDomainEntityCreation extends Component {
                     <MenuItem value='Malware'>{t('Malware')}</MenuItem>
                     <MenuItem value='Tool'>{t('Tool')}</MenuItem>
                     <MenuItem value='Vulnerability'>{t('Vulnerability')}</MenuItem>
+                    <MenuItem value='City'>{t('City')}</MenuItem>
+                    <MenuItem value='Country'>{t('Country')}</MenuItem>
                   </Field>
                   <div className={classes.buttons}>
                     <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
@@ -253,6 +255,8 @@ class StixDomainEntityCreation extends Component {
                     <MenuItem value='Malware'>{t('Malware')}</MenuItem>
                     <MenuItem value='Tool'>{t('Tool')}</MenuItem>
                     <MenuItem value='Vulnerability'>{t('Vulnerability')}</MenuItem>
+                    <MenuItem value='City'>{t('City')}</MenuItem>
+                    <MenuItem value='Country'>{t('Country')}</MenuItem>
                   </Field>
                 </DialogContent>
                 <DialogActions classes={{ root: classes.dialogActions }}>

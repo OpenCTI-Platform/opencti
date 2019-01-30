@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
 import { fetchQuery } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
-import { compose } from 'ramda';
+import { compose, map } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
@@ -17,8 +17,8 @@ import { ArrowRightAlt } from '@material-ui/icons';
 import { environment, commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { itemColor } from '../../../utils/Colors';
-import { resolveRoles } from '../../../utils/Relation';
 import { parse } from '../../../utils/Time';
+import { resolveRoles, resolveRelationsTypes } from '../../../utils/Relation';
 import ItemIcon from '../../../components/ItemIcon';
 import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
@@ -262,6 +262,8 @@ class StixRelationCreation extends Component {
     const {
       t, classes, from, to,
     } = this.props;
+    const relationshipTypes = resolveRelationsTypes(from.type, to.type);
+
     return (
       <Formik
         enableReinitialize={true}
@@ -327,13 +329,10 @@ class StixRelationCreation extends Component {
                      }}
                      containerstyle={{ marginTop: 20, width: '100%' }}
               >
-                <MenuItem value='targets'>{t('Targets')}</MenuItem>
-                <MenuItem value='uses'>{t('Uses')}</MenuItem>
-                <MenuItem value='attributed-to'>{t('Attributed to')}</MenuItem>
-                <MenuItem value='variant-of'>{t('Variant of')}</MenuItem>
-                <MenuItem value='gathering'>{t('Part of')}</MenuItem>
-                <MenuItem value='related-to'>{t('Related to')}</MenuItem>
-                <MenuItem value='localization'>{t('Localized in')}</MenuItem>
+                {map(type => (
+                    <MenuItem key={type} value={type}>{t(`relation_${type}`)}</MenuItem>
+                ), relationshipTypes)}
+                <MenuItem value='related-to'>{t('relation_related-to')}</MenuItem>
               </Field>
               <Field name='weight'
                      component={Select}
@@ -456,7 +455,7 @@ class StixRelationCreation extends Component {
               </div>
             </div>
             <div className={classes.middle} style={{ paddingTop: 15 }}>
-              <ArrowRightAlt fontSize='small'/><br />
+              <ArrowRightAlt fontSize='small'/><br/>
               <div style={{
                 padding: '5px 8px 5px 8px',
                 backgroundColor: '#607d8b',
@@ -491,9 +490,9 @@ class StixRelationCreation extends Component {
 
   renderLoader() {
     return (
-        <div className={this.props.classes.loader}>
-          <CircularProgress size={80} thickness={2} className={this.props.classes.loaderCircle}/>
-        </div>
+      <div className={this.props.classes.loader}>
+        <CircularProgress size={80} thickness={2} className={this.props.classes.loaderCircle}/>
+      </div>
     );
   }
 
@@ -508,7 +507,7 @@ class StixRelationCreation extends Component {
           maxWidth='md'
           fullWidth={true}
         >
-          {step === 0 ? this.renderLoader() : '' }
+          {step === 0 ? this.renderLoader() : ''}
           {step === 1 ? this.renderSelectRelation() : ''}
           {step === 2 ? this.renderForm() : ''}
         </Dialog>

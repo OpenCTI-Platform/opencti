@@ -14,6 +14,9 @@ import {
   MoveItemsAction,
 } from 'storm-react-diagrams';
 import { withStyles } from '@material-ui/core/styles';
+import IconButton from '@material-ui/core/IconButton';
+import { AspectRatio } from '@material-ui/icons';
+import { AutoFix } from 'mdi-material-ui';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
 import { commitMutation, fetchQuery } from '../../../relay/environment';
@@ -25,10 +28,11 @@ import EntityLinkFactory from '../../../components/graph_node/EntityLinkFactory'
 import EntityLabelFactory from '../../../components/graph_node/EntityLabelFactory';
 import EntityLabelModel from '../../../components/graph_node/EntityLabelModel';
 import EntityLinkModel from '../../../components/graph_node/EntityLinkModel';
+import { distributeElements } from '../../../utils/DagreHelper';
 import { workspaceMutationFieldPatch } from './WorkspaceEditionOverview';
 import WorkspaceAddObjectRefs from './WorkspaceAddObjectRefs';
 import { workspaceMutationRelationAdd, workspaceMutationRelationDelete } from './WorkspaceAddObjectRefsLines';
-import StixRelationCreation from '../stix_relation/StixRelationCreation';
+import StixRelationCreation, { stixRelationCreationDeleteMutation } from '../stix_relation/StixRelationCreation';
 import StixRelationEdition from '../stix_relation/StixRelationEdition';
 
 const styles = () => ({
@@ -44,6 +48,11 @@ const styles = () => ({
     minHeight: 'calc(100vh - 170px)',
     margin: 0,
     padding: 0,
+  },
+  icon: {
+    position: 'fixed',
+    zIndex: 3000,
+    bottom: 13,
   },
 });
 
@@ -118,6 +127,12 @@ class WorkspaceGraphComponent extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    if (this.props.workspace.graph_data !== prevProps.workspace.graph_data) {
+      this.initialize();
+      this.forceUpdate();
+      return;
+    }
+
     const added = difference(
       this.props.workspace.objectRefs.edges,
       prevProps.workspace.objectRefs.edges,
@@ -126,10 +141,30 @@ class WorkspaceGraphComponent extends Component {
       prevProps.workspace.objectRefs.edges,
       this.props.workspace.objectRefs.edges,
     );
-    if ((this.props.workspace.graph_data !== prevProps.workspace.graph_data)
-      || added.length > 0
-      || removed.length > 0) {
-      this.initialize();
+    // if a node has been added, add in graph
+    if (added.length > 0) {
+      const model = this.engine.getDiagramModel();
+      const newNodes = map(n => new EntityNodeModel({
+        id: n.node.id,
+        relationId: n.relation.id,
+        name: n.node.name,
+        type: n.node.type,
+      }), added);
+      forEach((n) => {
+        n.addListener({ selectionChanged: this.handleSelection.bind(this) });
+        model.addNode(n);
+      }, newNodes);
+      this.forceUpdate();
+    }
+    // if a node has been removed, remove in graph
+    if (removed.length > 0) {
+      const model = this.engine.getDiagramModel();
+      const removedIds = map(n => n.node.id, removed);
+      forEach((n) => {
+        if (removedIds.includes(n.extras.id)) {
+          model.removeNode(n);
+        }
+      }, values(model.getNodes()));
       this.forceUpdate();
     }
   }
@@ -200,9 +235,12 @@ class WorkspaceGraphComponent extends Component {
         newLink.setSourcePort(fromPort);
         newLink.setTargetPort(toPort);
         const label = new EntityLabelModel();
-        label.setLabel(l.node.relationship_type);
-        label.setFirstSeen(l.node.first_seen);
-        label.setLastSeen(l.node.last_seen);
+        label.setExtras([{
+          id: l.node.id,
+          relationship_type: l.node.relationship_type,
+          first_seen: l.node.first_seen,
+          last_seen: l.node.last_seen,
+        }]);
         newLink.addLabel(label);
         newLink.addListener({ selectionChanged: this.handleSelection.bind(this) });
         model.addLink(newLink);
@@ -274,16 +312,16 @@ class WorkspaceGraphComponent extends Component {
   handleLinkCreation(event) {
     const model = this.engine.getDiagramModel();
     const currentLinks = model.getLinks();
-    const currentLinksPairs = map(n => ({ source: pathOr(null, ['sourcePort', 'id'], n), target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
+    const currentLinksPairs = map(n => ({ source: n.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
     if (event.port !== undefined) {
       // ensure that the links are not circular on the same element
       const link = last(values(event.port.links));
-      const linkPair = { source: pathOr(null, ['sourcePort', 'id'], link), target: pathOr(null, ['targetPort', 'id'], link) };
+      const linkPair = { source: link.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], link) };
       const filteredCurrentLinks = filter(n => (
         n.source === linkPair.source && n.target === linkPair.target)
         || (n.source === linkPair.target && n.target === linkPair.source),
       currentLinksPairs);
-      if (link.sourcePort === null || link.targetPort === null || (link.sourcePort === link.targetPort)) {
+      if (link.targetPort === null || (link.sourcePort === link.targetPort)) {
         model.removeLink(link);
       } else if (filteredCurrentLinks.length === 1) {
         link.addListener({ selectionChanged: this.handleSelection.bind(this) });
@@ -301,13 +339,13 @@ class WorkspaceGraphComponent extends Component {
   handleLinkDeletion(event) {
     const model = this.engine.getDiagramModel();
     const currentLinks = model.getLinks();
-    const currentLinksPairs = map(n => ({ source: pathOr(null, ['sourcePort', 'id'], n), target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
+    const currentLinksPairs = map(n => ({ source: n.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
     if (event.isCreated === false) {
       if (event.link !== undefined) {
         const { link } = event;
         // ensure that the link is not circular on the same element
         if (link.targetPort !== null && (link.sourcePort !== link.targetPort)) {
-          const linkPair = { source: pathOr(null, ['sourcePort', 'id'], link), target: pathOr(null, ['targetPort', 'id'], link) };
+          const linkPair = { source: link.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], link) };
           const filteredCurrentLinks = filter(n => (
             n.source === linkPair.source && n.target === linkPair.target)
             || (n.source === linkPair.target && n.target === linkPair.source),
@@ -398,9 +436,12 @@ class WorkspaceGraphComponent extends Component {
     const model = this.engine.getDiagramModel();
     const linkObject = model.getLink(this.state.currentLink);
     const label = new EntityLabelModel();
-    label.setLabel(result.relationship_type);
-    label.setFirstSeen(result.first_seen);
-    label.setLastSeen(result.last_seen);
+    label.setExtras([{
+      id: result.id,
+      relationship_type: result.relationship_type,
+      first_seen: result.first_seen,
+      last_seen: result.last_seen,
+    }]);
     linkObject.addLabel(label);
     const input = {
       fromRole: 'so',
@@ -449,6 +490,27 @@ class WorkspaceGraphComponent extends Component {
     });
   }
 
+  autoDistribute() {
+    const model = this.engine.getDiagramModel();
+    const serialized = model.serializeDiagram();
+    const distributedSerializedDiagram = distributeElements(serialized);
+    const distributedDeSerializedModel = new DiagramModel();
+    distributedDeSerializedModel.deSerializeDiagram(distributedSerializedDiagram, this.engine);
+    this.engine.setDiagramModel(distributedDeSerializedModel);
+    this.forceUpdate();
+  }
+
+  distribute() {
+    this.autoDistribute();
+    this.initialize();
+    this.handleSaveGraph();
+  }
+
+  zoomToFit() {
+    this.engine.zoomToFit();
+    this.handleSaveGraph();
+  }
+
   render() {
     const { classes, workspace } = this.props;
     const {
@@ -456,6 +518,12 @@ class WorkspaceGraphComponent extends Component {
     } = this.state;
     return (
       <div className={classes.container}>
+        <IconButton color='primary' className={classes.icon} onClick={this.zoomToFit.bind(this)} style={{ left: 90 }}>
+          <AspectRatio/>
+        </IconButton>
+        <IconButton color='primary' className={classes.icon} onClick={this.distribute.bind(this)} style={{ left: 150 }}>
+          <AutoFix/>
+        </IconButton>
         <DiagramWidget
           className={classes.canvas}
           diagramEngine={this.engine}
@@ -463,10 +531,6 @@ class WorkspaceGraphComponent extends Component {
           allowLooseLinks={false}
           maxNumberPointsPerLink={0}
           actionStoppedFiring={this.handleMovesChange.bind(this)}
-        />
-        <WorkspaceAddObjectRefs
-          workspaceId={workspace.id}
-          workspaceObjectRefs={workspace.objectRefs.edges}
         />
         <StixRelationCreation
           open={openCreateRelation}
@@ -520,9 +584,13 @@ const WorkspaceGraph = createFragmentContainer(WorkspaceGraphComponent, {
                       last_seen
                       from {
                           id
+                          type
+                          name
                       }
                       to {
                           id
+                          type
+                          name
                       }
                   }
                   relation {

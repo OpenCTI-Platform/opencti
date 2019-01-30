@@ -32,9 +32,9 @@ const styles = theme => ({
   },
   createButton: {
     position: 'fixed',
-    bottom: 30,
+    bottom: 50,
     right: 30,
-    zIndex: 100,
+    zIndex: 1100,
   },
   title: {
     float: 'left',

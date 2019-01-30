@@ -38,7 +38,7 @@ class IntrusionSetIdentityComponent extends Component {
             {t('Last seen')}
           </Typography>
           {fld(intrusionSet.last_seen)}
-          <Typography variant='h3' gutterBottom={true}>
+          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
             {t('Sophistication')}
           </Typography>
           {t(`${intrusionSet.sophistication ? `sophistication_${intrusionSet.sophistication}` : 'sophistication_unkown'}`)}

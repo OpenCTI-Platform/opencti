@@ -28,7 +28,7 @@ function distributeGraph(model) {
   const nodes = mapElements(model);
   const edges = mapEdges(model);
   const graph = new dagre.graphlib.Graph();
-  graph.setGraph({});
+  graph.setGraph({ ranker: 'longest-path' });
   graph.setDefaultEdgeLabel(() => ({}));
   // add elements to dagre graph
   nodes.forEach((node) => {
