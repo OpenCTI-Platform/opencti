@@ -112,7 +112,7 @@ export const addUser = async (user, newUser) => {
     }";
     $user has email "${newUser.email}"; ${
     newUser.password
-      ? `$user has password ${bcrypt.hashSync(newUser.password)};`
+      ? `$user has password "${bcrypt.hashSync(newUser.password)}";`
       : ''
   }
     $user has firstname "${newUser.firstname}";
