@@ -258,6 +258,7 @@ const i18n = {
       References: 'Références',
       'Source name': 'Nom de la source',
       'External ID': 'ID externe',
+      relations: 'relations',
       URL: 'URL',
       'entitie(s)': 'entité(s)',
       'Confidence level': 'Niveau de confiance',

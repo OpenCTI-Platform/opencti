@@ -49,7 +49,6 @@ class ReportEditionContainer extends Component {
       t, classes, handleClose, report, me,
     } = this.props;
     const { editContext } = report;
-    // Add current user to the context if is not available yet.
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
     const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
     return (

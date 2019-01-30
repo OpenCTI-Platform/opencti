@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, head } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../i18n';
 
@@ -16,17 +16,45 @@ const styles = () => ({
       background: '#1e3f49',
     },
   },
+  itemInferred: {
+    textAlign: 'center',
+    padding: '5px 8px 5px 8px',
+    backgroundColor: '#14262c',
+    color: '#ffffff',
+    pointerEvents: 'auto',
+    fontSize: 12,
+  },
 });
 
 class EntityLabelWidget extends Component {
   render() {
-    return <div className={this.props.classes.item} onClick={this.props.model.setSelected.bind(this, true)}>
-      <strong>{this.props.t(`relation_${this.props.model.label}`)}</strong>
-      <br />
-      {this.props.model.firstSeen ? this.props.nsd(this.props.model.firstSeen) : ''}
-      <br />
-      {this.props.model.lastSeen ? this.props.nsd(this.props.model.lastSeen) : ''}
-    </div>;
+    const {
+      t, nsd, classes, model, model: { extras },
+    } = this.props;
+    if (extras.length === 1) {
+      const label = head(extras);
+      if (label.inferred === true) {
+        return (
+          <div className={classes.itemInferred}>
+            <strong>{t(`relation_${label.relationship_type}`)}</strong>
+          </div>
+        );
+      }
+      return (
+        <div className={classes.item} onClick={model.setSelected.bind(this, true)}>
+          <strong>{t(`relation_${label.relationship_type}`)}</strong>
+          <br/>
+          {nsd(label.first_seen)}
+          <br/>
+          {nsd(label.last_seen)}
+        </div>
+      );
+    }
+    return (
+        <div className={classes.itemInferred}>
+          <strong>{extras.length} {t('relations')}</strong>
+        </div>
+    );
   }
 }
 

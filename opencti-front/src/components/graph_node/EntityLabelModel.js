@@ -6,34 +6,26 @@ export default class EntityLabelModel extends LabelModel {
     super('entity');
     this.offsetY = -23;
     this.selected = false;
-    this.firstSeen = null;
-    this.lastSeen = null;
+    this.extras = null;
   }
 
   setLabel(label) {
     this.label = label;
   }
 
-  setFirstSeen(firstSeen) {
-    this.firstSeen = firstSeen;
-  }
-
-  setLastSeen(lastSeen) {
-    this.lastSeen = lastSeen;
+  setExtras(extras) {
+    this.extras = extras;
   }
 
   deSerialize(ob, engine) {
     super.deSerialize(ob, engine);
-    this.label = ob.label;
-    this.firstSeen = ob.firstSeen;
-    this.lastSeen = ob.lastSeen;
+    this.extras = ob.extras;
   }
 
   serialize() {
     return mergeRight(super.serialize(), {
       label: this.label,
-      firstSeen: this.firstSeen,
-      lastSeen: this.lastSeen,
+      extras: this.extras,
     });
   }
 

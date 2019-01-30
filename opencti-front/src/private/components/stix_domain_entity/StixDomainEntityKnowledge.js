@@ -187,20 +187,7 @@ class StixDomainEntityKnowledge extends Component {
     return (
       <div className={classes.container}>
         <Drawer anchor='bottom' variant='permanent' classes={{ paper: classes.bottomNav }}>
-          <Grid container={true} spacing={8} justify='center' alignItems='center'>
-            <Grid item={true} xs='auto'>
-              <FormControlLabel
-                style={{ paddingTop: 5 }}
-                control={
-                  <Switch
-                    checked={this.state.inferred}
-                    onChange={this.handleChangeInferred.bind(this)}
-                    color='primary'
-                  />
-                }
-                label={t('Inferences')}
-              />
-            </Grid>
+          <Grid container={true} spacing={8}>
             <Grid item={true} xs='auto'>
               <Select
                 style={{ height: 50 }}
@@ -274,6 +261,19 @@ class StixDomainEntityKnowledge extends Component {
                 <MenuItem value='All years'>{t('All years')}</MenuItem>
                 {map(year => (<MenuItem key={year} value={year}>{year}</MenuItem>), yearsList)}
               </Select>
+            </Grid>
+            <Grid item={true} xs='auto'>
+              <FormControlLabel
+                style={{ paddingTop: 5, marginLeft: 20 }}
+                control={
+                  <Switch
+                    checked={this.state.inferred}
+                    onChange={this.handleChangeInferred.bind(this)}
+                    color='primary'
+                  />
+                }
+                label={t('Inferences')}
+              />
             </Grid>
           </Grid>
         </Drawer>

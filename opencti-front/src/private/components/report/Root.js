@@ -26,6 +26,10 @@ const reportQuery = graphql`
             ...ReportHeader_report
             ...ReportOverview_report
             ...ReportKnowledge_report
+            
+        },
+        me {
+            ...ReportKnowledge_me
         }
     }
 `;
@@ -60,7 +64,7 @@ class RootReport extends Component {
                     routeProps => <Report {...routeProps} report={props.report}/>
                   }/>
                   <Route exact path='/dashboard/reports/all/:reportId/knowledge' render={
-                    routeProps => <ReportKnowledge {...routeProps} report={props.report}/>
+                    routeProps => <ReportKnowledge {...routeProps} report={props.report} me={props.me}/>
                   }/>
                 </div>
               );

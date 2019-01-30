@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import {
   compose, map, pipe, forEach, append, values,
   pathOr, filter, last, head, pluck, includes,
-  indexBy, prop,
+  indexBy, prop, uniq,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -14,9 +14,13 @@ import {
   MoveItemsAction,
 } from 'storm-react-diagrams';
 import { withStyles } from '@material-ui/core/styles';
+import IconButton from '@material-ui/core/IconButton';
+import { AspectRatio } from '@material-ui/icons';
+import { AutoFix } from 'mdi-material-ui';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
 import { yearFormat } from '../../../utils/Time';
+import { distributeElements } from '../../../utils/DagreHelper';
 import { commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
@@ -44,6 +48,11 @@ const styles = () => ({
     minHeight: 'calc(100vh - 170px)',
     margin: 0,
     padding: 0,
+  },
+  icon: {
+    position: 'fixed',
+    zIndex: 3000,
+    bottom: 13,
   },
 });
 
@@ -106,7 +115,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
   initialize() {
     const { stixDomainEntity, stixDomainEntity: { stixRelations } } = this.props;
     // prepare actual nodes & relations
-    const actualNodes = append(stixDomainEntity, map(n => n.node.to, stixRelations.edges));
+    const actualNodes = append(stixDomainEntity, uniq(map(n => n.node.to, stixRelations.edges)));
     const actualRelations = stixRelations.edges;
     const actualNodesIds = pluck('id', actualNodes);
     const actualRelationsIds = pipe(map(n => n.node), pluck('id'))(actualRelations);
@@ -153,30 +162,57 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
     forEach((l) => {
       if (includes(pathOr(null, ['extras', 'relation', 'id'], l), actualRelationsIds)) {
         l.addListener({ selectionChanged: this.handleSelection.bind(this) });
+        const label = head(l.labels);
+        const extrasIds = pluck('id', label.extras);
+        const toDelete = [];
+        forEach((eid) => {
+          if (!includes(eid, actualRelationsIds)) {
+            toDelete.push(eid);
+          }
+        })(extrasIds);
+        label.setExtras(filter(n => !includes(n.id, toDelete), label.extras));
       } else {
         model.removeLink(l);
       }
     }, values(links));
     forEach((l) => {
       if (!includes(l.node.id, linksIds)) {
-        const fromPort = finalNodesObject[this.props.stixDomainEntity.id] ? finalNodesObject[this.props.stixDomainEntity.id].node.getPort('main') : null;
+        const fromPort = finalNodesObject[stixDomainEntity.id] ? finalNodesObject[stixDomainEntity.id].node.getPort('main') : null;
         const toPort = finalNodesObject[l.node.to.id] ? finalNodesObject[l.node.to.id].node.getPort('main') : null;
-        const newLink = new EntityLinkModel();
-        newLink.setExtras({
-          relation: l.node,
-        });
-        if (l.node.inferred) {
-          newLink.setColor('#607d8b');
+        const toPortLinks = values(toPort.getLinks());
+        if (toPortLinks.length === 1) {
+          const existingLink = model.getLink(head(toPortLinks));
+          const label = head(existingLink.labels);
+          const extrasIds = pluck('id', label.extras);
+          if (!includes(l.node.id, extrasIds)) {
+            label.extras.push({
+              id: l.node.id,
+              relationship_type: l.node.relationship_type,
+              first_seen: l.node.first_seen,
+              last_seen: l.node.last_seen,
+            });
+          }
+        } else {
+          const newLink = new EntityLinkModel();
+          newLink.setSourcePort(fromPort);
+          newLink.setTargetPort(toPort);
+          newLink.setExtras({
+            relation: l.node,
+          });
+          if (l.node.inferred) {
+            newLink.setColor('#607d8b');
+          }
+          const label = new EntityLabelModel();
+          label.setExtras([{
+            id: l.node.id,
+            relationship_type: l.node.relationship_type,
+            first_seen: l.node.first_seen,
+            last_seen: l.node.last_seen,
+          }]);
+          newLink.addLabel(label);
+          newLink.addListener({ selectionChanged: this.handleSelection.bind(this) });
+          model.addLink(newLink);
         }
-        newLink.setSourcePort(fromPort);
-        newLink.setTargetPort(toPort);
-        const label = new EntityLabelModel();
-        label.setLabel(l.node.relationship_type);
-        label.setFirstSeen(l.node.first_seen);
-        label.setLastSeen(l.node.last_seen);
-        newLink.addLabel(label);
-        newLink.addListener({ selectionChanged: this.handleSelection.bind(this) });
-        model.addLink(newLink);
       }
     }, actualRelations);
     // set the model
@@ -309,9 +345,11 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
     const model = this.engine.getDiagramModel();
     const linkObject = model.getLink(this.state.currentLink);
     const label = new EntityLabelModel();
-    label.setLabel(result.relationship_type);
-    label.setFirstSeen(result.first_seen);
-    label.setLastSeen(result.last_seen);
+    label.setExtras([{
+      relationship_type: result.relationship_type,
+      first_seen: result.first_seen,
+      last_seen: result.last_seen,
+    }]);
     linkObject.addLabel(label);
     linkObject.setExtras({
       relation: result,
@@ -344,6 +382,27 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
     });
   }
 
+  autoDistribute() {
+    const model = this.engine.getDiagramModel();
+    const serialized = model.serializeDiagram();
+    const distributedSerializedDiagram = distributeElements(serialized);
+    const distributedDeSerializedModel = new DiagramModel();
+    distributedDeSerializedModel.deSerializeDiagram(distributedSerializedDiagram, this.engine);
+    this.engine.setDiagramModel(distributedDeSerializedModel);
+    this.forceUpdate();
+  }
+
+  distribute() {
+    this.autoDistribute();
+    this.autoDistribute();
+    this.handleSaveGraph();
+  }
+
+  zoomToFit() {
+    this.engine.zoomToFit();
+    this.handleSaveGraph();
+  }
+
   render() {
     const { classes, stixDomainEntity } = this.props;
     const {
@@ -351,6 +410,12 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
     } = this.state;
     return (
       <div className={classes.container}>
+        <IconButton color='primary' className={classes.icon} onClick={this.zoomToFit.bind(this)} style={{ right: 330 }}>
+          <AspectRatio />
+        </IconButton>
+        <IconButton color='primary' className={classes.icon} onClick={this.distribute.bind(this)} style={{ right: 270 }}>
+          <AutoFix />
+        </IconButton>
         <DiagramWidget
           className={classes.canvas}
           diagramEngine={this.engine}

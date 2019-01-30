@@ -33,7 +33,7 @@ const styles = () => ({
 
 class ReportHeaderComponent extends Component {
   render() {
-    const { classes, report } = this.props;
+    const { classes, report, variant } = this.props;
     return (
       <div>
         <Typography variant='h1' gutterBottom={true} classes={{ root: classes.title }}>
@@ -42,9 +42,9 @@ class ReportHeaderComponent extends Component {
         <div className={classes.popover}>
           <ReportPopover reportId={report.id}/>
         </div>
-        <div className={classes.marking}>
+        {variant !== 'noMarking' ? <div className={classes.marking}>
           {pathOr([], ['markingDefinitions', 'edges'], report).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} label={markingDefinition.node.definition}/>)}
-        </div>
+        </div> : ''}
         <div className='clearfix'/>
       </div>
     );
@@ -53,6 +53,7 @@ class ReportHeaderComponent extends Component {
 
 ReportHeaderComponent.propTypes = {
   report: PropTypes.object,
+  variant: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,

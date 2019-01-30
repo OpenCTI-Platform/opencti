@@ -12,6 +12,11 @@ const SubscriptionAvatarsStyles = () => ({
     float: 'right',
     display: 'flex',
   },
+  avatarsGraph: {
+    float: 'right',
+    display: 'flex',
+    marginTop: -40,
+  },
   avatar: {
     width: 28,
     height: 28,
@@ -28,9 +33,9 @@ const SubscriptionAvatarsFocusStyles = () => ({
 
 class SubscriptionAvatarsComponent extends Component {
   render() {
-    const { classes, users } = this.props;
+    const { classes, users, variant } = this.props;
     return (
-      <div className={classes.avatars}>
+      <div className={variant === 'inGraph' ? classes.avatarsGraph : classes.avatars}>
         {users.map((user, i) => <Tooltip title={user.name} key={i}>
           <Avatar classes={{ root: classes.avatar }} style={{ backgroundColor: stringToColour(user.name) }}>
             {user.name.charAt(0)}
@@ -44,6 +49,7 @@ class SubscriptionAvatarsComponent extends Component {
 SubscriptionAvatarsComponent.propTypes = {
   classes: PropTypes.object.isRequired,
   users: PropTypes.array,
+  variant: PropTypes.string,
 };
 
 export const SubscriptionAvatars = withStyles(SubscriptionAvatarsStyles)(SubscriptionAvatarsComponent);

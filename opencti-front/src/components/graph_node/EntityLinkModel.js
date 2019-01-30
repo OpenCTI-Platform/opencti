@@ -55,4 +55,8 @@ export default class EntityLinkModel extends LinkModel {
   setExtras(extras) {
     this.extras = extras;
   }
+
+  setLabels(labels) {
+    this.labels = labels;
+  }
 }
