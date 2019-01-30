@@ -22,7 +22,9 @@ import {
   now,
   paginate,
   qk,
-  editInputTx
+  editInputTx,
+  monthFormat,
+  yearFormat
 } from '../database/grakn';
 
 // Security related
@@ -86,6 +88,8 @@ export const addPerson = async (user, newUser) => {
       newUser.description ? newUser.description.toLowerCase() : ''
     }";
     $user has created_at ${now()};
+    $user has created_at_month "${monthFormat(now())}";
+    $user has created_at_year "${yearFormat(now())}";   
     $user has updated_at ${now()};
   `);
   return createPerson.then(result => {
@@ -104,6 +108,8 @@ export const addUser = async (user, newUser) => {
     $user has stix_id "user--${uuid()}";
     $user has stix_label "";
     $user has stix_label_lowercase "";
+    $user has alias "";
+    $user has alias_lowercase "";
     $user has name "${newUser.name}";
     $user has description "${newUser.description}";
     $user has name_lowercase "${newUser.name.toLowerCase()}";
@@ -123,6 +129,8 @@ export const addUser = async (user, newUser) => {
         : '$user has language "auto";'
     }
     $user has created_at ${now()};
+    $user has created_at_month "${monthFormat(now())}";
+    $user has created_at_year "${yearFormat(now())}";      
     $user has updated_at ${now()};
     ${join(' ', map(role => `$user has grant "${role}";`, newUser.grant))}
   `);

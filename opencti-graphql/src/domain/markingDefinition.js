@@ -7,10 +7,12 @@ import {
   deleteRelation,
   editInputTx,
   loadByID,
+  monthFormat,
   notify,
   now,
   paginate,
-  qk
+  qk,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -32,6 +34,8 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
     $markingDefinition has modified ${now()};
     $markingDefinition has revoked false;
     $markingDefinition has created_at ${now()};
+    $markingDefinition has created_at_month "${monthFormat(now())}";
+    $markingDefinition has created_at_year "${yearFormat(now())}";       
     $markingDefinition has updated_at ${now()};
   `);
   return createMarkingDefinition.then(result => {

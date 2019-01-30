@@ -7,11 +7,13 @@ import {
   deleteRelation,
   editInputTx,
   loadByID,
+  monthFormat,
   notify,
   now,
   paginate,
   qk,
-  qkObjUnique
+  qkObjUnique,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import {
@@ -111,6 +113,8 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     $stixDomainEntity has modified ${now()};
     $stixDomainEntity has revoked false;
     $stixDomainEntity has created_at ${now()};
+    $stixDomainEntity has created_at_month "${monthFormat(now())}";
+    $stixDomainEntity has created_at_year "${yearFormat(now())}";      
     $stixDomainEntity has updated_at ${now()};
   `);
   return createStixDomainEntity.then(result => {

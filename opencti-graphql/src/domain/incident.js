@@ -3,11 +3,13 @@ import uuid from 'uuid/v4';
 import {
   deleteByID,
   loadByID,
+  monthFormat,
   notify,
   now,
   paginate,
   prepareDate,
-  takeTx
+  takeTx,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -36,6 +38,8 @@ export const addIncident = async (user, incident) => {
     $incident has modified ${now()};
     $incident has revoked false;
     $incident has created_at ${now()};
+    $incident has created_at_month "${monthFormat(now())}";
+    $incident has created_at_year "${yearFormat(now())}";   
     $incident has updated_at ${now()};
   `);
   const createIncident = await incidentIterator.next();

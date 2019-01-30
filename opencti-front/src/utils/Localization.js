@@ -235,6 +235,7 @@ const i18n = {
       'Last obs.': 'Dernière obs.',
       Confirmation: 'Confirmation',
       'Kill chain': 'Kill chain',
+      'This feature is not available yet.': 'Cette fonctionnalité n\'est pas encore disponible.',
       'Phase name': "Nom de l'étape",
       'Kill chain name': 'Nom de la kill chain',
       Order: 'Ordre',

@@ -3,11 +3,13 @@ import uuid from 'uuid/v4';
 import {
   deleteByID,
   loadByID,
+  monthFormat,
   notify,
   now,
   paginate,
   prepareDate,
-  takeTx
+  takeTx,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -36,6 +38,8 @@ export const addCampaign = async (user, campaign) => {
     $campaign has modified ${now()};
     $campaign has revoked false;
     $campaign has created_at ${now()};
+    $campaign has created_at_month "${monthFormat(now())}";
+    $campaign has created_at_year "${yearFormat(now())}";
     $campaign has updated_at ${now()};
   `);
   const createCampaign = await campaignIterator.next();

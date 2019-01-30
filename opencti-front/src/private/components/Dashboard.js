@@ -25,11 +25,12 @@ import Bar from 'recharts/lib/cartesian/Bar';
 import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
 import { QueryRenderer } from '../../relay/environment';
+import truncate from '../../utils/String';
+import { resolveLink } from '../../utils/Entity';
 import Theme from '../../components/Theme';
 import inject18n from '../../components/i18n';
 import ItemIcon from '../../components/ItemIcon';
 import ItemMarking from '../../components/ItemMarking';
-import truncate from '../../utils/String';
 
 const styles = theme => ({
   card: {
@@ -363,6 +364,7 @@ class Dashboard extends Component {
                         {props.stixDomainEntities.edges.map((stixDomainEntityEdge) => {
                           const stixDomainEntity = stixDomainEntityEdge.node;
                           const markingDefinition = head(pathOr([], ['markingDefinitions', 'edges'], stixDomainEntity));
+                          const link = resolveLink(stixDomainEntity.type);
                           return (
                             <ListItem
                               key={stixDomainEntity.id}
@@ -370,7 +372,7 @@ class Dashboard extends Component {
                               classes={{ default: classes.item }}
                               divider={true}
                               component={Link}
-                              to={`/dashboard/reports/all/${stixDomainEntity.id}`}
+                              to={`${link}/${stixDomainEntity.id}`}
                             >
                               <ListItemIcon classes={{ root: classes.itemIcon }}>
                                 <ItemIcon type={stixDomainEntity.type}/>

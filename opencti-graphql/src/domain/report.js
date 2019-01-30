@@ -101,6 +101,8 @@ export const addReport = async (user, report) => {
     $report has modified ${now()};
     $report has revoked false;
     $report has created_at ${now()};
+    $report has created_at_month "${monthFormat(now())}";
+    $report has created_at_year "${yearFormat(now())}";        
     $report has updated_at ${now()};
   `);
   const createdReport = await reportIterator.next();

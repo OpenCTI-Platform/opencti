@@ -2,10 +2,12 @@ import { head } from 'ramda';
 import {
   deleteByID,
   loadByID,
+  monthFormat,
   notify,
   now,
   paginate,
-  qk
+  qk,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -39,6 +41,8 @@ export const addGroup = async (user, group) => {
       group.description ? group.description.toLowerCase() : ''
     }";
     $group has created_at ${now()};
+    $group has created_at_month "${monthFormat(now())}";
+    $group has created_at_year "${yearFormat(now())}";    
     $group has updated_at ${now()};
   `);
   return createGroup.then(result => {

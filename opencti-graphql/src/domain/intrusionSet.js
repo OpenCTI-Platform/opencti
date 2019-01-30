@@ -6,7 +6,9 @@ import {
   loadByID,
   notify,
   now,
-  paginate
+  paginate,
+  yearFormat,
+  monthFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -41,6 +43,8 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     $intrusionSet has modified ${now()};
     $intrusionSet has revoked false;
     $intrusionSet has created_at ${now()};
+    $intrusionSet has created_at_month "${monthFormat(now())}";
+    $intrusionSet has created_at_year "${yearFormat(now())}";       
     $intrusionSet has updated_at ${now()};
   `);
   const createIntrusionSet = await intrusionSetIterator.next();

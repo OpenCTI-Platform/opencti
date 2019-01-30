@@ -83,6 +83,8 @@ export const addStixRelation = async (user, stixRelation) => {
     $stixRelation has modified ${now()};
     $stixRelation has revoked false;
     $stixRelation has created_at ${now()};
+    $stixRelation has created_at_month "${monthFormat(now())}";
+    $stixRelation has created_at_year "${yearFormat(now())}";        
     $stixRelation has updated_at ${now()};
   `);
   return createStixRelation.then(result => {

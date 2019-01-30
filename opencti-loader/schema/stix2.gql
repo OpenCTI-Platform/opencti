@@ -10,6 +10,8 @@ define
 
   # OpenCTI properties
   "created_at" sub attribute datatype date;
+  "created_at_month" sub attribute datatype string;
+  "created_at_year" sub attribute datatype string;
   "updated_at" sub attribute datatype date;
   "issuer" sub attribute datatype string;
   "duration" sub attribute datatype string;
@@ -237,6 +239,8 @@ define
     has "description"
     has "description_lowercase"
     has "created_at"
+    has "created_at_month"
+    has "created_at_year"
     has "updated_at"
     plays "so";
 
@@ -315,6 +319,8 @@ define
     has "platform_external_auth"
     has "platform_registration"
     has "created_at"
+    has "created_at_month"
+    has "created_at_year"
     has "updated_at";
 
   "Group" sub entity
@@ -324,6 +330,8 @@ define
     has "description"
     has "description_lowercase"
     has "created_at"
+    has "created_at_month"
+    has "created_at_year"
     has "updated_at"
     plays "allowed"
     plays "grouping";
@@ -336,6 +344,8 @@ define
     has "description_lowercase"
     has "graph_data"
     has "created_at"
+    has "created_at_month"
+    has "created_at_year"
     has "updated_at"
     plays "to"
     plays "so"
@@ -350,6 +360,8 @@ define
     has "duration"
     has "issuer"
     has "created_at"
+    has "created_at_month"
+    has "created_at_year"
     has "updated_at"
     plays "authorization";
 
@@ -363,6 +375,8 @@ define
     has "modified"
     has "revoked"
     has "created_at"
+    has "created_at_month"
+    has "created_at_year"
     has "updated_at"
     plays "relate_from"
     plays "relate_to"

@@ -7,10 +7,12 @@ import {
   deleteRelation,
   editInputTx,
   loadByID,
+  monthFormat,
   notify,
   now,
   paginate,
-  qk
+  qk,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -65,6 +67,8 @@ export const addExternalReference = async (user, externalReference) => {
     $externalReference has modified ${now()};
     $externalReference has revoked false;
     $externalReference has created_at ${now()};
+    $externalReference has created_at_month "${monthFormat(now())}";
+    $externalReference has created_at_year "${yearFormat(now())}";    
     $externalReference has updated_at ${now()};
   `);
   return createExternalReference.then(result => {

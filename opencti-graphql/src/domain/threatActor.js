@@ -6,7 +6,9 @@ import {
   loadByID,
   notify,
   now,
-  paginate
+  paginate,
+  yearFormat,
+  monthFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -41,10 +43,13 @@ export const addThreatActor = async (user, threatActor) => {
     $threatActor has modified ${now()};
     $threatActor has revoked false;
     $threatActor has created_at ${now()};
+    $threatActor has created_at_month "${monthFormat(now())}";
+    $threatActor has created_at_year "${yearFormat(now())}";        
     $threatActor has updated_at ${now()};
   `);
   const createThreatActor = await threatActorIterator.next();
-  const createThreatActorId = await createThreatActor.map().get('threatActor').id;
+  const createThreatActorId = await createThreatActor.map().get('threatActor')
+    .id;
 
   if (threatActor.createdByRef) {
     await wTx.query(`match $from id ${createThreatActorId};

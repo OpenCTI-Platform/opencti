@@ -3,10 +3,12 @@ import uuid from 'uuid/v4';
 import {
   deleteByID,
   loadByID,
+  monthFormat,
   notify,
   now,
   paginate,
-  qk
+  qk,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -40,6 +42,8 @@ export const addCountry = async (user, country) => {
     $country has modified ${now()};
     $country has revoked false;
     $country has created_at ${now()};
+    $country has created_at_month "${monthFormat(now())}";
+    $country has created_at_year "${yearFormat(now())}";
     $country has updated_at ${now()};
   `);
   return createCountry.then(result => {

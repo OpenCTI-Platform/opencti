@@ -3,10 +3,12 @@ import uuid from 'uuid/v4';
 import {
   deleteByID,
   loadByID,
+  monthFormat,
   notify,
   now,
   paginate,
-  takeTx
+  takeTx,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -41,6 +43,8 @@ export const addSector = async (user, sector) => {
     $sector has modified ${now()};
     $sector has revoked false;
     $sector has created_at ${now()};
+    $sector has created_at_month "${monthFormat(now())}";
+    $sector has created_at_year "${yearFormat(now())}";       
     $sector has updated_at ${now()};
   `);
   const createSector = await sectorIterator.next();

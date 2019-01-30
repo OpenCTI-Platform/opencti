@@ -3,10 +3,12 @@ import uuid from 'uuid/v4';
 import {
   deleteByID,
   loadByID,
+  monthFormat,
   notify,
   now,
   paginate,
-  takeTx
+  takeTx,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -33,6 +35,8 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     $courseOfAction has modified ${now()};
     $courseOfAction has revoked false;
     $courseOfAction has created_at ${now()};
+    $courseOfAction has created_at_month "${monthFormat(now())}";
+    $courseOfAction has created_at_year "${yearFormat(now())}";    
     $courseOfAction has updated_at ${now()};
   `);
   const createCourseOfAction = await courseOfActionIterator.next();

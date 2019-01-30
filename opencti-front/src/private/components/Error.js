@@ -5,6 +5,7 @@ import {
 import * as PropTypes from 'prop-types';
 import { Redirect, Route, withRouter } from 'react-router-dom';
 import { ApplicationError, IN_DEV_MODE } from '../../relay/environment';
+import ErrorNotFound from '../../components/ErrorNotFound';
 
 class ErrorBoundaryComponent extends React.Component {
   constructor(props) {
@@ -57,7 +58,7 @@ BoundaryRoute.propTypes = {
 };
 
 // 404
-export const NoMatch = () => <div>404</div>;
+export const NoMatch = () => <ErrorNotFound/>
 
 // Really simple error display
 export const SimpleError = () => <div>ERROR</div>;
