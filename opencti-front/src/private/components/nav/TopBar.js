@@ -16,6 +16,7 @@ import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
 import TopMenuSearch from './TopMenuSearch';
+import TopMenuExplore from './TopMenuExplore';
 import TopMenuWorkspaces from './TopMenuWorkspaces';
 import TopMenuWorkspace from './TopMenuWorkspace';
 import TopMenuKnowledge from './TopMenuKnowledge';
@@ -126,6 +127,7 @@ class TopBar extends Component {
           <div className={classes.menuContainer}>
             {location.pathname === '/dashboard' || location.pathname === '/dashboard/entities' ? <TopMenuDashboard/> : ''}
             {location.pathname.includes('/dashboard/search/') ? <TopMenuSearch/> : ''}
+            {location.pathname.includes('/dashboard/explore') ? <TopMenuExplore/> : ''}
             {location.pathname === '/dashboard/investigate' ? <TopMenuWorkspaces/> : ''}
             {location.pathname.includes('/dashboard/investigate/') ? <TopMenuWorkspace/> : ''}
             {location.pathname === '/dashboard/knowledge' || location.pathname.match('/dashboard/knowledge/[a-z_]+$') ? <TopMenuKnowledge/> : ''}

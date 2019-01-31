@@ -74,7 +74,7 @@ const inlineStyles = {
 class MarkingDefinitions extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'level', orderAsc: true };
+    this.state = { sortBy: 'definition_type', orderAsc: true };
   }
 
   reverseBy(field) {

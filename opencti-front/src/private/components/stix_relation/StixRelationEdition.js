@@ -46,7 +46,7 @@ class StixRelationEdition extends Component {
           query={stixRelationEditionQuery}
           variables={{ id: stixRelationId }}
           render={({ props }) => {
-            if (props) { // Done
+            if (props) {
               return (
                 <StixRelationEditionOverview
                   variant={variant}
@@ -57,10 +57,9 @@ class StixRelationEdition extends Component {
                 />
               );
             }
-            // Loading
             return <div> &nbsp; </div>;
           }}
-        /> : '&nbsp;'}
+        /> : ''}
       </Drawer>
     );
   }

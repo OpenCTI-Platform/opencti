@@ -285,6 +285,14 @@ const i18n = {
       Example: 'Exemple',
       'API key': 'Clé d\'API',
       Playground: 'Playground',
+      // Explore
+      'Kill chains': 'Kill chains',
+      'Explore the victims and the targets of the dataset through space and time.': 'Explorer les victimes et les cibles des données à travers l\'espace et le temps',
+      'Explore the attack campaigns of the dataset through time and involved entities.': 'Explorer les campagnes d\'attaques des données à travers le temps et les entités impliquées.',
+      'Explore the techniques, tactics and procedures of the dataset through time and entities who used its.': 'Explorer les techniques, tactiques et procédures des données à travers le temps et les entités qui les utilisent.',
+      'Explore the kill chains of entities through time and other contextual information like campaigns or incidents.': 'Explorer les kill chains des entités à travers le temps et d\'autres informations contextuelles comme les campagnes ou les incidents.',
+      'Explore the vulnerabilities used by entities through time and kill chain phases.': 'Explorer les vulnérabilités utilisées par les entités à travers le temps et les phases de la kill chain.',
+      'Explore the observables of the dataset though time to visualize clusters and correlations.': 'Explorer les observables des données à travers le temps pour visualiser des clusters et des corrélations.',
       // Types
       'entity_threat-actor': 'Acteur',
       'entity_attack-pattern': 'TTP',

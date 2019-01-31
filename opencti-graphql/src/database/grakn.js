@@ -58,6 +58,11 @@ export const lowerCaseAttributes = [
   'source_name', // External Reference
   'external_id' // External Reference
 ];
+export const statsDateAttributes = [
+  'first_seen', // Standard
+  'last_seen', // Standard
+  'published', // Standard
+];
 
 // Instance of Axios to make Grakn API Calls.
 const client = new Grakn(conf.get('grakn:driver'));
@@ -425,6 +430,14 @@ export const editInputTx = async (id, input, transaction) => {
     const joinedValues = join(' ', lowerValues);
     const newInput = { key: `${key}_lowercase`, value: [joinedValues] };
     return editInputTx(id, newInput, wTx);
+  }
+  if (includes(key, statsDateAttributes)) {
+    const monthValue = monthFormat(head(value));
+    const yearValue = yearFormat(head(value));
+    const monthInput = { key: `${key}_month`, value: [monthValue] };
+    editInputTx(id, monthInput, wTx);
+    const yearInput = { key: `${key}_year`, value: [yearValue] };
+    return editInputTx(id, yearInput, wTx);
   }
   await wTx.commit();
   return loadByID(id);

@@ -22,6 +22,19 @@ const stixRelationQuery = graphql`
 `;
 
 class StixRelation extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { openEdit: false };
+  }
+
+  handleOpenEdition() {
+    this.setState({ openEdit: true });
+  }
+
+  handleCloseEdition() {
+    this.setState({ openEdit: false });
+  }
+
   render() {
     const {
       classes, entityId, inversedRelations, match: { params: { relationId } },

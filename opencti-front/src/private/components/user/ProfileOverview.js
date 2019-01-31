@@ -102,7 +102,7 @@ class ProfileOverviewComponent extends Component {
             validationSchema={userValidation(t)}
             render={() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field name='name' component={TextField} label={t('name')} fullWidth={true}
+                <Field name='name' component={TextField} label={t('Name')} fullWidth={true}
                        onSubmit={this.handleSubmitField.bind(this)}
                 />
                 <Field name='email' component={TextField} label={t('Email address')}

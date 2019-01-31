@@ -120,10 +120,9 @@ class Reports extends Component {
             query={reportsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
-              if (props) { // Done
+              if (props) {
                 return <ReportsLines data={props} paginationOptions={paginationOptions}/>;
               }
-              // Loading
               return <ReportsLines data={null} dummy={true}/>;
             }}
           />

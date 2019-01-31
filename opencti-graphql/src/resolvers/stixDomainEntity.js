@@ -6,6 +6,7 @@ import {
   findAll,
   findById,
   findByName,
+  findByExternalReference,
   search,
   markingDefinitions,
   stixDomainEntityEditContext,
@@ -27,6 +28,9 @@ const stixDomainEntityResolvers = {
       if (args.name && args.name.length > 0) {
         return findByName(args);
       }
+      if (args.externalReferenceId && args.externalReferenceId.length > 0) {
+        return findByExternalReference(args);
+      }
       return findAll(args);
     })
   },
@@ -39,7 +43,8 @@ const stixDomainEntityResolvers = {
       }
       return 'Unknown';
     },
-    markingDefinitions: (stixDomainEntity, args) => markingDefinitions(stixDomainEntity.id, args),
+    markingDefinitions: (stixDomainEntity, args) =>
+      markingDefinitions(stixDomainEntity.id, args),
     editContext: auth(stixDomainEntity => fetchEditContext(stixDomainEntity.id))
   },
   Mutation: {

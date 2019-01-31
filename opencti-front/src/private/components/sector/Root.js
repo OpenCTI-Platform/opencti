@@ -7,6 +7,7 @@ import TopBar from '../nav/TopBar';
 import Sector from './Sector';
 import SectorReports from './SectorReports';
 import SectorKnowledge from './SectorKnowledge';
+import { NoMatch } from "../Error";
 
 const subscription = graphql`
     subscription RootSectorSubscription($id: ID!) {

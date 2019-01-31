@@ -23,20 +23,31 @@ import {
 } from './stixRelation';
 
 export const findAll = args =>
-  paginate('match $m isa Stix-Domain-Entity', args, false);
+  paginate('match $m isa Stix-Domain-Entity', args);
 
 export const findById = stixDomainEntityId => loadByID(stixDomainEntityId);
 
 export const findByName = args =>
   paginate(
-    `match $m isa Stix-Domain-Entity; $m has name "${args.name}"`,
+    `match $m isa ${
+      args.type ? args.type : 'Stix-Domain-Entity'
+    } $m has name "${args.name}"`,
+    args,
+    false
+  );
+
+export const findByExternalReference = args =>
+  paginate(
+    `match $m isa ${args.type ? args.type : 'Stix-Domain-Entity'};
+     $rel(external_reference:$externalReference, so:$stixDomainEntity) isa external_references;
+     $externalReference id "${args.externalReferenceId}"`,
     args,
     false
   );
 
 export const search = args =>
   paginate(
-    `match $m isa Stix-Domain-Entity
+    `match $m isa ${args.type ? args.type : 'Stix-Domain-Entity'}
     has name_lowercase $name;
     $m has description_lowercase $desc;
     $m has alias_lowercase $alias;
@@ -76,6 +87,14 @@ export const reports = (stixDomainEntityId, args) =>
   paginate(
     `match $report isa Report; 
     $rel(knowledge_aggregation:$report, so:$stixDomainEntity) isa object_refs; 
+    $stixDomainEntity id ${stixDomainEntityId}`,
+    args
+  );
+
+export const externalReferences = (stixDomainEntityId, args) =>
+  paginate(
+    `match $externalReference isa External-Reference; 
+    $rel(external_reference:$externalReference, so:$stixDomainEntity) isa external_references; 
     $stixDomainEntity id ${stixDomainEntityId}`,
     args
   );
