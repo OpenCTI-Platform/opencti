@@ -31,7 +31,7 @@ export const findByName = args =>
   paginate(
     `match $m isa ${
       args.type ? args.type : 'Stix-Domain-Entity'
-    } $m has name "${args.name}"`,
+    }; $m has name "${args.name}"`,
     args,
     false
   );

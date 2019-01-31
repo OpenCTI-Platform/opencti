@@ -53,7 +53,7 @@ class StixRelation extends Component {
       },
       onCompleted: () => {
         this.handleCloseEdition();
-        this.props.history.push(location.pathname.replace(`/knowledge/relations/${relationId}`, ''));
+        this.props.history.push(location.pathname.replace(`/relations/${relationId}`, ''));
       },
     });
   }
