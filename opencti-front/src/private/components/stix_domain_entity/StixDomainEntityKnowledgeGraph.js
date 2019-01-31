@@ -32,8 +32,8 @@ import EntityLabelModel from '../../../components/graph_node/EntityLabelModel';
 import EntityLinkModel from '../../../components/graph_node/EntityLinkModel';
 import { stixDomainEntityMutationFieldPatch } from './StixDomainEntityEditionOverview';
 import StixDomainEntityAddObjectRefs from './StixDomainEntityAddObjectRefs';
-import StixRelationCreation, { stixRelationCreationDeleteMutation } from '../stix_relation/StixRelationCreation';
-import StixRelationEdition from '../stix_relation/StixRelationEdition';
+import StixRelationCreation  from '../stix_relation/StixRelationCreation';
+import StixRelationEdition, { stixRelationEditionDeleteMutation } from '../stix_relation/StixRelationEdition';
 
 const styles = () => ({
   container: {
@@ -302,7 +302,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
           if (filteredCurrentLinks.length === 0) {
             if (link.extras && link.extras.relation) {
               commitMutation({
-                mutation: stixRelationCreationDeleteMutation,
+                mutation: stixRelationEditionDeleteMutation,
                 variables: {
                   id: link.extras.relation.id,
                 },

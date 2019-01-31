@@ -32,8 +32,8 @@ import { distributeElements } from '../../../utils/DagreHelper';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
 import { reportMutationRelationAdd, reportMutationRelationDelete } from './ReportAddObjectRefsLines';
-import StixRelationCreation, { stixRelationCreationDeleteMutation } from '../stix_relation/StixRelationCreation';
-import StixRelationEdition from '../stix_relation/StixRelationEdition';
+import StixRelationCreation  from '../stix_relation/StixRelationCreation';
+import StixRelationEdition, { stixRelationEditionDeleteMutation } from '../stix_relation/StixRelationEdition';
 
 const styles = () => ({
   container: {
@@ -352,7 +352,7 @@ class ReportKnowledgeGraphComponent extends Component {
               fetchQuery(reportKnowledgeGraphCheckRelationQuery, { id: link.extras.relation.id }).then((data) => {
                 if (data.stixRelation.reports.edges.length === 0) {
                   commitMutation({
-                    mutation: stixRelationCreationDeleteMutation,
+                    mutation: stixRelationEditionDeleteMutation,
                     variables: {
                       id: link.extras.relation.id,
                     },

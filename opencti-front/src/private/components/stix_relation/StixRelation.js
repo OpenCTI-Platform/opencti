@@ -1,15 +1,24 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
+import { withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
+import Fab from '@material-ui/core/Fab';
+import { Edit } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
-import { QueryRenderer } from '../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import StixRelationOverview from './StixRelationOverview';
+import StixRelationEdition, { stixRelationEditionDeleteMutation } from './StixRelationEdition';
 
 const styles = () => ({
   container: {
     margin: 0,
+  },
+  editButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 300,
   },
 });
 
@@ -35,12 +44,29 @@ class StixRelation extends Component {
     this.setState({ openEdit: false });
   }
 
+  handleDelete() {
+    const { location, match: { params: { relationId } } } = this.props;
+    commitMutation({
+      mutation: stixRelationEditionDeleteMutation,
+      variables: {
+        id: relationId,
+      },
+      onCompleted: () => {
+        this.handleCloseEdition();
+        this.props.history.push(location.pathname.replace(`/knowledge/relations/${relationId}`, ''));
+      },
+    });
+  }
+
   render() {
     const {
       classes, entityId, inversedRelations, match: { params: { relationId } },
     } = this.props;
     return (
       <div className={classes.container}>
+        <Fab onClick={this.handleOpenEdition.bind(this)}
+             color='secondary' aria-label='Edit'
+             className={classes.editButton}><Edit/></Fab>
         <QueryRenderer
           query={stixRelationQuery}
           variables={{ id: relationId }}
@@ -55,6 +81,12 @@ class StixRelation extends Component {
             return <div> &nbsp; </div>;
           }}
         />
+        <StixRelationEdition
+          open={this.state.openEdit}
+          stixRelationId={relationId}
+          handleClose={this.handleCloseEdition.bind(this)}
+          handleDelete={this.handleDelete.bind(this)}
+        />
       </div>
     );
   }
@@ -67,9 +99,12 @@ StixRelation.propTypes = {
   t: PropTypes.func,
   match: PropTypes.object,
   history: PropTypes.object,
+  location: PropTypes.object,
 };
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles),
+
 )(StixRelation);

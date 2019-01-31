@@ -175,14 +175,6 @@ const stixRelationCreationMutation = graphql`
     }
 `;
 
-export const stixRelationCreationDeleteMutation = graphql`
-    mutation StixRelationCreationDeleteMutation($id: ID!) {
-        stixRelationEdit(id: $id) {
-            delete
-        }
-    }
-`;
-
 const stixRelationValidation = t => Yup.object().shape({
   relationship_type: Yup.string()
     .required(t('This field is required')),

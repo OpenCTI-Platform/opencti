@@ -34,6 +34,14 @@ const stixRelationEditionQuery = graphql`
     }
 `;
 
+export const stixRelationEditionDeleteMutation = graphql`
+    mutation StixRelationCreationDeleteMutation($id: ID!) {
+        stixRelationEdit(id: $id) {
+            delete
+        }
+    }
+`;
+
 class StixRelationEdition extends Component {
   render() {
     const {

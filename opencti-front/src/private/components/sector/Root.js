@@ -2,12 +2,11 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Redirect, withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer, requestSubscription } from "../../../relay/environment";
+import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import Sector from './Sector';
 import SectorReports from './SectorReports';
 import SectorKnowledge from './SectorKnowledge';
-import { NoMatch } from "../Error";
 
 const subscription = graphql`
     subscription RootSectorSubscription($id: ID!) {
