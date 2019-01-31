@@ -35,7 +35,7 @@ const stixRelationEditionQuery = graphql`
 `;
 
 export const stixRelationEditionDeleteMutation = graphql`
-    mutation StixRelationCreationDeleteMutation($id: ID!) {
+    mutation StixRelationEditionDeleteMutation($id: ID!) {
         stixRelationEdit(id: $id) {
             delete
         }
