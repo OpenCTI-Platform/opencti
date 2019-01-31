@@ -8,7 +8,8 @@ import {
   now,
   paginate,
   yearFormat,
-  monthFormat
+  monthFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -33,11 +34,15 @@ export const addThreatActor = async (user, threatActor) => {
     $threatActor has stix_label_lowercase "";
     $threatActor has alias "";
     $threatActor has alias_lowercase "";
-    $threatActor has name "${threatActor.name}";
-    $threatActor has description "${threatActor.description}";
-    $threatActor has name_lowercase "${threatActor.name.toLowerCase()}";
+    $threatActor has name "${prepareString(threatActor.name)}";
+    $threatActor has description "${prepareString(threatActor.description)}";
+    $threatActor has name_lowercase "${prepareString(
+      threatActor.name.toLowerCase()
+    )}";
     $threatActor has description_lowercase "${
-      threatActor.description ? threatActor.description.toLowerCase() : ''
+      threatActor.description
+        ? prepareString(threatActor.description.toLowerCase())
+        : ''
     }";
     $threatActor has created ${now()};
     $threatActor has modified ${now()};

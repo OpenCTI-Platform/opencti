@@ -6,6 +6,7 @@ import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import Report from './Report';
 import ReportKnowledge from './ReportKnowledge';
+import ReportEntities from './ReportEntities';
 
 const subscription = graphql`
     subscription RootReportSubscription($id: ID!) {
@@ -26,6 +27,7 @@ const reportQuery = graphql`
             ...ReportHeader_report
             ...ReportOverview_report
             ...ReportKnowledge_report
+            ...ReportEntities_report
             
         },
         me {
@@ -65,6 +67,9 @@ class RootReport extends Component {
                   }/>
                   <Route exact path='/dashboard/reports/all/:reportId/knowledge' render={
                     routeProps => <ReportKnowledge {...routeProps} report={props.report} me={props.me}/>
+                  }/>
+                  <Route exact path='/dashboard/reports/all/:reportId/entities' render={
+                    routeProps => <ReportEntities {...routeProps} report={props.report} me={props.me}/>
                   }/>
                 </div>
               );

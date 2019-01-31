@@ -7,7 +7,8 @@ import {
   now,
   paginate,
   qk,
-  yearFormat
+  yearFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -34,11 +35,11 @@ export const permissions = (groupId, args) =>
 export const addGroup = async (user, group) => {
   const createGroup = qk(`insert $group isa Group 
     has type "group";
-    $group has name "${group.name}";
-    $group has description "${group.description}";
-    $group has name_lowercase "${group.name.toLowerCase()}";
+    $group has name "${prepareString(group.name)}";
+    $group has description "${prepareString(group.description)}";
+    $group has name_lowercase "${prepareString(group.name.toLowerCase())}";
     $group has description_lowercase "${
-      group.description ? group.description.toLowerCase() : ''
+      group.description ? prepareString(group.description.toLowerCase()) : ''
     }";
     $group has created_at ${now()};
     $group has created_at_month "${monthFormat(now())}";

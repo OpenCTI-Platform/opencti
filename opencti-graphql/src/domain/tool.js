@@ -8,7 +8,8 @@ import {
   now,
   paginate,
   takeTx,
-  yearFormat
+  yearFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -25,11 +26,11 @@ export const addTool = async (user, tool) => {
     $tool has stix_label_lowercase "";
     $tool has alias "";
     $tool has alias_lowercase "";
-    $tool has name "${tool.name}";
-    $tool has description "${tool.description}";
-    $tool has name_lowercase "${tool.name.toLowerCase()}";
+    $tool has name "${prepareString(tool.name)}";
+    $tool has description "${prepareString(tool.description)}";
+    $tool has name_lowercase "${prepareString(tool.name.toLowerCase())}";
     $tool has description_lowercase "${
-      tool.description ? tool.description.toLowerCase() : ''
+      tool.description ? prepareString(tool.description.toLowerCase()) : ''
     }";
     $tool has created ${now()};
     $tool has modified ${now()};

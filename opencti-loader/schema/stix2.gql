@@ -460,6 +460,7 @@ define
 
   "Sector" sub "Identity"
     plays "gather";
+    plays "part_of";
 
   "Organization" sub "Identity"
     plays "localized"

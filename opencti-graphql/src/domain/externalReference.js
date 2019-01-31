@@ -12,7 +12,8 @@ import {
   now,
   paginate,
   qk,
-  yearFormat
+  yearFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -34,9 +35,9 @@ export const search = args =>
     has source_name_lowercase $sn;
     $m has description_lowercase $desc;
     $m has url $url;
-    { $sn contains "${args.search.toLowerCase()}"; } or
-    { $desc contains "${args.search.toLowerCase()}"; } or
-    { $url contains "${args.search.toLowerCase()}"; }`,
+    { $sn contains "${prepareString(args.search.toLowerCase())}"; } or
+    { $desc contains "${prepareString(args.search.toLowerCase())}"; } or
+    { $url contains "${prepareString(args.search.toLowerCase())}"; }`,
     args,
     false
   );
@@ -45,22 +46,32 @@ export const addExternalReference = async (user, externalReference) => {
   const createExternalReference = qk(`insert $externalReference isa External-Reference 
     has type "external-reference";
     $externalReference has stix_id "external-reference--${uuid()}";
-    $externalReference has source_name "${externalReference.source_name}";
-    $externalReference has source_name_lowercase "${externalReference.source_name.toLowerCase()}";
-    $externalReference has description "${externalReference.description}";
+    $externalReference has source_name "${prepareString(
+      externalReference.source_name
+    )}";
+    $externalReference has source_name_lowercase "${prepareString(
+      externalReference.source_name.toLowerCase()
+    )}";
+    $externalReference has description "${prepareString(
+      externalReference.description
+    )}";
     $externalReference has description_lowercase "${
       externalReference.description
-        ? externalReference.description.toLowerCase()
+        ? prepareString(externalReference.description.toLowerCase())
         : ''
     }";
     $externalReference has url "${
-      externalReference.url ? externalReference.url.toLowerCase() : ''
+      externalReference.url
+        ? prepareString(externalReference.url.toLowerCase())
+        : ''
     }";
-    $externalReference has hash "${externalReference.hash}";
-    $externalReference has external_id "${externalReference.external_id}";
+    $externalReference has hash "${prepareString(externalReference.hash)}";
+    $externalReference has external_id "${prepareString(
+      externalReference.external_id
+    )}";
     $externalReference has external_id_lowercase "${
       externalReference.external_id
-        ? externalReference.external_id.toLowerCase()
+        ? prepareString(externalReference.external_id.toLowerCase())
         : ''
     }";
     $externalReference has created ${now()};

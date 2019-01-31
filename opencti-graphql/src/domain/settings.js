@@ -6,7 +6,8 @@ import {
   loadFirst,
   notify,
   now,
-  qk
+  qk,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, setEditContext } from '../database/redis';
@@ -16,10 +17,12 @@ export const getSettings = () => loadFirst('Settings').then(result => result);
 export const addSettings = async (user, settings) => {
   const createSettings = qk(`insert $settings isa Settings
     has type "settings";  
-    $settings has platform_title "${settings.platform_title}";
-    $settings has platform_email "${settings.platform_email}";
-    $settings has platform_url "${settings.platform_url}";
-    $settings has platform_language "${settings.platform_language}";
+    $settings has platform_title "${prepareString(settings.platform_title)}";
+    $settings has platform_email "${prepareString(settings.platform_email)}";
+    $settings has platform_url "${prepareString(settings.platform_url)}";
+    $settings has platform_language "${prepareString(
+      settings.platform_language
+    )}";
     $settings has platform_external_auth ${settings.platform_external_auth};
     $settings has platform_registration ${settings.platform_registration};
     $settings has created_at ${now()};

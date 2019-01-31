@@ -8,7 +8,8 @@ import {
   now,
   paginate,
   yearFormat,
-  monthFormat
+  monthFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -33,11 +34,15 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     $intrusionSet has stix_label_lowercase "";
     $intrusionSet has alias "";
     $intrusionSet has alias_lowercase "";
-    $intrusionSet has name "${intrusionSet.name}";
-    $intrusionSet has description "${intrusionSet.description}";
-    $intrusionSet has name_lowercase "${intrusionSet.name.toLowerCase()}";
+    $intrusionSet has name "${prepareString(intrusionSet.name)}";
+    $intrusionSet has description "${prepareString(intrusionSet.description)}";
+    $intrusionSet has name_lowercase "${prepareString(
+      intrusionSet.name.toLowerCase()
+    )}";
     $intrusionSet has description_lowercase "${
-      intrusionSet.description ? intrusionSet.description.toLowerCase() : ''
+      intrusionSet.description
+        ? prepareString(intrusionSet.description.toLowerCase())
+        : ''
     }";
     $intrusionSet has created ${now()};
     $intrusionSet has modified ${now()};

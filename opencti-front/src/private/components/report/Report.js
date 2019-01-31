@@ -10,6 +10,9 @@ import ReportHeader from './ReportHeader';
 import ReportOverview from './ReportOverview';
 import ReportEdition from './ReportEdition';
 import EntityExternalReferences from '../external_reference/EntityExternalReferences';
+import EntityObservablesChart from '../observable/EntityObservablesChart';
+import EntityRelationsChart from '../stix_relation/EntityRelationsChart';
+import EntityKillChainPhasesChart from '../kill_chain_phase/EntityKillChainPhasesChart';
 
 const styles = () => ({
   container: {
@@ -32,6 +35,17 @@ class ReportComponent extends Component {
           </Grid>
           <Grid item={true} xs={6}>
             <EntityExternalReferences entityId={report.id}/>
+          </Grid>
+        </Grid>
+        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
+          <Grid item={true} xs={4}>
+            <EntityObservablesChart entityId={report.id}/>
+          </Grid>
+          <Grid item={true} xs={4}>
+            <EntityKillChainPhasesChart entityId={report.id}/>
+          </Grid>
+          <Grid item={true} xs={4}>
+            <EntityRelationsChart entityId={report.id}/>
           </Grid>
         </Grid>
         <ReportEdition reportId={report.id}/>

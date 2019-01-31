@@ -8,7 +8,8 @@ import {
   now,
   paginate,
   takeTx,
-  yearFormat
+  yearFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -36,11 +37,17 @@ export const addAttackPattern = async (user, attackPattern) => {
     $attackPattern has stix_label_lowercase "";
     $attackPattern has alias "";
     $attackPattern has alias_lowercase "";
-    $attackPattern has name "${attackPattern.name}";
-    $attackPattern has description "${attackPattern.description}";
-    $attackPattern has name_lowercase "${attackPattern.name.toLowerCase()}";
+    $attackPattern has name "${prepareString(attackPattern.name)}";
+    $attackPattern has description "${prepareString(
+      attackPattern.description
+    )}";
+    $attackPattern has name_lowercase "${prepareString(
+      attackPattern.name.toLowerCase()
+    )}";
     $attackPattern has description_lowercase "${
-      attackPattern.description ? attackPattern.description.toLowerCase() : ''
+      attackPattern.description
+        ? prepareString(attackPattern.description.toLowerCase())
+        : ''
     }";
     $attackPattern has created ${now()};
     $attackPattern has modified ${now()};

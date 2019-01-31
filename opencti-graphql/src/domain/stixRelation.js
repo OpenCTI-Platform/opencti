@@ -13,7 +13,8 @@ import {
   qk,
   prepareDate,
   yearFormat,
-  monthFormat
+  monthFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -33,8 +34,8 @@ export const search = args =>
     `match $m isa Stix-Domain-Entity
     has name_lowercase $name
     has description_lowercase $desc;
-    { $name contains "${args.search.toLowerCase()}"; } or
-    { $desc contains "${args.search.toLowerCase()}"; }`,
+    { $name contains "${prepareString(args.search.toLowerCase())}"; } or
+    { $desc contains "${prepareString(args.search.toLowerCase())}"; }`,
     args
   );
 
@@ -65,10 +66,12 @@ export const addStixRelation = async (user, stixRelation) => {
     $stixRelation has type "stix-relation";
     $stixRelation has stix_id "relationship--${uuid()}";
     $stixRelation has name "";
-    $stixRelation has description "${stixRelation.description}";
+    $stixRelation has description "${prepareString(stixRelation.description)}";
     $stixRelation has name_lowercase "";
     $stixRelation has description_lowercase "${
-      stixRelation.description ? stixRelation.description.toLowerCase() : ''
+      stixRelation.description
+        ? prepareString(stixRelation.description.toLowerCase())
+        : ''
     }";
     $stixRelation has weight ${stixRelation.weight};
     $stixRelation has first_seen ${prepareDate(stixRelation.first_seen)};

@@ -8,7 +8,8 @@ import {
   now,
   paginate,
   takeTx,
-  yearFormat
+  yearFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -21,8 +22,8 @@ export const search = args =>
     `match $m isa Identity
     has name_lowercase $name
     has description_lowercase $desc;
-    { $name contains "${args.search.toLowerCase()}"; } or
-    { $desc contains "${args.search.toLowerCase()}"; }`,
+    { $name contains "${prepareString(args.search.toLowerCase())}"; } or
+    { $desc contains "${prepareString(args.search.toLowerCase())}"; }`,
     args
   );
 
@@ -37,11 +38,15 @@ export const addIdentity = async (user, identity) => {
     $identity has stix_label_lowercase "";
     $identity has alias "";
     $identity has alias_lowercase "";
-    $identity has name "${identity.name}";
-    $identity has description "${identity.description}";
-    $identity has name_lowercase "${identity.name.toLowerCase()}";
+    $identity has name "${prepareString(identity.name)}";
+    $identity has description "${prepareString(identity.description)}";
+    $identity has name_lowercase "${prepareString(
+      identity.name.toLowerCase()
+    )}";
     $identity has description_lowercase "${
-      identity.description ? identity.description.toLowerCase() : ''
+      identity.description
+        ? prepareString(identity.description.toLowerCase())
+        : ''
     }";
     $identity has created ${now()};
     $identity has modified ${now()};

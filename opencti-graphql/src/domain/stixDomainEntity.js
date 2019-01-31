@@ -13,7 +13,8 @@ import {
   paginate,
   qk,
   qkObjUnique,
-  yearFormat
+  yearFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import {
@@ -31,7 +32,7 @@ export const findByName = args =>
   paginate(
     `match $m isa ${
       args.type ? args.type : 'Stix-Domain-Entity'
-    }; $m has name "${args.name}"`,
+    }; $m has name "${prepareString(args.name)}"`,
     args,
     false
   );
@@ -40,7 +41,7 @@ export const findByExternalReference = args =>
   paginate(
     `match $m isa ${args.type ? args.type : 'Stix-Domain-Entity'};
      $rel(external_reference:$externalReference, so:$stixDomainEntity) isa external_references;
-     $externalReference id "${args.externalReferenceId}"`,
+     $externalReference id "${prepareString(args.externalReferenceId)}"`,
     args,
     false
   );
@@ -51,9 +52,9 @@ export const search = args =>
     has name_lowercase $name;
     $m has description_lowercase $desc;
     $m has alias_lowercase $alias;
-    { $name contains "${args.search.toLowerCase()}"; } or
-    { $desc contains "${args.search.toLowerCase()}"; } or 
-    { $alias contains "${args.search.toLowerCase()}"; }`,
+    { $name contains "${prepareString(args.search.toLowerCase())}"; } or
+    { $desc contains "${prepareString(args.search.toLowerCase())}"; } or 
+    { $alias contains "${prepareString(args.search.toLowerCase())}"; }`,
     args,
     false
   );
@@ -114,18 +115,24 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   const createStixDomainEntity = qk(`insert $stixDomainEntity isa ${
     stixDomainEntity.type
   } 
-    has type "${stixDomainEntity.type.toLowerCase()}";
-    $stixDomainEntity has stix_id "${stixDomainEntity.type.toLowerCase()}--${uuid()}";
+    has type "${prepareString(stixDomainEntity.type.toLowerCase())}";
+    $stixDomainEntity has stix_id "${prepareString(
+      stixDomainEntity.type.toLowerCase()
+    )}--${uuid()}";
     $stixDomainEntity has stix_label "";
     $stixDomainEntity has stix_label_lowercase "";
     $stixDomainEntity has alias "";
     $stixDomainEntity has alias_lowercase "";
-    $stixDomainEntity has name "${stixDomainEntity.name}";
-    $stixDomainEntity has description "${stixDomainEntity.description}";
-    $stixDomainEntity has name_lowercase "${stixDomainEntity.name.toLowerCase()}";
+    $stixDomainEntity has name "${prepareString(stixDomainEntity.name)}";
+    $stixDomainEntity has description "${prepareString(
+      stixDomainEntity.description
+    )}";
+    $stixDomainEntity has name_lowercase "${prepareString(
+      stixDomainEntity.name.toLowerCase()
+    )}";
     $stixDomainEntity has description_lowercase "${
       stixDomainEntity.description
-        ? stixDomainEntity.description.toLowerCase()
+        ? prepareString(stixDomainEntity.description.toLowerCase())
         : ''
     }";
     $stixDomainEntity has created ${now()};

@@ -8,7 +8,8 @@ import {
   now,
   paginate,
   takeTx,
-  yearFormat
+  yearFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -25,11 +26,15 @@ export const addOrganization = async (user, organization) => {
     $organization has stix_label_lowercase "";
     $organization has alias "";
     $organization has alias_lowercase "";
-    $organization has name "${organization.name}";
-    $organization has description "${organization.description}";
-    $organization has name_lowercase "${organization.name.toLowerCase()}";
+    $organization has name "${prepareString(organization.name)}";
+    $organization has description "${prepareString(organization.description)}";
+    $organization has name_lowercase "${prepareString(
+      organization.name.toLowerCase()
+    )}";
     $organization has description_lowercase "${
-      organization.description ? organization.description.toLowerCase() : ''
+      organization.description
+        ? prepareString(organization.description.toLowerCase())
+        : ''
     }";
     $organization has created ${now()};
     $organization has modified ${now()};

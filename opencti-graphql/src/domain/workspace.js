@@ -5,13 +5,16 @@ import {
   deleteByID,
   deleteRelation,
   editInputTx,
-  loadByID, monthFormat,
+  loadByID,
+  monthFormat,
   notify,
   now,
   paginate,
   paginateRelationships,
   qkObjUnique,
-  takeTx, yearFormat
+  takeTx,
+  yearFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -57,11 +60,15 @@ export const addWorkspace = async (user, workspace) => {
   const wTx = await takeTx();
   const workspaceIterator = await wTx.query(`insert $workspace isa Workspace 
     has type "workspace";
-    $workspace has name "${workspace.name}";
-    $workspace has description "${workspace.description}";
-    $workspace has name_lowercase "${workspace.name.toLowerCase()}";
+    $workspace has name "${prepareString(workspace.name)}";
+    $workspace has description "${prepareString(workspace.description)}";
+    $workspace has name_lowercase "${prepareString(
+      workspace.name.toLowerCase()
+    )}";
     $workspace has description_lowercase "${
-      workspace.description ? workspace.description.toLowerCase() : ''
+      workspace.description
+        ? prepareString(workspace.description.toLowerCase())
+        : ''
     }";
     $workspace has created_at ${now()};
     $workspace has created_at_month "${monthFormat(now())}";

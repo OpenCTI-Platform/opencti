@@ -10,7 +10,8 @@ import {
   prepareDate,
   yearFormat,
   monthFormat,
-  takeTx
+  takeTx,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -19,7 +20,9 @@ export const findAll = args => {
     const finalArgs = assoc('orderBy', 'name', args);
     return paginate(
       `match $r isa Report; ${
-        args.reportClass ? `$m has report_class "${args.reportClass}"` : ''
+        args.reportClass
+          ? `$m has report_class "${prepareString(args.reportClass)}"`
+          : ''
       } $rel(creator:$x, so:$r) isa created_by_ref`,
       finalArgs,
       true,
@@ -28,7 +31,9 @@ export const findAll = args => {
   }
   return paginate(
     `match $r isa Report ${
-      args.reportClass ? `; $r has report_class "${args.reportClass}"` : ''
+      args.reportClass
+        ? `; $r has report_class "${prepareString(args.reportClass)}"`
+        : ''
     }`,
     args
   );
@@ -39,7 +44,9 @@ export const findByEntity = args => {
     const finalArgs = assoc('orderBy', 'name', args);
     return paginate(
       `match $r isa Report; ${
-        args.reportClass ? `$r has report_class "${args.reportClass}"` : ''
+        args.reportClass
+          ? `$r has report_class "${prepareString(args.reportClass)}"`
+          : ''
       } $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
         $so id ${args.objectId};
         $relCreatedByRef(creator:$x, so:$r) isa created_by_ref`,
@@ -52,7 +59,9 @@ export const findByEntity = args => {
     `match $r isa Report; 
     $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
     $so id ${args.objectId} ${
-      args.reportClass ? `; $r has report_class "${args.reportClass}"` : ''
+      args.reportClass
+        ? `; $r has report_class "${prepareString(args.reportClass)}"`
+        : ''
     }`,
     args
   );
@@ -86,16 +95,16 @@ export const addReport = async (user, report) => {
     $report has stix_label_lowercase "";
     $report has alias "";
     $report has alias_lowercase "";
-    $report has name "${report.name}";
-    $report has description "${report.description}";
-    $report has name_lowercase "${report.name.toLowerCase()}";
+    $report has name "${prepareString(report.name)}";
+    $report has description "${prepareString(report.description)}";
+    $report has name_lowercase "${prepareString(report.name.toLowerCase())}";
     $report has description_lowercase "${
-      report.description ? report.description.toLowerCase() : ''
+      report.description ? prepareString(report.description.toLowerCase()) : ''
     }";
     $report has published ${prepareDate(report.published)};
     $report has published_month "${monthFormat(report.published)}";
     $report has published_year "${yearFormat(report.published)}";
-    $report has report_class "${report.report_class}";
+    $report has report_class "${prepareString(report.report_class)}";
     $report has graph_data "";
     $report has created ${now()};
     $report has modified ${now()};

@@ -8,7 +8,8 @@ import {
   now,
   paginate,
   qk,
-  yearFormat
+  yearFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -32,11 +33,11 @@ export const addCountry = async (user, country) => {
     $country has stix_label_lowercase "";
     $country has alias "";
     $country has alias_lowercase "";
-    $country has name "${country.name}";
-    $country has description "${country.description}";
-    $country has name_lowercase "${country.name.toLowerCase()}";
+    $country has name "${prepareString(country.name)}";
+    $country has description "${prepareString(country.description)}";
+    $country has name_lowercase "${prepareString(country.name.toLowerCase())}";
     $country has description_lowercase "${
-      country.description ? country.description.toLowerCase() : ''
+      country.description ? prepareString(country.description.toLowerCase()) : ''
     }";
     $country has created ${now()};
     $country has modified ${now()};

@@ -12,7 +12,8 @@ import {
   now,
   paginate,
   qk,
-  yearFormat
+  yearFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -24,12 +25,14 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   const createMarkingDefinition = qk(`insert $markingDefinition isa Marking-Definition 
     has type "marking-definition";
     $markingDefinition has stix_id "marking-definition--${uuid()}";
-    $markingDefinition has definition_type "${
+    $markingDefinition has definition_type "${prepareString(
       markingDefinition.definition_type
-    }";
-    $markingDefinition has definition "${markingDefinition.definition}";
-    $markingDefinition has color "${markingDefinition.color}";
-    $markingDefinition has level ${markingDefinition.level};
+    )}";
+    $markingDefinition has definition "${prepareString(
+      markingDefinition.definition
+    )}";
+    $markingDefinition has color "${prepareString(markingDefinition.color)}";
+    $markingDefinition has level ${prepareString(markingDefinition.level)};
     $markingDefinition has created ${now()};
     $markingDefinition has modified ${now()};
     $markingDefinition has revoked false;

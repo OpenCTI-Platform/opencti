@@ -24,7 +24,8 @@ import {
   qk,
   editInputTx,
   monthFormat,
-  yearFormat
+  yearFormat,
+  prepareString
 } from '../database/grakn';
 
 // Security related
@@ -81,11 +82,13 @@ export const addPerson = async (user, newUser) => {
     $user has stix_label_lowercase "";
     $user has alias "";
     $user has alias_lowercase "";
-    $user has name "${newUser.name}";
-    $user has description "${newUser.description}";
-    $user has name_lowercase "${newUser.name.toLowerCase()}";
+    $user has name "${prepareString(newUser.name)}";
+    $user has description "${prepareString(newUser.description)}";
+    $user has name_lowercase "${prepareString(newUser.name.toLowerCase())}";
     $user has description_lowercase "${
-      newUser.description ? newUser.description.toLowerCase() : ''
+      newUser.description
+        ? prepareString(newUser.description.toLowerCase())
+        : ''
     }";
     $user has created_at ${now()};
     $user has created_at_month "${monthFormat(now())}";
@@ -110,22 +113,24 @@ export const addUser = async (user, newUser) => {
     $user has stix_label_lowercase "";
     $user has alias "";
     $user has alias_lowercase "";
-    $user has name "${newUser.name}";
-    $user has description "${newUser.description}";
-    $user has name_lowercase "${newUser.name.toLowerCase()}";
+    $user has name "${prepareString(newUser.name)}";
+    $user has description "${prepareString(newUser.description)}";
+    $user has name_lowercase "${prepareString(newUser.name.toLowerCase())}";
     $user has description_lowercase "${
-      newUser.description ? newUser.description.toLowerCase() : ''
+      newUser.description
+        ? prepareString(newUser.description.toLowerCase())
+        : ''
     }";
     $user has email "${newUser.email}"; ${
     newUser.password
       ? `$user has password "${bcrypt.hashSync(newUser.password)}";`
       : ''
   }
-    $user has firstname "${newUser.firstname}";
-    $user has lastname "${newUser.lastname}";
+    $user has firstname "${prepareString(newUser.firstname)}";
+    $user has lastname "${prepareString(newUser.lastname)}";
     ${
       newUser.language
-        ? `$user has language "${newUser.language}";`
+        ? `$user has language "${prepareString(newUser.language)}";`
         : '$user has language "auto";'
     }
     $user has created_at ${now()};

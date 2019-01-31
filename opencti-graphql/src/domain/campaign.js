@@ -9,7 +9,8 @@ import {
   paginate,
   prepareDate,
   takeTx,
-  yearFormat
+  yearFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -26,11 +27,15 @@ export const addCampaign = async (user, campaign) => {
     $campaign has stix_label_lowercase "";
     $campaign has alias "";
     $campaign has alias_lowercase "";
-    $campaign has name "${campaign.name}";
-    $campaign has description "${campaign.description}";
-    $campaign has name_lowercase "${campaign.name.toLowerCase()}";
+    $campaign has name "${prepareString(campaign.name)}";
+    $campaign has description "${prepareString(campaign.description)}";
+    $campaign has name_lowercase "${prepareString(
+      campaign.name.toLowerCase()
+    )}";
     $campaign has description_lowercase "${
-      campaign.description ? campaign.description.toLowerCase() : ''
+      campaign.description
+        ? prepareString(campaign.description.toLowerCase())
+        : ''
     }";
     $campaign has first_seen ${prepareDate(campaign.first_seen)};
     $campaign has last_seen ${prepareDate(campaign.last_seen)};

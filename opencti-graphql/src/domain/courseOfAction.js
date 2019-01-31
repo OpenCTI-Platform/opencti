@@ -8,7 +8,8 @@ import {
   now,
   paginate,
   takeTx,
-  yearFormat
+  yearFormat,
+  prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -25,11 +26,17 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     $courseOfAction has stix_label_lowercase "";
     $courseOfAction has alias "";
     $courseOfAction has alias_lowercase "";
-    $courseOfAction has name "${courseOfAction.name}";
-    $courseOfAction has description "${courseOfAction.description}";
-    $courseOfAction has name_lowercase "${courseOfAction.name.toLowerCase()}";
+    $courseOfAction has name "${prepareString(courseOfAction.name)}";
+    $courseOfAction has description "${prepareString(
+      courseOfAction.description
+    )}";
+    $courseOfAction has name_lowercase "${prepareString(
+      courseOfAction.name.toLowerCase()
+    )}";
     $courseOfAction has description_lowercase "${
-      courseOfAction.description ? courseOfAction.description.toLowerCase() : ''
+      courseOfAction.description
+        ? prepareString(courseOfAction.description.toLowerCase())
+        : ''
     }";
     $courseOfAction has created ${now()};
     $courseOfAction has modified ${now()};

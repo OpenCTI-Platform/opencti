@@ -41,6 +41,7 @@ export const prepareDate = date =>
 export const yearFormat = date => moment(date).format('YYYY');
 export const monthFormat = date => moment(date).format('YYYY-MM');
 export const dayFormat = date => moment(date).format('YYYY-MM-DD');
+export const prepareString = s => s.replace(/"/g, '\\"');
 
 // Attributes key that can contains multiple values.
 export const multipleAttributes = [
@@ -61,7 +62,7 @@ export const lowerCaseAttributes = [
 export const statsDateAttributes = [
   'first_seen', // Standard
   'last_seen', // Standard
-  'published', // Standard
+  'published' // Standard
 ];
 
 // Instance of Axios to make Grakn API Calls.
@@ -392,7 +393,7 @@ export const editInputTx = async (id, input, transaction) => {
     const oldValue = await oldValuesConcept[i].value();
     const typedOldValue =
       attrType === String
-        ? `"${oldValue}"`
+        ? `"${prepareString(oldValue)}"`
         : attrType === Date
         ? prepareDate(oldValue)
         : oldValue;
@@ -419,7 +420,10 @@ export const editInputTx = async (id, input, transaction) => {
   }
 
   // Setup the new attribute
-  const typedValues = map(v => (attrType === String ? `"${v}"` : v), value);
+  const typedValues = map(
+    v => (attrType === String ? `"${prepareString(v)}"` : v),
+    value
+  );
   const graknValues = join(' ', map(val => `has ${key} ${val}`, typedValues));
   const createQuery = `match $m id ${id}; insert $m ${graknValues};`;
   await wTx.query(createQuery);
