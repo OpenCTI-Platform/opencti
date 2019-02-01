@@ -5,6 +5,7 @@ import {
   killChainPhaseDelete,
   findAll,
   findById,
+  findByPhaseName,
   markingDefinitions,
   killChainPhaseEditContext,
   killChainPhaseEditField,
@@ -18,7 +19,12 @@ import { admin, auth, withCancel } from './wrapper';
 const killChainPhaseResolvers = {
   Query: {
     killChainPhase: auth((_, { id }) => findById(id)),
-    killChainPhases: auth((_, args) => findAll(args))
+    killChainPhases: auth((_, args) => {
+      if (args.phaseName && args.phaseName.length > 0) {
+        return findByPhaseName(args);
+      }
+      return findAll(args);
+    })
   },
   KillChainPhase: {
     markingDefinitions: (killChainPhase, args) =>

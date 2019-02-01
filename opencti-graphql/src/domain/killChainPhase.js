@@ -19,6 +19,15 @@ import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Kill-Chain-Phase', args);
 
+export const findById = killChainPhaseId => loadByID(killChainPhaseId);
+
+export const findByPhaseName = args =>
+  paginate(
+    `match $m isa Kill-Chain-Phase; $m has phase_name "${prepareString(args.phaseName)}"`,
+    args,
+    false
+  );
+
 export const markingDefinitions = (killChainPhaseId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
@@ -26,8 +35,6 @@ export const markingDefinitions = (killChainPhaseId, args) =>
     $killChainPhase id ${killChainPhaseId}`,
     args
   );
-
-export const findById = killChainPhaseId => loadByID(killChainPhaseId);
 
 export const addKillChainPhase = async (user, killChainPhase) => {
   const createKillChainPhase = qk(`insert $killChainPhase isa Kill-Chain-Phase

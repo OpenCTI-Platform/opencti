@@ -1224,7 +1224,7 @@ type Query {
     externalReferencesOf(objectId: String!, first: Int, after: ID, orderBy: ExternalReferencesOrdering, orderMode: OrderingMode, search: String): ExternalReferenceConnection
     # KillChainPhases
     killChainPhase(id: String!): KillChainPhase
-    killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, search: String): KillChainPhaseConnection
+    killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, search: String, phaseName: String): KillChainPhaseConnection
     # AttackPatterns
     attackPattern(id: String!): AttackPattern
     attackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, search: String): AttackPatternConnection

@@ -33,6 +33,7 @@ const i18n = {
       'Do you want to delete this vulnerability?': 'Souhaitez-vous supprimer cette vulnérabilité ?',
       Information: 'Informations',
       'Last internal reports': 'Derniers rapports internes',
+      'Last reports': 'Derniers rapports',
       'Last modified entities': 'Dernières entités modifiées',
       'Global parameters': 'Paramètres généraux',
       'External authentication': 'Authentification externe',
