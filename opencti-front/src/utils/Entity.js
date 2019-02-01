@@ -24,6 +24,8 @@ export const resolveLink = (type) => {
       return '/dashboard/knowledge/tools';
     case 'vulnerability':
       return '/dashboard/knowledge/vulnerabilities';
+    case 'report':
+      return '/dashboard/reports/all';
     default:
       return null;
   }

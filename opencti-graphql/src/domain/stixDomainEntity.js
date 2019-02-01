@@ -24,7 +24,10 @@ import {
 } from './stixRelation';
 
 export const findAll = args =>
-  paginate('match $m isa Stix-Domain-Entity', args);
+  paginate(
+    `match $m isa ${args.type ? args.type : 'Stix-Domain-Entity'}`,
+    args
+  );
 
 export const findById = stixDomainEntityId => loadByID(stixDomainEntityId);
 
@@ -39,7 +42,7 @@ export const findByName = args =>
 
 export const findByExternalReference = args =>
   paginate(
-    `match $m isa ${args.type ? args.type : 'Stix-Domain-Entity'};
+    `match $stixDomainEntity isa ${args.type ? args.type : 'Stix-Domain-Entity'};
      $rel(external_reference:$externalReference, so:$stixDomainEntity) isa external_references;
      $externalReference id "${prepareString(args.externalReferenceId)}"`,
     args,

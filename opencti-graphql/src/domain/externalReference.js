@@ -18,7 +18,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args =>
-  paginate('match $m isa External-Reference', args, false);
+  paginate('match $m isa External-Reference', args);
 export const findAllBySo = args =>
   paginate(
     `match $externalReference isa External-Reference; 

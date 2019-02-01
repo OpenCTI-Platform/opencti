@@ -116,8 +116,8 @@ const inlineStyles = {
 };
 
 const dashboardLastReportsQuery = graphql`
-    query DashboardLastReportsQuery($first: Int, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {
-        reports(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
+    query DashboardLastReportsQuery($reportClass: String, $first: Int, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {
+        reports(reportClass: $reportClass, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
             edges {
                 node {
                     id
@@ -306,12 +306,12 @@ class Dashboard extends Component {
         <Grid container={true} spacing={16} style={{ marginTop: 20 }}>
           <Grid item={true} xs={6}>
             <Typography variant='h2' gutterBottom={true}>
-              {t('Last reports')}
+              {t('Last internal reports')}
             </Typography>
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <QueryRenderer
                 query={dashboardLastReportsQuery}
-                variables={{ first: 15, orderBy: 'published', orderMode: 'desc' }}
+                variables={{ reportClass: 'internal', first: 15, orderBy: 'published', orderMode: 'desc' }}
                 render={({ props }) => {
                   if (props && props.reports) {
                     return (
