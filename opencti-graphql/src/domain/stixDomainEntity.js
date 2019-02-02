@@ -76,7 +76,8 @@ export const killChainPhases = (stixDomainEntityId, args) =>
     `match $kc isa Kill-Chain-Phase; 
     $rel(kill_chain_phase:$kc, phase_belonging:$stixDomainEntity) isa kill_chain_phases; 
     $stixDomainEntity id ${stixDomainEntityId}`,
-    args
+    args,
+    false
   );
 
 export const markingDefinitions = (stixDomainEntityId, args) =>
@@ -84,7 +85,8 @@ export const markingDefinitions = (stixDomainEntityId, args) =>
     `match $marking isa Marking-Definition; 
     $rel(marking:$marking, so:$stixDomainEntity) isa object_marking_refs; 
     $stixDomainEntity id ${stixDomainEntityId}`,
-    args
+    args,
+    false
   );
 
 export const reports = (stixDomainEntityId, args) =>
@@ -100,7 +102,8 @@ export const externalReferences = (stixDomainEntityId, args) =>
     `match $externalReference isa External-Reference; 
     $rel(external_reference:$externalReference, so:$stixDomainEntity) isa external_references; 
     $stixDomainEntity id ${stixDomainEntityId}`,
-    args
+    args,
+    false
   );
 
 export const stixRelations = (stixDomainEntityId, args) => {

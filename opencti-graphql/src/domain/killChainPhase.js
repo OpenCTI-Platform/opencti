@@ -33,7 +33,8 @@ export const markingDefinitions = (killChainPhaseId, args) =>
     `match $marking isa Marking-Definition; 
     (marking:$marking, so:$killChainPhase) isa object_marking_refs; 
     $killChainPhase id ${killChainPhaseId}`,
-    args
+    args,
+    false,
   );
 
 export const addKillChainPhase = async (user, killChainPhase) => {
