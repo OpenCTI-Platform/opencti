@@ -56,7 +56,7 @@ export const reportMutationFieldPatch = graphql`
     }
 `;
 
-const reportEditionOverviewFocus = graphql`
+export const reportEditionOverviewFocus = graphql`
     mutation ReportEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
         reportEdit(id: $id) {
             contextPatch(input : $input) {

@@ -13,6 +13,7 @@ const subscription = graphql`
         stixDomainEntity(id: $id) {
             ...on ThreatActor {
                 ...ThreatActor_threatActor
+                ...ThreatActorEditionContainer_threatActor
             }
             ...StixDomainEntityKnowledgeGraph_stixDomainEntity
         }

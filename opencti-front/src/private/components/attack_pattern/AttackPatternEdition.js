@@ -6,9 +6,10 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer } from '../../../relay/environment';
+import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import AttackPatternEditionContainer from './AttackPatternEditionContainer';
+import { attackPatternEditionOverviewFocus } from './AttackPatternEditionOverview';
 
 const styles = theme => ({
   editButton: {
@@ -52,6 +53,15 @@ class AttackPatternEdition extends Component {
   }
 
   handleClose() {
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: attackPatternEditionOverviewFocus,
+        variables: {
+          id: this.props.attackPatternId,
+          input: { focusOn: '' },
+        },
+      });
+    }
     this.setState({ open: false });
   }
 

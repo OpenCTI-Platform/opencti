@@ -54,7 +54,7 @@ const attackPatternMutationFieldPatch = graphql`
     }
 `;
 
-const attackPatternEditionOverviewFocus = graphql`
+export const attackPatternEditionOverviewFocus = graphql`
     mutation AttackPatternEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
         attackPatternEdit(id: $id) {
             contextPatch(input : $input) {

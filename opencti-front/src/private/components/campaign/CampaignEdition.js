@@ -6,9 +6,10 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer } from '../../../relay/environment';
+import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import CampaignEditionContainer from './CampaignEditionContainer';
+import { campaignEditionOverviewFocus } from './CampaignEditionOverview';
 
 const styles = theme => ({
   editButton: {
@@ -52,6 +53,15 @@ class CampaignEdition extends Component {
   }
 
   handleClose() {
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: campaignEditionOverviewFocus,
+        variables: {
+          id: this.props.campaignId,
+          input: { focusOn: '' },
+        },
+      });
+    }
     this.setState({ open: false });
   }
 

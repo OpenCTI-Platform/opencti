@@ -46,7 +46,7 @@ class StixDomainEntityEdition extends Component {
           query={stixDomainEntityEditionQuery}
           variables={{ id: stixDomainEntityId }}
           render={({ props }) => {
-            if (props) { // Done
+            if (props) {
               return (
                 <StixDomainEntityEditionOverview
                   variant={variant}
@@ -57,7 +57,6 @@ class StixDomainEntityEdition extends Component {
                 />
               );
             }
-            // Loading
             return <div> &nbsp; </div>;
           }}
         /> : '&nbsp;'}

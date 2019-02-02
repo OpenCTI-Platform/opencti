@@ -54,7 +54,7 @@ const toolMutationFieldPatch = graphql`
     }
 `;
 
-const toolEditionOverviewFocus = graphql`
+export const toolEditionOverviewFocus = graphql`
     mutation ToolEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
         toolEdit(id: $id) {
             contextPatch(input : $input) {

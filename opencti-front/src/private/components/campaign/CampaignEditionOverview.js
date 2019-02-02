@@ -53,7 +53,7 @@ const campaignMutationFieldPatch = graphql`
     }
 `;
 
-const campaignEditionOverviewFocus = graphql`
+export const campaignEditionOverviewFocus = graphql`
     mutation CampaignEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
         campaignEdit(id: $id) {
             contextPatch(input : $input) {

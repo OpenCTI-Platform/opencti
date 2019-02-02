@@ -63,7 +63,7 @@ const networkFetch = (operation, variables) => fetch('/graphql', {
 let networkSubscriptions = null;
 export const WS_ACTIVATED = IN_DEV_MODE ? (process.env.REACT_APP_WS_ACTIVATED === 'true') : window.WS_ACTIVATED === 'true';
 if (WS_ACTIVATED) {
-  const subscriptionClient = new SubscriptionClient(`ws${window.location.protocol === 'https:' ? 's' : ''}://${window.location.host}/graphql`, {
+  const subscriptionClient = new SubscriptionClient(`ws${window.location.protocol === 'https:' ? 's' : ''}://${window.location.host}/subscriptions`, {
     reconnect: true,
   });
   const subscriptionLink = new WebSocketLink(subscriptionClient);

@@ -8,7 +8,8 @@ import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
-import { QueryRenderer } from '../../../relay/environment';
+import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
+import { workspaceEditionOverviewFocus } from './WorkspaceEditionOverview';
 
 const styles = theme => ({
   editButton: {
@@ -52,8 +53,18 @@ class WorkspaceEdition extends Component {
   }
 
   handleClose() {
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: workspaceEditionOverviewFocus,
+        variables: {
+          id: this.props.workspaceId,
+          input: { focusOn: '' },
+        },
+      });
+    }
     this.setState({ open: false });
   }
+
 
   render() {
     const { classes, workspaceId } = this.props;

@@ -78,7 +78,7 @@ const stixRelationMutationFieldPatch = graphql`
     }
 `;
 
-const stixRelationEditionFocus = graphql`
+export const stixRelationEditionFocus = graphql`
     mutation StixRelationEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
         stixRelationEdit(id: $id) {
             contextPatch(input : $input) {

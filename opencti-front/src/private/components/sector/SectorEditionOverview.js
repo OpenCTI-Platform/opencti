@@ -53,7 +53,7 @@ const sectorMutationFieldPatch = graphql`
     }
 `;
 
-const sectorEditionOverviewFocus = graphql`
+export const sectorEditionOverviewFocus = graphql`
     mutation SectorEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
         sectorEdit(id: $id) {
             contextPatch(input : $input) {

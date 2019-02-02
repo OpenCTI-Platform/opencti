@@ -63,7 +63,7 @@ input EditInput {
     value: [String]! # Values to apply
 }
 input EditContext {
-    focusOn: String! # Field name
+    focusOn: String # Field name
 }
 type EditUserContext {
     name: String!

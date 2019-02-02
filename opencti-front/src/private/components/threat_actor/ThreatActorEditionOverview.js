@@ -53,7 +53,7 @@ const threatActorMutationFieldPatch = graphql`
     }
 `;
 
-const threatActorEditionOverviewFocus = graphql`
+export const threatActorEditionOverviewFocus = graphql`
     mutation ThreatActorEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
         threatActorEdit(id: $id) {
             contextPatch(input : $input) {

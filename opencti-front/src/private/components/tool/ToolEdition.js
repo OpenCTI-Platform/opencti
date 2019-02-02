@@ -6,9 +6,10 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer } from '../../../relay/environment';
+import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import ToolEditionContainer from './ToolEditionContainer';
+import { toolEditionOverviewFocus } from './ToolEditionOverview';
 
 const styles = theme => ({
   editButton: {
@@ -52,6 +53,15 @@ class ToolEdition extends Component {
   }
 
   handleClose() {
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: toolEditionOverviewFocus,
+        variables: {
+          id: this.props.toolId,
+          input: { focusOn: '' },
+        },
+      });
+    }
     this.setState({ open: false });
   }
 

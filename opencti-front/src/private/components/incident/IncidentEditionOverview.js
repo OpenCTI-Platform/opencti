@@ -53,7 +53,7 @@ const incidentMutationFieldPatch = graphql`
     }
 `;
 
-const incidentEditionOverviewFocus = graphql`
+export const incidentEditionOverviewFocus = graphql`
     mutation IncidentEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
         incidentEdit(id: $id) {
             contextPatch(input : $input) {

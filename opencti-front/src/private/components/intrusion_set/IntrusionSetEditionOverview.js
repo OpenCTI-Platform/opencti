@@ -53,7 +53,7 @@ const intrusionSetMutationFieldPatch = graphql`
     }
 `;
 
-const intrusionSetEditionOverviewFocus = graphql`
+export const intrusionSetEditionOverviewFocus = graphql`
     mutation IntrusionSetEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
         intrusionSetEdit(id: $id) {
             contextPatch(input : $input) {

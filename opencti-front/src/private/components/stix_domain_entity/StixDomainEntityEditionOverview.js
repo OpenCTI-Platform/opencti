@@ -74,7 +74,7 @@ export const stixDomainEntityMutationFieldPatch = graphql`
     }
 `;
 
-const stixDomainEntityEditionFocus = graphql`
+export const stixDomainEntityEditionFocus = graphql`
     mutation StixDomainEntityEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
         stixDomainEntityEdit(id: $id) {
             contextPatch(input : $input) {
@@ -95,8 +95,7 @@ class StixDomainEntityEditionContainer extends Component {
     const sub = requestSubscription({
       subscription,
       variables: {
-        // eslint-disable-next-line
-        id: this.props.stixDomainEntity.id
+        id: this.props.stixDomainEntity.id,
       },
     });
     this.setState({ sub });

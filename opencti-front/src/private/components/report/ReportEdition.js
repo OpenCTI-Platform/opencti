@@ -8,7 +8,8 @@ import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
 import ReportEditionContainer from './ReportEditionContainer';
-import { QueryRenderer } from '../../../relay/environment';
+import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
+import { reportEditionOverviewFocus } from './ReportEditionOverview';
 
 const styles = theme => ({
   editButton: {
@@ -52,6 +53,15 @@ class ReportEdition extends Component {
   }
 
   handleClose() {
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: reportEditionOverviewFocus,
+        variables: {
+          id: this.props.reportId,
+          input: { focusOn: '' },
+        },
+      });
+    }
     this.setState({ open: false });
   }
 

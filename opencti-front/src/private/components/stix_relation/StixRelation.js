@@ -7,9 +7,10 @@ import { withStyles } from '@material-ui/core/styles';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../relay/environment';
+import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
 import StixRelationOverview from './StixRelationOverview';
 import StixRelationEdition, { stixRelationEditionDeleteMutation } from './StixRelationEdition';
+import { stixRelationEditionFocus } from './StixRelationEditionOverview';
 
 const styles = () => ({
   container: {
@@ -41,6 +42,16 @@ class StixRelation extends Component {
   }
 
   handleCloseEdition() {
+    const { match: { params: { relationId } } } = this.props;
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: stixRelationEditionFocus,
+        variables: {
+          id: relationId,
+          input: { focusOn: '' },
+        },
+      });
+    }
     this.setState({ openEdit: false });
   }
 
