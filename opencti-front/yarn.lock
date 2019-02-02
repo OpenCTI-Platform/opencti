@@ -8881,7 +8881,7 @@ mdast-add-list-metadata@1.0.1:
   dependencies:
     unist-util-visit-parents "1.1.2"
 
-mdi-material-ui@^5.8.0:
+mdi-material-ui@^5.9.0:
   version "5.9.0"
   resolved "https://registry.yarnpkg.com/mdi-material-ui/-/mdi-material-ui-5.9.0.tgz#88d662a0c618224e8150d02b3f7f2ab2569803a0"
   integrity sha512-+3vYdXmh3zS/FhIb/0+fGLoplgVGxOtK6zxP7hhDZ9nVYxhSP85n+Uh/g5qLb/W1mXihOxEGkcKS2p+dxYBg6w==
