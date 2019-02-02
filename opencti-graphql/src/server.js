@@ -117,7 +117,6 @@ const server = new ApolloServer({
     return response;
   },
   subscriptions: {
-    path: '/subscriptions',
     // https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
     onConnect: async (connectionParams, webSocket) => {
       const cookies = webSocket.upgradeReq.headers.cookie;
