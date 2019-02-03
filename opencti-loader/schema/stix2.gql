@@ -577,8 +577,20 @@ define
       ("allowed": $user, "allow": $markingDefinition) isa "user_permission";
     };
 
-    # Threat Actors => Malwares rule
+    # Threat Actors => Malwares rule through Intrusion-Set
     "ThreatActorUsesMalwareRule" sub rule
+    when {
+      $intrusionSet isa "Intrusion-Set";
+      $malware isa "Malware";
+      $threatActor isa "Threat-Actor";
+      ("user": $intrusionSet, "usage": $malware) isa uses;
+      ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
+    } then {
+      ("user": $threatActor, "usage": $malware) isa "uses";
+    };
+
+    # Threat Actors => Identity rule
+    "ThreatActorTargetsIdentityRule" sub rule
     when {
       $intrusionSet isa "Intrusion-Set";
       $malware isa "Malware";

@@ -3,10 +3,15 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
+import { DiagramEngine } from 'storm-react-diagrams';
 import Drawer from '@material-ui/core/Drawer';
 import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
+import EntityLabelFactory from '../../../components/graph_node/EntityLabelFactory';
+import EntityLinkFactory from '../../../components/graph_node/EntityLinkFactory';
+import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
+import EntityPortFactory from '../../../components/graph_node/EntityPortFactory';
 import WorkspaceHeader from './WorkspaceHeader';
 import WorkspaceGraph, { workspaceGraphQuery } from './WorkspaceGraph';
 
@@ -27,6 +32,17 @@ const styles = theme => ({
 });
 
 class WorkspaceKnowledgeComponent extends Component {
+  constructor(props) {
+    super(props);
+    const engine = new DiagramEngine();
+    engine.installDefaultFactories();
+    engine.registerPortFactory(new EntityPortFactory());
+    engine.registerNodeFactory(new EntityNodeFactory());
+    engine.registerLinkFactory(new EntityLinkFactory());
+    engine.registerLabelFactory(new EntityLabelFactory());
+    this.state = { engine };
+  }
+
   render() {
     const { classes, workspace } = this.props;
     return (
@@ -40,7 +56,7 @@ class WorkspaceKnowledgeComponent extends Component {
           variables={{ id: workspace.id }}
           render={({ props }) => {
             if (props && props.workspace) {
-              return <WorkspaceGraph workspace={props.workspace}/>;
+              return <WorkspaceGraph workspace={props.workspace} engine={this.state.engine}/>;
             }
             return <div> &nbsp; </div>;
           }}

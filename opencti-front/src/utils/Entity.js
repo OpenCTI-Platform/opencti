@@ -8,6 +8,8 @@ export const resolveLink = (type) => {
       return '/dashboard/catalogs/cities';
     case 'organization':
       return '/dashboard/catalogs/organizations';
+    case 'user':
+      return '/dashboard/catalogs/persons';
     case 'threat-actor':
       return '/dashboard/knowledge/threat_actors';
     case 'sector':
@@ -21,9 +23,9 @@ export const resolveLink = (type) => {
     case 'malware':
       return '/dashboard/knowledge/malwares';
     case 'tool':
-      return '/dashboard/knowledge/tools';
+      return '/dashboard/catalogs/tools';
     case 'vulnerability':
-      return '/dashboard/knowledge/vulnerabilities';
+      return '/dashboard/catalogs/vulnerabilities';
     case 'report':
       return '/dashboard/reports/all';
     default:

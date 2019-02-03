@@ -1,4 +1,5 @@
 import { contains } from 'ramda';
+import { $$asyncIterator } from 'iterall';
 import { ROLE_ADMIN } from '../config/conf';
 import { AlreadyAuth, AuthRequired, ForbiddenAccess } from '../config/errors';
 
@@ -15,7 +16,7 @@ export function withCancel(asyncIterator, onCancel) {
       return asyncIterator.throw(error);
     }
   };
-  return { [Symbol.asyncIterator]: () => updatedAsyncIterator };
+  return { [$$asyncIterator]: () => updatedAsyncIterator };
 }
 
 const base = wrappedFunction => (_, args, context, info) =>

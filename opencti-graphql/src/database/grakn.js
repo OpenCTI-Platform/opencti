@@ -268,13 +268,7 @@ export const qkSingleValue = queryDef =>
  */
 export const deleteByID = id => {
   const deleteQuery = qk(`match $x id ${id}; $z($x, $y); delete $z, $x;`);
-  return deleteQuery.then(result => {
-    if (isEmpty(result.data)) {
-      throw new MissingElement({ message: "Element doesn't exist" });
-    } else {
-      return id;
-    }
-  });
+  return deleteQuery.then(() => id);
 };
 
 /**
@@ -284,13 +278,7 @@ export const deleteByID = id => {
  */
 export const deleteOneById = id => {
   const deleteQuery = qk(`match $x id ${id}; delete $x;`);
-  return deleteQuery.then(result => {
-    if (isEmpty(result.data)) {
-      throw new MissingElement({ message: "Element doesn't exist" });
-    } else {
-      return id;
-    }
-  });
+  return deleteQuery.then(() => id);
 };
 
 /**
@@ -479,18 +467,12 @@ export const createRelation = (id, input) => {
 export const deleteRelation = (id, relationId) => {
   // TODO : `match $x id ${relationId}; $z($x, $y); delete $z, $x;` is not working if $z doest not exists at all
   const deleteQuery = qk(`match $x id ${relationId}; delete $x;`);
-  return deleteQuery.then(result => {
-    if (isEmpty(result.data)) {
-      throw new MissingElement({
-        message: `Element ${relationId} doesn't exist`
-      });
-    } else {
-      return loadByID(id).then(data => ({
-        node: data,
-        relation: { id: relationId }
-      }));
-    }
-  });
+  return deleteQuery.then(() =>
+    loadByID(id).then(data => ({
+      node: data,
+      relation: { id: relationId }
+    }))
+  );
 };
 
 /**

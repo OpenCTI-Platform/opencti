@@ -12,6 +12,8 @@ import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
 import StixDomainEntities from './components/StixDomainEntities';
 import Explore from './components/Explore';
+import Workspaces from './components/Workspaces';
+import RootWorkspace from './components/workspace/Root';
 import ThreatActors from './components/ThreatActors';
 import RootThreatActor from './components/threat_actor/Root';
 import Sectors from './components/Sectors';
@@ -105,6 +107,8 @@ class Root extends Component {
                         <BoundaryRoute exact path='/dashboard' component={Dashboard}/>
                         <BoundaryRoute exact path='/dashboard/search/:keyword' render={routeProps => <StixDomainEntities {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/explore' component={Explore}/>
+                        <BoundaryRoute exact path='/dashboard/investigate' component={Workspaces}/>
+                        <BoundaryRoute exact path='/dashboard/investigate/:workspaceId' component={RootWorkspace}/>
                         <BoundaryRoute exact path='/dashboard/knowledge' render={() => (<Redirect to='/dashboard/knowledge/threat_actors'/>)}/>
                         <BoundaryRoute exact path='/dashboard/knowledge/threat_actors' component={ThreatActors}/>
                         <BoundaryRoute path='/dashboard/knowledge/threat_actors/:threatActorId' render={routeProps => <RootThreatActor {...routeProps} me={props.me}/>}/>

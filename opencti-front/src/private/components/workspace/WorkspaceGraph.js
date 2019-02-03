@@ -2,13 +2,12 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
   compose, map, pipe, forEach, difference, values,
-  pathOr, filter, last, head, pluck, includes,
-  indexBy, prop,
+  pathOr, filter, last, head, includes,
+  indexBy, prop, pluck,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  DiagramEngine,
   DiagramModel,
   DiagramWidget,
   MoveItemsAction,
@@ -22,17 +21,15 @@ import { Subject, timer } from 'rxjs/index';
 import { commitMutation, fetchQuery } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
-import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
-import EntityPortFactory from '../../../components/graph_node/EntityPortFactory';
-import EntityLinkFactory from '../../../components/graph_node/EntityLinkFactory';
-import EntityLabelFactory from '../../../components/graph_node/EntityLabelFactory';
 import EntityLabelModel from '../../../components/graph_node/EntityLabelModel';
 import EntityLinkModel from '../../../components/graph_node/EntityLinkModel';
 import { distributeElements } from '../../../utils/DagreHelper';
+import { serializeGraph } from '../../../utils/GraphHelper';
 import { workspaceMutationFieldPatch } from './WorkspaceEditionOverview';
+import WorkspaceAddObjectRefs from './WorkspaceAddObjectRefs';
 import { workspaceMutationRelationAdd, workspaceMutationRelationDelete } from './WorkspaceAddObjectRefsLines';
-import StixRelationCreation  from '../stix_relation/StixRelationCreation';
-import StixRelationEdition from '../stix_relation/StixRelationEdition';
+import StixRelationCreation from '../stix_relation/StixRelationCreation';
+import StixRelationEdition, { stixRelationEditionDeleteMutation } from '../stix_relation/StixRelationEdition';
 
 const styles = () => ({
   container: {
@@ -64,8 +61,8 @@ export const workspaceGraphQuery = graphql`
 `;
 
 const workspaceGraphResolveRelationsQuery = graphql`
-    query WorkspaceGraphResolveRelationsQuery($fromId: String, $inferred: Boolean) {
-        stixRelations(fromId: $fromId, inferred: $inferred) {
+    query WorkspaceGraphResolveRelationsQuery($fromId: String, $first: Int, $inferred: Boolean) {
+        stixRelations(fromId: $fromId, first: $first, inferred: $inferred) {
             edges {
                 node {
                     id
@@ -88,7 +85,7 @@ export const workspaceGraphMutationRelationsAdd = graphql`
     }
 `;
 
-const GRAPHER$ = new Subject().pipe(debounce(() => timer(1500)));
+const GRAPHER$ = new Subject().pipe(debounce(() => timer(1000)));
 
 class WorkspaceGraphComponent extends Component {
   constructor(props) {
@@ -101,13 +98,6 @@ class WorkspaceGraphComponent extends Component {
       editRelationId: null,
       currentLink: null,
     };
-    this.saving = false;
-    this.engine = new DiagramEngine();
-    this.engine.installDefaultFactories();
-    this.engine.registerPortFactory(new EntityPortFactory());
-    this.engine.registerNodeFactory(new EntityNodeFactory());
-    this.engine.registerLinkFactory(new EntityLinkFactory());
-    this.engine.registerLabelFactory(new EntityLabelFactory());
   }
 
   componentDidMount() {
@@ -126,12 +116,6 @@ class WorkspaceGraphComponent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.workspace.graph_data !== prevProps.workspace.graph_data) {
-      this.initialize();
-      this.forceUpdate();
-      return;
-    }
-
     const added = difference(
       this.props.workspace.objectRefs.edges,
       prevProps.workspace.objectRefs.edges,
@@ -142,7 +126,7 @@ class WorkspaceGraphComponent extends Component {
     );
     // if a node has been added, add in graph
     if (added.length > 0) {
-      const model = this.engine.getDiagramModel();
+      const model = this.props.engine.getDiagramModel();
       const newNodes = map(n => new EntityNodeModel({
         id: n.node.id,
         relationId: n.relation.id,
@@ -153,77 +137,76 @@ class WorkspaceGraphComponent extends Component {
         n.addListener({ selectionChanged: this.handleSelection.bind(this) });
         model.addNode(n);
       }, newNodes);
-      this.forceUpdate();
+      this.props.engine.repaintCanvas();
     }
     // if a node has been removed, remove in graph
     if (removed.length > 0) {
-      const model = this.engine.getDiagramModel();
+      const model = this.props.engine.getDiagramModel();
       const removedIds = map(n => n.node.id, removed);
       forEach((n) => {
         if (removedIds.includes(n.extras.id)) {
-          model.removeNode(n);
+          n.remove();
         }
       }, values(model.getNodes()));
-      this.forceUpdate();
+      this.props.engine.repaintCanvas();
+    }
+
+    if (this.props.workspace.graph_data !== prevProps.workspace.graph_data) {
+      this.updateView();
     }
   }
 
   initialize() {
-    // prepare actual nodes & relations
-    const actualNodes = this.props.workspace.objectRefs.edges;
-    const actualRelations = this.props.workspace.relationRefs.edges;
-    const actualNodesIds = pipe(map(n => n.node), pluck('id'))(actualNodes);
-    const actualRelationsIds = pipe(map(n => n.node), pluck('id'))(actualRelations);
-    // create a new model, component is mounted!
     const model = new DiagramModel();
+    // prepare nodes & relations
+    const nodes = this.props.workspace.objectRefs.edges;
+    const relations = this.props.workspace.relationRefs.edges;
+
     // decode graph data if any
+    let graphData = {};
     if (Array.isArray(this.props.workspace.graph_data) && head(this.props.workspace.graph_data).length > 0) {
-      const graphData = Buffer.from(head(this.props.workspace.graph_data), 'base64').toString('ascii');
-      const decodedGraphData = JSON.parse(graphData);
-      model.deSerializeDiagram(decodedGraphData, this.engine);
+      graphData = JSON.parse(Buffer.from(head(this.props.workspace.graph_data), 'base64').toString('ascii'));
     }
-    // sync nodes & links
-    // check deleted nodes
-    const nodes = model.getNodes();
-    const nodesIds = map(n => pathOr(null, ['extras', 'id'], n), values(nodes));
+
+    // set offset & zoom
+    if (graphData.zoom) {
+      model.setZoomLevel(graphData.zoom);
+    }
+    if (graphData.offsetX) {
+      model.setOffsetX(graphData.offsetX);
+    }
+    if (graphData.offsetY) {
+      model.setOffsetY(graphData.offsetY);
+    }
+
+    // add nodes
     forEach((n) => {
-      if (includes(pathOr(null, ['extras', 'id'], n), actualNodesIds)) {
-        n.setSelected(false);
-        n.addListener({ selectionChanged: this.handleSelection.bind(this) });
-      } else {
-        model.removeNode(n);
+      const newNode = new EntityNodeModel({
+        id: n.node.id,
+        relationId: n.relation.id,
+        name: n.node.name,
+        type: n.node.type,
+      });
+      newNode.addListener({ selectionChanged: this.handleSelection.bind(this) });
+      const position = pathOr(null, ['nodes', n.node.id, 'position'], graphData);
+      if (position && position.x !== undefined && position.y !== undefined) {
+        newNode.setPosition(position.x, position.y);
       }
-    }, values(nodes));
-    // check added nodes
-    forEach((n) => {
-      if (!includes(n.node.id, nodesIds)) {
-        const newNode = new EntityNodeModel({
-          id: n.node.id,
-          relationId: n.relation.id,
-          name: n.node.name,
-          type: n.node.type,
-        });
-        newNode.addListener({ selectionChanged: this.handleSelection.bind(this) });
-        model.addNode(newNode);
-      }
-    }, actualNodes);
+      model.addNode(newNode);
+    }, nodes);
+
+    // build usables nodes object
     const finalNodes = model.getNodes();
     const finalNodesObject = pipe(
       values,
       map(n => ({ id: n.extras.id, node: n })),
       indexBy(prop('id')),
     )(finalNodes);
-    const links = model.getLinks();
-    const linksIds = map(l => pathOr(null, ['extras', 'relation', 'id'], l), values(links));
+
+    // add relations
+    const createdRelations = [];
     forEach((l) => {
-      if (includes(pathOr(null, ['extras', 'relation', 'id'], l), actualRelationsIds)) {
-        l.addListener({ selectionChanged: this.handleSelection.bind(this) });
-      } else {
-        model.removeLink(l);
-      }
-    }, values(links));
-    forEach((l) => {
-      if (!includes(l.node.id, linksIds)) {
+      if (!includes(l.relation.id, createdRelations)) {
         const fromPort = finalNodesObject[l.node.from.id] ? finalNodesObject[l.node.from.id].node.getPort('main') : null;
         const toPort = finalNodesObject[l.node.to.id] ? finalNodesObject[l.node.to.id].node.getPort('main') : null;
         const newLink = new EntityLinkModel();
@@ -243,31 +226,58 @@ class WorkspaceGraphComponent extends Component {
         newLink.addLabel(label);
         newLink.addListener({ selectionChanged: this.handleSelection.bind(this) });
         model.addLink(newLink);
+        createdRelations.push(l.relation.id);
       }
-    }, actualRelations);
-    // set the model
+    }, relations);
+
+    // add listeners
     model.addListener({
       nodesUpdated: this.handleNodeChanges.bind(this),
       linksUpdated: this.handleLinksChange.bind(this),
       zoomUpdated: this.handleSaveGraph.bind(this),
     });
-    this.engine.setDiagramModel(model);
+    this.props.engine.setDiagramModel(model);
+    this.props.engine.repaintCanvas();
+  }
+
+  updateView() {
+    const model = this.props.engine.getDiagramModel();
+
+    // decode graph data if any
+    let graphData = {};
+    if (Array.isArray(this.props.workspace.graph_data) && head(this.props.workspace.graph_data).length > 0) {
+      graphData = JSON.parse(Buffer.from(head(this.props.workspace.graph_data), 'base64').toString('ascii'));
+    }
+
+    // set offset & zoom
+    if (graphData.zoom) {
+      model.setZoomLevel(graphData.zoom);
+    }
+    if (graphData.offsetX) {
+      model.setOffsetX(graphData.offsetX);
+    }
+    if (graphData.offsetY) {
+      model.setOffsetY(graphData.offsetY);
+    }
+
+    // set nodes positions
+    const nodes = model.getNodes();
+    forEach((n) => {
+      const position = pathOr(null, ['nodes', n.extras.id, 'position'], graphData);
+      if (position && position.x && position.y) {
+        n.setPosition(position.x, position.y);
+      }
+    })(values(nodes));
+    this.props.engine.repaintCanvas();
   }
 
   saveGraph() {
-    if (this.saving === false) {
-      this.saving = true;
-      const model = this.engine.getDiagramModel();
-      const graphData = JSON.stringify(model.serializeDiagram());
-      const encodedGraphData = Buffer.from(graphData).toString('base64');
-      commitMutation({
-        mutation: workspaceMutationFieldPatch,
-        variables: { id: this.props.workspace.id, input: { key: 'graph_data', value: encodedGraphData } },
-        onCompleted: () => {
-          this.saving = false;
-        },
-      });
-    }
+    const model = this.props.engine.getDiagramModel();
+    const graphData = serializeGraph(model);
+    commitMutation({
+      mutation: workspaceMutationFieldPatch,
+      variables: { id: this.props.workspace.id, input: { key: 'graph_data', value: graphData } },
+    });
   }
 
   handleSaveGraph() {
@@ -276,6 +286,7 @@ class WorkspaceGraphComponent extends Component {
 
   handleMovesChange(event) {
     if (event instanceof MoveItemsAction) {
+      // handle drag & drop
       this.handleSaveGraph();
     }
     return true;
@@ -283,16 +294,56 @@ class WorkspaceGraphComponent extends Component {
 
   handleNodeChanges(event) {
     if (event.node !== undefined) {
+      const { node } = event;
       if (event.isCreated === false) {
-        const nodeRelationId = pathOr(null, ['node', 'extras', 'relationId'], event);
-        if (nodeRelationId !== null) {
-          commitMutation({
-            mutation: workspaceMutationRelationDelete,
-            variables: {
-              id: this.props.workspace.id,
-              relationId: nodeRelationId,
-            },
-          });
+        // handle node deletion
+        commitMutation({
+          mutation: workspaceMutationRelationDelete,
+          variables: {
+            id: this.props.workspace.id,
+            relationId: node.extras.relationId,
+          },
+        });
+        this.handleSaveGraph();
+      }
+    }
+    return true;
+  }
+
+  handleLinksChange(event) {
+    const model = this.props.engine.getDiagramModel();
+    const currentLinks = model.getLinks();
+    const currentLinksPairs = map(n => ({ source: n.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
+    if (event.isCreated === true) {
+      // handle link creation
+      event.link.addListener({
+        targetPortChanged: this.handleLinkCreation.bind(this),
+      });
+    } else if (event.link !== undefined) {
+      // handle link deletion
+      const { link } = event;
+      if (link.targetPort !== null && (link.sourcePort !== link.targetPort)) {
+        const linkPair = { source: link.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], link) };
+        const filteredCurrentLinks = filter(n => (
+          n.source === linkPair.source && n.target === linkPair.target)
+          || (n.source === linkPair.target && n.target === linkPair.source),
+        currentLinksPairs);
+        if (filteredCurrentLinks.length === 0) {
+          if (link.extras && link.extras.relation) {
+            commitMutation({
+              mutation: workspaceMutationRelationDelete,
+              variables: {
+                id: this.props.workspace.id,
+                relationId: link.extras.objectRefId,
+              },
+            });
+            commitMutation({
+              mutation: stixRelationEditionDeleteMutation,
+              variables: {
+                id: link.extras.relation.id,
+              },
+            });
+          }
         }
       }
       this.handleSaveGraph();
@@ -300,16 +351,8 @@ class WorkspaceGraphComponent extends Component {
     return true;
   }
 
-  handleLinksChange(event) {
-    this.handleLinkDeletion(event);
-    event.link.addListener({
-      targetPortChanged: this.handleLinkCreation.bind(this),
-    });
-    return true;
-  }
-
   handleLinkCreation(event) {
-    const model = this.engine.getDiagramModel();
+    const model = this.props.engine.getDiagramModel();
     const currentLinks = model.getLinks();
     const currentLinksPairs = map(n => ({ source: n.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
     if (event.port !== undefined) {
@@ -321,7 +364,7 @@ class WorkspaceGraphComponent extends Component {
         || (n.source === linkPair.target && n.target === linkPair.source),
       currentLinksPairs);
       if (link.targetPort === null || (link.sourcePort === link.targetPort)) {
-        model.removeLink(link);
+        link.remove();
       } else if (filteredCurrentLinks.length === 1) {
         link.addListener({ selectionChanged: this.handleSelection.bind(this) });
         this.setState({
@@ -330,38 +373,6 @@ class WorkspaceGraphComponent extends Component {
           createRelationTo: link.targetPort.parent.extras,
           currentLink: link,
         });
-      }
-    }
-    return true;
-  }
-
-  handleLinkDeletion(event) {
-    const model = this.engine.getDiagramModel();
-    const currentLinks = model.getLinks();
-    const currentLinksPairs = map(n => ({ source: n.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
-    if (event.isCreated === false) {
-      if (event.link !== undefined) {
-        const { link } = event;
-        // ensure that the link is not circular on the same element
-        if (link.targetPort !== null && (link.sourcePort !== link.targetPort)) {
-          const linkPair = { source: link.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], link) };
-          const filteredCurrentLinks = filter(n => (
-            n.source === linkPair.source && n.target === linkPair.target)
-            || (n.source === linkPair.target && n.target === linkPair.source),
-          currentLinksPairs);
-          if (filteredCurrentLinks.length === 0) {
-            if (link.extras && link.extras.relation) {
-              commitMutation({
-                mutation: workspaceMutationRelationDelete,
-                variables: {
-                  id: this.props.workspace.id,
-                  relationId: link.extras.objectRefId,
-                },
-              });
-            }
-            this.handleSaveGraph();
-          }
-        }
       }
     }
     return true;
@@ -381,28 +392,30 @@ class WorkspaceGraphComponent extends Component {
       fetchQuery(workspaceGraphResolveRelationsQuery, {
         inferred: true,
         fromId: event.entity.extras.id,
+        first: 30,
       }).then((data) => {
         if (data && data.stixRelations) {
           // prepare actual nodes & relations
-          const actualNodes = this.props.workspace.objectRefs.edges;
-          const actualRelations = this.props.workspace.relationRefs.edges;
-          const actualNodesIds = pipe(map(n => n.node), pluck('id'))(actualNodes);
-          const actualRelationsIds = pipe(map(n => n.node), pluck('id'))(actualRelations);
+          const nodes = this.props.workspace.objectRefs.edges;
+          const relations = this.props.workspace.relationRefs.edges;
+          const nodesIds = pipe(map(n => n.node), pluck('id'))(nodes);
+          const relationsIds = pipe(map(n => n.node), pluck('id'))(relations);
           // check added nodes
-          const relationsToAdd = [];
+          const objectsToAdd = [];
           forEach((n) => {
-            if (!includes(n.node.to.id, actualNodesIds)) {
-              relationsToAdd.push(n.node.to.id);
+            if (!includes(n.node.to.id, nodesIds)) {
+              objectsToAdd.push(n.node.to.id);
             }
           }, data.stixRelations.edges);
           forEach((n) => {
-            if (!includes(n.node.id, actualRelationsIds)) {
-              relationsToAdd.push(n.node.id);
+            if (!includes(n.node.id, relationsIds)) {
+              objectsToAdd.push(n.node.id);
             }
           }, data.stixRelations.edges);
+
           const input = {
             fromRole: 'knowledge_aggregation',
-            toIds: relationsToAdd,
+            toIds: objectsToAdd,
             toRole: 'so',
             through: 'object_refs',
           };
@@ -412,6 +425,9 @@ class WorkspaceGraphComponent extends Component {
               id: this.props.workspace.id,
               input,
             },
+            onCompleted: () => {
+              this.initialize();
+            },
           });
         }
       });
@@ -420,7 +436,7 @@ class WorkspaceGraphComponent extends Component {
   }
 
   handleCloseRelationCreation() {
-    const model = this.engine.getDiagramModel();
+    const model = this.props.engine.getDiagramModel();
     const linkObject = model.getLink(this.state.currentLink);
     linkObject.remove();
     this.setState({
@@ -432,7 +448,7 @@ class WorkspaceGraphComponent extends Component {
   }
 
   handleResultRelationCreation(result) {
-    const model = this.engine.getDiagramModel();
+    const model = this.props.engine.getDiagramModel();
     const linkObject = model.getLink(this.state.currentLink);
     const label = new EntityLabelModel();
     label.setExtras([{
@@ -479,7 +495,7 @@ class WorkspaceGraphComponent extends Component {
   }
 
   handleDeleteRelation() {
-    const model = this.engine.getDiagramModel();
+    const model = this.props.engine.getDiagramModel();
     const linkObject = model.getLink(this.state.currentLink);
     linkObject.remove();
     this.setState({
@@ -490,28 +506,27 @@ class WorkspaceGraphComponent extends Component {
   }
 
   autoDistribute() {
-    const model = this.engine.getDiagramModel();
+    const model = this.props.engine.getDiagramModel();
     const serialized = model.serializeDiagram();
     const distributedSerializedDiagram = distributeElements(serialized);
     const distributedDeSerializedModel = new DiagramModel();
-    distributedDeSerializedModel.deSerializeDiagram(distributedSerializedDiagram, this.engine);
-    this.engine.setDiagramModel(distributedDeSerializedModel);
-    this.forceUpdate();
+    distributedDeSerializedModel.deSerializeDiagram(distributedSerializedDiagram, this.props.engine);
+    this.props.engine.setDiagramModel(distributedDeSerializedModel);
+    this.props.engine.repaintCanvas();
   }
 
   distribute() {
     this.autoDistribute();
-    this.initialize();
     this.handleSaveGraph();
   }
 
   zoomToFit() {
-    this.engine.zoomToFit();
+    this.props.engine.zoomToFit();
     this.handleSaveGraph();
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, engine, workspace } = this.props;
     const {
       openCreateRelation, createRelationFrom, createRelationTo, openEditRelation, editRelationId,
     } = this.state;
@@ -525,11 +540,15 @@ class WorkspaceGraphComponent extends Component {
         </IconButton>
         <DiagramWidget
           className={classes.canvas}
-          diagramEngine={this.engine}
+          diagramEngine={engine}
           inverseZoom={true}
           allowLooseLinks={false}
           maxNumberPointsPerLink={0}
           actionStoppedFiring={this.handleMovesChange.bind(this)}
+        />
+        <WorkspaceAddObjectRefs
+          workspaceId={workspace.id}
+          workspaceObjectRefs={workspace.objectRefs.edges}
         />
         <StixRelationCreation
           open={openCreateRelation}
@@ -551,6 +570,7 @@ class WorkspaceGraphComponent extends Component {
 
 WorkspaceGraphComponent.propTypes = {
   workspace: PropTypes.object,
+  engine: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

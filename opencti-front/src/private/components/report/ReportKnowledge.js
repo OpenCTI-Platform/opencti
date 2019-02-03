@@ -5,10 +5,15 @@ import {
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
+import { DiagramEngine } from 'storm-react-diagrams';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
+import EntityLabelFactory from '../../../components/graph_node/EntityLabelFactory';
+import EntityLinkFactory from '../../../components/graph_node/EntityLinkFactory';
+import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
+import EntityPortFactory from '../../../components/graph_node/EntityPortFactory';
 import { SubscriptionAvatars } from '../../../components/Subscription';
 import ReportHeader from './ReportHeader';
 import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
@@ -30,6 +35,17 @@ const styles = theme => ({
 });
 
 class ReportKnowledgeComponent extends Component {
+  constructor(props) {
+    super(props);
+    const engine = new DiagramEngine();
+    engine.installDefaultFactories();
+    engine.registerPortFactory(new EntityPortFactory());
+    engine.registerNodeFactory(new EntityNodeFactory());
+    engine.registerLinkFactory(new EntityLinkFactory());
+    engine.registerLabelFactory(new EntityLabelFactory());
+    this.state = { engine };
+  }
+
   render() {
     const { classes, report, me } = this.props;
     const { editContext } = report;
@@ -47,7 +63,7 @@ class ReportKnowledgeComponent extends Component {
           variables={{ id: report.id }}
           render={({ props }) => {
             if (props && props.report) {
-              return <ReportKnowledgeGraph report={props.report}/>;
+              return <ReportKnowledgeGraph report={props.report} engine={this.state.engine}/>;
             }
             return <div> &nbsp; </div>;
           }}

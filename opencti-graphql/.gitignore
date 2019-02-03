@@ -5,6 +5,7 @@ dist
 node_modules
 public
 config/development.json
+config/production.json
 config/test.json
 config/local.json
 coverage

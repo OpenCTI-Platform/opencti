@@ -4,6 +4,7 @@ import {
   compose, filter, head, includes, map,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
+import { DiagramEngine } from 'storm-react-diagrams';
 import Drawer from '@material-ui/core/Drawer';
 import Grid from '@material-ui/core/Grid';
 import Select from '@material-ui/core/Select';
@@ -16,6 +17,10 @@ import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer, fetchQuery } from '../../../relay/environment';
 import { currentYear, parse, yearFormat } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
+import EntityLabelFactory from '../../../components/graph_node/EntityLabelFactory';
+import EntityLinkFactory from '../../../components/graph_node/EntityLinkFactory';
+import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
+import EntityPortFactory from '../../../components/graph_node/EntityPortFactory';
 import StixDomainEntityKnowledgeGraph from './StixDomainEntityKnowledgeGraph';
 
 const styles = theme => ({
@@ -65,7 +70,14 @@ const stixDomainEntityKnowledgeQuery = graphql`
 class StixDomainEntityKnowledge extends Component {
   constructor(props) {
     super(props);
+    const engine = new DiagramEngine();
+    engine.installDefaultFactories();
+    engine.registerPortFactory(new EntityPortFactory());
+    engine.registerNodeFactory(new EntityNodeFactory());
+    engine.registerLinkFactory(new EntityLinkFactory());
+    engine.registerLabelFactory(new EntityLabelFactory());
     this.state = {
+      engine,
       inferred: false,
       openToTypes: false,
       openWeights: false,
@@ -284,6 +296,7 @@ class StixDomainEntityKnowledge extends Component {
             if (props && props.stixDomainEntity) {
               return (
                 <StixDomainEntityKnowledgeGraph
+                  engine={this.state.engine}
                   isSavable={this.isSavable.bind(this)}
                   variables={variables}
                   stixDomainEntity={props.stixDomainEntity}

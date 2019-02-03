@@ -12,8 +12,12 @@ export default class EntityNodeModel extends NodeModel {
     this.selected = selected;
     this.iterateListeners((listener, event) => {
       if (listener.selectionChanged) {
-        listener.selectionChanged({ ...event, expand: expand, isSelected: selected });
+        listener.selectionChanged({ ...event, expand, isSelected: selected });
       }
     });
+  }
+
+  getPosition() {
+    return { x: this.x, y: this.y };
   }
 }

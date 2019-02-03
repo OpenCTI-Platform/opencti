@@ -37,6 +37,10 @@ const relationsTypesMapping = {
   incident_malware: ['uses'],
   incident_vulnerability: ['targets'],
   'malware_attack-pattern': ['uses'],
+  malware_country: ['targets', 'attributed-to'],
+  malware_city: ['targets', 'attributed-to'],
+  malware_organization: ['targets', 'attributed-to'],
+  malware_sector: ['targets'],
   malware_vulnerability: ['targets'],
   malware_tool: ['uses'],
   malware_malware: ['variant-of'],
@@ -45,6 +49,8 @@ const relationsTypesMapping = {
   organization_city: ['localization'],
   organization_sector: ['gathering'],
   user_organization: ['gathering'],
+  user_country: ['localization'],
+  user_city: ['localization'],
 };
 
 export const resolveRelationsTypes = (fromType, toType) => (relationsTypesMapping[`${fromType}_${toType}`] ? relationsTypesMapping[`${fromType}_${toType}`] : []);

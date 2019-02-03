@@ -36,7 +36,8 @@ export const markingDefinitions = (workspaceId, args) =>
     `match $marking isa Marking-Definition; 
     $rel(marking:$marking, so:$workspace) isa object_marking_refs; 
     $workspace id ${workspaceId}`,
-    args
+    args,
+    false
   );
 
 export const objectRefs = (workspaceId, args) =>
@@ -44,7 +45,8 @@ export const objectRefs = (workspaceId, args) =>
     `match $so isa Stix-Domain-Entity; 
     $rel(so:$so, knowledge_aggregation:$workspace) isa object_refs; 
     $workspace id ${workspaceId}`,
-    args
+    args,
+    false
   );
 
 export const relationRefs = (workspaceId, args) =>
