@@ -3,13 +3,14 @@ import uuid from 'uuid/v4';
 import {
   deleteByID,
   loadByID,
+  dayFormat,
   monthFormat,
+  yearFormat,
   notify,
   now,
   paginate,
   prepareDate,
   takeTx,
-  yearFormat,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -38,11 +39,18 @@ export const addCampaign = async (user, campaign) => {
         : ''
     }";
     $campaign has first_seen ${prepareDate(campaign.first_seen)};
+    $campaign has first_seen_day "${dayFormat(campaign.first_seen)}";
+    $campaign has first_seen_month "${monthFormat(campaign.first_seen)}";
+    $campaign has first_seen_year "${yearFormat(campaign.first_seen)}";
     $campaign has last_seen ${prepareDate(campaign.last_seen)};
+    $campaign has last_seen_day "${dayFormat(campaign.last_seen)}";
+    $campaign has last_seen_month "${monthFormat(campaign.last_seen)}";
+    $campaign has last_seen_year "${yearFormat(campaign.last_seen)}";
     $campaign has created ${now()};
     $campaign has modified ${now()};
     $campaign has revoked false;
     $campaign has created_at ${now()};
+    $campaign has created_at_day "${dayFormat(now())}";
     $campaign has created_at_month "${monthFormat(now())}";
     $campaign has created_at_year "${yearFormat(now())}";
     $campaign has updated_at ${now()};

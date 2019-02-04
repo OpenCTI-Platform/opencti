@@ -108,7 +108,7 @@ class Root extends Component {
                         <BoundaryRoute exact path='/dashboard/search/:keyword' render={routeProps => <StixDomainEntities {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/explore' component={Explore}/>
                         <BoundaryRoute exact path='/dashboard/investigate' component={Workspaces}/>
-                        <BoundaryRoute exact path='/dashboard/investigate/:workspaceId' component={RootWorkspace}/>
+                        <BoundaryRoute exact path='/dashboard/investigate_work/:workspaceId' component={RootWorkspace}/>
                         <BoundaryRoute exact path='/dashboard/knowledge' render={() => (<Redirect to='/dashboard/knowledge/threat_actors'/>)}/>
                         <BoundaryRoute exact path='/dashboard/knowledge/threat_actors' component={ThreatActors}/>
                         <BoundaryRoute path='/dashboard/knowledge/threat_actors/:threatActorId' render={routeProps => <RootThreatActor {...routeProps} me={props.me}/>}/>

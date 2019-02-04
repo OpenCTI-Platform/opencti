@@ -39,13 +39,13 @@ class SectorComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart sector={sector}/>
+            <EntityCampaignsChart entityId={sector.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart sector={sector}/>
+            <EntityIncidentsChart entityId={sector.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart sector={sector}/>
+            <EntityReportsChart entityId={sector.id}/>
           </Grid>
         </Grid>
         <SectorEdition sectorId={sector.id}/>

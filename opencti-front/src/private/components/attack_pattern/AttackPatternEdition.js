@@ -96,7 +96,6 @@ class AttackPatternEdition extends Component {
 AttackPatternEdition.propTypes = {
   attackPatternId: PropTypes.string,
   me: PropTypes.object,
-  attackPattern: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

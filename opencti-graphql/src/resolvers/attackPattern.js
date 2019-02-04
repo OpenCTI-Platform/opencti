@@ -14,7 +14,7 @@ import {
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation,
+  stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 import { auth } from './wrapper';

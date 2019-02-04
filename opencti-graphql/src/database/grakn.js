@@ -6,7 +6,6 @@ import {
   includes,
   groupBy,
   head,
-  isEmpty,
   join,
   last,
   map,
@@ -21,7 +20,6 @@ import { offsetToCursor } from 'graphql-relay';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn';
 import conf, { logger } from '../config/conf';
-import { MissingElement } from '../config/errors';
 import { pubsub } from './redis';
 
 // Global variables
@@ -42,6 +40,45 @@ export const yearFormat = date => moment(date).format('YYYY');
 export const monthFormat = date => moment(date).format('YYYY-MM');
 export const dayFormat = date => moment(date).format('YYYY-MM-DD');
 export const prepareString = s => (s ? s.replace(/"/g, '\\"') : '');
+
+export const fillTimeSeries = (startDate, endDate, interval, data) => {
+  const startDateParsed = moment(startDate);
+  const endDateParsed = moment(endDate);
+  let dateFormat = null;
+
+  switch (interval) {
+    case 'year':
+      dateFormat = 'YYYY';
+      break;
+    case 'month':
+      dateFormat = 'YYYY-MM';
+      break;
+    default:
+      dateFormat = 'YYYY-MM-DD';
+  }
+
+  const elementsOfInterval = endDateParsed.diff(
+    startDateParsed,
+    `${interval}s`,
+    false
+  );
+
+  const newData = [];
+  for (let i = 0; i <= elementsOfInterval; i++) {
+    let value = 0;
+    for (let j = 0; j < data.length; j++) {
+      if (data[j].date === startDateParsed.format(dateFormat)) {
+        value = data[j].value;
+      }
+    }
+    newData[i] = {
+      date: startDateParsed.endOf(interval).format(),
+      value
+    };
+    startDateParsed.add(1, `${interval}s`);
+  }
+  return newData;
+};
 
 // Attributes key that can contains multiple values.
 export const multipleAttributes = [
@@ -201,7 +238,7 @@ export const qkRel = (
         map(line => {
           const relationPromise = line[key].inferred
             ? Promise.resolve({
-                id: line[key]['@id'],
+                id: line[key].id,
                 type: 'stix_relation',
                 relationship_type: line[key].type.label,
                 inferred: true
@@ -323,7 +360,7 @@ export const loadRelationById = id =>
       const line = head(result.data);
       const relationPromise = line.x.inferred
         ? Promise.resolve({
-            id: line.x['@id'],
+            id: line.x.id,
             type: 'stix_relation',
             relationship_type: line.x.type.label,
             inferred: true
@@ -424,8 +461,11 @@ export const editInputTx = async (id, input, transaction) => {
     return editInputTx(id, newInput, wTx);
   }
   if (includes(key, statsDateAttributes)) {
+    const dayValue = dayFormat(head(value));
     const monthValue = monthFormat(head(value));
     const yearValue = yearFormat(head(value));
+    const dayInput = { key: `${key}_day`, value: [dayValue] };
+    editInputTx(id, dayInput, wTx);
     const monthInput = { key: `${key}_month`, value: [monthValue] };
     editInputTx(id, monthInput, wTx);
     const yearInput = { key: `${key}_year`, value: [yearValue] };
@@ -589,7 +629,7 @@ const buildPaginationRelationships = (
 };
 
 /**
- * Grakn generic pagination query without ordering
+ * Grakn generic pagination query
  * @param query
  * @param options
  * @returns Promise
@@ -629,19 +669,19 @@ export const paginateRelationships = (query, options, extraRel = null) => {
         )} { $to isa ${head(toTypes)}; };`
       : ''
   } ${
-    firstSeenStart && !inferred
+    firstSeenStart
       ? `$rel has first_seen $fs; $fs > ${prepareDate(
           firstSeenStart
         )}; $fs < ${prepareDate(firstSeenStop)};`
       : ''
   } ${
-    lastSeenStart && !inferred
+    lastSeenStart
       ? `$rel has last_seen $ls; $ls > ${prepareDate(
           lastSeenStart
         )}; $ls < ${prepareDate(lastSeenStop)};`
       : ''
   } ${
-    weights && !inferred
+    weights
       ? `$rel has weight $weight; ${join(
           ' ',
           map(weight => `{ $weight == ${weight}; } or`, weights)
@@ -665,6 +705,25 @@ export const paginateRelationships = (query, options, extraRel = null) => {
     const globalCount = data ? head(data) : 0;
     const instances = data ? last(data) : [];
     return buildPaginationRelationships(first, offset, instances, globalCount);
+  });
+};
+
+/**
+ * Grakn generic timeseries
+ * @param query
+ * @param options
+ * @returns Promise
+ */
+export const timeSeries = (query, options) => {
+  const { startDate, endDate, operation, field, interval } = options;
+  const finalQuery = `${query}; $x has ${field}_${interval} $g; aggregate group $g ${operation};`;
+  console.log(finalQuery);
+  return qk(finalQuery).then(result => {
+    const data = result.data.map(n => ({
+      date: /Value\s\[([\d-]+)\]/i.exec(head(head(toPairs(n))))[1],
+      value: head(last(head(toPairs(n))))
+    }));
+    return fillTimeSeries(startDate, endDate, interval, data);
   });
 };
 

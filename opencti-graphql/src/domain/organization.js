@@ -3,12 +3,13 @@ import uuid from 'uuid/v4';
 import {
   deleteByID,
   loadByID,
+  dayFormat,
   monthFormat,
+  yearFormat,
   notify,
   now,
   paginate,
   takeTx,
-  yearFormat,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -40,6 +41,7 @@ export const addOrganization = async (user, organization) => {
     $organization has modified ${now()};
     $organization has revoked false;
     $organization has created_at ${now()};
+    $organization has created_at_day "${dayFormat(now())}";
     $organization has created_at_month "${monthFormat(now())}";
     $organization has created_at_year "${yearFormat(now())}";         
     $organization has updated_at ${now()};

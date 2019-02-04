@@ -45,10 +45,10 @@ type ownedBy {
 
 ### Relay
 type PageInfo {
-    startCursor: String!,
-    endCursor: String!,
-    hasNextPage: Boolean!,
-    hasPreviousPage: Boolean!,
+    startCursor: String!
+    endCursor: String!
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
     globalCount: Int!
 }
 enum OrderingMode {
@@ -68,6 +68,20 @@ input EditContext {
 type EditUserContext {
     name: String!
     focusOn: String # Field name
+}
+
+### Stats
+enum StatsOperation {
+    count,
+    sum,
+}
+type TimeSeries {
+    date: DateTime!
+    value: Int!
+}
+type Distribution {
+    label: String!
+    value: Int!
 }
 
 ### Settings
@@ -866,6 +880,8 @@ type IntrusionSet implements GlobalObject & StixDomainEntity {
 input IntrusionSetAddInput {
     name: String!
     description: String!
+    first_seen: DateTime
+    last_seen: DateTime
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
@@ -1187,6 +1203,7 @@ type Query {
     # StixDomainEntities
     stixDomainEntity(id: String): StixDomainEntity
     stixDomainEntities(first: Int, after: ID, orderBy: StixDomainEntitiesOrdering, orderMode: OrderingMode, name: String, search: String, externalReferenceId: String, type: String): StixDomainEntityConnection
+    stixDomainEntitiesTimeSeries(type: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
     # StixRelations
     stixRelation(id: String!): StixRelation
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, inferred: Boolean, toId: String,fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
@@ -1220,8 +1237,7 @@ type Query {
     markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, search: String): MarkingDefinitionConnection
     # ExternalReferences
     externalReference(id: String!): ExternalReference
-    externalReferences(first: Int, after: ID, orderBy: ExternalReferencesOrdering, orderMode: OrderingMode, search: String): ExternalReferenceConnection
-    externalReferencesOf(objectId: String!, first: Int, after: ID, orderBy: ExternalReferencesOrdering, orderMode: OrderingMode, search: String): ExternalReferenceConnection
+    externalReferences(first: Int, after: ID, orderBy: ExternalReferencesOrdering, orderMode: OrderingMode, objectId: String, search: String): ExternalReferenceConnection
     # KillChainPhases
     killChainPhase(id: String!): KillChainPhase
     killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, search: String, phaseName: String): KillChainPhaseConnection
@@ -1255,6 +1271,7 @@ type Query {
     # Reports
     report(id: String!): Report
     reports(first: Int, after: ID, orderBy: ReportsOrdering, orderMode: OrderingMode, objectId: String, reportClass: String, search: String): ReportConnection
+    reportsTimeSeries(objectId: String, reportClass: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
 }
 
 ### SUBSCRIPTIONS

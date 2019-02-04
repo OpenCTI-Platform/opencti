@@ -95,7 +95,7 @@ class EntityReports extends Component {
     const { classes, entityId, reportClass } = this.props;
     const paginationOptions = {
       objectId: entityId,
-      reportClass: reportClass || '',
+      reportClass: reportClass || null,
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };

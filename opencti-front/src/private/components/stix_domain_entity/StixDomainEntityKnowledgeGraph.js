@@ -23,6 +23,7 @@ import {
   DiagramModel,
   DiagramWidget,
   MoveItemsAction,
+  MoveCanvasAction,
 } from 'storm-react-diagrams';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
@@ -59,7 +60,7 @@ const styles = () => ({
   },
   icon: {
     position: 'fixed',
-    zIndex: 3000,
+    zIndex: 1001,
     bottom: 13,
   },
 });
@@ -213,9 +214,11 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
               relationship_type: l.node.relationship_type,
               first_seen: l.node.first_seen,
               last_seen: l.node.last_seen,
+              inferred: l.node.inferred,
             },
           ]);
           newLink.addLabel(label);
+          newLink.setInferred(l.node.inferred);
           newLink.addListener({
             selectionChanged: this.handleSelection.bind(this),
           });
@@ -296,7 +299,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
   }
 
   handleMovesChange(event) {
-    if (event instanceof MoveItemsAction) {
+    if (event instanceof MoveItemsAction || event instanceof MoveCanvasAction) {
       // handle drag & drop
       this.handleSaveGraph();
     }
@@ -332,13 +335,15 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
           currentLinksPairs,
         );
         if (filteredCurrentLinks.length === 0) {
-          if (link.extras && link.extras.relation) {
+          if (link.extras && link.extras.relation.inferred === false && link.extras.relation) {
             commitMutation({
               mutation: stixRelationEditionDeleteMutation,
               variables: {
                 id: link.extras.relation.id,
               },
             });
+          } else {
+            model.addLink(link);
           }
         }
       }

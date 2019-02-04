@@ -23,6 +23,7 @@ import {
   paginate,
   qk,
   editInputTx,
+  dayFormat,
   monthFormat,
   yearFormat,
   prepareString
@@ -91,6 +92,7 @@ export const addPerson = async (user, newUser) => {
         : ''
     }";
     $user has created_at ${now()};
+    $user has created_at_day "${dayFormat(now())}";
     $user has created_at_month "${monthFormat(now())}";
     $user has created_at_year "${yearFormat(now())}";   
     $user has updated_at ${now()};
@@ -134,6 +136,7 @@ export const addUser = async (user, newUser) => {
         : '$user has language "auto";'
     }
     $user has created_at ${now()};
+    $user has created_at_day "${dayFormat(now())}";
     $user has created_at_month "${monthFormat(now())}";
     $user has created_at_year "${yearFormat(now())}";      
     $user has updated_at ${now()};

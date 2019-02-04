@@ -9,11 +9,12 @@ import {
   findByExternalReference,
   search,
   markingDefinitions,
+  stixDomainEntitiesTimeSeries,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation,
+  stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
 import { fetchEditContext, pubsub } from '../database/redis';
 import { auth, withCancel } from './wrapper';
@@ -32,7 +33,10 @@ const stixDomainEntityResolvers = {
         return findByExternalReference(args);
       }
       return findAll(args);
-    })
+    }),
+    stixDomainEntitiesTimeSeries: auth((_, args) =>
+      stixDomainEntitiesTimeSeries(args)
+    )
   },
   StixDomainEntity: {
     __resolveType(obj) {

@@ -7,8 +7,9 @@ import {
   notify,
   now,
   paginate,
-  yearFormat,
+  dayFormat,
   monthFormat,
+  yearFormat,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -48,6 +49,7 @@ export const addThreatActor = async (user, threatActor) => {
     $threatActor has modified ${now()};
     $threatActor has revoked false;
     $threatActor has created_at ${now()};
+    $threatActor has created_at_day "${dayFormat(now())}";
     $threatActor has created_at_month "${monthFormat(now())}";
     $threatActor has created_at_year "${yearFormat(now())}";        
     $threatActor has updated_at ${now()};

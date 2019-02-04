@@ -43,13 +43,13 @@ class IntrusionSetComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart intrusionSet={intrusionSet}/>
+            <EntityObservablesChart entityId={intrusionSet.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityKillChainPhasesChart intrusionSet={intrusionSet}/>
+            <EntityKillChainPhasesChart entityId={intrusionSet.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart intrusionSet={intrusionSet}/>
+            <EntityReportsChart entityId={intrusionSet.id}/>
           </Grid>
         </Grid>
         <IntrusionSetEdition intrusionSetId={intrusionSet.id}/>

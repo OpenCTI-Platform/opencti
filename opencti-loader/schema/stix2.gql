@@ -10,6 +10,7 @@ define
 
   # OpenCTI properties
   "created_at" sub attribute datatype date;
+  "created_at_day" sub attribute datatype string;
   "created_at_month" sub attribute datatype string;
   "created_at_year" sub attribute datatype string;
   "updated_at" sub attribute datatype date;
@@ -38,11 +39,13 @@ define
   "modified" sub attribute datatype date;
   "revoked" sub attribute datatype boolean;
   "first_seen" sub attribute datatype date;
-  "first_seen_year" sub attribute datatype string;
+  "first_seen_day" sub attribute datatype string;
   "first_seen_month" sub attribute datatype string;
+  "first_seen_year" sub attribute datatype string;
   "last_seen" sub attribute datatype date;
-  "last_seen_year" sub attribute datatype string;
+  "last_seen_day" sub attribute datatype string;
   "last_seen_month" sub attribute datatype string;
+  "last_seen_year" sub attribute datatype string;
   "name" sub attribute datatype string;
   "name_lowercase" sub attribute datatype string;
   "description" sub attribute datatype string;
@@ -74,8 +77,9 @@ define
   "external_id" sub attribute datatype string;
   "external_id_lowercase" sub attribute datatype string;
   "published" sub attribute datatype date;
-  "published_year" sub attribute datatype string;
+  "published_day" sub attribute datatype string;
   "published_month" sub attribute datatype string;
+  "published_year" sub attribute datatype string;
   "report_class" sub attribute datatype string;
   "pattern" sub attribute datatype string;
   "valid_from" sub attribute datatype date;
@@ -229,9 +233,11 @@ define
     has "relationship_type"
     has "weight"
     has "first_seen"
+    has "first_seen_day"
     has "first_seen_month"
     has "first_seen_year"
     has "last_seen"
+    has "last_seen_day"
     has "last_seen_month"
     has "last_seen_year"
     has "name"
@@ -239,6 +245,7 @@ define
     has "description"
     has "description_lowercase"
     has "created_at"
+    has "created_at_day"
     has "created_at_month"
     has "created_at_year"
     has "updated_at"
@@ -319,6 +326,7 @@ define
     has "platform_external_auth"
     has "platform_registration"
     has "created_at"
+    has "created_at_day"
     has "created_at_month"
     has "created_at_year"
     has "updated_at";
@@ -330,6 +338,7 @@ define
     has "description"
     has "description_lowercase"
     has "created_at"
+    has "created_at_day"
     has "created_at_month"
     has "created_at_year"
     has "updated_at"
@@ -344,6 +353,7 @@ define
     has "description_lowercase"
     has "graph_data"
     has "created_at"
+    has "created_at_day"
     has "created_at_month"
     has "created_at_year"
     has "updated_at"
@@ -360,6 +370,7 @@ define
     has "duration"
     has "issuer"
     has "created_at"
+    has "created_at_day"
     has "created_at_month"
     has "created_at_year"
     has "updated_at"
@@ -375,6 +386,7 @@ define
     has "modified"
     has "revoked"
     has "created_at"
+    has "created_at_day"
     has "created_at_month"
     has "created_at_year"
     has "updated_at"
@@ -417,6 +429,13 @@ define
     plays "marking"
     plays "allow";
 
+  "Indicator" sub "Stix-Domain"
+    has "pattern"
+    has "valid_from"
+    has "valid_until"
+    plays "phase_belonging"
+    plays "indicator";
+
   "Attack-Pattern" sub "Stix-Domain-Entity"
     plays "phase_belonging"
     plays "source"
@@ -427,9 +446,11 @@ define
 
   "Campaign" sub "Stix-Domain-Entity"
     has "first_seen"
+    has "first_seen_day"
     has "first_seen_month"
     has "first_seen_year"
     has "last_seen"
+    has "last_seen_day"
     has "last_seen_month"
     has "last_seen_year"
     has "objective"
@@ -444,6 +465,8 @@ define
 
   "Identity" sub "Stix-Domain-Entity"
     is-abstract
+    plays "gather"
+    plays "part_of"
     plays "creator"
     plays "target"
     plays "origin"
@@ -458,13 +481,10 @@ define
     plays "localized"
     plays "location";
 
-  "Sector" sub "Identity"
-    plays "gather";
-    plays "part_of";
+  "Sector" sub "Identity";
 
   "Organization" sub "Identity"
-    plays "localized"
-    plays "gather";
+    plays "localized";
 
   "Threat-Actor" sub "Identity"
     has "stix_role"
@@ -477,8 +497,7 @@ define
     plays "attribution"
     plays "source"
     plays "user"
-    plays "characterize"
-    plays "part_of";
+    plays "characterize";
 
   "User" sub "Identity"
     has "password"
@@ -491,22 +510,16 @@ define
     plays "author"
     plays "owner"
     plays "member"
-    plays "allowed"
-    plays "part_of";
-
-  "Indicator" sub "Stix-Domain-Entity"
-    has "pattern"
-    has "valid_from"
-    has "valid_until"
-    plays "phase_belonging"
-    plays "indicator";
+    plays "allowed";
 
   "Incident" sub "Stix-Domain-Entity"
     has "objective"
     has "first_seen"
+    has "first_seen_day"
     has "first_seen_month"
     has "first_seen_year"
     has "last_seen"
+    has "last_seen_day"
     has "last_seen_month"
     has "last_seen_year"
     plays "attribution"
@@ -517,9 +530,11 @@ define
 
   "Intrusion-Set" sub "Stix-Domain-Entity"
     has "first_seen"
+    has "first_seen_day"
     has "first_seen_month"
     has "first_seen_year"
     has "last_seen"
+    has "last_seen_day"
     has "last_seen_month"
     has "last_seen_year"
     has "goal"
@@ -545,6 +560,7 @@ define
 
   "Report" sub "Stix-Domain-Entity"
     has "published"
+    has "published_day"
     has "published_year"
     has "published_month"
     has "report_class"
@@ -577,8 +593,8 @@ define
       ("allowed": $user, "allow": $markingDefinition) isa "user_permission";
     };
 
-    # Threat Actors => Malwares rule through Intrusion-Set
-    "ThreatActorUsesMalwareRule" sub rule
+    # Threat Actor => uses => Malware through Intrusion-Set
+    "ThreatActorUsesMalwareTroughIntrusionSetRule" sub rule
     when {
       $intrusionSet isa "Intrusion-Set";
       $malware isa "Malware";
@@ -589,14 +605,50 @@ define
       ("user": $threatActor, "usage": $malware) isa "uses";
     };
 
-    # Threat Actors => Identity rule
-    "ThreatActorTargetsIdentityRule" sub rule
+    # Threat Actor => targets => Identity through Intrusion-Set
+    "ThreatActorTargetsIdentityThroughIntrusionSetRule" sub rule
     when {
       $intrusionSet isa "Intrusion-Set";
-      $malware isa "Malware";
+      $identity isa "Identity";
       $threatActor isa "Threat-Actor";
-      ("user": $intrusionSet, "usage": $malware) isa uses;
+      ("source": $intrusionSet, "target": $identity) isa targets;
       ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
     } then {
-      ("user": $threatActor, "usage": $malware) isa "uses";
+      ("source": $threatActor, "target": $identity) isa "targets";
+    };
+
+    # Intrusion set => targets => Identity through Campaign
+    "IntrusionSetTargetsIdentityThroughCampaignRule" sub rule
+    when {
+      $campaign isa "Campaign";
+      $identity isa "Identity";
+      $intrusionSet isa "Intrusion-Set";
+      ("source": $campaign, "target": $identity) isa targets;
+      ("origin": $intrusionSet, "attribution": $campaign) isa attributed-to;
+    } then {
+      ("source": $intrusionSet, "target": $identity) isa "targets";
+    };
+
+    # Intrusion set => targets => Identity through SubIdentity
+    "IntrusionSetTargetsIdentityThroughIdentityRule" sub rule
+    when {
+      $subidentity isa "Identity";
+      $identity isa "Identity";
+      $intrusionSet isa "Intrusion-Set";
+      ("source": $intrusionSet, "target": $subidentity) isa targets;
+      ("gather": $identity, "part_of": $subidentity) isa gathering;
+    } then {
+      ("source": $intrusionSet, "target": $identity) isa "targets";
+    };
+
+    # Campaign => attributed-to => Threat Actor through Intrusion-Set
+    "CampaignAttributedToThreatActorTroughIntrusionSetRule" sub rule
+    when {
+      $intrusionSet isa "Intrusion-Set";
+      $threatActor isa "Threat-Actor";
+      $campaign isa "Campaign";
+      ("origin": $intrusionSet, "attribution": $campaign) isa attributed-to;
+      ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
+    } then {
+      ("origin": $threatActor, "attribution": $campaign) isa "attributed-to";
     };

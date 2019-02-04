@@ -78,7 +78,7 @@ class StixDomainEntityKnowledge extends Component {
     engine.registerLabelFactory(new EntityLabelFactory());
     this.state = {
       engine,
-      inferred: false,
+      inferred: true,
       openToTypes: false,
       openWeights: false,
       toTypes: ['All'],
@@ -93,7 +93,7 @@ class StixDomainEntityKnowledge extends Component {
   componentDidMount() {
     const { stixDomainEntityId } = this.props;
     fetchQuery(firstStixRelationQuery, {
-      inferred: false,
+      inferred: true,
       fromId: stixDomainEntityId,
       first: 1,
       orderBy: 'first_seen',
@@ -109,7 +109,7 @@ class StixDomainEntityKnowledge extends Component {
     const {
       firstSeenStart, firstSeenStop, weights, toTypes, inferred,
     } = this.state;
-    if (inferred === false
+    if (inferred === true
       && firstSeenStart === null
       && firstSeenStop === null
       && includes(0, weights)
@@ -220,6 +220,7 @@ class StixDomainEntityKnowledge extends Component {
               >
                 <MenuItem value='All'>{t('All entities')}</MenuItem>
                 <MenuItem value='Country'>{t('Country')}</MenuItem>
+                <MenuItem value='City'>{t('City')}</MenuItem>
                 <MenuItem value='Sector'>{t('Sector')}</MenuItem>
                 <MenuItem value='Organization'>{t('Organization')}</MenuItem>
                 <MenuItem value='User'>{t('Person')}</MenuItem>

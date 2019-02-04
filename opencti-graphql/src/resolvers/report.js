@@ -3,6 +3,8 @@ import {
   reportDelete,
   findAll,
   findByEntity,
+  reportsTimeSeries,
+  reportsTimeSeriesByEntity,
   findById,
   objectRefs,
   relationRefs
@@ -27,6 +29,12 @@ const reportResolvers = {
         return findByEntity(args);
       }
       return findAll(args);
+    }),
+    reportsTimeSeries: auth((_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return reportsTimeSeriesByEntity(args);
+      }
+      return reportsTimeSeries(args);
     })
   },
   Report: {

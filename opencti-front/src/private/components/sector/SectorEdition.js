@@ -94,7 +94,6 @@ class SectorEdition extends Component {
 SectorEdition.propTypes = {
   sectorId: PropTypes.string,
   me: PropTypes.object,
-  sector: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

@@ -7,13 +7,15 @@ import {
   deleteRelation,
   editInputTx,
   loadByID,
+  dayFormat,
   monthFormat,
+  yearFormat,
   notify,
   now,
   paginate,
   qk,
+  timeSeries,
   qkObjUnique,
-  yearFormat,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -26,6 +28,12 @@ import {
 export const findAll = args =>
   paginate(
     `match $m isa ${args.type ? args.type : 'Stix-Domain-Entity'}`,
+    args
+  );
+
+export const stixDomainEntitiesTimeSeries = args =>
+  timeSeries(
+    `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'}`,
     args
   );
 
@@ -42,7 +50,9 @@ export const findByName = args =>
 
 export const findByExternalReference = args =>
   paginate(
-    `match $stixDomainEntity isa ${args.type ? args.type : 'Stix-Domain-Entity'};
+    `match $stixDomainEntity isa ${
+      args.type ? args.type : 'Stix-Domain-Entity'
+    };
      $rel(external_reference:$externalReference, so:$stixDomainEntity) isa external_references;
      $externalReference id "${prepareString(args.externalReferenceId)}"`,
     args,
@@ -97,6 +107,14 @@ export const reports = (stixDomainEntityId, args) =>
     args
   );
 
+export const reportsTimeSeries = (stixDomainEntityId, args) =>
+  timeSeries(
+    `match $m isa Report; 
+    $rel(knowledge_aggregation:$report, so:$stixDomainEntity) isa object_refs; 
+    $stixDomainEntity id ${stixDomainEntityId}`,
+    args
+  );
+
 export const externalReferences = (stixDomainEntityId, args) =>
   paginate(
     `match $externalReference isa External-Reference; 
@@ -145,6 +163,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     $stixDomainEntity has modified ${now()};
     $stixDomainEntity has revoked false;
     $stixDomainEntity has created_at ${now()};
+    $stixDomainEntity has created_at_day "${dayFormat(now())}";
     $stixDomainEntity has created_at_month "${monthFormat(now())}";
     $stixDomainEntity has created_at_year "${yearFormat(now())}";      
     $stixDomainEntity has updated_at ${now()};

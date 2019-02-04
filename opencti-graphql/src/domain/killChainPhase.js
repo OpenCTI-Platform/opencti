@@ -7,12 +7,13 @@ import {
   deleteRelation,
   editInputTx,
   loadByID,
+  dayFormat,
   monthFormat,
+  yearFormat,
   notify,
   now,
   paginate,
   qk,
-  yearFormat,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -54,6 +55,7 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     $killChainPhase has modified ${now()};
     $killChainPhase has revoked false;
     $killChainPhase has created_at ${now()};
+    $killChainPhase has created_at_day "${dayFormat(now())}";
     $killChainPhase has created_at_month "${monthFormat(now())}";
     $killChainPhase has created_at_year "${yearFormat(now())}";       
     $killChainPhase has updated_at ${now()};

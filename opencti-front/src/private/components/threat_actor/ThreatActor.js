@@ -43,13 +43,13 @@ class ThreatActorComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart threatActor={threatActor}/>
+            <EntityObservablesChart entityId={threatActor.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart threatActor={threatActor}/>
+            <EntityCampaignsChart entityId={threatActor.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart threatActor={threatActor}/>
+            <EntityReportsChart entityId={threatActor.id}/>
           </Grid>
         </Grid>
         <ThreatActorEdition threatActorId={threatActor.id}/>

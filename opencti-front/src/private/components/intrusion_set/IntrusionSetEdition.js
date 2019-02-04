@@ -96,7 +96,6 @@ class IntrusionSetEdition extends Component {
 IntrusionSetEdition.propTypes = {
   intrusionSetId: PropTypes.string,
   me: PropTypes.object,
-  intrusionSet: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

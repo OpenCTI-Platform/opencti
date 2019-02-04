@@ -3,12 +3,13 @@ import uuid from 'uuid/v4';
 import {
   deleteByID,
   loadByID,
+  dayFormat,
   monthFormat,
+  yearFormat,
   notify,
   now,
   paginate,
   takeTx,
-  yearFormat,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -52,6 +53,7 @@ export const addIdentity = async (user, identity) => {
     $identity has modified ${now()};
     $identity has revoked false;
     $identity has created_at ${now()};
+    $identity has created_at_day "${dayFormat(now())}";
     $identity has created_at_month "${monthFormat(now())}";
     $identity has created_at_year "${yearFormat(now())}";   
     $identity has updated_at ${now()};

@@ -39,13 +39,13 @@ class AttackPatternComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <AttackPatternUsageChart attackPattern={attackPattern}/>
+            <AttackPatternUsageChart attackPatternId={attackPattern.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityRelationsChart attackPattern={attackPattern}/>
+            <EntityRelationsChart entityId={attackPattern.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart attackPattern={attackPattern}/>
+            <EntityReportsChart entityId={attackPattern.id}/>
           </Grid>
         </Grid>
         <AttackPatternEdition attackPatternId={attackPattern.id}/>

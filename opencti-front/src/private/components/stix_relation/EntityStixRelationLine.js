@@ -92,6 +92,40 @@ class ReportLineComponent extends Component {
     const {
       nsd, t, classes, stixRelation, stixDomainEntity, paginationOptions, entityLink,
     } = this.props;
+    if (stixRelation.inferred === true) {
+      return (
+        <ListItem
+          classes={{ root: classes.item }}
+          divider={true}
+        >
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <ItemIcon type={stixDomainEntity.type}/>
+          </ListItemIcon>
+          <ListItemText primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {stixDomainEntity.name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.type}>
+                {t(`entity_${stixDomainEntity.type}`)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.first_seen}>
+                -
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.last_seen}>
+                -
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.weight}>
+                <ItemConfidenceLevel level={99} variant='inList'/>
+              </div>
+            </div>
+          }/>
+          <ListItemSecondaryAction>
+            <StixRelationPopover stixRelationId={stixRelation.id} paginationOptions={paginationOptions}/>
+          </ListItemSecondaryAction>
+        </ListItem>
+      );
+    }
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -148,6 +182,7 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
           first_seen
           last_seen
           description
+          inferred
       }
   `,
   stixDomainEntity: graphql`
@@ -194,7 +229,7 @@ class EntityStixRelationLineDummyComponent extends Component {
             </div>
           </div>
         }/>
-        <ListItemSecondaryAction classes={{root: classes.itemIconDisabled}}>
+        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
           <MoreVert/>
         </ListItemSecondaryAction>
       </ListItem>

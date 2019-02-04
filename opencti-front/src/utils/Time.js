@@ -12,7 +12,11 @@ export const ONE_SECOND = 1000;
 
 export const parse = date => moment(date);
 
-export const now = () => moment();
+export const now = () => moment().format();
+
+export const monthsAgo = number => moment().subtract(number, 'months').format();
+
+export const yearsAgo = number => moment().subtract(number, 'years').format();
 
 export const dayFormat = data => (data && data !== '-' ? parse(data).format(dayDateFormat) : '');
 

@@ -7,19 +7,20 @@ import {
   deleteRelation,
   editInputTx,
   loadByID,
+  dayFormat,
   monthFormat,
+  yearFormat,
   notify,
   now,
   paginate,
   qk,
-  yearFormat,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args =>
   paginate('match $m isa External-Reference', args);
-export const findAllBySo = args =>
+export const findByEntity = args =>
   paginate(
     `match $externalReference isa External-Reference; 
     $rel(external_reference:$externalReference, so:$so) isa external_references; 
@@ -78,6 +79,7 @@ export const addExternalReference = async (user, externalReference) => {
     $externalReference has modified ${now()};
     $externalReference has revoked false;
     $externalReference has created_at ${now()};
+    $externalReference has created_at_day "${dayFormat(now())}";
     $externalReference has created_at_month "${monthFormat(now())}";
     $externalReference has created_at_year "${yearFormat(now())}";    
     $externalReference has updated_at ${now()};

@@ -11,6 +11,7 @@ import {
   DiagramModel,
   DiagramWidget,
   MoveItemsAction,
+  MoveCanvasAction,
 } from 'storm-react-diagrams';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
@@ -275,7 +276,8 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleMovesChange(event) {
-    if (event instanceof MoveItemsAction) {
+    console.log(event);
+    if (event instanceof MoveItemsAction || event instanceof MoveCanvasAction) {
       // handle drag & drop
       this.handleSaveGraph();
     }

@@ -39,13 +39,13 @@ class ToolComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <ToolUsageChart tool={tool}/>
+            <ToolUsageChart toolId={tool.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityKillChainPhasesChart tool={tool}/>
+            <EntityKillChainPhasesChart entityId={tool.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart tool={tool}/>
+            <EntityReportsChart entityId={tool.id}/>
           </Grid>
         </Grid>
         <ToolEdition toolId={tool.id}/>

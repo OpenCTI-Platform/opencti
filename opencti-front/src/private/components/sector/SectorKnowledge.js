@@ -21,7 +21,7 @@ const styles = () => ({
   },
 });
 
-const inversedRelations = ['intrusion-set', 'campaign', 'incident', 'malware'];
+const inversedRelations = ['organization', 'intrusion-set', 'campaign', 'incident', 'malware'];
 
 class SectorKnowledgeComponent extends Component {
   render() {
@@ -36,6 +36,7 @@ class SectorKnowledgeComponent extends Component {
             routeProps => <StixRelation entityId={sector.id} {...routeProps} inversedRelations={inversedRelations}/>
           }/>
           {location.pathname.includes('overview') ? <StixDomainEntityKnowledge stixDomainEntityId={sector.id}/> : ''}
+          {location.pathname.includes('organizations') ? <EntityStixRelations entityId={sector.id} relationType='gathering' targetEntityTypes={['Organization']} entityLink={link}/> : ''}
           {location.pathname.includes('intrusion_sets') ? <EntityStixRelations entityId={sector.id} relationType='targets' targetEntityTypes={['Intrusion-Set']} entityLink={link}/> : ''}
           {location.pathname.includes('campaigns') ? <EntityStixRelations entityId={sector.id} relationType='targets' targetEntityTypes={['Campaign']} entityLink={link}/> : ''}
           {location.pathname.includes('incidents') ? <EntityStixRelations entityId={sector.id} relationType='targets' targetEntityTypes={['Incident']} entityLink={link}/> : ''}

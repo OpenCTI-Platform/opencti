@@ -3,12 +3,13 @@ import uuid from 'uuid/v4';
 import {
   deleteByID,
   loadByID,
+  dayFormat,
   monthFormat,
+  yearFormat,
   notify,
   now,
   paginate,
   takeTx,
-  yearFormat,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -53,6 +54,7 @@ export const addAttackPattern = async (user, attackPattern) => {
     $attackPattern has modified ${now()};
     $attackPattern has revoked false;
     $attackPattern has created_at ${now()};
+    $attackPattern has created_at_day "${dayFormat(now())}";
     $attackPattern has created_at_month "${monthFormat(now())}";
     $attackPattern has created_at_year "${yearFormat(now())}";
     $attackPattern has updated_at ${now()};

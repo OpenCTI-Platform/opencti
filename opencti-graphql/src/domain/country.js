@@ -3,12 +3,13 @@ import uuid from 'uuid/v4';
 import {
   deleteByID,
   loadByID,
+  dayFormat,
   monthFormat,
+  yearFormat,
   notify,
   now,
   paginate,
   qk,
-  yearFormat,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -37,12 +38,15 @@ export const addCountry = async (user, country) => {
     $country has description "${prepareString(country.description)}";
     $country has name_lowercase "${prepareString(country.name.toLowerCase())}";
     $country has description_lowercase "${
-      country.description ? prepareString(country.description.toLowerCase()) : ''
+      country.description
+        ? prepareString(country.description.toLowerCase())
+        : ''
     }";
     $country has created ${now()};
     $country has modified ${now()};
     $country has revoked false;
     $country has created_at ${now()};
+    $country has created_at_day "${dayFormat(now())}";
     $country has created_at_month "${monthFormat(now())}";
     $country has created_at_year "${yearFormat(now())}";
     $country has updated_at ${now()};

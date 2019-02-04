@@ -124,6 +124,8 @@ class EntityStixRelations extends Component {
       firstSeenStop: null,
       weights: [0],
       openWeights: false,
+      openToTypes: false,
+      toTypes: ['All'],
       inferred: true,
     };
   }
@@ -163,6 +165,25 @@ class EntityStixRelations extends Component {
         <span>{t(label)}</span>
       </div>
     );
+  }
+
+  handleOpenToTypes() {
+    this.setState({ openToTypes: true });
+  }
+
+  handleCloseToTypes() {
+    this.setState({ openToTypes: false });
+  }
+
+  handleChangeEntities(event) {
+    const { value } = event.target;
+    if (includes('All', this.state.toTypes) || !includes('All', value)) {
+      const toTypes = filter(v => v !== 'All', value);
+      if (toTypes.length > 0) {
+        return this.setState({ openToTypes: false, toTypes });
+      }
+    }
+    return this.setState({ openToTypes: false, toTypes: ['All'] });
   }
 
   handleChangeYear(event) {
@@ -219,7 +240,7 @@ class EntityStixRelations extends Component {
 
     const paginationOptions = {
       inferred: this.state.inferred,
-      toTypes: targetEntityTypes || null,
+      toTypes: includes('All', this.state.toTypes) ? targetEntityTypes : this.state.toTypes,
       fromId: entityId,
       relationType,
       firstSeenStart: this.state.firstSeenStart || null,
@@ -228,6 +249,7 @@ class EntityStixRelations extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
+
     return (
       <div className={classes.container}>
         <Drawer anchor='bottom' variant='permanent' classes={{ paper: classes.bottomNav }}>
@@ -235,6 +257,40 @@ class EntityStixRelations extends Component {
             <Grid item={true} xs='auto'>
               <Select
                 style={{ height: 50 }}
+                multiple={true}
+                value={this.state.toTypes}
+                open={this.state.openToTypes}
+                onClose={this.handleCloseToTypes.bind(this)}
+                onOpen={this.handleOpenToTypes.bind(this)}
+                onChange={this.handleChangeEntities.bind(this)}
+                input={<Input id='entities'/>}
+                renderValue={selected => (
+                  <div className={classes.chips}>
+                    {selected.map(value => (
+                      <Chip key={value} label={t(`entity_${value.toLowerCase()}`)} className={classes.chip}/>
+                    ))}
+                  </div>
+                )}
+              >
+                <MenuItem value='All'>{t('All entities')}</MenuItem>
+                {includes('Country', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='Country'>{t('Country')}</MenuItem> : ''}
+                {includes('City', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='City'>{t('City')}</MenuItem> : ''}
+                {includes('Sector', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='Sector'>{t('Sector')}</MenuItem> : ''}
+                {includes('Organization', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='Organization'>{t('Organization')}</MenuItem> : ''}
+                {includes('User', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='User'>{t('Person')}</MenuItem> : ''}
+                {includes('Threat-Actor', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='Threat-Actor'>{t('Threat actor')}</MenuItem> : ''}
+                {includes('Intrusion-Set', targetEntityTypes) ? <MenuItem value='Intrusion-Set'>{t('Intrusion set')}</MenuItem> : ''}
+                {includes('Campaign', targetEntityTypes) ? <MenuItem value='Campaign'>{t('Campaign')}</MenuItem> : ''}
+                {includes('Incident', targetEntityTypes) ? <MenuItem value='Incident'>{t('Incident')}</MenuItem> : ''}
+                {includes('Malware', targetEntityTypes) ? <MenuItem value='Malware'>{t('Malware')}</MenuItem> : ''}
+                {includes('Tool', targetEntityTypes) ? <MenuItem value='Tool'>{t('Tool')}</MenuItem> : ''}
+                {includes('Vulnerability', targetEntityTypes) ? <MenuItem value='Vulnerability'>{t('Vulnerability')}</MenuItem> : ''}
+                {includes('Attack-Pattern', targetEntityTypes) ? <MenuItem value='Attack-Pattern'>{t('Attack pattern')}</MenuItem> : ''}
+              </Select>
+            </Grid>
+            <Grid item={true} xs='auto'>
+              <Select
+                style={{ height: 50, marginLeft: 20 }}
                 multiple={true}
                 value={this.state.weights}
                 open={this.state.openWeights}

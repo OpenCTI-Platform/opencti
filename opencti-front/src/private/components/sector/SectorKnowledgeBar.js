@@ -5,7 +5,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
-import { DeviceHub } from '@material-ui/icons';
+import { DeviceHub, AccountBalance } from '@material-ui/icons';
 import {
   ChessKnight,
   Biohazard,
@@ -80,6 +80,15 @@ class SectorKnowledgeBar extends Component {
           <div className={classes.content}>
             <span className={classes.title}>{t('Overview')}</span><br />
             <span className={classes.subtitle}>{t('Knowledge graph')}</span>
+          </div>
+        </Paper>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/organizations` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/organizations`}>
+          <div className={classes.icon}>
+            <AccountBalance fontSize='default'/>
+          </div>
+          <div className={classes.content}>
+            <span className={classes.title}>{t('Organizations')}</span><br />
+            <span className={classes.subtitle}>{t('Part of this sector')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/intrusion_sets` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/intrusion_sets`}>

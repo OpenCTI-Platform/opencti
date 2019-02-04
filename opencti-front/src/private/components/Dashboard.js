@@ -24,8 +24,10 @@ import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import Bar from 'recharts/lib/cartesian/Bar';
 import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
+import Tooltip from 'recharts/lib/component/Tooltip';
 import { QueryRenderer } from '../../relay/environment';
 import truncate from '../../utils/String';
+import { yearsAgo, now } from '../../utils/Time';
 import { resolveLink } from '../../utils/Entity';
 import Theme from '../../components/Theme';
 import inject18n from '../../components/i18n';
@@ -115,6 +117,15 @@ const inlineStyles = {
   },
 };
 
+const dashboardStixDomainEntitiesTimeSeriesQuery = graphql`
+    query DashboardStixDomainEntitiesTimeSeriesQuery($field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
+        stixDomainEntitiesTimeSeries(field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
+            date,
+            value
+        }
+    }
+`;
+
 const dashboardLastReportsQuery = graphql`
     query DashboardLastReportsQuery($reportClass: String, $first: Int, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {
         reports(reportClass: $reportClass, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
@@ -161,28 +172,15 @@ const dashboardLastStixDomainEntitiesQuery = graphql`
 `;
 
 class Dashboard extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      chartData: [
-        { date: '2017-11-01', number: 8 },
-        { date: '2017-12-01', number: 12 },
-        { date: '2018-01-01', number: 45 },
-        { date: '2018-02-01', number: 42 },
-        { date: '2018-03-01', number: 12 },
-        { date: '2018-04-01', number: 69 },
-        { date: '2018-05-01', number: 45 },
-        { date: '2018-06-01', number: 42 },
-        { date: '2018-07-01', number: 15 },
-        { date: '2018-08-01', number: 25 },
-        { date: '2018-09-01', number: 58 },
-        { date: '2018-10-01', number: 45 },
-      ],
-    };
-  }
-
   render() {
     const { t, nsd, classes } = this.props;
+    const stixDomainEntitiesTimeSeriesVariables = {
+      field: 'created_at',
+      operation: 'count',
+      startDate: yearsAgo(1),
+      endDate: now(),
+      interval: 'day',
+    };
     return (
       <div>
         <Grid container={true} spacing={16}>
@@ -289,15 +287,33 @@ class Dashboard extends Component {
                   {t('Ingested entities')}
                 </div>
                 <div className={classes.graphContainer}>
-                  <ResponsiveContainer height={180} width='100%'>
-                    <BarChart data={this.state.chartData} margin={{
-                      top: 5, right: 5, bottom: 25, left: 5,
-                    }}>
-                      <XAxis dataKey='date' stroke='#ffffff' interval={0} angle={-45} textAnchor='end' tickFormatter={nsd}/>
-                      <YAxis stroke='#ffffff'/>
-                      <Bar fill={Theme.palette.primary.main} dataKey='number' barSize={10}/>
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <QueryRenderer
+                    query={dashboardStixDomainEntitiesTimeSeriesQuery}
+                    variables={stixDomainEntitiesTimeSeriesVariables}
+                    render={({ props }) => {
+                      if (props && props.stixDomainEntitiesTimeSeries) {
+                        return (
+                          <ResponsiveContainer height={180} width='100%'>
+                            <BarChart data={props.stixDomainEntitiesTimeSeries} margin={{
+                              top: 5, right: 5, bottom: 25, left: 5,
+                            }}>
+                              <XAxis dataKey='date' stroke='#ffffff' interval={15} angle={-45} textAnchor='end' tickFormatter={nsd}/>
+                              <YAxis stroke='#ffffff'/>
+                              <Tooltip
+                                cursor={{ fill: 'rgba(0, 0, 0, 0.2)', stroke: 'rgba(0, 0, 0, 0.2)', strokeWidth: 2 }}
+                                contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', fontSize: 12, borderRadius: 10 }}
+                                labelFormatter={nsd}
+                              />
+                              <Bar fill={Theme.palette.primary.main} dataKey='value' barSize={10}/>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        );
+                      }
+                      return (
+                        <div> &nbsp; </div>
+                      );
+                    }}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -311,7 +327,9 @@ class Dashboard extends Component {
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <QueryRenderer
                 query={dashboardLastReportsQuery}
-                variables={{ reportClass: 'internal', first: 15, orderBy: 'published', orderMode: 'desc' }}
+                variables={{
+                  reportClass: 'internal', first: 15, orderBy: 'published', orderMode: 'desc',
+                }}
                 render={({ props }) => {
                   if (props && props.reports) {
                     return (
@@ -405,6 +423,7 @@ Dashboard.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,
+  md: PropTypes.func,
   history: PropTypes.object,
 };
 

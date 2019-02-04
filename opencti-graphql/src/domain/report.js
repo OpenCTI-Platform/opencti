@@ -8,10 +8,12 @@ import {
   paginate,
   paginateRelationships,
   prepareDate,
-  yearFormat,
+  dayFormat,
   monthFormat,
+  yearFormat,
   takeTx,
-  prepareString
+  prepareString,
+  timeSeries
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -38,6 +40,16 @@ export const findAll = args => {
     args
   );
 };
+
+export const reportsTimeSeries = args =>
+  timeSeries(
+    `match $x isa Report ${
+      args.reportClass
+        ? `; $x has report_class "${prepareString(args.reportClass)}"`
+        : ''
+    }`,
+    args
+  );
 
 export const findByEntity = args => {
   if (args.orderBy === 'createdByRef') {
@@ -66,6 +78,18 @@ export const findByEntity = args => {
     args
   );
 };
+
+export const reportsTimeSeriesByEntity = args =>
+  timeSeries(
+    `match $x isa Report; 
+    $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
+    $so id ${args.objectId} ${
+      args.reportClass
+        ? `; $x has report_class "${prepareString(args.reportClass)}"`
+        : ''
+    }`,
+    args
+  );
 
 export const findById = reportId => loadByID(reportId);
 
@@ -102,6 +126,7 @@ export const addReport = async (user, report) => {
       report.description ? prepareString(report.description.toLowerCase()) : ''
     }";
     $report has published ${prepareDate(report.published)};
+    $report has published_day "${dayFormat(report.published)}";
     $report has published_month "${monthFormat(report.published)}";
     $report has published_year "${yearFormat(report.published)}";
     $report has report_class "${prepareString(report.report_class)}";
@@ -110,6 +135,7 @@ export const addReport = async (user, report) => {
     $report has modified ${now()};
     $report has revoked false;
     $report has created_at ${now()};
+    $report has created_at_day "${dayFormat(now())}";
     $report has created_at_month "${monthFormat(now())}";
     $report has created_at_year "${yearFormat(now())}";        
     $report has updated_at ${now()};

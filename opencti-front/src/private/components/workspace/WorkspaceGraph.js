@@ -11,6 +11,7 @@ import {
   DiagramModel,
   DiagramWidget,
   MoveItemsAction,
+  MoveCanvasAction,
 } from 'storm-react-diagrams';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
@@ -29,7 +30,7 @@ import { workspaceMutationFieldPatch } from './WorkspaceEditionOverview';
 import WorkspaceAddObjectRefs from './WorkspaceAddObjectRefs';
 import { workspaceMutationRelationAdd, workspaceMutationRelationDelete } from './WorkspaceAddObjectRefsLines';
 import StixRelationCreation from '../stix_relation/StixRelationCreation';
-import StixRelationEdition, { stixRelationEditionDeleteMutation } from '../stix_relation/StixRelationEdition';
+import StixRelationEdition from '../stix_relation/StixRelationEdition';
 
 const styles = () => ({
   container: {
@@ -222,8 +223,10 @@ class WorkspaceGraphComponent extends Component {
           relationship_type: l.node.relationship_type,
           first_seen: l.node.first_seen,
           last_seen: l.node.last_seen,
+          inferred: l.node.inferred,
         }]);
         newLink.addLabel(label);
+        newLink.setInferred(l.node.inferred);
         newLink.addListener({ selectionChanged: this.handleSelection.bind(this) });
         model.addLink(newLink);
         createdRelations.push(l.relation.id);
@@ -285,7 +288,7 @@ class WorkspaceGraphComponent extends Component {
   }
 
   handleMovesChange(event) {
-    if (event instanceof MoveItemsAction) {
+    if (event instanceof MoveItemsAction || event instanceof MoveCanvasAction) {
       // handle drag & drop
       this.handleSaveGraph();
     }
@@ -335,12 +338,6 @@ class WorkspaceGraphComponent extends Component {
               variables: {
                 id: this.props.workspace.id,
                 relationId: link.extras.objectRefId,
-              },
-            });
-            commitMutation({
-              mutation: stixRelationEditionDeleteMutation,
-              variables: {
-                id: link.extras.relation.id,
               },
             });
           }

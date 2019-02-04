@@ -21,7 +21,7 @@ export default class EntityLinkFactory extends SRD.AbstractLinkFactory {
   generateLinkSegment(model, widget, selected, path) {
     return (
       <path
-        className={selected ? widget.bem('--path-selected') : ''}
+        className={model.inferred ? widget.bem('--path-inferred') : selected ? widget.bem('--path-selected') : ''}
         strokeWidth={model.width}
         stroke={model.color}
         d={path}

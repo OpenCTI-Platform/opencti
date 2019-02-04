@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import BarChart from 'recharts/lib/chart/BarChart';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
@@ -9,9 +8,12 @@ import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
 import Bar from 'recharts/lib/cartesian/Bar';
 import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
+import Tooltip from 'recharts/lib/component/Tooltip';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import { QueryRenderer } from '../../../relay/environment';
+import { now, yearsAgo } from '../../../utils/Time';
 import Theme from '../../../components/Theme';
 import inject18n from '../../../components/i18n';
 
@@ -26,62 +28,77 @@ const styles = theme => ({
   },
 });
 
-class EntityReportsChartComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      chartData: [
-        { date: '2018-08', value: 8 },
-        { date: '2018-09', value: 12 },
-        { date: '2018-10', value: 45 },
-        { date: '2018-11', value: 42 },
-        { date: '2018-12', value: 12 },
-      ],
-    };
-  }
+const entityReportsChartReportsTimeSeriesQuery = graphql`
+    query EntityReportsChartReportsTimeSeriesQuery($objectId: String, $reportClass: String, $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
+        reportsTimeSeries(objectId: $objectId, reportClass: $reportClass, field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
+            date,
+            value
+        }
+    }
+`;
 
+class EntityReportsChart extends Component {
   render() {
-    const { t, classes } = this.props;
+    const {
+      t, md, classes, entityId, reportClass,
+    } = this.props;
+    const reportsTimeSeriesVariables = {
+      objectId: entityId,
+      reportClass: reportClass || null,
+      field: 'published',
+      operation: 'count',
+      startDate: yearsAgo(3),
+      endDate: now(),
+      interval: 'month',
+    };
     return (
       <div style={{ height: '100%' }}>
         <Typography variant='h4' gutterBottom={true}>
           {t('Reports')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <ResponsiveContainer height={330} width='100%'>
-            <BarChart data={this.state.chartData} margin={{
-              top: 20, right: 50, bottom: 20, left: -10,
-            }}>
-              <CartesianGrid strokeDasharray='3 3'/>
-              <XAxis dataKey='date' stroke='#ffffff' interval={0} angle={-45} textAnchor='end'/>
-              <YAxis stroke='#ffffff'/>
-              <Bar fill={Theme.palette.primary.main} dataKey='value' barSize={5}/>
-            </BarChart>
-          </ResponsiveContainer>
+          <QueryRenderer
+            query={entityReportsChartReportsTimeSeriesQuery}
+            variables={reportsTimeSeriesVariables}
+            render={({ props }) => {
+              if (props && props.reportsTimeSeries) {
+                return (
+                  <ResponsiveContainer height={330} width='100%'>
+                    <BarChart data={props.reportsTimeSeries} margin={{
+                      top: 20, right: 50, bottom: 20, left: -10,
+                    }}>
+                      <CartesianGrid strokeDasharray='3 3'/>
+                      <XAxis dataKey='date' stroke='#ffffff' interval={2} angle={-45} textAnchor='end' tickFormatter={md}/>
+                      <YAxis stroke='#ffffff'/>
+                      <Tooltip
+                        cursor={{ fill: 'rgba(0, 0, 0, 0.2)', stroke: 'rgba(0, 0, 0, 0.2)', strokeWidth: 2 }}
+                        contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', fontSize: 12, borderRadius: 10 }}
+                        labelFormatter={md}
+                      />
+                      <Bar fill={Theme.palette.primary.main} dataKey='value' barSize={10}/>
+                    </BarChart>
+                  </ResponsiveContainer>
+                );
+              }
+              return (
+                <div> &nbsp; </div>
+              );
+            }}
+          />
         </Paper>
       </div>
     );
   }
 }
 
-EntityReportsChartComponent.propTypes = {
-  observablesStats: PropTypes.object,
+EntityReportsChart.propTypes = {
+  entityId: PropTypes.string,
   classes: PropTypes.object,
+  reportClass: PropTypes.string,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  md: PropTypes.func,
+  history: PropTypes.object,
 };
-
-const EntityReportsChart = createFragmentContainer(EntityReportsChartComponent, {
-  observablesStats: graphql`
-      fragment EntityReportsChart_observablesStats on Malware {
-          id,
-          name,
-          description,
-          created,
-          modified
-      }
-  `,
-});
 
 export default compose(
   inject18n,

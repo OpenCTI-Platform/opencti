@@ -95,7 +95,6 @@ class CampaignEdition extends Component {
 CampaignEdition.propTypes = {
   campaignId: PropTypes.string,
   me: PropTypes.object,
-  campaign: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

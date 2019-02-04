@@ -178,6 +178,7 @@ const i18n = {
       'Used by this actor': 'Utilisé par cet acteur',
       'Targeting this sector': 'Ciblant ce secteur',
       'Affecting this sector': 'Affectant ce secteur',
+      'Part of this sector': 'Appartenant à ce secteur',
       'Origins of this intrusion set': 'Origine de ce mode opératoire',
       'Attributed to this intrusion set': 'Attribué à ce mode opératoire',
       'Used by this intrusion set': 'Utilisé par ce mode opératoire',
@@ -198,6 +199,7 @@ const i18n = {
       'Tool usage': 'Utilisation de cet outil',
       'Targeting this vulnerability': 'Ciblant cette vulnérabilité',
       Inferences: 'Inférences',
+      Inferred: 'Inféré',
       // User
       'Sign in': "S'identifier",
       Email: 'Email',

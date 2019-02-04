@@ -3,12 +3,13 @@ import uuid from 'uuid/v4';
 import {
   deleteByID,
   loadByID,
+  dayFormat,
   monthFormat,
+  yearFormat,
   notify,
   now,
   paginate,
   takeTx,
-  yearFormat,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -36,6 +37,7 @@ export const addCity = async (user, city) => {
     $city has modified ${now()};
     $city has revoked false;
     $city has created_at ${now()};
+    $city has created_at_day "${dayFormat(now())}";
     $city has created_at_month "${monthFormat(now())}";
     $city has created_at_year "${yearFormat(now())}";
     $city has updated_at ${now()};

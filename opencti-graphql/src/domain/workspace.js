@@ -6,14 +6,15 @@ import {
   deleteRelation,
   editInputTx,
   loadByID,
+  dayFormat,
   monthFormat,
+  yearFormat,
   notify,
   now,
   paginate,
   paginateRelationships,
   qkObjUnique,
   takeTx,
-  yearFormat,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -73,6 +74,7 @@ export const addWorkspace = async (user, workspace) => {
         : ''
     }";
     $workspace has created_at ${now()};
+    $workspace has created_at_day "${dayFormat(now())}";
     $workspace has created_at_month "${monthFormat(now())}";
     $workspace has created_at_year "${yearFormat(now())}";          
     $workspace has updated_at ${now()};

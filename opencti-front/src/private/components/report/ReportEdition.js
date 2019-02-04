@@ -96,7 +96,6 @@ class ReportEdition extends Component {
 ReportEdition.propTypes = {
   reportId: PropTypes.string,
   me: PropTypes.object,
-  report: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

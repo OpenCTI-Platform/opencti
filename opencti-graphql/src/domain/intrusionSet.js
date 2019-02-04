@@ -4,11 +4,13 @@ import {
   takeTx,
   deleteByID,
   loadByID,
+  dayFormat,
+  monthFormat,
+  yearFormat,
+  prepareDate,
   notify,
   now,
   paginate,
-  yearFormat,
-  monthFormat,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -44,10 +46,21 @@ export const addIntrusionSet = async (user, intrusionSet) => {
         ? prepareString(intrusionSet.description.toLowerCase())
         : ''
     }";
+    $intrusionSet has first_seen ${prepareDate(intrusionSet.first_seen)};
+    $intrusionSet has first_seen_day "${dayFormat(intrusionSet.first_seen)}";
+    $intrusionSet has first_seen_month "${monthFormat(
+      intrusionSet.first_seen
+    )}";
+    $intrusionSet has first_seen_year "${yearFormat(intrusionSet.first_seen)}";
+    $intrusionSet has last_seen ${prepareDate(intrusionSet.last_seen)};
+    $intrusionSet has last_seen_day "${dayFormat(intrusionSet.last_seen)}";
+    $intrusionSet has last_seen_month "${monthFormat(intrusionSet.last_seen)}";
+    $intrusionSet has last_seen_year "${yearFormat(intrusionSet.last_seen)}";
     $intrusionSet has created ${now()};
     $intrusionSet has modified ${now()};
     $intrusionSet has revoked false;
     $intrusionSet has created_at ${now()};
+    $intrusionSet has created_at_day "${dayFormat(now())}";
     $intrusionSet has created_at_month "${monthFormat(now())}";
     $intrusionSet has created_at_year "${yearFormat(now())}";       
     $intrusionSet has updated_at ${now()};

@@ -10,13 +10,17 @@ const inject18n = (WrappedComponent) => {
       const shortDate = date => this.props.intl.formatDate(date, { day: 'numeric', month: 'short', year: 'numeric' });
       const shortNumericDate = date => this.props.intl.formatDate(date, { day: 'numeric', month: 'numeric', year: 'numeric' });
       const standardDate = date => this.props.intl.formatDate(date);
+      const monthDate = date => this.props.intl.formatDate(date, { month: 'short', year: 'numeric' });
+      const yearDate = date => this.props.intl.formatDate(date, { day: 'numeric', month: 'numeric', year: 'numeric' });
       return (
         <WrappedComponent {...this.props}
                           {...{ t: translate }}
                           {...{ fld: longDate }}
                           {...{ fsd: shortDate }}
                           {...{ nsd: shortNumericDate }}
-                          {...{ fd: standardDate }}>
+                          {...{ fd: standardDate }}
+                          {...{ md: monthDate }}
+                          {...{ yd: yearDate }}>
           {children}
         </WrappedComponent>
       );

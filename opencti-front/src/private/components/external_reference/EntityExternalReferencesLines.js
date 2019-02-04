@@ -62,7 +62,7 @@ class EntityExternalReferencesLinesContainer extends Component {
         const userProxy = store.get(container.getDataID());
         const conn = ConnectionHandler.getConnection(
           userProxy,
-          'Pagination_externalReferencesOf',
+          'Pagination_externalReferences',
           this.props.paginationOptions,
         );
         ConnectionHandler.deleteNode(conn, externalReferenceEdge.node.id);
@@ -80,12 +80,12 @@ class EntityExternalReferencesLinesContainer extends Component {
           {t('External references')}
         </Typography>
         <AddExternalReferences entityId={entityId}
-                               entityExternalReferences={data.externalReferencesOf.edges}
+                               entityExternalReferences={data.externalReferences.edges}
                                entityPaginationOptions={paginationOptions}/>
         <div className='clearfix'/>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List classes={{ root: classes.list }}>
-            {data.externalReferencesOf.edges.map((externalReferenceEdge) => {
+            {data.externalReferences.edges.map((externalReferenceEdge) => {
               const externalReference = externalReferenceEdge.node;
               const externalReferenceId = externalReference.external_id ? `(${externalReference.external_id})` : '';
               if (externalReference.url) {
@@ -176,7 +176,7 @@ const EntityExternalReferencesLines = createPaginationContainer(
                 orderBy: {type: "ExternalReferencesOrdering", defaultValue: ID}
                 orderMode: {type: "OrderingMode", defaultValue: "asc"}
             ) {
-                externalReferencesOf(objectId: $objectId, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_externalReferencesOf") {
+                externalReferences(objectId: $objectId, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_externalReferences") {
                     edges {
                         node {
                             id
@@ -197,7 +197,7 @@ const EntityExternalReferencesLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.externalReferencesOf;
+      return props.data && props.data.externalReferences;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

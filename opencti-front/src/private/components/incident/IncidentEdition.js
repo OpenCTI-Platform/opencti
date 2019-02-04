@@ -96,7 +96,6 @@ class IncidentEdition extends Component {
 IncidentEdition.propTypes = {
   incidentId: PropTypes.string,
   me: PropTypes.object,
-  incident: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

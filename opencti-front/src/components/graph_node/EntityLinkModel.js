@@ -8,6 +8,7 @@ export default class EntityLinkModel extends LinkModel {
     this.color = '#00bcd4';
     this.width = 3;
     this.curvyness = 50;
+    this.inferred = false;
   }
 
   serialize() {
@@ -58,5 +59,9 @@ export default class EntityLinkModel extends LinkModel {
 
   setLabels(labels) {
     this.labels = labels;
+  }
+
+  setInferred(inferred) {
+    this.inferred = inferred;
   }
 }

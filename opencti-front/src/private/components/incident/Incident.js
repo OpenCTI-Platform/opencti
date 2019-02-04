@@ -43,10 +43,10 @@ class IncidentComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart incident={incident}/>
+            <EntityObservablesChart entityId={incident.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityKillChainPhasesChart incident={incident}/>
+            <EntityKillChainPhasesChart entityId={incident.id}/>
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart incident={incident}/>

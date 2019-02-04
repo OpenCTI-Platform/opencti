@@ -4,7 +4,7 @@ import {
   addExternalReference,
   externalReferenceDelete,
   findAll,
-  findAllBySo,
+  findByEntity,
   findById,
   search,
   externalReferenceEditContext,
@@ -20,12 +20,14 @@ const externalReferenceResolvers = {
   Query: {
     externalReference: auth((_, { id }) => findById(id)),
     externalReferences: auth((_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return findByEntity(args);
+      }
       if (args.search && args.search.length > 0) {
         return search(args);
       }
       return findAll(args);
     }),
-    externalReferencesOf: auth((_, args) => findAllBySo(args))
   },
   ExternalReference: {
     editContext: auth(externalReference =>

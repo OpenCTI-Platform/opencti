@@ -38,6 +38,10 @@ const inlineStyles = {
   orange: {
     backgroundColor: '#ff9800',
   },
+  blueGrey: {
+    backgroundColor: '#607d8b',
+    fontStyle: 'italic',
+  },
 };
 
 class ItemConfidenceLevel extends Component {
@@ -65,6 +69,8 @@ class ItemConfidenceLevel extends Component {
         return <Chip classes={{ root: style }} style={inlineStyles.green} label={t('High')}/>;
       case 5:
         return <Chip classes={{ root: style }} style={inlineStyles.darkGreen} label={t('Very high')}/>;
+      case 99:
+        return <Chip classes={{ root: style }} style={inlineStyles.blueGrey} label={t('Inferred')}/>;
       default:
         return <Chip classes={{ root: style }} style={inlineStyles.blue} label={t('Medium')}/>;
     }

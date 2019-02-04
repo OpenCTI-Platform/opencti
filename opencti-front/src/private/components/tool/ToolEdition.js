@@ -96,7 +96,6 @@ class ToolEdition extends Component {
 ToolEdition.propTypes = {
   toolId: PropTypes.string,
   me: PropTypes.object,
-  tool: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
