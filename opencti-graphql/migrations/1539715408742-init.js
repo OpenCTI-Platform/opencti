@@ -10,7 +10,7 @@ module.exports.up = async next => {
       firstname: '',
       lastname: '',
       email: 'admin@opencti.org',
-      grant: ['ROLE_ADMIN']
+      grant: ['ROLE_ROOT', 'ROLE_ADMIN']
     }
   );
   await addUser(
@@ -22,7 +22,7 @@ module.exports.up = async next => {
       firstname: '',
       lastname: '',
       email: 'user@opencti.org',
-      grant: ['ROLE_USER']
+      grant: []
     }
   );
   next();

@@ -14,25 +14,25 @@ import {
   killChainPhaseCleanContext
 } from '../domain/killChainPhase';
 import { fetchEditContext, pubsub } from '../database/redis';
-import { admin, auth, withCancel } from './wrapper';
+import withCancel from '../schema/subscriptionWrapper';
 
 const killChainPhaseResolvers = {
   Query: {
-    killChainPhase: auth((_, { id }) => findById(id)),
-    killChainPhases: auth((_, args) => {
+    killChainPhase: (_, { id }) => findById(id),
+    killChainPhases: (_, args) => {
       if (args.phaseName && args.phaseName.length > 0) {
         return findByPhaseName(args);
       }
       return findAll(args);
-    })
+    }
   },
   KillChainPhase: {
     markingDefinitions: (killChainPhase, args) =>
       markingDefinitions(killChainPhase.id, args),
-    editContext: admin(killChainPhase => fetchEditContext(killChainPhase.id))
+    editContext: killChainPhase => fetchEditContext(killChainPhase.id)
   },
   Mutation: {
-    killChainPhaseEdit: admin((_, { id }, { user }) => ({
+    killChainPhaseEdit: (_, { id }, { user }) => ({
       delete: () => killChainPhaseDelete(id),
       fieldPatch: ({ input }) => killChainPhaseEditField(user, id, input),
       contextPatch: ({ input }) => killChainPhaseEditContext(user, id, input),
@@ -40,15 +40,14 @@ const killChainPhaseResolvers = {
       relationAdd: ({ input }) => killChainPhaseAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         killChainPhaseDeleteRelation(user, id, relationId)
-    })),
-    killChainPhaseAdd: admin((_, { input }, { user }) =>
+    }),
+    killChainPhaseAdd: (_, { input }, { user }) =>
       addKillChainPhase(user, input)
-    )
   },
   Subscription: {
     killChainPhase: {
       resolve: payload => payload.instance,
-      subscribe: admin((_, { id }, { user }) => {
+      subscribe: (_, { id }, { user }) => {
         killChainPhaseEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.KillChainPhase.EDIT_TOPIC),
@@ -60,7 +59,7 @@ const killChainPhaseResolvers = {
         return withCancel(filtering, () => {
           killChainPhaseCleanContext(user, id);
         });
-      })
+      }
     }
   }
 };

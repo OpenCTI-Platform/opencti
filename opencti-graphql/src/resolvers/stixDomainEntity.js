@@ -18,12 +18,12 @@ import {
   stixRelations
 } from '../domain/stixDomainEntity';
 import { fetchEditContext, pubsub } from '../database/redis';
-import { auth, withCancel } from './wrapper';
+import withCancel from '../schema/subscriptionWrapper';
 
 const stixDomainEntityResolvers = {
   Query: {
-    stixDomainEntity: auth((_, { id }) => findById(id)),
-    stixDomainEntities: auth((_, args) => {
+    stixDomainEntity: (_, { id }) => findById(id),
+    stixDomainEntities: (_, args) => {
       if (args.search && args.search.length > 0) {
         return search(args);
       }
@@ -34,10 +34,9 @@ const stixDomainEntityResolvers = {
         return findByExternalReference(args);
       }
       return findAll(args);
-    }),
-    stixDomainEntitiesTimeSeries: auth((_, args) =>
+    },
+    stixDomainEntitiesTimeSeries: (_, args) =>
       stixDomainEntitiesTimeSeries(args)
-    )
   },
   StixDomainEntity: {
     __resolveType(obj) {
@@ -52,10 +51,10 @@ const stixDomainEntityResolvers = {
       markingDefinitions(stixDomainEntity.id, args),
     stixRelations: (stixDomainEntity, args) =>
       stixRelations(stixDomainEntity.id, args),
-    editContext: auth(stixDomainEntity => fetchEditContext(stixDomainEntity.id))
+    editContext: stixDomainEntity => fetchEditContext(stixDomainEntity.id)
   },
   Mutation: {
-    stixDomainEntityEdit: auth((_, { id }, { user }) => ({
+    stixDomainEntityEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
@@ -63,15 +62,14 @@ const stixDomainEntityResolvers = {
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)
-    })),
-    stixDomainEntityAdd: auth((_, { input }, { user }) =>
+    }),
+    stixDomainEntityAdd: (_, { input }, { user }) =>
       addStixDomainEntity(user, input)
-    )
   },
   Subscription: {
     stixDomainEntity: {
       resolve: payload => payload.instance,
-      subscribe: auth((_, { id }, { user }) => {
+      subscribe: (_, { id }, { user }) => {
         stixDomainEntityEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC),
@@ -83,7 +81,7 @@ const stixDomainEntityResolvers = {
         return withCancel(filtering, () => {
           stixDomainEntityCleanContext(user, id);
         });
-      })
+      }
     }
   }
 };

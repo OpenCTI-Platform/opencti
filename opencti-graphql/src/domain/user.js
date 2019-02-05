@@ -106,7 +106,6 @@ export const addPerson = async (user, newUser) => {
 };
 
 export const addUser = async (user, newUser) => {
-  // const userPassword = await hashPassword(user.password);
   const newToken = generateOpenCTIWebToken(newUser.email);
   const createUser = qk(`insert $user isa User 
     has type "user";
@@ -140,7 +139,11 @@ export const addUser = async (user, newUser) => {
     $user has created_at_month "${monthFormat(now())}";
     $user has created_at_year "${yearFormat(now())}";      
     $user has updated_at ${now()};
-    ${join(' ', map(role => `$user has grant "${role}";`, newUser.grant))}
+    ${
+      newUser.grant
+        ? join(' ', map(role => `$user has grant "${role}";`, newUser.grant))
+        : ''
+    }
   `);
   const createToken = qk(`insert $token isa Token 
     has type "token"; 
@@ -183,7 +186,6 @@ export const loginFromProvider = (email, name) => {
       const newUser = {
         name,
         email,
-        grant: [ROLE_USER],
         created: now(),
         password: null
       };

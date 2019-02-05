@@ -17,12 +17,11 @@ import {
   stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
-import { auth } from './wrapper';
 
 const attackPatternResolvers = {
   Query: {
-    attackPattern: auth((_, { id }) => findById(id)),
-    attackPatterns: auth((_, args) => findAll(args))
+    attackPattern: (_, { id }) => findById(id),
+    attackPatterns: (_, args) => findAll(args)
   },
   AttackPattern: {
     createdByRef: (attackPattern, args) => createdByRef(attackPattern.id, args),
@@ -33,10 +32,10 @@ const attackPatternResolvers = {
     reports: (attackPattern, args) => reports(attackPattern.id, args),
     stixRelations: (attackPattern, args) =>
       stixRelations(attackPattern.id, args),
-    editContext: auth(attackPattern => fetchEditContext(attackPattern.id))
+    editContext: attackPattern => fetchEditContext(attackPattern.id)
   },
   Mutation: {
-    attackPatternEdit: auth((_, { id }, { user }) => ({
+    attackPatternEdit: (_, { id }, { user }) => ({
       delete: () => attackPatternDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
@@ -44,10 +43,8 @@ const attackPatternResolvers = {
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)
-    })),
-    attackPatternAdd: auth((_, { input }, { user }) =>
-      addAttackPattern(user, input)
-    )
+    }),
+    attackPatternAdd: (_, { input }, { user }) => addAttackPattern(user, input)
   }
 };
 

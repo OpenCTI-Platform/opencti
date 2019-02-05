@@ -12,22 +12,21 @@ import {
 } from '../domain/stixDomainEntity';
 
 import { fetchEditContext } from '../database/redis';
-import { auth } from './wrapper';
 
 const sectorResolvers = {
   Query: {
-    sector: auth((_, { id }) => findById(id)),
-    sectors: auth((_, args) => findAll(args))
+    sector: (_, { id }) => findById(id),
+    sectors: (_, args) => findAll(args)
   },
   Sector: {
     createdByRef: (sector, args) => createdByRef(sector.id, args),
     markingDefinitions: (sector, args) => markingDefinitions(sector.id, args),
     reports: (sector, args) => reports(sector.id, args),
     stixRelations: (campaign, args) => stixRelations(campaign.id, args),
-    editContext: auth(sector => fetchEditContext(sector.id))
+    editContext: sector => fetchEditContext(sector.id)
   },
   Mutation: {
-    sectorEdit: auth((_, { id }, { user }) => ({
+    sectorEdit: (_, { id }, { user }) => ({
       delete: () => sectorDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
@@ -35,8 +34,8 @@ const sectorResolvers = {
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)
-    })),
-    sectorAdd: auth((_, { input }, { user }) => addSector(user, input))
+    }),
+    sectorAdd: (_, { input }, { user }) => addSector(user, input)
   }
 };
 

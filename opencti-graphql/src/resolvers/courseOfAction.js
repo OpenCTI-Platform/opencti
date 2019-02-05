@@ -16,22 +16,24 @@ import {
   stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
-import { auth } from './wrapper';
 
 const courseOfActionResolvers = {
   Query: {
-    courseOfAction: auth((_, { id }) => findById(id)),
-    courseOfActions: auth((_, args) => findAll(args))
+    courseOfAction: (_, { id }) => findById(id),
+    courseOfActions: (_, args) => findAll(args)
   },
   CourseOfAction: {
-    createdByRef: (courseOfAction, args) => createdByRef(courseOfAction.id, args),
-    markingDefinitions: (courseOfAction, args) => markingDefinitions(courseOfAction.id, args),
+    createdByRef: (courseOfAction, args) =>
+      createdByRef(courseOfAction.id, args),
+    markingDefinitions: (courseOfAction, args) =>
+      markingDefinitions(courseOfAction.id, args),
     reports: (courseOfAction, args) => reports(courseOfAction.id, args),
-    stixRelations: (courseOfAction, args) => stixRelations(courseOfAction.id, args),
-    editContext: auth(courseOfAction => fetchEditContext(courseOfAction.id))
+    stixRelations: (courseOfAction, args) =>
+      stixRelations(courseOfAction.id, args),
+    editContext: courseOfAction => fetchEditContext(courseOfAction.id)
   },
   Mutation: {
-    courseOfActionEdit: auth((_, { id }, { user }) => ({
+    courseOfActionEdit: (_, { id }, { user }) => ({
       delete: () => courseOfActionDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
@@ -39,8 +41,9 @@ const courseOfActionResolvers = {
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)
-    })),
-    courseOfActionAdd: auth((_, { input }, { user }) => addCourseOfAction(user, input))
+    }),
+    courseOfActionAdd: (_, { input }, { user }) =>
+      addCourseOfAction(user, input)
   }
 };
 
