@@ -87,6 +87,9 @@ const workspaceGraphResolveRelationsQuery = graphql`
                     first_seen
                     last_seen
                     inferred
+                    from {
+                        id
+                    }
                     to {
                         id
                     }
@@ -181,6 +184,9 @@ class WorkspaceGraphComponent extends Component {
     if (this.props.workspace.graph_data !== prevProps.workspace.graph_data) {
       this.updateView();
     }
+    if (this.props.inferred !== prevProps.inferred) {
+      this.resolveCurrentNodesLinks();
+    }
   }
 
   initialize() {
@@ -245,31 +251,32 @@ class WorkspaceGraphComponent extends Component {
     this.resolveCurrentNodesLinks();
   }
 
-  resolveCurrentNodesLinks() {
+  async resolveCurrentNodesLinks() {
     const model = this.props.engine.getDiagramModel();
+    forEach((l) => { l.remove(); }, values(model.getLinks()));
     const nodes = model.getNodes();
     const nodesObject = pipe(
       values,
-      map(n => ({ id: n.extras.id, node: n })),
+      map(n => ({ id: n.extras.id, nodeId: n.id })),
       indexBy(prop('id')),
     )(nodes);
-    forEach((n) => {
-      fetchQuery(workspaceGraphResolveRelationsQuery, {
-        inferred: false,
+
+    const createdRelations = [];
+    const relationsPairs = {};
+    for (const n of values(nodes)) {
+      await fetchQuery(workspaceGraphResolveRelationsQuery, {
+        inferred: this.props.inferred,
         fromId: n.extras.id,
-        first: 30,
+        first: 200,
       }).then((data) => {
         if (data && data.stixRelations) {
-          const createdRelations = [];
           forEach((l) => {
-            if (nodesObject[l.node.to.id]) {
-              console.log(l);
-              if (!includes(l.id, createdRelations)) {
-                const fromPort = nodesObject[n.extras.id] ? nodesObject[n.extras.id].node.getPort('main') : null;
-                const toPort = nodesObject[l.node.to.id] ? nodesObject[l.node.to.id].node.getPort('main') : null;
-                const toPortLinks = values(toPort.getLinks());
-                if (toPortLinks.length === 1) {
-                  const existingLink = model.getLink(head(toPortLinks));
+            if (nodesObject[l.node.from.id] && nodesObject[l.node.to.id]) {
+              if (!includes(l.node.id, createdRelations)) {
+                const fromPort = nodesObject[l.node.from.id] ? model.getNode(nodesObject[l.node.from.id].nodeId).getPort('main') : null;
+                const toPort = nodesObject[l.node.to.id] ? model.getNode(nodesObject[l.node.to.id].nodeId).getPort('main') : null;
+                if (relationsPairs[`${fromPort.id}-${toPort.id}`]) {
+                  const existingLink = model.getLink(relationsPairs[`${fromPort.id}-${toPort.id}`]);
                   const label = head(existingLink.labels);
                   const extrasIds = pluck('id', label.extras);
                   if (!includes(l.node.id, extrasIds)) {
@@ -302,17 +309,18 @@ class WorkspaceGraphComponent extends Component {
                   newLink.addListener({
                     selectionChanged: this.handleSelection.bind(this),
                   });
-                  console.log(newLink);
                   model.addLink(newLink);
                   createdRelations.push(l.node.id);
+                  relationsPairs[`${fromPort.id}-${toPort.id}`] = newLink.id;
                   this.props.engine.repaintCanvas();
                 }
               }
             }
           }, data.stixRelations.edges);
+          this.props.engine.repaintCanvas();
         }
       });
-    }, values(nodes));
+    }
   }
 
   updateView() {
@@ -458,7 +466,7 @@ class WorkspaceGraphComponent extends Component {
     }
     if (event.isSelected === true && event.expand === true) {
       fetchQuery(workspaceGraphResolveRelationsQuery, {
-        inferred: true,
+        inferred: this.props.inferred,
         fromId: event.entity.extras.id,
         first: 30,
       }).then((data) => {
@@ -646,6 +654,7 @@ class WorkspaceGraphComponent extends Component {
 
 WorkspaceGraphComponent.propTypes = {
   workspace: PropTypes.object,
+  inferred: PropTypes.bool,
   engine: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

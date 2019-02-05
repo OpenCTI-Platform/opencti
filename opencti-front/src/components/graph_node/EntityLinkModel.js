@@ -16,6 +16,7 @@ export default class EntityLinkModel extends LinkModel {
       width: this.width,
       color: this.color,
       curvyness: this.curvyness,
+      inferred: this.inferred,
     });
   }
 
@@ -24,6 +25,7 @@ export default class EntityLinkModel extends LinkModel {
     this.color = ob.color;
     this.width = ob.width;
     this.curvyness = ob.curvyness;
+    this.inferred = ob.inferred;
   }
 
   addLabel(label) {

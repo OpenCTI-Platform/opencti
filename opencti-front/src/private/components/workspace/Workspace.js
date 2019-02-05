@@ -5,6 +5,9 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { DiagramEngine } from 'storm-react-diagrams';
 import Drawer from '@material-ui/core/Drawer';
+import Grid from '@material-ui/core/Grid';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
@@ -24,7 +27,7 @@ const styles = theme => ({
   },
   bottomNav: {
     zIndex: 1000,
-    padding: '10px 274px 10px 84px',
+    padding: '10px 274px 10px 200px',
     backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     height: 75,
@@ -40,15 +43,33 @@ class WorkspaceKnowledgeComponent extends Component {
     engine.registerNodeFactory(new EntityNodeFactory());
     engine.registerLinkFactory(new EntityLinkFactory());
     engine.registerLabelFactory(new EntityLabelFactory());
-    this.state = { engine };
+    this.state = { inferred: true, engine };
+  }
+
+  handleChangeInferred() {
+    this.setState({ inferred: !this.state.inferred });
   }
 
   render() {
-    const { classes, workspace } = this.props;
+    const { t, classes, workspace } = this.props;
     return (
       <div className={classes.container}>
         <Drawer anchor='bottom' variant='permanent' classes={{ paper: classes.bottomNav }}>
-          <div> &nbsp; </div>
+          <Grid container={true} spacing={8}>
+            <Grid item={true} xs='auto'>
+              <FormControlLabel
+                style={{ paddingTop: 5, marginLeft: 20 }}
+                control={
+                  <Switch
+                    checked={this.state.inferred}
+                    onChange={this.handleChangeInferred.bind(this)}
+                    color='primary'
+                  />
+                }
+                label={t('Inferences')}
+              />
+            </Grid>
+          </Grid>
         </Drawer>
         <WorkspaceHeader workspace={workspace}/>
         <QueryRenderer
@@ -56,7 +77,11 @@ class WorkspaceKnowledgeComponent extends Component {
           variables={{ id: workspace.id }}
           render={({ props }) => {
             if (props && props.workspace) {
-              return <WorkspaceGraph workspace={props.workspace} engine={this.state.engine}/>;
+              return <WorkspaceGraph
+                workspace={props.workspace}
+                engine={this.state.engine}
+                inferred={this.state.inferred}
+              />;
             }
             return <div> &nbsp; </div>;
           }}
