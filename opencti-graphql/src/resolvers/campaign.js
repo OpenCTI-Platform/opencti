@@ -2,7 +2,9 @@ import {
   addCampaign,
   campaignDelete,
   findAll,
-  findById
+  findById,
+  campaignsTimeSeries,
+  campaignsTimeSeriesByEntity
 } from '../domain/campaign';
 import {
   createdByRef,
@@ -21,7 +23,13 @@ import { auth } from './wrapper';
 const campaignResolvers = {
   Query: {
     campaign: auth((_, { id }) => findById(id)),
-    campaigns: auth((_, args) => findAll(args))
+    campaigns: auth((_, args) => findAll(args)),
+    campaignsTimeSeries: auth((_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return campaignsTimeSeriesByEntity(args);
+      }
+      return campaignsTimeSeries(args);
+    })
   },
   Campaign: {
     createdByRef: (campaign, args) => createdByRef(campaign.id, args),

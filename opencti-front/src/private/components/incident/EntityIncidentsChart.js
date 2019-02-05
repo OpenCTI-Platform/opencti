@@ -39,7 +39,9 @@ const entityIncidentsChartIncidentsTimeSeriesQuery = graphql`
 
 class EntityIncidentsChart extends Component {
   render() {
-    const { t, md, classes, entityId } = this.props;
+    const {
+      t, md, classes, entityId,
+    } = this.props;
     const incidentsTimeSeriesVariables = {
       objectId: entityId,
       field: 'first_seen',
@@ -59,7 +61,6 @@ class EntityIncidentsChart extends Component {
             variables={incidentsTimeSeriesVariables}
             render={({ props }) => {
               if (props && props.incidentsTimeSeries) {
-                console.log(props.incidentsTimeSeries);
                 return (
                   <ResponsiveContainer height={330} width='100%'>
                     <AreaChart data={props.incidentsTimeSeries} margin={{

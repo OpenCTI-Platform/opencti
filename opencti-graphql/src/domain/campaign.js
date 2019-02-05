@@ -11,11 +11,31 @@ import {
   paginate,
   prepareDate,
   takeTx,
-  prepareString
+  prepareString,
+  timeSeries
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Campaign', args);
+
+export const campaignsTimeSeries = args =>
+  timeSeries('match $x isa Campaign', args);
+
+export const findByEntity = args =>
+  paginate(
+    `match $c isa Campaign; 
+    $rel($i, $to) isa stix_relation; 
+    $to id ${args.objectId}`,
+    args
+  );
+
+export const campaignsTimeSeriesByEntity = args =>
+  timeSeries(
+    `match $x isa Campaign; 
+    $rel($x, $to) isa stix_relation; 
+    $to id ${args.objectId}`,
+    args
+  );
 
 export const findById = campaignId => loadByID(campaignId);
 
