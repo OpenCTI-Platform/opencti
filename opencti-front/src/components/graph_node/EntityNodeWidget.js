@@ -1,23 +1,22 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { PortWidget } from 'storm-react-diagrams';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
-import { Info } from '@material-ui/icons';
+import { Info, OpenWith } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
 import { itemColor } from '../../utils/Colors';
 import { resolveLink } from '../../utils/Entity';
-import inject18n from '../i18n';
 import ItemIcon from '../ItemIcon';
 
 const styles = () => ({
   node: {
     position: 'relative',
-    width: 180,
-    height: 80,
+    width: 150,
+    height: 60,
     borderRadius: 10,
     zIndex: 20,
+    padding: '10px 0 10px 0',
   },
   port: {
     position: 'absolute',
@@ -27,34 +26,8 @@ const styles = () => ({
     left: 0,
     borderRadius: 10,
   },
-  header: {
-    padding: '10px 0 10px 0',
-    borderBottom: '1px solid #ffffff',
-  },
-  icon: {
-    position: 'absolute',
-    top: 8,
-    left: 5,
-    fontSize: 8,
-  },
-  type: {
-    width: '100%',
-    textAlign: 'center',
-    color: '#ffffff',
-    fontSize: 11,
-  },
-  popover: {
-    position: 'absolute',
-    color: '#ffffff',
-    top: -5,
-    right: 0,
-    zIndex: 100,
-  },
   content: {
     width: '100%',
-    height: 40,
-    maxHeight: 40,
-    lineHeight: '40px',
     color: '#ffffff',
     textAlign: 'center',
   },
@@ -63,6 +36,17 @@ const styles = () => ({
     lineHeight: 1,
     fontSize: 12,
     verticalAlign: 'middle',
+  },
+  overlay: {
+    transition: 'opacity 600ms, visibility 600ms;',
+    position: 'absolute',
+    opacity: 0,
+    visibility: 'hidden',
+    top: 10,
+    left: -40,
+  },
+  button: {
+    padding: 5,
   },
 });
 
@@ -78,7 +62,7 @@ class EntityNodeWidget extends Component {
 
   render() {
     const {
-      node, node: { extras }, classes, t,
+      node, node: { extras }, classes,
     } = this.props;
     const link = resolveLink(extras.type);
     return (
@@ -86,25 +70,20 @@ class EntityNodeWidget extends Component {
         backgroundColor: itemColor(extras.type, true),
         border: node.selected ? '2px solid #00c0ff' : '2px solid #333333',
         display: node.hidden ? 'none' : 'block',
-      }} onDoubleClick={this.handleExpand.bind(this)}>
-        <div className={classes.header}>
-            <div className={classes.icon}>
-              <ItemIcon type={extras.type} color={itemColor(extras.type, false)} size='small'/>
-            </div>
-            <div className={classes.type}>
-              {t(`entity_${extras.type}`)}
-            </div>
-            <div className={classes.popover}>
-              {link
-                ? <IconButton component={Link} to={`${link}/${extras.id}`}>
-                  <Info fontSize='small' />
-                </IconButton>
-                : <Info fontSize='small' style={{ margin: '10px 10px 0 0', color: '#A3A3A3' }} />
-              }
-            </div>
-        </div>
+      }}>
         <div className={classes.content}>
+          <ItemIcon type={extras.type} color={itemColor(extras.type, false)} size='large'/>
+          <br />
           <span className={classes.name}>{extras.name}</span>
+        </div>
+        <div className={classes.overlay} style={{ visibility: node.selected ? 'visible' : 'hidden', opacity: node.selected ? 1 : 0 }}>
+          <IconButton component={Link} to={`${link}/${extras.id}`} className={classes.button}>
+            <Info fontSize='small' />
+          </IconButton>
+          <br />
+          <IconButton onClick={this.handleExpand.bind(this)} className={classes.button}>
+            <OpenWith fontSize='small' />
+          </IconButton>
         </div>
         <div className={classes.port} onClick={this.setSelected.bind(this)} style={{ display: node.selected ? 'none' : 'block' }}>
           <PortWidget name='main' node={node} />
@@ -120,7 +99,4 @@ EntityNodeWidget.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(EntityNodeWidget);
+export default withStyles(styles)(EntityNodeWidget);
