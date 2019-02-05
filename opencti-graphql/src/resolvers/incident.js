@@ -2,7 +2,9 @@ import {
   addIncident,
   incidentDelete,
   findAll,
-  findById
+  findById,
+  incidentsTimeSeriesByEntity,
+  incidentsTimeSeries,
 } from '../domain/incident';
 import {
   createdByRef,
@@ -21,7 +23,13 @@ import { auth } from './wrapper';
 const incidentResolvers = {
   Query: {
     incident: auth((_, { id }) => findById(id)),
-    incidents: auth((_, args) => findAll(args))
+    incidents: auth((_, args) => findAll(args)),
+    incidentsTimeSeries: auth((_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return incidentsTimeSeriesByEntity(args);
+      }
+      return incidentsTimeSeries(args);
+    })
   },
   Incident: {
     createdByRef: (incident, args) => createdByRef(incident.id, args),

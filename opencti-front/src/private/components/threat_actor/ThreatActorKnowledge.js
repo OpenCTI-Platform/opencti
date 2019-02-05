@@ -37,8 +37,8 @@ class ThreatActorKnowledgeComponent extends Component {
           }/>
           {location.pathname.includes('overview') ? <StixDomainEntityKnowledge stixDomainEntityId={threatActor.id}/> : ''}
           {location.pathname.includes('intrusion_sets') ? <EntityStixRelations entityId={threatActor.id} relationType='attributed-to' targetEntityTypes={['Intrusion-Set']} entityLink={link}/> : ''}
-          {location.pathname.includes('campaigns') ? <EntityStixRelations entityId={threatActor.id} relationType='uses' targetEntityTypes={['Campaign']} entityLink={link}/> : ''}
-          {location.pathname.includes('incidents') ? <EntityStixRelations entityId={threatActor.id} relationType='uses' targetEntityTypes={['Incident']} entityLink={link}/> : ''}
+          {location.pathname.includes('campaigns') ? <EntityStixRelations entityId={threatActor.id} relationType='attributed-to' targetEntityTypes={['Campaign']} entityLink={link}/> : ''}
+          {location.pathname.includes('incidents') ? <EntityStixRelations entityId={threatActor.id} relationType='attributed-to' targetEntityTypes={['Incident']} entityLink={link}/> : ''}
           {location.pathname.includes('victimology') ? <EntityStixRelations entityId={threatActor.id} relationType='targets' targetEntityTypes={['Identity']} entityLink={link}/> : ''}
           {location.pathname.includes('malwares') ? <EntityStixRelations entityId={threatActor.id} relationType='uses' targetEntityTypes={['Malware']} entityLink={link}/> : ''}
           {location.pathname.includes('ttp') ? <EntityStixRelations entityId={threatActor.id} relationType='uses' targetEntityTypes={['Attack-Pattern']} entityLink={link}/> : ''}

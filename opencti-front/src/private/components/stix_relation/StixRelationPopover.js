@@ -112,10 +112,12 @@ class StixRelationPopover extends Component {
   }
 
   render() {
-    const { classes, t, stixRelationId } = this.props;
+    const {
+      classes, t, stixRelationId, disabled,
+    } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
+        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true' disabled={disabled}>
           <MoreVert/>
         </IconButton>
         <Menu
@@ -161,6 +163,7 @@ class StixRelationPopover extends Component {
 
 StixRelationPopover.propTypes = {
   stixRelationId: PropTypes.string,
+  disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

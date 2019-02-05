@@ -392,7 +392,7 @@ const i18n = {
       'relation_variant-of': 'variant of',
       'relation_part-of': 'part of',
       relation_localization: 'localized in',
-      'relation_related-to': 'lié à',
+      'relation_related-to': 'related to',
       relation_gathering: 'belong to',
       confidence_0: 'All confidence levels',
       confidence_1: 'Very low',

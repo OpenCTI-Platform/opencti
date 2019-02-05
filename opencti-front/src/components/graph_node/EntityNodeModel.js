@@ -6,6 +6,7 @@ export default class EntityNodeModel extends NodeModel {
     super('entity');
     this.addPort(new EntityPortModel('main'));
     this.extras = data;
+    this.expanded = false;
   }
 
   setSelected(selected, expand = false) {
@@ -19,5 +20,13 @@ export default class EntityNodeModel extends NodeModel {
 
   getPosition() {
     return { x: this.x, y: this.y };
+  }
+
+  setExpanded(expanded) {
+    this.expanded = expanded;
+  }
+
+  getExpanded() {
+    return this.expanded;
   }
 }

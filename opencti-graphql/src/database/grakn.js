@@ -718,7 +718,7 @@ export const timeSeries = (query, options) => {
   const { startDate, endDate, operation, field, interval } = options;
   const finalQuery = `${query}; $x has ${field}_${interval} $g; aggregate group $g ${operation};`;
   console.log(finalQuery);
-  return qk(finalQuery).then(result => {
+  return qk(finalQuery, true).then(result => {
     const data = result.data.map(n => ({
       date: /Value\s\[([\d-]+)\]/i.exec(head(head(toPairs(n))))[1],
       value: head(last(head(toPairs(n))))

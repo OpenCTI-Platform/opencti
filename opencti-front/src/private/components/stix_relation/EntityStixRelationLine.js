@@ -10,6 +10,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert, Help } from '@material-ui/icons';
+import { resolveLink } from '../../../utils/Entity';
 import inject18n from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
@@ -92,47 +93,14 @@ class ReportLineComponent extends Component {
     const {
       nsd, t, classes, stixRelation, stixDomainEntity, paginationOptions, entityLink,
     } = this.props;
-    if (stixRelation.inferred === true) {
-      return (
-        <ListItem
-          classes={{ root: classes.item }}
-          divider={true}
-        >
-          <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <ItemIcon type={stixDomainEntity.type}/>
-          </ListItemIcon>
-          <ListItemText primary={
-            <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
-                {stixDomainEntity.name}
-              </div>
-              <div className={classes.bodyItem} style={inlineStyles.type}>
-                {t(`entity_${stixDomainEntity.type}`)}
-              </div>
-              <div className={classes.bodyItem} style={inlineStyles.first_seen}>
-                -
-              </div>
-              <div className={classes.bodyItem} style={inlineStyles.last_seen}>
-                -
-              </div>
-              <div className={classes.bodyItem} style={inlineStyles.weight}>
-                <ItemConfidenceLevel level={99} variant='inList'/>
-              </div>
-            </div>
-          }/>
-          <ListItemSecondaryAction>
-            <StixRelationPopover stixRelationId={stixRelation.id} paginationOptions={paginationOptions}/>
-          </ListItemSecondaryAction>
-        </ListItem>
-      );
-    }
+    const link = stixRelation.inferred ? `${resolveLink(stixDomainEntity.type)}/${stixDomainEntity.id}` : `${entityLink}/relations/${stixRelation.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         button={true}
         component={Link}
-        to={`${entityLink}/relations/${stixRelation.id}`}
+        to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon type={stixDomainEntity.type}/>
@@ -146,18 +114,22 @@ class ReportLineComponent extends Component {
               {t(`entity_${stixDomainEntity.type}`)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.first_seen}>
-              {nsd(stixRelation.first_seen)}
+              {stixRelation.inferred ? '-' : nsd(stixRelation.first_seen)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.last_seen}>
-              {nsd(stixRelation.last_seen)}
+              {stixRelation.inferred ? '-' : nsd(stixRelation.last_seen)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.weight}>
-              <ItemConfidenceLevel level={stixRelation.weight} variant='inList'/>
+              <ItemConfidenceLevel level={stixRelation.inferred ? 99 : stixRelation.weight} variant='inList'/>
             </div>
           </div>
         }/>
         <ListItemSecondaryAction>
-          <StixRelationPopover stixRelationId={stixRelation.id} paginationOptions={paginationOptions}/>
+          <StixRelationPopover
+            stixRelationId={stixRelation.id}
+            paginationOptions={paginationOptions}
+            disabled={stixRelation.inferred}
+          />
         </ListItemSecondaryAction>
       </ListItem>
     );

@@ -143,12 +143,11 @@ class UserPopover extends Component {
             query={userEditionQuery}
             variables={{ id: userId }}
             render={({ props }) => {
-              if (props) { // Done
+              if (props) {
                 return <UserEdition me={props.me}
                                     user={props.user}
                                     handleClose={this.handleCloseUpdate.bind(this)}/>;
               }
-              // Loading
               return <div> &nbsp; </div>;
             }}
           />

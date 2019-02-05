@@ -231,7 +231,6 @@ type Workspace implements GlobalObject {
     ownedBy: ownedBy
     markingDefinitions: MarkingDefinitionConnection
     objectRefs: StixDomainEntityConnection
-    relationRefs: StixRelationConnection
     created_at: DateTime!
     updated_at: DateTime!
 }
@@ -1256,9 +1255,11 @@ type Query {
     # Campaigns
     campaign(id: String!): Campaign
     campaigns(first: Int, after: ID, orderBy: CampaignsOrdering, orderMode: OrderingMode, search: String): CampaignConnection
+    campaignsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
     # Incidents
     incident(id: String!): Incident
     incidents(first: Int, after: ID, orderBy: IncidentsOrdering, orderMode: OrderingMode, search: String): IncidentConnection
+    incidentsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
     # Malwares
     malware(id: String!): Malware
     malwares(first: Int, after: ID, orderBy: MalwaresOrdering, orderMode: OrderingMode, search: String): MalwareConnection

@@ -1,9 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, map, pipe, forEach, difference, values,
-  pathOr, filter, last, head, includes,
-  indexBy, prop, pluck,
+  compose,
+  map,
+  pipe,
+  forEach,
+  difference,
+  values,
+  pathOr,
+  filter,
+  last,
+  head,
+  includes,
+  pluck, indexBy, prop,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -28,7 +37,10 @@ import { distributeElements } from '../../../utils/DagreHelper';
 import { serializeGraph } from '../../../utils/GraphHelper';
 import { workspaceMutationFieldPatch } from './WorkspaceEditionOverview';
 import WorkspaceAddObjectRefs from './WorkspaceAddObjectRefs';
-import { workspaceMutationRelationAdd, workspaceMutationRelationDelete } from './WorkspaceAddObjectRefsLines';
+import {
+  workspaceMutationRelationAdd,
+  workspaceMutationRelationDelete,
+} from './WorkspaceAddObjectRefsLines';
 import StixRelationCreation from '../stix_relation/StixRelationCreation';
 import StixRelationEdition from '../stix_relation/StixRelationEdition';
 
@@ -62,11 +74,19 @@ export const workspaceGraphQuery = graphql`
 `;
 
 const workspaceGraphResolveRelationsQuery = graphql`
-    query WorkspaceGraphResolveRelationsQuery($fromId: String, $first: Int, $inferred: Boolean) {
+    query WorkspaceGraphResolveRelationsQuery(
+    $fromId: String
+    $first: Int
+    $inferred: Boolean
+    ) {
         stixRelations(fromId: $fromId, first: $first, inferred: $inferred) {
             edges {
                 node {
                     id
+                    relationship_type
+                    first_seen
+                    last_seen
+                    inferred
                     to {
                         id
                     }
@@ -77,7 +97,10 @@ const workspaceGraphResolveRelationsQuery = graphql`
 `;
 
 export const workspaceGraphMutationRelationsAdd = graphql`
-    mutation WorkspaceGraphRelationsAddMutation($id: ID!, $input: RelationsAddInput!) {
+    mutation WorkspaceGraphRelationsAddMutation(
+    $id: ID!
+    $input: RelationsAddInput!
+    ) {
         workspaceEdit(id: $id) {
             relationsAdd(input: $input) {
                 ...WorkspaceGraph_workspace
@@ -128,12 +151,15 @@ class WorkspaceGraphComponent extends Component {
     // if a node has been added, add in graph
     if (added.length > 0) {
       const model = this.props.engine.getDiagramModel();
-      const newNodes = map(n => new EntityNodeModel({
-        id: n.node.id,
-        relationId: n.relation.id,
-        name: n.node.name,
-        type: n.node.type,
-      }), added);
+      const newNodes = map(
+        n => new EntityNodeModel({
+          id: n.node.id,
+          relationId: n.relation.id,
+          name: n.node.name,
+          type: n.node.type,
+        }),
+        added,
+      );
       forEach((n) => {
         n.addListener({ selectionChanged: this.handleSelection.bind(this) });
         model.addNode(n);
@@ -159,14 +185,20 @@ class WorkspaceGraphComponent extends Component {
 
   initialize() {
     const model = new DiagramModel();
-    // prepare nodes & relations
+    // prepare nodes
     const nodes = this.props.workspace.objectRefs.edges;
-    const relations = this.props.workspace.relationRefs.edges;
 
     // decode graph data if any
     let graphData = {};
-    if (Array.isArray(this.props.workspace.graph_data) && head(this.props.workspace.graph_data).length > 0) {
-      graphData = JSON.parse(Buffer.from(head(this.props.workspace.graph_data), 'base64').toString('ascii'));
+    if (
+      Array.isArray(this.props.workspace.graph_data)
+      && head(this.props.workspace.graph_data).length > 0
+    ) {
+      graphData = JSON.parse(
+        Buffer.from(head(this.props.workspace.graph_data), 'base64').toString(
+          'ascii',
+        ),
+      );
     }
 
     // set offset & zoom
@@ -188,50 +220,19 @@ class WorkspaceGraphComponent extends Component {
         name: n.node.name,
         type: n.node.type,
       });
-      newNode.addListener({ selectionChanged: this.handleSelection.bind(this) });
-      const position = pathOr(null, ['nodes', n.node.id, 'position'], graphData);
+      newNode.addListener({
+        selectionChanged: this.handleSelection.bind(this),
+      });
+      const position = pathOr(
+        null,
+        ['nodes', n.node.id, 'position'],
+        graphData,
+      );
       if (position && position.x !== undefined && position.y !== undefined) {
         newNode.setPosition(position.x, position.y);
       }
       model.addNode(newNode);
     }, nodes);
-
-    // build usables nodes object
-    const finalNodes = model.getNodes();
-    const finalNodesObject = pipe(
-      values,
-      map(n => ({ id: n.extras.id, node: n })),
-      indexBy(prop('id')),
-    )(finalNodes);
-
-    // add relations
-    const createdRelations = [];
-    forEach((l) => {
-      if (!includes(l.relation.id, createdRelations)) {
-        const fromPort = finalNodesObject[l.node.from.id] ? finalNodesObject[l.node.from.id].node.getPort('main') : null;
-        const toPort = finalNodesObject[l.node.to.id] ? finalNodesObject[l.node.to.id].node.getPort('main') : null;
-        const newLink = new EntityLinkModel();
-        newLink.setExtras({
-          relation: l.node,
-          objectRefId: l.relation.id,
-        });
-        newLink.setSourcePort(fromPort);
-        newLink.setTargetPort(toPort);
-        const label = new EntityLabelModel();
-        label.setExtras([{
-          id: l.node.id,
-          relationship_type: l.node.relationship_type,
-          first_seen: l.node.first_seen,
-          last_seen: l.node.last_seen,
-          inferred: l.node.inferred,
-        }]);
-        newLink.addLabel(label);
-        newLink.setInferred(l.node.inferred);
-        newLink.addListener({ selectionChanged: this.handleSelection.bind(this) });
-        model.addLink(newLink);
-        createdRelations.push(l.relation.id);
-      }
-    }, relations);
 
     // add listeners
     model.addListener({
@@ -241,6 +242,77 @@ class WorkspaceGraphComponent extends Component {
     });
     this.props.engine.setDiagramModel(model);
     this.props.engine.repaintCanvas();
+    this.resolveCurrentNodesLinks();
+  }
+
+  resolveCurrentNodesLinks() {
+    const model = this.props.engine.getDiagramModel();
+    const nodes = model.getNodes();
+    const nodesObject = pipe(
+      values,
+      map(n => ({ id: n.extras.id, node: n })),
+      indexBy(prop('id')),
+    )(nodes);
+    forEach((n) => {
+      fetchQuery(workspaceGraphResolveRelationsQuery, {
+        inferred: false,
+        fromId: n.extras.id,
+        first: 30,
+      }).then((data) => {
+        if (data && data.stixRelations) {
+          const createdRelations = [];
+          forEach((l) => {
+            if (nodesObject[l.node.to.id]) {
+              console.log(l);
+              if (!includes(l.id, createdRelations)) {
+                const fromPort = nodesObject[n.extras.id] ? nodesObject[n.extras.id].node.getPort('main') : null;
+                const toPort = nodesObject[l.node.to.id] ? nodesObject[l.node.to.id].node.getPort('main') : null;
+                const toPortLinks = values(toPort.getLinks());
+                if (toPortLinks.length === 1) {
+                  const existingLink = model.getLink(head(toPortLinks));
+                  const label = head(existingLink.labels);
+                  const extrasIds = pluck('id', label.extras);
+                  if (!includes(l.node.id, extrasIds)) {
+                    label.extras.push({
+                      id: l.node.id,
+                      relationship_type: l.node.relationship_type,
+                      first_seen: l.node.first_seen,
+                      last_seen: l.node.last_seen,
+                    });
+                  }
+                } else {
+                  const newLink = new EntityLinkModel();
+                  newLink.setExtras({
+                    relation: l.node,
+                  });
+                  newLink.setSourcePort(fromPort);
+                  newLink.setTargetPort(toPort);
+                  const label = new EntityLabelModel();
+                  label.setExtras([
+                    {
+                      id: l.node.id,
+                      relationship_type: l.node.relationship_type,
+                      first_seen: l.node.first_seen,
+                      last_seen: l.node.last_seen,
+                      inferred: l.node.inferred,
+                    },
+                  ]);
+                  newLink.addLabel(label);
+                  newLink.setInferred(l.node.inferred);
+                  newLink.addListener({
+                    selectionChanged: this.handleSelection.bind(this),
+                  });
+                  console.log(newLink);
+                  model.addLink(newLink);
+                  createdRelations.push(l.node.id);
+                  this.props.engine.repaintCanvas();
+                }
+              }
+            }
+          }, data.stixRelations.edges);
+        }
+      });
+    }, values(nodes));
   }
 
   updateView() {
@@ -248,8 +320,15 @@ class WorkspaceGraphComponent extends Component {
 
     // decode graph data if any
     let graphData = {};
-    if (Array.isArray(this.props.workspace.graph_data) && head(this.props.workspace.graph_data).length > 0) {
-      graphData = JSON.parse(Buffer.from(head(this.props.workspace.graph_data), 'base64').toString('ascii'));
+    if (
+      Array.isArray(this.props.workspace.graph_data)
+      && head(this.props.workspace.graph_data).length > 0
+    ) {
+      graphData = JSON.parse(
+        Buffer.from(head(this.props.workspace.graph_data), 'base64').toString(
+          'ascii',
+        ),
+      );
     }
 
     // set offset & zoom
@@ -266,7 +345,11 @@ class WorkspaceGraphComponent extends Component {
     // set nodes positions
     const nodes = model.getNodes();
     forEach((n) => {
-      const position = pathOr(null, ['nodes', n.extras.id, 'position'], graphData);
+      const position = pathOr(
+        null,
+        ['nodes', n.extras.id, 'position'],
+        graphData,
+      );
       if (position && position.x && position.y) {
         n.setPosition(position.x, position.y);
       }
@@ -279,7 +362,10 @@ class WorkspaceGraphComponent extends Component {
     const graphData = serializeGraph(model);
     commitMutation({
       mutation: workspaceMutationFieldPatch,
-      variables: { id: this.props.workspace.id, input: { key: 'graph_data', value: graphData } },
+      variables: {
+        id: this.props.workspace.id,
+        input: { key: 'graph_data', value: graphData },
+      },
     });
   }
 
@@ -314,36 +400,11 @@ class WorkspaceGraphComponent extends Component {
   }
 
   handleLinksChange(event) {
-    const model = this.props.engine.getDiagramModel();
-    const currentLinks = model.getLinks();
-    const currentLinksPairs = map(n => ({ source: n.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
     if (event.isCreated === true) {
       // handle link creation
       event.link.addListener({
         targetPortChanged: this.handleLinkCreation.bind(this),
       });
-    } else if (event.link !== undefined) {
-      // handle link deletion
-      const { link } = event;
-      if (link.targetPort !== null && (link.sourcePort !== link.targetPort)) {
-        const linkPair = { source: link.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], link) };
-        const filteredCurrentLinks = filter(n => (
-          n.source === linkPair.source && n.target === linkPair.target)
-          || (n.source === linkPair.target && n.target === linkPair.source),
-        currentLinksPairs);
-        if (filteredCurrentLinks.length === 0) {
-          if (link.extras && link.extras.relation) {
-            commitMutation({
-              mutation: workspaceMutationRelationDelete,
-              variables: {
-                id: this.props.workspace.id,
-                relationId: link.extras.objectRefId,
-              },
-            });
-          }
-        }
-      }
-      this.handleSaveGraph();
     }
     return true;
   }
@@ -351,16 +412,26 @@ class WorkspaceGraphComponent extends Component {
   handleLinkCreation(event) {
     const model = this.props.engine.getDiagramModel();
     const currentLinks = model.getLinks();
-    const currentLinksPairs = map(n => ({ source: n.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
+    const currentLinksPairs = map(
+      n => ({
+        source: n.sourcePort.id,
+        target: pathOr(null, ['targetPort', 'id'], n),
+      }),
+      values(currentLinks),
+    );
     if (event.port !== undefined) {
       // ensure that the links are not circular on the same element
       const link = last(values(event.port.links));
-      const linkPair = { source: link.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], link) };
-      const filteredCurrentLinks = filter(n => (
-        n.source === linkPair.source && n.target === linkPair.target)
-        || (n.source === linkPair.target && n.target === linkPair.source),
-      currentLinksPairs);
-      if (link.targetPort === null || (link.sourcePort === link.targetPort)) {
+      const linkPair = {
+        source: link.sourcePort.id,
+        target: pathOr(null, ['targetPort', 'id'], link),
+      };
+      const filteredCurrentLinks = filter(
+        n => (n.source === linkPair.source && n.target === linkPair.target)
+          || (n.source === linkPair.target && n.target === linkPair.source),
+        currentLinksPairs,
+      );
+      if (link.targetPort === null || link.sourcePort === link.targetPort) {
         link.remove();
       } else if (filteredCurrentLinks.length === 1) {
         link.addListener({ selectionChanged: this.handleSelection.bind(this) });
@@ -394,9 +465,10 @@ class WorkspaceGraphComponent extends Component {
         if (data && data.stixRelations) {
           // prepare actual nodes & relations
           const nodes = this.props.workspace.objectRefs.edges;
-          const relations = this.props.workspace.relationRefs.edges;
-          const nodesIds = pipe(map(n => n.node), pluck('id'))(nodes);
-          const relationsIds = pipe(map(n => n.node), pluck('id'))(relations);
+          const nodesIds = pipe(
+            map(n => n.node),
+            pluck('id'),
+          )(nodes);
           // check added nodes
           const objectsToAdd = [];
           forEach((n) => {
@@ -404,12 +476,6 @@ class WorkspaceGraphComponent extends Component {
               objectsToAdd.push(n.node.to.id);
             }
           }, data.stixRelations.edges);
-          forEach((n) => {
-            if (!includes(n.node.id, relationsIds)) {
-              objectsToAdd.push(n.node.id);
-            }
-          }, data.stixRelations.edges);
-
           const input = {
             fromRole: 'knowledge_aggregation',
             toIds: objectsToAdd,
@@ -448,12 +514,14 @@ class WorkspaceGraphComponent extends Component {
     const model = this.props.engine.getDiagramModel();
     const linkObject = model.getLink(this.state.currentLink);
     const label = new EntityLabelModel();
-    label.setExtras([{
-      id: result.id,
-      relationship_type: result.relationship_type,
-      first_seen: result.first_seen,
-      last_seen: result.last_seen,
-    }]);
+    label.setExtras([
+      {
+        id: result.id,
+        relationship_type: result.relationship_type,
+        first_seen: result.first_seen,
+        last_seen: result.last_seen,
+      },
+    ]);
     linkObject.addLabel(label);
     const input = {
       fromRole: 'so',
@@ -492,14 +560,7 @@ class WorkspaceGraphComponent extends Component {
   }
 
   handleDeleteRelation() {
-    const model = this.props.engine.getDiagramModel();
-    const linkObject = model.getLink(this.state.currentLink);
-    linkObject.remove();
-    this.setState({
-      openEditRelation: false,
-      editRelationId: null,
-      currentLink: null,
-    });
+    return true;
   }
 
   autoDistribute() {
@@ -507,7 +568,10 @@ class WorkspaceGraphComponent extends Component {
     const serialized = model.serializeDiagram();
     const distributedSerializedDiagram = distributeElements(serialized);
     const distributedDeSerializedModel = new DiagramModel();
-    distributedDeSerializedModel.deSerializeDiagram(distributedSerializedDiagram, this.props.engine);
+    distributedDeSerializedModel.deSerializeDiagram(
+      distributedSerializedDiagram,
+      this.props.engine,
+    );
     this.props.engine.setDiagramModel(distributedDeSerializedModel);
     this.props.engine.repaintCanvas();
   }
@@ -525,14 +589,28 @@ class WorkspaceGraphComponent extends Component {
   render() {
     const { classes, engine, workspace } = this.props;
     const {
-      openCreateRelation, createRelationFrom, createRelationTo, openEditRelation, editRelationId,
+      openCreateRelation,
+      createRelationFrom,
+      createRelationTo,
+      openEditRelation,
+      editRelationId,
     } = this.state;
     return (
       <div className={classes.container}>
-        <IconButton color='primary' className={classes.icon} onClick={this.zoomToFit.bind(this)} style={{ left: 90 }}>
+        <IconButton
+          color="primary"
+          className={classes.icon}
+          onClick={this.zoomToFit.bind(this)}
+          style={{ left: 90 }}
+        >
           <AspectRatio/>
         </IconButton>
-        <IconButton color='primary' className={classes.icon} onClick={this.distribute.bind(this)} style={{ left: 150 }}>
+        <IconButton
+          color="primary"
+          className={classes.icon}
+          onClick={this.distribute.bind(this)}
+          style={{ left: 150 }}
+        >
           <AutoFix/>
         </IconButton>
         <DiagramWidget
@@ -557,6 +635,7 @@ class WorkspaceGraphComponent extends Component {
         <StixRelationEdition
           open={openEditRelation}
           stixRelationId={editRelationId}
+          variant='noGraph'
           handleClose={this.handleCloseRelationEdition.bind(this)}
           handleDelete={this.handleDeleteRelation.bind(this)}
         />
@@ -585,29 +664,6 @@ const WorkspaceGraph = createFragmentContainer(WorkspaceGraphComponent, {
                       type
                       name
                       description
-                  }
-                  relation {
-                      id
-                  }
-              }
-          }
-          relationRefs {
-              edges {
-                  node {
-                      id
-                      relationship_type
-                      first_seen
-                      last_seen
-                      from {
-                          id
-                          type
-                          name
-                      }
-                      to {
-                          id
-                          type
-                          name
-                      }
                   }
                   relation {
                       id

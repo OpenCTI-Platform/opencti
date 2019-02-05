@@ -7,7 +7,6 @@ import {
   markingDefinitions,
   ownedBy,
   objectRefs,
-  relationRefs,
   workspaceEditContext,
   workspaceEditField,
   workspaceAddRelation,
@@ -29,7 +28,6 @@ const workspaceResolvers = {
     markingDefinitions: (workspace, args) =>
       markingDefinitions(workspace.id, args),
     objectRefs: (workspace, args) => objectRefs(workspace.id, args),
-    relationRefs: (workspace, args) => relationRefs(workspace.id, args),
     editContext: auth(workspace => fetchEditContext(workspace.id))
   },
   Mutation: {

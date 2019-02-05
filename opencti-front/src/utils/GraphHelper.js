@@ -7,6 +7,7 @@ export const serializeGraph = (model) => {
   forEach((n) => {
     graphData.nodes[n.extras.id] = {
       position: n.getPosition(),
+      expanded: n.getExpanded(),
     };
   }, values(nodes));
   graphData.zoom = model.getZoomLevel();

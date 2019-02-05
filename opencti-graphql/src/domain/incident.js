@@ -1,4 +1,4 @@
-import { map } from 'ramda';
+import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   deleteByID,
@@ -11,11 +11,31 @@ import {
   paginate,
   prepareDate,
   takeTx,
-  prepareString
+  prepareString,
+  timeSeries
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Incident', args);
+
+export const incidentsTimeSeries = args =>
+  timeSeries('match $x isa Incident', args);
+
+export const findByEntity = args =>
+  paginate(
+    `match $i isa Incident; 
+    $rel($i, $to) isa stix_relation; 
+    $to id ${args.objectId}`,
+    args
+  );
+
+export const incidentsTimeSeriesByEntity = args =>
+  timeSeries(
+    `match $x isa Incident; 
+    $rel($x, $to) isa stix_relation; 
+    $to id ${args.objectId}`,
+    args
+  );
 
 export const findById = incidentId => loadByID(incidentId);
 

@@ -34,6 +34,7 @@ const relationsTypesMapping = {
   incident_sector: ['targets'],
   'incident_threat-actor': ['attributed-to'],
   'incident_intrusion-set': ['attributed-to'],
+  incident_campaign: ['attributed-to'],
   incident_malware: ['uses'],
   incident_vulnerability: ['targets'],
   'malware_attack-pattern': ['uses'],

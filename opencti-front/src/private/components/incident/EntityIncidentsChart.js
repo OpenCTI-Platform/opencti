@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import AreaChart from 'recharts/lib/chart/AreaChart';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
@@ -9,9 +8,12 @@ import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
 import Area from 'recharts/lib/cartesian/Area';
 import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
+import Tooltip from 'recharts/lib/component/Tooltip';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import { QueryRenderer } from '../../../relay/environment';
+import { now, yearsAgo } from '../../../utils/Time';
 import Theme from '../../../components/Theme';
 import inject18n from '../../../components/i18n';
 
@@ -26,66 +28,73 @@ const styles = theme => ({
   },
 });
 
-class EntityIncidentsChartComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      chartData: [
-        { date: '2018-04', value: 0 },
-        { date: '2018-05', value: 2 },
-        { date: '2018-06', value: 4 },
-        { date: '2018-07', value: 2 },
-        { date: '2018-08', value: 4 },
-        { date: '2018-09', value: 3 },
-        { date: '2018-10', value: 2 },
-        { date: '2018-11', value: 4 },
-        { date: '2018-12', value: 5 },
-      ],
-    };
-  }
+const entityIncidentsChartIncidentsTimeSeriesQuery = graphql`
+    query EntityIncidentsChartIncidentsTimeSeriesQuery($objectId: String, $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
+        incidentsTimeSeries(objectId: $objectId, field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
+            date,
+            value
+        }
+    }
+`;
 
+class EntityIncidentsChart extends Component {
   render() {
-    const { t, classes } = this.props;
+    const { t, md, classes, entityId } = this.props;
+    const incidentsTimeSeriesVariables = {
+      objectId: entityId,
+      field: 'first_seen',
+      operation: 'count',
+      startDate: yearsAgo(3),
+      endDate: now(),
+      interval: 'month',
+    };
     return (
       <div style={{ height: '100%' }}>
         <Typography variant='h4' gutterBottom={true}>
           {t('Incidents')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <ResponsiveContainer height={330} width='100%'>
-            <AreaChart data={this.state.chartData} margin={{
-              top: 20, right: 50, bottom: 20, left: -10,
-            }}>
-              <CartesianGrid strokeDasharray='3 3'/>
-              <XAxis dataKey='date' stroke='#ffffff' interval={0} angle={-45} textAnchor='end'/>
-              <YAxis stroke='#ffffff'/>
-              <Area type='monotone' stroke={Theme.palette.primary.main} dataKey='value'/>
-            </AreaChart>
-          </ResponsiveContainer>
+          <QueryRenderer
+            query={entityIncidentsChartIncidentsTimeSeriesQuery}
+            variables={incidentsTimeSeriesVariables}
+            render={({ props }) => {
+              if (props && props.incidentsTimeSeries) {
+                console.log(props.incidentsTimeSeries);
+                return (
+                  <ResponsiveContainer height={330} width='100%'>
+                    <AreaChart data={props.incidentsTimeSeries} margin={{
+                      top: 20, right: 50, bottom: 20, left: -10,
+                    }}>
+                      <CartesianGrid strokeDasharray='3 3'/>
+                      <XAxis dataKey='date' stroke='#ffffff' interval={2} angle={-45} textAnchor='end' tickFormatter={md}/>
+                      <YAxis stroke='#ffffff'/>
+                      <Tooltip
+                        cursor={{ fill: 'rgba(0, 0, 0, 0.2)', stroke: 'rgba(0, 0, 0, 0.2)', strokeWidth: 2 }}
+                        contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', fontSize: 12, borderRadius: 10 }}
+                        labelFormatter={md}
+                      />
+                      <Area type='monotone' stroke={Theme.palette.primary.main} dataKey='value'/>
+                    </AreaChart>
+                  </ResponsiveContainer>
+                );
+              }
+              return (
+                <div> &nbsp; </div>
+              );
+            }}
+          />
         </Paper>
       </div>
     );
   }
 }
 
-EntityIncidentsChartComponent.propTypes = {
-  observablesStats: PropTypes.object,
+EntityIncidentsChart.propTypes = {
+  entityId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  md: PropTypes.func,
 };
-
-const EntityIncidentsChart = createFragmentContainer(EntityIncidentsChartComponent, {
-  observablesStats: graphql`
-      fragment EntityIncidentsChart_observablesStats on Malware {
-          id,
-          name,
-          description,
-          created,
-          modified
-      }
-  `,
-});
 
 export default compose(
   inject18n,

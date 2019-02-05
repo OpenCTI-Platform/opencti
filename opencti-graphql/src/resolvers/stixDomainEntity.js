@@ -14,7 +14,8 @@ import {
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
+  stixRelations
 } from '../domain/stixDomainEntity';
 import { fetchEditContext, pubsub } from '../database/redis';
 import { auth, withCancel } from './wrapper';
@@ -49,6 +50,8 @@ const stixDomainEntityResolvers = {
     },
     markingDefinitions: (stixDomainEntity, args) =>
       markingDefinitions(stixDomainEntity.id, args),
+    stixRelations: (stixDomainEntity, args) =>
+      stixRelations(stixDomainEntity.id, args),
     editContext: auth(stixDomainEntity => fetchEditContext(stixDomainEntity.id))
   },
   Mutation: {

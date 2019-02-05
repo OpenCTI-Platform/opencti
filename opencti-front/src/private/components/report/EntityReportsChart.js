@@ -75,7 +75,7 @@ class EntityReportsChart extends Component {
                         contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', fontSize: 12, borderRadius: 10 }}
                         labelFormatter={md}
                       />
-                      <Bar fill={Theme.palette.primary.main} dataKey='value' barSize={10}/>
+                      <Bar fill={Theme.palette.primary.main} dataKey='value' barSize={5}/>
                     </BarChart>
                   </ResponsiveContainer>
                 );

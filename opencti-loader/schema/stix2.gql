@@ -593,7 +593,7 @@ define
       ("allowed": $user, "allow": $markingDefinition) isa "user_permission";
     };
 
-    # Threat Actor => uses => Malware through Intrusion-Set
+    # Threat-Actor => uses => Malware through Intrusion-Set
     "ThreatActorUsesMalwareTroughIntrusionSetRule" sub rule
     when {
       $intrusionSet isa "Intrusion-Set";
@@ -605,7 +605,7 @@ define
       ("user": $threatActor, "usage": $malware) isa "uses";
     };
 
-    # Threat Actor => targets => Identity through Intrusion-Set
+    # Threat-Actor => targets => Identity through Intrusion-Set
     "ThreatActorTargetsIdentityThroughIntrusionSetRule" sub rule
     when {
       $intrusionSet isa "Intrusion-Set";
@@ -617,7 +617,7 @@ define
       ("source": $threatActor, "target": $identity) isa "targets";
     };
 
-    # Intrusion set => targets => Identity through Campaign
+    # Intrusion-Set => targets => Identity through Campaign
     "IntrusionSetTargetsIdentityThroughCampaignRule" sub rule
     when {
       $campaign isa "Campaign";
@@ -629,7 +629,19 @@ define
       ("source": $intrusionSet, "target": $identity) isa "targets";
     };
 
-    # Intrusion set => targets => Identity through SubIdentity
+    # Intrusion-Set => targets => Identity through Incident
+    "IntrusionSetTargetsIdentityThroughIncidentRule" sub rule
+    when {
+      $incident isa "Incident";
+      $identity isa "Identity";
+      $intrusionSet isa "Intrusion-Set";
+      ("source": $incident, "target": $identity) isa targets;
+      ("origin": $intrusionSet, "attribution": $incident) isa attributed-to;
+    } then {
+      ("source": $intrusionSet, "target": $identity) isa "targets";
+    };
+
+    # Intrusion-Set => targets => Identity through SubIdentity
     "IntrusionSetTargetsIdentityThroughIdentityRule" sub rule
     when {
       $subidentity isa "Identity";
@@ -641,7 +653,7 @@ define
       ("source": $intrusionSet, "target": $identity) isa "targets";
     };
 
-    # Campaign => attributed-to => Threat Actor through Intrusion-Set
+    # Campaign => attributed-to => Threat-Actor through Intrusion-Set
     "CampaignAttributedToThreatActorTroughIntrusionSetRule" sub rule
     when {
       $intrusionSet isa "Intrusion-Set";
@@ -651,4 +663,28 @@ define
       ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
     } then {
       ("origin": $threatActor, "attribution": $campaign) isa "attributed-to";
+    };
+
+    # Incident => attributed-to => Intrusion-Set through Campaign
+    "IncidentAttributedToIntrusionSetTroughCampaignRule" sub rule
+    when {
+      $campaign isa "Campaign";
+      $intrusionSet isa "Intrusion-Set";
+      $incident isa "Incident";
+      ("origin": $campaign, "attribution": $incident) isa attributed-to;
+      ("origin": $intrusionSet, "attribution": $campaign) isa attributed-to;
+    } then {
+      ("origin": $intrusionSet, "attribution": $incident) isa "attributed-to";
+    };
+
+    # Incident => targets => Identity through SubIdentity
+    "IncidentTargetsIdentityThroughIdentityRule" sub rule
+    when {
+      $subidentity isa "Identity";
+      $identity isa "Identity";
+      $incident isa "Incident";
+      ("source": $incident, "target": $subidentity) isa targets;
+      ("gather": $identity, "part_of": $subidentity) isa gathering;
+    } then {
+      ("source": $incident, "target": $identity) isa "targets";
     };

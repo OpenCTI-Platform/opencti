@@ -12,7 +12,6 @@ import {
   notify,
   now,
   paginate,
-  paginateRelationships,
   qkObjUnique,
   takeTx,
   prepareString
@@ -48,15 +47,6 @@ export const objectRefs = (workspaceId, args) =>
     $workspace id ${workspaceId}`,
     args,
     false
-  );
-
-export const relationRefs = (workspaceId, args) =>
-  paginateRelationships(
-    `match $rel($from, $to) isa stix_relation; 
-    $extraRel(so:$rel, knowledge_aggregation:$workspace) isa object_refs; 
-    $workspace id ${workspaceId}`,
-    args,
-    'extraRel'
   );
 
 export const addWorkspace = async (user, workspace) => {
