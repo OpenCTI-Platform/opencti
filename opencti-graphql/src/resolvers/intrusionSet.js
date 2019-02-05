@@ -14,21 +14,20 @@ import {
   stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
-import { auth } from './wrapper';
 
 const intrusionSetResolvers = {
   Query: {
-    intrusionSet: auth((_, { id }) => findById(id)),
-    intrusionSets: auth((_, args) => findAll(args))
+    intrusionSet: (_, { id }) => findById(id),
+    intrusionSets: (_, args) => findAll(args)
   },
   IntrusionSet: {
     markingDefinitions: (intrusionSet, args) =>
       markingDefinitions(intrusionSet.id, args),
     stixRelations: (intrusionSet, args) => stixRelations(intrusionSet.id, args),
-    editContext: auth(intrusionSet => fetchEditContext(intrusionSet.id))
+    editContext: intrusionSet => fetchEditContext(intrusionSet.id)
   },
   Mutation: {
-    intrusionSetEdit: auth((_, { id }, { user }) => ({
+    intrusionSetEdit: (_, { id }, { user }) => ({
       delete: () => intrusionSetDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
@@ -36,10 +35,8 @@ const intrusionSetResolvers = {
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)
-    })),
-    intrusionSetAdd: auth((_, { input }, { user }) =>
-      addIntrusionSet(user, input)
-    )
+    }),
+    intrusionSetAdd: (_, { input }, { user }) => addIntrusionSet(user, input)
   }
 };
 

@@ -19,7 +19,6 @@ import { commitMutation } from '../../../relay/environment';
 const roles = [
   { label: 'ROLE_ROOT', value: 'ROLE_ROOT' },
   { label: 'ROLE_ADMIN', value: 'ROLE_ADMIN' },
-  { label: 'ROLE_USER', value: 'ROLE_USER' },
 ];
 
 const styles = theme => ({

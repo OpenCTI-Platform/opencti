@@ -16,17 +16,16 @@ import {
   stixDomainEntityAddRelation,
   stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
-import { auth } from './wrapper';
 
 const identityResolvers = {
   Query: {
-    identity: auth((_, { id }) => findById(id)),
-    identities: auth((_, args) => {
+    identity: (_, { id }) => findById(id),
+    identities: (_, args) => {
       if (args.search && args.search.length > 0) {
         return search(args);
       }
       return findAll(args);
-    })
+    }
   },
   Identity: {
     __resolveType(obj) {
@@ -38,12 +37,13 @@ const identityResolvers = {
       return 'Unknown';
     },
     createdByRef: (identity, args) => createdByRef(identity.id, args),
-    markingDefinitions: (identity, args) => markingDefinitions(identity.id, args),
+    markingDefinitions: (identity, args) =>
+      markingDefinitions(identity.id, args),
     reports: (identity, args) => reports(identity.id, args),
-    stixRelations: (identity, args) => stixRelations(identity.id, args),
+    stixRelations: (identity, args) => stixRelations(identity.id, args)
   },
   Mutation: {
-    identityEdit: auth((_, { id }, { user }) => ({
+    identityEdit: (_, { id }, { user }) => ({
       delete: () => identityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
@@ -51,8 +51,8 @@ const identityResolvers = {
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)
-    })),
-    identityAdd: auth((_, { input }, { user }) => addIdentity(user, input))
+    }),
+    identityAdd: (_, { input }, { user }) => addIdentity(user, input)
   }
 };
 

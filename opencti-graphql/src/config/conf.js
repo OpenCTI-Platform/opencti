@@ -38,7 +38,7 @@ export const BUS_TOPICS = {
   KillChainPhase: {
     EDIT_TOPIC: 'KILL_CHAIN_PHASE_EDIT_TOPIC',
     ADDED_TOPIC: 'KILL_CHAIN_PHASE_ADDED_TOPIC'
-  },
+  }
 };
 
 // Environment from NODE_ENV environment variable

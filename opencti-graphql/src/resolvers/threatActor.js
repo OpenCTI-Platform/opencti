@@ -16,22 +16,22 @@ import {
   stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
-import { auth } from './wrapper';
 
 const threatActorResolvers = {
   Query: {
-    threatActor: auth((_, { id }) => findById(id)),
-    threatActors: auth((_, args) => findAll(args))
+    threatActor: (_, { id }) => findById(id),
+    threatActors: (_, args) => findAll(args)
   },
   ThreatActor: {
     createdByRef: (threatActor, args) => createdByRef(threatActor.id, args),
-    markingDefinitions: (threatActor, args) => markingDefinitions(threatActor.id, args),
+    markingDefinitions: (threatActor, args) =>
+      markingDefinitions(threatActor.id, args),
     reports: (threatActor, args) => reports(threatActor.id, args),
     stixRelations: (threatActor, args) => stixRelations(threatActor.id, args),
-    editContext: auth(threatActor => fetchEditContext(threatActor.id))
+    editContext: threatActor => fetchEditContext(threatActor.id)
   },
   Mutation: {
-    threatActorEdit: auth((_, { id }, { user }) => ({
+    threatActorEdit: (_, { id }, { user }) => ({
       delete: () => threatActorDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
@@ -39,10 +39,8 @@ const threatActorResolvers = {
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)
-    })),
-    threatActorAdd: auth((_, { input }, { user }) =>
-      addThreatActor(user, input)
-    )
+    }),
+    threatActorAdd: (_, { input }, { user }) => addThreatActor(user, input)
   }
 };
 

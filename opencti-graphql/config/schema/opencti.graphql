@@ -1,4 +1,5 @@
 ### Directives
+directive @auth(for: UserRole = ROLE_USER) on OBJECT | FIELD_DEFINITION
 directive @constraint(
     # String constraints
     minLength: Int
@@ -285,8 +286,8 @@ enum UsersOrdering {
 }
 enum UserRole {
     ROLE_ROOT
+    ROLE_F
     ROLE_ADMIN
-    ROLE_USER
 }
 type UserConnection {
     pageInfo: PageInfo!
@@ -1200,90 +1201,90 @@ type Query {
     # Settings
     settings: Settings
     # StixDomainEntities
-    stixDomainEntity(id: String): StixDomainEntity
-    stixDomainEntities(first: Int, after: ID, orderBy: StixDomainEntitiesOrdering, orderMode: OrderingMode, name: String, search: String, externalReferenceId: String, type: String): StixDomainEntityConnection
-    stixDomainEntitiesTimeSeries(type: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
+    stixDomainEntity(id: String): StixDomainEntity @auth
+    stixDomainEntities(first: Int, after: ID, orderBy: StixDomainEntitiesOrdering, orderMode: OrderingMode, name: String, search: String, externalReferenceId: String, type: String): StixDomainEntityConnection @auth
+    stixDomainEntitiesTimeSeries(type: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries] @auth
     # StixRelations
-    stixRelation(id: String!): StixRelation
-    stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, inferred: Boolean, toId: String,fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
+    stixRelation(id: String!): StixRelation @auth
+    stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, inferred: Boolean, toId: String,fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection @auth
     # Workspaces
-    workspace(id: String!): Workspace
-    workspaces(first: Int, after: ID, orderBy: WorkspacesOrdering, orderMode: OrderingMode, search: String): WorkspaceConnection
+    workspace(id: String!): Workspace @auth
+    workspaces(first: Int, after: ID, orderBy: WorkspacesOrdering, orderMode: OrderingMode, search: String): WorkspaceConnection @auth
     # Identities
-    identity(id: String!): Identity
-    identities(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): IdentityConnection
+    identity(id: String!): Identity @auth
+    identities(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): IdentityConnection @auth
     # Users
-    me: User
-    user(id: String!): User
-    users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
+    me: User @auth
+    user(id: String!): User @auth(for: ROLE_ADMIN)
+    users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection @auth(for: ROLE_ADMIN)
     # Organizations
-    organization(id: String!): Organization
-    organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, search: String): OrganizationConnection
+    organization(id: String!): Organization @auth
+    organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, search: String): OrganizationConnection @auth
     # Sectors
-    sector(id: String!): Sector
-    sectors(first: Int, after: ID, orderBy: SectorsOrdering, orderMode: OrderingMode, search: String): SectorConnection
+    sector(id: String!): Sector @auth
+    sectors(first: Int, after: ID, orderBy: SectorsOrdering, orderMode: OrderingMode, search: String): SectorConnection @auth
     # Cities
-    city(id: String!): City
-    cities(first: Int, after: ID, orderBy: CitiesOrdering, orderMode: OrderingMode, search: String): CityConnection
+    city(id: String!): City @auth
+    cities(first: Int, after: ID, orderBy: CitiesOrdering, orderMode: OrderingMode, search: String): CityConnection @auth
     # Countries
-    country(id: String!): Country
-    countries(first: Int, after: ID, orderBy: CountriesOrdering, orderMode: OrderingMode, search: String): CountryConnection
+    country(id: String!): Country @auth
+    countries(first: Int, after: ID, orderBy: CountriesOrdering, orderMode: OrderingMode, search: String): CountryConnection @auth
     # Groups
-    group(id: String!): Group
-    groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
+    group(id: String!): Group @auth
+    groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection @auth
     # MarkingDefinitions
-    markingDefinition(id: String!): MarkingDefinition
-    markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, search: String): MarkingDefinitionConnection
+    markingDefinition(id: String!): MarkingDefinition @auth
+    markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, search: String): MarkingDefinitionConnection @auth
     # ExternalReferences
-    externalReference(id: String!): ExternalReference
-    externalReferences(first: Int, after: ID, orderBy: ExternalReferencesOrdering, orderMode: OrderingMode, objectId: String, search: String): ExternalReferenceConnection
+    externalReference(id: String!): ExternalReference @auth
+    externalReferences(first: Int, after: ID, orderBy: ExternalReferencesOrdering, orderMode: OrderingMode, objectId: String, search: String): ExternalReferenceConnection @auth
     # KillChainPhases
-    killChainPhase(id: String!): KillChainPhase
-    killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, search: String, phaseName: String): KillChainPhaseConnection
+    killChainPhase(id: String!): KillChainPhase @auth
+    killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, search: String, phaseName: String): KillChainPhaseConnection @auth
     # AttackPatterns
-    attackPattern(id: String!): AttackPattern
-    attackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, search: String): AttackPatternConnection
+    attackPattern(id: String!): AttackPattern @auth
+    attackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, search: String): AttackPatternConnection @auth
     # CourseOfActions
-    courseOfAction(id: String!): CourseOfAction
-    courseOfActions(first: Int, after: ID, orderBy: CourseOfActionsOrdering, orderMode: OrderingMode, search: String): CourseOfActionConnection
+    courseOfAction(id: String!): CourseOfAction @auth
+    courseOfActions(first: Int, after: ID, orderBy: CourseOfActionsOrdering, orderMode: OrderingMode, search: String): CourseOfActionConnection @auth
     # ThreatActors
-    threatActor(id: String!): ThreatActor
-    threatActors(first: Int, after: ID, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, search: String): ThreatActorConnection
+    threatActor(id: String!): ThreatActor @auth
+    threatActors(first: Int, after: ID, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, search: String): ThreatActorConnection @auth
     # IntursionSets
-    intrusionSet(id: String!): IntrusionSet
-    intrusionSets(first: Int, after: ID, orderBy: IntrusionSetsOrdering, orderMode: OrderingMode, search: String): IntrusionSetConnection
+    intrusionSet(id: String!): IntrusionSet @auth
+    intrusionSets(first: Int, after: ID, orderBy: IntrusionSetsOrdering, orderMode: OrderingMode, search: String): IntrusionSetConnection @auth
     # Campaigns
-    campaign(id: String!): Campaign
-    campaigns(first: Int, after: ID, orderBy: CampaignsOrdering, orderMode: OrderingMode, search: String): CampaignConnection
-    campaignsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
+    campaign(id: String!): Campaign @auth
+    campaigns(first: Int, after: ID, orderBy: CampaignsOrdering, orderMode: OrderingMode, search: String): CampaignConnection @auth
+    campaignsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries] @auth
     # Incidents
-    incident(id: String!): Incident
-    incidents(first: Int, after: ID, orderBy: IncidentsOrdering, orderMode: OrderingMode, search: String): IncidentConnection
-    incidentsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
+    incident(id: String!): Incident @auth
+    incidents(first: Int, after: ID, orderBy: IncidentsOrdering, orderMode: OrderingMode, search: String): IncidentConnection @auth
+    incidentsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries] @auth
     # Malwares
-    malware(id: String!): Malware
-    malwares(first: Int, after: ID, orderBy: MalwaresOrdering, orderMode: OrderingMode, search: String): MalwareConnection
+    malware(id: String!): Malware @auth
+    malwares(first: Int, after: ID, orderBy: MalwaresOrdering, orderMode: OrderingMode, search: String): MalwareConnection @auth
     # Tools
-    tool(id: String!): Tool
-    tools(first: Int, after: ID, orderBy: ToolsOrdering, orderMode: OrderingMode, search: String): ToolConnection
+    tool(id: String!): Tool @auth
+    tools(first: Int, after: ID, orderBy: ToolsOrdering, orderMode: OrderingMode, search: String): ToolConnection @auth
     # Vulnerabilities
-    vulnerability(id: String!): Vulnerability
-    vulnerabilities(first: Int, after: ID, orderBy: VulnerabilitiesOrdering, orderMode: OrderingMode, search: String): VulnerabilityConnection
+    vulnerability(id: String!): Vulnerability @auth
+    vulnerabilities(first: Int, after: ID, orderBy: VulnerabilitiesOrdering, orderMode: OrderingMode, search: String): VulnerabilityConnection @auth
     # Reports
-    report(id: String!): Report
-    reports(first: Int, after: ID, orderBy: ReportsOrdering, orderMode: OrderingMode, objectId: String, reportClass: String, search: String): ReportConnection
-    reportsTimeSeries(objectId: String, reportClass: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
+    report(id: String!): Report @auth
+    reports(first: Int, after: ID, orderBy: ReportsOrdering, orderMode: OrderingMode, objectId: String, reportClass: String, search: String): ReportConnection @auth
+    reportsTimeSeries(objectId: String, reportClass: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries] @auth
 }
 
 ### SUBSCRIPTIONS
 type Subscription {
-    settings(id: ID!): Settings
-    stixDomainEntity(id: ID!): StixDomainEntity
-    stixRelation(id: ID!): StixRelation
-    workspace(id: ID!): Workspace
-    markingDefinition(id: ID!): MarkingDefinition
-    externalReference(id: ID!): ExternalReference
-    killChainPhase(id: ID!): KillChainPhase
+    settings(id: ID!): Settings @auth(for: ROLE_ADMIN)
+    markingDefinition(id: ID!): MarkingDefinition @auth(for: ROLE_ADMIN)
+    killChainPhase(id: ID!): KillChainPhase @auth(for: ROLE_ADMIN)
+    stixDomainEntity(id: ID!): StixDomainEntity @auth
+    stixRelation(id: ID!): StixRelation @auth
+    workspace(id: ID!): Workspace @auth
+    externalReference(id: ID!): ExternalReference  @auth
 }
 
 ### MUTATIONS
@@ -1525,83 +1526,82 @@ type ReportEditMutations {
 }
 
 # Mutations
-
 type Mutation {
-    # Settings
-    settingsAdd(input: SettingsAddInput): Settings
-    settingsEdit(id: ID!): SettingsEditMutations
     # Login
     token(input: UserLoginInput) : String
+    # Settings
+    settingsAdd(input: SettingsAddInput): Settings @auth(for: ROLE_ADMIN)
+    settingsEdit(id: ID!): SettingsEditMutations @auth(for: ROLE_ADMIN)
     # StixDomainEntity
-    stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity
-    stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations
+    stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth
+    stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations @auth
     # StixRelation
-    stixRelationAdd(input: StixRelationAddInput): StixRelation
-    stixRelationEdit(id: ID!): StixRelationEditMutations
+    stixRelationAdd(input: StixRelationAddInput): StixRelation @auth
+    stixRelationEdit(id: ID!): StixRelationEditMutations @auth
     # Workspace
-    workspaceAdd(input: WorkspaceAddInput): Workspace
-    workspaceEdit(id: ID!): WorkspaceEditMutations
+    workspaceAdd(input: WorkspaceAddInput): Workspace @auth
+    workspaceEdit(id: ID!): WorkspaceEditMutations @auth
     # Identity
-    identityAdd(input: IdentityAddInput): Identity
-    identityEdit(id: ID!): IdentityEditMutations
+    identityAdd(input: IdentityAddInput): Identity @auth
+    identityEdit(id: ID!): IdentityEditMutations @auth
     # User
-    userAdd(input: UserAddInput): User
-    personAdd(input: PersonAddInput): User
-    userEdit(id: ID!): UserEditMutations
-    meEdit(input: EditInput): User
-    logout: ID
+    userAdd(input: UserAddInput): User @auth(for: ROLE_ADMIN)
+    personAdd(input: PersonAddInput): User @auth(for: ROLE_ADMIN)
+    userEdit(id: ID!): UserEditMutations @auth(for: ROLE_ADMIN)
+    meEdit(input: EditInput): User @auth
+    logout: ID @auth
     # Organization
-    organizationAdd(input: OrganizationAddInput): Organization
-    organizationEdit(id: ID!): OrganizationEditMutations
+    organizationAdd(input: OrganizationAddInput): Organization @auth
+    organizationEdit(id: ID!): OrganizationEditMutations @auth
     # Sector
-    sectorAdd(input: SectorAddInput): Sector
-    sectorEdit(id: ID!): SectorEditMutations
+    sectorAdd(input: SectorAddInput): Sector @auth
+    sectorEdit(id: ID!): SectorEditMutations @auth
     # City
-    cityAdd(input: CityAddInput): City
-    cityEdit(id: ID!): CityEditMutations
+    cityAdd(input: CityAddInput): City @auth
+    cityEdit(id: ID!): CityEditMutations @auth
     # Country
-    countryAdd(input: CountryAddInput): Country
-    countryEdit(id: ID!): CountryEditMutations
+    countryAdd(input: CountryAddInput): Country @auth
+    countryEdit(id: ID!): CountryEditMutations @auth
     # Group
-    groupAdd(input: GroupAddInput): Group
-    groupEdit(id: ID!): GroupEditMutations
+    groupAdd(input: GroupAddInput): Group @auth(for: ROLE_ADMIN)
+    groupEdit(id: ID!): GroupEditMutations @auth(for: ROLE_ADMIN)
     # MarkingDefinition
-    markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition
-    markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations
+    markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @auth(for: ROLE_ADMIN)
+    markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @auth(for: ROLE_ADMIN)
     # ExternalReference
-    externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference
-    externalReferenceEdit(id: ID!): ExternalReferenceEditMutations
+    externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference @auth
+    externalReferenceEdit(id: ID!): ExternalReferenceEditMutations @auth
     # KillChainPhase
-    killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase
-    killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations
+    killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: ROLE_ADMIN)
+    killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: ROLE_ADMIN)
     # AttackPattern
-    attackPatternAdd(input: AttackPatternAddInput): AttackPattern
-    attackPatternEdit(id: ID!): AttackPatternEditMutations
+    attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth
+    attackPatternEdit(id: ID!): AttackPatternEditMutations @auth
     # CourseOfAction
-    courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction
-    courseOfActionEdit(id: ID!): CourseOfActionEditMutations
+    courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction @auth
+    courseOfActionEdit(id: ID!): CourseOfActionEditMutations @auth
     # ThreatActor
-    threatActorAdd(input: ThreatActorAddInput): ThreatActor
-    threatActorEdit(id: ID!): ThreatActorEditMutations
+    threatActorAdd(input: ThreatActorAddInput): ThreatActor @auth
+    threatActorEdit(id: ID!): ThreatActorEditMutations @auth
     # IntrusionSet
-    intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet
-    intrusionSetEdit(id: ID!): IntrusionSetEditMutations
+    intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet @auth
+    intrusionSetEdit(id: ID!): IntrusionSetEditMutations @auth
     # Campaign
-    campaignAdd(input: CampaignAddInput): Campaign
-    campaignEdit(id: ID!): CampaignEditMutations
+    campaignAdd(input: CampaignAddInput): Campaign @auth
+    campaignEdit(id: ID!): CampaignEditMutations @auth
     # Incident
-    incidentAdd(input: IncidentAddInput): Incident
-    incidentEdit(id: ID!): IncidentEditMutations
+    incidentAdd(input: IncidentAddInput): Incident @auth
+    incidentEdit(id: ID!): IncidentEditMutations @auth
     # Malware
-    malwareAdd(input: MalwareAddInput): Malware
-    malwareEdit(id: ID!): MalwareEditMutations
+    malwareAdd(input: MalwareAddInput): Malware @auth
+    malwareEdit(id: ID!): MalwareEditMutations @auth
     # Tool
-    toolAdd(input: ToolAddInput): Tool
-    toolEdit(id: ID!): ToolEditMutations
+    toolAdd(input: ToolAddInput): Tool @auth
+    toolEdit(id: ID!): ToolEditMutations @auth
     # Vulnerability
-    vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability
-    vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
+    vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability @auth
+    vulnerabilityEdit(id: ID!): VulnerabilityEditMutations @auth
     # Report
-    reportAdd(input: ReportAddInput): Report
-    reportEdit(id: ID!): ReportEditMutations
+    reportAdd(input: ReportAddInput): Report @auth
+    reportEdit(id: ID!): ReportEditMutations @auth
 }

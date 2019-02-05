@@ -16,12 +16,11 @@ import {
   stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
-import { auth } from './wrapper';
 
 const organizationResolvers = {
   Query: {
-    organization: auth((_, { id }) => findById(id)),
-    organizations: auth((_, args) => findAll(args))
+    organization: (_, { id }) => findById(id),
+    organizations: (_, args) => findAll(args)
   },
   Organization: {
     createdByRef: (organization, args) => createdByRef(organization.id, args),
@@ -29,10 +28,10 @@ const organizationResolvers = {
       markingDefinitions(organization.id, args),
     reports: (organization, args) => reports(organization.id, args),
     stixRelations: (organization, args) => stixRelations(organization.id, args),
-    editContext: auth(organization => fetchEditContext(organization.id))
+    editContext: organization => fetchEditContext(organization.id)
   },
   Mutation: {
-    organizationEdit: auth((_, { id }, { user }) => ({
+    organizationEdit: (_, { id }, { user }) => ({
       delete: () => organizationDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
@@ -40,8 +39,8 @@ const organizationResolvers = {
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)
-    })),
-    organizationAdd: auth((_, { input }, { user }) => addOrganization(user, input))
+    }),
+    organizationAdd: (_, { input }, { user }) => addOrganization(user, input)
   }
 };
 

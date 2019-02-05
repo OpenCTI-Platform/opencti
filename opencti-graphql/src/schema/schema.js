@@ -3,7 +3,6 @@ import { importSchema } from 'graphql-import';
 import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from 'graphql-tools';
 import ConstraintDirective from 'graphql-constraint-directive';
-// noinspection NodeJsCodingAssistanceForCoreModules
 import path from 'path';
 import settingsResolvers from '../resolvers/settings';
 import globalObjectResolvers from '../resolvers/globalObject';
@@ -27,9 +26,10 @@ import intrusionSetResolvers from '../resolvers/intrusionSet';
 import campaignResolvers from '../resolvers/campaign';
 import incidentResolvers from '../resolvers/incident';
 import malwareResolvers from '../resolvers/malware';
-import toolRsolvers from '../resolvers/tool';
+import toolResolvers from '../resolvers/tool';
 import vulnerabilityResolvers from '../resolvers/vulnerability';
 import reportResolvers from '../resolvers/report';
+import AuthDirectives, { AUTH_DIRECTIVE } from './authDirective';
 
 const globalResolvers = {
   DateTime: GraphQLDateTime
@@ -62,7 +62,7 @@ const resolvers = mergeResolvers([
   campaignResolvers,
   incidentResolvers,
   malwareResolvers,
-  toolRsolvers,
+  toolResolvers,
   vulnerabilityResolvers,
   reportResolvers
 ]);
@@ -70,7 +70,10 @@ const resolvers = mergeResolvers([
 const schema = makeExecutableSchema({
   typeDefs,
   resolvers,
-  schemaDirectives: { constraint: ConstraintDirective }
+  schemaDirectives: {
+    [AUTH_DIRECTIVE]: AuthDirectives,
+    constraint: ConstraintDirective
+  }
 });
 
 export default schema;

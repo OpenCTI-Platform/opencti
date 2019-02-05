@@ -103,8 +103,6 @@ class UserCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // TODO Fix this @sam
-    values.grant = ['ROLE_USER'];
     commitMutation({
       mutation: userMutation,
       variables: {

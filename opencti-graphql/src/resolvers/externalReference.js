@@ -14,12 +14,12 @@ import {
   externalReferenceCleanContext
 } from '../domain/externalReference';
 import { fetchEditContext, pubsub } from '../database/redis';
-import { auth, withCancel } from './wrapper';
+import withCancel from '../schema/subscriptionWrapper';
 
 const externalReferenceResolvers = {
   Query: {
-    externalReference: auth((_, { id }) => findById(id)),
-    externalReferences: auth((_, args) => {
+    externalReference: (_, { id }) => findById(id),
+    externalReferences: (_, args) => {
       if (args.objectId && args.objectId.length > 0) {
         return findByEntity(args);
       }
@@ -27,15 +27,13 @@ const externalReferenceResolvers = {
         return search(args);
       }
       return findAll(args);
-    }),
+    }
   },
   ExternalReference: {
-    editContext: auth(externalReference =>
-      fetchEditContext(externalReference.id)
-    )
+    editContext: externalReference => fetchEditContext(externalReference.id)
   },
   Mutation: {
-    externalReferenceEdit: auth((_, { id }, { user }) => ({
+    externalReferenceEdit: (_, { id }, { user }) => ({
       delete: () => externalReferenceDelete(id),
       fieldPatch: ({ input }) => externalReferenceEditField(user, id, input),
       contextPatch: ({ input }) =>
@@ -44,15 +42,14 @@ const externalReferenceResolvers = {
       relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         externalReferenceDeleteRelation(user, id, relationId)
-    })),
-    externalReferenceAdd: auth((_, { input }, { user }) =>
+    }),
+    externalReferenceAdd: (_, { input }, { user }) =>
       addExternalReference(user, input)
-    )
   },
   Subscription: {
     externalReference: {
       resolve: payload => payload.instance,
-      subscribe: auth((_, { id }, { user }) => {
+      subscribe: (_, { id }, { user }) => {
         externalReferenceEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.ExternalReference.EDIT_TOPIC),
@@ -64,7 +61,7 @@ const externalReferenceResolvers = {
         return withCancel(filtering, () => {
           externalReferenceCleanContext(user, id);
         });
-      })
+      }
     }
   }
 };
