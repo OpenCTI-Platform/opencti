@@ -11,8 +11,8 @@ import ReportOverview from './ReportOverview';
 import ReportEdition from './ReportEdition';
 import EntityExternalReferences from '../external_reference/EntityExternalReferences';
 import EntityObservablesChart from '../observable/EntityObservablesChart';
-import EntityRelationsChart from '../stix_relation/EntityStixRelationsPie';
-import EntityKillChainPhasesChart from '../stix_relation/EntityStixRelationsRadar';
+import EntityStixRelationsPie from '../stix_relation/EntityStixRelationsPie';
+import EntityStixRelationsRadar from '../stix_relation/EntityStixRelationsRadar';
 
 const styles = () => ({
   container: {
@@ -42,10 +42,10 @@ class ReportComponent extends Component {
             <EntityObservablesChart entityId={report.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityKillChainPhasesChart entityId={report.id}/>
+            <EntityStixRelationsRadar entityId={report.id} entityType='Kill-Chain-Phase' relationType='kill_chain_phases' field='phase_name'/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityRelationsChart entityId={report.id}/>
+            <EntityStixRelationsPie entityId={report.id} entityType='Stix-Domain-Entity' relationType='object_refs' field='type'/>
           </Grid>
         </Grid>
         <ReportEdition reportId={report.id}/>

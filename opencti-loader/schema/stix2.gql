@@ -567,7 +567,8 @@ define
     has "published_year"
     has "published_month"
     has "report_class"
-    plays "knowledge_aggregation";
+    plays "knowledge_aggregation"
+    plays "phase_belonging";
 
   "Tool" sub "Stix-Domain-Entity"
     has "tool_version"
@@ -726,4 +727,16 @@ define
       ("user": $malware, "usage": $attackPattern) isa uses;
     } then {
       ("phase_belonging": $malware, "kill_chain_phase": $killChainPhase) isa "kill_chain_phases";
+    };
+
+    # Kill-Chain-Phase => kill_chain_phases => Report through Attack-Pattern
+    "KillChainPhaseKillChainPhasesReportThroughAttackPatternRule" sub rule
+    when {
+      $attackPattern isa "Attack-Pattern";
+      $report isa "Report";
+      $killChainPhase isa "Kill-Chain-Phase";
+      ("phase_belonging": $attackPattern, "kill_chain_phase": $killChainPhase) isa kill_chain_phases;
+      ("knowledge_aggregation": $report, "so": $attackPattern) isa object_refs;
+    } then {
+      ("phase_belonging": $report, "kill_chain_phase": $killChainPhase) isa "kill_chain_phases";
     };
