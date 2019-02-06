@@ -80,6 +80,11 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
   return newData;
 };
 
+export const later = delay =>
+  new Promise(resolve => {
+    setTimeout(resolve, delay);
+  });
+
 // Attributes key that can contains multiple values.
 export const multipleAttributes = [
   'stix_label',
@@ -177,9 +182,14 @@ export const qk = (queryDef, infer = false) => {
     method: 'post',
     url: `/kb/grakn/graql${infer ? '?infer=true' : ''}`,
     data: queryDef
-  }).catch(error => {
-    logger.error(`Grakn query error: ${queryDef}`, error.response);
-    // throw new FunctionalError({ message: error.response.data.exception });
+  }).catch(async error => {
+    logger.error(`Grakn query error: ${queryDef}`, error.response.data);
+    // TODO: Workaround to avoid concurrency error on Grakn
+    if (infer && error.response.data.exception === null) {
+      await later(50);
+      return qk(queryDef, infer);
+    }
+    return false;
   });
 };
 
@@ -736,12 +746,10 @@ export const distribution = (query, options) => {
   const { operation, field } = options;
   const finalQuery = `${query}; $x has ${field} $g; aggregate group $g ${operation};`;
   return qk(finalQuery, true).then(result => {
-    const data = result.data.map(n => {
-      return {
-        label: /Value\s\[(.*)\]/i.exec(head(head(toPairs(n))))[1],
-        value: head(last(head(toPairs(n))))
-      };
-    });
+    const data = result.data.map(n => ({
+      label: /Value\s\[(.*)\]/i.exec(head(head(toPairs(n))))[1],
+      value: head(last(head(toPairs(n))))
+    }));
     return data;
   });
 };

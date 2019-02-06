@@ -669,6 +669,18 @@ define
       ("origin": $threatActor, "attribution": $campaign) isa "attributed-to";
     };
 
+    # Incident => attributed-to => Threat-Actor through Intrusion-Set
+    "IncidentAttributedToThreatActorTroughIntrusionSetRule" sub rule
+    when {
+      $intrusionSet isa "Intrusion-Set";
+      $threatActor isa "Threat-Actor";
+      $incident isa "Incident";
+      ("origin": $intrusionSet, "attribution": $incident) isa attributed-to;
+      ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
+    } then {
+      ("origin": $threatActor, "attribution": $incident) isa "attributed-to";
+    };
+
     # Incident => attributed-to => Intrusion-Set through Campaign
     "IncidentAttributedToIntrusionSetTroughCampaignRule" sub rule
     when {
@@ -739,4 +751,16 @@ define
       ("knowledge_aggregation": $report, "so": $attackPattern) isa object_refs;
     } then {
       ("phase_belonging": $report, "kill_chain_phase": $killChainPhase) isa "kill_chain_phases";
+    };
+
+    # Threat-Actor => object_refs => Report through Intrusion-Set
+    "ThreatActorObjectRefsReportThroughIntrusionSetRule" sub rule
+    when {
+      $intrusionSet isa "Intrusion-Set";
+      $report isa "Report";
+      $threatActor isa "Threat-Actor";
+      ("so": $intrusionSet, "knowledge_aggregation": $report) isa object_refs;
+      ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
+    } then {
+      ("so": $threatActor, "knowledge_aggregation": $report) isa "object_refs";
     };
