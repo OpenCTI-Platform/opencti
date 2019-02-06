@@ -254,13 +254,13 @@ class WorkspaceGraphComponent extends Component {
   async resolveCurrentNodesLinks() {
     const model = this.props.engine.getDiagramModel();
     forEach((l) => { l.remove(); }, values(model.getLinks()));
+
     const nodes = model.getNodes();
     const nodesObject = pipe(
       values,
       map(n => ({ id: n.extras.id, nodeId: n.id })),
       indexBy(prop('id')),
     )(nodes);
-
     const createdRelations = [];
     const relationsPairs = {};
     for (const n of values(nodes)) {
@@ -318,6 +318,7 @@ class WorkspaceGraphComponent extends Component {
             }
           }, data.stixRelations.edges);
           this.props.engine.repaintCanvas();
+          this.forceUpdate();
         }
       });
     }

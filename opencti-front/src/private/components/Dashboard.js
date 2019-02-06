@@ -24,6 +24,7 @@ import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import Bar from 'recharts/lib/cartesian/Bar';
 import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
+import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
 import Tooltip from 'recharts/lib/component/Tooltip';
 import { QueryRenderer } from '../../relay/environment';
 import truncate from '../../utils/String';
@@ -299,6 +300,7 @@ class Dashboard extends Component {
                             }}>
                               <XAxis dataKey='date' stroke='#ffffff' interval={15} angle={-45} textAnchor='end' tickFormatter={nsd}/>
                               <YAxis stroke='#ffffff'/>
+                              <CartesianGrid strokeDasharray='2 2' stroke='#0f181f'/>
                               <Tooltip
                                 cursor={{ fill: 'rgba(0, 0, 0, 0.2)', stroke: 'rgba(0, 0, 0, 0.2)', strokeWidth: 2 }}
                                 contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', fontSize: 12, borderRadius: 10 }}

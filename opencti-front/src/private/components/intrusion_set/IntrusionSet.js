@@ -13,7 +13,7 @@ import IntrusionSetEdition from './IntrusionSetEdition';
 import EntityLastReports from '../report/EntityLastReports';
 import EntityObservablesChart from '../observable/EntityObservablesChart';
 import EntityReportsChart from '../report/EntityReportsChart';
-import EntityKillChainPhasesChart from '../kill_chain_phase/EntityKillChainPhasesChart';
+import EntityStixRelationsRadar from '../stix_relation/EntityStixRelationsRadar';
 
 const styles = () => ({
   container: {
@@ -43,10 +43,10 @@ class IntrusionSetComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart entityId={intrusionSet.id}/>
+            <EntityStixRelationsRadar entityId={intrusionSet.id} entityType='Kill-Chain-Phase' relationType='kill_chain_phases' field='phase_name'/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityKillChainPhasesChart entityId={intrusionSet.id}/>
+            <EntityObservablesChart entityId={intrusionSet.id}/>
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={intrusionSet.id}/>

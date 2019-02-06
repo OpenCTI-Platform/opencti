@@ -66,7 +66,7 @@ class EntityIncidentsChart extends Component {
                     <AreaChart data={props.incidentsTimeSeries} margin={{
                       top: 20, right: 50, bottom: 20, left: -10,
                     }}>
-                      <CartesianGrid strokeDasharray='3 3'/>
+                      <CartesianGrid strokeDasharray='2 2' stroke='#0f181f'/>
                       <XAxis dataKey='date' stroke='#ffffff' interval={2} angle={-45} textAnchor='end' tickFormatter={md}/>
                       <YAxis stroke='#ffffff'/>
                       <Tooltip

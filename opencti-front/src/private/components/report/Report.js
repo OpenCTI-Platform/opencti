@@ -11,8 +11,8 @@ import ReportOverview from './ReportOverview';
 import ReportEdition from './ReportEdition';
 import EntityExternalReferences from '../external_reference/EntityExternalReferences';
 import EntityObservablesChart from '../observable/EntityObservablesChart';
-import EntityRelationsChart from '../stix_relation/EntityRelationsChart';
-import EntityKillChainPhasesChart from '../kill_chain_phase/EntityKillChainPhasesChart';
+import EntityRelationsChart from '../stix_relation/EntityStixRelationsPie';
+import EntityKillChainPhasesChart from '../stix_relation/EntityStixRelationsRadar';
 
 const styles = () => ({
   container: {

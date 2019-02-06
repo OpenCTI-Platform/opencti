@@ -10,9 +10,9 @@ import ToolHeader from './ToolHeader';
 import ToolOverview from './ToolOverview';
 import ToolEdition from './ToolEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import ToolUsageChart from './ToolUsageChart';
+import EntityStixRelationsChart from '../stix_relation/EntityStixRelationsChart';
 import EntityReportsChart from '../report/EntityReportsChart';
-import EntityKillChainPhasesChart from '../kill_chain_phase/EntityKillChainPhasesChart';
+import EntityStixRelationsRadar from '../stix_relation/EntityStixRelationsRadar';
 
 const styles = () => ({
   container: {
@@ -39,10 +39,10 @@ class ToolComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <ToolUsageChart toolId={tool.id}/>
+            <EntityStixRelationsChart entityId={tool.id} relationType='uses' />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityKillChainPhasesChart entityId={tool.id}/>
+            <EntityStixRelationsRadar entityId={tool.id} entityType='Kill-Chain-Phase' relationType='kill_chain_phases' field='phase_name'/>
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={tool.id}/>

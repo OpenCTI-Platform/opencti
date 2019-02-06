@@ -717,13 +717,32 @@ export const paginateRelationships = (query, options, extraRel = null) => {
 export const timeSeries = (query, options) => {
   const { startDate, endDate, operation, field, interval } = options;
   const finalQuery = `${query}; $x has ${field}_${interval} $g; aggregate group $g ${operation};`;
-  console.log(finalQuery);
   return qk(finalQuery, true).then(result => {
     const data = result.data.map(n => ({
       date: /Value\s\[([\d-]+)\]/i.exec(head(head(toPairs(n))))[1],
       value: head(last(head(toPairs(n))))
     }));
     return fillTimeSeries(startDate, endDate, interval, data);
+  });
+};
+
+/**
+ * Grakn generic timeseries
+ * @param query
+ * @param options
+ * @returns Promise
+ */
+export const distribution = (query, options) => {
+  const { operation, field } = options;
+  const finalQuery = `${query}; $x has ${field} $g; aggregate group $g ${operation};`;
+  return qk(finalQuery, true).then(result => {
+    const data = result.data.map(n => {
+      return {
+        label: /Value\s\[(.*)\]/i.exec(head(head(toPairs(n))))[1],
+        value: head(last(head(toPairs(n))))
+      };
+    });
+    return data;
   });
 };
 

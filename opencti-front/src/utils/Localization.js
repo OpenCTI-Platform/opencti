@@ -154,6 +154,8 @@ const i18n = {
       'Entities types': 'Types d\'entités',
       'Attack pattern usage': 'Usage de cette TTP',
       'Vulnerability usage': 'Usage de cette vulnérabilité',
+      'Entity usage': 'Usage de cette entité',
+      'Distribution:': 'Répartition :',
       Parameters: 'Paramètres',
       Users: 'Utilisateurs',
       Groups: 'Groupes',
@@ -314,6 +316,8 @@ const i18n = {
       entity_vulnerability: 'Vulnérabilité',
       entity_all: 'Toutes les entités',
       'entity_course-of-action': 'Mesure de mitigation',
+      'entity_Kill-Chain-Phase': 'phases de kill chain',
+      'entity_Stix-Domain-Entity': 'types d\'entités',
       report_internal: 'Rapport interne',
       report_external: 'Source externe',
       // Relations
@@ -383,6 +387,8 @@ const i18n = {
       entity_vulnerability: 'Vulnerability',
       entity_all: 'All entities',
       'entity_course-of-action': 'Course of action',
+      'entity_Kill-Chain-Phase': 'kill chain phases',
+      'entity_Stix-Domain-Entity': 'entities types',
       report_internal: 'Internal report',
       report_external: 'External report',
       // Relations

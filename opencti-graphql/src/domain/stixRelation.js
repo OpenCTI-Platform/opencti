@@ -1,4 +1,4 @@
-import { head } from 'ramda';
+import { head, join, map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
@@ -15,16 +15,70 @@ import {
   dayFormat,
   monthFormat,
   yearFormat,
-  prepareString
+  prepareString,
+  timeSeries,
+  distribution
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args =>
   paginateRelationships('match $rel($from, $to) isa stix_relation', args);
 
+export const stixRelationsTimeSeries = args =>
+  timeSeries(
+    `match $x($from, $to) isa stix_relation;  ${
+      args.toTypes
+        ? `${join(
+            ' ',
+            map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
+          )} { $to isa ${head(args.toTypes)}; };`
+        : ''
+    } $from id ${args.fromId}`,
+    args
+  );
+
+export const stixRelationsDistribution = args =>
+  distribution(
+    `match $rel($from, $x) isa stix_relation; ${
+      args.toTypes
+        ? `${join(
+            ' ',
+            map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
+          )} { $x isa ${head(args.toTypes)}; };`
+        : ''
+    } $from id ${args.fromId}`,
+    args
+  );
+
 export const findByType = args =>
   paginateRelationships(
     `match $rel($from, $to) isa ${args.relationType}`,
+    args
+  );
+
+export const stixRelationsTimeSeriesByType = args =>
+  timeSeries(
+    `match $x($from, $to) isa ${args.relationType}; ${
+      args.toTypes
+        ? `${join(
+            ' ',
+            map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
+          )} { $to isa ${head(args.toTypes)}; };`
+        : ''
+    } $from id ${args.fromId}`,
+    args
+  );
+
+export const stixRelationDistributionByType = args =>
+  distribution(
+    `match $rel($from, $x) isa ${args.relationType}; ${
+      args.toTypes
+        ? `${join(
+            ' ',
+            map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
+          )} { $x isa ${head(args.toTypes)}; };`
+        : ''
+    } $from id ${args.fromId}`,
     args
   );
 

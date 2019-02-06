@@ -11,7 +11,7 @@ import ThreatActorOverview from './ThreatActorOverview';
 import ThreatActorIdentity from './ThreatActorIdentity';
 import ThreatActorEdition from './ThreatActorEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import EntityObservablesChart from '../observable/EntityObservablesChart';
+import EntityIncidentsChart from '../incident/EntityIncidentsChart';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityCampaignsChart from '../campaign/EntityCampaignsChart';
 
@@ -43,10 +43,10 @@ class ThreatActorComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart entityId={threatActor.id}/>
+            <EntityCampaignsChart entityId={threatActor.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart entityId={threatActor.id}/>
+            <EntityIncidentsChart entityId={threatActor.id}/>
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={threatActor.id}/>

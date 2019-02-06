@@ -458,7 +458,8 @@ define
     plays "origin"
     plays "user"
     plays "source"
-    plays "characterize";
+    plays "characterize"
+    plays "phase_belonging";
 
   "Course-Of-Action" sub "Stix-Domain-Entity"
     plays "mitigation";
@@ -526,7 +527,8 @@ define
     plays "user"
     plays "usage"
     plays "source"
-    plays "characterize";
+    plays "characterize"
+    plays "phase_belonging";
 
   "Intrusion-Set" sub "Stix-Domain-Entity"
     has "first_seen"
@@ -546,7 +548,8 @@ define
     plays "source"
     plays "user"
     plays "origin"
-    plays "characterize";
+    plays "characterize"
+    plays "phase_belonging";
 
   "Malware" sub "Stix-Domain-Entity"
     plays "phase_belonging"
@@ -687,4 +690,40 @@ define
       ("gather": $identity, "part_of": $subidentity) isa gathering;
     } then {
       ("source": $incident, "target": $identity) isa "targets";
+    };
+
+    # Kill-Chain-Phase => kill_chain_phases => Intrusion-Set through Attack-Pattern
+    "KillChainPhaseKillChainPhasesIntrusionSetThroughAttackPatternRule" sub rule
+    when {
+      $attackPattern isa "Attack-Pattern";
+      $intrusionSet isa "Intrusion-Set";
+      $killChainPhase isa "Kill-Chain-Phase";
+      ("phase_belonging": $attackPattern, "kill_chain_phase": $killChainPhase) isa kill_chain_phases;
+      ("user": $intrusionSet, "usage": $attackPattern) isa uses;
+    } then {
+      ("phase_belonging": $intrusionSet, "kill_chain_phase": $killChainPhase) isa "kill_chain_phases";
+    };
+
+    # Kill-Chain-Phase => kill_chain_phases =>Incident through Attack-Pattern
+    "KillChainPhaseKillChainPhasesIncidentThroughAttackPatternRule" sub rule
+    when {
+      $attackPattern isa "Attack-Pattern";
+      $incident isa "Incident";
+      $killChainPhase isa "Kill-Chain-Phase";
+      ("phase_belonging": $attackPattern, "kill_chain_phase": $killChainPhase) isa kill_chain_phases;
+      ("user": $incident, "usage": $attackPattern) isa uses;
+    } then {
+      ("phase_belonging": $incident, "kill_chain_phase": $killChainPhase) isa "kill_chain_phases";
+    };
+
+    # Kill-Chain-Phase => kill_chain_phases => Malware through Attack-Pattern
+    "KillChainPhaseKillChainPhasesMalwareThroughAttackPatternRule" sub rule
+    when {
+      $attackPattern isa "Attack-Pattern";
+      $malware isa "Malware";
+      $killChainPhase isa "Kill-Chain-Phase";
+      ("phase_belonging": $attackPattern, "kill_chain_phase": $killChainPhase) isa kill_chain_phases;
+      ("user": $malware, "usage": $attackPattern) isa uses;
+    } then {
+      ("phase_belonging": $malware, "kill_chain_phase": $killChainPhase) isa "kill_chain_phases";
     };

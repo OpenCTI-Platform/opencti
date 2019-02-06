@@ -10,9 +10,9 @@ import AttackPatternHeader from './AttackPatternHeader';
 import AttackPatternOverview from './AttackPatternOverview';
 import AttackPatternEdition from './AttackPatternEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import EntityRelationsChart from '../stix_relation/EntityRelationsChart';
+import EntityStixRelationsPie from '../stix_relation/EntityStixRelationsPie';
 import EntityReportsChart from '../report/EntityReportsChart';
-import AttackPatternUsageChart from './AttackPatternUsageChart';
+import EntityStixRelationsChart from '../stix_relation/EntityStixRelationsChart';
 
 const styles = () => ({
   container: {
@@ -39,10 +39,10 @@ class AttackPatternComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <AttackPatternUsageChart attackPatternId={attackPattern.id}/>
+            <EntityStixRelationsChart entityId={attackPattern.id} relationType='uses' />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityRelationsChart entityId={attackPattern.id}/>
+            <EntityStixRelationsPie entityId={attackPattern.id} entityType='Stix-Domain-Entity' field='type'/>
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={attackPattern.id}/>

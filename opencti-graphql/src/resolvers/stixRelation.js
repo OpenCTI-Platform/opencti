@@ -6,6 +6,10 @@ import {
   findAll,
   findByType,
   findById,
+  stixRelationsTimeSeries,
+  stixRelationsTimeSeriesByType,
+  stixRelationsDistribution,
+  stixRelationDistributionByType,
   search,
   reports,
   markingDefinitions,
@@ -27,6 +31,18 @@ const stixRelationResolvers = {
         return findByType(args);
       }
       return findAll(args);
+    },
+    stixRelationsTimeSeries: (_, args) => {
+      if (args.relationType && args.relationType.length > 0) {
+        return stixRelationsTimeSeriesByType(args);
+      }
+      return stixRelationsTimeSeries(args);
+    },
+    stixRelationsDistribution: (_, args) => {
+      if (args.relationType && args.relationType.length > 0) {
+        return stixRelationDistributionByType(args);
+      }
+      return stixRelationsDistribution(args);
     }
   },
   StixRelation: {
