@@ -39,8 +39,8 @@ const renderCustomizedLabel = ({
   );
 };
 
-const entityStixRelationsRadarStixRelationDistributionQuery = graphql`
-    query EntityStixRelationsRadarStixRelationDistributionQuery($fromId: String, $toTypes: [String], $relationType: String, $field: String!, $operation: StatsOperation!) {
+const entityStixRelationsPieStixRelationDistributionQuery = graphql`
+    query EntityStixRelationsPieStixRelationDistributionQuery($fromId: String, $toTypes: [String], $relationType: String, $field: String!, $operation: StatsOperation!) {
         stixRelationsDistribution(fromId: $fromId, toTypes: $toTypes, relationType: $relationType, field: $field, operation: $operation) {
             label,
             value
@@ -67,7 +67,7 @@ class EntityStixRelationsPie extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
-            query={entityStixRelationsRadarStixRelationDistributionQuery}
+            query={entityStixRelationsPieStixRelationDistributionQuery}
             variables={stixRelationsDistributionVariables}
             render={({ props }) => {
               if (props && props.stixRelationsDistribution) {
