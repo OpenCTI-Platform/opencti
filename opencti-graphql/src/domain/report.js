@@ -76,7 +76,10 @@ export const findByEntity = args => {
         ? `; $r has report_class "${prepareString(args.reportClass)}"`
         : ''
     }`,
-    args
+    args,
+    true,
+    null,
+    true
   );
 };
 
