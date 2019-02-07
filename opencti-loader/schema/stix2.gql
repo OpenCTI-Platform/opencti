@@ -621,6 +621,18 @@ define
       ("source": $threatActor, "target": $identity) isa "targets";
     };
 
+    # Threat-Actor => attributed-to => Identity through Intrusion-Set
+    "ThreatActorAttributedToIdentityThroughIntrusionSetRule" sub rule
+    when {
+      $intrusionSet isa "Intrusion-Set";
+      $identity isa "Identity";
+      $threatActor isa "Threat-Actor";
+      ("origin": $identity, "attribution": $intrusionSet) isa attributed-to;
+      ("relate_from": $identity, "relate_to": $threatActor) isa related-to;
+    } then {
+      ("origin": $threatActor, "attribution": $intrusionSet) isa "attributed-to";
+    };
+
     # Intrusion-Set => targets => Identity through Campaign
     "IntrusionSetTargetsIdentityThroughCampaignRule" sub rule
     when {

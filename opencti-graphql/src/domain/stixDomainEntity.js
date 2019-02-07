@@ -63,11 +63,9 @@ export const search = args =>
   paginate(
     `match $m isa ${args.type ? args.type : 'Stix-Domain-Entity'}
     has name_lowercase $name;
-    $m has description_lowercase $desc;
     $m has alias_lowercase $alias;
     { $name contains "${prepareString(args.search.toLowerCase())}"; } or
-    { $desc contains "${prepareString(args.search.toLowerCase())}"; } or 
-    { $alias contains "${prepareString(args.search.toLowerCase())}"; }`,
+    { $desc contains "${prepareString(args.search.toLowerCase())}"; }`,
     args,
     false
   );
