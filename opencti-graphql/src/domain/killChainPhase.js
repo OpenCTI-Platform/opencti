@@ -24,7 +24,9 @@ export const findById = killChainPhaseId => loadByID(killChainPhaseId);
 
 export const findByPhaseName = args =>
   paginate(
-    `match $m isa Kill-Chain-Phase; $m has phase_name "${prepareString(args.phaseName)}"`,
+    `match $m isa Kill-Chain-Phase; $m has phase_name "${prepareString(
+      args.phaseName
+    )}"`,
     args,
     false
   );
@@ -35,7 +37,7 @@ export const markingDefinitions = (killChainPhaseId, args) =>
     (marking:$marking, so:$killChainPhase) isa object_marking_refs; 
     $killChainPhase id ${killChainPhaseId}`,
     args,
-    false,
+    false
   );
 
 export const addKillChainPhase = async (user, killChainPhase) => {
@@ -48,9 +50,7 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     $killChainPhase has phase_name "${prepareString(
       killChainPhase.phase_name
     )}";
-    $killChainPhase has phase_order "${prepareString(
-      killChainPhase.phase_order
-    )}";
+    $killChainPhase has phase_order ${killChainPhase.phase_order};
     $killChainPhase has created ${now()};
     $killChainPhase has modified ${now()};
     $killChainPhase has revoked false;

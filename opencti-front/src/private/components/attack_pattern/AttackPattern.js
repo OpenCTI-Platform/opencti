@@ -9,7 +9,7 @@ import inject18n from '../../../components/i18n';
 import AttackPatternHeader from './AttackPatternHeader';
 import AttackPatternOverview from './AttackPatternOverview';
 import AttackPatternEdition from './AttackPatternEdition';
-import EntityLastReports from '../report/EntityLastReports';
+import EntityExternalReferences from '../external_reference/EntityExternalReferences';
 import EntityStixRelationsPie from '../stix_relation/EntityStixRelationsPie';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityStixRelationsChart from '../stix_relation/EntityStixRelationsChart';
@@ -34,7 +34,7 @@ class AttackPatternComponent extends Component {
             <AttackPatternOverview attackPattern={attackPattern}/>
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={attackPattern.id}/>
+            <EntityExternalReferences entityId={attackPattern.id}/>
           </Grid>
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>

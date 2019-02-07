@@ -88,7 +88,7 @@ class ToolPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/catalogs/attack_patterns');
+        this.props.history.push('/dashboard/catalogs/tools');
       },
     });
   }

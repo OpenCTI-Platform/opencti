@@ -67,7 +67,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_externalReferencesOf',
+    'Pagination_externalReferences',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -94,7 +94,7 @@ class AddExternalReferencesLinesContainer extends Component {
           const userProxy = store.get(container.getDataID());
           const conn = ConnectionHandler.getConnection(
             userProxy,
-            'Pagination_externalReferencesOf',
+            'Pagination_externalReferences',
             entityPaginationOptions,
           );
           ConnectionHandler.deleteNode(conn, externalReference.id);
