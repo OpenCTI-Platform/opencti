@@ -136,6 +136,7 @@ interface StixDomainEntity {
     description: String
     graph_data: [String]
     editContext: [EditUserContext]
+    createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, inferred: Boolean, toId: String,fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
     created_at: DateTime!
