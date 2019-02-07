@@ -39,7 +39,8 @@ export const prepareDate = date =>
 export const yearFormat = date => moment(date).format('YYYY');
 export const monthFormat = date => moment(date).format('YYYY-MM');
 export const dayFormat = date => moment(date).format('YYYY-MM-DD');
-export const prepareString = s => (s ? s.replace(/"/g, '\\"') : '');
+export const prepareString = s =>
+  s ? s.replace('\\', '\\\\').replace(/"/g, '\\"') : '';
 
 export const fillTimeSeries = (startDate, endDate, interval, data) => {
   const startDateParsed = moment(startDate);

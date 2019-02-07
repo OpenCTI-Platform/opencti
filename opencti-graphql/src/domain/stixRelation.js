@@ -26,14 +26,16 @@ export const findAll = args =>
 
 export const stixRelationsTimeSeries = args =>
   timeSeries(
-    `match $x($from, $to) isa stix_relation;  ${
+    `match $x($from, $to) isa stix_relation; ${
       args.toTypes
         ? `${join(
             ' ',
             map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
           )} { $to isa ${head(args.toTypes)}; };`
         : ''
-    } $from id ${args.fromId}`,
+    } ${
+      args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
+    }`,
     args
   );
 
@@ -46,7 +48,9 @@ export const stixRelationsDistribution = args =>
             map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
           )} { $x isa ${head(args.toTypes)}; };`
         : ''
-    } $from id ${args.fromId}`,
+    } ${
+      args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
+    }`,
     args
   );
 
@@ -65,7 +69,9 @@ export const stixRelationsTimeSeriesByType = args =>
             map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
           )} { $to isa ${head(args.toTypes)}; };`
         : ''
-    } $from id ${args.fromId}`,
+    } ${
+      args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
+    }`,
     args
   );
 
@@ -78,7 +84,9 @@ export const stixRelationDistributionByType = args =>
             map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
           )} { $x isa ${head(args.toTypes)}; };`
         : ''
-    } $from id ${args.fromId}`,
+    } ${
+      args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
+    }`,
     args
   );
 

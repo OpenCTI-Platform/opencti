@@ -12,7 +12,6 @@ import Avatar from '@material-ui/core/Avatar';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import EntityExternalReferencesLines, { entityExternalReferencesLinesQuery } from './EntityExternalReferencesLines';
-import AddExternalReferences from './AddExternalReferences';
 
 const styles = theme => ({
   paper: {

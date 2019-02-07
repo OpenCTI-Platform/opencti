@@ -299,6 +299,9 @@ const i18n = {
       'Explore the kill chains of entities through time and other contextual information like campaigns or incidents.': 'Explorer les kill chains des entités à travers le temps et d\'autres informations contextuelles comme les campagnes ou les incidents.',
       'Explore the vulnerabilities used by entities through time and kill chain phases.': 'Explorer les vulnérabilités utilisées par les entités à travers le temps et les phases de la kill chain.',
       'Explore the observables of the dataset though time to visualize clusters and correlations.': 'Explorer les observables des données à travers le temps pour visualiser des clusters et des corrélations.',
+      'Origins of the targeting': 'Origines du ciblage',
+      'Targeted entities types': 'Types d\'entités ciblées',
+      'Targeted entities through time': 'Ciblages d\'entités à travers le temps',
       // Types
       'entity_threat-actor': 'Acteur',
       'entity_attack-pattern': 'TTP',

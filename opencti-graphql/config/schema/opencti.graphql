@@ -1207,7 +1207,7 @@ type Query {
     # StixRelations
     stixRelation(id: String!): StixRelation @auth
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, inferred: Boolean, toId: String, fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection @auth
-    stixRelationsTimeSeries(fromId: String, relationType: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries] @auth
+    stixRelationsTimeSeries(fromId: String, relationType: String, toTypes: [String], field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries] @auth
     stixRelationsDistribution(fromId: String, relationType: String, toTypes: [String], field: String!, operation: StatsOperation!): [Distribution] @auth
     # Workspaces
     workspace(id: String!): Workspace @auth

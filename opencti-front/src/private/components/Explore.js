@@ -39,6 +39,12 @@ const styles = theme => ({
     color: theme.palette.primary.main,
     fontSize: 20,
   },
+  title_disabled: {
+    marginTop: 5,
+    textTransform: 'uppercase',
+    color: '#a0a0a0',
+    fontSize: 20,
+  },
   description: {
     paddingRight: 60,
     marginTop: 10,
@@ -77,9 +83,9 @@ class Explore extends Component {
           </Grid>
           <Grid item={true} xs={4}>
             <Card raised={true} classes={{ root: classes.card }}>
-              <CardActionArea component={Link} to='/dashboard/explore/campaigns' classes={{ root: classes.actionArea }}>
+              <CardActionArea component={Link} to='/dashboard/explore/campaigns' classes={{ root: classes.actionArea }} disabled={true}>
                 <CardContent>
-                  <div className={classes.title}>
+                  <div className={classes.title_disabled}>
                     {t('Campaigns')}
                   </div>
                   <div className={classes.description}>
@@ -94,9 +100,9 @@ class Explore extends Component {
           </Grid>
           <Grid item={true} xs={4}>
             <Card raised={true} classes={{ root: classes.card }}>
-              <CardActionArea component={Link} to='/dashboard/explore/ttp' classes={{ root: classes.actionArea }}>
+              <CardActionArea component={Link} to='/dashboard/explore/ttp' classes={{ root: classes.actionArea }} disabled={true}>
                 <CardContent>
-                  <div className={classes.title}>
+                  <div className={classes.title_disabled}>
                     {t('Attack patterns')}
                   </div>
                   <div className={classes.description}>
@@ -113,9 +119,9 @@ class Explore extends Component {
         <Grid container={true} spacing={32}>
           <Grid item={true} xs={4}>
             <Card raised={true} classes={{ root: classes.card }}>
-              <CardActionArea component={Link} to='/dashboard/explore/killchains' classes={{ root: classes.actionArea }}>
+              <CardActionArea component={Link} to='/dashboard/explore/killchains' classes={{ root: classes.actionArea }} disabled={true}>
                 <CardContent>
-                  <div className={classes.title}>
+                  <div className={classes.title_disabled}>
                     {t('Kill chains')}
                   </div>
                   <div className={classes.description}>
@@ -130,9 +136,9 @@ class Explore extends Component {
           </Grid>
           <Grid item={true} xs={4}>
             <Card raised={true} classes={{ root: classes.card }}>
-              <CardActionArea component={Link} to='/dashboard/explore/vulnerabilities' classes={{ root: classes.actionArea }}>
+              <CardActionArea component={Link} to='/dashboard/explore/vulnerabilities' classes={{ root: classes.actionArea }} disabled={true}>
                 <CardContent>
-                  <div className={classes.title}>
+                  <div className={classes.title_disabled}>
                     {t('Vulnerabilities')}
                   </div>
                   <div className={classes.description}>
@@ -147,9 +153,9 @@ class Explore extends Component {
           </Grid>
           <Grid item={true} xs={4}>
             <Card raised={true} classes={{ root: classes.card }}>
-              <CardActionArea component={Link} to='/dashboard/explore/observables' classes={{ root: classes.actionArea }}>
+              <CardActionArea component={Link} to='/dashboard/explore/observables' classes={{ root: classes.actionArea }} disabled={true}>
                 <CardContent>
-                  <div className={classes.title}>
+                  <div className={classes.title_disabled}>
                     {t('Observables')}
                   </div>
                   <div className={classes.description}>

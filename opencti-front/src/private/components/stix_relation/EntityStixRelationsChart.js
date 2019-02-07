@@ -20,7 +20,7 @@ const styles = theme => ({
   paper: {
     minHeight: '100%',
     margin: '10px 0 0 0',
-    padding: 0,
+    padding: '0 0 10px 0',
     backgroundColor: theme.palette.paper.background,
     color: theme.palette.text.main,
     borderRadius: 6,
@@ -28,8 +28,8 @@ const styles = theme => ({
 });
 
 const entityStixRelationsChartStixRelationTimeSeriesQuery = graphql`
-    query EntityStixRelationsChartStixRelationTimeSeriesQuery($fromId: String, $relationType: String, $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
-        stixRelationsTimeSeries(fromId: $fromId, relationType: $relationType, field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
+    query EntityStixRelationsChartStixRelationTimeSeriesQuery($fromId: String, $relationType: String, $toTypes: [String], $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
+        stixRelationsTimeSeries(fromId: $fromId, relationType: $relationType, toTypes: $toTypes, field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
             date,
             value
         }
@@ -39,11 +39,12 @@ const entityStixRelationsChartStixRelationTimeSeriesQuery = graphql`
 class EntityStixRelationsChart extends Component {
   render() {
     const {
-      t, classes, entityId, relationType, md,
+      t, classes, entityId, toTypes, relationType, title, md,
     } = this.props;
     const stixRelationsTimeSeriesVariables = {
-      fromId: entityId,
+      fromId: entityId || null,
       relationType,
+      toTypes: toTypes || null,
       field: 'first_seen',
       operation: 'count',
       startDate: yearsAgo(3),
@@ -53,7 +54,7 @@ class EntityStixRelationsChart extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant='h4' gutterBottom={true}>
-          {t('Entity usage')}
+          {title ? t(title) : t('Entity usage')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
@@ -88,6 +89,8 @@ class EntityStixRelationsChart extends Component {
 EntityStixRelationsChart.propTypes = {
   entityId: PropTypes.string,
   relationType: PropTypes.string,
+  toTypes: PropTypes.array,
+  title: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   md: PropTypes.func,
