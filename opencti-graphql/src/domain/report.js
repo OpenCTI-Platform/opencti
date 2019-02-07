@@ -64,7 +64,8 @@ export const findByEntity = args => {
         $relCreatedByRef(creator:$x, so:$r) isa created_by_ref`,
       finalArgs,
       true,
-      'x'
+      'x',
+      true
     );
   }
   return paginate(

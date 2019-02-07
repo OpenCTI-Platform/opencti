@@ -201,8 +201,8 @@ export const qk = (queryDef, infer = false) => {
  * @param relationKey the key to bind relation result.
  * @returns {Promise<AxiosResponse<any> | never | never>}
  */
-export const qkObj = (queryDef, key = 'x', relationKey) =>
-  qk(queryDef, false).then(result => {
+export const qkObj = (queryDef, key = 'x', relationKey, infer = false) =>
+  qk(queryDef, infer).then(result => {
     if (result && result.data) {
       return Promise.all(
         map(line => {
@@ -304,8 +304,8 @@ export const qkObjUnique = (queryDef, key = 'x', relationKey) =>
  * @param queryDef
  * @returns {Promise<AxiosResponse<any> | never | never>}
  */
-export const qkSingleValue = queryDef =>
-  qk(queryDef).then(result =>
+export const qkSingleValue = (queryDef, infer = false) =>
+  qk(queryDef, infer).then(result =>
     result && result.data.length > 0 ? head(result.data) : null
   );
 
@@ -568,7 +568,8 @@ export const paginate = (
   query,
   options,
   ordered = true,
-  relationOrderingKey = null
+  relationOrderingKey = null,
+  infer = false
 ) => {
   const {
     first = 200,
@@ -582,7 +583,7 @@ export const paginate = (
     query
   );
   const relationKey = findRelationVariable && findRelationVariable[1]; // Could be setup to get relation info
-  const count = qkSingleValue(`${query}; aggregate count;`);
+  const count = qkSingleValue(`${query}; aggregate count;`, infer);
   const ordering = relationOrderingKey
     ? `$${relationOrderingKey} has ${orderBy} $o; order by $o ${orderMode};`
     : `$${instanceKey} has ${orderBy} $o; order by $o ${orderMode};`;
@@ -593,7 +594,8 @@ export const paginate = (
       relationKey ? `, $${relationKey}` : ''
     };`,
     instanceKey,
-    relationKey
+    relationKey,
+    infer
   );
   return Promise.all([count, elements]).then(data => {
     const globalCount = data ? head(data) : 0;
