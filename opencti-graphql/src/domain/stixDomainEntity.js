@@ -28,7 +28,8 @@ import {
 export const findAll = args =>
   paginate(
     `match $m isa ${args.type ? args.type : 'Stix-Domain-Entity'}`,
-    args
+    args,
+    false
   );
 
 export const stixDomainEntitiesTimeSeries = args =>
@@ -65,7 +66,7 @@ export const search = args =>
     has name_lowercase $name;
     $m has alias_lowercase $alias;
     { $name contains "${prepareString(args.search.toLowerCase())}"; } or
-    { $desc contains "${prepareString(args.search.toLowerCase())}"; }`,
+    { $m contains "${prepareString(args.search.toLowerCase())}"; }`,
     args,
     false
   );
