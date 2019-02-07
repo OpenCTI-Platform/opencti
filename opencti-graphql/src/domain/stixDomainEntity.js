@@ -66,7 +66,7 @@ export const search = args =>
     has name_lowercase $name;
     $m has alias_lowercase $alias;
     { $name contains "${prepareString(args.search.toLowerCase())}"; } or
-    { $m contains "${prepareString(args.search.toLowerCase())}"; }`,
+    { $alias contains "${prepareString(args.search.toLowerCase())}"; }`,
     args,
     false
   );

@@ -14,18 +14,19 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa Identity', args);
+export const findAll = args => paginate('match $m isa Identity', args, false);
 
 export const findById = identityId => loadByID(identityId);
 
 export const search = args =>
   paginate(
     `match $m isa Identity
-    has name_lowercase $name
-    has description_lowercase $desc;
+    has name_lowercase $name;
+    $m has alias_lowercase $alias;
     { $name contains "${prepareString(args.search.toLowerCase())}"; } or
-    { $desc contains "${prepareString(args.search.toLowerCase())}"; }`,
-    args
+    { $alias contains "${prepareString(args.search.toLowerCase())}"; }`,
+    args,
+    false
   );
 
 export const addIdentity = async (user, identity) => {
