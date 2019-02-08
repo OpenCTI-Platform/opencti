@@ -104,10 +104,9 @@ class Persons extends Component {
             query={personsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
-              if (props) { // Done
+              if (props) {
                 return <PersonsLines data={props} paginationOptions={paginationOptions}/>;
               }
-              // Loading
               return <PersonsLines data={null} dummy={true}/>;
             }}
           />

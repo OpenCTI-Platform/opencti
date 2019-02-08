@@ -226,6 +226,7 @@ class WorkspaceGraphComponent extends Component {
         name: n.node.name,
         type: n.node.type,
       });
+      newNode.setExpandable(true);
       newNode.addListener({
         selectionChanged: this.handleSelection.bind(this),
       });

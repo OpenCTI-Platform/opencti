@@ -33,7 +33,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
       markingDefinition.definition
     )}";
     $markingDefinition has color "${prepareString(markingDefinition.color)}";
-    $markingDefinition has level ${prepareString(markingDefinition.level)};
+    $markingDefinition has level ${markingDefinition.level};
     $markingDefinition has created ${now()};
     $markingDefinition has modified ${now()};
     $markingDefinition has revoked false;

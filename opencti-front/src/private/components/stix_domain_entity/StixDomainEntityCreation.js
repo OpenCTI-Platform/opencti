@@ -182,7 +182,7 @@ class StixDomainEntityCreation extends Component {
                          containerstyle={{ marginTop: 20, width: '100%' }}
                   >
                     <MenuItem value='Organization'>{t('Organization')}</MenuItem>
-                    <MenuItem value='Person'>{t('Person')}</MenuItem>
+                    <MenuItem value='User'>{t('Person')}</MenuItem>
                     <MenuItem value='Threat-Actor'>{t('Threat actor')}</MenuItem>
                     <MenuItem value='Intrusion-Set'>{t('Intrusion set')}</MenuItem>
                     <MenuItem value='Campaign'>{t('Campaign')}</MenuItem>
@@ -249,7 +249,7 @@ class StixDomainEntityCreation extends Component {
                          containerstyle={{ marginTop: 20, width: '100%' }}
                   >
                     <MenuItem value='Organization'>{t('Organization')}</MenuItem>
-                    <MenuItem value='Person'>{t('Person')}</MenuItem>
+                    <MenuItem value='User'>{t('Person')}</MenuItem>
                     <MenuItem value='Threat-Actor'>{t('Threat actor')}</MenuItem>
                     <MenuItem value='Intrusion-Set'>{t('Intrusion set')}</MenuItem>
                     <MenuItem value='Campaign'>{t('Campaign')}</MenuItem>

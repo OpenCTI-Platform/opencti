@@ -72,35 +72,61 @@ public class Relationship extends Domain {
                 fromRole,
                 toRole,
                 getRelationship_type());
-
-        Object relation = driver.read(getRelation);
-        String relationCreation = format("match $from isa %s " +
-                        "has stix_id %s; " +
-                        "$to isa %s has stix_id %s; " +
-                        "insert $rel(%s: $from, %s: $to) " +
-                        "isa %s " +
-                        "has stix_id %s; " +
-                        "$rel has name \"\"; " +
-                        "$rel has description \"\"; " +
-                        "$rel has name_lowercase \"\"; " +
-                        "$rel has description_lowercase \"\"; " +
-                        "$rel has weight 3; " +
-                        "$rel has first_seen 2016-05-05; " +
-                        "$rel has last_seen 2018-05-05; " +
-                        "$rel has created 2018-05-05; " +
-                        "$rel has modified 2018-05-05; " +
-                        "$rel has type \"stix-relation\"; " +
-                        "$rel has relationship_type \"%s\";",
-                from.getEntityName(),
-                prepare(from.getId()),
-                to.getEntityName(),
-                prepare(to.getId()),
-                fromRole,
-                toRole,
-                getRelationship_type(),
-                prepare(getId()),
-                getRelationship_type());
-        driver.write(relationCreation);
+        Object relation = null;
+        try {
+            relation = driver.read(getRelation);
+        } catch( Exception e ) {
+        }
+        if (relation == null && !getRelationship_type().equals("created_by_ref") && !getRelationship_type().equals("object_marking_refs") ) {
+            String relationCreation;
+            if (getRelationship_type().equals("external_references") || getRelationship_type().equals("kill_chain_phases")) {
+                relationCreation = format("match $from isa %s " +
+                                "has stix_id %s; " +
+                                "$to isa %s has stix_id %s; " +
+                                "insert $rel(%s: $from, %s: $to) " +
+                                "isa %s " +
+                                "has stix_id %s; ",
+                        from.getEntityName(),
+                        prepare(from.getId()),
+                        to.getEntityName(),
+                        prepare(to.getId()),
+                        fromRole,
+                        toRole,
+                        getRelationship_type(),
+                        prepare(getId()));
+            } else {
+                relationCreation = format("match $from isa %s " +
+                                "has stix_id %s; " +
+                                "$to isa %s has stix_id %s; " +
+                                "insert $rel(%s: $from, %s: $to) " +
+                                "isa %s " +
+                                "has stix_id %s; " +
+                                "$rel has name \"\"; " +
+                                "$rel has description \"\"; " +
+                                "$rel has name_lowercase \"\"; " +
+                                "$rel has description_lowercase \"\"; " +
+                                "$rel has weight 3; " +
+                                "$rel has first_seen 2016-05-05; " +
+                                "$rel has last_seen 2018-05-05; " +
+                                "$rel has created 2018-05-05; " +
+                                "$rel has modified 2018-05-05; " +
+                                "$rel has type \"stix-relation\"; " +
+                                "$rel has relationship_type \"%s\";",
+                        from.getEntityName(),
+                        prepare(from.getId()),
+                        to.getEntityName(),
+                        prepare(to.getId()),
+                        fromRole,
+                        toRole,
+                        getRelationship_type(),
+                        prepare(getId()),
+                        getRelationship_type());
+            }
+            try {
+                driver.write(relationCreation);
+            } catch( Exception e ) {
+            }
+        }
     }
 
     private String id;
