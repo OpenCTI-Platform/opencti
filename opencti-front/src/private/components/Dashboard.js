@@ -29,10 +29,8 @@ import Tooltip from 'recharts/lib/component/Tooltip';
 import { QueryRenderer } from '../../relay/environment';
 import truncate from '../../utils/String';
 import { yearsAgo, now } from '../../utils/Time';
-import { resolveLink } from '../../utils/Entity';
 import Theme from '../../components/Theme';
 import inject18n from '../../components/i18n';
-import ItemIcon from '../../components/ItemIcon';
 import ItemMarking from '../../components/ItemMarking';
 
 const styles = theme => ({

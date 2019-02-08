@@ -8,7 +8,6 @@ import Drawer from '@material-ui/core/Drawer';
 import { DeviceHub, AccountBalance } from '@material-ui/icons';
 import {
   SourcePull,
-  Fire,
   TargetVariant,
   SourceFork,
 } from 'mdi-material-ui';
