@@ -50,7 +50,7 @@ const inlineStyles = {
   },
   name: {
     float: 'left',
-    width: '70%',
+    width: '60%',
     fontSize: 12,
     fontWeight: '700',
   },

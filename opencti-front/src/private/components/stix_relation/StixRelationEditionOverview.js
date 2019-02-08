@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
@@ -14,6 +15,7 @@ import Button from '@material-ui/core/Button';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import { dateFormat } from '../../../utils/Time';
+import { resolveLink } from '../../../utils/Entity';
 import inject18n from '../../../components/i18n';
 import { commitMutation, requestSubscription } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
@@ -57,6 +59,9 @@ const styles = theme => ({
       backgroundColor: '#c62828',
       borderColor: '#c62828',
     },
+  },
+  buttonLeft: {
+    float: 'left',
   },
 });
 
@@ -141,7 +146,7 @@ class StixRelationEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, handleDelete, stixRelation, me, variant,
+      t, classes, handleClose, handleDelete, stixRelation, me, variant, stixDomainEntity,
     } = this.props;
     const { editContext } = stixRelation;
     // Add current user to the context if is not available yet.
@@ -152,6 +157,7 @@ class StixRelationEditionContainer extends Component {
       assoc('last_seen', dateFormat(stixRelation.last_seen)),
       pick(['weight', 'first_seen', 'last_seen', 'description']),
     )(stixRelation);
+    const link = stixDomainEntity ? resolveLink(stixDomainEntity.type) : '';
     return (
       <div>
         <div className={classes.header}>
@@ -208,6 +214,9 @@ class StixRelationEditionContainer extends Component {
               </Form>
             )}
           />
+          {stixDomainEntity ? <Button variant='contained' color='primary' component={Link} to={`${link}/${stixDomainEntity.id}/knowledge/relations/${stixRelation.id}`} classes={{ root: classes.buttonLeft }}>
+            {t('Details')}
+          </Button> : ''}
           {variant !== 'noGraph'
             ? <Button variant='contained' onClick={handleDelete.bind(this)} classes={{ root: classes.button }}>
             {t('Delete')}
@@ -223,6 +232,7 @@ StixRelationEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   handleDelete: PropTypes.func,
   classes: PropTypes.object,
+  stixDomainEntity: PropTypes.object,
   stixRelation: PropTypes.object,
   me: PropTypes.object,
   theme: PropTypes.object,

@@ -67,6 +67,10 @@ const styles = theme => ({
     marginRight: 0,
     color: theme.palette.primary.main,
   },
+  itemIconSecondary: {
+    marginRight: 0,
+    color: theme.palette.secondary.main,
+  },
   number: {
     float: 'left',
     color: theme.palette.primary.main,
@@ -136,29 +140,6 @@ const dashboardLastReportsQuery = graphql`
                     name
                     description
                     published
-                    markingDefinitions {
-                        edges {
-                            node {
-                                definition
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-`;
-
-const dashboardLastStixDomainEntitiesQuery = graphql`
-    query DashboardLastStixDomainEntitiesQuery($first: Int, $orderBy: StixDomainEntitiesOrdering, $orderMode: OrderingMode) {
-        stixDomainEntities(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
-            edges {
-                node {
-                    id
-                    type
-                    name
-                    description
-                    updated_at
                     markingDefinitions {
                         edges {
                             node {
@@ -330,7 +311,54 @@ class Dashboard extends Component {
               <QueryRenderer
                 query={dashboardLastReportsQuery}
                 variables={{
-                  reportClass: 'internal', first: 15, orderBy: 'published', orderMode: 'desc',
+                  reportClass: 'internal', first: 10, orderBy: 'published', orderMode: 'desc',
+                }}
+                render={({ props }) => {
+                  if (props && props.reports) {
+                    return (
+                      <List>
+                        {props.reports.edges.map((reportEdge) => {
+                          const report = reportEdge.node;
+                          const markingDefinition = head(pathOr([], ['markingDefinitions', 'edges'], report));
+                          return (
+                            <ListItem
+                              key={report.id}
+                              dense={true}
+                              classes={{ default: classes.item }}
+                              divider={true}
+                              component={Link}
+                              to={`/dashboard/reports/all/${report.id}`}
+                            >
+                              <ListItemIcon classes={{ root: classes.itemIconSecondary }}>
+                                <Description/>
+                              </ListItemIcon>
+                              <ListItemText primary={truncate(report.name, 70)} secondary={truncate(report.description, 70)}/>
+                              <div style={{ minWidth: 100 }}>
+                                {markingDefinition ? <ItemMarking key={markingDefinition.node.id} label={markingDefinition.node.definition}/> : ''}
+                              </div>
+                              <div style={inlineStyles.itemDate}>{nsd(report.published)}</div>
+                            </ListItem>
+                          );
+                        })}
+                      </List>
+                    );
+                  }
+                  return (
+                    <div> &nbsp; </div>
+                  );
+                }}
+              />
+            </Paper>
+          </Grid>
+          <Grid item={true} xs={6}>
+            <Typography variant='h2' gutterBottom={true}>
+              {t('Last external reports')}
+            </Typography>
+            <Paper classes={{ root: classes.paper }} elevation={2}>
+              <QueryRenderer
+                query={dashboardLastReportsQuery}
+                variables={{
+                  reportClass: 'external', first: 10, orderBy: 'published', orderMode: 'desc',
                 }}
                 render={({ props }) => {
                   if (props && props.reports) {
@@ -356,52 +384,6 @@ class Dashboard extends Component {
                                 {markingDefinition ? <ItemMarking key={markingDefinition.node.id} label={markingDefinition.node.definition}/> : ''}
                               </div>
                               <div style={inlineStyles.itemDate}>{nsd(report.published)}</div>
-                            </ListItem>
-                          );
-                        })}
-                      </List>
-                    );
-                  }
-                  return (
-                    <div> &nbsp; </div>
-                  );
-                }}
-              />
-            </Paper>
-          </Grid>
-          <Grid item={true} xs={6}>
-            <Typography variant='h2' gutterBottom={true}>
-              {t('Last modified entities')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
-              <QueryRenderer
-                query={dashboardLastStixDomainEntitiesQuery}
-                variables={{ first: 15, orderBy: 'updated_at', orderMode: 'desc' }}
-                render={({ props }) => {
-                  if (props && props.stixDomainEntities) {
-                    return (
-                      <List>
-                        {props.stixDomainEntities.edges.map((stixDomainEntityEdge) => {
-                          const stixDomainEntity = stixDomainEntityEdge.node;
-                          const markingDefinition = head(pathOr([], ['markingDefinitions', 'edges'], stixDomainEntity));
-                          const link = resolveLink(stixDomainEntity.type);
-                          return (
-                            <ListItem
-                              key={stixDomainEntity.id}
-                              dense={true}
-                              classes={{ default: classes.item }}
-                              divider={true}
-                              component={Link}
-                              to={`${link}/${stixDomainEntity.id}`}
-                            >
-                              <ListItemIcon classes={{ root: classes.itemIcon }}>
-                                <ItemIcon type={stixDomainEntity.type}/>
-                              </ListItemIcon>
-                              <ListItemText primary={truncate(stixDomainEntity.name, 70)} secondary={truncate(stixDomainEntity.description, 70)}/>
-                              <div style={{ minWidth: 100 }}>
-                                {markingDefinition ? <ItemMarking key={markingDefinition.node.id} label={markingDefinition.node.definition}/> : ''}
-                              </div>
-                              <div style={inlineStyles.itemDate}>{nsd(stixDomainEntity.updated_at)}</div>
                             </ListItem>
                           );
                         })}

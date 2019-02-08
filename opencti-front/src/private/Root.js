@@ -37,8 +37,10 @@ import RootTool from './components/tool/Root';
 import Vulnerabilities from './components/Vulnerabilities';
 import RootVulnerabilities from './components/vulnerability/Root';
 import Countries from './components/Countries';
+import RootCountry from './components/country/Root';
 import Cities from './components/Cities';
 import Organizations from './components/Organizations';
+import RootOrganization from './components/organization/Root';
 import Persons from './components/Persons';
 import Settings from './components/Settings';
 import Users from './components/Users';
@@ -138,8 +140,10 @@ class Root extends Component {
                         <BoundaryRoute exact path='/dashboard/catalogs/vulnerabilities' component={Vulnerabilities}/>
                         <BoundaryRoute path='/dashboard/catalogs/vulnerabilities/:vulnerabilityId' render={routeProps => <RootVulnerabilities {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/catalogs/countries' component={Countries}/>
+                        <BoundaryRoute path='/dashboard/catalogs/countries/:countryId' render={routeProps => <RootCountry {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/catalogs/cities' component={Cities}/>
                         <BoundaryRoute exact path='/dashboard/catalogs/organizations' component={Organizations}/>
+                        <BoundaryRoute path='/dashboard/catalogs/organizations/:organizationId' render={routeProps => <RootOrganization {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/catalogs/persons' component={Persons}/>
                         <BoundaryRoute exact path='/dashboard/settings' component={Settings}/>
                         <BoundaryRoute exact path='/dashboard/settings/users' component={Users}/>

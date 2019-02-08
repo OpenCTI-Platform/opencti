@@ -211,9 +211,16 @@ export const qkObj = (queryDef, key = 'x', relationKey, infer = false) =>
           );
           const relationPromise = !relationKey
             ? Promise.resolve(null)
-            : attrByID(line[relationKey]['@id']).then(res =>
-                attrMap(line[relationKey].id, res)
-              );
+            : line[relationKey].inferred
+            ? Promise.resolve({
+                id: line[relationKey].id,
+                type: 'stix_relation',
+                relationship_type: line[relationKey].type.label,
+                inferred: true
+              })
+            : attrByID(line[relationKey]['@id'])
+                .then(res => attrMap(line[relationKey].id, res))
+                .then(data => assoc('inferred', false, data));
           return Promise.all([nodePromise, relationPromise]).then(
             ([node, relation]) => ({
               node,
@@ -247,6 +254,7 @@ export const qkRel = (
     if (result && result.data) {
       return Promise.all(
         map(line => {
+          console.log(line);
           const relationPromise = line[key].inferred
             ? Promise.resolve({
                 id: line[key].id,

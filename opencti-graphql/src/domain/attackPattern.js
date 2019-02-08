@@ -24,7 +24,7 @@ export const findAll = args => {
       'x'
     );
   }
-  return paginate('match $r isa Attack-Pattern', args);
+  return paginate('match $a isa Attack-Pattern', args);
 };
 
 export const findById = attackPatternId => loadByID(attackPatternId);

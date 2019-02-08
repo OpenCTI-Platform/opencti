@@ -32,6 +32,10 @@ import TopMenuCatalogs from './TopMenuCatalogs';
 import TopMenuAttackPattern from './TopMenuAttackPattern';
 import TopMenuTool from './TopMenuTool';
 import TopMenuVulnerability from './TopMenuVulnerability';
+import TopMenuCountry from './TopMenuCountry';
+import TopMenuCity from './TopMenuCity';
+import TopMenuOrganization from './TopMenuOrganization';
+import TopMenuPerson from './TopMenuPerson';
 import TopMenuSources from './TopMenuSources';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
@@ -143,6 +147,10 @@ class TopBar extends Component {
             {location.pathname.includes('/dashboard/catalogs/attack_patterns/') ? <TopMenuAttackPattern/> : ''}
             {location.pathname.includes('/dashboard/catalogs/tools/') ? <TopMenuTool/> : ''}
             {location.pathname.includes('/dashboard/catalogs/vulnerabilities/') ? <TopMenuVulnerability/> : ''}
+            {location.pathname.includes('/dashboard/catalogs/countries/') ? <TopMenuCountry/> : ''}
+            {location.pathname.includes('/dashboard/catalogs/cities/') ? <TopMenuCity/> : ''}
+            {location.pathname.includes('/dashboard/catalogs/organizations/') ? <TopMenuOrganization/> : ''}
+            {location.pathname.includes('/dashboard/catalogs/persons/') ? <TopMenuPerson/> : ''}
             {location.pathname === '/dashboard/sources' || location.pathname.match('/dashboard/sources/[a-z_]+$') ? <TopMenuSources/> : ''}
             {location.pathname === '/dashboard/settings' || location.pathname.match('/dashboard/settings/[a-z_]+$') ? <TopMenuSettings/> : ''}
             {location.pathname === '/dashboard/profile' ? <TopMenuProfile/> : ''}

@@ -45,7 +45,7 @@ export const stixRelationEditionDeleteMutation = graphql`
 class StixRelationEdition extends Component {
   render() {
     const {
-      classes, stixRelationId, open, handleClose, handleDelete, variant,
+      classes, stixRelationId, stixDomainEntity, open, handleClose, handleDelete, variant,
     } = this.props;
     return (
       <Drawer open={open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={handleClose.bind(this)}>
@@ -59,6 +59,7 @@ class StixRelationEdition extends Component {
                 <StixRelationEditionOverview
                   variant={variant}
                   me={props.me}
+                  stixDomainEntity={stixDomainEntity}
                   stixRelation={props.stixRelation}
                   handleClose={handleClose.bind(this)}
                   handleDelete={handleDelete.bind(this)}
@@ -76,6 +77,7 @@ class StixRelationEdition extends Component {
 StixRelationEdition.propTypes = {
   variant: PropTypes.string,
   stixRelationId: PropTypes.string,
+  stixDomainEntity: PropTypes.object,
   open: PropTypes.bool,
   handleClose: PropTypes.func,
   handleDelete: PropTypes.func,

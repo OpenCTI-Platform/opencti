@@ -8,8 +8,6 @@ import {
   append,
   values,
   pathOr,
-  filter,
-  last,
   head,
   pluck,
   includes,
@@ -40,9 +38,7 @@ import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
 import EntityLabelModel from '../../../components/graph_node/EntityLabelModel';
 import EntityLinkModel from '../../../components/graph_node/EntityLinkModel';
 import { stixDomainEntityMutationFieldPatch } from './StixDomainEntityEditionOverview';
-import StixDomainEntityAddObjectRefs from './StixDomainEntityAddObjectRefs';
-import StixRelationCreation from '../stix_relation/StixRelationCreation';
-import StixRelationEdition, { stixRelationEditionDeleteMutation } from '../stix_relation/StixRelationEdition';
+import StixRelationEdition from '../stix_relation/StixRelationEdition';
 
 const styles = () => ({
   container: {
@@ -71,9 +67,6 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      openCreateRelation: false,
-      createRelationFrom: null,
-      createRelationTo: null,
       openEditRelation: false,
       editRelationId: null,
       currentLink: null,
@@ -307,75 +300,8 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
   }
 
   handleLinksChange(event) {
-    const model = this.props.engine.getDiagramModel();
-    const currentLinks = model.getLinks();
-    const currentLinksPairs = map(
-      n => ({
-        source: n.sourcePort.id,
-        target: pathOr(null, ['targetPort', 'id'], n),
-      }),
-      values(currentLinks),
-    );
     if (event.isCreated === true) {
-      // handle link creation
-      event.link.addListener({
-        targetPortChanged: this.handleLinkCreation.bind(this),
-      });
-    } else if (event.link !== undefined) {
-      // handle link deletion
-      const { link } = event;
-      if (link.targetPort !== null && link.sourcePort !== link.targetPort) {
-        const linkPair = {
-          source: link.sourcePort.id,
-          target: pathOr(null, ['targetPort', 'id'], link),
-        };
-        const filteredCurrentLinks = filter(
-          n => (n.source === linkPair.source && n.target === linkPair.target)
-            || (n.source === linkPair.target && n.target === linkPair.source),
-          currentLinksPairs,
-        );
-        if (filteredCurrentLinks.length === 0) {
-          if (link.extras && link.extras.relation.inferred === false && link.extras.relation) {
-            commitMutation({
-              mutation: stixRelationEditionDeleteMutation,
-              variables: {
-                id: link.extras.relation.id,
-              },
-            });
-          } else {
-            model.addLink(link);
-          }
-        }
-      }
-      this.handleSaveGraph();
-    }
-    return true;
-  }
-
-  handleLinkCreation(event) {
-    const model = this.props.engine.getDiagramModel();
-    const currentLinks = model.getLinks();
-    const currentLinksPairs = map(n => ({ source: n.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
-    if (event.port !== undefined) {
-      // ensure that the links are not circular on the same element
-      const link = last(values(event.port.links));
-      const linkPair = { source: link.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], link) };
-      const filteredCurrentLinks = filter(n => (
-        n.source === linkPair.source && n.target === linkPair.target)
-        || (n.source === linkPair.target && n.target === linkPair.source),
-      currentLinksPairs);
-      if (link.targetPort === null || (link.sourcePort === link.targetPort)) {
-        model.removeLink(link);
-        link.remove();
-      } else if (filteredCurrentLinks.length === 1) {
-        link.addListener({ selectionChanged: this.handleSelection.bind(this) });
-        this.setState({
-          openCreateRelation: true,
-          createRelationFrom: link.sourcePort.parent.extras,
-          createRelationTo: link.targetPort.parent.extras,
-          currentLink: link,
-        });
-      }
+      event.link.remove();
     }
     return true;
   }
@@ -393,42 +319,6 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
     return true;
   }
 
-  handleCloseRelationCreation() {
-    const model = this.props.engine.getDiagramModel();
-    const linkObject = model.getLink(this.state.currentLink);
-    linkObject.remove();
-    this.setState({
-      openCreateRelation: false,
-      createRelationFrom: null,
-      createRelationTo: null,
-      currentLink: null,
-    });
-  }
-
-  handleResultRelationCreation(result) {
-    const model = this.props.engine.getDiagramModel();
-    const linkObject = model.getLink(this.state.currentLink);
-    const label = new EntityLabelModel();
-    label.setExtras([
-      {
-        relationship_type: result.relationship_type,
-        first_seen: result.first_seen,
-        last_seen: result.last_seen,
-      },
-    ]);
-    linkObject.addLabel(label);
-    linkObject.setExtras({
-      relation: result,
-    });
-    this.setState({
-      openCreateRelation: false,
-      createRelationFrom: null,
-      createRelationTo: null,
-      currentLink: null,
-    });
-    this.handleSaveGraph();
-  }
-
   handleCloseRelationEdition() {
     this.setState({
       openEditRelation: false,
@@ -438,14 +328,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
   }
 
   handleDeleteRelation() {
-    const model = this.props.engine.getDiagramModel();
-    const linkObject = model.getLink(this.state.currentLink);
-    linkObject.remove();
-    this.setState({
-      openEditRelation: false,
-      editRelationId: null,
-      currentLink: null,
-    });
+    return false;
   }
 
   autoDistribute() {
@@ -470,13 +353,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
 
   render() {
     const { classes, stixDomainEntity } = this.props;
-    const {
-      openCreateRelation,
-      createRelationFrom,
-      createRelationTo,
-      openEditRelation,
-      editRelationId,
-    } = this.state;
+    const { openEditRelation, editRelationId } = this.state;
     return (
       <div className={classes.container}>
         <IconButton
@@ -490,12 +367,12 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
         <IconButton
           color="primary"
           className={classes.icon}
-          onClick={this.distribute.bind(this)}
           style={{ right: 270 }}
         >
           <AutoFix/>
         </IconButton>
         <DiagramWidget
+          deleteKeys={[]}
           className={classes.canvas}
           diagramEngine={this.props.engine}
           inverseZoom={true}
@@ -503,23 +380,11 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
           maxNumberPointsPerLink={0}
           actionStoppedFiring={this.handleMovesChange.bind(this)}
         />
-        <StixDomainEntityAddObjectRefs
-          stixDomainEntityId={stixDomainEntity.id}
-          stixDomainEntityObjectRefs={map(
-            n => n.node.to,
-            stixDomainEntity.stixRelations.edges,
-          )}
-        />
-        <StixRelationCreation
-          open={openCreateRelation}
-          from={createRelationFrom}
-          to={createRelationTo}
-          handleClose={this.handleCloseRelationCreation.bind(this)}
-          handleResult={this.handleResultRelationCreation.bind(this)}
-        />
         <StixRelationEdition
           open={openEditRelation}
           stixRelationId={editRelationId}
+          stixDomainEntity={stixDomainEntity}
+          variant='noGraph'
           handleClose={this.handleCloseRelationEdition.bind(this)}
           handleDelete={this.handleDeleteRelation.bind(this)}
         />

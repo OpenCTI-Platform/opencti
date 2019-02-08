@@ -57,7 +57,7 @@ class EntityStixRelationsRadar extends Component {
             query={entityStixRelationsRadarStixRelationDistributionQuery}
             variables={stixRelationsDistributionVariables}
             render={({ props }) => {
-              if (props && props.stixRelationsDistribution) {
+              if (props && props.stixRelationsDistribution && props.stixRelationsDistribution.length > 0) {
                 return (
                   <ResponsiveContainer height={300} width='100%'>
                     <RadarChart outerRadius={110} data={props.stixRelationsDistribution}>

@@ -1,6 +1,6 @@
 const relationsTypesMapping = {
   'threat-actor_attack-pattern': ['uses'],
-  'threat-actor_country': ['targets'],
+  'threat-actor_country': ['targets', 'attributed-to'],
   'threat-actor_city': ['targets'],
   'threat-actor_sector': ['targets'],
   'threat-actor_organization': ['targets'],

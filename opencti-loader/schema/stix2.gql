@@ -511,6 +511,7 @@ define
     plays "author"
     plays "owner"
     plays "member"
+    plays "localized"
     plays "allowed";
 
   "Incident" sub "Stix-Domain-Entity"

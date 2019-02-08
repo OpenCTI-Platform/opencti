@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle,no-nested-ternary */
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
@@ -81,9 +81,7 @@ class OrganizationsLines extends Component {
       return <div key={key}>&nbsp;</div>;
     }
     const organization = organizationNode.node;
-    return <div key={key} style={style}>
-      <OrganizationLine key={organization.id} organization={organization} paginationOptions={this.props.paginationOptions}/>
-    </div>;
+    return <div key={key} style={style}><OrganizationLine key={organization.id} organization={organization}/></div>;
   }
 
   render() {
@@ -94,8 +92,8 @@ class OrganizationsLines extends Component {
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
         {({
-            height, isScrolling, onChildScroll, scrollTop,
-          }) => (
+          height, isScrolling, onChildScroll, scrollTop,
+        }) => (
           <div className={styles.windowScrollerWrapper}>
             <InfiniteLoader isRowLoaded={this._isRowLoaded}
                             loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
@@ -132,7 +130,6 @@ class OrganizationsLines extends Component {
 
 OrganizationsLines.propTypes = {
   classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
   data: PropTypes.object,
   relay: PropTypes.object,
   organizations: PropTypes.object,
@@ -142,22 +139,6 @@ OrganizationsLines.propTypes = {
 export const organizationsLinesQuery = graphql`
     query OrganizationsLinesPaginationQuery($count: Int!, $cursor: ID, $orderBy: OrganizationsOrdering, $orderMode: OrderingMode) {
         ...OrganizationsLines_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
-    }
-`;
-
-export const organizationsLinesSearchQuery = graphql`
-    query OrganizationsLinesSearchQuery($search: String) {
-        organizations(search: $search) {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                    created_at
-                    updated_at
-                }
-            }
-        }
     }
 `;
 

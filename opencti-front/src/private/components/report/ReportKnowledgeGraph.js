@@ -276,7 +276,6 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleMovesChange(event) {
-    console.log(event);
     if (event instanceof MoveItemsAction || event instanceof MoveCanvasAction) {
       // handle drag & drop
       this.handleSaveGraph();
@@ -487,7 +486,7 @@ class ReportKnowledgeGraphComponent extends Component {
         <IconButton color='primary' className={classes.icon} onClick={this.zoomToFit.bind(this)} style={{ left: 90 }}>
           <AspectRatio/>
         </IconButton>
-        <IconButton color='primary' className={classes.icon} onClick={this.distribute.bind(this)} style={{ left: 150 }}>
+        <IconButton color='primary' className={classes.icon} style={{ left: 150 }}>
           <AutoFix/>
         </IconButton>
         <DiagramWidget

@@ -12,6 +12,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import MenuItem from '@material-ui/core/MenuItem';
+import Tooltip from '@material-ui/core/Tooltip';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ArrowRightAlt } from '@material-ui/icons';
 import { environment, commitMutation } from '../../../relay/environment';
@@ -322,7 +323,7 @@ class StixRelationCreation extends Component {
                      containerstyle={{ marginTop: 20, width: '100%' }}
               >
                 {map(type => (
-                    <MenuItem key={type} value={type}>{t(`relation_${type}`)}</MenuItem>
+                  <MenuItem key={type} value={type}>{t(`relation_${type}`)}</MenuItem>
                 ), relationshipTypes)}
                 <MenuItem value='related-to'>{t('relation_related-to')}</MenuItem>
               </Field>
@@ -397,16 +398,18 @@ class StixRelationCreation extends Component {
               </div>
               <div className={classes.middle}>
                 <ArrowRightAlt fontSize='small'/><br/>
-                <div style={{
-                  padding: '5px 8px 5px 8px',
-                  backgroundColor: '#14262c',
-                  color: '#ffffff',
-                  fontSize: 12,
-                  display: 'inline-block',
-                }}>{t(`relation_${relation.node.relationship_type}`)}<br/>
-                  {t('First obs.')} {nsd(relation.node.first_seen)}<br/>
-                  {t('Last obs.')} {nsd(relation.node.last_seen)}
-                </div>
+                <Tooltip title={relation.node.description} aria-label='Description' placement='top'>
+                  <div style={{
+                    padding: '5px 8px 5px 8px',
+                    backgroundColor: '#14262c',
+                    color: '#ffffff',
+                    fontSize: 12,
+                    display: 'inline-block',
+                  }}>{t(`relation_${relation.node.relationship_type}`)}<br/>
+                    {t('First obs.')} {nsd(relation.node.first_seen)}<br/>
+                    {t('Last obs.')} {nsd(relation.node.last_seen)}
+                  </div>
+                </Tooltip>
               </div>
               <div className={classes.item} style={{
                 backgroundColor: itemColor(to.type, true),

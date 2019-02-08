@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle,no-nested-ternary */
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
@@ -81,9 +81,7 @@ class CountriesLines extends Component {
       return <div key={key}>&nbsp;</div>;
     }
     const country = countryNode.node;
-    return <div key={key} style={style}>
-      <CountryLine key={country.id} country={country} paginationOptions={this.props.paginationOptions}/>
-    </div>;
+    return <div key={key} style={style}><CountryLine key={country.id} country={country}/></div>;
   }
 
   render() {
@@ -94,8 +92,8 @@ class CountriesLines extends Component {
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
         {({
-            height, isScrolling, onChildScroll, scrollTop,
-          }) => (
+          height, isScrolling, onChildScroll, scrollTop,
+        }) => (
           <div className={styles.windowScrollerWrapper}>
             <InfiniteLoader isRowLoaded={this._isRowLoaded}
                             loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
@@ -132,7 +130,6 @@ class CountriesLines extends Component {
 
 CountriesLines.propTypes = {
   classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
   data: PropTypes.object,
   relay: PropTypes.object,
   countries: PropTypes.object,
@@ -142,22 +139,6 @@ CountriesLines.propTypes = {
 export const countriesLinesQuery = graphql`
     query CountriesLinesPaginationQuery($count: Int!, $cursor: ID, $orderBy: CountriesOrdering, $orderMode: OrderingMode) {
         ...CountriesLines_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
-    }
-`;
-
-export const countriesLinesSearchQuery = graphql`
-    query CountriesLinesSearchQuery($search: String) {
-        countries(search: $search) {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                    created_at
-                    updated_at
-                }
-            }
-        }
     }
 `;
 
