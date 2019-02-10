@@ -11,6 +11,7 @@ export default {
     navBottom: { background: '#0f181f' },
     paper: { background: '#303a3d', disabled: '#181f22' },
     field: { background: '#265058' },
+    action: { disabled: '#4f4f4f' },
     divider: '#5c5c5c',
   },
   typography: {

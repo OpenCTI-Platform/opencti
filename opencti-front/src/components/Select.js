@@ -7,7 +7,7 @@ import { fieldToSelect } from 'formik-material-ui';
 
 const Select = props => (
   <FormControl style={props.containerstyle} error={props.form.errors[props.field.name] !== undefined && props.form.touched[props.field.name]}>
-    <InputLabel>
+    <InputLabel style={{ color: props.disabled ? '#4f4f4f' : '' }}>
       {props.label}
     </InputLabel>
     <MuiSelect

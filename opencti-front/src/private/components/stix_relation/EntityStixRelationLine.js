@@ -10,7 +10,6 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert, Help } from '@material-ui/icons';
-import { resolveLink } from '../../../utils/Entity';
 import inject18n from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
@@ -93,7 +92,7 @@ class ReportLineComponent extends Component {
     const {
       nsd, t, classes, stixRelation, stixDomainEntity, paginationOptions, entityLink,
     } = this.props;
-    const link = stixRelation.inferred ? `${resolveLink(stixDomainEntity.type)}/${stixDomainEntity.id}` : `${entityLink}/relations/${stixRelation.id}`;
+    const link = `${entityLink}/relations/${stixRelation.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}

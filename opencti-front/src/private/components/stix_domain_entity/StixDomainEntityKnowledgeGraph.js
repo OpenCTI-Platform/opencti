@@ -39,6 +39,7 @@ import EntityLabelModel from '../../../components/graph_node/EntityLabelModel';
 import EntityLinkModel from '../../../components/graph_node/EntityLinkModel';
 import { stixDomainEntityMutationFieldPatch } from './StixDomainEntityEditionOverview';
 import StixRelationEdition from '../stix_relation/StixRelationEdition';
+import StixRelationEditionInferred from '../stix_relation/StixRelationEditionInferred';
 
 const styles = () => ({
   container: {
@@ -68,6 +69,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
     super(props);
     this.state = {
       openEditRelation: false,
+      openEditRelationInferred: false,
       editRelationId: null,
       currentLink: null,
     };
@@ -309,11 +311,19 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
   handleSelection(event) {
     if (event.isSelected === true && event.openEdit === true) {
       if (event.entity instanceof EntityLinkModel) {
-        this.setState({
-          openEditRelation: true,
-          editRelationId: event.entity.extras.relation.id,
-          currentLink: event.entity,
-        });
+        if (event.inferred) {
+          this.setState({
+            openEditRelationInferred: true,
+            editRelationId: event.entity.extras.relation.id,
+            currentLink: event.entity,
+          });
+        } else {
+          this.setState({
+            openEditRelation: true,
+            editRelationId: event.entity.extras.relation.id,
+            currentLink: event.entity,
+          });
+        }
       }
     }
     return true;
@@ -322,6 +332,14 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
   handleCloseRelationEdition() {
     this.setState({
       openEditRelation: false,
+      editRelationId: null,
+      currentLink: null,
+    });
+  }
+
+  handleCloseRelationEditionInferred() {
+    this.setState({
+      openEditRelationInferred: false,
       editRelationId: null,
       currentLink: null,
     });
@@ -353,7 +371,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
 
   render() {
     const { classes, stixDomainEntity } = this.props;
-    const { openEditRelation, editRelationId } = this.state;
+    const { openEditRelation, openEditRelationInferred, editRelationId } = this.state;
     return (
       <div className={classes.container}>
         <IconButton
@@ -387,6 +405,12 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
           variant='noGraph'
           handleClose={this.handleCloseRelationEdition.bind(this)}
           handleDelete={this.handleDeleteRelation.bind(this)}
+        />
+        <StixRelationEditionInferred
+          open={openEditRelationInferred}
+          stixRelationId={editRelationId}
+          stixDomainEntity={stixDomainEntity}
+          handleClose={this.handleCloseRelationEditionInferred.bind(this)}
         />
       </div>
     );

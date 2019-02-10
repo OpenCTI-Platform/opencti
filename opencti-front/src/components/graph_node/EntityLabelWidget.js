@@ -15,14 +15,8 @@ const styles = () => ({
     '&:hover': {
       background: '#1e3f49',
     },
-  },
-  itemInferred: {
-    textAlign: 'center',
-    padding: '5px 8px 5px 8px',
-    backgroundColor: '#14262c',
-    color: '#ffffff',
-    pointerEvents: 'auto',
-    fontSize: 12,
+    position: 'relative',
+    zIndex: 1500,
   },
 });
 
@@ -33,29 +27,18 @@ class EntityLabelWidget extends Component {
     } = this.props;
     if (extras.length === 1) {
       const label = head(extras);
-      if (label.inferred === true) {
-        return (
-          <div className={classes.itemInferred}>
-            <strong>{t(`relation_${label.relationship_type}`)}</strong>
-            <br />
-            <em>{t('Inferred')}</em>
-          </div>
-        );
-      }
       return (
         <div className={classes.item} onClick={model.setSelected.bind(this, true)}>
           <strong>{t(`relation_${label.relationship_type}`)}</strong>
-          <br/>
-          {nsd(label.first_seen)}
-          <br/>
-          {nsd(label.last_seen)}
+          {label.inferred === true ? <span><br/><em>{t('Inferred')}</em></span> : ''}
+          {label.first_seen ? <span><br/>{nsd(label.first_seen)}<br/>{nsd(label.last_seen)}</span> : ''}
         </div>
       );
     }
     return (
-        <div className={classes.itemInferred}>
-          <strong>{extras.length} {t('relations')}</strong>
-        </div>
+      <div className={classes.itemInferred}>
+        <strong>{extras.length} {t('relations')}</strong>
+      </div>
     );
   }
 }

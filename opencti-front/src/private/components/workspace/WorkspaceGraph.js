@@ -43,6 +43,7 @@ import {
 } from './WorkspaceAddObjectRefsLines';
 import StixRelationCreation from '../stix_relation/StixRelationCreation';
 import StixRelationEdition from '../stix_relation/StixRelationEdition';
+import StixRelationEditionInferred from '../stix_relation/StixRelationEditionInferred';
 
 const styles = () => ({
   container: {
@@ -122,6 +123,7 @@ class WorkspaceGraphComponent extends Component {
       createRelationFrom: null,
       createRelationTo: null,
       openEditRelation: false,
+      openEditRelationInferred: false,
       editRelationId: null,
       currentLink: null,
     };
@@ -459,11 +461,19 @@ class WorkspaceGraphComponent extends Component {
   handleSelection(event) {
     if (event.isSelected === true && event.openEdit === true) {
       if (event.entity instanceof EntityLinkModel) {
-        this.setState({
-          openEditRelation: true,
-          editRelationId: event.entity.extras.relation.id,
-          currentLink: event.entity,
-        });
+        if (event.inferred) {
+          this.setState({
+            openEditRelationInferred: true,
+            editRelationId: event.entity.extras.relation.id,
+            currentLink: event.entity,
+          });
+        } else {
+          this.setState({
+            openEditRelation: true,
+            editRelationId: event.entity.extras.relation.id,
+            currentLink: event.entity,
+          });
+        }
       }
     }
     if (event.isSelected === true && event.expand === true) {
@@ -569,6 +579,14 @@ class WorkspaceGraphComponent extends Component {
     });
   }
 
+  handleCloseRelationEditionInferred() {
+    this.setState({
+      openEditRelationInferred: false,
+      editRelationId: null,
+      currentLink: null,
+    });
+  }
+
   handleDeleteRelation() {
     return true;
   }
@@ -603,6 +621,7 @@ class WorkspaceGraphComponent extends Component {
       createRelationFrom,
       createRelationTo,
       openEditRelation,
+      openEditRelationInferred,
       editRelationId,
     } = this.state;
     return (
@@ -648,6 +667,11 @@ class WorkspaceGraphComponent extends Component {
           variant='noGraph'
           handleClose={this.handleCloseRelationEdition.bind(this)}
           handleDelete={this.handleDeleteRelation.bind(this)}
+        />
+        <StixRelationEditionInferred
+          open={openEditRelationInferred}
+          stixRelationId={editRelationId}
+          handleClose={this.handleCloseRelationEditionInferred.bind(this)}
         />
       </div>
     );

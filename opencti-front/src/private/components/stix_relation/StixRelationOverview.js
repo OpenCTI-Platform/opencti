@@ -1,24 +1,42 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { compose, includes } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
+import { DiagramEngine } from 'storm-react-diagrams';
 import { createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import { ArrowRightAlt } from '@material-ui/icons';
+import Fab from '@material-ui/core/Fab';
+import { ArrowRightAlt, Edit } from '@material-ui/icons';
 import { itemColor } from '../../../utils/Colors';
 import { resolveLink } from '../../../utils/Entity';
 import inject18n from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
 import EntityReports from '../report/EntityReports';
+import StixRelationEdition, {
+  stixRelationEditionDeleteMutation,
+} from './StixRelationEdition';
+import { commitMutation, WS_ACTIVATED } from '../../../relay/environment';
+import EntityLabelFactory from '../../../components/graph_node/EntityLabelFactory';
+import EntityLinkFactory from '../../../components/graph_node/EntityLinkFactory';
+import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
+import EntityPortFactory from '../../../components/graph_node/EntityPortFactory';
+import { stixRelationEditionFocus } from './StixRelationEditionOverview';
+import StixRelationInferences from './StixRelationInferences';
+
 
 const styles = theme => ({
   container: {
     position: 'relative',
+  },
+  editButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 300,
   },
   item: {
     position: 'absolute',
@@ -87,9 +105,68 @@ const styles = theme => ({
 });
 
 class StixRelationContainer extends Component {
+  constructor(props) {
+    super(props);
+    const engine = new DiagramEngine();
+    engine.installDefaultFactories();
+    engine.registerPortFactory(new EntityPortFactory());
+    engine.registerNodeFactory(new EntityNodeFactory());
+    engine.registerLinkFactory(new EntityLinkFactory());
+    engine.registerLabelFactory(new EntityLabelFactory());
+    this.state = { openEdit: false, engine };
+  }
+
+  handleOpenEdition() {
+    this.setState({ openEdit: true });
+  }
+
+  handleCloseEdition() {
+    const {
+      match: {
+        params: { relationId },
+      },
+    } = this.props;
+    if (WS_ACTIVATED) {
+      commitMutation({
+        mutation: stixRelationEditionFocus,
+        variables: {
+          id: relationId,
+          input: { focusOn: '' },
+        },
+      });
+    }
+    this.setState({ openEdit: false });
+  }
+
+  handleDelete() {
+    const {
+      location,
+      match: {
+        params: { relationId },
+      },
+    } = this.props;
+    commitMutation({
+      mutation: stixRelationEditionDeleteMutation,
+      variables: {
+        id: relationId,
+      },
+      onCompleted: () => {
+        this.handleCloseEdition();
+        this.props.history.push(
+          location.pathname.replace(`/relations/${relationId}`, ''),
+        );
+      },
+    });
+  }
+
   render() {
     const {
-      t, fld, classes, entityId, stixRelation, inversedRelations,
+      t,
+      fld,
+      classes,
+      entityId,
+      stixRelation,
+      inversedRelations,
     } = this.props;
     const linkedEntity = stixRelation.to;
     const from = linkedEntity.id === entityId ? stixRelation.to : stixRelation.from;
@@ -100,18 +177,23 @@ class StixRelationContainer extends Component {
     return (
       <div className={classes.container}>
         <Link to={`${linkFrom}/${from.id}`}>
-          <div className={classes.item} style={{
-            backgroundColor: itemColor(from.type, true),
-            top: 10,
-            left: 0,
-          }}>
+          <div
+            className={classes.item}
+            style={{
+              backgroundColor: itemColor(from.type, true),
+              top: 10,
+              left: 0,
+            }}
+          >
             <div className={classes.itemHeader}>
               <div className={classes.icon}>
-                <ItemIcon type={from.type} color={itemColor(from.type, false)} size='small'/>
+                <ItemIcon
+                  type={from.type}
+                  color={itemColor(from.type, false)}
+                  size="small"
+                />
               </div>
-              <div className={classes.type}>
-                {t(`entity_${from.type}`)}
-              </div>
+              <div className={classes.type}>{t(`entity_${from.type}`)}</div>
             </div>
             <div className={classes.content}>
               <span className={classes.name}>{from.name}</span>
@@ -119,30 +201,45 @@ class StixRelationContainer extends Component {
           </div>
         </Link>
         <div className={classes.middle}>
-          {includes(to.type, inversedRelations) ? <ArrowRightAlt fontSize='large' style={{ transform: 'rotate(180deg)' }}/> : <ArrowRightAlt fontSize='large'/>}<br/>
-          <div style={{
-            padding: '5px 8px 5px 8px',
-            backgroundColor: '#14262c',
-            color: '#ffffff',
-            fontSize: 12,
-            display: 'inline-block',
-          }}>
+          {includes(to.type, inversedRelations) ? (
+            <ArrowRightAlt
+              fontSize="large"
+              style={{ transform: 'rotate(180deg)' }}
+            />
+          ) : (
+            <ArrowRightAlt fontSize="large"/>
+          )}
+          <br/>
+          <div
+            style={{
+              padding: '5px 8px 5px 8px',
+              backgroundColor: '#14262c',
+              color: '#ffffff',
+              fontSize: 12,
+              display: 'inline-block',
+            }}
+          >
             {t(`relation_${stixRelation.relationship_type}`)}
           </div>
         </div>
         <Link to={`${linkTo}/${to.id}`}>
-          <div className={classes.item} style={{
-            backgroundColor: itemColor(to.type, true),
-            top: 10,
-            right: 0,
-          }}>
+          <div
+            className={classes.item}
+            style={{
+              backgroundColor: itemColor(to.type, true),
+              top: 10,
+              right: 0,
+            }}
+          >
             <div className={classes.itemHeader}>
               <div className={classes.icon}>
-                <ItemIcon type={to.type} color={itemColor(to.type, false)} size='small'/>
+                <ItemIcon
+                  type={to.type}
+                  color={itemColor(to.type, false)}
+                  size='small'
+                />
               </div>
-              <div className={classes.type}>
-                {t(`entity_${to.type}`)}
-              </div>
+              <div className={classes.type}>{t(`entity_${to.type}`)}</div>
             </div>
             <div className={classes.content}>
               <span className={classes.name}>{to.name}</span>
@@ -152,7 +249,7 @@ class StixRelationContainer extends Component {
         <div className='clearfix'/>
         <div className={classes.data}>
           <div className={classes.information}>
-            <Typography variant='h4' gutterBottom={true}>
+            <Typography variant="h4" gutterBottom={true}>
               {t('Information')}
             </Typography>
             <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -160,33 +257,85 @@ class StixRelationContainer extends Component {
                 {t('Relationship type')}
               </Typography>
               {t(`relation_${stixRelation.relationship_type}`)}
-              <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+              <Typography
+                variant='h3'
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('First seen')}
               </Typography>
-              {fld(stixRelation.first_seen)}
-              <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+              {stixRelation.inferred ? '-' : fld(stixRelation.first_seen)}
+              <Typography
+                variant='h3'
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('Last seen')}
               </Typography>
-              {fld(stixRelation.last_seen)}
-              <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+              {stixRelation.inferred ? '-' : fld(stixRelation.last_seen)}
+              <Typography
+                variant='h3'
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('Confidence level')}
               </Typography>
-              <ItemConfidenceLevel level={stixRelation.weight}/>
-              <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+              <ItemConfidenceLevel
+                level={stixRelation.inferred ? 99 : stixRelation.weight}
+              />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('Description')}
               </Typography>
-              <Markdown className='markdown' source={stixRelation.description}/>
+              <Markdown
+                className='markdown'
+                source={stixRelation.description}
+              />
             </Paper>
           </div>
-          <div className={classes.reports}>
-            <Typography variant='h4' gutterBottom={true}>
-              {t('Reports')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
-              <EntityReports entityId={stixRelation.id}/>
-            </Paper>
-          </div>
+          {stixRelation.inferred ? (
+            <div className={classes.reports}>
+              <Typography variant='h4' gutterBottom={true}>
+                {t('Inference explanation')}
+              </Typography>
+              <Paper classes={{ root: classes.paper }} elevation={2} style={{ height: 400 }}>
+                <StixRelationInferences engine={this.state.engine} stixRelation={stixRelation} from={from} to={to}/>
+              </Paper>
+            </div>
+          ) : (
+            <div className={classes.reports}>
+              <Typography variant='h4' gutterBottom={true}>
+                {t('Reports')}
+              </Typography>
+              <Paper classes={{ root: classes.paper }} elevation={2}>
+                <EntityReports entityId={stixRelation.id}/>
+              </Paper>
+            </div>
+          )}
         </div>
+        {stixRelation.inferred ? (
+          ''
+        ) : (
+          <div>
+            <Fab
+              onClick={this.handleOpenEdition.bind(this)}
+              color='secondary'
+              aria-label='Edit'
+              className={classes.editButton}
+            >
+              <Edit/>
+            </Fab>
+            <StixRelationEdition
+              open={this.state.openEdit}
+              stixRelationId={stixRelation.id}
+              handleClose={this.handleCloseEdition.bind(this)}
+              handleDelete={this.handleDelete.bind(this)}
+            />
+          </div>
+        )}
       </div>
     );
   }
@@ -200,7 +349,9 @@ StixRelationContainer.propTypes = {
   t: PropTypes.func,
   nsd: PropTypes.func,
   fld: PropTypes.func,
+  match: PropTypes.object,
   history: PropTypes.object,
+  location: PropTypes.object,
 };
 
 const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
@@ -212,6 +363,26 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
           first_seen
           last_seen
           description
+          inferred
+          inferences {
+              edges {
+                  node {
+                      id
+                      relationship_type
+                      inferred
+                      from {
+                          id
+                          name
+                          type
+                      }
+                      to {
+                          id
+                          name
+                          type
+                      }
+                  }
+              }
+          }
           from {
               id
               type
@@ -239,5 +410,6 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles),
 )(StixRelationOverview);

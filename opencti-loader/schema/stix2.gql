@@ -89,6 +89,11 @@ define
   "relationship_type" sub attribute datatype string;
   "weight" sub attribute datatype long;
 
+  # STIX SOO
+  "number" sub attribute datatype long;
+  "rir" sub attribute datatype string;
+  "value" sub attribute datatype string;
+
   ## ROLES
 
   # Migration
@@ -106,6 +111,7 @@ define
 
   # STIX common roles
   "so" sub role;
+  "soo" sub role;
   "kill_chain_phase" sub role;
 
   # STIX embeded roles
@@ -114,6 +120,10 @@ define
   "external_reference" sub role;
   "phase_belonging" sub role;
   "knowledge_aggregation" sub role;
+
+  # STIX observables embeded roles
+  "resolves_to" sub role;
+  "belongs_to" sub role;
 
   # STIX SRO roles
 
@@ -156,6 +166,7 @@ define
   # belonging
   "gather" sub role;
   "part_of" sub role;
+
 
   ## RELATIONSHIPS
 
@@ -221,6 +232,43 @@ define
   "object_refs" sub "stix_relation_embedded"
     relates "so"
     relates "knowledge_aggregation";
+
+  # STIX SOO embeded relationships
+   "stix_relation_observable_embedded" sub relationship
+    is-abstract
+    has "stix_id"
+    has "created"
+    has "modified"
+    has "revoked"
+    has "type"
+    has "relationship_type"
+    has "weight"
+    has "first_seen"
+    has "first_seen_day"
+    has "first_seen_month"
+    has "first_seen_year"
+    has "last_seen"
+    has "last_seen_day"
+    has "last_seen_month"
+    has "last_seen_year"
+    has "name"
+    has "name_lowercase"
+    has "description"
+    has "description_lowercase"
+    has "created_at"
+    has "created_at_day"
+    has "created_at_month"
+    has "created_at_year"
+    has "updated_at"
+    plays "so";
+
+  "resolves_to_refs" sub "stix_relation_observable_embedded"
+    relates "soo"
+    relates "resolves_to";
+
+  "belongs_to_refs" sub "stix_relation_observable_embedded"
+    relates "soo"
+    relates "belongs_to";
 
   # STIX SRO relationships
   "stix_relation" sub relationship
@@ -584,6 +632,46 @@ define
     plays "target"
     plays "problem";
 
+   "Stix-Observable" sub entity
+    is-abstract
+    has "type"
+    has "value"
+    has "created_at"
+    has "created_at_day"
+    has "created_at_month"
+    has "created_at_year"
+    has "updated_at"
+    plays "so"
+    plays "soo"
+    plays "indicator";
+
+    "Domain" sub "Stix-Observable";
+
+    "IPv4-Addr" sub "Stix-Observable"
+    plays "resolves_to";
+
+    "IPv6-Addr" sub "Stix-Observable"
+    plays "resolves_to";
+
+    "URL" sub "Stix-Observable";
+
+    "Stix-Observable-Data" sub entity
+    is-abstract
+    has "type"
+    has "value"
+    has "created_at"
+    has "created_at_day"
+    has "created_at_month"
+    has "created_at_year"
+    has "updated_at"
+    plays "so";
+
+    "Autonomous-System" sub "Stix-Observable-Data"
+    has "number"
+    has "name"
+    has "rir"
+    plays "belongs_to";
+
     ## RULES
     # Access rule
     "UserPermissionRule" sub rule
@@ -634,6 +722,18 @@ define
       ("origin": $threatActor, "attribution": $intrusionSet) isa "attributed-to";
     };
 
+    # Intrusion-Set => uses => Malware through Campaign
+    "IntrusionSetUsesMalwareTroughCampaignRule" sub rule
+    when {
+      $campaign isa "Campaign";
+      $malware isa "Malware";
+      $intrusionSet isa "Intrusion-Set";
+      ("user": $campaign, "usage": $malware) isa uses;
+      ("origin": $intrusionSet, "attribution": $campaign) isa attributed-to;
+    } then {
+      ("user": $intrusionSet, "usage": $malware) isa "uses";
+    };
+
     # Intrusion-Set => targets => Identity through Campaign
     "IntrusionSetTargetsIdentityThroughCampaignRule" sub rule
     when {
@@ -680,6 +780,18 @@ define
       ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
     } then {
       ("origin": $threatActor, "attribution": $campaign) isa "attributed-to";
+    };
+
+    # Campaign => targets => Identity through SubIdentity
+    "CampaignTargetsIdentityThroughIdentityRule" sub rule
+    when {
+      $subidentity isa "Identity";
+      $identity isa "Identity";
+      $campaign isa "Campaign";
+      ("source": $campaign, "target": $subidentity) isa targets;
+      ("gather": $identity, "part_of": $subidentity) isa gathering;
+    } then {
+      ("source": $campaign, "target": $identity) isa "targets";
     };
 
     # Incident => attributed-to => Threat-Actor through Intrusion-Set

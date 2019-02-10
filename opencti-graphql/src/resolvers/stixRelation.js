@@ -6,6 +6,7 @@ import {
   findAll,
   findByType,
   findById,
+  findByIdInferred,
   stixRelationsTimeSeries,
   stixRelationsTimeSeriesByType,
   stixRelationsDistribution,
@@ -22,7 +23,12 @@ import withCancel from '../schema/subscriptionWrapper';
 
 const stixRelationResolvers = {
   Query: {
-    stixRelation: (_, { id }) => findById(id),
+    stixRelation: (_, { id }) => {
+      if (/V(\d+)$/i.exec(id) === null) {
+        return findByIdInferred(id);
+      }
+      return findById(id);
+    },
     stixRelations: (_, args) => {
       if (args.search && args.search.length > 0) {
         return search(args);
@@ -48,7 +54,12 @@ const stixRelationResolvers = {
   StixRelation: {
     markingDefinitions: (stixRelation, args) =>
       markingDefinitions(stixRelation.id, args),
-    reports: (stixRelation, args) => reports(stixRelation.id, args),
+    reports: (stixRelation, args) => {
+      if (/V(\d+)$/i.exec(stixRelation.id) !== null) {
+        return reports(stixRelation.id, args);
+      }
+      return null;
+    },
     editContext: stixRelation => fetchEditContext(stixRelation.id)
   },
   Mutation: {

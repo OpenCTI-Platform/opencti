@@ -38,7 +38,7 @@ const styles = theme => ({
   },
   linesContainer: {
     marginTop: 20,
-    paddingTop: 0,
+    padding: '0 0 90px 0',
   },
   item: {
     paddingLeft: 10,

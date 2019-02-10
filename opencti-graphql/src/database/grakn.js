@@ -86,6 +86,14 @@ export const later = delay =>
     setTimeout(resolve, delay);
   });
 
+export const randomKey = number => {
+  let key = '';
+  for (let i = 0; i < number; i++) {
+    key += Math.floor(Math.random() * 10).toString();
+  }
+  return key;
+};
+
 // Attributes key that can contains multiple values.
 export const multipleAttributes = [
   'stix_label',
@@ -250,14 +258,16 @@ export const qkRel = (
   extraRelKey,
   infer
 ) =>
+  // return queryTx(queryDef);
   qk(queryDef, infer).then(result => {
     if (result && result.data) {
       return Promise.all(
         map(line => {
-          console.log(line);
           const relationPromise = line[key].inferred
             ? Promise.resolve({
-                id: line[key].id,
+                id: Buffer.from(line[key]['explanation-query']).toString(
+                  'base64'
+                ),
                 type: 'stix_relation',
                 relationship_type: line[key].type.label,
                 inferred: true
@@ -377,16 +387,9 @@ export const loadRelationById = id =>
   qk(`match $x($from, $to); $x id ${id}; get;`).then(result => {
     if (result && result.data) {
       const line = head(result.data);
-      const relationPromise = line.x.inferred
-        ? Promise.resolve({
-            id: line.x.id,
-            type: 'stix_relation',
-            relationship_type: line.x.type.label,
-            inferred: true
-          })
-        : attrByID(line.x['@id'])
-            .then(res => attrMap(line.x.id, res))
-            .then(data => assoc('inferred', false, data));
+      const relationPromise = attrByID(line.x['@id'])
+        .then(res => attrMap(line.x.id, res))
+        .then(data => assoc('inferred', false, data));
       const fromPromise = attrByID(line.from['@id']).then(res =>
         attrMap(line.from.id, res)
       );
@@ -405,6 +408,108 @@ export const loadRelationById = id =>
     }
     return Promise.resolve(null);
   });
+
+export const loadRelationInferredById = async id => {
+  const decodedQuery = Buffer.from(id, 'base64').toString('ascii');
+  let query;
+  if (decodedQuery.endsWith('}')) {
+    query = `match ${decodedQuery}; get;`;
+  } else {
+    query = `${decodedQuery.replace('(', '$rel (').slice(0, -1)}, $rel;`;
+  }
+  const queryRegex = /\([a-z_]+:\s\$(\w+),\s[a-z_]+:\s\$(\w+)\)\s[a-z_]+\s([\w-]+);/i.exec(
+    query
+  );
+  const fromKey = queryRegex[1];
+  const toKey = queryRegex[2];
+  const relationType = queryRegex[3];
+  const session = await client.session('grakn');
+  const wTx = await session.transaction(Grakn.txType.WRITE);
+  const answerIterator = await wTx.query(query);
+  const answer = await answerIterator.next();
+  const fromId = answer.map().get(fromKey).id;
+  const toId = answer.map().get(toKey).id;
+  const relationPromise = Promise.resolve({
+    id,
+    type: 'stix_relation',
+    relationship_type: relationType,
+    inferred: true
+  });
+  const fromPromise = attrByID(`/kb/grakn/concept/${fromId}`).then(res =>
+    attrMap(fromId, res)
+  );
+  const toPromise = attrByID(`/kb/grakn/concept/${toId}`).then(res =>
+    attrMap(toId, res)
+  );
+  const explanation = await answer.explanation();
+  const explanationAnswers = await explanation.answers();
+  const inferences = explanationAnswers.map(explanationAnswer => {
+    const explanationAnswerExplanation = explanationAnswer.explanation();
+    let inferenceQuery = explanationAnswerExplanation.queryPattern();
+    const inferenceQueryRegex = /(\$(\d+)\s)?\([a-z_]+:\s\$(\w+),\s[a-z_]+:\s\$(\w+)\)\sisa\s([\w-]+);/i.exec(
+      inferenceQuery
+    );
+    let relationKey;
+    if (inferenceQueryRegex[2] !== undefined) {
+      relationKey = inferenceQueryRegex[2];
+    } else {
+      relationKey = randomKey(5);
+      inferenceQuery = inferenceQuery.replace('(', `$${relationKey} (`);
+    }
+    return {
+      inferenceQuery,
+      relationKey,
+      fromKey: inferenceQueryRegex[3],
+      toKey: inferenceQueryRegex[4],
+      relationType: inferenceQueryRegex[5]
+    };
+  });
+  const inferencesQueries = pluck('inferenceQuery', inferences);
+  const inferencesQuery = `match {${join('; ', inferencesQueries)}; }; get;`;
+  const inferencesAnswerIterator = await wTx.query(inferencesQuery);
+  const inferencesAnswer = await inferencesAnswerIterator.next();
+  const inferencesPromises = inferences.map(async inference => {
+    const inferred = await inferencesAnswer
+      .map()
+      .get(inference.relationKey)
+      .isInferred();
+    const inferenceFromId = inferencesAnswer.map().get(inference.fromKey).id;
+    const inferenceToId = inferencesAnswer.map().get(inference.toKey).id;
+    const inferenceId = inferred
+      ? Buffer.from(inference.inferenceQuery).toString('base64')
+      : inferencesAnswer.map().get(inference.relationKey).id;
+    return Promise.resolve({
+      node: {
+        id: inferenceId,
+        inferred,
+        relationship_type: inference.relationType,
+        from: attrByID(`/kb/grakn/concept/${inferenceFromId}`).then(res =>
+          attrMap(inferenceFromId, res)
+        ),
+        to: attrByID(`/kb/grakn/concept/${inferenceToId}`).then(res =>
+          attrMap(inferenceToId, res)
+        )
+      }
+    });
+  });
+
+  await wTx.close();
+  await session.close();
+
+  return Promise.all([
+    relationPromise,
+    fromPromise,
+    toPromise,
+    inferencesPromises
+  ]).then(([node, from, to, relationInferences]) => {
+    const finalResult = pipe(
+      assoc('from', to),
+      assoc('to', from),
+      assoc('inferences', { edges: relationInferences })
+    )(node);
+    return finalResult;
+  });
+};
 
 /**
  * Edit an attribute value.

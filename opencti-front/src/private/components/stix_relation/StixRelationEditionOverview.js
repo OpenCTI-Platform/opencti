@@ -149,7 +149,6 @@ class StixRelationEditionContainer extends Component {
       t, classes, handleClose, handleDelete, stixRelation, me, variant, stixDomainEntity,
     } = this.props;
     const { editContext } = stixRelation;
-    // Add current user to the context if is not available yet.
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
     const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
     const initialValues = pipe(

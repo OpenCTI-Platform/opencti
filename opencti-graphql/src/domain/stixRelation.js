@@ -6,6 +6,7 @@ import {
   editInputTx,
   loadByID,
   loadRelationById,
+  loadRelationInferredById,
   notify,
   now,
   paginateRelationships,
@@ -91,6 +92,8 @@ export const stixRelationDistributionByType = args =>
   );
 
 export const findById = stixRelationId => loadRelationById(stixRelationId);
+export const findByIdInferred = stixRelationId =>
+  loadRelationInferredById(stixRelationId);
 
 export const search = args =>
   paginateRelationships(

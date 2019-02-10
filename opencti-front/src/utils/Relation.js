@@ -42,6 +42,7 @@ const relationsTypesMapping = {
   malware_city: ['targets', 'attributed-to'],
   malware_organization: ['targets', 'attributed-to'],
   malware_sector: ['targets'],
+  malware_user: ['targets', 'attributed-to'],
   malware_vulnerability: ['targets'],
   malware_tool: ['uses'],
   malware_malware: ['variant-of'],

@@ -212,6 +212,8 @@ const i18n = {
       'Related to this country': 'Lié à ce pays',
       Inferences: 'Inférences',
       Inferred: 'Inféré',
+      'Inference explanation': 'Explication de l\'inférence',
+      Relation: 'Relation',
       // User
       'Sign in': "S'identifier",
       Email: 'Email',
