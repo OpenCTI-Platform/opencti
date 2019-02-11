@@ -27,7 +27,7 @@ const styles = theme => ({
   },
   bottomNav: {
     zIndex: 1000,
-    padding: '10px 274px 10px 200px',
+    padding: '10px 274px 10px 120px',
     backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     height: 75,

@@ -25,7 +25,6 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import { AspectRatio } from '@material-ui/icons';
-import { AutoFix } from 'mdi-material-ui';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
 import { commitMutation, fetchQuery } from '../../../relay/environment';
@@ -633,14 +632,6 @@ class WorkspaceGraphComponent extends Component {
           style={{ left: 90 }}
         >
           <AspectRatio/>
-        </IconButton>
-        <IconButton
-          color="primary"
-          className={classes.icon}
-          onClick={this.distribute.bind(this)}
-          style={{ left: 150 }}
-        >
-          <AutoFix/>
         </IconButton>
         <DiagramWidget
           className={classes.canvas}

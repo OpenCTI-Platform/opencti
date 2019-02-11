@@ -16,7 +16,6 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import { AspectRatio } from '@material-ui/icons';
-import { AutoFix } from 'mdi-material-ui';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
 import { commitMutation, fetchQuery } from '../../../relay/environment';
@@ -485,9 +484,6 @@ class ReportKnowledgeGraphComponent extends Component {
       <div className={classes.container}>
         <IconButton color='primary' className={classes.icon} onClick={this.zoomToFit.bind(this)} style={{ left: 90 }}>
           <AspectRatio/>
-        </IconButton>
-        <IconButton color='primary' className={classes.icon} style={{ left: 150 }}>
-          <AutoFix/>
         </IconButton>
         <DiagramWidget
           className={classes.canvas}

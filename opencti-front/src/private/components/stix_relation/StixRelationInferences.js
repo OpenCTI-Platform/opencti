@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  forEach, compose, includes, pluck, values, pipe, prop, map, indexBy,
+  forEach, compose, includes, values, pipe, prop, map, indexBy,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { DiagramModel, DiagramWidget } from 'storm-react-diagrams';

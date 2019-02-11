@@ -26,7 +26,6 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import { AspectRatio } from '@material-ui/icons';
-import { AutoFix } from 'mdi-material-ui';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
 import { yearFormat } from '../../../utils/Time';
@@ -378,16 +377,9 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
           color="primary"
           className={classes.icon}
           onClick={this.zoomToFit.bind(this)}
-          style={{ right: 330 }}
-        >
-          <AspectRatio/>
-        </IconButton>
-        <IconButton
-          color="primary"
-          className={classes.icon}
           style={{ right: 270 }}
         >
-          <AutoFix/>
+          <AspectRatio/>
         </IconButton>
         <DiagramWidget
           deleteKeys={[]}
