@@ -5,6 +5,7 @@ import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import { Info, OpenWith } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
+import { truncate } from '../../utils/String';
 import { itemColor } from '../../utils/Colors';
 import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../ItemIcon';
@@ -74,7 +75,7 @@ class EntityNodeWidget extends Component {
         <div className={classes.content}>
           <ItemIcon type={extras.type} color={itemColor(extras.type, false)} size='large'/>
           <br/>
-          <span className={classes.name}>{extras.name}</span>
+          <span className={classes.name}>{truncate(extras.name, 50)}</span>
         </div>
         <div className={classes.overlay} style={{ visibility: node.selected ? 'visible' : 'hidden', opacity: node.selected ? 1 : 0 }}>
           <IconButton component={Link} to={`${link}/${extras.id}`} className={classes.button} style={{ marginTop: expandable ? 0 : 15 }}>

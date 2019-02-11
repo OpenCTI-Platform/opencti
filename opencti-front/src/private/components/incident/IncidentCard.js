@@ -13,6 +13,7 @@ import Avatar from '@material-ui/core/Avatar';
 import { compose } from 'ramda';
 import { Fire } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
+import { truncate } from '../../../utils/String';
 
 const styles = theme => ({
   card: {
@@ -89,12 +90,12 @@ class IncidentCardComponent extends Component {
           <CardHeader
             classes={{ root: classes.header }}
             avatar={<Avatar className={classes.avatar}>{incident.name.charAt(0)}</Avatar>}
-            title={incident.name}
+            title={truncate(incident.name, 50)}
             subheader={`${t('Updated the')} ${fsd(incident.modified)}`}
             action={<Fire className={classes.icon}/>}
           />
           <CardContent classes={{ root: classes.content }}>
-            <Markdown source={incident.description} disallowedTypes={['link']} unwrapDisallowed={true}/>
+            <Markdown source={truncate(incident.description, 50)} disallowedTypes={['link']} unwrapDisallowed={true}/>
           </CardContent>
         </CardActionArea>
       </Card>

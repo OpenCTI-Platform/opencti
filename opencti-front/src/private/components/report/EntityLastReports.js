@@ -13,7 +13,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { Description } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
-import truncate from '../../../utils/String';
+import { truncate } from '../../../utils/String';
 import { QueryRenderer } from '../../../relay/environment';
 
 const styles = theme => ({

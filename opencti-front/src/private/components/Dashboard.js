@@ -27,7 +27,7 @@ import YAxis from 'recharts/lib/cartesian/YAxis';
 import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
 import Tooltip from 'recharts/lib/component/Tooltip';
 import { QueryRenderer } from '../../relay/environment';
-import truncate from '../../utils/String';
+import { truncate } from '../../utils/String';
 import { yearsAgo, now } from '../../utils/Time';
 import Theme from '../../components/Theme';
 import inject18n from '../../components/i18n';

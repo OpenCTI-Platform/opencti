@@ -608,6 +608,7 @@ define
     plays "usage"
     plays "problem"
     plays "characterize"
+    plays "attribution"
     plays "original";
 
   "Report" sub "Stix-Domain-Entity"

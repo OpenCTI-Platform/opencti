@@ -16,7 +16,7 @@ import Avatar from '@material-ui/core/Avatar';
 import { LinkOff } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
-import truncate from '../../../utils/String';
+import { truncate } from '../../../utils/String';
 import { commitMutation } from '../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';

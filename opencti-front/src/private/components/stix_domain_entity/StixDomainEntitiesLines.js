@@ -16,7 +16,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { ExpandMore } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
-import truncate from '../../../utils/String';
+import { truncate } from '../../../utils/String';
 import { resolveLink } from '../../../utils/Entity';
 import ItemIcon from '../../../components/ItemIcon';
 import inject18n from '../../../components/i18n';

@@ -49,7 +49,7 @@ class IncidentComponent extends Component {
             <EntityObservablesChart entityId={incident.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart incident={incident}/>
+            <EntityReportsChart entityId={incident.id}/>
           </Grid>
         </Grid>
         <IncidentEdition incidentId={incident.id}/>

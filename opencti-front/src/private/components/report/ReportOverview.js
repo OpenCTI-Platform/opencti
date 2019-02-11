@@ -8,6 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
+import { truncate } from '../../../utils/String';
 
 const styles = theme => ({
   paper: {
@@ -50,7 +51,7 @@ class ReportOverviewComponent extends Component {
           <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
             {t('Description')}
           </Typography>
-          <Markdown className='markdown' source={report.description}/>
+          <Markdown className='markdown' source={truncate(report.description, 250)}/>
         </Paper>
       </div>
     );
