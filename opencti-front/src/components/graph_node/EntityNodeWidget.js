@@ -75,7 +75,7 @@ class EntityNodeWidget extends Component {
         <div className={classes.content}>
           <ItemIcon type={extras.type} color={itemColor(extras.type, false)} size='large'/>
           <br/>
-          <span className={classes.name}>{truncate(extras.name, 50)}</span>
+          <span className={classes.name}>{truncate(extras.name, 30)}</span>
         </div>
         <div className={classes.overlay} style={{ visibility: node.selected ? 'visible' : 'hidden', opacity: node.selected ? 1 : 0 }}>
           <IconButton component={Link} to={`${link}/${extras.id}`} className={classes.button} style={{ marginTop: expandable ? 0 : 15 }}>

@@ -44,7 +44,7 @@ export const findByName = args =>
   paginate(
     `match $m isa ${
       args.type ? args.type : 'Stix-Domain-Entity'
-    }; $m has name "${prepareString(args.name)}"`,
+    }; $m has name_lowercase "${prepareString(args.name.toLowerCase())}"`,
     args,
     false
   );

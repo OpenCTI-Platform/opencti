@@ -5,6 +5,7 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import { truncate } from '../../../utils/String';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 import ReportPopover from './ReportPopover';
@@ -37,7 +38,7 @@ class ReportHeaderComponent extends Component {
     return (
       <div>
         <Typography variant='h1' gutterBottom={true} classes={{ root: classes.title }}>
-          {report.name}
+          {truncate(report.name, 80)}
         </Typography>
         <div className={classes.popover}>
           <ReportPopover reportId={report.id}/>
