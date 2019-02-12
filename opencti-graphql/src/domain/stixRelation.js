@@ -23,9 +23,11 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => {
-  if (args.resolveInferences) {
+  if (args.resolveInferences && args.resolveRelationType) {
     return paginateRelationships(
-      'match $from; $linked($from, $entity) isa stix_relation; $rel($entity, $to) isa stix_relation',
+      `match $from; $linked($from, $entity) isa ${
+        args.resolveRelationType
+      }; $rel($entity, $to) isa stix_relation`,
       args
     );
   }
@@ -36,9 +38,11 @@ export const findAll = args => {
 };
 
 export const stixRelationsTimeSeries = args => {
-  if (args.resolveInferences) {
+  if (args.resolveInferences && args.resolveRelationType) {
     return timeSeries(
-      `match $from; $linked($from, $entity) isa stix_relation; $x($entity, $to) isa stix_relation; ${
+      `match $from; $linked($from, $entity) isa ${
+        args.resolveRelationType
+      }; $x($entity, $to) isa stix_relation; ${
         args.toTypes
           ? `${join(
               ' ',
@@ -67,9 +71,11 @@ export const stixRelationsTimeSeries = args => {
 };
 
 export const stixRelationsDistribution = args => {
-  if (args.resolveInferences) {
+  if (args.resolveInferences && args.resolveRelationType) {
     return distribution(
-      `match $from; $linked($from, $entity) isa stix_relation; $rel($entity, $x) isa stix_relation; ${
+      `match $from; $linked($from, $entity) isa ${
+        args.resolveRelationType
+      }; $rel($entity, $x) isa stix_relation; ${
         args.toTypes
           ? `${join(
               ' ',
@@ -98,11 +104,11 @@ export const stixRelationsDistribution = args => {
 };
 
 export const findByType = args => {
-  if (args.resolveInferences) {
+  if (args.resolveInferences && args.resolveRelationType) {
     return paginateRelationships(
-      `match $from; $linked($from, $entity) isa stix_relation; $rel($entity, $to) isa ${
-        args.relationType
-      }`,
+      `match $from; $linked($from, $entity) isa ${
+        args.resolveRelationType
+      }; $rel($entity, $to) isa ${args.relationType}`,
       args
     );
   }
@@ -112,11 +118,11 @@ export const findByType = args => {
   );
 };
 export const stixRelationsTimeSeriesByType = args => {
-  if (args.resolveInferences) {
+  if (args.resolveInferences && args.resolveRelationType) {
     return timeSeries(
-      `match $from; $linked($from, $entity) isa stix_relation; $x($entity, $to) isa ${
-        args.relationType
-      }; ${
+      `match $from; $linked($from, $entity) isa ${
+        args.resolveRelationType
+      }; $x($entity, $to) isa ${args.relationType}; ${
         args.entityTypes
           ? `${join(
               ' ',
@@ -155,11 +161,11 @@ export const stixRelationsTimeSeriesByType = args => {
 };
 
 export const stixRelationDistributionByType = args => {
-  if (args.resolveInferences) {
+  if (args.resolveInferences && args.resolveRelationType) {
     return distribution(
-      `match $from; $linked($from, $entity) isa stix_relation; $rel($entity, $x) isa ${
-        args.relationType
-      }; ${
+      `match $from; $linked($from, $entity) isa ${
+        args.resolveRelationType
+      }; $rel($entity, $x) isa ${args.relationType}; ${
         args.entityTypes
           ? `${join(
               ' ',

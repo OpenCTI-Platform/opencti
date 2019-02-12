@@ -132,8 +132,12 @@ class EntityStixRelations extends Component {
   }
 
   componentDidMount() {
-    const { entityId, relationType, targetEntityTypes } = this.props;
+    const {
+      entityId, relationType, targetEntityTypes, resolveRelationType,
+    } = this.props;
     fetchQuery(firstStixRelationQuery, {
+      resolveInferences: true,
+      resolveRelationType,
       toTypes: targetEntityTypes || null,
       fromId: entityId,
       relationType,
@@ -233,7 +237,7 @@ class EntityStixRelations extends Component {
 
   render() {
     const {
-      t, classes, entityId, relationType, entityLink, targetEntityTypes,
+      t, classes, entityId, relationType, entityLink, targetEntityTypes, resolveRelationType,
     } = this.props;
     const startYear = this.state.firstSeenFirstYear === currentYear() ? this.state.firstSeenFirstYear - 1 : this.state.firstSeenFirstYear;
     const yearsList = [];
@@ -243,6 +247,7 @@ class EntityStixRelations extends Component {
 
     const paginationOptions = {
       resolveInferences: this.state.resolveInferences,
+      resolveRelationType,
       inferred: this.state.inferred,
       toTypes: includes('All', this.state.toTypes) ? targetEntityTypes : this.state.toTypes,
       fromId: entityId,
@@ -388,6 +393,7 @@ class EntityStixRelations extends Component {
 
 EntityStixRelations.propTypes = {
   entityId: PropTypes.string,
+  resolveRelationType: PropTypes.string,
   targetEntityTypes: PropTypes.array,
   entityLink: PropTypes.string,
   relationType: PropTypes.string,

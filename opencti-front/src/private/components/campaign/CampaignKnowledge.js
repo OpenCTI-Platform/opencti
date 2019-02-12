@@ -36,7 +36,7 @@ class CampaignKnowledgeComponent extends Component {
             routeProps => <StixRelation entityId={campaign.id} {...routeProps} inversedRelations={inversedRelations}/>
           }/>
           {location.pathname.includes('overview') ? <StixDomainEntityKnowledge stixDomainEntityId={campaign.id}/> : ''}
-          {location.pathname.includes('attribution') ? <EntityStixRelations entityId={campaign.id} relationType='attributed-to' targetEntityTypes={['Identity']} entityLink={link}/> : ''}
+          {location.pathname.includes('attribution') ? <EntityStixRelations resolveRelationType='attributed-to' entityId={campaign.id} relationType='attributed-to' targetEntityTypes={['Identity', 'Intrusion-Set']} entityLink={link}/> : ''}
           {location.pathname.includes('incidents') ? <EntityStixRelations entityId={campaign.id} relationType='attributed-to' targetEntityTypes={['Incident']} entityLink={link}/> : ''}
           {location.pathname.includes('malwares') ? <EntityStixRelations entityId={campaign.id} relationType='uses' targetEntityTypes={['Campaign']} entityLink={link}/> : ''}
           {location.pathname.includes('victimology') ? <EntityStixRelations entityId={campaign.id} relationType='targets' targetEntityTypes={['Identity']} entityLink={link}/> : ''}
