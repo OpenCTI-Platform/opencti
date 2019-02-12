@@ -42,7 +42,13 @@ class ReportComponent extends Component {
             <EntityObservablesChart entityId={report.id}/>
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityStixRelationsRadar entityId={report.id} entityType='Kill-Chain-Phase' relationType='kill_chain_phases' field='phase_name'/>
+            <EntityStixRelationsRadar
+              entityId={report.id}
+              entityType='Kill-Chain-Phase'
+              relationType='kill_chain_phases'
+              field='phase_name'
+              resolveInferences={true}
+            />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsPie entityId={report.id} entityType='Stix-Domain-Entity' relationType='object_refs' field='type'/>

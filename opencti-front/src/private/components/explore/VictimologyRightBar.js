@@ -1,26 +1,40 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import { compose } from 'ramda';
+import {
+  compose, map, pathOr, pipe, union,
+} from 'ramda';
+import { Formik, Field, Form } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import MenuList from '@material-ui/core/MenuList';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import MenuItem from '@material-ui/core/MenuItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
+import Typography from '@material-ui/core/Typography';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
-import Collapse from '@material-ui/core/Collapse';
 import Drawer from '@material-ui/core/Drawer';
-import { Public, ExpandLess, ExpandMore } from '@material-ui/icons';
-import { Diamond } from 'mdi-material-ui';
+import Checkbox from '@material-ui/core/Checkbox';
 import inject18n from '../../../components/i18n';
-import { QueryRenderer } from '../../../relay/environment';
+import Autocomplete from '../../../components/Autocomplete';
+import { fetchQuery } from '../../../relay/environment';
+
+const targetingTypes = [
+  'All',
+  'Campaign',
+  'Incident',
+];
+
+const targetTypes = [
+  'All',
+  'Country',
+  'Sector',
+  'Organization',
+];
 
 const styles = theme => ({
   drawerPaper: {
     minHeight: '100vh',
     width: 250,
+    padding: '20px 10px 20px 10px',
     position: 'fixed',
     backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
@@ -28,43 +42,31 @@ const styles = theme => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
   },
-  subheader: {
-    paddingLeft: 15,
-  },
-  nested: {
-    paddingLeft: theme.spacing.unit * 4,
-  },
-  listIcon: {
-    marginRight: 5,
-  },
-  listText: {
-    paddingRight: 5,
-  },
   toolbar: theme.mixins.toolbar,
 });
 
-const victimologyRightBarThreatActorsQuery = graphql`
-    query VictimologyRightBarThreatActorsQuery {
-        threatActors {
+const victimologyRightBarThreatActorsSearchQuery = graphql`
+    query VictimologyRightBarThreatActorsQuery($search: String) {
+        threatActors(search: $search) {
             edges {
                 node {
                     id
                     name
-                    description
+                    type
                 }
             }
         }
     }
 `;
 
-const victimologyRightBarIntrusionSetsQuery = graphql`
-    query VictimologyRightBarIntrusionSetsQuery {
-        intrusionSets {
+const victimologyRightBarIntrusionSetsSearchQuery = graphql`
+    query VictimologyRightBarIntrusionSetsQuery($search: String) {
+        intrusionSets(search: $search) {
             edges {
                 node {
                     id
                     name
-                    description
+                    type
                 }
             }
         }
@@ -74,117 +76,114 @@ const victimologyRightBarIntrusionSetsQuery = graphql`
 class VictimologyRightBar extends Component {
   constructor(props) {
     super(props);
-    this.state = { threatActorOpen: true };
+    this.state = { threats: [] };
   }
 
-  handleThreatActorToggle() {
-    this.setState({ threatActorOpen: !this.state.threatActorOpen });
+  searchThreats(event) {
+    fetchQuery(victimologyRightBarThreatActorsSearchQuery, {
+      search: event.target.value,
+      first: 10,
+    }).then((data) => {
+      const threatActors = pipe(
+        pathOr([], ['threatActors', 'edges']),
+        map(n => ({ label: n.node.name, value: n.node.id, type: n.node.type })),
+      )(data);
+      this.setState({ threats: union(this.state.threats, threatActors) });
+    });
+    fetchQuery(victimologyRightBarIntrusionSetsSearchQuery, {
+      search: event.target.value,
+      first: 10,
+    }).then((data) => {
+      const intrusionSets = pipe(
+        pathOr([], ['intrusionSets', 'edges']),
+        map(n => ({ label: n.node.name, value: n.node.id, type: n.node.type })),
+      )(data);
+      this.setState({ threats: union(this.state.threats, intrusionSets) });
+    });
   }
 
   render() {
-    const { t, classes } = this.props;
+    const {
+      t,
+      classes,
+      handleSelectThreat,
+      handleSelectTargetingType,
+      selectedTargetingTypes,
+      handleSelectTargetType,
+      selectedTargetTypes,
+    } = this.props;
     return (
       <Drawer variant='permanent' anchor='right' classes={{ paper: classes.drawerPaper }}>
         <div className={classes.toolbar}/>
-        <MenuList component='nav' classes={{ root: classes.menuList }} subheader={<ListSubheader classes={{ root: classes.subheader }} color='primary'>{t('Origins of the targeting')}</ListSubheader>}>
-          <MenuItem onClick={this.handleThreatActorToggle.bind(this)} dense={true}>
-            <ListItemIcon classes={{ root: classes.listIcon }}>
-              <Public/>
-            </ListItemIcon>
-            <ListItemText primary={t('Threat actors')} classes={{ root: classes.listText }}/>
-            {this.state.threatActorOpen ? <ExpandLess/> : <ExpandMore/>}
-          </MenuItem>
-          <Collapse in={this.state.threatActorOpen} timeout='auto' unmountOnExit={true}>
-            <QueryRenderer
-              query={victimologyRightBarThreatActorsQuery}
-              render={({ props }) => {
-                if (props && props.threatActors) {
-                  return (
-                    <MenuList component='div' disablePadding={true}>
-                      {props.threatActors.edges.map((threatActorEdge) => {
-                        const threatActor = threatActorEdge.node;
-                        return (
-                          <MenuItem
-                            key={threatActor.id}
-                            className={classes.nested}
-                            dense={true}
-                          >
-                            <Checkbox
-                              tabIndex={-1}
-                              disableRipple
-                            />
-                            <ListItemText primary={threatActor.name}/>
-                          </MenuItem>
-                        );
-                      })}
-                    </MenuList>
-                  );
-                }
-                return (
-                  <div> &nbsp; </div>
-                );
-              }}
-            />
-          </Collapse>
-          <MenuItem onClick={this.handleThreatActorToggle.bind(this)} dense={true}>
-            <ListItemIcon classes={{ root: classes.listIcon }}>
-              <Diamond/>
-            </ListItemIcon>
-            <ListItemText primary={t('Intrusion sets')} classes={{ root: classes.listText }}/>
-            {this.state.threatActorOpen ? <ExpandLess/> : <ExpandMore/>}
-          </MenuItem>
-          <Collapse in={this.state.threatActorOpen} timeout='auto' unmountOnExit={true}>
-            <QueryRenderer
-              query={victimologyRightBarIntrusionSetsQuery}
-              render={({ props }) => {
-                if (props && props.intrusionSets) {
-                  return (
-                    <MenuList component='div' disablePadding={true}>
-                      {props.intrusionSets.edges.map((intrusionSetEdge) => {
-                        const intrusionSet = intrusionSetEdge.node;
-                        return (
-                          <MenuItem
-                            key={intrusionSet.id}
-                            className={classes.nested}
-                            dense={true}
-                          >
-                            <Checkbox
-                              tabIndex={-1}
-                              disableRipple
-                            />
-                            <ListItemText primary={intrusionSet.name}/>
-                          </MenuItem>
-                        );
-                      })}
-                    </MenuList>
-                  );
-                }
-                return (
-                  <div> &nbsp; </div>
-                );
-              }}
-            />
-          </Collapse>
-        </MenuList>
-        <MenuList component='nav' classes={{ root: classes.menuList }} subheader={<ListSubheader classes={{ root: classes.subheader }} color='primary'>{t('Targeted entities types')}</ListSubheader>}>
-          <MenuItem onClick={this.handleThreatActorToggle.bind(this)} dense={true}>
-            <ListItemIcon classes={{ root: classes.listIcon }}>
-              <Public/>
-            </ListItemIcon>
-            <ListItemText primary={t('Threat actors')} classes={{ root: classes.listText }}/>
-            {this.state.threatActorOpen ? <ExpandLess/> : <ExpandMore/>}
-          </MenuItem>
-          <Collapse in={this.state.threatActorOpen} timeout='auto' unmountOnExit={true}>
-            <MenuList component='div' disablePadding={true}>
-              <MenuItem
-                className={classes.nested}
+        <Typography variant='h3' gutterBottom={true}>
+          {t('Origins of the targeting')}
+        </Typography>
+        <Formik
+          enableReinitialize={true}
+          initialValues={{ searchThreat: '' }}
+          render={() => (
+            <Form style={{ marginTop: -30 }}>
+              <Field
+                name='searchThreat'
+                component={Autocomplete}
+                labelDisplay={false}
+                multiple={false}
+                label={t('Search for a threat...')}
+                options={this.state.threats}
+                onInputChange={this.searchThreats.bind(this)}
+                onChange={handleSelectThreat.bind(this)}
+              />
+            </Form>
+          )}
+        />
+        <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          {t('Types of the targeting')}
+        </Typography>
+        <List className={classes.root}>
+          {targetingTypes.map((targetingType) => {
+            const selected = (targetingType === 'All' && selectedTargetingTypes === null)
+              || (selectedTargetingTypes !== null && selectedTargetingTypes.indexOf(targetingType) !== -1);
+            return (
+              <ListItem
+                key={targetingType}
                 dense={true}
+                button={true}
+                style={{ padding: 0 }}
+                onClick={handleSelectTargetingType.bind(this, targetingType)}
               >
-                <ListItemText inset primary='test'/>
-              </MenuItem>
-            </MenuList>
-          </Collapse>
-        </MenuList>
+                <Checkbox
+                  checked={selected}
+                  disableRipple={true}
+                />
+                <ListItemText primary={t(targetingType)}/>
+              </ListItem>
+            );
+          })}
+        </List>
+        <Typography variant='h3' gutterBottom={true} style={{ marginTop: 10 }}>
+          {t('Types of the targets')}
+        </Typography>
+        <List className={classes.root}>
+          {targetTypes.map((targetType) => {
+            const selected = (targetType === 'All' && selectedTargetTypes === null)
+              || (selectedTargetTypes !== null && selectedTargetTypes.indexOf(targetType) !== -1);
+            return (
+              <ListItem
+                key={targetType}
+                dense={true}
+                button={true}
+                style={{ padding: 0 }}
+                onClick={handleSelectTargetType.bind(this, targetType)}
+              >
+                <Checkbox
+                  checked={selected}
+                  disableRipple={true}
+                />
+                <ListItemText primary={t(targetType)}/>
+              </ListItem>
+            );
+          })}
+        </List>
       </Drawer>
     );
   }
@@ -192,6 +191,11 @@ class VictimologyRightBar extends Component {
 
 VictimologyRightBar.propTypes = {
   attackPatternId: PropTypes.string,
+  handleSelectThreat: PropTypes.func,
+  handleSelectTargetingType: PropTypes.func,
+  selectedTargetingTypes: PropTypes.array,
+  handleSelectTargetType: PropTypes.func,
+  selectedTargetTypes: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

@@ -21,7 +21,7 @@ const relationsTypesMapping = {
   'campaign_threat-actor': ['attributed-to'],
   'campaign_intrusion-set': ['attributed-to'],
   'campaign_attack-pattern': ['uses'],
-  campaign_county: ['targets'],
+  campaign_country: ['targets'],
   campaign_city: ['targets'],
   campaign_sector: ['targets'],
   campaign_organization: ['targets', 'attributed-to'],

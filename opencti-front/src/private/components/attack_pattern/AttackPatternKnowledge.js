@@ -32,7 +32,7 @@ const inversedRelations = [
 class AttackPatternKnowledgeComponent extends Component {
   render() {
     const { classes, attackPattern, location } = this.props;
-    const link = `/dashboard/knowledge/attackPatterns/${attackPattern.id}/knowledge`;
+    const link = `/dashboard/knowledge/attack_patterns/${attackPattern.id}/knowledge`;
     return (
       <div className={classes.container}>
         <AttackPatternHeader attackPattern={attackPattern} variant='noalias'/>

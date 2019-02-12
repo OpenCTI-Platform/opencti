@@ -42,7 +42,13 @@ class ToolComponent extends Component {
             <EntityStixRelationsChart entityId={tool.id} relationType='uses' />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityStixRelationsRadar entityId={tool.id} entityType='Kill-Chain-Phase' relationType='kill_chain_phases' field='phase_name'/>
+            <EntityStixRelationsRadar
+              entityId={tool.id}
+              entityType='Kill-Chain-Phase'
+              relationType='kill_chain_phases'
+              field='phase_name'
+              resolveInferences={true}
+            />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={tool.id}/>

@@ -16,7 +16,8 @@ import { itemColor } from '../../../utils/Colors';
 
 const styles = theme => ({
   paper: {
-    minHeight: '100%',
+    minHeight: 300,
+    height: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     backgroundColor: theme.palette.paper.background,
@@ -40,8 +41,8 @@ const renderCustomizedLabel = ({
 };
 
 const entityStixRelationsPieStixRelationDistributionQuery = graphql`
-    query EntityStixRelationsPieStixRelationDistributionQuery($fromId: String, $toTypes: [String], $relationType: String, $field: String!, $operation: StatsOperation!) {
-        stixRelationsDistribution(fromId: $fromId, toTypes: $toTypes, relationType: $relationType, field: $field, operation: $operation) {
+    query EntityStixRelationsPieStixRelationDistributionQuery($fromId: String, $toTypes: [String], $entityTypes: [String], $relationType: String, $resolveInferences: Boolean, $field: String!, $operation: StatsOperation!) {
+        stixRelationsDistribution(fromId: $fromId, toTypes: $toTypes, entityTypes: $entityTypes, relationType: $relationType, resolveInferences: $resolveInferences, field: $field, operation: $operation) {
             label,
             value
         }
@@ -51,11 +52,20 @@ const entityStixRelationsPieStixRelationDistributionQuery = graphql`
 class EntityStixRelationsPie extends Component {
   render() {
     const {
-      t, classes, entityId, entityType, relationType, field,
+      t,
+      classes,
+      entityId,
+      entityType,
+      relationType,
+      field,
+      entityTypes,
+      resolveInferences,
     } = this.props;
     const stixRelationsDistributionVariables = {
       fromId: entityId,
       toTypes: entityType ? [entityType] : null,
+      entityTypes: entityTypes || null,
+      resolveInferences,
       relationType,
       field,
       operation: 'count',
@@ -101,6 +111,8 @@ EntityStixRelationsPie.propTypes = {
   entityId: PropTypes.string,
   relationType: PropTypes.string,
   entityType: PropTypes.string,
+  resolveInferences: PropTypes.bool,
+  entityTypes: PropTypes.array,
   field: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

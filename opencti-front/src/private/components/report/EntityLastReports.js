@@ -55,8 +55,8 @@ const inlineStyles = {
 };
 
 const entityLastReportsQuery = graphql`
-    query EntityLastReportsQuery($objectId: String!, $first: Int) {
-        reports(objectId: $objectId, first: $first) {
+    query EntityLastReportsQuery($objectId: String!, $first: Int, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {
+        reports(objectId: $objectId, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
             edges {
                 node {
                     id
@@ -89,7 +89,9 @@ class EntityLastReports extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
             query={entityLastReportsQuery}
-            variables={{ objectId: entityId, first: 8 }}
+            variables={{
+              objectId: entityId, first: 8, orderBy: 'published', orderMode: 'desc',
+            }}
             render={({ props }) => {
               if (props && props.reports) {
                 return (

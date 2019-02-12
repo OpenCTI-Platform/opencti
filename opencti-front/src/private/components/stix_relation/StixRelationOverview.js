@@ -13,6 +13,7 @@ import Fab from '@material-ui/core/Fab';
 import { ArrowRightAlt, Edit } from '@material-ui/icons';
 import { itemColor } from '../../../utils/Colors';
 import { resolveLink } from '../../../utils/Entity';
+import { truncate } from '../../../utils/String';
 import inject18n from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
@@ -196,7 +197,7 @@ class StixRelationContainer extends Component {
               <div className={classes.type}>{t(`entity_${from.type}`)}</div>
             </div>
             <div className={classes.content}>
-              <span className={classes.name}>{from.name}</span>
+              <span className={classes.name}>{truncate(from.name, 120)}</span>
             </div>
           </div>
         </Link>
@@ -242,7 +243,7 @@ class StixRelationContainer extends Component {
               <div className={classes.type}>{t(`entity_${to.type}`)}</div>
             </div>
             <div className={classes.content}>
-              <span className={classes.name}>{to.name}</span>
+              <span className={classes.name}>{truncate(to.name, 120)}</span>
             </div>
           </div>
         </Link>

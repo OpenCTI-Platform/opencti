@@ -853,7 +853,7 @@ export const timeSeries = (query, options) => {
 };
 
 /**
- * Grakn generic timeseries
+ * Grakn generic distribution
  * @param query
  * @param options
  * @returns Promise

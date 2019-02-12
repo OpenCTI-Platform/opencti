@@ -193,6 +193,7 @@ class Autocomplete extends Component {
       onFocus,
       helperText,
       multiple,
+      labelDisplay,
     } = this.props;
     const errorText = errors[field.name];
     const hasError = dirty && errorText !== undefined;
@@ -208,7 +209,9 @@ class Autocomplete extends Component {
     };
 
     let displayLabel = false;
-    if (Array.isArray(values[field.name]) && values[field.name].length > 0) {
+    if (labelDisplay !== null) {
+      displayLabel = labelDisplay;
+    } else if (Array.isArray(values[field.name]) && values[field.name].length > 0) {
       displayLabel = true;
     } else if (!Array.isArray(values[field.name]) && values[field.name] !== '') {
       displayLabel = true;

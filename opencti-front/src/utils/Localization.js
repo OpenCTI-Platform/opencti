@@ -10,6 +10,7 @@ const i18n = {
       'You are not allowed to do this.': 'Vous n\'ête pas autorisés à faire cette action.',
       // Interface
       Search: 'Rechercher',
+      'Search for a threat...': 'Rechercher une menace...',
       'Do you want to delete this user?': 'Souahitez-vous supprimer cet utilisateur ?',
       'Do you want to delete this group?': 'Souahitez-vous supprimer ce groupe ?',
       'Do you want to delete this threat actor?': 'Souhaitez-vous supprimer cet acteur ?',
@@ -304,6 +305,7 @@ const i18n = {
       'API key': 'Clé d\'API',
       Playground: 'Playground',
       Details: 'Détails',
+      All: 'Tout',
       // Explore
       'Kill chains': 'Kill chains',
       'Explore the victims and the targets of the dataset through space and time.': 'Explorer les victimes et les cibles des données à travers l\'espace et le temps',
@@ -313,6 +315,8 @@ const i18n = {
       'Explore the vulnerabilities used by entities through time and kill chain phases.': 'Explorer les vulnérabilités utilisées par les entités à travers le temps et les phases de la kill chain.',
       'Explore the observables of the dataset though time to visualize clusters and correlations.': 'Explorer les observables des données à travers le temps pour visualiser des clusters et des corrélations.',
       'Origins of the targeting': 'Origines du ciblage',
+      'Types of the targeting': 'Types de ciblage',
+      'Types of the targets': 'Types de cibles',
       'Targeted entities types': 'Types d\'entités ciblées',
       'Targeted entities through time': 'Ciblages d\'entités à travers le temps',
       // Types
@@ -334,6 +338,8 @@ const i18n = {
       'entity_course-of-action': 'Mesure de mitigation',
       'entity_Kill-Chain-Phase': 'phases de kill chain',
       'entity_Stix-Domain-Entity': 'types d\'entités',
+      entity_Sector: 'secteurs d\'activité',
+      entity_Country: 'pays',
       report_internal: 'Rapport interne',
       report_external: 'Source externe',
       // Relations
@@ -405,6 +411,8 @@ const i18n = {
       'entity_course-of-action': 'Course of action',
       'entity_Kill-Chain-Phase': 'kill chain phases',
       'entity_Stix-Domain-Entity': 'entities types',
+      entity_Sector: 'activity sectors',
+      entity_Country: 'countries',
       report_internal: 'Internal report',
       report_external: 'External report',
       // Relations

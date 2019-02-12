@@ -127,6 +127,7 @@ class EntityStixRelations extends Component {
       openToTypes: false,
       toTypes: ['All'],
       inferred: true,
+      resolveInferences: false,
     };
   }
 
@@ -195,12 +196,14 @@ class EntityStixRelations extends Component {
         firstSeen: value,
         firstSeenStart: parse(startDate).format(),
         firstSeenStop: parse(endDate).format(),
+        resolveInferences: true,
       });
     } else {
       this.setState({
         firstSeen: value,
         firstSeenStart: null,
         firstSeenStop: null,
+        resolveInferences: false,
       });
     }
   }
@@ -218,10 +221,10 @@ class EntityStixRelations extends Component {
     if (includes(0, this.state.weights) || !includes(0, value)) {
       const weights = filter(v => v !== 0, value);
       if (weights.length > 0) {
-        return this.setState({ openWeights: false, weights });
+        return this.setState({ openWeights: false, weights, resolveInferences: true });
       }
     }
-    return this.setState({ openWeights: false, weights: [0] });
+    return this.setState({ openWeights: false, weights: [0], resolveInferences: false });
   }
 
   handleChangeInferred() {
@@ -239,6 +242,7 @@ class EntityStixRelations extends Component {
     }
 
     const paginationOptions = {
+      resolveInferences: this.state.resolveInferences,
       inferred: this.state.inferred,
       toTypes: includes('All', this.state.toTypes) ? targetEntityTypes : this.state.toTypes,
       fromId: entityId,

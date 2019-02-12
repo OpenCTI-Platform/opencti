@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, filter, head, includes, map,
+  compose, filter, head, includes, map, equals,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { DiagramEngine } from 'storm-react-diagrams';
@@ -81,7 +81,7 @@ class StixDomainEntityKnowledge extends Component {
       inferred: true,
       openToTypes: false,
       openWeights: false,
-      toTypes: ['All'],
+      toTypes: ['Threat-Actor', 'Intrusion-Set', 'Campaign'],
       firstSeen: 'All years',
       firstSeenFirstYear: currentYear(),
       firstSeenStart: null,
@@ -113,8 +113,10 @@ class StixDomainEntityKnowledge extends Component {
       && firstSeenStart === null
       && firstSeenStop === null
       && includes(0, weights)
-      && includes('All', toTypes)) {
+      && equals(toTypes, ['Threat-Actor', 'Intrusion-Set', 'Campaign'])) {
       return true;
+    } else {
+      return false;
     }
   }
 

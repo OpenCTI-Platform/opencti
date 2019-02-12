@@ -68,6 +68,12 @@ const intrusionSetEditionIdentityFocus = graphql`
 `;
 
 const intrusionSetValidation = t => Yup.object().shape({
+  first_seen: Yup.date()
+    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .required(t('This field is required')),
+  last_seen: Yup.date()
+    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .required(t('This field is required')),
   sophistication: Yup.string()
     .required(t('This field is required')),
   resource_level: Yup.string()

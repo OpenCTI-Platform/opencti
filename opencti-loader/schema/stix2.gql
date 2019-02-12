@@ -880,13 +880,13 @@ define
     };
 
     # Threat-Actor => object_refs => Report through Intrusion-Set
-    "ThreatActorObjectRefsReportThroughIntrusionSetRule" sub rule
-    when {
-      $intrusionSet isa "Intrusion-Set";
-      $report isa "Report";
-      $threatActor isa "Threat-Actor";
-      ("so": $intrusionSet, "knowledge_aggregation": $report) isa object_refs;
-      ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
-    } then {
-      ("so": $threatActor, "knowledge_aggregation": $report) isa "object_refs";
-    };
+    #"ThreatActorObjectRefsReportThroughIntrusionSetRule" sub rule
+    #when {
+    #  $intrusionSet isa "Intrusion-Set";
+    #  $report isa "Report";
+    #  $threatActor isa "Threat-Actor";
+    #  ("so": $intrusionSet, "knowledge_aggregation": $report) isa object_refs;
+    #  ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
+    #} then {
+    #  ("so": $threatActor, "knowledge_aggregation": $report) isa "object_refs";
+    #};

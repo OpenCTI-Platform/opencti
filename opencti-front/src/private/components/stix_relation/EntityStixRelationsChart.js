@@ -18,7 +18,8 @@ import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
   paper: {
-    minHeight: '100%',
+    minHeight: 340,
+    height: '100%',
     margin: '10px 0 0 0',
     padding: '0 0 10px 0',
     backgroundColor: theme.palette.paper.background,
@@ -28,8 +29,8 @@ const styles = theme => ({
 });
 
 const entityStixRelationsChartStixRelationTimeSeriesQuery = graphql`
-    query EntityStixRelationsChartStixRelationTimeSeriesQuery($fromId: String, $relationType: String, $toTypes: [String], $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
-        stixRelationsTimeSeries(fromId: $fromId, relationType: $relationType, toTypes: $toTypes, field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
+    query EntityStixRelationsChartStixRelationTimeSeriesQuery($fromId: String, $entityTypes: [String] $relationType: String, $resolveInferences: Boolean, $toTypes: [String], $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
+        stixRelationsTimeSeries(fromId: $fromId, entityTypes: $entityTypes, relationType: $relationType, resolveInferences: $resolveInferences, toTypes: $toTypes, field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
             date,
             value
         }
@@ -39,10 +40,19 @@ const entityStixRelationsChartStixRelationTimeSeriesQuery = graphql`
 class EntityStixRelationsChart extends Component {
   render() {
     const {
-      t, classes, entityId, toTypes, relationType, title, md,
+      t,
+      classes,
+      entityId,
+      toTypes,
+      relationType,
+      title,
+      md,
+      resolveInferences,
+      entityTypes,
     } = this.props;
     const stixRelationsTimeSeriesVariables = {
       fromId: entityId || null,
+      entityTypes: entityTypes || null,
       relationType,
       toTypes: toTypes || null,
       field: 'first_seen',
@@ -50,6 +60,7 @@ class EntityStixRelationsChart extends Component {
       startDate: yearsAgo(3),
       endDate: now(),
       interval: 'month',
+      resolveInferences,
     };
     return (
       <div style={{ height: '100%' }}>
@@ -89,6 +100,8 @@ class EntityStixRelationsChart extends Component {
 EntityStixRelationsChart.propTypes = {
   entityId: PropTypes.string,
   relationType: PropTypes.string,
+  resolveInferences: PropTypes.bool,
+  entityTypes: PropTypes.array,
   toTypes: PropTypes.array,
   title: PropTypes.string,
   classes: PropTypes.object,

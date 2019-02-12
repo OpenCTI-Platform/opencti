@@ -22,11 +22,36 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args =>
-  paginateRelationships('match $rel($from, $to) isa stix_relation', args);
+export const findAll = args => {
+  if (args.resolveInferences) {
+    return paginateRelationships(
+      'match $from; $linked($from, $entity) isa stix_relation; $rel($entity, $to) isa stix_relation',
+      args
+    );
+  }
+  return paginateRelationships(
+    'match $rel($from, $to) isa stix_relation',
+    args
+  );
+};
 
-export const stixRelationsTimeSeries = args =>
-  timeSeries(
+export const stixRelationsTimeSeries = args => {
+  if (args.resolveInferences) {
+    return timeSeries(
+      `match $from; $linked($from, $entity) isa stix_relation; $x($entity, $to) isa stix_relation; ${
+        args.toTypes
+          ? `${join(
+              ' ',
+              map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
+            )} { $to isa ${head(args.toTypes)}; };`
+          : ''
+      } ${
+        args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
+      }`,
+      args
+    );
+  }
+  return timeSeries(
     `match $x($from, $to) isa stix_relation; ${
       args.toTypes
         ? `${join(
@@ -39,9 +64,25 @@ export const stixRelationsTimeSeries = args =>
     }`,
     args
   );
+};
 
-export const stixRelationsDistribution = args =>
-  distribution(
+export const stixRelationsDistribution = args => {
+  if (args.resolveInferences) {
+    return distribution(
+      `match $from; $linked($from, $entity) isa stix_relation; $rel($entity, $x) isa stix_relation; ${
+        args.toTypes
+          ? `${join(
+              ' ',
+              map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
+            )} { $x isa ${head(args.toTypes)}; };`
+          : ''
+      } ${
+        args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
+      }`,
+      args
+    );
+  }
+  return distribution(
     `match $rel($from, $x) isa stix_relation; ${
       args.toTypes
         ? `${join(
@@ -54,15 +95,51 @@ export const stixRelationsDistribution = args =>
     }`,
     args
   );
+};
 
-export const findByType = args =>
-  paginateRelationships(
+export const findByType = args => {
+  if (args.resolveInferences) {
+    return paginateRelationships(
+      `match $from; $linked($from, $entity) isa stix_relation; $rel($entity, $to) isa ${
+        args.relationType
+      }`,
+      args
+    );
+  }
+  return paginateRelationships(
     `match $rel($from, $to) isa ${args.relationType}`,
     args
   );
-
-export const stixRelationsTimeSeriesByType = args =>
-  timeSeries(
+};
+export const stixRelationsTimeSeriesByType = args => {
+  if (args.resolveInferences) {
+    return timeSeries(
+      `match $from; $linked($from, $entity) isa stix_relation; $x($entity, $to) isa ${
+        args.relationType
+      }; ${
+        args.entityTypes
+          ? `${join(
+              ' ',
+              map(
+                entityType => `{ $entity isa ${entityType}; } or`,
+                args.entityTypes
+              )
+            )} { $entity isa ${head(args.entityTypes)}; };`
+          : ''
+      } ${
+        args.toTypes
+          ? `${join(
+              ' ',
+              map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
+            )} { $to isa ${head(args.toTypes)}; };`
+          : ''
+      } ${
+        args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
+      }`,
+      args
+    );
+  }
+  return timeSeries(
     `match $x($from, $to) isa ${args.relationType}; ${
       args.toTypes
         ? `${join(
@@ -75,9 +152,37 @@ export const stixRelationsTimeSeriesByType = args =>
     }`,
     args
   );
+};
 
-export const stixRelationDistributionByType = args =>
-  distribution(
+export const stixRelationDistributionByType = args => {
+  if (args.resolveInferences) {
+    return distribution(
+      `match $from; $linked($from, $entity) isa stix_relation; $rel($entity, $x) isa ${
+        args.relationType
+      }; ${
+        args.entityTypes
+          ? `${join(
+              ' ',
+              map(
+                entityType => `{ $entity isa ${entityType}; } or`,
+                args.entityTypes
+              )
+            )} { $entity isa ${head(args.entityTypes)}; };`
+          : ''
+      } ${
+        args.toTypes
+          ? `${join(
+              ' ',
+              map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
+            )} { $x isa ${head(args.toTypes)}; };`
+          : ''
+      } ${
+        args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
+      }`,
+      args
+    );
+  }
+  return distribution(
     `match $rel($from, $x) isa ${args.relationType}; ${
       args.toTypes
         ? `${join(
@@ -90,6 +195,7 @@ export const stixRelationDistributionByType = args =>
     }`,
     args
   );
+};
 
 export const findById = stixRelationId => loadRelationById(stixRelationId);
 export const findByIdInferred = stixRelationId =>
