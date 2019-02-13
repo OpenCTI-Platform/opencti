@@ -39,7 +39,12 @@ class ToolComponent extends Component {
         </Grid>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
           <Grid item={true} xs={4}>
-            <EntityStixRelationsChart entityId={tool.id} relationType='uses' />
+            <EntityStixRelationsChart
+              entityId={tool.id}
+              relationType='uses'
+              resolveInferences={true}
+              resolveRelationType='attributed-to'
+            />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsRadar
@@ -48,6 +53,7 @@ class ToolComponent extends Component {
               relationType='kill_chain_phases'
               field='phase_name'
               resolveInferences={true}
+              resolveRelationType='attributed-to'
             />
           </Grid>
           <Grid item={true} xs={4}>

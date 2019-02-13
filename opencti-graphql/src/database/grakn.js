@@ -13,7 +13,9 @@ import {
   pipe,
   pluck,
   toPairs,
-  values
+  values,
+  uniqBy,
+  path
 } from 'ramda';
 import moment from 'moment';
 import { offsetToCursor } from 'graphql-relay';
@@ -817,8 +819,12 @@ export const paginateRelationships = (query, options, extraRel = null) => {
   const count = qkSingleValue(`${finalQuery} aggregate count;`);
   const elements = qkRel(
     `${finalQuery} ${
-      orderBy && !inferred
-        ? `$rel has ${orderBy} $o; order by $o ${orderMode};`
+      orderBy
+        ? `${
+            orderBy === 'first_seen' && firstSeenStart
+              ? `order by $fs ${orderMode}`
+              : `$rel has ${orderBy} $o; order by $o ${orderMode}`
+          };`
         : ''
     } offset ${offset}; limit ${first}; get;`,
     'rel',

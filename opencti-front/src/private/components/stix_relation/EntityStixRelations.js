@@ -100,8 +100,8 @@ const inlineStyles = {
 };
 
 const firstStixRelationQuery = graphql`
-    query EntityStixRelationsFirstStixRelationQuery($toTypes: [String], $fromId: String, $relationType: String, $first: Int, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
-        stixRelations(toTypes: $toTypes, fromId: $fromId, relationType: $relationType, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
+    query EntityStixRelationsFirstStixRelationQuery($toTypes: [String], $fromId: String, $relationType: String, $inferred: Boolean, $resolveInferences: Boolean, $resolveRelationType: String, $first: Int, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
+        stixRelations(toTypes: $toTypes, fromId: $fromId, relationType: $relationType, inferred: $inferred, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
             edges {
                 node {
                     id
@@ -144,6 +144,7 @@ class EntityStixRelations extends Component {
       first: 1,
       orderBy: 'first_seen',
       orderMode: 'asc',
+      inferred: true,
     }).then((data) => {
       if (data.stixRelations.edges.length > 0) {
         this.setState({ firstSeenFirstYear: yearFormat(head(data.stixRelations.edges).node.first_seen) });
@@ -255,7 +256,7 @@ class EntityStixRelations extends Component {
       firstSeenStart: this.state.firstSeenStart || null,
       firstSeenStop: this.state.firstSeenStop || null,
       weights: includes(0, this.state.weights) ? null : this.state.weights,
-      orderBy: this.state.sortBy,
+      orderBy: this.state.resolveInferences ? this.state.sortBy : null,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
 
@@ -362,9 +363,9 @@ class EntityStixRelations extends Component {
               <div>
                 {this.SortHeader('name', 'Name', false)}
                 {this.SortHeader('type', 'Entity type', false)}
-                {this.SortHeader('first_seen', 'First obs.', !this.state.inferred)}
-                {this.SortHeader('last_seen', 'Last obs.', !this.state.inferred)}
-                {this.SortHeader('weight', 'Confidence level', !this.state.inferred)}
+                {this.SortHeader('first_seen', 'First obs.', this.state.resolveInferences)}
+                {this.SortHeader('last_seen', 'Last obs.', this.state.resolveInferences)}
+                {this.SortHeader('weight', 'Confidence level', this.state.resolveInferences)}
               </div>
             }/>
             <ListItemSecondaryAction>

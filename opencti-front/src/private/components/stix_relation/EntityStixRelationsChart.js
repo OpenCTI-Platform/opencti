@@ -29,8 +29,8 @@ const styles = theme => ({
 });
 
 const entityStixRelationsChartStixRelationTimeSeriesQuery = graphql`
-    query EntityStixRelationsChartStixRelationTimeSeriesQuery($fromId: String, $entityTypes: [String] $relationType: String, $resolveInferences: Boolean, $toTypes: [String], $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
-        stixRelationsTimeSeries(fromId: $fromId, entityTypes: $entityTypes, relationType: $relationType, resolveInferences: $resolveInferences, toTypes: $toTypes, field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
+    query EntityStixRelationsChartStixRelationTimeSeriesQuery($fromId: String, $entityTypes: [String] $relationType: String, $resolveRelationType: String, $resolveInferences: Boolean, $toTypes: [String], $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
+        stixRelationsTimeSeries(fromId: $fromId, entityTypes: $entityTypes, relationType: $relationType, resolveRelationType: $resolveRelationType, resolveInferences: $resolveInferences, toTypes: $toTypes, field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
             date,
             value
         }
@@ -49,6 +49,7 @@ class EntityStixRelationsChart extends Component {
       md,
       resolveInferences,
       entityTypes,
+      resolveRelationType,
     } = this.props;
     const stixRelationsTimeSeriesVariables = {
       fromId: entityId || null,
@@ -61,6 +62,7 @@ class EntityStixRelationsChart extends Component {
       endDate: now(),
       interval: 'month',
       resolveInferences,
+      resolveRelationType,
     };
     return (
       <div style={{ height: '100%' }}>
@@ -101,6 +103,7 @@ EntityStixRelationsChart.propTypes = {
   entityId: PropTypes.string,
   relationType: PropTypes.string,
   resolveInferences: PropTypes.bool,
+  resolveRelationType: PropTypes.string,
   entityTypes: PropTypes.array,
   toTypes: PropTypes.array,
   title: PropTypes.string,

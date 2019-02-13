@@ -77,6 +77,7 @@ class Victimology extends Component {
             toTypes={['Identity']}
             title='Targeted entities through time'
             resolveInferences={resolveInference}
+            resolveRelationType='attributed-to'
           />
           <Grid container={true} spacing={16} style={{ marginTop: 20 }}>
             <Grid item={true} xs={6}>
@@ -87,6 +88,7 @@ class Victimology extends Component {
                 relationType='targets'
                 field='name'
                 resolveInferences={resolveInference}
+                resolveRelationType='attributed-to'
               />
             </Grid>
             <Grid item={true} xs={6}>
@@ -97,6 +99,7 @@ class Victimology extends Component {
                 relationType='targets'
                 field='name'
                 resolveInferences={resolveInference}
+                resolveRelationType='attributed-to'
               />
             </Grid>
           </Grid>

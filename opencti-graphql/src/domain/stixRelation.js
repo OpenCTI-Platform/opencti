@@ -27,7 +27,7 @@ export const findAll = args => {
     return paginateRelationships(
       `match $from; $linked($from, $entity) isa ${
         args.resolveRelationType
-      }; $rel($entity, $to) isa stix_relation`,
+      }; { $rel($entity, $to) isa stix_relation; } or { $rel($from, $to) isa stix_relation; }`,
       args
     );
   }
@@ -42,7 +42,7 @@ export const stixRelationsTimeSeries = args => {
     return timeSeries(
       `match $from; $linked($from, $entity) isa ${
         args.resolveRelationType
-      }; $x($entity, $to) isa stix_relation; ${
+      }; { $x($entity, $to) isa stix_relation; } or { $x($from, $to) isa stix_relation; }; ${
         args.toTypes
           ? `${join(
               ' ',
@@ -75,7 +75,7 @@ export const stixRelationsDistribution = args => {
     return distribution(
       `match $from; $linked($from, $entity) isa ${
         args.resolveRelationType
-      }; $rel($entity, $x) isa stix_relation; ${
+      }; { $rel($entity, $x) isa stix_relation; } or { $rel($from, $x) isa stix_relation; }; ${
         args.toTypes
           ? `${join(
               ' ',
@@ -108,7 +108,9 @@ export const findByType = args => {
     return paginateRelationships(
       `match $from; $linked($from, $entity) isa ${
         args.resolveRelationType
-      }; $rel($entity, $to) isa ${args.relationType}`,
+      }; { $rel($entity, $to) isa ${
+        args.relationType
+      }; } or { $rel($from, $to) isa ${args.relationType}; }`,
       args
     );
   }
@@ -122,7 +124,9 @@ export const stixRelationsTimeSeriesByType = args => {
     return timeSeries(
       `match $from; $linked($from, $entity) isa ${
         args.resolveRelationType
-      }; $x($entity, $to) isa ${args.relationType}; ${
+      }; { $x($entity, $to) isa ${
+        args.relationType
+      }; } or { $x($from, $to) isa ${args.relationType}; }; ${
         args.entityTypes
           ? `${join(
               ' ',
@@ -165,7 +169,9 @@ export const stixRelationDistributionByType = args => {
     return distribution(
       `match $from; $linked($from, $entity) isa ${
         args.resolveRelationType
-      }; $rel($entity, $x) isa ${args.relationType}; ${
+      }; { $rel($entity, $x) isa ${
+        args.relationType
+      }; } or { $rel($from, $x) isa ${args.relationType}; }; ${
         args.entityTypes
           ? `${join(
               ' ',

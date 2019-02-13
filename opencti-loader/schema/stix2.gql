@@ -832,52 +832,52 @@ define
     };
 
     # Kill-Chain-Phase => kill_chain_phases => Intrusion-Set through Attack-Pattern
-    "KillChainPhaseKillChainPhasesIntrusionSetThroughAttackPatternRule" sub rule
-    when {
-      $attackPattern isa "Attack-Pattern";
-      $intrusionSet isa "Intrusion-Set";
-      $killChainPhase isa "Kill-Chain-Phase";
-      ("phase_belonging": $attackPattern, "kill_chain_phase": $killChainPhase) isa kill_chain_phases;
-      ("user": $intrusionSet, "usage": $attackPattern) isa uses;
-    } then {
-      ("phase_belonging": $intrusionSet, "kill_chain_phase": $killChainPhase) isa "kill_chain_phases";
-    };
+    #"KillChainPhaseKillChainPhasesIntrusionSetThroughAttackPatternRule" sub rule
+    #when {
+    #  $attackPattern isa "Attack-Pattern";
+    #  $intrusionSet isa "Intrusion-Set";
+    #  $killChainPhase isa "Kill-Chain-Phase";
+    #  ("phase_belonging": $attackPattern, "kill_chain_phase": $killChainPhase) isa kill_chain_phases;
+    #  ("user": $intrusionSet, "usage": $attackPattern) isa uses;
+    #} then {
+    #  ("phase_belonging": $intrusionSet, "kill_chain_phase": $killChainPhase) isa "kill_chain_phases";
+    #};
 
     # Kill-Chain-Phase => kill_chain_phases =>Incident through Attack-Pattern
-    "KillChainPhaseKillChainPhasesIncidentThroughAttackPatternRule" sub rule
-    when {
-      $attackPattern isa "Attack-Pattern";
-      $incident isa "Incident";
-      $killChainPhase isa "Kill-Chain-Phase";
-      ("phase_belonging": $attackPattern, "kill_chain_phase": $killChainPhase) isa kill_chain_phases;
-      ("user": $incident, "usage": $attackPattern) isa uses;
-    } then {
-      ("phase_belonging": $incident, "kill_chain_phase": $killChainPhase) isa "kill_chain_phases";
-    };
+    #"KillChainPhaseKillChainPhasesIncidentThroughAttackPatternRule" sub rule
+    #when {
+    #  $attackPattern isa "Attack-Pattern";
+    #  $incident isa "Incident";
+    #  $killChainPhase isa "Kill-Chain-Phase";
+    #  ("phase_belonging": $attackPattern, "kill_chain_phase": $killChainPhase) isa kill_chain_phases;
+    #  ("user": $incident, "usage": $attackPattern) isa uses;
+    #} then {
+    #  ("phase_belonging": $incident, "kill_chain_phase": $killChainPhase) isa "kill_chain_phases";
+    #};
 
     # Kill-Chain-Phase => kill_chain_phases => Malware through Attack-Pattern
-    "KillChainPhaseKillChainPhasesMalwareThroughAttackPatternRule" sub rule
-    when {
-      $attackPattern isa "Attack-Pattern";
-      $malware isa "Malware";
-      $killChainPhase isa "Kill-Chain-Phase";
-      ("phase_belonging": $attackPattern, "kill_chain_phase": $killChainPhase) isa kill_chain_phases;
-      ("user": $malware, "usage": $attackPattern) isa uses;
-    } then {
-      ("phase_belonging": $malware, "kill_chain_phase": $killChainPhase) isa "kill_chain_phases";
-    };
+    #"KillChainPhaseKillChainPhasesMalwareThroughAttackPatternRule" sub rule
+    #when {
+    #  $attackPattern isa "Attack-Pattern";
+    #  $malware isa "Malware";
+    #  $killChainPhase isa "Kill-Chain-Phase";
+    #  ("phase_belonging": $attackPattern, "kill_chain_phase": $killChainPhase) isa kill_chain_phases;
+    #  ("user": $malware, "usage": $attackPattern) isa uses;
+    #} then {
+    #  ("phase_belonging": $malware, "kill_chain_phase": $killChainPhase) isa "kill_chain_phases";
+    #};
 
     # Kill-Chain-Phase => kill_chain_phases => Report through Attack-Pattern
-    "KillChainPhaseKillChainPhasesReportThroughAttackPatternRule" sub rule
-    when {
-      $attackPattern isa "Attack-Pattern";
-      $report isa "Report";
-      $killChainPhase isa "Kill-Chain-Phase";
-      ("phase_belonging": $attackPattern, "kill_chain_phase": $killChainPhase) isa kill_chain_phases;
-      ("knowledge_aggregation": $report, "so": $attackPattern) isa object_refs;
-    } then {
-      ("phase_belonging": $report, "kill_chain_phase": $killChainPhase) isa "kill_chain_phases";
-    };
+    #"KillChainPhaseKillChainPhasesReportThroughAttackPatternRule" sub rule
+    #when {
+    #  $attackPattern isa "Attack-Pattern";
+    #  $report isa "Report";
+    #  $killChainPhase isa "Kill-Chain-Phase";
+    #  ("phase_belonging": $attackPattern, "kill_chain_phase": $killChainPhase) isa kill_chain_phases;
+    #  ("knowledge_aggregation": $report, "so": $attackPattern) isa object_refs;
+    #} then {
+    #  ("phase_belonging": $report, "kill_chain_phase": $killChainPhase) isa "kill_chain_phases";
+    #};
 
     # Threat-Actor => object_refs => Report through Intrusion-Set
     #"ThreatActorObjectRefsReportThroughIntrusionSetRule" sub rule

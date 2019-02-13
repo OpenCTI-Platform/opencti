@@ -49,6 +49,7 @@ class IntrusionSetComponent extends Component {
               relationType='kill_chain_phases'
               field='phase_name'
               resolveInferences={true}
+              resolveRelationType='uses'
             />
           </Grid>
           <Grid item={true} xs={4}>

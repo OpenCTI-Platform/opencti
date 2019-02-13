@@ -48,6 +48,7 @@ class ReportComponent extends Component {
               relationType='kill_chain_phases'
               field='phase_name'
               resolveInferences={true}
+              resolveRelationType='object_refs'
             />
           </Grid>
           <Grid item={true} xs={4}>
