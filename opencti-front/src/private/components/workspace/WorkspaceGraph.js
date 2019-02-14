@@ -412,7 +412,6 @@ class WorkspaceGraphComponent extends Component {
 
   handleLinksChange(event) {
     if (event.isCreated === true) {
-      // handle link creation
       event.link.addListener({
         targetPortChanged: this.handleLinkCreation.bind(this),
       });

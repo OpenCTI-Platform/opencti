@@ -168,12 +168,12 @@ class Dashboard extends Component {
             <Card raised={true} classes={{ root: classes.card }} style={{ height: 120 }}>
               <CardContent>
                 <div className={classes.number}>
-                  5 456
+                  6 719
                 </div>
                 <div className={classes.diff}>
                   <ArrowUpward color='inherit' classes={{ root: classes.diffIcon }}/>
                   <div className={classes.diffNumber}>
-                    5 123
+                    248
                   </div>
                   <div className={classes.diffDescription}>
                     ({t('last 24h')})
@@ -191,12 +191,12 @@ class Dashboard extends Component {
             <Card raised={true} classes={{ root: classes.card }} style={{ height: 120 }}>
               <CardContent>
                 <div className={classes.number}>
-                  849
+                  1 946
                 </div>
                 <div className={classes.diff}>
                   <ArrowUpward color='inherit' classes={{ root: classes.diffIcon }}/>
                   <div className={classes.diffNumber}>
-                    5
+                    8
                   </div>
                   <div className={classes.diffDescription}>
                     ({t('last 24h')})

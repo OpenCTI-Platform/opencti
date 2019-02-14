@@ -36,7 +36,7 @@ class EntityLabelWidget extends Component {
       );
     }
     return (
-      <div className={classes.itemInferred}>
+      <div className={classes.item}>
         <strong>{extras.length} {t('relations')}</strong>
       </div>
     );

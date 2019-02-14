@@ -320,15 +320,8 @@ class ReportKnowledgeGraphComponent extends Component {
         currentLinksPairs);
         if (filteredCurrentLinks.length === 0) {
           if (link.extras && link.extras.relation) {
-            commitMutation({
-              mutation: reportMutationRelationDelete,
-              variables: {
-                id: this.props.report.id,
-                relationId: link.extras.objectRefId,
-              },
-            });
             fetchQuery(reportKnowledgeGraphCheckRelationQuery, { id: link.extras.relation.id }).then((data) => {
-              if (data.stixRelation.reports.edges.length === 0) {
+              if (data.stixRelation.reports.edges.length === 1) {
                 commitMutation({
                   mutation: stixRelationEditionDeleteMutation,
                   variables: {
@@ -336,6 +329,13 @@ class ReportKnowledgeGraphComponent extends Component {
                   },
                 });
               }
+              commitMutation({
+                mutation: reportMutationRelationDelete,
+                variables: {
+                  id: this.props.report.id,
+                  relationId: link.extras.objectRefId,
+                },
+              });
             });
           }
         }

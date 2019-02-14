@@ -44,8 +44,8 @@ class CountryKnowledgeComponent extends Component {
           }/>
           {location.pathname.includes('overview') ? <StixDomainEntityKnowledge stixDomainEntityId={country.id}/> : ''}
           {location.pathname.includes('organizations') ? <EntityStixRelations entityId={country.id} relationType='localization' targetEntityTypes={['Organization']} entityLink={link}/> : ''}
-          {location.pathname.includes('threats') ? <EntityStixRelations entityId={country.id} relationType='targets' targetEntityTypes={['Identity', 'Intrusion-Set', 'Campaign', 'Incident', 'Malware']} entityLink={link}/> : ''}
-          {location.pathname.includes('attribution') ? <EntityStixRelations entityId={country.id} relationType='attributed-to' targetEntityTypes={['Identity']} entityLink={link}/> : ''}
+          {location.pathname.includes('threats') ? <EntityStixRelations resolveRelationType='attributed-to' entityId={country.id} relationType='targets' targetEntityTypes={['Identity', 'Intrusion-Set', 'Campaign', 'Incident', 'Malware']} entityLink={link}/> : ''}
+          {location.pathname.includes('attribution') ? <EntityStixRelations resolveRelationType='attributed-to' entityId={country.id} relationType='attributed-to' targetEntityTypes={['Identity']} entityLink={link}/> : ''}
           {location.pathname.includes('entities') ? <EntityStixRelations entityId={country.id} relationType='related-to' targetEntityTypes={['Identity']} entityLink={link}/> : ''}
         </div>
       </div>

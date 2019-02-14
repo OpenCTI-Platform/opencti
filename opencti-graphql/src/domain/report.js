@@ -57,7 +57,7 @@ export const findByEntity = args => {
     return paginate(
       `match $r isa Report; ${
         args.reportClass
-          ? `$r has report_class "${prepareString(args.reportClass)}"`
+          ? `$r has report_class "${prepareString(args.reportClass)};"`
           : ''
       } $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
         $so id ${args.objectId};
