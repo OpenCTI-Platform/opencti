@@ -120,13 +120,13 @@ export const statsDateAttributes = [
 
 // Instance of Axios to make Grakn API Calls.
 const client = new Grakn(conf.get('grakn:driver'));
+const session = client.session('grakn');
 const axiosInstance = axios.create({
   baseURL: conf.get('grakn:baseURL'),
   timeout: conf.get('grakn:timeout')
 });
 
 export const takeTx = async () => {
-  const session = await client.session('grakn');
   const wTx = await session.transaction(Grakn.txType.WRITE);
   return wTx;
 };
@@ -425,7 +425,6 @@ export const loadRelationInferredById = async id => {
   const fromKey = queryRegex[1];
   const toKey = queryRegex[2];
   const relationType = queryRegex[3];
-  const session = await client.session('grakn');
   const wTx = await session.transaction(Grakn.txType.WRITE);
   const answerIterator = await wTx.query(query);
   const answer = await answerIterator.next();
@@ -496,7 +495,6 @@ export const loadRelationInferredById = async id => {
   });
 
   await wTx.close();
-  await session.close();
 
   return Promise.all([
     relationPromise,
@@ -520,14 +518,10 @@ export const loadRelationInferredById = async id => {
  * @param transaction
  * @returns the complete instance
  */
-export const editInputTx = async (id, input, transaction) => {
+export const editInputTx = async (id, input) => {
   const { key, value } = input; // value can be multi valued
   // 00. If the transaction already exist, just continue the process
-  let wTx = transaction;
-  if (!wTx) {
-    const session = await client.session('grakn');
-    wTx = await session.transaction(Grakn.txType.WRITE);
-  }
+  const wTx = await takeTx();
 
   // 01. We need to fetch the type to quote the string if needed.
   const labelTypeQuery = `match $x label "${key}" sub attribute; get;`;
@@ -578,26 +572,27 @@ export const editInputTx = async (id, input, transaction) => {
   const graknValues = join(' ', map(val => `has ${key} ${val}`, typedValues));
   const createQuery = `match $m id ${id}; insert $m ${graknValues};`;
   await wTx.query(createQuery);
+  await wTx.commit();
 
   // TODO Remove this after https://github.com/graknlabs/grakn/issues/4828
   if (includes(key, lowerCaseAttributes)) {
     const lowerValues = map(v => v.toLowerCase(), value);
     const joinedValues = join(' ', lowerValues);
     const newInput = { key: `${key}_lowercase`, value: [joinedValues] };
-    return editInputTx(id, newInput, wTx);
+    return editInputTx(id, newInput);
   }
   if (includes(key, statsDateAttributes)) {
     const dayValue = dayFormat(head(value));
     const monthValue = monthFormat(head(value));
     const yearValue = yearFormat(head(value));
     const dayInput = { key: `${key}_day`, value: [dayValue] };
-    editInputTx(id, dayInput, wTx);
+    await editInputTx(id, dayInput);
     const monthInput = { key: `${key}_month`, value: [monthValue] };
-    editInputTx(id, monthInput, wTx);
+    await editInputTx(id, monthInput);
     const yearInput = { key: `${key}_year`, value: [yearValue] };
-    return editInputTx(id, yearInput, wTx);
+    return editInputTx(id, yearInput);
   }
-  await wTx.commit();
+
   return loadByID(id);
 };
 
