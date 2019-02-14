@@ -43,7 +43,7 @@ class WorkspaceKnowledgeComponent extends Component {
     engine.registerNodeFactory(new EntityNodeFactory());
     engine.registerLinkFactory(new EntityLinkFactory());
     engine.registerLabelFactory(new EntityLabelFactory());
-    this.state = { inferred: true, engine };
+    this.state = { inferred: false, engine };
   }
 
   handleChangeInferred() {
