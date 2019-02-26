@@ -224,7 +224,6 @@ class ReportKnowledgeGraphComponent extends Component {
     model.addListener({
       nodesUpdated: this.handleNodeChanges.bind(this),
       linksUpdated: this.handleLinksChange.bind(this),
-      zoomUpdated: this.handleSaveGraph.bind(this),
     });
     this.props.engine.setDiagramModel(model);
     this.props.engine.repaintCanvas();

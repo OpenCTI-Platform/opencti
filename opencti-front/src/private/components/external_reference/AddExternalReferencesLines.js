@@ -173,8 +173,8 @@ AddExternalReferencesLinesContainer.propTypes = {
 };
 
 export const addExternalReferencesLinesQuery = graphql`
-    query AddExternalReferencesLinesQuery($search: String, $count: Int!, $cursor: ID, $orderBy: ExternalReferencesOrdering, $orderMode: OrderingMode) {
-        ...AddExternalReferencesLines_data @arguments(search: $search, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
+    query AddExternalReferencesLinesQuery($search: String, $count: Int!, $cursor: ID) {
+        ...AddExternalReferencesLines_data @arguments(search: $search, count: $count, cursor: $cursor)
     }
 `;
 
@@ -183,10 +183,8 @@ const AddExternalReferencesLines = createPaginationContainer(AddExternalReferenc
       fragment AddExternalReferencesLines_data on Query @argumentDefinitions(
           search: {type: "String"}
           count: {type: "Int", defaultValue: 25}
-          cursor: {type: "ID"}
-          orderBy: {type: "ExternalReferencesOrdering", defaultValue: ID}
-          orderMode: {type: "OrderingMode", defaultValue: "asc"}) {
-          externalReferences(search: $search, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_externalReferences") {
+          cursor: {type: "ID"}) {
+          externalReferences(search: $search, first: $count, after: $cursor) @connection(key: "Pagination_externalReferences") {
               edges {
                   node {
                       id

@@ -3,15 +3,24 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, head, map, includes, filter,
+  compose, head, map, includes, filter, pipe, assoc, omit, mergeRight,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
+import { CSVLink } from 'react-csv';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Grid from '@material-ui/core/Grid';
+import Menu from '@material-ui/core/Menu';
 import Select from '@material-ui/core/Select';
 import Input from '@material-ui/core/Input';
 import Chip from '@material-ui/core/Chip';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogActions from '@material-ui/core/DialogActions';
+import IconButton from '@material-ui/core/IconButton';
+import Button from '@material-ui/core/Button';
 import MenuItem from '@material-ui/core/MenuItem';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -20,9 +29,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import {
+  ArrowDropDown, ArrowDropUp, TableChart, SaveAlt,
+} from '@material-ui/icons';
 import { QueryRenderer, fetchQuery } from '../../../relay/environment';
-import { currentYear, parse, yearFormat } from '../../../utils/Time';
+import { currentYear, parse, yearFormat, dateFormat } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import EntityStixRelationsLines, { entityStixRelationsLinesQuery } from './EntityStixRelationsLines';
 
@@ -58,6 +70,22 @@ const styles = theme => ({
   },
   chip: {
     margin: theme.spacing.unit / 4,
+  },
+  views: {
+    position: 'absolute',
+    top: -65,
+    right: 0,
+  },
+  export: {
+    width: '100%',
+    paddingTop: 10,
+    textAlign: 'center',
+  },
+  loaderCircle: {
+    display: 'inline-block',
+  },
+  rightIcon: {
+    marginLeft: theme.spacing.unit,
   },
 });
 
@@ -112,6 +140,31 @@ const firstStixRelationQuery = graphql`
     }
 `;
 
+const exportStixRelationQuery = graphql`
+    query EntityStixRelationsExportStixRelationsQuery($fromId: String, $toTypes: [String], $inferred: Boolean, $relationType: String, $resolveInferences: Boolean, $resolveRelationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $weights: [Int], $count: Int!, $cursor: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
+        stixRelations(fromId: $fromId, toTypes: $toTypes, inferred: $inferred, relationType: $relationType, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_stixRelations") {
+            edges {
+                node {
+                    id
+                    weight
+                    first_seen
+                    last_seen
+                    description
+                    inferred
+                    to {
+                        id
+                        type
+                        name
+                        description
+                        created_at
+                        updated_at
+                    }
+                }
+            }
+        }
+    }
+`;
+
 class EntityStixRelations extends Component {
   constructor(props) {
     super(props);
@@ -128,6 +181,10 @@ class EntityStixRelations extends Component {
       toTypes: ['All'],
       inferred: true,
       resolveInferences: false,
+      view: 'lines',
+      anchorExport: null,
+      exportCsvOpen: false,
+      exportCsvData: null,
     };
   }
 
@@ -150,6 +207,10 @@ class EntityStixRelations extends Component {
         this.setState({ firstSeenFirstYear: yearFormat(head(data.stixRelations.edges).node.first_seen) });
       }
     });
+  }
+
+  handleChangeView(mode) {
+    this.setState({ view: mode });
   }
 
   reverseBy(field) {
@@ -208,7 +269,6 @@ class EntityStixRelations extends Component {
         firstSeen: value,
         firstSeenStart: null,
         firstSeenStop: null,
-        resolveInferences: false,
       });
     }
   }
@@ -229,23 +289,35 @@ class EntityStixRelations extends Component {
         return this.setState({ openWeights: false, weights, resolveInferences: true });
       }
     }
-    return this.setState({ openWeights: false, weights: [0], resolveInferences: false });
+    return this.setState({ openWeights: false, weights: [0] });
   }
 
   handleChangeInferred() {
-    this.setState({ inferred: !this.state.inferred });
+    this.setState({ inferred: !this.state.inferred, resolveInferences: !this.state.inferred === false ? false : this.state.resolveInferences });
   }
 
-  render() {
-    const {
-      t, classes, entityId, relationType, entityLink, targetEntityTypes, resolveRelationType,
-    } = this.props;
-    const startYear = this.state.firstSeenFirstYear === currentYear() ? this.state.firstSeenFirstYear - 1 : this.state.firstSeenFirstYear;
-    const yearsList = [];
-    for (let i = startYear; i <= currentYear(); i++) {
-      yearsList.push(i);
-    }
+  handleChangeResolveInferences() {
+    this.setState({ resolveInferences: !this.state.resolveInferences });
+  }
 
+  handleOpenExport(event) {
+    this.setState({ anchorExport: event.currentTarget });
+  }
+
+  handleCloseExport() {
+    this.setState({ anchorExport: null });
+  }
+
+  handleCloseExportCsv() {
+    this.setState({ exportCsvOpen: false, exportCsvData: null });
+  }
+
+  handleDownloadCSV() {
+    this.handleCloseExport();
+    this.setState({ exportCsvOpen: true });
+    const {
+      entityId, relationType, targetEntityTypes, resolveRelationType,
+    } = this.props;
     const paginationOptions = {
       resolveInferences: this.state.resolveInferences,
       resolveRelationType,
@@ -259,6 +331,83 @@ class EntityStixRelations extends Component {
       orderBy: this.state.resolveInferences ? this.state.sortBy : null,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
+
+    fetchQuery(exportStixRelationQuery, { count: 10000, ...paginationOptions }).then((data) => {
+      const finalData = pipe(
+        map(n => n.node),
+        map(n => assoc('relationship_description', n.description)(n)),
+        map(n => mergeRight(n, n.to)),
+        map(n => assoc('first_seen', dateFormat(n.first_seen))(n)),
+        map(n => assoc('last_seen', dateFormat(n.last_seen))(n)),
+        map(n => omit(['to', 'id', 'inferred', '__typename', 'created_at', 'updated_at'], n)),
+      )(data.stixRelations.edges);
+      this.setState({ exportCsvData: finalData });
+    });
+  }
+
+  renderLines() {
+    const {
+      classes, entityId, relationType, entityLink, targetEntityTypes, resolveRelationType,
+    } = this.props;
+    const paginationOptions = {
+      resolveInferences: this.state.resolveInferences,
+      resolveRelationType,
+      inferred: this.state.inferred,
+      toTypes: includes('All', this.state.toTypes) ? targetEntityTypes : this.state.toTypes,
+      fromId: entityId,
+      relationType,
+      firstSeenStart: this.state.firstSeenStart || null,
+      firstSeenStop: this.state.firstSeenStop || null,
+      weights: includes(0, this.state.weights) ? null : this.state.weights,
+      orderBy: this.state.resolveInferences ? this.state.sortBy : null,
+      orderMode: this.state.orderAsc ? 'asc' : 'desc',
+    };
+    return (
+      <List classes={{ root: classes.linesContainer }}>
+        <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
+          <ListItemIcon>
+            <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
+          </ListItemIcon>
+          <ListItemText primary={
+            <div>
+              {this.SortHeader('name', 'Name', false)}
+              {this.SortHeader('type', 'Entity type', false)}
+              {this.SortHeader('first_seen', 'First obs.', this.state.resolveInferences)}
+              {this.SortHeader('last_seen', 'Last obs.', this.state.resolveInferences)}
+              {this.SortHeader('weight', 'Confidence level', this.state.resolveInferences)}
+            </div>
+          }/>
+          <ListItemSecondaryAction>
+            &nbsp;
+          </ListItemSecondaryAction>
+        </ListItem>
+        <QueryRenderer
+          query={entityStixRelationsLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ props }) => {
+            if (props) {
+              return <EntityStixRelationsLines
+                data={props}
+                paginationOptions={paginationOptions}
+                entityLink={entityLink}
+              />;
+            }
+            return <EntityStixRelationsLines data={null} dummy={true}/>;
+          }}
+        />
+      </List>
+    );
+  }
+
+  render() {
+    const {
+      t, classes, targetEntityTypes, entityId, relationType,
+    } = this.props;
+    const startYear = this.state.firstSeenFirstYear === currentYear() ? this.state.firstSeenFirstYear - 1 : this.state.firstSeenFirstYear;
+    const yearsList = [];
+    for (let i = startYear; i <= currentYear(); i++) {
+      yearsList.push(i);
+    }
 
     return (
       <div className={classes.container}>
@@ -326,7 +475,7 @@ class EntityStixRelations extends Component {
             </Grid>
             <Grid item={true} xs='auto'>
               <Select
-                style={{ width: 170, height: 52, marginLeft: 20 }}
+                style={{ width: 170, height: 50, marginLeft: 20 }}
                 value={this.state.firstSeen}
                 onChange={this.handleChangeYear.bind(this)}
                 renderValue={selected => (
@@ -341,7 +490,7 @@ class EntityStixRelations extends Component {
             </Grid>
             <Grid item={true} xs='auto'>
               <FormControlLabel
-                style={{ paddingTop: 5, marginLeft: 20 }}
+                style={{ paddingTop: 5, marginLeft: 15 }}
                 control={
                   <Switch
                     checked={this.state.inferred}
@@ -352,41 +501,66 @@ class EntityStixRelations extends Component {
                 label={t('Inferences')}
               />
             </Grid>
+            {this.state.inferred
+              ? <Grid item={true} xs='auto'>
+                <FormControlLabel
+                  style={{ paddingTop: 5, marginLeft: 0 }}
+                  control={
+                    <Switch
+                      checked={this.state.resolveInferences}
+                      onChange={this.handleChangeResolveInferences.bind(this)}
+                      color='primary'
+                    />
+                  }
+                  label={t('Details')}
+                />
+              </Grid> : ''}
           </Grid>
         </Drawer>
-        <List classes={{ root: classes.linesContainer }}>
-          <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
-            <ListItemIcon>
-              <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
-            </ListItemIcon>
-            <ListItemText primary={
-              <div>
-                {this.SortHeader('name', 'Name', false)}
-                {this.SortHeader('type', 'Entity type', false)}
-                {this.SortHeader('first_seen', 'First obs.', this.state.resolveInferences)}
-                {this.SortHeader('last_seen', 'Last obs.', this.state.resolveInferences)}
-                {this.SortHeader('weight', 'Confidence level', this.state.resolveInferences)}
-              </div>
-            }/>
-            <ListItemSecondaryAction>
-              &nbsp;
-            </ListItemSecondaryAction>
-          </ListItem>
-          <QueryRenderer
-            query={entityStixRelationsLinesQuery}
-            variables={{ count: 25, ...paginationOptions }}
-            render={({ props }) => {
-              if (props) {
-                return <EntityStixRelationsLines
-                  data={props}
-                  paginationOptions={paginationOptions}
-                  entityLink={entityLink}
-                />;
-              }
-              return <EntityStixRelationsLines data={null} dummy={true}/>;
-            }}
-          />
-        </List>
+        <div className={classes.views}>
+          <IconButton color={this.state.view === 'lines' ? 'secondary' : 'primary'}
+                      classes={{ root: classes.button }}
+                      onClick={this.handleChangeView.bind(this, 'lines')}>
+            <TableChart/>
+          </IconButton>
+          <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true'>
+            <SaveAlt/>
+          </IconButton>
+          <Menu
+            anchorEl={this.state.anchorExport}
+            open={Boolean(this.state.anchorExport)}
+            onClose={this.handleCloseExport.bind(this)}
+            style={{ marginTop: 50 }}
+          >
+            <MenuItem onClick={this.handleDownloadCSV.bind(this)}>{t('CSV file')}</MenuItem>
+          </Menu>
+        </div>
+        {this.state.view === 'lines' ? this.renderLines() : ''}
+        <Dialog
+          open={this.state.exportCsvOpen}
+          onClose={this.handleCloseExportCsv.bind(this)}
+          fullWidth={true}
+        >
+          <DialogTitle>
+            {t('Export data in CSV')}
+          </DialogTitle>
+          <DialogContent>
+            {this.state.exportCsvData === null
+              ? <div className={this.props.classes.export}><CircularProgress size={40} thickness={2} className={this.props.classes.loaderCircle}/></div>
+              : <DialogContentText>{t('The CSV file has been generated with the parameters of the view and is ready for download.')}</DialogContentText>
+            }
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleCloseExportCsv.bind(this)} color='primary'>
+              {t('Cancel')}
+            </Button>
+            {this.state.exportCsvData !== null
+              ? <Button component={CSVLink} data={this.state.exportCsvData} color='primary' filename={`${entityId}_${relationType}.csv`}>
+                {t('Download')}
+              </Button>
+              : ''}
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }

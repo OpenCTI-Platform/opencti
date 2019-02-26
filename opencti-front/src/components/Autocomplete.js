@@ -209,7 +209,7 @@ class Autocomplete extends Component {
     };
 
     let displayLabel = false;
-    if (labelDisplay !== null) {
+    if (labelDisplay !== null && labelDisplay !== undefined) {
       displayLabel = labelDisplay;
     } else if (Array.isArray(values[field.name]) && values[field.name].length > 0) {
       displayLabel = true;

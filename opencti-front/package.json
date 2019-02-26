@@ -29,6 +29,7 @@
     "prop-types": "^15.6.2",
     "ramda": "^0.26.1",
     "react": "^16.7.0",
+    "react-csv": "^1.1.1",
     "react-document-title": "^2.0.3",
     "react-dom": "^16.7.0",
     "react-intl": "^2.8.0",

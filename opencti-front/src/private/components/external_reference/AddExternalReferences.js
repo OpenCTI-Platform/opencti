@@ -108,8 +108,6 @@ class AddExternalReferences extends Component {
               variables={{
                 search: this.state.search,
                 count: 20,
-                orderBy: 'created_at',
-                orderMode: 'desc',
               }}
               render={({ props }) => {
                 if (props) {

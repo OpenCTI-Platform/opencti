@@ -1164,6 +1164,7 @@ type Report implements GlobalObject & StixDomainEntity {
     modified: DateTime
     published: DateTime
     revoked: Boolean
+    object_status: Int
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection

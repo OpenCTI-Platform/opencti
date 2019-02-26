@@ -213,6 +213,10 @@ const i18n = {
       'Related to this country': 'Lié à ce pays',
       Inferences: 'Inférences',
       Inferred: 'Inféré',
+      'CSV file': 'Fichier CSV',
+      'Export data in CSV': 'Exporter les données en CSV',
+      'The CSV file has been generated with the parameters of the view and is ready for download.': 'Le fichier CSV a été généré avec les paramètres de la vue et est prêt pour être téléchargé.',
+      Download: 'Télécharger',
       'Inference explanation': 'Explication de l\'inférence',
       Relation: 'Relation',
       // User

@@ -130,10 +130,10 @@ class CountryPopover extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseDelete.bind(this)} color="primary" disabled={this.state.deleting}>
+            <Button onClick={this.handleCloseDelete.bind(this)} color='primary' disabled={this.state.deleting}>
               {t('Cancel')}
             </Button>
-            <Button onClick={this.submitDelete.bind(this)} color="primary" disabled={this.state.deleting}>
+            <Button onClick={this.submitDelete.bind(this)} color='primary' disabled={this.state.deleting}>
               {t('Delete')}
             </Button>
           </DialogActions>

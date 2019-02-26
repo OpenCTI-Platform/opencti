@@ -684,7 +684,7 @@ export const paginate = (
   const {
     first = 200,
     after,
-    orderBy = 'created_at',
+    orderBy = null,
     orderMode = 'asc'
   } = options;
   const offset = after ? cursorToOffset(after) : 0;
@@ -699,7 +699,7 @@ export const paginate = (
     : `$${instanceKey} has ${orderBy} $o; order by $o ${orderMode};`;
   const elements = qkObj(
     `${query}; ${
-      ordered ? ordering : ''
+      ordered && orderBy ? ordering : ''
     } offset ${offset}; limit ${first}; get $${instanceKey}${
       relationKey ? `, $${relationKey}` : ''
     };`,

@@ -152,3 +152,9 @@ div.srd-port:hover {
     stroke: #607d8b !important;
     stroke-dasharray: 10,2;
 }
+
+.srd-default-link__label {
+    width: 5000px !important;
+    height: 5000px !important;
+    overflow: hidden !important;
+}
