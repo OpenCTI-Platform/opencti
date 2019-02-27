@@ -11,12 +11,12 @@ const redisOptions = {
   maxRetriesPerRequest: 2
 };
 
-export const pubsub =
-  isAppRealTime &&
-  new RedisPubSub({
-    publisher: new Redis(redisOptions),
-    subscriber: new Redis(redisOptions)
-  });
+export const pubsub = isAppRealTime
+  ? new RedisPubSub({
+      publisher: new Redis(redisOptions),
+      subscriber: new Redis(redisOptions)
+    })
+  : null;
 
 const client = isAppRealTime && new Redis(redisOptions);
 if (client) {

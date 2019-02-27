@@ -131,17 +131,8 @@ public class OpenCTI {
                 "(Query average: " + (relationProcessingTime / (2 * nbRelationsToProcess)) + " ms)");
     }
 
-    private static void loadStixSchema(GraknDriver driver) throws Exception {
-        System.out.println("Loading stix2 schema to grakn");
-        long startLoadSchema = System.currentTimeMillis();
-        driver.loadSchema();
-        long endLoadSchema = System.currentTimeMillis();
-        System.out.println("Stix2 schema loaded in " + (endLoadSchema - startLoadSchema) / 1000 + " seconds");
-    }
-
     public static void main(String[] args) throws Exception {
         GraknDriver driver = new GraknDriver(cp);
-        loadStixSchema(driver);
-        //filesToProcess(driver);
+        filesToProcess(driver);
     }
 }
