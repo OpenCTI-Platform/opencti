@@ -5,7 +5,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import {
-  compose, insert, find, propEq, pick, assoc, pipe,
+  compose, insert, find, propEq, pick, assoc, pipe, map, pathOr, difference, head,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -17,10 +17,12 @@ import * as Yup from 'yup';
 import { dateFormat } from '../../../utils/Time';
 import { resolveLink } from '../../../utils/Entity';
 import inject18n from '../../../components/i18n';
-import { commitMutation, requestSubscription } from '../../../relay/environment';
+import { commitMutation, fetchQuery, requestSubscription } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../components/Subscription';
 import Select from '../../../components/Select';
+import { countriesLinesSearchQuery } from '../country/CountriesLines';
+import Autocomplete from '../../../components/Autocomplete';
 
 const styles = theme => ({
   header: {
@@ -93,6 +95,30 @@ export const stixRelationEditionFocus = graphql`
     }
 `;
 
+const stixRelationMutationRelationAdd = graphql`
+    mutation StixRelationEditionOverviewRelationAddMutation($id: ID!, $input: RelationAddInput!) {
+        stixRelationEdit(id: $id) {
+            relationAdd(input: $input) {
+                node {
+                    ...StixRelationEditionOverview_stixRelation
+                }
+            }
+        }
+    }
+`;
+
+const stixRelationMutationRelationDelete = graphql`
+    mutation StixRelationEditionOverviewRelationDeleteMutation($id: ID!, $relationId: ID!) {
+        stixRelationEdit(id: $id) {
+            relationDelete(relationId: $relationId) {
+                node {
+                    ...StixRelationEditionOverview_stixRelation
+                }
+            }
+        }
+    }
+`;
+
 const stixRelationValidation = t => Yup.object().shape({
   weight: Yup.number()
     .typeError(t('The value must be a number'))
@@ -108,6 +134,11 @@ const stixRelationValidation = t => Yup.object().shape({
 });
 
 class StixRelationEditionContainer extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { locations: [] };
+  }
+
   componentDidMount() {
     const sub = requestSubscription({
       subscription,
@@ -121,6 +152,54 @@ class StixRelationEditionContainer extends Component {
 
   componentWillUnmount() {
     this.state.sub.dispose();
+  }
+
+  searchLocations(event) {
+    fetchQuery(countriesLinesSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
+      const locations = pipe(
+        pathOr([], ['countries', 'edges']),
+        map(n => ({ label: n.node.name, value: n.node.id })),
+      )(data);
+      this.setState({ locations });
+    });
+  }
+
+  handleChangeLocation(name, values) {
+    const { stixRelation } = this.props;
+    const currentLocations = pipe(
+      pathOr([], ['locations', 'edges']),
+      map(n => ({ label: n.node.name, value: n.node.id, relationId: n.relation.id })),
+    )(stixRelation);
+
+    const added = difference(values, currentLocations);
+    const removed = difference(currentLocations, values);
+
+    if (added.length > 0) {
+      commitMutation({
+        mutation: stixRelationMutationRelationAdd,
+        variables: {
+          id: head(added).value,
+          input: {
+            fromRole: 'location',
+            toId: this.props.stixRelation.id,
+            toRole: 'localized',
+            through: 'localization',
+          },
+        },
+      });
+    }
+
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: stixRelationMutationRelationDelete,
+        variables: {
+          id: this.props.stixRelation.id,
+          relationId: head(removed).relationId,
+        },
+      });
+    }
   }
 
   handleChangeFocus(name) {
@@ -151,10 +230,15 @@ class StixRelationEditionContainer extends Component {
     const { editContext } = stixRelation;
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
     const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
+    const locations = pipe(
+      pathOr([], ['locations', 'edges']),
+      map(n => ({ label: n.node.name, value: n.node.id, relationId: n.relation.id })),
+    )(stixRelation);
     const initialValues = pipe(
       assoc('first_seen', dateFormat(stixRelation.first_seen)),
       assoc('last_seen', dateFormat(stixRelation.last_seen)),
-      pick(['weight', 'first_seen', 'last_seen', 'description']),
+      assoc('locations', locations),
+      pick(['weight', 'first_seen', 'last_seen', 'description', 'locations']),
     )(stixRelation);
     const link = stixDomainEntity ? resolveLink(stixDomainEntity.type) : '';
     return (
@@ -210,6 +294,17 @@ class StixRelationEditionContainer extends Component {
                        onFocus={this.handleChangeFocus.bind(this)}
                        onSubmit={this.handleSubmitField.bind(this)}
                        helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='description'/>}/>
+                <Field
+                  name='locations'
+                  component={Autocomplete}
+                  multiple={true}
+                  label={t('Locations')}
+                  options={this.state.locations}
+                  onInputChange={this.searchLocations.bind(this)}
+                  onChange={this.handleChangeLocation.bind(this)}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='locations'/>}
+                />
               </Form>
             )}
           />
@@ -246,6 +341,17 @@ const StixRelationEditionFragment = createFragmentContainer(StixRelationEditionC
           first_seen
           last_seen
           description
+          locations {
+              edges {
+                  node {
+                      id
+                      name
+                  }
+                  relation {
+                      id
+                  }
+              }
+          } 
           editContext {
               name
               focusOn

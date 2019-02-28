@@ -298,6 +298,7 @@ define
     has "created_at_month"
     has "created_at_year"
     has "updated_at"
+    plays "localized"
     plays "so";
 
   # targets
@@ -694,6 +695,7 @@ define
       ("allowed": $user, "allow": $markingDefinition) isa "user_permission";
     };
 
+    ## USES MALWARE
     # Threat-Actor => uses => Malware through Intrusion-Set
     "ThreatActorUsesMalwareTroughIntrusionSetRule" sub rule
     when {
@@ -706,42 +708,6 @@ define
       ("user": $threatActor, "usage": $malware) isa "uses";
     };
 
-    # Threat-Actor => targets => Identity through Intrusion-Set
-    "ThreatActorTargetsIdentityThroughIntrusionSetRule" sub rule
-    when {
-      $intrusionSet isa "Intrusion-Set";
-      $identity isa "Identity";
-      $threatActor isa "Threat-Actor";
-      ("source": $intrusionSet, "target": $identity) isa targets;
-      ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
-    } then {
-      ("source": $threatActor, "target": $identity) isa "targets";
-    };
-
-    # Threat-Actor => attributed-to => Identity through Intrusion-Set
-    "ThreatActorAttributedToIdentityThroughIntrusionSetRule" sub rule
-    when {
-      $intrusionSet isa "Intrusion-Set";
-      $identity isa "Identity";
-      $threatActor isa "Threat-Actor";
-      ("origin": $identity, "attribution": $intrusionSet) isa attributed-to;
-      ("relate_from": $identity, "relate_to": $threatActor) isa related-to;
-    } then {
-      ("origin": $threatActor, "attribution": $intrusionSet) isa "attributed-to";
-    };
-
-    # Threat-Actor => targets => Location through Identity
-    "ThreatActorTargetsLocationThroughIdentityRule" sub rule
-    when {
-      $identity isa "Identity";
-      $location isa "Country";
-      $threatActor isa "Threat-Actor";
-      ("source": $threatActor, "target": $identity) isa targets;
-      ("location": $location, "localized": $identity) isa localization;
-    } then {
-      ("source": $threatActor, "target": $location) isa "targets";
-    };
-
     # Intrusion-Set => uses => Malware through Campaign
     "IntrusionSetUsesMalwareTroughCampaignRule" sub rule
     when {
@@ -752,6 +718,43 @@ define
       ("origin": $intrusionSet, "attribution": $campaign) isa attributed-to;
     } then {
       ("user": $intrusionSet, "usage": $malware) isa "uses";
+    };
+
+    # Intrusion-Set => uses => Malware through Incident
+    "IntrusionSetUsesMalwareTroughIncidentRule" sub rule
+    when {
+      $incident isa "Incident";
+      $malware isa "Malware";
+      $intrusionSet isa "Intrusion-Set";
+      ("user": $incident, "usage": $malware) isa uses;
+      ("origin": $intrusionSet, "attribution": $incident) isa attributed-to;
+    } then {
+      ("user": $intrusionSet, "usage": $malware) isa "uses";
+    };
+
+    # Campaign => uses => Malware through Incident
+    "CampaignUsesMalwareTroughIncidentRule" sub rule
+    when {
+      $incident isa "Incident";
+      $malware isa "Malware";
+      $campaign isa "Campaign";
+      ("user": $incident, "usage": $malware) isa uses;
+      ("origin": $campaign, "attribution": $incident) isa attributed-to;
+    } then {
+      ("user": $campaign, "usage": $malware) isa "uses";
+    };
+
+    ### TARGETS IDENTITY
+    # Threat-Actor => targets => Identity through Intrusion-Set
+    "ThreatActorTargetsIdentityThroughIntrusionSetRule" sub rule
+    when {
+      $intrusionSet isa "Intrusion-Set";
+      $identity isa "Identity";
+      $threatActor isa "Threat-Actor";
+      ("source": $intrusionSet, "target": $identity) isa targets;
+      ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
+    } then {
+      ("source": $threatActor, "target": $identity) isa "targets";
     };
 
     # Intrusion-Set => targets => Identity through Campaign
@@ -802,30 +805,6 @@ define
       ("source": $intrusionSet, "target": $identity) isa "targets";
     };
 
-    # Intrusion-Set => targets => Location through Identity
-    "IntrusionSetTargetsLocationThroughIdentityRule" sub rule
-    when {
-      $identity isa "Identity";
-      $location isa "Country";
-      $intrusionSet isa "Intrusion-Set";
-      ("source": $intrusionSet, "target": $identity) isa targets;
-      ("location": $location, "localized": $identity) isa localization;
-    } then {
-      ("source": $intrusionSet, "target": $location) isa "targets";
-    };
-
-    # Campaign => attributed-to => Threat-Actor through Intrusion-Set
-    "CampaignAttributedToThreatActorTroughIntrusionSetRule" sub rule
-    when {
-      $intrusionSet isa "Intrusion-Set";
-      $threatActor isa "Threat-Actor";
-      $campaign isa "Campaign";
-      ("origin": $intrusionSet, "attribution": $campaign) isa attributed-to;
-      ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
-    } then {
-      ("origin": $threatActor, "attribution": $campaign) isa "attributed-to";
-    };
-
     # Campaign => targets => Identity through Malware
     "CampaignTargetsIdentityThroughMalwareRule" sub rule
     when {
@@ -848,42 +827,6 @@ define
       ("gather": $identity, "part_of": $subidentity) isa gathering;
     } then {
       ("source": $campaign, "target": $identity) isa "targets";
-    };
-
-    # Campaign => targets => Location through Identity
-    "CampaignTargetsLocationThroughIdentityRule" sub rule
-    when {
-      $identity isa "Identity";
-      $location isa "Country";
-      $campaign isa "Campaign";
-      ("source": $campaign, "target": $identity) isa targets;
-      ("location": $location, "localized": $identity) isa localization;
-    } then {
-      ("source": $campaign, "target": $location) isa "targets";
-    };
-
-    # Incident => attributed-to => Threat-Actor through Intrusion-Set
-    "IncidentAttributedToThreatActorTroughIntrusionSetRule" sub rule
-    when {
-      $intrusionSet isa "Intrusion-Set";
-      $threatActor isa "Threat-Actor";
-      $incident isa "Incident";
-      ("origin": $intrusionSet, "attribution": $incident) isa attributed-to;
-      ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
-    } then {
-      ("origin": $threatActor, "attribution": $incident) isa "attributed-to";
-    };
-
-    # Incident => attributed-to => Intrusion-Set through Campaign
-    "IncidentAttributedToIntrusionSetTroughCampaignRule" sub rule
-    when {
-      $campaign isa "Campaign";
-      $intrusionSet isa "Intrusion-Set";
-      $incident isa "Incident";
-      ("origin": $campaign, "attribution": $incident) isa attributed-to;
-      ("origin": $intrusionSet, "attribution": $campaign) isa attributed-to;
-    } then {
-      ("origin": $intrusionSet, "attribution": $incident) isa "attributed-to";
     };
 
     # Incident => targets => Identity through Malware
@@ -910,6 +853,43 @@ define
       ("source": $incident, "target": $identity) isa "targets";
     };
 
+    ### TARGETS LOCATION
+    # Threat-Actor => targets => Location through Identity
+    "ThreatActorTargetsLocationThroughIdentityRule" sub rule
+    when {
+      $identity isa "Identity";
+      $location isa "Country";
+      $threatActor isa "Threat-Actor";
+      ("source": $threatActor, "target": $identity) isa targets;
+      ("location": $location, "localized": $identity) isa localization;
+    } then {
+      ("source": $threatActor, "target": $location) isa "targets";
+    };
+
+    # Intrusion-Set => targets => Location through Identity
+    "IntrusionSetTargetsLocationThroughIdentityRule" sub rule
+    when {
+      $identity isa "Identity";
+      $location isa "Country";
+      $intrusionSet isa "Intrusion-Set";
+      ("source": $intrusionSet, "target": $identity) isa targets;
+      ("location": $location, "localized": $identity) isa localization;
+    } then {
+      ("source": $intrusionSet, "target": $location) isa "targets";
+    };
+
+     # Campaign => targets => Location through Identity
+    "CampaignTargetsLocationThroughIdentityRule" sub rule
+    when {
+      $identity isa "Identity";
+      $location isa "Country";
+      $campaign isa "Campaign";
+      ("source": $campaign, "target": $identity) isa targets;
+      ("location": $location, "localized": $identity) isa localization;
+    } then {
+      ("source": $campaign, "target": $location) isa "targets";
+    };
+
     # Incident => targets => Location through Identity
     "IncidentTargetsLocationThroughIdentityRule" sub rule
     when {
@@ -922,6 +902,56 @@ define
       ("source": $incident, "target": $location) isa "targets";
     };
 
+    ### ATTRIBUTED-TO IDENTITY
+    # Threat-Actor => attributed-to => Identity through Intrusion-Set
+    "ThreatActorAttributedToIdentityThroughIntrusionSetRule" sub rule
+    when {
+      $intrusionSet isa "Intrusion-Set";
+      $identity isa "Identity";
+      $threatActor isa "Threat-Actor";
+      ("origin": $identity, "attribution": $intrusionSet) isa attributed-to;
+      ("relate_from": $identity, "relate_to": $threatActor) isa related-to;
+    } then {
+      ("origin": $threatActor, "attribution": $intrusionSet) isa "attributed-to";
+    };
+
+    # Campaign => attributed-to => Threat-Actor through Intrusion-Set
+    "CampaignAttributedToThreatActorTroughIntrusionSetRule" sub rule
+    when {
+      $intrusionSet isa "Intrusion-Set";
+      $threatActor isa "Threat-Actor";
+      $campaign isa "Campaign";
+      ("origin": $intrusionSet, "attribution": $campaign) isa attributed-to;
+      ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
+    } then {
+      ("origin": $threatActor, "attribution": $campaign) isa "attributed-to";
+    };
+
+    # Incident => attributed-to => Threat-Actor through Intrusion-Set
+    "IncidentAttributedToThreatActorTroughIntrusionSetRule" sub rule
+    when {
+      $intrusionSet isa "Intrusion-Set";
+      $threatActor isa "Threat-Actor";
+      $incident isa "Incident";
+      ("origin": $intrusionSet, "attribution": $incident) isa attributed-to;
+      ("origin": $threatActor, "attribution": $intrusionSet) isa attributed-to;
+    } then {
+      ("origin": $threatActor, "attribution": $incident) isa "attributed-to";
+    };
+
+    # Incident => attributed-to => Intrusion-Set through Campaign
+    "IncidentAttributedToIntrusionSetTroughCampaignRule" sub rule
+    when {
+      $campaign isa "Campaign";
+      $intrusionSet isa "Intrusion-Set";
+      $incident isa "Incident";
+      ("origin": $campaign, "attribution": $incident) isa attributed-to;
+      ("origin": $intrusionSet, "attribution": $campaign) isa attributed-to;
+    } then {
+      ("origin": $intrusionSet, "attribution": $incident) isa "attributed-to";
+    };
+
+    ### LOCALIZED IN COUNTRY
     # Identity => localized => Country through City
     "IdentityLocalizedCountryThroughCityRule" sub rule
     when {

@@ -116,7 +116,7 @@ class Users extends Component {
           </ListItem>
           <QueryRenderer
             query={usersLinesQuery}
-            variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
+            variables={{ isUser: true, count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
             render={({ props }) => {
               if (props) {
                 return <UsersLines data={props} paginationOptions={paginationOptions}/>;

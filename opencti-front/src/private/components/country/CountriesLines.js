@@ -142,6 +142,20 @@ export const countriesLinesQuery = graphql`
     }
 `;
 
+export const countriesLinesSearchQuery = graphql`
+    query CountriesLinesSearchQuery($search: String) {
+        countries(search: $search) {
+            edges {
+                node {
+                    id
+                    name
+                    description
+                }
+            }
+        }
+    }
+`;
+
 export default withStyles(styles)(createPaginationContainer(
   CountriesLines,
   {

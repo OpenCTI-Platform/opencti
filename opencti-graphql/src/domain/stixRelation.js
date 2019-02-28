@@ -18,7 +18,8 @@ import {
   yearFormat,
   prepareString,
   timeSeries,
-  distribution
+  distribution,
+  takeTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -239,8 +240,20 @@ export const reports = (stixRelationId, args) =>
     args
   );
 
+export const locations = (stixRelationId, args) =>
+  paginate(
+    `match $location isa Country; 
+    $rel(location:$location, localized:$stixRelation) isa localization; 
+    $stixRelation id ${stixRelationId}`,
+    args,
+    false
+  );
+
 export const addStixRelation = async (user, stixRelation) => {
-  const createStixRelation = qk(`match $from id ${stixRelation.fromId}; 
+  const wTx = await takeTx();
+  const stixRelationIterator = await wTx.query(`match $from id ${
+    stixRelation.fromId
+  }; 
     $to id ${stixRelation.toId}; 
     insert $stixRelation(${stixRelation.fromRole}: $from, ${
     stixRelation.toRole
@@ -277,12 +290,37 @@ export const addStixRelation = async (user, stixRelation) => {
     $stixRelation has created_at_year "${yearFormat(now())}";        
     $stixRelation has updated_at ${now()};
   `);
-  return createStixRelation.then(result => {
-    const { data } = result;
-    return loadByID(head(data).stixRelation.id).then(created =>
-      notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user)
+  const createStixRelation = await stixRelationIterator.next();
+  const createdStixRelationId = await createStixRelation
+    .map()
+    .get('stixRelation').id;
+
+  if (stixRelation.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.query(
+        `match $from id ${createdStixRelationId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      stixRelation.markingDefinitions
     );
-  });
+    await Promise.all(markingDefinitionsPromises);
+  }
+
+  if (stixRelation.locations) {
+    const createLocation = location =>
+      wTx.query(
+        `match $from id ${createdStixRelationId}; $to id ${location}; insert (localized: $from, location: $to) isa localization;`
+      );
+    const locationsPromises = map(createLocation, stixRelation.locations);
+    await Promise.all(locationsPromises);
+  }
+
+  await wTx.commit();
+
+  return loadByID(createdStixRelationId).then(created =>
+    notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user)
+  );
 };
 
 export const stixRelationDelete = stixRelationId =>

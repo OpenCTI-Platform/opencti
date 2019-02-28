@@ -80,6 +80,7 @@ migrate.load(
         throw err2;
       }
       logger.info('Migrations successfully ran');
+      process.exit(0);
     });
   }
 );

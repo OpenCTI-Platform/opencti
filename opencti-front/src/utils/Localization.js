@@ -275,6 +275,7 @@ const i18n = {
       Sector: 'Secteur',
       Country: 'Pays',
       City: 'Ville',
+      Locations: 'Localisations',
       Person: 'Personne',
       'Search for an entity': 'Rechercher une entité',
       'Linked knowledge': 'Connaissance liée',

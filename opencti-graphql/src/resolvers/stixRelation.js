@@ -14,12 +14,17 @@ import {
   search,
   reports,
   markingDefinitions,
+  locations,
   stixRelationEditContext,
   stixRelationCleanContext,
   stixRelationEditField
 } from '../domain/stixRelation';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
+import {
+  stixDomainEntityAddRelation,
+  stixDomainEntityDeleteRelation
+} from '../domain/stixDomainEntity';
 
 const stixRelationResolvers = {
   Query: {
@@ -54,6 +59,8 @@ const stixRelationResolvers = {
   StixRelation: {
     markingDefinitions: (stixRelation, args) =>
       markingDefinitions(stixRelation.id, args),
+    locations: (stixRelation, args) =>
+      locations(stixRelation.id, args),
     reports: (stixRelation, args) => {
       if (/V(\d+)$/i.exec(stixRelation.id) !== null) {
         return reports(stixRelation.id, args);
@@ -67,7 +74,10 @@ const stixRelationResolvers = {
       delete: () => stixRelationDelete(id),
       fieldPatch: ({ input }) => stixRelationEditField(user, id, input),
       contextPatch: ({ input }) => stixRelationEditContext(user, id, input),
-      contextClean: () => stixRelationCleanContext(user, id)
+      contextClean: () => stixRelationCleanContext(user, id),
+      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
+      relationDelete: ({ relationId }) =>
+        stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     stixRelationAdd: (_, { input }, { user }) => addStixRelation(user, input)
   },

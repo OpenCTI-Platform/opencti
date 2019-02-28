@@ -53,6 +53,7 @@ const relationsTypesMapping = {
   user_organization: ['gathering'],
   user_country: ['localization'],
   user_city: ['localization'],
+  'attack-pattern_attack-pattern': ['comes-after'],
 };
 
 export const resolveRelationsTypes = (fromType, toType) => (relationsTypesMapping[`${fromType}_${toType}`] ? relationsTypesMapping[`${fromType}_${toType}`] : []);
@@ -73,6 +74,8 @@ export const resolveRoles = (type) => {
       return { fromRole: 'relate_from', toRole: 'relate_to' };
     case 'localization':
       return { fromRole: 'localized', toRole: 'location' };
+    case 'comes-after':
+      return { fromRole: 'coming_from', toRole: 'coming_after' };
     default:
       return { fromRole: '', toRole: '' };
   }

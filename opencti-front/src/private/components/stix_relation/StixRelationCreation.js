@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
-import { fetchQuery } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
-import { compose, map } from 'ramda';
+import {
+  compose, map, pathOr, pipe, pluck,
+} from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
@@ -15,7 +16,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ArrowRightAlt } from '@material-ui/icons';
-import { environment, commitMutation } from '../../../relay/environment';
+import { fetchQuery, commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { itemColor } from '../../../utils/Colors';
 import { parse } from '../../../utils/Time';
@@ -23,6 +24,8 @@ import { resolveRoles, resolveRelationsTypes } from '../../../utils/Relation';
 import ItemIcon from '../../../components/ItemIcon';
 import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
+import { countriesLinesSearchQuery } from '../country/CountriesLines';
+import Autocomplete from '../../../components/Autocomplete';
 
 const styles = theme => ({
   loader: {
@@ -195,7 +198,19 @@ const stixRelationValidation = t => Yup.object().shape({
 class StixRelationCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = { step: 0, existingRelations: [] };
+    this.state = { step: 0, existingRelations: [], locations: [] };
+  }
+
+  searchLocations(event) {
+    fetchQuery(countriesLinesSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
+      const locations = pipe(
+        pathOr([], ['countries', 'edges']),
+        map(n => ({ label: n.node.name, value: n.node.id })),
+      )(data);
+      this.setState({ locations });
+    });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -206,6 +221,7 @@ class StixRelationCreation extends Component {
     values.toRole = roles.toRole;
     values.first_seen = parse(values.first_seen).format();
     values.last_seen = parse(values.last_seen).format();
+    values.locations = pluck('value', values.locations);
 
     commitMutation({
       mutation: stixRelationCreationMutation,
@@ -225,7 +241,7 @@ class StixRelationCreation extends Component {
   componentDidUpdate(prevProps) {
     if ((this.props.from !== prevProps.from && this.props.to !== prevProps.to)
       && (this.props.from !== null && this.props.to !== null)) {
-      fetchQuery(environment, stixRelationCreationQuery, {
+      fetchQuery(stixRelationCreationQuery, {
         fromId: this.props.from.id,
         toId: this.props.to.id,
       }).then((data) => {
@@ -251,6 +267,7 @@ class StixRelationCreation extends Component {
     this.props.handleClose();
   }
 
+
   renderForm() {
     const {
       t, classes, from, to,
@@ -261,7 +278,7 @@ class StixRelationCreation extends Component {
       <Formik
         enableReinitialize={true}
         initialValues={{
-          relationship_type: '', weight: '', first_seen: '', last_seen: '', description: '',
+          relationship_type: '', weight: '', first_seen: '', last_seen: '', description: '', locations: [],
         }}
         validationSchema={stixRelationValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
@@ -347,6 +364,14 @@ class StixRelationCreation extends Component {
               <Field name='first_seen' component={TextField} label={t('First seen')} fullWidth={true} style={{ marginTop: 20 }}/>
               <Field name='last_seen' component={TextField} label={t('Last seen')} fullWidth={true} style={{ marginTop: 20 }}/>
               <Field name='description' component={TextField} label={t('Description')} fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
+              <Field
+                name='locations'
+                component={Autocomplete}
+                multiple={true}
+                label={t('Locations')}
+                options={this.state.locations}
+                onInputChange={this.searchLocations.bind(this)}
+              />
             </DialogContent>
             <DialogActions classes={{ root: classes.dialogActions }}>
               <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>

@@ -138,8 +138,8 @@ UsersLines.propTypes = {
 };
 
 export const usersLinesQuery = graphql`
-    query UsersLinesPaginationQuery($count: Int!, $cursor: ID, $orderBy: UsersOrdering, $orderMode: OrderingMode) {
-        ...UsersLines_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
+    query UsersLinesPaginationQuery($count: Int!, $cursor: ID, $orderBy: UsersOrdering, $orderMode: OrderingMode, $isUser: Boolean) {
+        ...UsersLines_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode, isUser: $isUser)
     }
 `;
 
@@ -169,8 +169,9 @@ export default withStyles(styles)(createPaginationContainer(
             cursor: {type: "ID"}
             orderBy: {type: "UsersOrdering", defaultValue: ID}
             orderMode: {type: "OrderingMode", defaultValue: "asc"}
+            isUser: {type: "Boolean"}
         ) {
-            users(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_users") {
+            users(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode, isUser: $isUser) @connection(key: "Pagination_users") {
                 edges {
                     node {
                         ...UserLine_user
@@ -197,6 +198,7 @@ export default withStyles(styles)(createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        isUser: fragmentVariables.isUser,
       };
     },
     query: usersLinesQuery,

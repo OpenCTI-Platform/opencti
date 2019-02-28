@@ -191,6 +191,7 @@ type StixRelation implements GlobalObject {
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
+    locations: IdentityConnection
     reports: ReportConnection
     from: StixDomainEntity
     to: StixDomainEntity
@@ -210,6 +211,7 @@ input StixRelationAddInput  {
     last_seen: DateTime
     createdByRef: String
     markingDefinitions: [String]
+    locations: [String]
     clientMutationId: String
 }
 
@@ -262,6 +264,7 @@ type IdentityConnection {
 type IdentityEdge {
     cursor: String!
     node: Identity!
+    relation: RelationEmbedded!
 }
 interface Identity {
     id: ID!
@@ -1226,7 +1229,7 @@ type Query {
     # Users
     me: User @auth
     user(id: String!): User @auth(for: ROLE_ADMIN)
-    users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection @auth(for: ROLE_ADMIN)
+    users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String, isUser: Boolean): UserConnection @auth(for: ROLE_ADMIN)
     # Organizations
     organization(id: String!): Organization @auth
     organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, search: String): OrganizationConnection @auth
@@ -1322,6 +1325,8 @@ type StixRelationEditMutations {
     fieldPatch(input: EditInput): StixRelation
     contextPatch(input: EditContext): StixRelation
     contextClean: StixRelation
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId: ID!): RelationData
 }
 
 # Workspace

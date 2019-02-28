@@ -52,8 +52,12 @@ export const setAuthenticationCookie = (token, res) => {
 };
 
 export const findAll = args => {
-  const { first, after, orderBy = 'email' } = args;
-  return paginate('match $m isa User', { first, after, orderBy });
+  const { first, after, orderBy = 'email', isUser } = args;
+  return paginate(`match $m isa User${isUser ? '; $m has email $e' : ''}`, {
+    first,
+    after,
+    orderBy
+  });
 };
 
 export const findById = userId => loadByID(userId);
