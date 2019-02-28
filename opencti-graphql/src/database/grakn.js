@@ -132,7 +132,7 @@ export const takeTx = async () => {
 };
 
 export const notify = (topic, instance, user, context) => {
-  pubsub.publish(topic, { instance, user, context });
+  if (pubsub) pubsub.publish(topic, { instance, user, context });
   return instance;
 };
 
@@ -194,7 +194,7 @@ export const qk = (queryDef, infer = false) => {
     url: `/kb/grakn/graql${infer ? '?infer=true' : ''}`,
     data: queryDef
   }).catch(async error => {
-    logger.error(`Grakn query error: ${queryDef}`, error.response.data);
+    logger.error(`Grakn query error: ${queryDef}`, error);
     // TODO: Workaround to avoid concurrency error on Grakn
     if (infer && error.response.data.exception === null) {
       await later(50);
@@ -511,6 +511,12 @@ export const loadRelationInferredById = async id => {
   });
 };
 
+export const write = async query => {
+  const wTx = await takeTx();
+  await wTx.query(query);
+  await wTx.commit();
+};
+
 /**
  * Edit an attribute value.
  * @param id
@@ -596,7 +602,6 @@ export const editInputTx = async (id, input) => {
     const yearInput = { key: `${key}_year`, value: [yearValue] };
     return editInputTx(id, yearInput);
   }
-
   return loadByID(id);
 };
 

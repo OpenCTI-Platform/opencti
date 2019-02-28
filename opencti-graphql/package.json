@@ -5,14 +5,14 @@
   "author": "Luatix",
   "license": "MIT",
   "scripts": {
-    "build": "babel --out-dir ./dist ./src && pkg package.json --output ./build/opencti",
     "start": "babel-node -r node_modules/dotenv/config ./src/server.js",
+    "build": "babel --out-dir ./dist ./src && pkg package.json --output ./build/opencti",
     "serv": "node dist/server.js",
+    "schema": "babel-node ./src/schema/schema-init.js",
     "migrate": "babel-node ./src/database/migration.js",
-    "addMigration": "migrate create",
+    "migrate:add": "migrate create",
     "lint": "eslint .",
     "test": "jest --coverage",
-    "load": "babel-node ./src/database/loader.js",
     "clean": "babel-node ./src/database/clean.js"
   },
   "bin": "./dist/server.js",
