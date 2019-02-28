@@ -14,8 +14,6 @@ import {
   pluck,
   toPairs,
   values,
-  uniqBy,
-  path
 } from 'ramda';
 import moment from 'moment';
 import { offsetToCursor } from 'graphql-relay';

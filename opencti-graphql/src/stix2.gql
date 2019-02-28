@@ -305,11 +305,6 @@ define
     relates "target"
     relates "source";
 
-  # targets
-  "compromises" sub "stix_relation"
-    relates "target"
-    relates "source";
-
   # uses
   "uses" sub "stix_relation"
     relates "usage"
