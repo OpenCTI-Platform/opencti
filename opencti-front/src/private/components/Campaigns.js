@@ -188,14 +188,10 @@ class Campaigns extends Component {
         <QueryRenderer
           query={campaignsLinesQuery}
           variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
-          render={({ error, props }) => {
-            if (error) { // Errors
-              return <CampaignsLines data={null} dummy={true}/>;
+          render={({ props }) => {
+            if (props) {
+              return <CampaignsLines data={props} dummy={false}/>;
             }
-            if (props) { // Done
-              return <CampaignsLines data={props}/>;
-            }
-            // Loading
             return <CampaignsLines data={null} dummy={true}/>;
           }}
         />

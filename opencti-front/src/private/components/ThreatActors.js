@@ -189,13 +189,9 @@ class ThreatActors extends Component {
           query={threatActorsLinesQuery}
           variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
           render={({ error, props }) => {
-            if (error) { // Errors
-              return <ThreatActorsLines data={null} dummy={true}/>;
-            }
-            if (props) { // Done
+            if (props) {
               return <ThreatActorsLines data={props}/>;
             }
-            // Loading
             return <ThreatActorsLines data={null} dummy={true}/>;
           }}
         />

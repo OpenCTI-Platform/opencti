@@ -188,14 +188,10 @@ class Sectors extends Component {
         <QueryRenderer
           query={sectorsLinesQuery}
           variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
-          render={({ error, props }) => {
-            if (error) { // Errors
-              return <SectorsLines data={null} dummy={true}/>;
-            }
-            if (props) { // Done
+          render={({ props }) => {
+            if (props) {
               return <SectorsLines data={props}/>;
             }
-            // Loading
             return <SectorsLines data={null} dummy={true}/>;
           }}
         />

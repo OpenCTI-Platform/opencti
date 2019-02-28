@@ -310,6 +310,7 @@ const i18n = {
       Playground: 'Playground',
       Details: 'Détails',
       All: 'Tout',
+      'No entities of this type has been found.': 'Aucune entité de ce type n\'a été trouvée.',
       // Explore
       'Kill chains': 'Kill chains',
       'Explore the victims and the targets of the dataset through space and time.': 'Explorer les victimes et les cibles des données à travers l\'espace et le temps',
@@ -362,6 +363,7 @@ const i18n = {
       relation_localization: 'localisé dans/en',
       'relation_related-to': 'lié à',
       relation_gathering: 'appartient à',
+      'relation_comes-after': 'vient après',
       confidence_0: 'Tous les niveaux de confiance',
       confidence_1: 'Très faible',
       confidence_2: 'Faible',
@@ -428,6 +430,7 @@ const i18n = {
       relation_localization: 'localized in',
       'relation_related-to': 'related to',
       relation_gathering: 'belong to',
+      'relation_comes-after': 'comes after',
       confidence_0: 'All confidence levels',
       confidence_1: 'Very low',
       confidence_2: 'Low',

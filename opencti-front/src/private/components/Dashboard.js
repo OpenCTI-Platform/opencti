@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { compose, head, pathOr } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Card from '@material-ui/core/Card';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
@@ -14,7 +15,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import CardContent from '@material-ui/core/CardContent';
 import {
-  ArrowUpward, Assignment, Layers, DeviceHub, Description,
+  Assignment, Layers, DeviceHub, Description,
 } from '@material-ui/icons';
 import {
   Database,
@@ -28,9 +29,10 @@ import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
 import Tooltip from 'recharts/lib/component/Tooltip';
 import { QueryRenderer } from '../../relay/environment';
 import { truncate } from '../../utils/String';
-import { yearsAgo, now } from '../../utils/Time';
+import { yearsAgo, dayAgo, now } from '../../utils/Time';
 import Theme from '../../components/Theme';
 import inject18n from '../../components/i18n';
+import ItemNumberDifference from '../../components/ItemNumberDifference';
 import ItemMarking from '../../components/ItemMarking';
 
 const styles = theme => ({
@@ -74,24 +76,6 @@ const styles = theme => ({
     color: theme.palette.primary.main,
     fontSize: 40,
   },
-  diff: {
-    float: 'left',
-    margin: '13px 0 0 10px',
-    fontSize: 13,
-  },
-  diffIcon: {
-    float: 'left',
-    color: '#4caf50',
-  },
-  diffNumber: {
-    marginTop: 6,
-    float: 'left',
-    color: '#4caf50',
-  },
-  diffDescription: {
-    margin: '6px 0 0 10px',
-    float: 'left',
-  },
   title: {
     marginTop: 5,
     textTransform: 'uppercase',
@@ -123,7 +107,7 @@ const inlineStyles = {
 const dashboardStixDomainEntitiesTimeSeriesQuery = graphql`
     query DashboardStixDomainEntitiesTimeSeriesQuery($field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
         stixDomainEntitiesTimeSeries(field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
-            date,
+            date
             value
         }
     }
@@ -151,6 +135,15 @@ const dashboardLastReportsQuery = graphql`
     }
 `;
 
+const dashboardStixDomainEntitiesNumberQuery = graphql`
+    query DashboardStixDomainEntitiesNumberQuery($type: String, $endDate: DateTime) {
+        stixDomainEntitiesNumber(type: $type, endDate: $endDate) {
+            total
+            count
+        }
+    }
+`;
+
 class Dashboard extends Component {
   render() {
     const { t, nsd, classes } = this.props;
@@ -166,98 +159,126 @@ class Dashboard extends Component {
         <Grid container={true} spacing={16}>
           <Grid item={true} xs={3}>
             <Card raised={true} classes={{ root: classes.card }} style={{ height: 120 }}>
-              <CardContent>
-                <div className={classes.number}>
-                  6 719
-                </div>
-                <div className={classes.diff}>
-                  <ArrowUpward color='inherit' classes={{ root: classes.diffIcon }}/>
-                  <div className={classes.diffNumber}>
-                    248
-                  </div>
-                  <div className={classes.diffDescription}>
-                    ({t('last 24h')})
-                  </div>
-                </div>
-                <div className='clearfix'/>
-                <div className={classes.title}>
-                  {t('Total entities')}
-                </div>
-                <div className={classes.icon}>
-                  <Database color='inherit' fontSize='large'/>
-                </div>
-              </CardContent>
+              <QueryRenderer
+                query={dashboardStixDomainEntitiesNumberQuery}
+                variables={{ endDate: dayAgo() }}
+                render={({ props }) => {
+                  if (props && props.stixDomainEntitiesNumber) {
+                    const total = props.stixDomainEntitiesNumber.total;
+                    const difference = total - props.stixDomainEntitiesNumber.count;
+                    return (
+                      <CardContent>
+                        <div className={classes.number}>
+                          {total}
+                        </div>
+                        <ItemNumberDifference difference={difference}/>
+                        <div className='clearfix'/>
+                        <div className={classes.title}>
+                          {t('Total entities')}
+                        </div>
+                        <div className={classes.icon}>
+                          <Database color='inherit' fontSize='large'/>
+                        </div>
+                      </CardContent>
+                    );
+                  }
+                  return (
+                    <div style={{ textAlign: 'center', paddingTop: 35 }}><CircularProgress size={40} thickness={2}/></div>
+                  );
+                }}
+              />
             </Card>
             <Card raised={true} classes={{ root: classes.card }} style={{ height: 120 }}>
-              <CardContent>
-                <div className={classes.number}>
-                  1 946
-                </div>
-                <div className={classes.diff}>
-                  <ArrowUpward color='inherit' classes={{ root: classes.diffIcon }}/>
-                  <div className={classes.diffNumber}>
-                    8
-                  </div>
-                  <div className={classes.diffDescription}>
-                    ({t('last 24h')})
-                  </div>
-                </div>
-                <div className='clearfix'/>
-                <div className={classes.title}>
-                  {t('Total reports')}
-                </div>
-                <div className={classes.icon}>
-                  <Assignment color='inherit' fontSize='large'/>
-                </div>
-              </CardContent>
+              <QueryRenderer
+                query={dashboardStixDomainEntitiesNumberQuery}
+                variables={{ type: 'Report', endDate: dayAgo() }}
+                render={({ props }) => {
+                  if (props && props.stixDomainEntitiesNumber) {
+                    const total = props.stixDomainEntitiesNumber.total;
+                    const difference = total - props.stixDomainEntitiesNumber.count;
+                    return (
+                      <CardContent>
+                        <div className={classes.number}>
+                          {total}
+                        </div>
+                        <ItemNumberDifference difference={difference}/>
+                        <div className='clearfix'/>
+                        <div className={classes.title}>
+                          {t('Total reports')}
+                        </div>
+                        <div className={classes.icon}>
+                          <Assignment color='inherit' fontSize='large'/>
+                        </div>
+                      </CardContent>
+                    );
+                  }
+                  return (
+                    <div style={{ textAlign: 'center', paddingTop: 35 }}><CircularProgress size={40} thickness={2}/></div>
+                  );
+                }}
+              />
             </Card>
           </Grid>
           <Grid item={true} xs={3}>
             <Card raised={true} classes={{ root: classes.card }} style={{ height: 120 }}>
-              <CardContent>
-                <div className={classes.number}>
-                  12 568
-                </div>
-                <div className={classes.diff}>
-                  <ArrowUpward color='inherit' classes={{ root: classes.diffIcon }}/>
-                  <div className={classes.diffNumber}>
-                    889
-                  </div>
-                  <div className={classes.diffDescription}>
-                    ({t('last 24h')})
-                  </div>
-                </div>
-                <div className='clearfix'/>
-                <div className={classes.title}>
-                  {t('Total observables')}
-                </div>
-                <div className={classes.icon}>
-                  <Layers color='inherit' fontSize='large'/>
-                </div>
-              </CardContent>
+              <QueryRenderer
+                query={dashboardStixDomainEntitiesNumberQuery}
+                variables={{ type: 'Stix-Observable', endDate: dayAgo() }}
+                render={({ props }) => {
+                  if (props && props.stixDomainEntitiesNumber) {
+                    const total = props.stixDomainEntitiesNumber.total;
+                    const difference = total - props.stixDomainEntitiesNumber.count;
+                    return (
+                      <CardContent>
+                        <div className={classes.number}>
+                          {total}
+                        </div>
+                        <ItemNumberDifference difference={difference}/>
+                        <div className='clearfix'/>
+                        <div className={classes.title}>
+                          {t('Total observables')}
+                        </div>
+                        <div className={classes.icon}>
+                          <Layers color='inherit' fontSize='large'/>
+                        </div>
+                      </CardContent>
+                    );
+                  }
+                  return (
+                    <div style={{ textAlign: 'center', paddingTop: 35 }}><CircularProgress size={40} thickness={2}/></div>
+                  );
+                }}
+              />
             </Card>
             <Card raised={true} classes={{ root: classes.card }} style={{ height: 120 }}>
-              <CardContent>
-                <div className={classes.number}>
-                  156
-                </div>
-                <div className={classes.diff}>
-                  <ArrowUpward color='inherit' classes={{ root: classes.diffIcon }}/>
-                  <div className={classes.diffNumber}>
-                    8
-                  </div>
-                  <div className={classes.diffDescription}>
-                    ({t('last 24h')})
-                  </div>
-                </div>
-                <div className='clearfix'/>
-                <div className={classes.title}>
-                  {t('Total investigations')}
-                </div>
-                <div className={classes.icon}>
-                  <DeviceHub color='inherit' fontSize='large'/>
-                </div>
-              </CardContent>
+              <QueryRenderer
+                query={dashboardStixDomainEntitiesNumberQuery}
+                variables={{ type: 'Workspace', endDate: dayAgo() }}
+                render={({ props }) => {
+                  if (props && props.stixDomainEntitiesNumber) {
+                    const total = props.stixDomainEntitiesNumber.total;
+                    const difference = total - props.stixDomainEntitiesNumber.count;
+                    return (
+                      <CardContent>
+                        <div className={classes.number}>
+                          {total}
+                        </div>
+                        <ItemNumberDifference difference={difference}/>
+                        <div className='clearfix'/>
+                        <div className={classes.title}>
+                          {t('Total investigations')}
+                        </div>
+                        <div className={classes.icon}>
+                          <DeviceHub color='inherit' fontSize='large'/>
+                        </div>
+                      </CardContent>
+                    );
+                  }
+                  return (
+                    <div style={{ textAlign: 'center', paddingTop: 35 }}><CircularProgress size={40} thickness={2}/></div>
+                  );
+                }}
+              />
             </Card>
           </Grid>
           <Grid item={true} xs={6}>
@@ -291,7 +312,7 @@ class Dashboard extends Component {
                         );
                       }
                       return (
-                        <div> &nbsp; </div>
+                        <div style={{ textAlign: 'center', paddingTop: 60 }}><CircularProgress size={40} thickness={2}/></div>
                       );
                     }}
                   />
@@ -342,7 +363,7 @@ class Dashboard extends Component {
                     );
                   }
                   return (
-                    <div> &nbsp; </div>
+                    <div style={{ textAlign: 'center', padding: '60px 0 30px 0' }}><CircularProgress size={40} thickness={2}/></div>
                   );
                 }}
               />
@@ -389,7 +410,7 @@ class Dashboard extends Component {
                     );
                   }
                   return (
-                    <div> &nbsp; </div>
+                    <div style={{ textAlign: 'center', padding: '60px 0 30px 0' }}><CircularProgress size={40} thickness={2}/></div>
                   );
                 }}
               />

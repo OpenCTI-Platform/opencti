@@ -188,14 +188,10 @@ class Incidents extends Component {
         <QueryRenderer
           query={incidentsLinesQuery}
           variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
-          render={({ error, props }) => {
-            if (error) { // Errors
-              return <IncidentsLines data={null} dummy={true}/>;
-            }
-            if (props) { // Done
+          render={({ props }) => {
+            if (props) {
               return <IncidentsLines data={props}/>;
             }
-            // Loading
             return <IncidentsLines data={null} dummy={true}/>;
           }}
         />

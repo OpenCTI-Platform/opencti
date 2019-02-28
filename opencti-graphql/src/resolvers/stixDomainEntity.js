@@ -10,6 +10,7 @@ import {
   search,
   markingDefinitions,
   stixDomainEntitiesTimeSeries,
+  stixDomainEntitiesNumber,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
@@ -37,7 +38,8 @@ const stixDomainEntityResolvers = {
       return findAll(args);
     },
     stixDomainEntitiesTimeSeries: (_, args) =>
-      stixDomainEntitiesTimeSeries(args)
+      stixDomainEntitiesTimeSeries(args),
+    stixDomainEntitiesNumber: (_, args) => stixDomainEntitiesNumber(args)
   },
   StixDomainEntity: {
     __resolveType(obj) {

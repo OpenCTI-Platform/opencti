@@ -16,7 +16,9 @@ import {
   qk,
   timeSeries,
   qkObjUnique,
-  prepareString
+  prepareString,
+  qkSingleValue,
+  prepareDate
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import {
@@ -37,6 +39,21 @@ export const stixDomainEntitiesTimeSeries = args =>
     `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'}`,
     args
   );
+
+export const stixDomainEntitiesNumber = args => ({
+  count: qkSingleValue(
+    `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'}; ${
+      args.endDate
+        ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};`
+        : ''
+    } aggregate count;`
+  ),
+  total: qkSingleValue(
+    `match $x isa ${
+      args.type ? args.type : 'Stix-Domain-Entity'
+    }; aggregate count;`
+  )
+});
 
 export const findById = stixDomainEntityId => loadByID(stixDomainEntityId);
 

@@ -143,9 +143,9 @@ class IncidentCardDummyComponent extends Component {
             action={<Fire className={classes.icon}/>}
           />
           <CardContent classes={{ root: classes.contentDummy }}>
-            <div className={classes.placeholder} style={{ width: '90%' }}/>
-            <div className={classes.placeholder} style={{ width: '95%' }}/>
-            <div className={classes.placeholder} style={{ width: '90%' }}/>
+            <div className='fakeItem' style={{ width: '90%' }}/>
+            <div className='fakeItem' style={{ width: '95%' }}/>
+            <div className='fakeItem' style={{ width: '90%' }}/>
           </CardContent>
         </CardActionArea>
       </Card>

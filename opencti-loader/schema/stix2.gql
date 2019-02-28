@@ -335,10 +335,10 @@ define
     relates "genuine"
     relates "dummy";
 
-  # indicates
-  "indicates" sub "stix_relation"
-    relates "characterize"
-    relates "indicator";
+  # comes-after
+  "comes-after" sub "stix_relation"
+    relates "coming_from"
+    relates "coming_after";
 
   # parentship
   "parentship" sub "stix_relation"
@@ -502,7 +502,9 @@ define
     plays "user"
     plays "usage"
     plays "problem"
-    plays "characterize";
+    plays "characterize"
+    plays "coming_from"
+    plays "coming_after";
 
   "Campaign" sub "Stix-Domain-Entity"
     has "first_seen"

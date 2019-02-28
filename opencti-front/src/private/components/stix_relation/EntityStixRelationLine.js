@@ -184,19 +184,19 @@ class EntityStixRelationLineDummyComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className={classes.placeholder} style={{ width: '80%' }}/>
+              <div className='fakeItem' style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.type}>
-              <div className={classes.placeholder} style={{ width: '70%' }}/>
+              <div className='fakeItem' style={{ width: '70%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.first_seen}>
-              <div className={classes.placeholder} style={{ width: 140 }}/>
+              <div className='fakeItem' style={{ width: 140 }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.last_seen}>
-              <div className={classes.placeholder} style={{ width: 140 }}/>
+              <div className='fakeItem' style={{ width: 140 }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.weight}>
-              <div className={classes.placeholder} style={{ width: 100 }}/>
+              <div className='fakeItem' style={{ width: 100 }}/>
             </div>
           </div>
         }/>

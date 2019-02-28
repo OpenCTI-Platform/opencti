@@ -160,19 +160,19 @@ class MarkingDefinitionLineDummyComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.definition_type}>
-              <div className={classes.placeholder} style={{ width: '80%' }}/>
+              <div className='fakeItem' style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.definition}>
-              <div className={classes.placeholder} style={{ width: '70%' }}/>
+              <div className='fakeItem' style={{ width: '70%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.color}>
-              <div className={classes.placeholder} style={{ width: '60%' }}/>
+              <div className='fakeItem' style={{ width: '60%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.level}>
-              <div className={classes.placeholder} style={{ width: '80%' }}/>
+              <div className='fakeItem' style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-              <div className={classes.placeholder} style={{ width: 140 }}/>
+              <div className='fakeItem' style={{ width: 140 }}/>
             </div>
           </div>
         }/>

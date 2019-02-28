@@ -24,6 +24,12 @@ input:-webkit-autofill:active {
     }
 }
 
+@keyframes loading {
+    100% {
+        transform: translateX(100%)
+    }
+}
+
 @-webkit-keyframes autofill {
     100% {
         background: transparent;
@@ -117,13 +123,33 @@ div.clearfix {
     font-family: Roboto, sans-serif;
 }
 
-.recharts-cartesian-axis-tick  {
+.recharts-cartesian-axis-tick {
     font-size: 10px;
     font-family: Roboto, sans-serif;
 }
 
 div.markdown p {
     margin: 0;
+}
+
+.fakeItem {
+    display: inline-block;
+    position: relative;
+    height: 1em;
+    font-size: 13px;
+    background: #4f4f4f;
+    overflow: hidden;
+}
+
+.fakeItem:after {
+    overflow: hidden;
+    width: 50%;
+    height: 100%;
+    content: '';
+    position: absolute;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0), rgba(255, 255, 255, 0.15), rgba(0, 0, 0, 0));
+    transform: translateX(-100%);
+    animation: loading 1s infinite;
 }
 
 div.srd-node {
@@ -150,7 +176,7 @@ div.srd-port:hover {
 
 .srd-default-link--path-inferred {
     stroke: #607d8b !important;
-    stroke-dasharray: 10,2;
+    stroke-dasharray: 10, 2;
 }
 
 .srd-default-link__label {

@@ -104,10 +104,9 @@ class Organizations extends Component {
             query={organizationsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
-              if (props) { // Done
+              if (props) {
                 return <OrganizationsLines data={props} paginationOptions={paginationOptions}/>;
               }
-              // Loading
               return <OrganizationsLines data={null} dummy={true}/>;
             }}
           />

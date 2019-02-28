@@ -155,16 +155,16 @@ class WorkspaceLineDummyComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className={classes.placeholder} style={{ width: '80%' }}/>
+              <div className='fakeItem' style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.owner}>
-              <div className={classes.placeholder} style={{ width: '70%' }}/>
+              <div className='fakeItem' style={{ width: '70%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              <div className={classes.placeholder} style={{ width: 140 }}/>
+              <div className='fakeItem' style={{ width: 140 }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.marking}>
-              <div className={classes.placeholder} style={{ width: '90%' }}/>
+              <div className='fakeItem' style={{ width: '90%' }}/>
             </div>
           </div>
         }/>

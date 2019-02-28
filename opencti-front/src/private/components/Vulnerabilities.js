@@ -107,10 +107,7 @@ class Vulnerabilities extends Component {
           <QueryRenderer
             query={vulnerabilitiesLinesQuery}
             variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
-            render={({ error, props }) => {
-              if (error) {
-                return <VulnerabilitiesLines data={null} dummy={true}/>;
-              }
+            render={({ props }) => {
               if (props) {
                 return <VulnerabilitiesLines data={props}/>;
               }

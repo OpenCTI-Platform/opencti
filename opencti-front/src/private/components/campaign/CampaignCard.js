@@ -71,11 +71,6 @@ const styles = theme => ({
     height: '.8em',
     backgroundColor: theme.palette.text.disabledDark,
   },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.text.disabled,
-  },
 });
 
 class CampaignCardComponent extends Component {
@@ -142,9 +137,9 @@ class CampaignCardDummyComponent extends Component {
             action={<ChessKnight className={classes.icon}/>}
           />
           <CardContent classes={{ root: classes.contentDummy }}>
-            <div className={classes.placeholder} style={{ width: '90%' }}/>
-            <div className={classes.placeholder} style={{ width: '95%' }}/>
-            <div className={classes.placeholder} style={{ width: '90%' }}/>
+            <div className='fakeItem' style={{ width: '90%' }}/>
+            <div className='fakeItem' style={{ width: '95%' }}/>
+            <div className='fakeItem' style={{ width: '90%' }}/>
           </CardContent>
         </CardActionArea>
       </Card>

@@ -157,16 +157,16 @@ class ExternalReferenceLineDummyComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.source_name}>
-              <div className={classes.placeholder} style={{ width: '80%' }}/>
+              <div className='fakeItem' style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.external_id}>
-              <div className={classes.placeholder} style={{ width: '70%' }}/>
+              <div className='fakeItem' style={{ width: '70%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.url}>
-              <div className={classes.placeholder} style={{ width: '60%' }}/>
+              <div className='fakeItem' style={{ width: '60%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-              <div className={classes.placeholder} style={{ width: 140 }}/>
+              <div className='fakeItem' style={{ width: 140 }}/>
             </div>
           </div>
         }/>

@@ -10,6 +10,7 @@ import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
 import Tooltip from 'recharts/lib/component/Tooltip';
 import { withStyles } from '@material-ui/core/styles';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../relay/environment';
@@ -19,7 +20,8 @@ import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
   paper: {
-    minHeight: '100%',
+    minHeight: 300,
+    height: '100%',
     margin: '10px 0 0 0',
     padding: '0 0 10px 0',
     backgroundColor: theme.palette.paper.background,
@@ -80,8 +82,13 @@ class EntityReportsChart extends Component {
                   </ResponsiveContainer>
                 );
               }
+              if (props) {
+                return (
+                  <div style={{ textAlign: 'center', paddingTop: 140 }}>{t('No entities of this type has been found.')}</div>
+                );
+              }
               return (
-                <div> &nbsp; </div>
+                <div style={{ textAlign: 'center', paddingTop: 140 }}><CircularProgress size={40} thickness={2}/></div>
               );
             }}
           />

@@ -104,10 +104,9 @@ class Groups extends Component {
             query={groupsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
-              if (props) { // Done
+              if (props) {
                 return <GroupsLines data={props} paginationOptions={paginationOptions}/>;
               }
-              // Loading
               return <GroupsLines data={null} dummy={true}/>;
             }}
           />

@@ -149,16 +149,16 @@ class KillChainPhaseLineDummyComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.kill_chain_name}>
-              <div className={classes.placeholder} style={{ width: '80%' }}/>
+              <div className='fakeItem' style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.phase_name}>
-              <div className={classes.placeholder} style={{ width: '70%' }}/>
+              <div className='fakeItem' style={{ width: '70%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.phase_order}>
-              <div className={classes.placeholder} style={{ width: '90%' }}/>
+              <div className='fakeItem' style={{ width: '90%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
-              <div className={classes.placeholder} style={{ width: 140 }}/>
+              <div className='fakeItem' style={{ width: 140 }}/>
             </div>
           </div>
         }/>

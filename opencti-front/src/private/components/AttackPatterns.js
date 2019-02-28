@@ -114,10 +114,7 @@ class AttackPatterns extends Component {
           <QueryRenderer
             query={attackPatternsLinesQuery}
             variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
-            render={({ error, props }) => {
-              if (error) {
-                return <AttackPatternsLines data={null} dummy={true}/>;
-              }
+            render={({ props }) => {
               if (props) {
                 return <AttackPatternsLines data={props}/>;
               }

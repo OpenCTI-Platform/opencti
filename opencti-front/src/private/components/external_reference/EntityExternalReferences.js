@@ -80,8 +80,8 @@ class EntityExternalReferences extends Component {
                         <Avatar classes={{ root: classes.avatarDisabled }}>{i}</Avatar>
                       </ListItemIcon>
                       <ListItemText
-                        primary={<span className={classes.placeholder} style={{ width: '80%' }}/>}
-                        secondary={<span className={classes.placeholder} style={{ width: '90%' }}/>}
+                        primary={<span className='fakeItem' style={{ width: '80%' }}/>}
+                        secondary={<span className='fakeItem' style={{ width: '90%' }}/>}
                       />
                     </ListItem>
                   ))}

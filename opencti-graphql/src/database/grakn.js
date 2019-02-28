@@ -75,7 +75,7 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
       }
     }
     newData[i] = {
-      date: startDateParsed.endOf(interval).format(),
+      date: startDateParsed.startOf(interval).format(),
       value
     };
     startDateParsed.add(1, `${interval}s`);
@@ -548,7 +548,7 @@ export const editInputTx = async (id, input) => {
     const countRemain = await countRemainIterator.next();
     const oldNumOfRef = await countRemain.number();
     // Start the delete phase
-    let deleteQuery;
+    let deleteQuery = null;
     if (oldNumOfRef > 1) {
       // In this case we need to remove the reference to the value
       deleteQuery = `match $m id ${id}; $m has ${key} $del via $d; $del == ${typedOldValue}; delete $d;`;
@@ -558,10 +558,14 @@ export const editInputTx = async (id, input) => {
       const attrGetQuery = `match $x isa ${key}; $x == ${typedOldValue}; $rel($x); get $x;`;
       const attrIterator = await wTx.query(attrGetQuery);
       const attrAnswer = await attrIterator.next();
-      const attrId = await attrAnswer.map().get('x').id;
-      deleteQuery = `match $attr id ${attrId}; delete $attr;`;
+      if (attrAnswer) {
+        const attrId = await attrAnswer.map().get('x').id;
+        deleteQuery = `match $attr id ${attrId}; delete $attr;`;
+      }
     }
-    await wTx.query(deleteQuery);
+    if (deleteQuery) {
+      await wTx.query(deleteQuery);
+    }
   }
 
   // Setup the new attribute
@@ -681,12 +685,7 @@ export const paginate = (
   relationOrderingKey = null,
   infer = false
 ) => {
-  const {
-    first = 200,
-    after,
-    orderBy = null,
-    orderMode = 'asc'
-  } = options;
+  const { first = 200, after, orderBy = null, orderMode = 'asc' } = options;
   const offset = after ? cursorToOffset(after) : 0;
   const instanceKey = /match\s\$(\w+)\s/i.exec(query)[1]; // We need to resolve the key instance used in query.
   const findRelationVariable = /\$(\w+)\((\w+):\$(\w+),[\s\w:$]+\)/i.exec(
@@ -821,7 +820,9 @@ export const paginateRelationships = (query, options, extraRel = null) => {
               : `$rel has ${orderBy} $o; order by $o ${orderMode}`
           };`
         : ''
-    } offset ${offset}; limit ${first}; get;`,
+    } offset ${offset}; limit ${first}; get $rel, $from, $to ${
+      extraRel !== null ? `, $${extraRel}` : ''
+    };`,
     'rel',
     'from',
     'to',

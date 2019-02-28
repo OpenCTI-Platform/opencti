@@ -104,10 +104,9 @@ class Cities extends Component {
             query={citiesLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
-              if (props) { // Done
+              if (props) {
                 return <CitiesLines data={props} paginationOptions={paginationOptions}/>;
               }
-              // Loading
               return <CitiesLines data={null} dummy={true}/>;
             }}
           />

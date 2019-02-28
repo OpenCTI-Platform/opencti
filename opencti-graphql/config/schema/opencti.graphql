@@ -84,6 +84,10 @@ type Distribution {
     label: String!
     value: Int!
 }
+type Number {
+    total: Int!
+    count: Int!
+}
 
 ### Settings
 type Settings {
@@ -1207,6 +1211,7 @@ type Query {
     stixDomainEntity(id: String): StixDomainEntity @auth
     stixDomainEntities(first: Int, after: ID, orderBy: StixDomainEntitiesOrdering, orderMode: OrderingMode, name: String, search: String, externalReferenceId: String, type: String): StixDomainEntityConnection @auth
     stixDomainEntitiesTimeSeries(type: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries] @auth
+    stixDomainEntitiesNumber(type: String, endDate: DateTime): Number @auth
     # StixRelations
     stixRelation(id: String!): StixRelation @auth
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, inferred: Boolean, toId: String, fromTypes: [String], toTypes: [String], relationType: String, resolveInferences: Boolean, resolveRelationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection @auth

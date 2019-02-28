@@ -107,10 +107,7 @@ class Tools extends Component {
           <QueryRenderer
             query={toolsLinesQuery}
             variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
-            render={({ error, props }) => {
-              if (error) {
-                return <ToolsLines data={null} dummy={true}/>;
-              }
+            render={({ props }) => {
               if (props) {
                 return <ToolsLines data={props}/>;
               }

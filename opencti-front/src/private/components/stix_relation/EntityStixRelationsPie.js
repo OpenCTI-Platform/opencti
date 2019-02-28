@@ -8,6 +8,7 @@ import Cell from 'recharts/lib/component/Cell';
 import Legend from 'recharts/lib/component/Legend';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import { withStyles } from '@material-ui/core/styles';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../relay/environment';
@@ -98,8 +99,13 @@ class EntityStixRelationsPie extends Component {
                   </ResponsiveContainer>
                 );
               }
+              if (props) {
+                return (
+                  <div style={{ textAlign: 'center', paddingTop: 140 }}>{t('No entities of this type has been found.')}</div>
+                );
+              }
               return (
-                <div> &nbsp; </div>
+                <div style={{ textAlign: 'center', paddingTop: 140 }}><CircularProgress size={40} thickness={2}/></div>
               );
             }}
           />

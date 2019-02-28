@@ -188,14 +188,10 @@ class IntrusionSets extends Component {
         <QueryRenderer
           query={intrusionSetsLinesQuery}
           variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
-          render={({ error, props }) => {
-            if (error) { // Errors
-              return <IntrusionSetsLines data={null} dummy={true}/>;
-            }
-            if (props) { // Done
+          render={({ props }) => {
+            if (props) {
               return <IntrusionSetsLines data={props}/>;
             }
-            // Loading
             return <IntrusionSetsLines data={null} dummy={true}/>;
           }}
         />

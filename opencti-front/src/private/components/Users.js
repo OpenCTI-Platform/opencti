@@ -118,10 +118,9 @@ class Users extends Component {
             query={usersLinesQuery}
             variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
             render={({ props }) => {
-              if (props) { // Done
+              if (props) {
                 return <UsersLines data={props} paginationOptions={paginationOptions}/>;
               }
-              // Loading
               return <UsersLines data={null} dummy={true}/>;
             }}
           />

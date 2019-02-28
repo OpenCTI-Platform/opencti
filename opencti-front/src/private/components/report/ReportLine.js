@@ -156,16 +156,16 @@ class ReportLineDummyComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className={classes.placeholder} style={{ width: '80%' }}/>
+              <div className='fakeItem' style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.createdByRef}>
-              <div className={classes.placeholder} style={{ width: '70%' }}/>
+              <div className='fakeItem' style={{ width: '70%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.published}>
-              <div className={classes.placeholder} style={{ width: 140 }}/>
+              <div className='fakeItem' style={{ width: 140 }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.marking}>
-              <div className={classes.placeholder} style={{ width: '90%' }}/>
+              <div className='fakeItem' style={{ width: '90%' }}/>
             </div>
           </div>
         }/>

@@ -104,10 +104,9 @@ class Countries extends Component {
             query={countriesLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
-              if (props) { // Done
+              if (props) {
                 return <CountriesLines data={props} paginationOptions={paginationOptions}/>;
               }
-              // Loading
               return <CountriesLines data={null} dummy={true}/>;
             }}
           />

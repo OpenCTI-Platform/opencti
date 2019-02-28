@@ -9,6 +9,7 @@ import PolarAngleAxis from 'recharts/lib/polar/PolarAngleAxis';
 import PolarRadiusAxis from 'recharts/lib/polar/PolarRadiusAxis';
 import Radar from 'recharts/lib/polar/Radar';
 import { withStyles } from '@material-ui/core/styles';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../relay/environment';
@@ -17,7 +18,8 @@ import Theme from '../../../components/Theme';
 
 const styles = theme => ({
   paper: {
-    minHeight: '100%',
+    minHeight: 300,
+    height: '100%',
     margin: '10px 0 0 0',
     padding: '30px 0 0 0',
     backgroundColor: theme.palette.paper.background,
@@ -71,8 +73,13 @@ class EntityStixRelationsRadar extends Component {
                   </ResponsiveContainer>
                 );
               }
+              if (props) {
+                return (
+                  <div style={{ textAlign: 'center', paddingTop: 110 }}>{t('No entities of this type has been found.')}</div>
+                );
+              }
               return (
-                <div> &nbsp; </div>
+                <div style={{ textAlign: 'center', paddingTop: 110 }}><CircularProgress size={40} thickness={2}/></div>
               );
             }}
           />

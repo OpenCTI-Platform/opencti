@@ -34,11 +34,6 @@ const styles = theme => ({
   itemIconDisabled: {
     color: theme.palette.text.disabled,
   },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.text.disabled,
-  },
 });
 
 const inlineStyles = {
@@ -133,13 +128,13 @@ class CityLineDummyComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className={classes.placeholder} style={{ width: '80%' }}/>
+              <div className='fakeItem' style={{ width: '80%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              <div className={classes.placeholder} style={{ width: 80 }}/>
+              <div className='fakeItem' style={{ width: 80 }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-              <div className={classes.placeholder} style={{ width: 80 }}/>
+              <div className='fakeItem' style={{ width: 80 }}/>
             </div>
           </div>
         }/>
