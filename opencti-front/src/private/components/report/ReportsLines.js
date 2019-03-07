@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
+import { assoc, filter, join, map, pathOr, pipe } from "ramda";
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer, InfiniteLoader, List, WindowScroller,
@@ -42,6 +42,24 @@ class ReportsLines extends Component {
     };
   }
 
+  filterList(list) {
+    const { searchTerm } = this.props;
+    const filterByKeyword = n => searchTerm === ''
+      || n.node.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.createdByRef_inline.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.markingDefinitions_inline.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
+    if (searchTerm.length > 0) {
+      return pipe(
+        map(n => n.node),
+        map(n => assoc('createdByRef_inline', pathOr('-', ['createdByRef', 'node', 'name'], n))(n)),
+        map(n => assoc('markingDefinitions_inline', join(', ', map(k => k.node.definition_name, pathOr([], ['markingDefinitions_inline', 'edges'], n))))(n)),
+        map(n => ({ node: n })),
+        filter(filterByKeyword),
+      )(list);
+    }
+    return list;
+  }
+
   _setRef(windowScroller) {
     // noinspection JSUnusedGlobalSymbols
     this._windowScroller = windowScroller;
@@ -62,7 +80,7 @@ class ReportsLines extends Component {
     if (this.props.dummy) {
       return true;
     }
-    const list = pathOr([], ['reports', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['reports', 'edges'], this.props.data));
     return !this.props.relay.hasMore() || index < list.length;
   }
 
@@ -72,7 +90,7 @@ class ReportsLines extends Component {
       return <div key={key} style={style}><ReportLineDummy/></div>;
     }
 
-    const list = pathOr([], ['reports', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['reports', 'edges'], this.props.data));
     if (!this._isRowLoaded({ index })) {
       return <div key={key} style={style}><ReportLineDummy/></div>;
     }
@@ -89,7 +107,7 @@ class ReportsLines extends Component {
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
-    const list = dummy ? [] : pathOr([], ['reports', 'edges'], this.props.data);
+    const list = dummy ? [] : this.filterList(pathOr([], ['reports', 'edges'], this.props.data));
     const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
@@ -137,6 +155,7 @@ ReportsLines.propTypes = {
   relay: PropTypes.object,
   reports: PropTypes.object,
   dummy: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const reportsLinesQuery = graphql`
@@ -181,6 +200,22 @@ export default withStyles(styles)(createPaginationContainer(
             reports(objectId: $objectId, reportClass: $reportClass, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_reports") {
                 edges {
                     node {
+                        id
+                        name
+                        published
+                        createdByRef {
+                            node {
+                                name
+                            }
+                        }
+                        markingDefinitions {
+                            edges {
+                                node {
+                                    id
+                                    definition
+                                }
+                            }
+                        }
                         ...ReportLine_report
                     }
                 }

@@ -35,6 +35,7 @@ export const attackPatternEditionQuery = graphql`
     query AttackPatternEditionContainerQuery($id: String!) {
         attackPattern(id: $id) {
             ...AttackPatternEditionContainer_attackPattern
+            ...AttackPatternEditionIdentity_attackPattern
         }
         me {
             ...AttackPatternEditionContainer_me

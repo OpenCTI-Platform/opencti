@@ -101,11 +101,19 @@ class EntityStixRelationsPie extends Component {
               }
               if (props) {
                 return (
-                  <div style={{ textAlign: 'center', paddingTop: 140 }}>{t('No entities of this type has been found.')}</div>
+                  <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                      {t('No entities of this type has been found.')}
+                    </span>
+                  </div>
                 );
               }
               return (
-                <div style={{ textAlign: 'center', paddingTop: 140 }}><CircularProgress size={40} thickness={2}/></div>
+                <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                      <CircularProgress size={40} thickness={2}/>
+                    </span>
+                </div>
               );
             }}
           />

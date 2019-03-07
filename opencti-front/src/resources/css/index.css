@@ -77,6 +77,14 @@ pre {
     font-weight: 400;
 }
 
+code {
+    font-family: Consolas, monaco, monospace;
+    padding: 3px;
+    font-size: 12px;
+    font-weight: 400;
+    background: rgba(64, 193, 255, 0.2);
+}
+
 span.icon {
     font-family: 'Roboto', sans-serif;
     display: block;

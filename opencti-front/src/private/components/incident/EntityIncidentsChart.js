@@ -10,6 +10,7 @@ import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
 import Tooltip from 'recharts/lib/component/Tooltip';
 import { withStyles } from '@material-ui/core/styles';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../relay/environment';
@@ -79,8 +80,21 @@ class EntityIncidentsChart extends Component {
                   </ResponsiveContainer>
                 );
               }
+              if (props) {
+                return (
+                  <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                      {t('No entities of this type has been found.')}
+                    </span>
+                  </div>
+                );
+              }
               return (
-                <div> &nbsp; </div>
+                <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                      <CircularProgress size={40} thickness={2}/>
+                    </span>
+                </div>
               );
             }}
           />

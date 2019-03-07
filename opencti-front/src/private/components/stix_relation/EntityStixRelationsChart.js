@@ -11,9 +11,10 @@ import YAxis from 'recharts/lib/cartesian/YAxis';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
+import Chip from '@material-ui/core/Chip';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../relay/environment';
-import { now, yearsAgo } from '../../../utils/Time';
+import { monthsAgo, now } from '../../../utils/Time';
 import Theme from '../../../components/Theme';
 import inject18n from '../../../components/i18n';
 
@@ -21,11 +22,15 @@ const styles = theme => ({
   paper: {
     minHeight: 340,
     height: '100%',
-    margin: '10px 0 0 0',
-    padding: '0 0 10px 0',
+    margin: '4px 0 0 0',
     backgroundColor: theme.palette.paper.background,
     color: theme.palette.text.main,
     borderRadius: 6,
+  },
+  chip: {
+    fontSize: 10,
+    height: 20,
+    marginLeft: 10,
   },
 });
 
@@ -39,6 +44,29 @@ const entityStixRelationsChartStixRelationTimeSeriesQuery = graphql`
 `;
 
 class EntityStixRelationsChart extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { period: 36, interval: 2 };
+  }
+
+  changePeriod(period) {
+    let interval = 2;
+    switch (period) {
+      case 12:
+        interval = 0;
+        break;
+      case 24:
+        interval = 1;
+        break;
+      case 36:
+        interval = 2;
+        break;
+      default:
+        interval = 2;
+    }
+    this.setState({ period, interval });
+  }
+
   render() {
     const {
       t,
@@ -59,7 +87,7 @@ class EntityStixRelationsChart extends Component {
       toTypes: toTypes || null,
       field: 'first_seen',
       operation: 'count',
-      startDate: yearsAgo(3),
+      startDate: monthsAgo(this.state.period),
       endDate: now(),
       interval: 'month',
       resolveInferences,
@@ -67,9 +95,15 @@ class EntityStixRelationsChart extends Component {
     };
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant='h4' gutterBottom={true} style={{ float: 'left' }}>
           {title ? t(title) : t('Entity usage')}
         </Typography>
+        <div style={{ float: 'right', marginTop: -6 }}>
+          <Chip classes={{ root: classes.chip }} style={{ backgroundColor: this.state.period === 12 ? '#795548' : '#757575' }} label='12M' component='button' onClick={this.changePeriod.bind(this, 12)}/>
+          <Chip classes={{ root: classes.chip }} style={{ backgroundColor: this.state.period === 24 ? '#795548' : '#757575' }} label='24M' component='button' onClick={this.changePeriod.bind(this, 24)}/>
+          <Chip classes={{ root: classes.chip }} style={{ backgroundColor: this.state.period === 36 ? '#795548' : '#757575' }} label='36M' component='button' onClick={this.changePeriod.bind(this, 36)}/>
+        </div>
+        <div className='clearfix'/>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
             query={entityStixRelationsChartStixRelationTimeSeriesQuery}
@@ -82,7 +116,7 @@ class EntityStixRelationsChart extends Component {
                       top: 20, right: 50, bottom: 20, left: -10,
                     }}>
                       <CartesianGrid strokeDasharray='2 2' stroke='#0f181f'/>
-                      <XAxis dataKey='date' stroke='#ffffff' interval={2} angle={-45} textAnchor='end' tickFormatter={md}/>
+                      <XAxis dataKey='date' stroke='#ffffff' interval={this.state.interval} angle={-45} textAnchor='end' tickFormatter={md}/>
                       <YAxis stroke='#ffffff'/>
                       <Area type='monotone' stroke={Theme.palette.primary.main} dataKey='value'/>
                     </AreaChart>
@@ -91,11 +125,19 @@ class EntityStixRelationsChart extends Component {
               }
               if (props) {
                 return (
-                  <div style={{ textAlign: 'center', paddingTop: 140 }}>{t('No entities of this type has been found.')}</div>
+                  <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                      {t('No entities of this type has been found.')}
+                    </span>
+                  </div>
                 );
               }
               return (
-                <div style={{ textAlign: 'center', paddingTop: 140 }}><CircularProgress size={40} thickness={2}/></div>
+                <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                      <CircularProgress size={40} thickness={2}/>
+                    </span>
+                </div>
               );
             }}
           />

@@ -10,9 +10,9 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import { QueryRenderer } from '../../relay/environment';
-import UsersLines, { usersLinesQuery } from './user/UsersLines';
+import ObservablesLines, { ObservablesLinesQuery } from './Observable/ObservablesLines';
 import inject18n from '../../components/i18n';
-import UserCreation from './user/UserCreation';
+import ObservableCreation from './Observable/ObservableCreation';
 
 const styles = () => ({
   linesContainer: {
@@ -40,38 +40,32 @@ const inlineStyles = {
     padding: 0,
     top: '0px',
   },
+  type: {
+    float: 'left',
+    width: '60%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
   name: {
     float: 'left',
-    width: '20%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  email: {
-    float: 'left',
-    width: '30%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  firstname: {
-    float: 'left',
-    width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  lastname: {
-    float: 'left',
-    width: '15%',
+    width: '60%',
     fontSize: 12,
     fontWeight: '700',
   },
   created_at: {
+    float: 'left',
+    width: '15%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  updated_at: {
     float: 'left',
     fontSize: 12,
     fontWeight: '700',
   },
 };
 
-class Users extends Component {
+class Observables extends Component {
   constructor(props) {
     super(props);
     this.state = { sortBy: 'name', orderAsc: true };
@@ -94,7 +88,6 @@ class Users extends Component {
   render() {
     const { classes } = this.props;
     const paginationOptions = {
-      isUser: true,
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
@@ -107,32 +100,30 @@ class Users extends Component {
             </ListItemIcon>
             <ListItemText primary={
               <div>
-                {this.SortHeader('name', 'name')}
-                {this.SortHeader('email', 'Email address')}
-                {this.SortHeader('firstname', 'Firstname')}
-                {this.SortHeader('lastname', 'Lastname')}
+                {this.SortHeader('name', 'Name')}
                 {this.SortHeader('created_at', 'Creation date')}
+                {this.SortHeader('updated_at', 'Modification date')}
               </div>
             }/>
           </ListItem>
           <QueryRenderer
-            query={usersLinesQuery}
+            query={ObservablesLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
               if (props) {
-                return <UsersLines data={props} paginationOptions={paginationOptions}/>;
+                return <ObservablesLines data={props} paginationOptions={paginationOptions}/>;
               }
-              return <UsersLines data={null} dummy={true}/>;
+              return <ObservablesLines data={null} dummy={true}/>;
             }}
           />
         </List>
-        <UserCreation paginationOptions={paginationOptions}/>
+        <ObservableCreation paginationOptions={paginationOptions}/>
       </div>
     );
   }
 }
 
-Users.propTypes = {
+Observables.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
@@ -141,4 +132,4 @@ Users.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(Users);
+)(Observables);

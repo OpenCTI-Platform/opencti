@@ -85,6 +85,8 @@ define
   "pattern" sub attribute datatype string;
   "valid_from" sub attribute datatype date;
   "valid_until" sub attribute datatype date;
+  "platform" sub attribute datatype string;
+  "required_permission" sub attribute datatype string;
 
   # STIX SRO
   "relationship_type" sub attribute datatype string;
@@ -493,6 +495,8 @@ define
     plays "indicator";
 
   "Attack-Pattern" sub "Stix-Domain-Entity"
+    has "platform"
+    has "required_permission"
     plays "phase_belonging"
     plays "source"
     plays "user"

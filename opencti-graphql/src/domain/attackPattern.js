@@ -1,4 +1,4 @@
-import { assoc, map } from 'ramda';
+import { assoc, map, join } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   deleteByID,
@@ -50,6 +50,32 @@ export const addAttackPattern = async (user, attackPattern) => {
         ? prepareString(attackPattern.description.toLowerCase())
         : ''
     }";
+    ${
+      attackPattern.platform
+        ? join(
+            ' ',
+            map(
+              platform =>
+                `$attackPattern has platform "${prepareString(platform)}";`,
+              attackPattern.platform
+            )
+          )
+        : ''
+    }
+    ${
+      attackPattern.required_permission
+        ? join(
+            ' ',
+            map(
+              requiredPermission =>
+                `$attackPattern has required_permission "${prepareString(
+                  requiredPermission
+                )}";`,
+              attackPattern.required_permission
+            )
+          )
+        : ''
+    }
     $attackPattern has created ${now()};
     $attackPattern has modified ${now()};
     $attackPattern has revoked false;

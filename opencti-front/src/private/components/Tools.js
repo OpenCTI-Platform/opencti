@@ -2,19 +2,41 @@
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { CSVLink } from 'react-csv';
+import {
+  assoc, compose, defaultTo, lensProp,
+  map, over, pipe,
+} from 'ramda';
+import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
-import { QueryRenderer } from '../../relay/environment';
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogActions from '@material-ui/core/DialogActions';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import IconButton from '@material-ui/core/IconButton';
+import {
+  ArrowDropDown, ArrowDropUp, TableChart, SaveAlt,
+} from '@material-ui/icons';
+import { fetchQuery, QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
+import SearchInput from '../../components/SearchInput';
 import ToolsLines, { toolsLinesQuery } from './tool/ToolsLines';
 import ToolCreation from './tool/ToolCreation';
+import { dateFormat } from '../../utils/Time';
 
-const styles = () => ({
+const styles = theme => ({
+  header: {
+    margin: '0 0 10px 0',
+  },
   linesContainer: {
     marginTop: 0,
     paddingTop: 0,
@@ -39,6 +61,17 @@ const styles = () => ({
     float: 'left',
     margin: '-5px 0 0 15px',
   },
+  export: {
+    width: '100%',
+    paddingTop: 10,
+    textAlign: 'center',
+  },
+  loaderCircle: {
+    display: 'inline-block',
+  },
+  rightIcon: {
+    marginLeft: theme.spacing.unit,
+  },
 });
 
 const inlineStyles = {
@@ -50,7 +83,13 @@ const inlineStyles = {
   },
   name: {
     float: 'left',
-    width: '60%',
+    width: '50%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  tool_version: {
+    float: 'left',
+    width: '20%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -67,10 +106,40 @@ const inlineStyles = {
   },
 };
 
+const exportToolsQuery = graphql`
+    query ToolsExportToolsQuery($count: Int!, $cursor: ID, $orderBy: ToolsOrdering, $orderMode: OrderingMode) {
+        tools(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_tools") {
+            edges {
+                node {
+                    id
+                    name
+                    description
+                    tool_version
+                }
+            }
+        }
+    }
+`;
+
 class Tools extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'name', orderAsc: true };
+    this.state = {
+      sortBy: 'name',
+      orderAsc: true,
+      searchTerm: '',
+      view: 'lines',
+      exportCsvOpen: false,
+      exportCsvData: null,
+    };
+  }
+
+  handleChangeView(mode) {
+    this.setState({ view: mode });
+  }
+
+  handleSearch(value) {
+    this.setState({ searchTerm: value });
   }
 
   reverseBy(field) {
@@ -87,10 +156,64 @@ class Tools extends Component {
     );
   }
 
+  handleOpenExport(event) {
+    this.setState({ anchorExport: event.currentTarget });
+  }
+
+  handleCloseExport() {
+    this.setState({ anchorExport: null });
+  }
+
+  handleCloseExportCsv() {
+    this.setState({ exportCsvOpen: false, exportCsvData: null });
+  }
+
+  handleDownloadCSV() {
+    this.handleCloseExport();
+    this.setState({ exportCsvOpen: true });
+    const paginationOptions = {
+      orderBy: this.state.sortBy,
+      orderMode: this.state.orderAsc ? 'asc' : 'desc',
+    };
+    fetchQuery(exportToolsQuery, { count: 10000, ...paginationOptions }).then((data) => {
+      const finalData = pipe(
+        map(n => n.node),
+        map(n => over(lensProp('description'), defaultTo('-'))(n)),
+        map(n => assoc('created', dateFormat(n.created))(n)),
+        map(n => assoc('modified', dateFormat(n.modified))(n)),
+      )(data.tools.edges);
+      this.setState({ exportCsvData: finalData });
+    });
+  }
+
   render() {
-    const { classes } = this.props;
+    const { classes, t } = this.props;
     return (
       <div>
+        <div className={classes.header}>
+          <div style={{ float: 'left' }}>
+            <SearchInput variant='small' onChange={this.handleSearch.bind(this)}/>
+          </div>
+          <div style={{ float: 'right' }}>
+            <IconButton color={this.state.view === 'lines' ? 'secondary' : 'primary'}
+                        classes={{ root: classes.button }}
+                        onClick={this.handleChangeView.bind(this, 'lines')}>
+              <TableChart/>
+            </IconButton>
+            <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true'>
+              <SaveAlt/>
+            </IconButton>
+            <Menu
+              anchorEl={this.state.anchorExport}
+              open={Boolean(this.state.anchorExport)}
+              onClose={this.handleCloseExport.bind(this)}
+              style={{ marginTop: 50 }}
+            >
+              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>{t('CSV file')}</MenuItem>
+            </Menu>
+          </div>
+          <div className='clearfix'/>
+        </div>
         <List classes={{ root: classes.linesContainer }}>
           <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
             <ListItemIcon>
@@ -99,6 +222,7 @@ class Tools extends Component {
             <ListItemText primary={
               <div>
                 {this.SortHeader('name', 'Name')}
+                {this.SortHeader('tool_version', 'Version')}
                 {this.SortHeader('created', 'Creation date')}
                 {this.SortHeader('modified', 'Modification date')}
               </div>
@@ -109,9 +233,9 @@ class Tools extends Component {
             variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
             render={({ props }) => {
               if (props) {
-                return <ToolsLines data={props}/>;
+                return <ToolsLines data={props} searchTerm={this.state.searchTerm}/>;
               }
-              return <ToolsLines data={null} dummy={true}/>;
+              return <ToolsLines data={null} dummy={true} searchTerm={this.state.searchTerm}/>;
             }}
           />
         </List>
@@ -120,6 +244,31 @@ class Tools extends Component {
               orderBy: this.state.sortBy,
               orderMode: this.state.orderAsc ? 'asc' : 'desc',
             }}/>
+        <Dialog
+          open={this.state.exportCsvOpen}
+          onClose={this.handleCloseExportCsv.bind(this)}
+          fullWidth={true}
+        >
+          <DialogTitle>
+            {t('Export data in CSV')}
+          </DialogTitle>
+          <DialogContent>
+            {this.state.exportCsvData === null
+              ? <div className={this.props.classes.export}><CircularProgress size={40} thickness={2} className={this.props.classes.loaderCircle}/></div>
+              : <DialogContentText>{t('The CSV file has been generated with the parameters of the view and is ready for download.')}</DialogContentText>
+            }
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleCloseExportCsv.bind(this)} color='primary'>
+              {t('Cancel')}
+            </Button>
+            {this.state.exportCsvData !== null
+              ? <Button component={CSVLink} data={this.state.exportCsvData} separator={';'} enclosingCharacter={'"'} color='primary' filename={`${t('Tools')}.csv`}>
+                {t('Download')}
+              </Button>
+              : ''}
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }

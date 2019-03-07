@@ -25,12 +25,19 @@ const styles = theme => ({
       width: 350,
     },
   },
+  searchInputSmall: {
+    transition: theme.transitions.create('width'),
+    width: 150,
+    '&:focus': {
+      width: 250,
+    },
+  },
 });
 
 class SearchInput extends Component {
   render() {
     const {
-      t, classes, onChange, onSubmit, variant, keyword
+      t, classes, onChange, onSubmit, variant, keyword,
     } = this.props;
     return (
       <Input
@@ -54,7 +61,10 @@ class SearchInput extends Component {
             <Search/>
           </InputAdornment>
         }
-        classes={{ root: variant === 'inDrawer' ? classes.searchRootInDrawer : classes.searchRoot, input: classes.searchInput }}
+        classes={{
+          root: variant === 'inDrawer' ? classes.searchRootInDrawer : classes.searchRoot,
+          input: variant === 'small' ? classes.searchInputSmall : classes.searchInput,
+        }}
         disableUnderline={true}
       />
     );

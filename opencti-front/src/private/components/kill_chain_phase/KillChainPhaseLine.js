@@ -7,7 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { MoreVert } from '@material-ui/icons';
-import { LockPattern } from 'mdi-material-ui';
+import { Launch } from 'mdi-material-ui';
 import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
 import KillChainPhasePopover from './KillChainPhasePopover';
@@ -83,7 +83,7 @@ class KillChainPhaseLineComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <LockPattern/>
+          <Launch/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
@@ -144,7 +144,7 @@ class KillChainPhaseLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <LockPattern/>
+          <Launch/>
         </ListItemIcon>
         <ListItemText primary={
           <div>

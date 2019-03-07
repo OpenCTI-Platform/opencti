@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {
-  compose, pathOr, head,
+  compose, pipe, pathOr, join, map, sort,
 } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
@@ -42,7 +42,7 @@ const styles = theme => ({
 const inlineStyles = {
   killChainPhases: {
     float: 'left',
-    width: '20%',
+    width: '25%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -50,7 +50,7 @@ const inlineStyles = {
   },
   name: {
     float: 'left',
-    width: '50%',
+    width: '45%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -75,7 +75,15 @@ const inlineStyles = {
 
 class AttackPatternLineComponent extends Component {
   render() {
-    const { fd, classes, attackPattern } = this.props;
+    const {
+      fd, classes, attackPattern, orderAsc,
+    } = this.props;
+    const killchainPhases = pipe(
+      pathOr([], ['killChainPhases', 'edges']),
+      map(n => n.node.phase_name),
+      sort((a, b) => (orderAsc ? a.localeCompare(b) : b.localeCompare(a))),
+      join(', '),
+    )(attackPattern);
     return (
       <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/catalogs/attack_patterns/${attackPattern.id}`}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -84,7 +92,7 @@ class AttackPatternLineComponent extends Component {
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.killChainPhases}>
-              {pathOr('-', ['node', 'phase_name'], head(pathOr([], ['killChainPhases', 'edges'], attackPattern)))}
+              {killchainPhases}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
               {attackPattern.name}
@@ -109,6 +117,7 @@ AttackPatternLineComponent.propTypes = {
   attackPattern: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
+  orderAsc: PropTypes.bool,
 };
 
 const AttackPatternLineFragment = createFragmentContainer(AttackPatternLineComponent, {

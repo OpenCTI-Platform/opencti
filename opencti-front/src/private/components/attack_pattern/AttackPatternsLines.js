@@ -4,7 +4,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
+import {
+  assoc, filter, map, pathOr, pipe, join,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer, InfiniteLoader, List, WindowScroller,
@@ -42,6 +44,22 @@ class AttackPatternsLines extends Component {
     };
   }
 
+  filterList(list) {
+    const { searchTerm } = this.props;
+    const filterByKeyword = n => searchTerm === ''
+      || n.node.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.killChainPhases_inline.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
+    if (searchTerm.length > 0) {
+      return pipe(
+        map(n => n.node),
+        map(n => assoc('killChainPhases_inline', join(', ', map(k => k.node.phase_name, pathOr([], ['killChainPhases', 'edges'], n))))(n)),
+        map(n => ({ node: n })),
+        filter(filterByKeyword),
+      )(list);
+    }
+    return list;
+  }
+
   _setRef(windowScroller) {
     // noinspection JSUnusedGlobalSymbols
     this._windowScroller = windowScroller;
@@ -59,20 +77,21 @@ class AttackPatternsLines extends Component {
   }
 
   _isRowLoaded({ index }) {
-    if (this.props.dummy) {
+    const { dummy } = this.props;
+    if (dummy) {
       return true;
     }
-    const list = pathOr([], ['attackPatterns', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['attackPatterns', 'edges'], this.props.data));
     return !this.props.relay.hasMore() || index < list.length;
   }
 
   _rowRenderer({ index, key, style }) {
-    const { dummy } = this.props;
+    const { dummy, orderAsc } = this.props;
     if (dummy) {
       return <div key={key} style={style}><AttackPatternLineDummy/></div>;
     }
 
-    const list = pathOr([], ['attackPatterns', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['attackPatterns', 'edges'], this.props.data));
     if (!this._isRowLoaded({ index })) {
       return <div key={key} style={style}><AttackPatternLineDummy/></div>;
     }
@@ -81,13 +100,13 @@ class AttackPatternsLines extends Component {
       return <div key={key}>&nbsp;</div>;
     }
     const attackPattern = attackPatternNode.node;
-    return <div key={key} style={style}><AttackPatternLine key={attackPattern.id} attackPattern={attackPattern}/></div>;
+    return <div key={key} style={style}><AttackPatternLine key={attackPattern.id} attackPattern={attackPattern} orderAsc={orderAsc}/></div>;
   }
 
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
-    const list = dummy ? [] : pathOr([], ['attackPatterns', 'edges'], this.props.data);
+    const list = dummy ? [] : this.filterList(pathOr([], ['attackPatterns', 'edges'], this.props.data));
     const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
@@ -134,6 +153,8 @@ AttackPatternsLines.propTypes = {
   relay: PropTypes.object,
   attackPatterns: PropTypes.object,
   dummy: PropTypes.bool,
+  orderAsc: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const attackPatternsLinesQuery = graphql`
@@ -155,6 +176,16 @@ export default withStyles(styles)(createPaginationContainer(
             attackPatterns(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_attackPatterns") {
                 edges {
                     node {
+                        name
+                        killChainPhases {
+                            edges {
+                                node {
+                                    id
+                                    kill_chain_name
+                                    phase_name
+                                }
+                            }
+                        }
                         ...AttackPatternLine_attackPattern
                     }
                 }

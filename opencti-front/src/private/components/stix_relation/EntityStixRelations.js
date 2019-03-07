@@ -555,7 +555,7 @@ class EntityStixRelations extends Component {
               {t('Cancel')}
             </Button>
             {this.state.exportCsvData !== null
-              ? <Button component={CSVLink} data={this.state.exportCsvData} color='primary' filename={`${entityId}_${relationType}.csv`}>
+              ? <Button component={CSVLink} data={this.state.exportCsvData} separator={';'} enclosingCharacter={'"'} color='primary' filename={`${entityId}_${relationType}.csv`}>
                 {t('Download')}
               </Button>
               : ''}

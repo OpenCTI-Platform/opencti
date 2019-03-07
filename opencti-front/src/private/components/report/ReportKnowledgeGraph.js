@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
   compose, map, pipe, forEach, difference, values,
-  pathOr, filter, last, head, includes,
-  indexBy, prop,
+  pathOr, filter, last, includes, indexBy, prop,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -154,8 +153,8 @@ class ReportKnowledgeGraphComponent extends Component {
 
     // decode graph data if any
     let graphData = {};
-    if (Array.isArray(this.props.report.graph_data) && head(this.props.report.graph_data).length > 0) {
-      graphData = JSON.parse(Buffer.from(head(this.props.report.graph_data), 'base64').toString('ascii'));
+    if (this.props.report.graph_data && this.props.report.graph_data.length > 0) {
+      graphData = JSON.parse(Buffer.from(this.props.report.graph_data, 'base64').toString('ascii'));
     }
 
     // set offset & zoom
@@ -234,8 +233,8 @@ class ReportKnowledgeGraphComponent extends Component {
 
     // decode graph data if any
     let graphData = {};
-    if (Array.isArray(this.props.report.graph_data) && head(this.props.report.graph_data).length > 0) {
-      graphData = JSON.parse(Buffer.from(head(this.props.report.graph_data), 'base64').toString('ascii'));
+    if (this.props.report.graph_data && this.props.report.graph_data.length > 0) {
+      graphData = JSON.parse(Buffer.from(this.props.report.graph_data, 'base64').toString('ascii'));
     }
 
     // set offset & zoom

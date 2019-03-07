@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
+import { filter, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer, InfiniteLoader, List, WindowScroller,
@@ -42,6 +42,16 @@ class ToolsLines extends Component {
     };
   }
 
+  filterList(list) {
+    const { searchTerm } = this.props;
+    const filterByKeyword = n => searchTerm === ''
+      || n.node.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
+    if (searchTerm.length > 0) {
+      return filter(filterByKeyword, list);
+    }
+    return list;
+  }
+
   _setRef(windowScroller) {
     // noinspection JSUnusedGlobalSymbols
     this._windowScroller = windowScroller;
@@ -62,7 +72,7 @@ class ToolsLines extends Component {
     if (this.props.dummy) {
       return true;
     }
-    const list = pathOr([], ['tools', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['tools', 'edges'], this.props.data));
     return !this.props.relay.hasMore() || index < list.length;
   }
 
@@ -72,7 +82,7 @@ class ToolsLines extends Component {
       return <div key={key} style={style}><ToolLineDummy/></div>;
     }
 
-    const list = pathOr([], ['tools', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['tools', 'edges'], this.props.data));
     if (!this._isRowLoaded({ index })) {
       return <div key={key} style={style}><ToolLineDummy/></div>;
     }
@@ -87,7 +97,7 @@ class ToolsLines extends Component {
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
-    const list = dummy ? [] : pathOr([], ['tools', 'edges'], this.props.data);
+    const list = dummy ? [] : this.filterList(pathOr([], ['tools', 'edges'], this.props.data));
     const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
@@ -134,6 +144,7 @@ ToolsLines.propTypes = {
   relay: PropTypes.object,
   tools: PropTypes.object,
   dummy: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const toolsLinesQuery = graphql`
@@ -155,6 +166,9 @@ export default withStyles(styles)(createPaginationContainer(
             tools(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_tools") {
                 edges {
                     node {
+                        id
+                        name
+                        description
                         ...ToolLine_tool
                     }
                 }

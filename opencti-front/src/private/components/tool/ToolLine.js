@@ -45,7 +45,15 @@ const styles = theme => ({
 const inlineStyles = {
   name: {
     float: 'left',
-    width: '60%',
+    width: '50%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  tool_version: {
+    float: 'left',
+    width: '20%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -81,6 +89,9 @@ class ToolLineComponent extends Component {
             <div className={classes.bodyItem} style={inlineStyles.name}>
               {tool.name}
             </div>
+            <div className={classes.bodyItem} style={inlineStyles.tool_version}>
+              {tool.tool_version}
+            </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
               {fd(tool.created)}
             </div>
@@ -108,6 +119,7 @@ const ToolLineFragment = createFragmentContainer(ToolLineComponent, {
       fragment ToolLine_tool on Tool {
           id
           name
+          tool_version
           created
           modified
       }
@@ -131,6 +143,9 @@ class ToolLineDummyComponent extends Component {
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
               <div className='fakeItem' style={{ width: '80%' }}/>
+            </div>
+            <div className={classes.bodyItem} style={inlineStyles.tool_version}>
+              <div className='fakeItem' style={{ width: '70%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.created}>
               <div className='fakeItem' style={{ width: 140 }}/>

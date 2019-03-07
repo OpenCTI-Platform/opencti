@@ -21,7 +21,6 @@ const styles = theme => ({
     minHeight: 300,
     height: '100%',
     margin: '10px 0 0 0',
-    padding: '30px 0 0 0',
     backgroundColor: theme.palette.paper.background,
     color: theme.palette.text.main,
     borderRadius: 6,
@@ -75,11 +74,19 @@ class EntityStixRelationsRadar extends Component {
               }
               if (props) {
                 return (
-                  <div style={{ textAlign: 'center', paddingTop: 110 }}>{t('No entities of this type has been found.')}</div>
+                  <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                      {t('No entities of this type has been found.')}
+                    </span>
+                  </div>
                 );
               }
               return (
-                <div style={{ textAlign: 'center', paddingTop: 110 }}><CircularProgress size={40} thickness={2}/></div>
+                <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                      <CircularProgress size={40} thickness={2}/>
+                    </span>
+                </div>
               );
             }}
           />

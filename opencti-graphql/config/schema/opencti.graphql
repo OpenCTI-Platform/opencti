@@ -138,7 +138,8 @@ interface StixDomainEntity {
     type: String!
     name: String!
     description: String
-    graph_data: [String]
+    alias: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -187,7 +188,7 @@ type StixRelation implements GlobalObject {
     last_seen: DateTime
     created: DateTime!
     modified: DateTime!
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -235,7 +236,7 @@ type Workspace implements GlobalObject {
     type: String!
     name: String!
     description: String
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     ownedBy: ownedBy
     markingDefinitions: MarkingDefinitionConnection
@@ -320,7 +321,7 @@ type User implements GlobalObject & StixDomainEntity & Identity {
     grant: [String]
     created: DateTime
     modified: DateTime
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -380,7 +381,7 @@ type Organization implements GlobalObject & StixDomainEntity & Identity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -425,7 +426,7 @@ type Sector implements GlobalObject & StixDomainEntity & Identity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -470,7 +471,7 @@ type City implements GlobalObject & StixDomainEntity & Identity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -515,7 +516,7 @@ type Country implements GlobalObject & StixDomainEntity & Identity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -554,7 +555,7 @@ type Group implements GlobalObject & StixDomainEntity {
     stix_label: [String]
     alias: [String]
     description: String
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     markingDefinitions: MarkingDefinitionConnection
     createdByRef: createdByRef
@@ -727,10 +728,12 @@ type AttackPattern implements GlobalObject & StixDomainEntity {
     stix_label: [String]
     alias: [String]
     description: String
+    platform: [String]
+    required_permission: [String]
     created: DateTime
     modified: DateTime
     revoked: Boolean
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -743,6 +746,8 @@ type AttackPattern implements GlobalObject & StixDomainEntity {
 input AttackPatternAddInput {
     name: String!
     description: String!
+    platform: [String]
+    required_permission: [String]
     createdByRef: String
     markingDefinitions: [String]
     killChainPhases: [String]
@@ -776,7 +781,7 @@ type CourseOfAction implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -826,7 +831,7 @@ type ThreatActor implements GlobalObject & StixDomainEntity & Identity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -877,7 +882,7 @@ type IntrusionSet implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -928,7 +933,7 @@ type Campaign implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -980,7 +985,7 @@ type Incident implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -1026,7 +1031,7 @@ type Malware implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -1073,7 +1078,7 @@ type Tool implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -1120,7 +1125,7 @@ type Vulnerability implements GlobalObject & StixDomainEntity {
     created: DateTime
     modified: DateTime
     revoked: Boolean
-    graph_data: [String]
+    graph_data: String
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -1166,7 +1171,8 @@ type Report implements GlobalObject & StixDomainEntity {
     name: String!
     description: String
     report_class: String
-    graph_data: [String]
+    alias: [String]
+    graph_data: String
     created: DateTime
     modified: DateTime
     published: DateTime

@@ -107,10 +107,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
       this.props.engine.repaintCanvas();
     }
 
-    if (
-      this.props.stixDomainEntity.graph_data
-      !== prevProps.stixDomainEntity.graph_data
-    ) {
+    if (this.props.stixDomainEntity.graph_data !== prevProps.stixDomainEntity.graph_data) {
       this.updateView();
     }
   }
@@ -131,8 +128,8 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
 
     // decode graph data if any
     let graphData = {};
-    if (Array.isArray(stixDomainEntity.graph_data) && head(stixDomainEntity.graph_data).length > 0) {
-      graphData = JSON.parse(Buffer.from(head(stixDomainEntity.graph_data), 'base64').toString('ascii'));
+    if (this.props.stixDomainEntity.graph_data && this.props.stixDomainEntity.graph_data.length > 0) {
+      graphData = JSON.parse(Buffer.from(this.props.stixDomainEntity.graph_data, 'base64').toString('ascii'));
     }
 
     // set offset & zoom
@@ -236,16 +233,8 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
 
     // decode graph data if any
     let graphData = {};
-    if (
-      Array.isArray(this.props.stixDomainEntity.graph_data)
-      && head(this.props.stixDomainEntity.graph_data).length > 0
-    ) {
-      graphData = JSON.parse(
-        Buffer.from(
-          head(this.props.stixDomainEntity.graph_data),
-          'base64',
-        ).toString('ascii'),
-      );
+    if (this.props.stixDomainEntity.graph_data && this.props.stixDomainEntity.graph_data.length > 0) {
+      graphData = JSON.parse(Buffer.from(this.props.stixDomainEntity.graph_data, 'base64').toString('ascii'));
     }
 
     // set offset & zoom

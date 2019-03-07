@@ -197,15 +197,8 @@ class WorkspaceGraphComponent extends Component {
 
     // decode graph data if any
     let graphData = {};
-    if (
-      Array.isArray(this.props.workspace.graph_data)
-      && head(this.props.workspace.graph_data).length > 0
-    ) {
-      graphData = JSON.parse(
-        Buffer.from(head(this.props.workspace.graph_data), 'base64').toString(
-          'ascii',
-        ),
-      );
+    if (this.props.workspace.graph_data && this.props.workspace.graph_data.length > 0) {
+      graphData = JSON.parse(Buffer.from(this.props.workspace.graph_data, 'base64').toString('ascii',));
     }
 
     // set offset & zoom
@@ -331,15 +324,8 @@ class WorkspaceGraphComponent extends Component {
 
     // decode graph data if any
     let graphData = {};
-    if (
-      Array.isArray(this.props.workspace.graph_data)
-      && head(this.props.workspace.graph_data).length > 0
-    ) {
-      graphData = JSON.parse(
-        Buffer.from(head(this.props.workspace.graph_data), 'base64').toString(
-          'ascii',
-        ),
-      );
+    if (this.props.workspace.graph_data && this.props.workspace.graph_data.length > 0) {
+      graphData = JSON.parse(Buffer.from(this.props.workspace.graph_data, 'base64').toString('ascii'));
     }
 
     // set offset & zoom

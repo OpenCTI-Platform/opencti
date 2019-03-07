@@ -325,6 +325,9 @@ const i18n = {
       'Types of the targets': 'Types de cibles',
       'Targeted entities types': 'Types d\'entités ciblées',
       'Targeted entities through time': 'Ciblages d\'entités à travers le temps',
+      Platforms: 'Systèmes d\'exploitation',
+      Platform: 'Système d\'exploitation',
+      'Required permissions': 'Permissions requises',
       // Types
       'entity_threat-actor': 'Acteur',
       'entity_attack-pattern': 'TTP',

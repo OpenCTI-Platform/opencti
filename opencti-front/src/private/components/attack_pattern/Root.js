@@ -26,6 +26,7 @@ const attackPatternQuery = graphql`
             ...AttackPattern_attackPattern
             ...AttackPatternHeader_attackPattern
             ...AttackPatternOverview_attackPattern
+            ...AttackPatternIdentity_attackPattern
             ...AttackPatternReports_attackPattern
             ...AttackPatternKnowledge_attackPattern
         }

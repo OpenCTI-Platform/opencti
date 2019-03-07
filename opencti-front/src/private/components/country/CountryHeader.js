@@ -109,7 +109,7 @@ class CountryHeaderComponent extends Component {
                 onSubmit={this.onSubmitCreateAlias.bind(this)}
                 render={() => (
                   <Form style={{ float: 'right' }}>
-                    <Field name='new_alias' component={TextField} placeholder={t('New alias')} className={classes.aliasInput}/>
+                    <Field name='new_alias' component={TextField} autoFocus={true} placeholder={t('New alias')} className={classes.aliasInput}/>
                   </Form>
                 )}
               />

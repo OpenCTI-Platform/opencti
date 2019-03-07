@@ -8,6 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import AttackPatternHeader from './AttackPatternHeader';
 import AttackPatternOverview from './AttackPatternOverview';
+import AttackPatternIdentity from './AttackPatternIdentity';
 import AttackPatternEdition from './AttackPatternEdition';
 import EntityExternalReferences from '../external_reference/EntityExternalReferences';
 import EntityStixRelationsPie from '../stix_relation/EntityStixRelationsPie';
@@ -30,10 +31,13 @@ class AttackPatternComponent extends Component {
       <div className={classes.container}>
         <AttackPatternHeader attackPattern={attackPattern}/>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={4}>
             <AttackPatternOverview attackPattern={attackPattern}/>
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={4}>
+            <AttackPatternIdentity attackPattern={attackPattern}/>
+          </Grid>
+          <Grid item={true} xs={4}>
             <EntityExternalReferences entityId={attackPattern.id}/>
           </Grid>
         </Grid>
@@ -66,6 +70,7 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
           id
           ...AttackPatternHeader_attackPattern
           ...AttackPatternOverview_attackPattern
+          ...AttackPatternIdentity_attackPattern
       }
   `,
 });

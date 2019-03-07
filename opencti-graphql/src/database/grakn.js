@@ -99,7 +99,8 @@ export const multipleAttributes = [
   'stix_label',
   'alias',
   'grant',
-  'graph_data'
+  'platform',
+  'required_permission'
 ];
 // TODO Remove this after https://github.com/graknlabs/grakn/issues/4828
 export const lowerCaseAttributes = [

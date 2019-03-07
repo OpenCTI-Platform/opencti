@@ -73,7 +73,7 @@ class AttackPatternKnowledgeBar extends Component {
     return (
       <Drawer variant='permanent' anchor='right' classes={{ paper: classes.drawerPaper }}>
         <div className={classes.toolbar}/>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/attackPatterns/${attackPatternId}/knowledge/overview` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge/overview`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge/overview` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge/overview`}>
           <div className={classes.icon}>
             <DeviceHub fontSize='default'/>
           </div>
