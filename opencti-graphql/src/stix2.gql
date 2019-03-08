@@ -538,10 +538,15 @@ define
     plays "genuine"
     plays "localized";
 
+  "Region" sub "Identity"
+    plays "location";
+
   "Country" sub "Identity"
+    plays "localized"
     plays "location";
 
   "City" sub "Identity"
+    plays "localized"
     plays "location";
 
   "Sector" sub "Identity";

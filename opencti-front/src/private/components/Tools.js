@@ -191,16 +191,16 @@ class Tools extends Component {
     return (
       <div>
         <div className={classes.header}>
-          <div style={{ float: 'left' }}>
+          <div style={{ float: 'left', marginTop: -10 }}>
             <SearchInput variant='small' onChange={this.handleSearch.bind(this)}/>
           </div>
-          <div style={{ float: 'right' }}>
+          <div style={{ float: 'right', marginTop: -20 }}>
             <IconButton color={this.state.view === 'lines' ? 'secondary' : 'primary'}
                         classes={{ root: classes.button }}
                         onClick={this.handleChangeView.bind(this, 'lines')}>
               <TableChart/>
             </IconButton>
-            <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true'>
+            <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true' color='primary'>
               <SaveAlt/>
             </IconButton>
             <Menu

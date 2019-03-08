@@ -328,6 +328,7 @@ const i18n = {
       Platforms: 'Systèmes d\'exploitation',
       Platform: 'Système d\'exploitation',
       'Required permissions': 'Permissions requises',
+      None: 'Aucun',
       // Types
       'entity_threat-actor': 'Acteur',
       'entity_attack-pattern': 'TTP',

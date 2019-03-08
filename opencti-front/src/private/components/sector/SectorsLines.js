@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
+import { filter, pathOr, propOr } from "ramda";
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer, InfiniteLoader, List, WindowScroller,
@@ -42,6 +42,17 @@ class SectorsLines extends Component {
     };
   }
 
+  filterList(list) {
+    const searchTerm = propOr('', 'searchTerm', this.props);
+    const filterByKeyword = n => searchTerm === ''
+      || n.node.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
+    if (searchTerm.length > 0) {
+      return filter(filterByKeyword, list);
+    }
+    return list;
+  }
+
   _setRef(windowScroller) {
     // noinspection JSUnusedGlobalSymbols
     this._windowScroller = windowScroller;
@@ -62,7 +73,7 @@ class SectorsLines extends Component {
     if (this.props.dummy) {
       return true;
     }
-    const list = pathOr([], ['sectors', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['sectors', 'edges'], this.props.data));
     return !this.props.relay.hasMore() || index < list.length;
   }
 
@@ -72,7 +83,7 @@ class SectorsLines extends Component {
       return <div key={key} style={style}><SectorLineDummy/></div>;
     }
 
-    const list = pathOr([], ['sectors', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['sectors', 'edges'], this.props.data));
     if (!this._isRowLoaded({ index })) {
       return <div key={key} style={style}><SectorLineDummy/></div>;
     }
@@ -87,7 +98,7 @@ class SectorsLines extends Component {
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
-    const list = dummy ? [] : pathOr([], ['sectors', 'edges'], this.props.data);
+    const list = dummy ? [] : this.filterList(pathOr([], ['sectors', 'edges'], this.props.data));
     const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
@@ -155,6 +166,9 @@ export default withStyles(styles)(createPaginationContainer(
             sectors(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_sectors") {
                 edges {
                     node {
+                        id
+                        name
+                        description
                         ...SectorLine_sector
                     }
                 }

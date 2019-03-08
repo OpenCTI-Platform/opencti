@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
+import { filter, pathOr, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer, ColumnSizer, InfiniteLoader, Grid, WindowScroller,
@@ -44,6 +44,17 @@ class SectorsCards extends Component {
     };
   }
 
+  filterList(list) {
+    const searchTerm = propOr('', 'searchTerm', this.props);
+    const filterByKeyword = n => searchTerm === ''
+      || n.node.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
+    if (searchTerm.length > 0) {
+      return filter(filterByKeyword, list);
+    }
+    return list;
+  }
+
   _setRef(windowScroller) {
     // noinspection JSUnusedGlobalSymbols
     this._windowScroller = windowScroller;
@@ -74,7 +85,7 @@ class SectorsCards extends Component {
     if (this.props.dummy) {
       return true;
     }
-    const list = pathOr([], ['sectors', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['sectors', 'edges'], this.props.data));
     return !this.props.relay.hasMore() || index < list.length;
   }
 
@@ -98,7 +109,7 @@ class SectorsCards extends Component {
       return <div className={className} key={key} style={style}><SectorCardDummy/></div>;
     }
 
-    const list = pathOr([], ['sectors', 'edges'], data);
+    const list = this.filterList(pathOr([], ['sectors', 'edges'], data));
     if (!this._isCellLoaded({ index })) {
       return <div className={className} key={key} style={style}><SectorCardDummy/></div>;
     }
@@ -114,7 +125,7 @@ class SectorsCards extends Component {
 
   render() {
     const { classes, dummy, data } = this.props;
-    const list = dummy ? [] : pathOr([], ['sectors', 'edges'], data);
+    const list = dummy ? [] : this.filterList(pathOr([], ['sectors', 'edges'], data));
     // const globalCount = dummy ? 0 : data.sectors.pageInfo.globalCount;
     // If init screen aka dummy
     let rowCount;
@@ -133,7 +144,7 @@ class SectorsCards extends Component {
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div className={classes.windowScrollerWrapper}>
+          <div className={classes.windowScrollerWrapper} key={this.props.searchTerm}>
             <InfiniteLoader isRowLoaded={this._isCellLoaded}
                             loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
               {({ onRowsRendered }) => {
@@ -187,6 +198,7 @@ SectorsCards.propTypes = {
   relay: PropTypes.object,
   sectors: PropTypes.object,
   dummy: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const sectorsCardsQuery = graphql`
@@ -208,6 +220,9 @@ export default withStyles(styles)(createPaginationContainer(
             sectors(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_sectors") {
                 edges {
                     node {
+                        id
+                        name
+                        description
                         ...SectorCard_sector
                     }
                 }

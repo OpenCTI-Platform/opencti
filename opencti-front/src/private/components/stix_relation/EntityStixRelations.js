@@ -523,7 +523,7 @@ class EntityStixRelations extends Component {
                       onClick={this.handleChangeView.bind(this, 'lines')}>
             <TableChart/>
           </IconButton>
-          <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true'>
+          <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true' color='primary'>
             <SaveAlt/>
           </IconButton>
           <Menu

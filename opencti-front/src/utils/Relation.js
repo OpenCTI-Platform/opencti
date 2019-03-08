@@ -27,6 +27,7 @@ const relationsTypesMapping = {
   campaign_organization: ['targets', 'attributed-to'],
   campaign_user: ['attributed-to', 'targets'],
   campaign_malware: ['uses'],
+  campaign_tool: ['uses'],
   campaign_vulnerability: ['targets'],
   incident_country: ['targets', 'attributed-to'],
   incident_city: ['targets', 'attributed-to'],

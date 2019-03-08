@@ -4,13 +4,22 @@ import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../components/i18n';
 import OrganizationHeader from './OrganizationHeader';
 import EntityReports from '../report/EntityReports';
 
-const styles = () => ({
+const styles = theme => ({
   container: {
     margin: 0,
+  },
+  paper: {
+    minHeight: '100%',
+    margin: '5px 0 0 0',
+    padding: '15px',
+    backgroundColor: theme.palette.paper.background,
+    color: theme.palette.text.main,
+    borderRadius: 6,
   },
 });
 
@@ -20,8 +29,9 @@ class OrganizationReportsComponent extends Component {
     return (
       <div className={classes.container}>
         <OrganizationHeader organization={organization}/>
-        <div style={{ height: 20 }}/>
-        <EntityReports entityId={organization.id}/>
+        <Paper classes={{ root: classes.paper }} elevation={2}>
+          <EntityReports entityId={organization.id}/>
+        </Paper>
       </div>
     );
   }

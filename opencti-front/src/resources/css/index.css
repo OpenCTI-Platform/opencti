@@ -188,7 +188,5 @@ div.srd-port:hover {
 }
 
 .srd-default-link__label {
-    width: 5000px !important;
-    height: 5000px !important;
-    overflow: hidden !important;
+    overflow: visible;
 }

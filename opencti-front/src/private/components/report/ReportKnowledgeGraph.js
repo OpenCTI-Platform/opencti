@@ -485,6 +485,7 @@ class ReportKnowledgeGraphComponent extends Component {
         </IconButton>
         <DiagramWidget
           className={classes.canvas}
+          deleteKeys={[46]}
           diagramEngine={engine}
           inverseZoom={true}
           allowLooseLinks={false}

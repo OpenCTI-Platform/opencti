@@ -74,14 +74,10 @@ const intrusionSetValidation = t => Yup.object().shape({
   last_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  sophistication: Yup.string()
-    .required(t('This field is required')),
-  resource_level: Yup.string()
-    .required(t('This field is required')),
-  primary_motivation: Yup.string()
-    .required(t('This field is required')),
-  secondary_motivation: Yup.string()
-    .required(t('This field is required')),
+  sophistication: Yup.string(),
+  resource_level: Yup.string(),
+  primary_motivation: Yup.string(),
+  secondary_motivation: Yup.string(),
   goal: Yup.string(),
 });
 
@@ -200,6 +196,7 @@ class IntrusionSetEditionIdentityComponent extends Component {
                     />
                   }
                 >
+                  <MenuItem key='none' value=''>{t('None')}</MenuItem>
                   <MenuItem key='individual' value='individual'>{t('resource_individual')}</MenuItem>
                   <MenuItem key='club' value='club'>{t('resource_club')}</MenuItem>
                   <MenuItem key='contest' value='contest'>{t('resource_contest')}</MenuItem>
@@ -227,6 +224,7 @@ class IntrusionSetEditionIdentityComponent extends Component {
                     />
                   }
                 >
+                  <MenuItem key='none' value=''>{t('None')}</MenuItem>
                   <MenuItem key='accidental' value='accidental'>{t('motivation_accidental')}</MenuItem>
                   <MenuItem key='coercion' value='coercion'>{t('motivation_coercion')}</MenuItem>
                   <MenuItem key='dominance' value='dominance'>{t('motivation_dominance')}</MenuItem>
@@ -258,6 +256,7 @@ class IntrusionSetEditionIdentityComponent extends Component {
                     />
                   }
                 >
+                  <MenuItem key='none' value=''>{t('None')}</MenuItem>
                   <MenuItem key='accidental' value='accidental'>{t('motivation_accidental')}</MenuItem>
                   <MenuItem key='coercion' value='coercion'>{t('motivation_coercion')}</MenuItem>
                   <MenuItem key='dominance' value='dominance'>{t('motivation_dominance')}</MenuItem>

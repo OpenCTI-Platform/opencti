@@ -179,6 +179,7 @@ class ThreatActorEditionIdentityComponent extends Component {
                     />
                   }
                 >
+                  <MenuItem key='none' value=''>{t('None')}</MenuItem>
                   <MenuItem key='individual' value='individual'>{t('resource_individual')}</MenuItem>
                   <MenuItem key='club' value='club'>{t('resource_club')}</MenuItem>
                   <MenuItem key='contest' value='contest'>{t('resource_contest')}</MenuItem>
@@ -206,6 +207,7 @@ class ThreatActorEditionIdentityComponent extends Component {
                     />
                   }
                 >
+                  <MenuItem key='none' value=''>{t('None')}</MenuItem>
                   <MenuItem key='accidental' value='accidental'>{t('motivation_accidental')}</MenuItem>
                   <MenuItem key='coercion' value='coercion'>{t('motivation_coercion')}</MenuItem>
                   <MenuItem key='dominance' value='dominance'>{t('motivation_dominance')}</MenuItem>
@@ -237,6 +239,7 @@ class ThreatActorEditionIdentityComponent extends Component {
                     />
                   }
                 >
+                  <MenuItem key='none' value=''>{t('None')}</MenuItem>
                   <MenuItem key='accidental' value='accidental'>{t('motivation_accidental')}</MenuItem>
                   <MenuItem key='coercion' value='coercion'>{t('motivation_coercion')}</MenuItem>
                   <MenuItem key='dominance' value='dominance'>{t('motivation_dominance')}</MenuItem>

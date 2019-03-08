@@ -76,7 +76,7 @@ class ReportAddObjectRefs extends Component {
   }
 
   handleClose() {
-    this.setState({ open: false, search: '' });
+    this.setState({ open: false });
   }
 
   handleSearch(keyword) {
@@ -93,7 +93,7 @@ class ReportAddObjectRefs extends Component {
         <Fab onClick={this.handleOpen.bind(this)}
              color='secondary' aria-label='Add'
              className={classes.createButton}><Add/></Fab>
-        <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
+        <Drawer open={this.state.open} keepMounted={true} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
           <div className={classes.header}>
             <IconButton aria-label='Close' className={classes.closeButton} onClick={this.handleClose.bind(this)}>
               <Close fontSize='small'/>

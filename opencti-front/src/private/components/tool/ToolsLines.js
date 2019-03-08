@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { filter, pathOr } from 'ramda';
+import { filter, pathOr, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer, InfiniteLoader, List, WindowScroller,
@@ -43,7 +43,7 @@ class ToolsLines extends Component {
   }
 
   filterList(list) {
-    const { searchTerm } = this.props;
+    const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''
       || n.node.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
     if (searchTerm.length > 0) {
@@ -104,7 +104,7 @@ class ToolsLines extends Component {
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div className={styles.windowScrollerWrapper}>
+          <div className={styles.windowScrollerWrapper} key={this.props.searchTerm}>
             <InfiniteLoader isRowLoaded={this._isRowLoaded}
                             loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
               {({ onRowsRendered }) => (

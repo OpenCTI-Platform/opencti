@@ -7,8 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight } from '@material-ui/icons';
-import { Biohazard } from 'mdi-material-ui';
+import { KeyboardArrowRight, Public } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
 
@@ -74,7 +73,7 @@ class ThreatActorLineComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActor.id}`}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Biohazard/>
+          <Public/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
@@ -125,7 +124,7 @@ class ThreatActorLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Biohazard/>
+          <Public/>
         </ListItemIcon>
         <ListItemText primary={
           <div>

@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  assoc, filter, map, pathOr, pipe, join,
+  assoc, filter, map, pathOr, pipe, join, propOr,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
@@ -45,7 +45,7 @@ class AttackPatternsLines extends Component {
   }
 
   filterList(list) {
-    const { searchTerm } = this.props;
+    const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''
       || n.node.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || n.node.killChainPhases_inline.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
@@ -113,7 +113,7 @@ class AttackPatternsLines extends Component {
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div className={styles.windowScrollerWrapper}>
+          <div className={styles.windowScrollerWrapper} key={this.props.searchTerm}>
             <InfiniteLoader isRowLoaded={this._isRowLoaded}
                             loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
               {({ onRowsRendered }) => (

@@ -2,29 +2,43 @@
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import {
+  assoc, compose, defaultTo, lensProp, map, over, pipe,
+} from 'ramda';
+import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogActions from '@material-ui/core/DialogActions';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import IconButton from '@material-ui/core/IconButton';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
 import {
-  ArrowDropDown, ArrowDropUp, ArrowUpward, ArrowDownward, Dashboard, TableChart,
+  ArrowDropDown, ArrowDropUp, ArrowUpward, ArrowDownward, Dashboard, TableChart, SaveAlt,
 } from '@material-ui/icons';
-import { QueryRenderer } from '../../relay/environment';
+import { CSVLink } from 'react-csv';
+import { fetchQuery, QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
+import SearchInput from '../../components/SearchInput';
 import ThreatActorsLines, { threatActorsLinesQuery } from './threat_actor/ThreatActorsLines';
 import ThreatActorsCards, { threatActorsCardsQuery, nbCardsToLoad } from './threat_actor/ThreatActorsCards';
 import ThreatActorCreation from './threat_actor/ThreatActorCreation';
+import { dateFormat } from '../../utils/Time';
 
-const styles = () => ({
+const styles = theme => ({
   linesContainer: {
-    marginTop: 0,
+    marginTop: 10,
     paddingTop: 0,
   },
   item: {
@@ -38,7 +52,7 @@ const styles = () => ({
   },
   views: {
     float: 'right',
-    marginTop: -10,
+    marginTop: -20,
   },
   inputLabel: {
     float: 'left',
@@ -47,13 +61,24 @@ const styles = () => ({
     float: 'left',
   },
   sortFieldLabel: {
-    margin: '12px 15px 0 0',
+    margin: '10px 15px 0 0',
     fontSize: 14,
     float: 'left',
   },
   sortIcon: {
     float: 'left',
     margin: '-5px 0 0 15px',
+  },
+  export: {
+    width: '100%',
+    paddingTop: 10,
+    textAlign: 'center',
+  },
+  loaderCircle: {
+    display: 'inline-block',
+  },
+  rightIcon: {
+    marginLeft: theme.spacing.unit,
   },
 });
 
@@ -83,14 +108,39 @@ const inlineStyles = {
   },
 };
 
+const exportThreatActorsQuery = graphql`
+    query ThreatActorsExportThreatActorsQuery($count: Int!, $cursor: ID, $orderBy: ThreatActorsOrdering, $orderMode: OrderingMode) {
+        threatActors(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_threatActors") {
+            edges {
+                node {
+                    id
+                    name
+                    description
+                }
+            }
+        }
+    }
+`;
+
 class ThreatActors extends Component {
   constructor(props) {
     super(props);
-    this.state = { view: 'cards', sortBy: 'name', orderAsc: true };
+    this.state = {
+      view: 'cards',
+      sortBy: 'name',
+      orderAsc: true,
+      searchTerm: '',
+      exportCsvOpen: false,
+      exportCsvData: null,
+    };
   }
 
   handleChangeView(mode) {
     this.setState({ view: mode });
+  }
+
+  handleSearch(value) {
+    this.setState({ searchTerm: value });
   }
 
   handleChangeSortBy(event) {
@@ -115,10 +165,43 @@ class ThreatActors extends Component {
     );
   }
 
+  handleOpenExport(event) {
+    this.setState({ anchorExport: event.currentTarget });
+  }
+
+  handleCloseExport() {
+    this.setState({ anchorExport: null });
+  }
+
+  handleCloseExportCsv() {
+    this.setState({ exportCsvOpen: false, exportCsvData: null });
+  }
+
+  handleDownloadCSV() {
+    this.handleCloseExport();
+    this.setState({ exportCsvOpen: true });
+    const paginationOptions = {
+      orderBy: this.state.sortBy,
+      orderMode: this.state.orderAsc ? 'asc' : 'desc',
+    };
+    fetchQuery(exportThreatActorsQuery, { count: 10000, ...paginationOptions }).then((data) => {
+      const finalData = pipe(
+        map(n => n.node),
+        map(n => over(lensProp('description'), defaultTo('-'))(n)),
+        map(n => assoc('created', dateFormat(n.created))(n)),
+        map(n => assoc('modified', dateFormat(n.modified))(n)),
+      )(data.threatActors.edges);
+      this.setState({ exportCsvData: finalData });
+    });
+  }
+
   renderCardParameters() {
     const { t, classes } = this.props;
     return (
       <div>
+        <div style={{ float: 'left', marginRight: 20 }}>
+          <SearchInput variant='small' onChange={this.handleSearch.bind(this)}/>
+        </div>
         <InputLabel classes={{ root: classes.sortFieldLabel }}>{t('Sort by')}</InputLabel>
         <FormControl classes={{ root: classes.sortField }}>
           <Select
@@ -136,7 +219,7 @@ class ThreatActors extends Component {
           </Select>
         </FormControl>
         <IconButton aria-label='Sort by' onClick={this.reverse.bind(this)} classes={{ root: classes.sortIcon }}>
-          {this.state.orderAsc ? <ArrowDownward /> : <ArrowUpward />}
+          {this.state.orderAsc ? <ArrowDownward/> : <ArrowUpward/>}
         </IconButton>
       </div>
     );
@@ -153,9 +236,9 @@ class ThreatActors extends Component {
         }}
         render={({ props }) => {
           if (props) {
-            return <ThreatActorsCards data={props} dummy={false}/>;
+            return <ThreatActorsCards data={props} dummy={false} searchTerm={this.state.searchTerm}/>;
           }
-          return <ThreatActorsCards data={null} dummy={true}/>;
+          return <ThreatActorsCards data={null} dummy={true} searchTerm={this.state.searchTerm}/>;
         }}
       />
     );
@@ -164,7 +247,7 @@ class ThreatActors extends Component {
   renderLinesParameters() {
     return (
       <div>
-        &nbsp;
+        <SearchInput variant='small' onChange={this.handleSearch.bind(this)}/>
       </div>
     );
   }
@@ -188,11 +271,11 @@ class ThreatActors extends Component {
         <QueryRenderer
           query={threatActorsLinesQuery}
           variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
-          render={({ error, props }) => {
+          render={({ props }) => {
             if (props) {
-              return <ThreatActorsLines data={props}/>;
+              return <ThreatActorsLines data={props} searchTerm={this.state.searchTerm}/>;
             }
-            return <ThreatActorsLines data={null} dummy={true}/>;
+            return <ThreatActorsLines data={null} dummy={true} searchTerm={this.state.searchTerm}/>;
           }}
         />
       </List>
@@ -200,7 +283,7 @@ class ThreatActors extends Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, t } = this.props;
     return (
       <div>
         <div className={classes.parameters}>
@@ -218,15 +301,51 @@ class ThreatActors extends Component {
                       onClick={this.handleChangeView.bind(this, 'lines')}>
             <TableChart/>
           </IconButton>
+          <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true' color='primary'>
+            <SaveAlt/>
+          </IconButton>
+          <Menu
+            anchorEl={this.state.anchorExport}
+            open={Boolean(this.state.anchorExport)}
+            onClose={this.handleCloseExport.bind(this)}
+            style={{ marginTop: 50 }}
+          >
+            <MenuItem onClick={this.handleDownloadCSV.bind(this)}>{t('CSV file')}</MenuItem>
+          </Menu>
         </div>
         <div className='clearfix'/>
         {this.state.view === 'cards' ? this.renderCards() : ''}
         {this.state.view === 'lines' ? this.renderLines() : ''}
         <ThreatActorCreation
-            paginationOptions={{
-              orderBy: this.state.sortBy,
-              orderMode: this.state.orderAsc ? 'asc' : 'desc',
-            }}/>
+          paginationOptions={{
+            orderBy: this.state.sortBy,
+            orderMode: this.state.orderAsc ? 'asc' : 'desc',
+          }}/>
+        <Dialog
+          open={this.state.exportCsvOpen}
+          onClose={this.handleCloseExportCsv.bind(this)}
+          fullWidth={true}
+        >
+          <DialogTitle>
+            {t('Export data in CSV')}
+          </DialogTitle>
+          <DialogContent>
+            {this.state.exportCsvData === null
+              ? <div className={this.props.classes.export}><CircularProgress size={40} thickness={2} className={this.props.classes.loaderCircle}/></div>
+              : <DialogContentText>{t('The CSV file has been generated with the parameters of the view and is ready for download.')}</DialogContentText>
+            }
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleCloseExportCsv.bind(this)} color='primary'>
+              {t('Cancel')}
+            </Button>
+            {this.state.exportCsvData !== null
+              ? <Button component={CSVLink} data={this.state.exportCsvData} separator={';'} enclosingCharacter={'"'} color='primary' filename={`${t('Threat actors')}.csv`}>
+                {t('Download')}
+              </Button>
+              : ''}
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }

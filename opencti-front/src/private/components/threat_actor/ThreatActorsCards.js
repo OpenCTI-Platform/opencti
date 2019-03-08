@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
+import { filter, pathOr, propOr } from "ramda";
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer, ColumnSizer, InfiniteLoader, Grid, WindowScroller,
@@ -44,6 +44,17 @@ class ThreatActorsCards extends Component {
     };
   }
 
+  filterList(list) {
+    const searchTerm = propOr('', 'searchTerm', this.props);
+    const filterByKeyword = n => searchTerm === ''
+      || n.node.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
+    if (searchTerm.length > 0) {
+      return filter(filterByKeyword, list);
+    }
+    return list;
+  }
+
   _setRef(windowScroller) {
     // noinspection JSUnusedGlobalSymbols
     this._windowScroller = windowScroller;
@@ -74,7 +85,7 @@ class ThreatActorsCards extends Component {
     if (this.props.dummy) {
       return true;
     }
-    const list = pathOr([], ['threatActors', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['threatActors', 'edges'], this.props.data));
     return !this.props.relay.hasMore() || index < list.length;
   }
 
@@ -98,7 +109,7 @@ class ThreatActorsCards extends Component {
       return <div className={className} key={key} style={style}><ThreatActorCardDummy/></div>;
     }
 
-    const list = pathOr([], ['threatActors', 'edges'], data);
+    const list = this.filterList(pathOr([], ['threatActors', 'edges'], data));
     if (!this._isCellLoaded({ index })) {
       return <div className={className} key={key} style={style}><ThreatActorCardDummy/></div>;
     }
@@ -114,7 +125,7 @@ class ThreatActorsCards extends Component {
 
   render() {
     const { classes, dummy, data } = this.props;
-    const list = dummy ? [] : pathOr([], ['threatActors', 'edges'], data);
+    const list = dummy ? [] : this.filterList(pathOr([], ['threatActors', 'edges'], data));
     // const globalCount = dummy ? 0 : data.threatActors.pageInfo.globalCount;
     // If init screen aka dummy
     let rowCount;
@@ -133,7 +144,7 @@ class ThreatActorsCards extends Component {
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div className={classes.windowScrollerWrapper}>
+          <div className={classes.windowScrollerWrapper} key={this.props.searchTerm}>
             <InfiniteLoader isRowLoaded={this._isCellLoaded}
                             loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
               {({ onRowsRendered }) => {
@@ -208,6 +219,9 @@ export default withStyles(styles)(createPaginationContainer(
             threatActors(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_threatActors") {
                 edges {
                     node {
+                        id
+                        name
+                        description
                         ...ThreatActorCard_threatActor
                     }
                 }

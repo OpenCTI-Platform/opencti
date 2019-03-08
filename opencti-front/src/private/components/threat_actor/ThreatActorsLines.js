@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
+import { filter, pathOr, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer, InfiniteLoader, List, WindowScroller,
@@ -42,6 +42,17 @@ class ThreatActorsLines extends Component {
     };
   }
 
+  filterList(list) {
+    const searchTerm = propOr('', 'searchTerm', this.props);
+    const filterByKeyword = n => searchTerm === ''
+      || n.node.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
+    if (searchTerm.length > 0) {
+      return filter(filterByKeyword, list);
+    }
+    return list;
+  }
+
   _setRef(windowScroller) {
     // noinspection JSUnusedGlobalSymbols
     this._windowScroller = windowScroller;
@@ -62,7 +73,7 @@ class ThreatActorsLines extends Component {
     if (this.props.dummy) {
       return true;
     }
-    const list = pathOr([], ['threatActors', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['threatActors', 'edges'], this.props.data));
     return !this.props.relay.hasMore() || index < list.length;
   }
 
@@ -72,7 +83,7 @@ class ThreatActorsLines extends Component {
       return <div key={key} style={style}><ThreatActorLineDummy/></div>;
     }
 
-    const list = pathOr([], ['threatActors', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['threatActors', 'edges'], this.props.data));
     if (!this._isRowLoaded({ index })) {
       return <div key={key} style={style}><ThreatActorLineDummy/></div>;
     }
@@ -87,14 +98,14 @@ class ThreatActorsLines extends Component {
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
-    const list = dummy ? [] : pathOr([], ['threatActors', 'edges'], this.props.data);
+    const list = dummy ? [] : this.filterList(pathOr([], ['threatActors', 'edges'], this.props.data));
     const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div className={styles.windowScrollerWrapper}>
+          <div className={styles.windowScrollerWrapper} key={this.props.searchTerm}>
             <InfiniteLoader isRowLoaded={this._isRowLoaded}
                             loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
               {({ onRowsRendered }) => (
@@ -134,6 +145,7 @@ ThreatActorsLines.propTypes = {
   relay: PropTypes.object,
   threatActors: PropTypes.object,
   dummy: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const threatActorsLinesQuery = graphql`
@@ -155,6 +167,9 @@ export default withStyles(styles)(createPaginationContainer(
             threatActors(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_threatActors") {
                 edges {
                     node {
+                        id
+                        name
+                        description
                         ...ThreatActorLine_threatActor
                     }
                 }

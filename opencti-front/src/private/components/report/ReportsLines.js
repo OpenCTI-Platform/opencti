@@ -4,7 +4,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { assoc, filter, join, map, pathOr, pipe } from "ramda";
+import {
+  assoc, filter, join, map, pathOr, pipe, propOr,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer, InfiniteLoader, List, WindowScroller,
@@ -43,7 +45,7 @@ class ReportsLines extends Component {
   }
 
   filterList(list) {
-    const { searchTerm } = this.props;
+    const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''
       || n.node.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || n.node.createdByRef_inline.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
@@ -110,7 +112,7 @@ class ReportsLines extends Component {
     const list = dummy ? [] : this.filterList(pathOr([], ['reports', 'edges'], this.props.data));
     const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
     return (
-      <WindowScroller ref={this._setRef} scrollElement={window}>
+      <WindowScroller ref={this._setRef} scrollElement={window} key={this.props.searchTerm}>
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (

@@ -219,16 +219,16 @@ class AttackPatterns extends Component {
     return (
       <div>
         <div className={classes.header}>
-          <div style={{ float: 'left' }}>
+          <div style={{ float: 'left', marginTop: -10 }}>
             <SearchInput variant='small' onChange={this.handleSearch.bind(this)}/>
           </div>
-          <div style={{ float: 'right' }}>
+          <div style={{ float: 'right', marginTop: -20 }}>
             <IconButton color={this.state.view === 'lines' ? 'secondary' : 'primary'}
                         classes={{ root: classes.button }}
                         onClick={this.handleChangeView.bind(this, 'lines')}>
               <TableChart/>
             </IconButton>
-            <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true'>
+            <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true' color='primary'>
               <SaveAlt/>
             </IconButton>
             <Menu
@@ -258,7 +258,7 @@ class AttackPatterns extends Component {
           </ListItem>
           <QueryRenderer
             query={attackPatternsLinesQuery}
-            variables={{ count: this.state.searchTerm.length > 0 ? 10000 : 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
+            variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
             render={({ props }) => {
               if (props) {
                 return <AttackPatternsLines data={props} orderAsc={this.state.orderAsc} searchTerm={this.state.searchTerm}/>;
@@ -291,7 +291,7 @@ class AttackPatterns extends Component {
               {t('Cancel')}
             </Button>
             {this.state.exportCsvData !== null
-              ? <Button component={CSVLink} data={this.state.exportCsvData} separator={';'} enclosingCharacter={'"'} color='primary' filename={`${t('Attack patterns')}.csv`}>
+              ? <Button component={CSVLink} data={this.state.exportCsvData} color='primary' filename={`${t('Attack patterns')}.csv`}>
                 {t('Download')}
               </Button>
               : ''}

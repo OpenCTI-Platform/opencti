@@ -115,9 +115,8 @@ class StixDomainEntityKnowledge extends Component {
       && includes(0, weights)
       && equals(toTypes, ['Threat-Actor', 'Intrusion-Set', 'Campaign'])) {
       return true;
-    } else {
-      return false;
     }
+    return false;
   }
 
   handleOpenToTypes() {

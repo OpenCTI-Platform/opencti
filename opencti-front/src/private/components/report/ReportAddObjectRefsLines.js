@@ -205,6 +205,7 @@ const ReportAddObjectRefsLines = createPaginationContainer(
     data: graphql`
         fragment ReportAddObjectRefsLines_data on Query @argumentDefinitions(
             search: {type: "String"}
+            
             count: {type: "Int", defaultValue: 25}
             cursor: {type: "ID"}
             orderBy: {type: "StixDomainEntitiesOrdering", defaultValue: ID}

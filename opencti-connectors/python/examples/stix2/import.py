@@ -120,7 +120,7 @@ for stix_object in enterprise_attack_data['objects']:
         if 'aliases' in stix_object:
             new_aliases = stix_object_result['alias'] + list(set(stix_object['aliases']) - set(stix_object_result['alias']))
             opencti.update_stix_domain_entity_field(stix_object_id, 'alias', new_aliases)
-        if 'x_mitre_aliases' in stix_object:
+        elif 'x_mitre_aliases' in stix_object:
             new_aliases = stix_object_result['alias'] + list(set(stix_object['x_mitre_aliases']) - set(stix_object_result['alias']))
             opencti.update_stix_domain_entity_field(stix_object_id, 'alias', new_aliases)
 
