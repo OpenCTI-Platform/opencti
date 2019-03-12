@@ -274,11 +274,6 @@ class ReportEditionOverviewComponent extends Component {
                        onFocus={this.handleChangeFocus.bind(this)}
                        onSubmit={this.handleSubmitField.bind(this)}
                        helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='name'/>}/>
-                <Field name='published' component={TextField} label={t('Publication date')}
-                       fullWidth={true} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='published'/>}/>
                 <Field name='report_class'
                        component={Select}
                        onFocus={this.handleChangeFocus.bind(this)}
@@ -355,7 +350,6 @@ const ReportEditionOverview = createFragmentContainer(ReportEditionOverviewCompo
       fragment ReportEditionOverview_report on Report {
           id
           name
-          published
           description
           report_class
           createdByRef {

@@ -44,6 +44,7 @@ class ToolComponent extends Component {
               relationType='uses'
               resolveInferences={true}
               resolveRelationType='attributed-to'
+              resolveRelationRole='origin'
             />
           </Grid>
           <Grid item={true} xs={4}>
@@ -54,6 +55,7 @@ class ToolComponent extends Component {
               field='phase_name'
               resolveInferences={true}
               resolveRelationType='attributed-to'
+              resolveRelationRole='origin'
             />
           </Grid>
           <Grid item={true} xs={4}>

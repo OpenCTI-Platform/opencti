@@ -10,7 +10,7 @@ import {
 import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../components/i18n';
-import TextField from '../../../components/TextField';
+import DatePickerField from '../../../components/DatePickerField';
 import Select from '../../../components/Select';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation, WS_ACTIVATED } from '../../../relay/environment';
@@ -138,12 +138,12 @@ class IntrusionSetEditionIdentityComponent extends Component {
           render={() => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field name='first_seen' component={TextField} label={t('First seen')}
+                <Field name='first_seen' component={DatePickerField} label={t('First seen')}
                        fullWidth={true}
                        onFocus={this.handleChangeFocus.bind(this)}
                        onSubmit={this.handleSubmitField.bind(this)}
                        helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='first_seen'/>}/>
-                <Field name='last_seen' component={TextField} label={t('Last seen')}
+                <Field name='last_seen' component={DatePickerField} label={t('Last seen')}
                        fullWidth={true} style={{ marginTop: 10 }}
                        onFocus={this.handleChangeFocus.bind(this)}
                        onSubmit={this.handleSubmitField.bind(this)}

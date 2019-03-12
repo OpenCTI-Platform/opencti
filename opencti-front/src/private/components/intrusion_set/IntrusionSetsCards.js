@@ -198,6 +198,7 @@ IntrusionSetsCards.propTypes = {
   relay: PropTypes.object,
   intrusionSets: PropTypes.object,
   dummy: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const intrusionSetsCardsQuery = graphql`

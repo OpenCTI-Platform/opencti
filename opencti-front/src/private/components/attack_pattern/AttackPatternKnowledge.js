@@ -39,14 +39,51 @@ class AttackPatternKnowledgeComponent extends Component {
         <AttackPatternKnowledgeBar attackPatternId={attackPattern.id}/>
         <div className={classes.content}>
           <Route exact path='/dashboard/catalogs/attack_patterns/:attackPatternId/knowledge/relations/:relationId' render={
-            routeProps => <StixRelation entityId={attackPattern.id} {...routeProps} inversedRelations={inversedRelations}/>
+            routeProps => <StixRelation
+              entityId={attackPattern.id}
+              inversedRelations={inversedRelations}
+              {...routeProps}
+            />
           }/>
-          {location.pathname.includes('overview') ? <StixDomainEntityKnowledge stixDomainEntityId={attackPattern.id}/> : ''}
-          {location.pathname.includes('intrusion_sets') ? <EntityStixRelations entityId={attackPattern.id} relationType='uses' targetEntityTypes={['Intrusion-Set']} entityLink={link}/> : ''}
-          {location.pathname.includes('campaigns') ? <EntityStixRelations entityId={attackPattern.id} relationType='uses' targetEntityTypes={['Campaign']} entityLink={link}/> : ''}
-          {location.pathname.includes('incidents') ? <EntityStixRelations entityId={attackPattern.id} relationType='uses' targetEntityTypes={['Incident']} entityLink={link}/> : ''}
-          {location.pathname.includes('malwares') ? <EntityStixRelations entityId={attackPattern.id} relationType='uses' targetEntityTypes={['Malware']} entityLink={link}/> : ''}
-          {location.pathname.includes('tools') ? <EntityStixRelations entityId={attackPattern.id} relationType='uses' targetEntityTypes={['Tools']} entityLink={link}/> : ''}
+
+          {location.pathname.includes('overview') ? <StixDomainEntityKnowledge
+            stixDomainEntityId={attackPattern.id}
+          /> : ''}
+
+          {location.pathname.includes('intrusion_sets') ? <EntityStixRelations
+            entityId={attackPattern.id}
+            relationType='uses'
+            targetEntityTypes={['Intrusion-Set']}
+            entityLink={link}
+          /> : ''}
+
+          {location.pathname.includes('campaigns') ? <EntityStixRelations
+            entityId={attackPattern.id}
+            relationType='uses'
+            targetEntityTypes={['Campaign']}
+            entityLink={link}
+          /> : ''}
+
+          {location.pathname.includes('incidents') ? <EntityStixRelations
+            entityId={attackPattern.id}
+            relationType='uses'
+            targetEntityTypes={['Incident']}
+            entityLink={link}
+          /> : ''}
+
+          {location.pathname.includes('malwares') ? <EntityStixRelations
+            entityId={attackPattern.id}
+            relationType='uses'
+            targetEntityTypes={['Malware']}
+            entityLink={link}/> : ''
+          }
+
+          {location.pathname.includes('tools') ? <EntityStixRelations
+            entityId={attackPattern.id}
+            relationType='uses'
+            targetEntityTypes={['Tools']}
+            entityLink={link}
+          /> : ''}
         </div>
       </div>
     );

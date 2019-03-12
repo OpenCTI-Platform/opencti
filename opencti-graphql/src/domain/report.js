@@ -134,6 +134,7 @@ export const addReport = async (user, report) => {
     $report has published_month "${monthFormat(report.published)}";
     $report has published_year "${yearFormat(report.published)}";
     $report has report_class "${prepareString(report.report_class)}";
+    $report has object_status 0;
     $report has graph_data "";
     $report has created ${now()};
     $report has modified ${now()};

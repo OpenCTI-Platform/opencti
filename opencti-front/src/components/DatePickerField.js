@@ -1,25 +1,62 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { DatePicker } from 'material-ui-pickers';
+import { InlineDatePicker } from 'material-ui-pickers';
+import { dateFormat } from '../utils/Time';
 import inject18n from './i18n';
 
 class DatePickerField extends Component {
   render() {
-    const { t, field, form, ...other } = this.props;
+    const {
+      t, fld, fsd, md, fd, yd, nsd, field, form, onFocus, onSubmit, onChange, ...other
+    } = this.props;
     const currentError = form.errors[field.name];
     return (
-      <DatePicker
-        keyboard
-        clearable
-        disablePast
+      <InlineDatePicker
+        onlyCalendar={true}
+        autoOk={true}
+        keyboard={true}
+        allowKeyboardControl={true}
+        clearable={true}
         name={field.name}
         value={field.value}
-        format='yyyy-MM-dd'
-        helperText={currentError}
-        error={Boolean(currentError)}
+        onFocus={() => {
+          if (typeof onFocus === 'function') {
+            onFocus(field.name);
+          }
+        }}
+        onBlur={() => {
+          form.setFieldTouched(
+            field.name,
+            true,
+            true,
+          );
+        }}
+        onKeyPress={(event) => {
+          form.setFieldTouched(
+            field.name,
+            true,
+            true,
+          );
+          if (typeof onSubmit === 'function' && event.key === 'Enter') {
+            onSubmit(field.name, event.target.value);
+          }
+        }}
+        onChange={(date) => {
+          form.setFieldValue(
+            field.name,
+            date,
+          );
+          if (typeof onChange === 'function') {
+            onChange(field.name, date);
+          }
+          if (typeof onSubmit === 'function') {
+            onSubmit(field.name, dateFormat(date));
+          }
+        }}
+        format='YYYY-MM-DD'
+        helperText={form.errors[field.name] !== undefined && form.touched[field.name] ? currentError : ''}
+        error={form.errors[field.name] !== undefined && form.touched[field.name]}
         onError={(_, error) => form.setFieldError(field.name, error)}
-        onChange={date => form.setFieldValue(field.name, date, true)}
-        mask={value => (value ? [/\d/, /\d/, '/', /\d/, /\d/, '/', /\d/, /\d/, /\d/, /\d/] : [])}
         {...other}
       />
     );

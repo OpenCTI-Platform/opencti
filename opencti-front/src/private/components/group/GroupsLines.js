@@ -137,6 +137,7 @@ GroupsLines.propTypes = {
   relay: PropTypes.object,
   groups: PropTypes.object,
   dummy: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const groupsLinesQuery = graphql`

@@ -85,6 +85,15 @@ class ThreatActorKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Knowledge graph')}</span>
           </div>
         </Paper>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/victimology` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/victimology`}>
+          <div className={classes.icon}>
+            <Target fontSize='default'/>
+          </div>
+          <div className={classes.content}>
+            <span className={classes.title}>{t('Victimology')}</span><br />
+            <span className={classes.subtitle}>{t('Targeted by this actor')}</span>
+          </div>
+        </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/intrusion_sets` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/intrusion_sets`}>
           <div className={classes.icon}>
             <Diamond fontSize='default'/>
@@ -110,15 +119,6 @@ class ThreatActorKnowledgeBar extends Component {
           <div className={classes.content}>
             <span className={classes.title}>{t('Incidents')}</span><br />
             <span className={classes.subtitle}>{t('Attributed to this actor')}</span>
-          </div>
-        </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/victimology` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/victimology`}>
-          <div className={classes.icon}>
-            <Target fontSize='default'/>
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Victimology')}</span><br />
-            <span className={classes.subtitle}>{t('Targeted by this actor')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/malwares` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/malwares`}>

@@ -198,6 +198,7 @@ ThreatActorsCards.propTypes = {
   relay: PropTypes.object,
   threatActors: PropTypes.object,
   dummy: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const threatActorsCardsQuery = graphql`

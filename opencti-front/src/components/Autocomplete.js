@@ -58,6 +58,14 @@ const styles = theme => ({
     left: 0,
     right: 0,
   },
+  paperReversed: {
+    position: 'absolute',
+    transform: 'translate(0, -340px)',
+    zIndex: 5000,
+    left: 0,
+    right: 0,
+    height: 300,
+  },
   divider: {
     height: theme.spacing.unit * 2,
   },
@@ -153,9 +161,10 @@ function MultiValue(props) {
 }
 
 function Menu(props) {
+  console.log(props)
   return (
-    <Paper square className={props.selectProps.classes.paper} {...props.innerProps}>
-      {props.children}
+    <Paper square className={props.selectProps.reverseMenu ? props.selectProps.classes.paperReversed : props.selectProps.classes.paper} {...props.innerProps}>
+        {props.children}
     </Paper>
   );
 }
@@ -194,6 +203,7 @@ class Autocomplete extends Component {
       helperText,
       multiple,
       labelDisplay,
+      reverseMenu,
     } = this.props;
     const errorText = errors[field.name];
     const hasError = dirty && errorText !== undefined;
@@ -255,6 +265,7 @@ class Autocomplete extends Component {
             placeholder={label}
             isMulti={multiple}
             openMenuOnClick={false}
+            reverseMenu={reverseMenu}
             isDisabled={isSubmitting}
             noOptionsMessage={() => <span style={{ fontStyle: 'italic' }}>{t('No available options')}</span>}
           />
@@ -284,6 +295,8 @@ Autocomplete.propTypes = {
   onFocus: PropTypes.func,
   helperText: PropTypes.node,
   multiple: PropTypes.bool,
+  labelDisplay: PropTypes.bool,
+  reverseMenu: PropTypes.bool,
 };
 
 export default compose(

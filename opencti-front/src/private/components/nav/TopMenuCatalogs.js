@@ -9,6 +9,7 @@ import {
   AccountBalance,
   Flag,
   BugReport,
+  Map,
 } from '@material-ui/icons';
 import { Application, CityVariant, LockPattern } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
@@ -46,6 +47,11 @@ class TopMenuSources extends Component {
           {t('Vulnerabilities')}
         </Button>
         <div style={{ paddingRight: 20, display: 'inline-block' }}>|</div>
+        <Button component={Link} to='/dashboard/catalogs/regions' variant={location.pathname === '/dashboard/catalogs/regions' ? 'contained' : 'text'} size='small'
+                color={location.pathname === '/dashboard/catalogs/regions' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+          <Map className={classes.icon} fontSize='small'/>
+          {t('Regions')}
+        </Button>
         <Button component={Link} to='/dashboard/catalogs/countries' variant={location.pathname === '/dashboard/catalogs/countries' ? 'contained' : 'text'} size='small'
                 color={location.pathname === '/dashboard/catalogs/countries' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <Flag className={classes.icon} fontSize='small'/>

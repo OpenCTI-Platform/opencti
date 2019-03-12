@@ -137,6 +137,7 @@ ExternalReferencesLines.propTypes = {
   relay: PropTypes.object,
   externalReferences: PropTypes.object,
   dummy: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const externalReferencesLinesQuery = graphql`

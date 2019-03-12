@@ -11,7 +11,6 @@ import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
 import StixDomainEntities from './components/StixDomainEntities';
-import Explore from './components/Explore';
 import ExploreVictimology from './components/explore/Victimology';
 import Workspaces from './components/Workspaces';
 import RootWorkspace from './components/workspace/Root';
@@ -36,6 +35,8 @@ import Tools from './components/Tools';
 import RootTool from './components/tool/Root';
 import Vulnerabilities from './components/Vulnerabilities';
 import RootVulnerabilities from './components/vulnerability/Root';
+import Regions from './components/Regions';
+import RootRegion from './components/region/Root';
 import Countries from './components/Countries';
 import RootCountry from './components/country/Root';
 import Cities from './components/Cities';
@@ -109,8 +110,9 @@ class Root extends Component {
                       <Switch>
                         <BoundaryRoute exact path='/dashboard' component={Dashboard}/>
                         <BoundaryRoute exact path='/dashboard/search/:keyword' render={routeProps => <StixDomainEntities {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/explore' component={Explore}/>
+                        <BoundaryRoute exact path='/dashboard/explore' render={() => (<Redirect to='/dashboard/explore/victimology'/>)}/>
                         <BoundaryRoute exact path='/dashboard/explore/victimology' component={ExploreVictimology}/>
+                        <BoundaryRoute path='/dashboard/explore/victimology/:stixDomainEntityId' component={ExploreVictimology}/>
                         <BoundaryRoute exact path='/dashboard/investigate' component={Workspaces}/>
                         <BoundaryRoute exact path='/dashboard/investigate/:workspaceId' component={RootWorkspace}/>
                         <BoundaryRoute exact path='/dashboard/knowledge' render={() => (<Redirect to='/dashboard/knowledge/threat_actors'/>)}/>
@@ -139,6 +141,8 @@ class Root extends Component {
                         <BoundaryRoute path='/dashboard/catalogs/tools/:toolId' render={routeProps => <RootTool {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/catalogs/vulnerabilities' component={Vulnerabilities}/>
                         <BoundaryRoute path='/dashboard/catalogs/vulnerabilities/:vulnerabilityId' render={routeProps => <RootVulnerabilities {...routeProps} me={props.me}/>}/>
+                        <BoundaryRoute exact path='/dashboard/catalogs/regions' component={Regions}/>
+                        <BoundaryRoute path='/dashboard/catalogs/regions/:regionId' render={routeProps => <RootRegion {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/catalogs/countries' component={Countries}/>
                         <BoundaryRoute path='/dashboard/catalogs/countries/:countryId' render={routeProps => <RootCountry {...routeProps} me={props.me}/>}/>
                         <BoundaryRoute exact path='/dashboard/catalogs/cities' component={Cities}/>

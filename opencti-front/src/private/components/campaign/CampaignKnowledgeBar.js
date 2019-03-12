@@ -93,6 +93,15 @@ class CampaignKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Origins of this campaign')}</span>
           </div>
         </Paper>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/victimology` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/victimology`}>
+          <div className={classes.icon}>
+            <Target fontSize='default'/>
+          </div>
+          <div className={classes.content}>
+            <span className={classes.title}>{t('Victimology')}</span><br />
+            <span className={classes.subtitle}>{t('Targeted in this campaign')}</span>
+          </div>
+        </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/incidents` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/incidents`}>
           <div className={classes.icon}>
             <Fire fontSize='default'/>
@@ -102,22 +111,13 @@ class CampaignKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Attributed to this campaign')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/campaigns` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/campaigns`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/malwares` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/malwares`}>
           <div className={classes.icon}>
             <Biohazard fontSize='default'/>
           </div>
           <div className={classes.content}>
             <span className={classes.title}>{t('Malwares')}</span><br />
             <span className={classes.subtitle}>{t('Used in this campaign')}</span>
-          </div>
-        </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/victimology` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/victimology`}>
-          <div className={classes.icon}>
-            <Target fontSize='default'/>
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Victimology')}</span><br />
-            <span className={classes.subtitle}>{t('Targeted in this campaign')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/ttp` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/ttp`}>

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
@@ -37,17 +37,13 @@ class ReportOverviewComponent extends Component {
           </Typography>
           {t(`report_${report.report_class}`)}
           <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
-            {t('Publication date')}
+            {t('Creation date')}
           </Typography>
-          {fld(report.published)}
+          {fld(report.created)}
           <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
             {t('Modification date')}
           </Typography>
           {fld(report.modified)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
-            {t('Author')}
-          </Typography>
-          {pathOr('-', ['createdByRef', 'node', 'name'], report)}
           <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
             {t('Description')}
           </Typography>
@@ -71,14 +67,9 @@ const ReportOverview = createFragmentContainer(ReportOverviewComponent, {
           id
           name
           description
-          published
+          created
           modified
           report_class
-          createdByRef {
-              node {
-                  name
-              }
-          }
       }
   `,
 });

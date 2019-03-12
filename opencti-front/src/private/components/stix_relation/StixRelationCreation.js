@@ -7,15 +7,14 @@ import {
 } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogActions from '@material-ui/core/DialogActions';
+import Drawer from '@material-ui/core/Drawer';
+import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { ArrowRightAlt } from '@material-ui/icons';
+import { Close, ArrowRightAlt } from '@material-ui/icons';
 import { fetchQuery, commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { itemColor } from '../../../utils/Colors';
@@ -26,17 +25,9 @@ import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
 import { countriesLinesSearchQuery } from '../country/CountriesLines';
 import Autocomplete from '../../../components/Autocomplete';
+import DatePickerField from '../../../components/DatePickerField';
 
 const styles = theme => ({
-  loader: {
-    width: '100%',
-    height: 180,
-    paddingTop: 50,
-    textAlign: 'center',
-  },
-  loaderCircle: {
-    display: 'inline-block',
-  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -47,9 +38,6 @@ const styles = theme => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
-  },
-  dialogActions: {
-    padding: '0 17px 20px 0',
   },
   createButton: {
     position: 'fixed',
@@ -278,17 +266,22 @@ class StixRelationCreation extends Component {
       <Formik
         enableReinitialize={true}
         initialValues={{
-          relationship_type: '', weight: '', first_seen: '', last_seen: '', description: '', locations: [],
+          relationship_type: '', weight: '', first_seen: null, last_seen: null, description: '', locations: [],
         }}
         validationSchema={stixRelationValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
         onReset={this.handleClose.bind(this)}
         render={({ submitForm, handleReset, isSubmitting }) => (
           <Form>
-            <DialogTitle>
-              {t('Create a relationship')}
-            </DialogTitle>
-            <DialogContent>
+            <div className={classes.header}>
+              <IconButton aria-label='Close' className={classes.closeButton} onClick={this.handleClose.bind(this)}>
+                <Close fontSize='small'/>
+              </IconButton>
+              <Typography variant='h6'>
+                {t('Create a relationship')}
+              </Typography>
+            </div>
+            <div className={classes.container}>
               <div className={classes.relationCreate}>
                 <div className={classes.item} style={{
                   backgroundColor: itemColor(from.type, true),
@@ -361,8 +354,8 @@ class StixRelationCreation extends Component {
                 <MenuItem value={4}>{t('High')}</MenuItem>
                 <MenuItem value={5}>{t('Very high')}</MenuItem>
               </Field>
-              <Field name='first_seen' component={TextField} label={t('First seen')} fullWidth={true} style={{ marginTop: 20 }}/>
-              <Field name='last_seen' component={TextField} label={t('Last seen')} fullWidth={true} style={{ marginTop: 20 }}/>
+              <Field name='first_seen' component={DatePickerField} label={t('First seen')} fullWidth={true} style={{ marginTop: 20 }}/>
+              <Field name='last_seen' component={DatePickerField} label={t('Last seen')} fullWidth={true} style={{ marginTop: 20 }}/>
               <Field name='description' component={TextField} label={t('Description')} fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
               <Field
                 name='locations'
@@ -372,15 +365,15 @@ class StixRelationCreation extends Component {
                 options={this.state.locations}
                 onInputChange={this.searchLocations.bind(this)}
               />
-            </DialogContent>
-            <DialogActions classes={{ root: classes.dialogActions }}>
-              <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
-                {t('Cancel')}
-              </Button>
-              <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
-                {t('Create')}
-              </Button>
-            </DialogActions>
+              <div className={classes.buttons}>
+                <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                  {t('Cancel')}
+                </Button>
+                <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
+                  {t('Create')}
+                </Button>
+              </div>
+            </div>
           </Form>
         )}
       />
@@ -394,10 +387,15 @@ class StixRelationCreation extends Component {
     const { existingRelations } = this.state;
     return (
       <div>
-        <DialogTitle>
-          {t('Select a relationship')}
-        </DialogTitle>
-        <DialogContent>
+        <div className={classes.header}>
+          <IconButton aria-label='Close' className={classes.closeButton} onClick={this.handleClose.bind(this)}>
+            <Close fontSize='small'/>
+          </IconButton>
+          <Typography variant='h6'>
+            {t('Select a relationship')}
+          </Typography>
+        </div>
+        <div className={classes.container}>
           {existingRelations.map(relation => (
             <div
               key={relation.node.id}
@@ -503,15 +501,17 @@ class StixRelationCreation extends Component {
             </div>
             <div className='clearfix'/>
           </div>
-        </DialogContent>
+        </div>
       </div>
     );
   }
 
   renderLoader() {
     return (
-      <div className={this.props.classes.loader}>
-        <CircularProgress size={80} thickness={2} className={this.props.classes.loaderCircle}/>
+      <div style={{ display: 'table', height: '100%', width: '100%' }}>
+        <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+          <CircularProgress size={80} thickness={2}/>
+        </span>
       </div>
     );
   }
@@ -521,16 +521,16 @@ class StixRelationCreation extends Component {
     const { step } = this.state;
     if (this.props.from !== null && this.props.to !== null) {
       return (
-        <Dialog
+        <Drawer
           open={open}
+          anchor='right'
+          classes={{ paper: this.props.classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
-          maxWidth='md'
-          fullWidth={true}
         >
-          {step === 0 ? this.renderLoader() : ''}
+          {step === 0 || step === undefined ? this.renderLoader() : ''}
           {step === 1 ? this.renderSelectRelation() : ''}
           {step === 2 ? this.renderForm() : ''}
-        </Dialog>
+        </Drawer>
       );
     }
     return (

@@ -9,6 +9,7 @@ import {
   Help,
   BugReport,
   Description,
+  Map,
 } from '@material-ui/icons';
 import {
   Biohazard,
@@ -39,6 +40,8 @@ const iconSelector = (type, variant, fontSize, color) => {
   }
 
   switch (type) {
+    case 'region':
+      return <Map style={style} fontSize={fontSize}/>;
     case 'country':
       return <Flag style={style} fontSize={fontSize}/>;
     case 'sector':

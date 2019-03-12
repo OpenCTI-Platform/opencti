@@ -73,6 +73,25 @@ class OpenCti:
         else:
             return None
 
+    def search_stix_domain_entity(self, nameOrAlias, type='Stix-Domain-Entity'):
+        query = """
+            query StixDomainEntities($search: String, $type: String) {
+                stixDomainEntities(search: $search, type: $type) {
+                    edges {
+                        node {
+                            id
+                            alias
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'search': nameOrAlias, 'type': type})
+        if len(result['data']['stixDomainEntities']['edges']) > 0:
+            return result['data']['stixDomainEntities']['edges'][0]['node']
+        else:
+            return None
+
     def update_stix_domain_entity_field(self, id, key, value):
         self.log('Updating field ' + key + '...')
         query = """
@@ -275,7 +294,7 @@ class OpenCti:
             mutation IntrusionSetAdd($input: IntrusionSetAddInput) {
                 intrusionSetAdd(input: $input) {
                     id
-                    aliases
+                    alias
                 }
             }
         """

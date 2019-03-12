@@ -94,6 +94,15 @@ class IntrusionSetKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Origins of this intrusion set')}</span>
           </div>
         </Paper>
+        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/victimology` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/victimology`}>
+          <div className={classes.icon}>
+            <Target fontSize='default'/>
+          </div>
+          <div className={classes.content}>
+            <span className={classes.title}>{t('Victimology')}</span><br />
+            <span className={classes.subtitle}>{t('Targeted by this intrusion set')}</span>
+          </div>
+        </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/campaigns` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/campaigns`}>
           <div className={classes.icon}>
             <ChessKnight fontSize='default'/>
@@ -119,15 +128,6 @@ class IntrusionSetKnowledgeBar extends Component {
           <div className={classes.content}>
             <span className={classes.title}>{t('Malwares')}</span><br />
             <span className={classes.subtitle}>{t('Used by this intrusion set')}</span>
-          </div>
-        </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/victimology` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/victimology`}>
-          <div className={classes.icon}>
-            <Target fontSize='default'/>
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Victimology')}</span><br />
-            <span className={classes.subtitle}>{t('Targeted by this intrusion set')}</span>
           </div>
         </Paper>
         <Paper classes={{ root: location.pathname === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/ttp` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/ttp`}>

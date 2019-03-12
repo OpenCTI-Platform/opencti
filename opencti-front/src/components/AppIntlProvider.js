@@ -1,6 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { addLocaleData, IntlProvider } from 'react-intl';
+import MomentUtils from '@date-io/moment';
+import 'moment/locale/fr';
+import moment from 'moment';
+import { MuiPickersUtilsProvider } from 'material-ui-pickers';
 import enLocaleData from 'react-intl/locale-data/en';
 import frLocaleData from 'react-intl/locale-data/fr';
 import graphql from 'babel-plugin-relay/macro';
@@ -25,11 +29,14 @@ class AppIntlProvider extends Component {
         key={lang}
         messages={i18n.messages[lang]}
       >
+        <MuiPickersUtilsProvider utils={MomentUtils} locale={lang} moment={moment}>
           {children}
-        </IntlProvider>
+        </MuiPickersUtilsProvider>
+      </IntlProvider>
     );
   }
 }
+
 AppIntlProvider.propTypes = {
   children: PropTypes.node,
   me: PropTypes.object,
@@ -38,10 +45,10 @@ AppIntlProvider.propTypes = {
 
 export const ConnectedIntlProvider = createFragmentContainer(AppIntlProvider, {
   me: graphql`
-        fragment AppIntlProvider_me on User {
-            language
-        }
-    `,
+      fragment AppIntlProvider_me on User {
+          language
+      }
+  `,
   settings: graphql`
       fragment AppIntlProvider_settings on Settings {
           platform_language

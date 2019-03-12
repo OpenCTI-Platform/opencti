@@ -105,7 +105,7 @@ class SectorsLines extends Component {
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div className={styles.windowScrollerWrapper}>
+          <div className={styles.windowScrollerWrapper} key={this.props.searchTerm}>
             <InfiniteLoader isRowLoaded={this._isRowLoaded}
                             loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
               {({ onRowsRendered }) => (
@@ -145,6 +145,7 @@ SectorsLines.propTypes = {
   relay: PropTypes.object,
   sectors: PropTypes.object,
   dummy: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const sectorsLinesQuery = graphql`

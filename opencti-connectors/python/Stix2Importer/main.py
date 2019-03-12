@@ -1,32 +1,44 @@
 # coding: utf-8
 
+import time
 import os
 import json
-import re
 import urllib3
 import yaml
-from opencti import OpenCti
+from threading import Thread
+from queue import Queue
+from lib.opencti import OpenCti
 
+# Disable SSL warning
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-config = yaml.load(open(os.path.dirname(__file__) + '/../../config.yml'))
-opencti = OpenCti(config)
-enterprise_attack_bundle_file_name = config['mitre'][
-                                         'repository_path_cti'] + '/enterprise-attack/enterprise-attack.json'
+# Prepare parallel processing
+task_queue = Queue()
 
-with open(os.path.join(enterprise_attack_bundle_file_name)) as enterprise_attack_bundle_file:
-    enterprise_attack_data = json.load(enterprise_attack_bundle_file)
+# Load configuration
+config = yaml.load(open(os.path.dirname(__file__) + '/../lib/config.yml'))
+
+# New OpenCTI instance
+opencti = OpenCti(config)
+
+# Script configuration
+workers_number = 4
+file_to_import = config['mitre']['repository_path_cti'] + '/enterprise-attack/enterprise-attack.json'
+
+# Load the file
+with open(os.path.join(file_to_import)) as file:
+    data = json.load(file)
 
 # Check if the bundle is correctly formated
-if 'type' not in enterprise_attack_data or enterprise_attack_data['type'] != 'bundle':
+if 'type' not in data or data['type'] != 'bundle':
     opencti.log('JSON data type is not a STIX2 bundle')
     exit(1)
-if 'objects' not in enterprise_attack_data or len(enterprise_attack_data['objects']) == 0:
+if 'objects' not in data or len(data['objects']) == 0:
     opencti.log('JSON data objects is empty')
     exit(1)
 
-# First iteration, create marking definitions
-for stix_object in enterprise_attack_data['objects']:
+# Definition of the STIX2 object importer
+def import_object(stix_object):
     # Create external references of the object if not exist
     external_references_ids = []
     if 'external_references' in stix_object:
@@ -70,34 +82,38 @@ for stix_object in enterprise_attack_data['objects']:
     # Create entity if not exists
     stix_object_id = None
     stix_object_result = {}
+    description = ''
+    if 'description' in stix_object:
+        description = opencti.convertMarkDown(stix_object['description'])
+
     if stix_object['type'] == 'threat-actor':
-        stix_object_result = opencti.get_stix_domain_entity_by_name(stix_object['name'], 'Threat-Actor')
+        stix_object_result = opencti.search_stix_domain_entity(stix_object['name'], 'Threat-Actor')
         if stix_object_result is not None:
             stix_object_id = stix_object_result['id']
         else:
             stix_object_result = opencti.create_threat_actor(
                 stix_object['name'],
-                stix_object['description']
+                description
             )
             stix_object_id = stix_object_result['id']
     elif stix_object['type'] == 'intrusion-set':
-        stix_object_result = opencti.get_stix_domain_entity_by_name(stix_object['name'], 'Intrusion-Set')
+        stix_object_result = opencti.search_stix_domain_entity(stix_object['name'], 'Intrusion-Set')
         if stix_object_result is not None:
             stix_object_id = stix_object_result['id']
         else:
             stix_object_result = opencti.create_intrusion_set(
                 stix_object['name'],
-                stix_object['description']
+                description
             )
             stix_object_id = stix_object_result['id']
     elif stix_object['type'] == 'attack-pattern':
-        stix_object_result = opencti.get_stix_domain_entity_by_name(stix_object['name'], 'Attack-Pattern')
+        stix_object_result = opencti.search_stix_domain_entity(stix_object['name'], 'Attack-Pattern')
         if stix_object_result is not None:
             stix_object_id = stix_object_result['id']
-            #opencti.update_stix_domain_entity_field(
-            #    stix_object_id, 'description',
-            #    opencti.convertMarkDown(stix_object['description'])
-            #)
+            opencti.update_stix_domain_entity_field(
+                stix_object_id, 'description',
+                description
+            )
         else:
             platforms = []
             if 'x_mitre_platforms' in stix_object:
@@ -108,7 +124,7 @@ for stix_object in enterprise_attack_data['objects']:
 
             stix_object_result = opencti.create_attack_pattern(
                 stix_object['name'],
-                opencti.convertMarkDown(stix_object['description']),
+                description,
                 platforms,
                 permissions_required,
                 kill_chain_phases_ids
@@ -124,6 +140,34 @@ for stix_object in enterprise_attack_data['objects']:
             new_aliases = stix_object_result['alias'] + list(set(stix_object['x_mitre_aliases']) - set(stix_object_result['alias']))
             opencti.update_stix_domain_entity_field(stix_object_id, 'alias', new_aliases)
 
-        # External references
+        # Add external references
         for external_reference_id in external_references_ids:
             opencti.add_external_reference(stix_object_id, external_reference_id)
+
+# Definition of the importer worker
+def importer():
+    while True:
+        stix_object = task_queue.get()
+        import_object(stix_object)
+        task_queue.task_done()
+
+
+# Start time
+start_time = time.time()
+
+# Create the worker threads
+threads = [Thread(target=importer) for _ in range(workers_number)]
+
+# Add the objects to import
+[task_queue.put(item) for item in data['objects']]
+
+# Start the workers
+[thread.start() for thread in threads]
+
+# Wait for all the tasks in the queue to be processed
+task_queue.join()
+
+# End time
+end_time = time.time()
+
+print("Data imported in: %ssecs" % (end_time - start_time))

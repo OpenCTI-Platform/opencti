@@ -26,6 +26,7 @@ const reportQuery = graphql`
             ...Report_report
             ...ReportHeader_report
             ...ReportOverview_report
+            ...ReportIdentity_report
             ...ReportKnowledge_report
             ...ReportEntities_report
             

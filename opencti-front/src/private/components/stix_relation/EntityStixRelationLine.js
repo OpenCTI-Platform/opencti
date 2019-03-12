@@ -13,6 +13,7 @@ import { MoreVert, Help } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
+import { resolveLink } from '../../../utils/Entity';
 import StixRelationPopover from './StixRelationPopover';
 
 const styles = theme => ({
@@ -90,9 +91,20 @@ const inlineStyles = {
 class ReportLineComponent extends Component {
   render() {
     const {
-      nsd, t, classes, stixRelation, stixDomainEntity, paginationOptions, entityLink,
+      nsd,
+      t,
+      classes,
+      stixRelation,
+      stixDomainEntity,
+      stixDomainEntityFrom,
+      paginationOptions,
+      entityId,
+      entityLink,
     } = this.props;
-    const link = `${entityLink}/relations/${stixRelation.id}`;
+    let link = `${entityLink}/relations/${stixRelation.id}`;
+    if (stixDomainEntityFrom.id !== entityId) {
+      link = `${resolveLink(stixDomainEntityFrom.type)}/${stixDomainEntityFrom.id}/knowledge/relations/${stixRelation.id}`;
+    }
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -136,10 +148,12 @@ class ReportLineComponent extends Component {
 }
 
 ReportLineComponent.propTypes = {
+  entityId: PropTypes.string,
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
   stixRelation: PropTypes.object,
   stixDomainEntity: PropTypes.object,
+  stixDomainEntityFrom: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,
@@ -158,6 +172,16 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
   `,
   stixDomainEntity: graphql`
       fragment EntityStixRelationLine_stixDomainEntity on StixDomainEntity {
+          id
+          type
+          name
+          description
+          created_at
+          updated_at
+      }
+  `,
+  stixDomainEntityFrom: graphql`
+      fragment EntityStixRelationLine_stixDomainEntityFrom on StixDomainEntity {
           id
           type
           name

@@ -32,6 +32,7 @@ import TopMenuCatalogs from './TopMenuCatalogs';
 import TopMenuAttackPattern from './TopMenuAttackPattern';
 import TopMenuTool from './TopMenuTool';
 import TopMenuVulnerability from './TopMenuVulnerability';
+import TopMenuRegion from './TopMenuRegion';
 import TopMenuCountry from './TopMenuCountry';
 import TopMenuCity from './TopMenuCity';
 import TopMenuOrganization from './TopMenuOrganization';
@@ -147,6 +148,7 @@ class TopBar extends Component {
             {location.pathname.includes('/dashboard/catalogs/attack_patterns/') ? <TopMenuAttackPattern/> : ''}
             {location.pathname.includes('/dashboard/catalogs/tools/') ? <TopMenuTool/> : ''}
             {location.pathname.includes('/dashboard/catalogs/vulnerabilities/') ? <TopMenuVulnerability/> : ''}
+            {location.pathname.includes('/dashboard/catalogs/regions/') ? <TopMenuRegion/> : ''}
             {location.pathname.includes('/dashboard/catalogs/countries/') ? <TopMenuCountry/> : ''}
             {location.pathname.includes('/dashboard/catalogs/cities/') ? <TopMenuCity/> : ''}
             {location.pathname.includes('/dashboard/catalogs/organizations/') ? <TopMenuOrganization/> : ''}

@@ -61,7 +61,7 @@ const styles = theme => ({
     float: 'left',
   },
   sortFieldLabel: {
-    margin: '12px 15px 0 0',
+    margin: '10px 15px 0 0',
     fontSize: 14,
     float: 'left',
   },

@@ -184,7 +184,7 @@ class CountryCreation extends Component {
               <Close fontSize='small'/>
             </IconButton>
             <Typography variant='h6'>
-              {t('Create an country')}
+              {t('Create a country')}
             </Typography>
           </div>
           <div className={classes.container}>

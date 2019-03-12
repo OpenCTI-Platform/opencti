@@ -116,7 +116,7 @@ class ReportsLines extends Component {
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div className={styles.windowScrollerWrapper}>
+          <div className={styles.windowScrollerWrapper} key={this.props.searchTerm}>
             <InfiniteLoader isRowLoaded={this._isRowLoaded}
                             loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
               {({ onRowsRendered }) => (

@@ -198,6 +198,7 @@ CampaignsCards.propTypes = {
   relay: PropTypes.object,
   campaigns: PropTypes.object,
   dummy: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const campaignsCardsQuery = graphql`

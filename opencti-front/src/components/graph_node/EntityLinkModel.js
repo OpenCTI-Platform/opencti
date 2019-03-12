@@ -59,8 +59,14 @@ export default class EntityLinkModel extends LinkModel {
     this.extras = extras;
   }
 
-  setLabels(labels) {
-    this.labels = labels;
+  setLabel(label) {
+    this.labels = [];
+    if (label instanceof EntityLabelModel) {
+      return super.addLabel(label);
+    }
+    const labelOb = new EntityLabelModel();
+    labelOb.setLabel(label);
+    return super.addLabel(labelOb);
   }
 
   setInferred(inferred) {

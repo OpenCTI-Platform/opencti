@@ -37,13 +37,44 @@ class ToolKnowledgeComponent extends Component {
         <ToolKnowledgeBar toolId={tool.id}/>
         <div className={classes.content}>
           <Route exact path='/dashboard/catalogs/tools/:toolId/knowledge/relations/:relationId' render={
-            routeProps => <StixRelation entityId={tool.id} {...routeProps} inversedRelations={inversedRelations}/>
+            routeProps => <StixRelation
+              entityId={tool.id}
+              inversedRelations={inversedRelations}
+              {...routeProps}
+            />
           }/>
-          {location.pathname.includes('overview') ? <StixDomainEntityKnowledge stixDomainEntityId={tool.id}/> : ''}
-          {location.pathname.includes('intrusion_sets') ? <EntityStixRelations entityId={tool.id} relationType='uses' targetEntityTypes={['Intrusion-Set']} entityLink={link}/> : ''}
-          {location.pathname.includes('campaigns') ? <EntityStixRelations entityId={tool.id} relationType='uses' targetEntityTypes={['Campaign']} entityLink={link}/> : ''}
-          {location.pathname.includes('incidents') ? <EntityStixRelations entityId={tool.id} relationType='uses' targetEntityTypes={['Incident']} entityLink={link}/> : ''}
-          {location.pathname.includes('malwares') ? <EntityStixRelations entityId={tool.id} relationType='uses' targetEntityTypes={['Malware']} entityLink={link}/> : ''}
+
+          {location.pathname.includes('overview') ? <StixDomainEntityKnowledge
+            stixDomainEntityId={tool.id}
+          /> : ''}
+
+          {location.pathname.includes('intrusion_sets') ? <EntityStixRelations
+            entityId={tool.id}
+            relationType='uses'
+            targetEntityTypes={['Intrusion-Set']}
+            entityLink={link}
+          /> : ''}
+
+          {location.pathname.includes('campaigns') ? <EntityStixRelations
+            entityId={tool.id}
+            relationType='uses'
+            targetEntityTypes={['Campaign']}
+            entityLink={link}
+          /> : ''}
+
+          {location.pathname.includes('incidents') ? <EntityStixRelations
+            entityId={tool.id}
+            relationType='uses'
+            targetEntityTypes={['Incident']}
+            entityLink={link}
+          /> : ''}
+
+          {location.pathname.includes('malwares') ? <EntityStixRelations
+            entityId={tool.id}
+            relationType='uses'
+            targetEntityTypes={['Malware']}
+            entityLink={link}
+          /> : ''}
         </div>
       </div>
     );

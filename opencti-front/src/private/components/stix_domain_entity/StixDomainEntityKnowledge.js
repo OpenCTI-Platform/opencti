@@ -80,13 +80,11 @@ class StixDomainEntityKnowledge extends Component {
       engine,
       inferred: true,
       openToTypes: false,
-      openWeights: false,
       toTypes: ['Threat-Actor', 'Intrusion-Set', 'Campaign'],
       firstSeen: 'All years',
       firstSeenFirstYear: currentYear(),
       firstSeenStart: null,
       firstSeenStop: null,
-      weights: [0],
     };
   }
 
@@ -107,12 +105,11 @@ class StixDomainEntityKnowledge extends Component {
 
   isSavable() {
     const {
-      firstSeenStart, firstSeenStop, weights, toTypes, inferred,
+      firstSeenStart, firstSeenStop, toTypes, inferred,
     } = this.state;
     if (inferred === true
       && firstSeenStart === null
       && firstSeenStop === null
-      && includes(0, weights)
       && equals(toTypes, ['Threat-Actor', 'Intrusion-Set', 'Campaign'])) {
       return true;
     }
@@ -127,23 +124,15 @@ class StixDomainEntityKnowledge extends Component {
     this.setState({ openToTypes: false });
   }
 
-  handleOpenWeights() {
-    this.setState({ openWeights: true });
-  }
-
-  handleCloseWeights() {
-    this.setState({ openWeights: false });
-  }
-
   handleChangeEntities(event) {
     const { value } = event.target;
     if (includes('All', this.state.toTypes) || !includes('All', value)) {
       const toTypes = filter(v => v !== 'All', value);
       if (toTypes.length > 0) {
-        return this.setState({ openToTypes: false, toTypes });
+        return this.setState({ toTypes });
       }
     }
-    return this.setState({ openToTypes: false, toTypes: ['All'] });
+    return this.setState({ toTypes: ['All'] });
   }
 
   handleChangeYear(event) {
@@ -165,17 +154,6 @@ class StixDomainEntityKnowledge extends Component {
     }
   }
 
-  handleChangeWeights(event) {
-    const { value } = event.target;
-    if (includes(0, this.state.weights) || !includes(0, value)) {
-      const weights = filter(v => v !== 0, value);
-      if (weights.length > 0) {
-        return this.setState({ openWeights: false, weights });
-      }
-    }
-    return this.setState({ openWeights: false, weights: [0] });
-  }
-
   handleChangeInferred() {
     this.setState({ inferred: !this.state.inferred });
   }
@@ -194,7 +172,6 @@ class StixDomainEntityKnowledge extends Component {
       toTypes: includes('All', this.state.toTypes) ? null : this.state.toTypes,
       firstSeenStart: null,
       firstSeenStop: null,
-      weights: includes(0, this.state.weights) ? null : this.state.weights,
     };
 
     return (
@@ -233,32 +210,6 @@ class StixDomainEntityKnowledge extends Component {
                 <MenuItem value='Tool'>{t('Tool')}</MenuItem>
                 <MenuItem value='Vulnerability'>{t('Vulnerability')}</MenuItem>
                 <MenuItem value='Attack-Pattern'>{t('Attack pattern')}</MenuItem>
-              </Select>
-            </Grid>
-            <Grid item={true} xs='auto'>
-              <Select
-                style={{ height: 50, marginLeft: 20 }}
-                multiple={true}
-                value={this.state.weights}
-                open={this.state.openWeights}
-                onClose={this.handleCloseWeights.bind(this)}
-                onOpen={this.handleOpenWeights.bind(this)}
-                onChange={this.handleChangeWeights.bind(this)}
-                input={<Input id='weights'/>}
-                renderValue={selected => (
-                  <div className={classes.chips}>
-                    {selected.map(value => (
-                      <Chip key={value} label={t(`confidence_${value}`)} className={classes.chip}/>
-                    ))}
-                  </div>
-                )}
-              >
-                <MenuItem value={0}>{t('All confidence levels')}</MenuItem>
-                <MenuItem value={1}>{t('Very low')}</MenuItem>
-                <MenuItem value={2}>{t('Low')}</MenuItem>
-                <MenuItem value={3}>{t('Medium')}</MenuItem>
-                <MenuItem value={4}>{t('High')}</MenuItem>
-                <MenuItem value={5}>{t('Very high')}</MenuItem>
               </Select>
             </Grid>
             <Grid item={true} xs='auto'>

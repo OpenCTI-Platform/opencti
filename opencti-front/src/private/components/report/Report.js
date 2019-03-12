@@ -8,6 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import ReportHeader from './ReportHeader';
 import ReportOverview from './ReportOverview';
+import ReportIdentity from './ReportIdentity';
 import ReportEdition from './ReportEdition';
 import EntityExternalReferences from '../external_reference/EntityExternalReferences';
 import EntityObservablesChart from '../observable/EntityObservablesChart';
@@ -30,8 +31,11 @@ class ReportComponent extends Component {
       <div className={classes.container}>
         <ReportHeader report={report}/>
         <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={4}>
             <ReportOverview report={report}/>
+          </Grid>
+          <Grid item={true} xs={2}>
+            <ReportIdentity report={report}/>
           </Grid>
           <Grid item={true} xs={6}>
             <EntityExternalReferences entityId={report.id}/>
@@ -49,10 +53,16 @@ class ReportComponent extends Component {
               field='phase_name'
               resolveInferences={true}
               resolveRelationType='object_refs'
+              resolveRelationRole='knowledge_aggregation'
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityStixRelationsPie entityId={report.id} entityType='Stix-Domain-Entity' relationType='object_refs' field='type'/>
+            <EntityStixRelationsPie
+              entityId={report.id}
+              entityType='Stix-Domain-Entity'
+              relationType='object_refs'
+              field='type'
+            />
           </Grid>
         </Grid>
         <ReportEdition reportId={report.id}/>
@@ -73,6 +83,7 @@ const Report = createFragmentContainer(ReportComponent, {
           id
           ...ReportHeader_report
           ...ReportOverview_report
+          ...ReportIdentity_report
       }
   `,
 });

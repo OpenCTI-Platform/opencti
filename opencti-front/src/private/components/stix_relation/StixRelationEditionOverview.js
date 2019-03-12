@@ -23,6 +23,7 @@ import { SubscriptionAvatars, SubscriptionFocus } from '../../../components/Subs
 import Select from '../../../components/Select';
 import { countriesLinesSearchQuery } from '../country/CountriesLines';
 import Autocomplete from '../../../components/Autocomplete';
+import DatePickerField from '../../../components/DatePickerField';
 
 const styles = theme => ({
   header: {
@@ -279,12 +280,12 @@ class StixRelationEditionContainer extends Component {
                   <MenuItem value='4'>{t('High')}</MenuItem>
                   <MenuItem value='5'>{t('Very high')}</MenuItem>
                 </Field>
-                <Field name='first_seen' component={TextField} label={t('First seen')}
+                <Field name='first_seen' component={DatePickerField} label={t('First seen')}
                        fullWidth={true} style={{ marginTop: 10 }}
                        onFocus={this.handleChangeFocus.bind(this)}
                        onSubmit={this.handleSubmitField.bind(this)}
                        helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='first_seen'/>}/>
-                <Field name='last_seen' component={TextField} label={t('Last seen')}
+                <Field name='last_seen' component={DatePickerField} label={t('Last seen')}
                        fullWidth={true} style={{ marginTop: 10 }}
                        onFocus={this.handleChangeFocus.bind(this)}
                        onSubmit={this.handleSubmitField.bind(this)}

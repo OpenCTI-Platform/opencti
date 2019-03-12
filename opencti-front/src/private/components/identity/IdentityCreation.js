@@ -179,6 +179,7 @@ class IdentityCreation extends Component {
                   >
                     <MenuItem value='Sector'>{t('Sector')}</MenuItem>
                     <MenuItem value='Organization'>{t('Organization')}</MenuItem>
+                    <MenuItem value='Region'>{t('Region')}</MenuItem>
                     <MenuItem value='Country'>{t('Country')}</MenuItem>
                     <MenuItem value='City'>{t('City')}</MenuItem>
                     <MenuItem value='User'>{t('Person')}</MenuItem>
@@ -237,6 +238,7 @@ class IdentityCreation extends Component {
                   >
                     <MenuItem value='Sector'>{t('Sector')}</MenuItem>
                     <MenuItem value='Organization'>{t('Organization')}</MenuItem>
+                    <MenuItem value='Region'>{t('Region')}</MenuItem>
                     <MenuItem value='Country'>{t('Country')}</MenuItem>
                     <MenuItem value='City'>{t('City')}</MenuItem>
                     <MenuItem value='User'>{t('Person')}</MenuItem>

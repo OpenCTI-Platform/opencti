@@ -11,6 +11,7 @@ import { KeyboardArrowRight, Description } from '@material-ui/icons';
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
+import ItemStatus from '../../../components/ItemStatus';
 
 const styles = theme => ({
   item: {
@@ -46,7 +47,7 @@ const styles = theme => ({
 const inlineStyles = {
   name: {
     float: 'left',
-    width: '45%',
+    width: '40%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -54,7 +55,7 @@ const inlineStyles = {
   },
   createdByRef: {
     float: 'left',
-    width: '25%',
+    width: '20%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -63,6 +64,14 @@ const inlineStyles = {
   published: {
     float: 'left',
     width: '15%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  object_status: {
+    float: 'left',
+    width: '10%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -79,7 +88,9 @@ const inlineStyles = {
 
 class ReportLineComponent extends Component {
   render() {
-    const { fd, classes, report } = this.props;
+    const {
+      t, fd, classes, report,
+    } = this.props;
 
     return (
       <ListItem classes={{ root: classes.item }} divider={true} component={Link} to={`/dashboard/reports/all/${report.id}`}>
@@ -96,6 +107,9 @@ class ReportLineComponent extends Component {
             </div>
             <div className={classes.bodyItem} style={inlineStyles.published}>
               {fd(report.published)}
+            </div>
+            <div className={classes.bodyItem} style={inlineStyles.object_status}>
+              <ItemStatus status={report.object_status} label={t(`report_status_${report.object_status ? report.object_status : 0}`)}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.marking}>
               {take(1, pathOr([], ['markingDefinitions', 'edges'], report)).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} variant='inList'
@@ -115,6 +129,7 @@ ReportLineComponent.propTypes = {
   report: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
+  t: PropTypes.func,
 };
 
 const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
@@ -122,6 +137,7 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
       fragment ReportLine_report on Report {
           id
           name
+          object_status
           createdByRef {
               node {
                   name
@@ -164,8 +180,11 @@ class ReportLineDummyComponent extends Component {
             <div className={classes.bodyItem} style={inlineStyles.published}>
               <div className='fakeItem' style={{ width: 140 }}/>
             </div>
+            <div className={classes.bodyItem} style={inlineStyles.object_status}>
+              <div className='fakeItem' style={{ width: '60%' }}/>
+            </div>
             <div className={classes.bodyItem} style={inlineStyles.marking}>
-              <div className='fakeItem' style={{ width: '90%' }}/>
+              <div className='fakeItem' style={{ width: 100 }}/>
             </div>
           </div>
         }/>

@@ -1,4 +1,25 @@
-import { head, join, map } from 'ramda';
+import {
+  head,
+  join,
+  map,
+  append,
+  omit,
+  concat,
+  sum,
+  pluck,
+  forEach,
+  assoc,
+  mergeWith,
+  evolve,
+  tail,
+  curry,
+  values,
+  prop,
+  groupBy,
+  reduce,
+  add
+} from 'ramda';
+import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
@@ -11,7 +32,6 @@ import {
   now,
   paginateRelationships,
   paginate,
-  qk,
   prepareDate,
   dayFormat,
   monthFormat,
@@ -19,45 +39,106 @@ import {
   prepareString,
   timeSeries,
   distribution,
-  takeTx
+  takeTx,
+  qkObjSimple,
+  buildPaginationRelationships
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => {
-  if (args.resolveInferences && args.resolveRelationType) {
-    return paginateRelationships(
-      `match $from; $linked($from, $entity) isa ${
-        args.resolveRelationType
-      }; { $rel($entity, $to) isa stix_relation; } or { $rel($from, $to) isa stix_relation; }`,
-      args
-    );
-  }
-  return paginateRelationships(
-    'match $rel($from, $to) isa stix_relation',
+const sumBy = attribute => vals =>
+  reduce(
+    (current, val) => evolve({ [attribute]: add(val[attribute]) }, current),
+    head(vals),
+    tail(vals)
+  );
+
+const groupSumBy = curry((groupOn, sumOn, vals) =>
+  values(map(sumBy(sumOn))(groupBy(prop(groupOn), vals)))
+);
+
+export const findAll = args =>
+  paginateRelationships(
+    `match $rel($from, $to) isa ${
+      args.relationType ? args.relationType : 'stix_relation'
+    }`,
     args
   );
-};
 
-export const stixRelationsTimeSeries = args => {
-  if (args.resolveInferences && args.resolveRelationType) {
-    return timeSeries(
-      `match $from; $linked($from, $entity) isa ${
-        args.resolveRelationType
-      }; { $x($entity, $to) isa stix_relation; } or { $x($from, $to) isa stix_relation; }; ${
-        args.toTypes
-          ? `${join(
-              ' ',
-              map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
-            )} { $to isa ${head(args.toTypes)}; };`
-          : ''
-      } ${
-        args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
-      }`,
-      args
+export const findAllWithInferences = async args => {
+  const entities = await qkObjSimple(
+    `match $x; (${args.resolveRelationRole}: $from, $x) isa ${
+      args.resolveRelationType
+    }; ${
+      args.resolveRelationToTypes
+        ? `${join(
+            ' ',
+            map(
+              resolveRelationToType =>
+                `{ $x isa ${resolveRelationToType}; } or`,
+              args.resolveRelationToTypes
+            )
+          )} { $x isa ${head(args.resolveRelationToTypes)}; };`
+        : ''
+    } $from id ${args.fromId}; get $x;`,
+    'x',
+    null,
+    true
+  );
+  const fromIds = append(args.fromId, map(e => e.node.id, entities));
+  const query = `match $rel($from, $to) isa ${
+    args.relationType ? args.relationType : 'stix_relation'
+  }; ${join(
+    ' ',
+    map(fromId => `{ $from id ${fromId}; } or`, fromIds)
+  )} { $from id ${head(fromIds)}; }`;
+  const resultPromise = paginateRelationships(
+    query,
+    assoc('inferred', false, omit(['fromId'], args)),
+    null,
+    false
+  );
+  let viaPromise = Promise.resolve([{ globalCount: 0, instances: [] }]);
+  if (args.resolveViaTypes) {
+    viaPromise = Promise.all(
+      map(resolveViaType => {
+        const viaQuery = `match $from; $rel($from, $entity) isa ${
+          args.relationType ? args.relationType : 'stix_relation'
+        }; ${join(
+          ' ',
+          map(fromId => `{ $from id ${fromId}; } or`, fromIds)
+        )} { $from id ${head(fromIds)}; }; $entity isa ${
+          resolveViaType.entityType
+        }; $link(${resolveViaType.relationRole}: $entity, $to) isa ${
+          resolveViaType.relationType
+        }`;
+        return paginateRelationships(
+          viaQuery,
+          omit(['fromId'], args),
+          null,
+          false
+        );
+      })(args.resolveViaTypes)
     );
   }
-  return timeSeries(
-    `match $x($from, $to) isa stix_relation; ${
+
+  return Promise.all([resultPromise, viaPromise]).then(([result, via]) => {
+    const { first = 200, after } = args;
+    const offset = after ? cursorToOffset(after) : 0;
+    const globalCount = result.globalCount + sum(pluck('globalCount', via));
+    let viaInstances = [];
+    forEach(n => {
+      viaInstances = concat(viaInstances, n.instances);
+    }, via);
+    const instances = concat(result.instances, viaInstances);
+    return buildPaginationRelationships(first, offset, instances, globalCount);
+  });
+};
+
+export const stixRelationsTimeSeries = args =>
+  timeSeries(
+    `match $x($from, $to) isa ${
+      args.relationType ? args.relationType : 'stix_relation'
+    }; ${
       args.toTypes
         ? `${join(
             ' ',
@@ -69,28 +150,86 @@ export const stixRelationsTimeSeries = args => {
     }`,
     args
   );
-};
 
-export const stixRelationsDistribution = args => {
-  if (args.resolveInferences && args.resolveRelationType) {
-    return distribution(
-      `match $from; $linked($from, $entity) isa ${
-        args.resolveRelationType
-      }; { $rel($entity, $x) isa stix_relation; } or { $rel($from, $x) isa stix_relation; }; ${
-        args.toTypes
-          ? `${join(
-              ' ',
-              map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
-            )} { $x isa ${head(args.toTypes)}; };`
-          : ''
-      } ${
-        args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
-      }`,
-      args
+export const stixRelationsTimeSeriesWithInferences = async args => {
+  const entities = await qkObjSimple(
+    `match $x; (${args.resolveRelationRole}: $from, $x) isa ${
+      args.resolveRelationType
+    }; ${
+      args.resolveRelationToTypes
+        ? `${join(
+            ' ',
+            map(
+              resolveRelationToType =>
+                `{ $x isa ${resolveRelationToType}; } or`,
+              args.resolveRelationToTypes
+            )
+          )} { $x isa ${head(args.resolveRelationToTypes)}; };`
+        : ''
+    } $from id ${args.fromId}; get $x;`,
+    'x',
+    null,
+    true
+  );
+  const fromIds = append(args.fromId, map(e => e.node.id, entities));
+  const query = `match $rel($from, $x) isa ${
+    args.relationType ? args.relationType : 'stix_relation'
+  }; ${join(
+    ' ',
+    map(fromId => `{ $from id ${fromId}; } or`, fromIds)
+  )} { $from id ${head(fromIds)}; }; ${
+    args.toTypes
+      ? `${join(
+          ' ',
+          map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
+        )} { $x isa ${head(args.toTypes)}; }`
+      : ''
+  }`;
+  const resultPromise = timeSeries(
+    query,
+    assoc('inferred', false, omit(['fromId'], args))
+  );
+  let viaPromise = Promise.resolve([]);
+  if (args.resolveViaTypes) {
+    viaPromise = Promise.all(
+      map(resolveViaType => {
+        const viaQuery = `match $from; $rel($from, $entity) isa ${
+          args.relationType ? args.relationType : 'stix_relation'
+        }; ${join(
+          ' ',
+          map(fromId => `{ $from id ${fromId}; } or`, fromIds)
+        )} { $from id ${head(fromIds)}; }; $entity isa ${
+          resolveViaType.entityType
+        }; $link(${resolveViaType.relationRole}: $entity, $x) isa ${
+          resolveViaType.relationType
+        }; ${
+          args.toTypes
+            ? `${join(
+                ' ',
+                map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
+              )} { $x isa ${head(args.toTypes)}; }`
+            : ''
+        }`;
+        return timeSeries(viaQuery, omit(['fromId'], args));
+      })(args.resolveViaTypes)
     );
   }
-  return distribution(
-    `match $rel($from, $x) isa stix_relation; ${
+
+  return Promise.all([resultPromise, viaPromise]).then(([result, via]) => {
+    let viaResult = [];
+    forEach(n => {
+      viaResult = concat(viaResult, n);
+    }, via);
+    const finalResult = concat(result, viaResult);
+    return groupSumBy('date', 'value', finalResult);
+  });
+};
+
+export const stixRelationsDistribution = args =>
+  distribution(
+    `match $rel($from, $x) isa ${
+      args.relationType ? args.relationType : 'stix_relation'
+    }; ${
       args.toTypes
         ? `${join(
             ' ',
@@ -102,112 +241,79 @@ export const stixRelationsDistribution = args => {
     }`,
     args
   );
-};
 
-export const findByType = args => {
-  if (args.resolveInferences && args.resolveRelationType) {
-    return paginateRelationships(
-      `match $from; $linked($from, $entity) isa ${
-        args.resolveRelationType
-      }; { $rel($entity, $to) isa ${
-        args.relationType
-      }; } or { $rel($from, $to) isa ${args.relationType}; }`,
-      args
-    );
-  }
-  return paginateRelationships(
-    `match $rel($from, $to) isa ${args.relationType}`,
-    args
-  );
-};
-export const stixRelationsTimeSeriesByType = args => {
-  if (args.resolveInferences && args.resolveRelationType) {
-    return timeSeries(
-      `match $from; $linked($from, $entity) isa ${
-        args.resolveRelationType
-      }; { $x($entity, $to) isa ${
-        args.relationType
-      }; } or { $x($from, $to) isa ${args.relationType}; }; ${
-        args.entityTypes
-          ? `${join(
-              ' ',
-              map(
-                entityType => `{ $entity isa ${entityType}; } or`,
-                args.entityTypes
-              )
-            )} { $entity isa ${head(args.entityTypes)}; };`
-          : ''
-      } ${
-        args.toTypes
-          ? `${join(
-              ' ',
-              map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
-            )} { $to isa ${head(args.toTypes)}; };`
-          : ''
-      } ${
-        args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
-      }`,
-      args
-    );
-  }
-  return timeSeries(
-    `match $x($from, $to) isa ${args.relationType}; ${
-      args.toTypes
+export const stixRelationsDistributionWithInferences = async args => {
+  const entities = await qkObjSimple(
+    `match $x; (${args.resolveRelationRole}: $from, $x) isa ${
+      args.resolveRelationType
+    }; ${
+      args.resolveRelationToTypes
         ? `${join(
             ' ',
-            map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
-          )} { $to isa ${head(args.toTypes)}; };`
+            map(
+              resolveRelationToType =>
+                `{ $x isa ${resolveRelationToType}; } or`,
+              args.resolveRelationToTypes
+            )
+          )} { $x isa ${head(args.resolveRelationToTypes)}; };`
         : ''
-    } ${
-      args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
-    }`,
-    args
+    } $from id ${args.fromId}; get $x;`,
+    'x',
+    null,
+    true
   );
-};
-
-export const stixRelationDistributionByType = args => {
-  if (args.resolveInferences && args.resolveRelationType) {
-    return distribution(
-      `match $from; $linked($from, $entity) isa ${
-        args.resolveRelationType
-      }; { $rel($entity, $x) isa ${
-        args.relationType
-      }; } or { $rel($from, $x) isa ${args.relationType}; }; ${
-        args.entityTypes
-          ? `${join(
-              ' ',
-              map(
-                entityType => `{ $entity isa ${entityType}; } or`,
-                args.entityTypes
-              )
-            )} { $entity isa ${head(args.entityTypes)}; };`
-          : ''
-      } ${
-        args.toTypes
-          ? `${join(
-              ' ',
-              map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
-            )} { $x isa ${head(args.toTypes)}; };`
-          : ''
-      } ${
-        args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
-      }`,
-      args
+  const fromIds = append(args.fromId, map(e => e.node.id, entities));
+  const query = `match $rel($from, $x) isa ${
+    args.relationType ? args.relationType : 'stix_relation'
+  }; ${join(
+    ' ',
+    map(fromId => `{ $from id ${fromId}; } or`, fromIds)
+  )} { $from id ${head(fromIds)}; }; ${
+    args.toTypes
+      ? `${join(
+          ' ',
+          map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
+        )} { $x isa ${head(args.toTypes)}; }`
+      : ''
+  }`;
+  const resultPromise = distribution(
+    query,
+    assoc('inferred', false, omit(['fromId'], args))
+  );
+  let viaPromise = Promise.resolve([]);
+  if (args.resolveViaTypes) {
+    viaPromise = Promise.all(
+      map(resolveViaType => {
+        const viaQuery = `match $from; $rel($from, $entity) isa ${
+          args.relationType ? args.relationType : 'stix_relation'
+        }; ${join(
+          ' ',
+          map(fromId => `{ $from id ${fromId}; } or`, fromIds)
+        )} { $from id ${head(fromIds)}; }; $entity isa ${
+          resolveViaType.entityType
+        }; $link(${resolveViaType.relationRole}: $entity, $x) isa ${
+          resolveViaType.relationType
+        }; ${
+          args.toTypes
+            ? `${join(
+                ' ',
+                map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
+              )} { $x isa ${head(args.toTypes)}; }`
+            : ''
+        }`;
+        return distribution(viaQuery, omit(['fromId'], args));
+      })(args.resolveViaTypes)
     );
   }
-  return distribution(
-    `match $rel($from, $x) isa ${args.relationType}; ${
-      args.toTypes
-        ? `${join(
-            ' ',
-            map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
-          )} { $x isa ${head(args.toTypes)}; };`
-        : ''
-    } ${
-      args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
-    }`,
-    args
-  );
+
+  return Promise.all([resultPromise, viaPromise]).then(([result, via]) => {
+    let viaResult = [];
+    forEach(n => {
+      viaResult = concat(viaResult, n);
+    }, via);
+    const finalResult = concat(result, viaResult);
+    return groupSumBy('label', 'value', finalResult);
+  });
 };
 
 export const findById = stixRelationId => loadRelationById(stixRelationId);

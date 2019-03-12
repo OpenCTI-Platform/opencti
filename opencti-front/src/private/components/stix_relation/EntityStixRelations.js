@@ -34,7 +34,9 @@ import {
   ArrowDropDown, ArrowDropUp, TableChart, SaveAlt,
 } from '@material-ui/icons';
 import { QueryRenderer, fetchQuery } from '../../../relay/environment';
-import { currentYear, parse, yearFormat, dateFormat } from '../../../utils/Time';
+import {
+  currentYear, parse, yearFormat, dateFormat,
+} from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import EntityStixRelationsLines, { entityStixRelationsLinesQuery } from './EntityStixRelationsLines';
 
@@ -128,8 +130,8 @@ const inlineStyles = {
 };
 
 const firstStixRelationQuery = graphql`
-    query EntityStixRelationsFirstStixRelationQuery($toTypes: [String], $fromId: String, $relationType: String, $inferred: Boolean, $resolveInferences: Boolean, $resolveRelationType: String, $first: Int, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
-        stixRelations(toTypes: $toTypes, fromId: $fromId, relationType: $relationType, inferred: $inferred, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
+    query EntityStixRelationsFirstStixRelationQuery($toTypes: [String], $fromId: String, $relationType: String, $inferred: Boolean, $resolveInferences: Boolean, $resolveRelationType: String, $resolveRelationRole: String, $resolveRelationToTypes: [String], $resolveViaTypes: [EntityRelation], $first: Int, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
+        stixRelations(toTypes: $toTypes, fromId: $fromId, relationType: $relationType, inferred: $inferred, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, resolveRelationRole: $resolveRelationRole, resolveRelationToTypes: $resolveRelationToTypes, resolveViaTypes: $resolveViaTypes, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
             edges {
                 node {
                     id
@@ -141,8 +143,8 @@ const firstStixRelationQuery = graphql`
 `;
 
 const exportStixRelationQuery = graphql`
-    query EntityStixRelationsExportStixRelationsQuery($fromId: String, $toTypes: [String], $inferred: Boolean, $relationType: String, $resolveInferences: Boolean, $resolveRelationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $weights: [Int], $count: Int!, $cursor: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
-        stixRelations(fromId: $fromId, toTypes: $toTypes, inferred: $inferred, relationType: $relationType, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_stixRelations") {
+    query EntityStixRelationsExportStixRelationsQuery($fromId: String, $toTypes: [String], $inferred: Boolean, $relationType: String, $resolveInferences: Boolean, $resolveRelationType: String, $resolveRelationRole: String, $resolveRelationToTypes: [String], $resolveViaTypes: [EntityRelation], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $weights: [Int], $count: Int!, $cursor: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
+        stixRelations(fromId: $fromId, toTypes: $toTypes, inferred: $inferred, relationType: $relationType, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, resolveRelationRole: $resolveRelationRole, resolveRelationToTypes: $resolveRelationToTypes, resolveViaTypes: $resolveViaTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_stixRelations") {
             edges {
                 node {
                     id
@@ -175,8 +177,6 @@ class EntityStixRelations extends Component {
       firstSeenFirstYear: currentYear(),
       firstSeenStart: null,
       firstSeenStop: null,
-      weights: [0],
-      openWeights: false,
       openToTypes: false,
       toTypes: ['All'],
       inferred: true,
@@ -190,11 +190,20 @@ class EntityStixRelations extends Component {
 
   componentDidMount() {
     const {
-      entityId, relationType, targetEntityTypes, resolveRelationType,
+      entityId,
+      relationType,
+      targetEntityTypes,
+      resolveRelationType,
+      resolveRelationRole,
+      resolveRelationToTypes,
+      resolveViaTypes,
     } = this.props;
     fetchQuery(firstStixRelationQuery, {
       resolveInferences: true,
       resolveRelationType,
+      resolveRelationRole,
+      resolveRelationToTypes,
+      resolveViaTypes,
       toTypes: targetEntityTypes || null,
       fromId: entityId,
       relationType,
@@ -247,10 +256,16 @@ class EntityStixRelations extends Component {
     if (includes('All', this.state.toTypes) || !includes('All', value)) {
       const toTypes = filter(v => v !== 'All', value);
       if (toTypes.length > 0) {
-        return this.setState({ openToTypes: false, toTypes });
+        if (this.props.targetEntityTypes.length > 1 && toTypes.length > 1) {
+          return this.setState({ resolveInferences: false, toTypes });
+        }
+        return this.setState({ toTypes });
       }
     }
-    return this.setState({ openToTypes: false, toTypes: ['All'] });
+    if (this.props.targetEntityTypes.length > 1) {
+      return this.setState({ resolveInferences: false, toTypes: ['All'] });
+    }
+    return this.setState({ toTypes: ['All'] });
   }
 
   handleChangeYear(event) {
@@ -263,6 +278,7 @@ class EntityStixRelations extends Component {
         firstSeenStart: parse(startDate).format(),
         firstSeenStop: parse(endDate).format(),
         resolveInferences: true,
+        inferred: true,
       });
     } else {
       this.setState({
@@ -271,25 +287,6 @@ class EntityStixRelations extends Component {
         firstSeenStop: null,
       });
     }
-  }
-
-  handleOpenWeights() {
-    this.setState({ openWeights: true });
-  }
-
-  handleCloseWeights() {
-    this.setState({ openWeights: false });
-  }
-
-  handleChangeWeights(event) {
-    const { value } = event.target;
-    if (includes(0, this.state.weights) || !includes(0, value)) {
-      const weights = filter(v => v !== 0, value);
-      if (weights.length > 0) {
-        return this.setState({ openWeights: false, weights, resolveInferences: true });
-      }
-    }
-    return this.setState({ openWeights: false, weights: [0] });
   }
 
   handleChangeInferred() {
@@ -316,18 +313,26 @@ class EntityStixRelations extends Component {
     this.handleCloseExport();
     this.setState({ exportCsvOpen: true });
     const {
-      entityId, relationType, targetEntityTypes, resolveRelationType,
+      entityId,
+      relationType,
+      targetEntityTypes,
+      resolveRelationType,
+      resolveRelationRole,
+      resolveRelationToTypes,
+      resolveViaTypes,
     } = this.props;
     const paginationOptions = {
       resolveInferences: this.state.resolveInferences,
       resolveRelationType,
+      resolveRelationRole,
+      resolveRelationToTypes,
+      resolveViaTypes,
       inferred: this.state.inferred,
       toTypes: includes('All', this.state.toTypes) ? targetEntityTypes : this.state.toTypes,
       fromId: entityId,
       relationType,
       firstSeenStart: this.state.firstSeenStart || null,
       firstSeenStop: this.state.firstSeenStop || null,
-      weights: includes(0, this.state.weights) ? null : this.state.weights,
       orderBy: this.state.resolveInferences ? this.state.sortBy : null,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
@@ -347,18 +352,28 @@ class EntityStixRelations extends Component {
 
   renderLines() {
     const {
-      classes, entityId, relationType, entityLink, targetEntityTypes, resolveRelationType,
+      classes,
+      entityId,
+      relationType,
+      entityLink,
+      targetEntityTypes,
+      resolveRelationType,
+      resolveRelationRole,
+      resolveRelationToTypes,
+      resolveViaTypes,
     } = this.props;
     const paginationOptions = {
       resolveInferences: this.state.resolveInferences,
       resolveRelationType,
+      resolveRelationRole,
+      resolveRelationToTypes,
+      resolveViaTypes,
       inferred: this.state.inferred,
       toTypes: includes('All', this.state.toTypes) ? targetEntityTypes : this.state.toTypes,
       fromId: entityId,
       relationType,
       firstSeenStart: this.state.firstSeenStart || null,
       firstSeenStop: this.state.firstSeenStop || null,
-      weights: includes(0, this.state.weights) ? null : this.state.weights,
       orderBy: this.state.resolveInferences ? this.state.sortBy : null,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
@@ -390,6 +405,7 @@ class EntityStixRelations extends Component {
                 data={props}
                 paginationOptions={paginationOptions}
                 entityLink={entityLink}
+                entityId={entityId}
               />;
             }
             return <EntityStixRelationsLines data={null} dummy={true}/>;
@@ -401,7 +417,12 @@ class EntityStixRelations extends Component {
 
   render() {
     const {
-      t, classes, targetEntityTypes, entityId, relationType,
+      t,
+      classes,
+      targetEntityTypes,
+      entityId,
+      relationType,
+      resolveRelationType,
     } = this.props;
     const startYear = this.state.firstSeenFirstYear === currentYear() ? this.state.firstSeenFirstYear - 1 : this.state.firstSeenFirstYear;
     const yearsList = [];
@@ -413,84 +434,61 @@ class EntityStixRelations extends Component {
       <div className={classes.container}>
         <Drawer anchor='bottom' variant='permanent' classes={{ paper: classes.bottomNav }}>
           <Grid container={true} spacing={8}>
-            <Grid item={true} xs='auto'>
-              <Select
-                style={{ height: 50 }}
-                multiple={true}
-                value={this.state.toTypes}
-                open={this.state.openToTypes}
-                onClose={this.handleCloseToTypes.bind(this)}
-                onOpen={this.handleOpenToTypes.bind(this)}
-                onChange={this.handleChangeEntities.bind(this)}
-                input={<Input id='entities'/>}
-                renderValue={selected => (
-                  <div className={classes.chips}>
-                    {selected.map(value => (
-                      <Chip key={value} label={t(`entity_${value.toLowerCase()}`)} className={classes.chip}/>
-                    ))}
-                  </div>
-                )}
-              >
-                <MenuItem value='All'>{t('All entities')}</MenuItem>
-                {includes('Country', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='Country'>{t('Country')}</MenuItem> : ''}
-                {includes('City', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='City'>{t('City')}</MenuItem> : ''}
-                {includes('Sector', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='Sector'>{t('Sector')}</MenuItem> : ''}
-                {includes('Organization', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='Organization'>{t('Organization')}</MenuItem> : ''}
-                {includes('User', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='User'>{t('Person')}</MenuItem> : ''}
-                {includes('Threat-Actor', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='Threat-Actor'>{t('Threat actor')}</MenuItem> : ''}
-                {includes('Intrusion-Set', targetEntityTypes) ? <MenuItem value='Intrusion-Set'>{t('Intrusion set')}</MenuItem> : ''}
-                {includes('Campaign', targetEntityTypes) ? <MenuItem value='Campaign'>{t('Campaign')}</MenuItem> : ''}
-                {includes('Incident', targetEntityTypes) ? <MenuItem value='Incident'>{t('Incident')}</MenuItem> : ''}
-                {includes('Malware', targetEntityTypes) ? <MenuItem value='Malware'>{t('Malware')}</MenuItem> : ''}
-                {includes('Tool', targetEntityTypes) ? <MenuItem value='Tool'>{t('Tool')}</MenuItem> : ''}
-                {includes('Vulnerability', targetEntityTypes) ? <MenuItem value='Vulnerability'>{t('Vulnerability')}</MenuItem> : ''}
-                {includes('Attack-Pattern', targetEntityTypes) ? <MenuItem value='Attack-Pattern'>{t('Attack pattern')}</MenuItem> : ''}
-              </Select>
-            </Grid>
-            <Grid item={true} xs='auto'>
-              <Select
-                style={{ height: 50, marginLeft: 20 }}
-                multiple={true}
-                value={this.state.weights}
-                open={this.state.openWeights}
-                onClose={this.handleCloseWeights.bind(this)}
-                onOpen={this.handleOpenWeights.bind(this)}
-                onChange={this.handleChangeWeights.bind(this)}
-                input={<Input id='weights'/>}
-                renderValue={selected => (
-                  <div className={classes.chips}>
-                    {selected.map(value => (
-                      <Chip key={value} label={t(`confidence_${value}`)} className={classes.chip}/>
-                    ))}
-                  </div>
-                )}
-              >
-                <MenuItem value={0}>{t('All confidence levels')}</MenuItem>
-                <MenuItem value={1}>{t('Very low')}</MenuItem>
-                <MenuItem value={2}>{t('Low')}</MenuItem>
-                <MenuItem value={3}>{t('Medium')}</MenuItem>
-                <MenuItem value={4}>{t('High')}</MenuItem>
-                <MenuItem value={5}>{t('Very high')}</MenuItem>
-              </Select>
-            </Grid>
-            <Grid item={true} xs='auto'>
-              <Select
-                style={{ width: 170, height: 50, marginLeft: 20 }}
-                value={this.state.firstSeen}
-                onChange={this.handleChangeYear.bind(this)}
-                renderValue={selected => (
-                  <div className={classes.chips}>
-                    <Chip key={selected} label={t(selected)} className={classes.chip}/>
-                  </div>
-                )}
-              >
-                <MenuItem value='All years'>{t('All years')}</MenuItem>
-                {map(year => (<MenuItem key={year} value={year}>{year}</MenuItem>), yearsList)}
-              </Select>
-            </Grid>
-            <Grid item={true} xs='auto'>
+            {targetEntityTypes.length > 1
+              ? <Grid item={true} xs='auto'>
+                <Select
+                  style={{ height: 50, marginRight: 15 }}
+                  multiple={true}
+                  value={this.state.toTypes}
+                  open={this.state.openToTypes}
+                  onClose={this.handleCloseToTypes.bind(this)}
+                  onOpen={this.handleOpenToTypes.bind(this)}
+                  onChange={this.handleChangeEntities.bind(this)}
+                  input={<Input id='entities'/>}
+                  renderValue={selected => (
+                    <div className={classes.chips}>
+                      {selected.map(value => (
+                        <Chip key={value} label={t(`entity_${value.toLowerCase()}`)} className={classes.chip}/>
+                      ))}
+                    </div>
+                  )}
+                >
+                  <MenuItem value='All'>{t('All entities')}</MenuItem>
+                  {includes('Region', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='Region'>{t('Region')}</MenuItem> : ''}
+                  {includes('Country', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='Country'>{t('Country')}</MenuItem> : ''}
+                  {includes('City', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='City'>{t('City')}</MenuItem> : ''}
+                  {includes('Sector', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='Sector'>{t('Sector')}</MenuItem> : ''}
+                  {includes('Organization', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='Organization'>{t('Organization')}</MenuItem> : ''}
+                  {includes('User', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='User'>{t('Person')}</MenuItem> : ''}
+                  {includes('Threat-Actor', targetEntityTypes) || includes('Identity', targetEntityTypes) ? <MenuItem value='Threat-Actor'>{t('Threat actor')}</MenuItem> : ''}
+                  {includes('Intrusion-Set', targetEntityTypes) ? <MenuItem value='Intrusion-Set'>{t('Intrusion set')}</MenuItem> : ''}
+                  {includes('Campaign', targetEntityTypes) ? <MenuItem value='Campaign'>{t('Campaign')}</MenuItem> : ''}
+                  {includes('Incident', targetEntityTypes) ? <MenuItem value='Incident'>{t('Incident')}</MenuItem> : ''}
+                  {includes('Malware', targetEntityTypes) ? <MenuItem value='Malware'>{t('Malware')}</MenuItem> : ''}
+                  {includes('Tool', targetEntityTypes) ? <MenuItem value='Tool'>{t('Tool')}</MenuItem> : ''}
+                  {includes('Vulnerability', targetEntityTypes) ? <MenuItem value='Vulnerability'>{t('Vulnerability')}</MenuItem> : ''}
+                  {includes('Attack-Pattern', targetEntityTypes) ? <MenuItem value='Attack-Pattern'>{t('Attack pattern')}</MenuItem> : ''}
+                </Select>
+              </Grid> : ''}
+            {((this.state.toTypes.length === 1 && targetEntityTypes.length === 1) || (this.state.toTypes.length === 1 && !includes('All', this.state.toTypes)))
+              ? <Grid item={true} xs='auto'>
+                <Select
+                  style={{ width: 170, height: 50, marginRight: 15 }}
+                  value={this.state.firstSeen}
+                  onChange={this.handleChangeYear.bind(this)}
+                  renderValue={selected => (
+                    <div className={classes.chips}>
+                      <Chip key={selected} label={t(selected)} className={classes.chip}/>
+                    </div>
+                  )}
+                >
+                  <MenuItem value='All years'>{t('All years')}</MenuItem>
+                  {map(year => (<MenuItem key={year} value={year}>{year}</MenuItem>), yearsList)}
+                </Select>
+              </Grid> : ''}
+            {resolveRelationType ? <Grid item={true} xs='auto'>
               <FormControlLabel
-                style={{ paddingTop: 5, marginLeft: 15 }}
+                style={{ paddingTop: 5, marginRight: 15 }}
                 control={
                   <Switch
                     checked={this.state.inferred}
@@ -500,11 +498,13 @@ class EntityStixRelations extends Component {
                 }
                 label={t('Inferences')}
               />
-            </Grid>
+            </Grid> : ''}
             {this.state.inferred
+            && resolveRelationType
+            && ((this.state.toTypes.length === 1 && targetEntityTypes.length === 1) || (this.state.toTypes.length === 1 && !includes('All', this.state.toTypes)))
               ? <Grid item={true} xs='auto'>
                 <FormControlLabel
-                  style={{ paddingTop: 5, marginLeft: 0 }}
+                  style={{ paddingTop: 5, marginRight: 15 }}
                   control={
                     <Switch
                       checked={this.state.resolveInferences}
@@ -569,6 +569,9 @@ class EntityStixRelations extends Component {
 EntityStixRelations.propTypes = {
   entityId: PropTypes.string,
   resolveRelationType: PropTypes.string,
+  resolveRelationRole: PropTypes.string,
+  resolveRelationToTypes: PropTypes.array,
+  resolveViaTypes: PropTypes.array,
   targetEntityTypes: PropTypes.array,
   entityLink: PropTypes.string,
   relationType: PropTypes.string,

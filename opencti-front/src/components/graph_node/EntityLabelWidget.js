@@ -11,6 +11,7 @@ const styles = () => ({
     backgroundColor: '#14262c',
     color: '#ffffff',
     pointerEvents: 'auto',
+    cursor: 'pointer',
     fontSize: 12,
     '&:hover': {
       background: '#1e3f49',

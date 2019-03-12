@@ -4,13 +4,13 @@ import {
   addStixRelation,
   stixRelationDelete,
   findAll,
-  findByType,
   findById,
   findByIdInferred,
+  findAllWithInferences,
   stixRelationsTimeSeries,
-  stixRelationsTimeSeriesByType,
+  stixRelationsTimeSeriesWithInferences,
   stixRelationsDistribution,
-  stixRelationDistributionByType,
+  stixRelationsDistributionWithInferences,
   search,
   reports,
   markingDefinitions,
@@ -38,20 +38,32 @@ const stixRelationResolvers = {
       if (args.search && args.search.length > 0) {
         return search(args);
       }
-      if (args.relationType && args.relationType.length > 0) {
-        return findByType(args);
+      if (
+        args.resolveInferences &&
+        args.resolveRelationRole &&
+        args.resolveRelationType
+      ) {
+        return findAllWithInferences(args);
       }
       return findAll(args);
     },
     stixRelationsTimeSeries: (_, args) => {
-      if (args.relationType && args.relationType.length > 0) {
-        return stixRelationsTimeSeriesByType(args);
+      if (
+        args.resolveInferences &&
+        args.resolveRelationRole &&
+        args.resolveRelationType
+      ) {
+        return stixRelationsTimeSeriesWithInferences(args);
       }
       return stixRelationsTimeSeries(args);
     },
     stixRelationsDistribution: (_, args) => {
-      if (args.relationType && args.relationType.length > 0) {
-        return stixRelationDistributionByType(args);
+      if (
+        args.resolveInferences &&
+        args.resolveRelationRole &&
+        args.resolveRelationType
+      ) {
+        return stixRelationsDistributionWithInferences(args);
       }
       return stixRelationsDistribution(args);
     }
@@ -59,8 +71,7 @@ const stixRelationResolvers = {
   StixRelation: {
     markingDefinitions: (stixRelation, args) =>
       markingDefinitions(stixRelation.id, args),
-    locations: (stixRelation, args) =>
-      locations(stixRelation.id, args),
+    locations: (stixRelation, args) => locations(stixRelation.id, args),
     reports: (stixRelation, args) => {
       if (/V(\d+)$/i.exec(stixRelation.id) !== null) {
         return reports(stixRelation.id, args);

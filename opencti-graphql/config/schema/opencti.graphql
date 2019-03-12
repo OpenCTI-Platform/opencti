@@ -58,6 +58,11 @@ enum OrderingMode {
 }
 
 ### Edit
+input EntityRelation {
+    entityType: String
+    relationType: String
+    relationRole: String
+}
 input EditInput {
     id: ID # ID of the instance in edition
     key: String! # Field name to change
@@ -526,6 +531,51 @@ type Country implements GlobalObject & StixDomainEntity & Identity {
     updated_at: DateTime!
 }
 input CountryAddInput  {
+    name: String!
+    description: String
+    createdByRef: String
+    markingDefinitions: [String]
+    clientMutationId: String
+}
+
+### Regions
+enum RegionsOrdering {
+    stix_id,
+    name,
+    description,
+    created,
+    modified,
+    created_at,
+    updated_at
+}
+type RegionConnection {
+    pageInfo: PageInfo!
+    edges: [RegionEdge]
+}
+type RegionEdge {
+    cursor: String!
+    node: Region!
+}
+type Region implements GlobalObject & StixDomainEntity & Identity {
+    id: ID!
+    type: String!
+    name: String!
+    stix_label: [String]
+    alias: [String]
+    description: String
+    created: DateTime
+    modified: DateTime
+    revoked: Boolean
+    graph_data: String
+    editContext: [EditUserContext]
+    createdByRef: createdByRef
+    markingDefinitions: MarkingDefinitionConnection
+    reports: ReportConnection
+    stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, inferred: Boolean, toId: String,fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+input RegionAddInput  {
     name: String!
     description: String
     createdByRef: String
@@ -1149,6 +1199,7 @@ enum ReportsOrdering {
     created,
     modified,
     published,
+    object_status,
     createdByRef,
     created_at,
     updated_at
@@ -1178,6 +1229,7 @@ type Report implements GlobalObject & StixDomainEntity {
     published: DateTime
     revoked: Boolean
     object_status: Int
+    source_confidence_level: Int
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -1223,9 +1275,9 @@ type Query {
     stixDomainEntitiesNumber(type: String, endDate: DateTime): Number @auth
     # StixRelations
     stixRelation(id: String!): StixRelation @auth
-    stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, inferred: Boolean, toId: String, fromTypes: [String], toTypes: [String], relationType: String, resolveInferences: Boolean, resolveRelationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection @auth
-    stixRelationsTimeSeries(fromId: String, relationType: String, resolveInferences: Boolean, resolveRelationType: String, entityTypes: [String], toTypes: [String], field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries] @auth
-    stixRelationsDistribution(fromId: String, relationType: String, resolveInferences: Boolean, resolveRelationType: String, entityTypes: [String], toTypes: [String], field: String!, operation: StatsOperation!): [Distribution] @auth
+    stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, inferred: Boolean, toId: String, fromTypes: [String], toTypes: [String], relationType: String, resolveInferences: Boolean, resolveRelationType: String, resolveRelationRole: String, resolveRelationToTypes: [String], resolveViaTypes: [EntityRelation], firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection @auth
+    stixRelationsTimeSeries(fromId: String, relationType: String, resolveInferences: Boolean, resolveRelationType: String, resolveRelationRole: String, resolveRelationToTypes: [String], resolveViaTypes: [EntityRelation], entityTypes: [String], toTypes: [String], field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries] @auth
+    stixRelationsDistribution(fromId: String, relationType: String, resolveInferences: Boolean, resolveRelationType: String, resolveRelationRole: String, resolveRelationToTypes: [String], resolveViaTypes: [EntityRelation], entityTypes: [String], toTypes: [String], field: String!, operation: StatsOperation!): [Distribution] @auth
     # Workspaces
     workspace(id: String!): Workspace @auth
     workspaces(first: Int, after: ID, orderBy: WorkspacesOrdering, orderMode: OrderingMode, search: String): WorkspaceConnection @auth
@@ -1234,8 +1286,8 @@ type Query {
     identities(first: Int, after: ID, orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String): IdentityConnection @auth
     # Users
     me: User @auth
-    user(id: String!): User @auth(for: ROLE_ADMIN)
-    users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String, isUser: Boolean): UserConnection @auth(for: ROLE_ADMIN)
+    user(id: String!): User @auth
+    users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String, isUser: Boolean): UserConnection @auth
     # Organizations
     organization(id: String!): Organization @auth
     organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, search: String): OrganizationConnection @auth
@@ -1248,6 +1300,9 @@ type Query {
     # Countries
     country(id: String!): Country @auth
     countries(first: Int, after: ID, orderBy: CountriesOrdering, orderMode: OrderingMode, search: String): CountryConnection @auth
+    # Regions
+    region(id: String!): Region @auth
+    regions(first: Int, after: ID, orderBy: RegionsOrdering, orderMode: OrderingMode, search: String): RegionConnection @auth
     # Groups
     group(id: String!): Group @auth
     groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection @auth
@@ -1402,6 +1457,16 @@ type CountryEditMutations {
     fieldPatch(input: EditInput): Country
     contextPatch(input: EditContext): Country
     contextClean: Country
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId: ID!): RelationData
+}
+
+# Region
+type RegionEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): Region
+    contextPatch(input: EditContext): Region
+    contextClean: Region
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1583,6 +1648,9 @@ type Mutation {
     # Country
     countryAdd(input: CountryAddInput): Country @auth
     countryEdit(id: ID!): CountryEditMutations @auth
+    # Region
+    regionAdd(input: RegionAddInput): Region @auth
+    regionEdit(id: ID!): RegionEditMutations @auth
     # Group
     groupAdd(input: GroupAddInput): Group @auth(for: ROLE_ADMIN)
     groupEdit(id: ID!): GroupEditMutations @auth(for: ROLE_ADMIN)

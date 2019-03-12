@@ -74,13 +74,13 @@ const inlineStyles = {
   },
   name: {
     float: 'left',
-    width: '45%',
+    width: '40%',
     fontSize: 12,
     fontWeight: '700',
   },
   createdByRef: {
     float: 'left',
-    width: '25%',
+    width: '20%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -89,6 +89,13 @@ const inlineStyles = {
     width: '15%',
     fontSize: 12,
     fontWeight: '700',
+  },
+  object_status: {
+    float: 'left',
+    width: '10%',
+    fontSize: 12,
+    fontWeight: '700',
+    cursor: 'default',
   },
   marking: {
     float: 'left',
@@ -108,6 +115,7 @@ export const exportReportsQuery = graphql`
                     created
                     modified
                     published
+                    object_status
                     createdByRef {
                         node {
                             name
@@ -251,6 +259,7 @@ class Reports extends Component {
                 {this.SortHeader('name', 'Name', true)}
                 {this.SortHeader('createdByRef', 'Author', true)}
                 {this.SortHeader('published', 'Publication date', true)}
+                {this.SortHeader('object_status', 'Status', true)}
                 {this.SortHeader('marking', 'Marking', false)}
               </div>
             }/>

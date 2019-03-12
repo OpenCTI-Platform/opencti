@@ -15,6 +15,7 @@ import organizationResolvers from '../resolvers/organization';
 import sectorResolvers from '../resolvers/sector';
 import cityResolvers from '../resolvers/city';
 import countryResolvers from '../resolvers/country';
+import regionResolvers from '../resolvers/region';
 import groupResolvers from '../resolvers/group';
 import markingDefinitionResolvers from '../resolvers/markingDefinition';
 import externalReferenceResolvers from '../resolvers/externalReference';
@@ -51,6 +52,7 @@ const resolvers = mergeResolvers([
   sectorResolvers,
   cityResolvers,
   countryResolvers,
+  regionResolvers,
   groupResolvers,
   markingDefinitionResolvers,
   externalReferenceResolvers,

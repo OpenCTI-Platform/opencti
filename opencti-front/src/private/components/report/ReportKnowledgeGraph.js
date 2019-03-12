@@ -59,6 +59,17 @@ export const reportKnowledgeGraphQuery = graphql`
     }
 `;
 
+const reportKnowledgeGraphRelationQuery = graphql`
+    query ReportKnowledgeGraphRelationQuery($id: String!) {
+        stixRelation(id: $id) {
+            id
+            first_seen
+            last_seen
+            relationship_type
+        }
+    }
+`;
+
 const reportKnowledgeGraphCheckRelationQuery = graphql`
     query ReportKnowledgeGraphCheckRelationQuery($id: String!) {
         stixRelation(id: $id) {
@@ -435,10 +446,24 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleCloseRelationEdition() {
+    const { editRelationId, currentLink } = this.state;
     this.setState({
       openEditRelation: false,
       editRelationId: null,
       currentLink: null,
+    });
+    fetchQuery(reportKnowledgeGraphRelationQuery, { id: editRelationId }).then((data) => {
+      const { stixRelation } = data;
+      const model = this.props.engine.getDiagramModel();
+      const linkObject = model.getLink(currentLink);
+      const label = new EntityLabelModel();
+      label.setExtras([{
+        id: stixRelation.id,
+        relationship_type: stixRelation.relationship_type,
+        first_seen: stixRelation.first_seen,
+        last_seen: stixRelation.last_seen,
+      }]);
+      linkObject.setLabel(label);
     });
   }
 

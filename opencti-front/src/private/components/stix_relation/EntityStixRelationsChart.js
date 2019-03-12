@@ -35,8 +35,8 @@ const styles = theme => ({
 });
 
 const entityStixRelationsChartStixRelationTimeSeriesQuery = graphql`
-    query EntityStixRelationsChartStixRelationTimeSeriesQuery($fromId: String, $entityTypes: [String] $relationType: String, $resolveRelationType: String, $resolveInferences: Boolean, $toTypes: [String], $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
-        stixRelationsTimeSeries(fromId: $fromId, entityTypes: $entityTypes, relationType: $relationType, resolveRelationType: $resolveRelationType, resolveInferences: $resolveInferences, toTypes: $toTypes, field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
+    query EntityStixRelationsChartStixRelationTimeSeriesQuery($fromId: String, $entityTypes: [String] $relationType: String, $resolveInferences: Boolean, $resolveRelationType: String, $resolveRelationRole: String, $resolveRelationToTypes: [String], $resolveViaTypes: [EntityRelation], $toTypes: [String], $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
+        stixRelationsTimeSeries(fromId: $fromId, entityTypes: $entityTypes, relationType: $relationType, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, resolveRelationRole: $resolveRelationRole, resolveRelationToTypes: $resolveRelationToTypes, resolveViaTypes: $resolveViaTypes, toTypes: $toTypes, field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
             date,
             value
         }
@@ -79,6 +79,9 @@ class EntityStixRelationsChart extends Component {
       resolveInferences,
       entityTypes,
       resolveRelationType,
+      resolveRelationRole,
+      resolveRelationToTypes,
+      resolveViaTypes,
     } = this.props;
     const stixRelationsTimeSeriesVariables = {
       fromId: entityId || null,
@@ -92,6 +95,9 @@ class EntityStixRelationsChart extends Component {
       interval: 'month',
       resolveInferences,
       resolveRelationType,
+      resolveRelationRole,
+      resolveRelationToTypes,
+      resolveViaTypes,
     };
     return (
       <div style={{ height: '100%' }}>
@@ -152,6 +158,9 @@ EntityStixRelationsChart.propTypes = {
   relationType: PropTypes.string,
   resolveInferences: PropTypes.bool,
   resolveRelationType: PropTypes.string,
+  resolveRelationRole: PropTypes.string,
+  resolveRelationToTypes: PropTypes.array,
+  resolveViaTypes: PropTypes.array,
   entityTypes: PropTypes.array,
   toTypes: PropTypes.array,
   title: PropTypes.string,

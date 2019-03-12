@@ -28,8 +28,8 @@ const styles = theme => ({
 });
 
 const entityStixRelationsRadarStixRelationDistributionQuery = graphql`
-    query EntityStixRelationsRadarStixRelationDistributionQuery($fromId: String, $toTypes: [String], $relationType: String, $resolveRelationType: String, $resolveInferences: Boolean, $field: String!, $operation: StatsOperation!) {
-        stixRelationsDistribution(fromId: $fromId, toTypes: $toTypes, relationType: $relationType, resolveRelationType: $resolveRelationType, resolveInferences: $resolveInferences, field: $field, operation: $operation) {
+    query EntityStixRelationsRadarStixRelationDistributionQuery($fromId: String, $toTypes: [String], $relationType: String, $resolveInferences: Boolean, $resolveRelationType: String, $resolveRelationRole: String, $resolveRelationToTypes: [String], $resolveViaTypes: [EntityRelation], $field: String!, $operation: StatsOperation!) {
+        stixRelationsDistribution(fromId: $fromId, toTypes: $toTypes, relationType: $relationType, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, resolveRelationRole: $resolveRelationRole, resolveRelationToTypes: $resolveRelationToTypes, resolveViaTypes: $resolveViaTypes, field: $field, operation: $operation) {
             label,
             value
         }
@@ -39,11 +39,24 @@ const entityStixRelationsRadarStixRelationDistributionQuery = graphql`
 class EntityStixRelationsRadar extends Component {
   render() {
     const {
-      t, classes, entityId, entityType, relationType, field, resolveInferences, resolveRelationType,
+      t,
+      classes,
+      entityId,
+      entityType,
+      relationType,
+      field,
+      resolveInferences,
+      resolveRelationType,
+      resolveRelationRole,
+      resolveRelationToTypes,
+      resolveViaTypes,
     } = this.props;
     const stixRelationsDistributionVariables = {
       resolveInferences,
       resolveRelationType,
+      resolveRelationRole,
+      resolveRelationToTypes,
+      resolveViaTypes,
       fromId: entityId,
       toTypes: entityType ? [entityType] : null,
       relationType,
@@ -102,6 +115,9 @@ EntityStixRelationsRadar.propTypes = {
   entityType: PropTypes.string,
   resolveInferences: PropTypes.bool,
   resolveRelationType: PropTypes.string,
+  resolveRelationRole: PropTypes.string,
+  resolveRelationToTypes: PropTypes.array,
+  resolveViaTypes: PropTypes.array,
   field: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

@@ -198,6 +198,7 @@ IncidentsCards.propTypes = {
   relay: PropTypes.object,
   incidents: PropTypes.object,
   dummy: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const incidentsCardsQuery = graphql`

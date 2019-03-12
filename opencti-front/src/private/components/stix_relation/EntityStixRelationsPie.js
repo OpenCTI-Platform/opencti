@@ -42,8 +42,8 @@ const renderCustomizedLabel = ({
 };
 
 const entityStixRelationsPieStixRelationDistributionQuery = graphql`
-    query EntityStixRelationsPieStixRelationDistributionQuery($fromId: String, $toTypes: [String], $entityTypes: [String], $relationType: String, $resolveRelationType: String, $resolveInferences: Boolean, $field: String!, $operation: StatsOperation!) {
-        stixRelationsDistribution(fromId: $fromId, toTypes: $toTypes, entityTypes: $entityTypes, relationType: $relationType, resolveRelationType: $resolveRelationType, resolveInferences: $resolveInferences, field: $field, operation: $operation) {
+    query EntityStixRelationsPieStixRelationDistributionQuery($fromId: String, $toTypes: [String], $entityTypes: [String], $relationType: String, $resolveInferences: Boolean, $resolveRelationType: String, $resolveRelationRole: String, $resolveRelationToTypes: [String], $resolveViaTypes: [EntityRelation], $field: String!, $operation: StatsOperation!) {
+        stixRelationsDistribution(fromId: $fromId, toTypes: $toTypes, entityTypes: $entityTypes, relationType: $relationType, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, resolveRelationRole: $resolveRelationRole, resolveRelationToTypes: $resolveRelationToTypes, resolveViaTypes: $resolveViaTypes, field: $field, operation: $operation) {
             label,
             value
         }
@@ -62,6 +62,9 @@ class EntityStixRelationsPie extends Component {
       entityTypes,
       resolveInferences,
       resolveRelationType,
+      resolveRelationRole,
+      resolveRelationToTypes,
+      resolveViaTypes,
     } = this.props;
     const stixRelationsDistributionVariables = {
       fromId: entityId,
@@ -69,6 +72,9 @@ class EntityStixRelationsPie extends Component {
       entityTypes: entityTypes || null,
       resolveInferences,
       resolveRelationType,
+      resolveRelationRole,
+      resolveRelationToTypes,
+      resolveViaTypes,
       relationType,
       field,
       operation: 'count',
@@ -129,6 +135,9 @@ EntityStixRelationsPie.propTypes = {
   entityType: PropTypes.string,
   resolveInferences: PropTypes.bool,
   resolveRelationType: PropTypes.string,
+  resolveRelationRole: PropTypes.string,
+  resolveRelationToTypes: PropTypes.array,
+  resolveViaTypes: PropTypes.array,
   entityTypes: PropTypes.array,
   field: PropTypes.string,
   classes: PropTypes.object,

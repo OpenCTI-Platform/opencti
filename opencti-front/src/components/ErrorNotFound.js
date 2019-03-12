@@ -7,7 +7,7 @@ import inject18n from './i18n';
 
 const styles = theme => ({
   container: {
-    width: '100vh',
+    width: '100vw',
     height: 'calc(100vh-180px)',
   },
   particlesContainer: {

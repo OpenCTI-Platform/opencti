@@ -31,7 +31,7 @@ import { Subject, timer } from 'rxjs/index';
 import { yearFormat } from '../../../utils/Time';
 import { distributeElements } from '../../../utils/DagreHelper';
 import { serializeGraph } from '../../../utils/GraphHelper';
-import { commitMutation } from '../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
 import EntityLabelModel from '../../../components/graph_node/EntityLabelModel';
@@ -60,6 +60,17 @@ const styles = () => ({
     bottom: 13,
   },
 });
+
+const stixDomainEntityKnowledgeGraphRelationQuery = graphql`
+    query StixDomainEntityKnowledgeGraphRelationQuery($id: String!) {
+        stixRelation(id: $id) {
+            id
+            first_seen
+            last_seen
+            relationship_type
+        }
+    }
+`;
 
 const GRAPHER$ = new Subject().pipe(debounce(() => timer(1000)));
 
@@ -318,10 +329,24 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
   }
 
   handleCloseRelationEdition() {
+    const { editRelationId, currentLink } = this.state;
     this.setState({
       openEditRelation: false,
       editRelationId: null,
       currentLink: null,
+    });
+    fetchQuery(stixDomainEntityKnowledgeGraphRelationQuery, { id: editRelationId }).then((data) => {
+      const { stixRelation } = data;
+      const model = this.props.engine.getDiagramModel();
+      const linkObject = model.getLink(currentLink);
+      const label = new EntityLabelModel();
+      label.setExtras([{
+        id: stixRelation.id,
+        relationship_type: stixRelation.relationship_type,
+        first_seen: stixRelation.first_seen,
+        last_seen: stixRelation.last_seen,
+      }]);
+      linkObject.setLabel(label);
     });
   }
 

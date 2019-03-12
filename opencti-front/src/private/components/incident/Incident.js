@@ -50,6 +50,7 @@ class IncidentComponent extends Component {
               field='phase_name'
               resolveInferences={true}
               resolveRelationType='uses'
+              resolveRelationRole='user'
             />
           </Grid>
           <Grid item={true} xs={4}>

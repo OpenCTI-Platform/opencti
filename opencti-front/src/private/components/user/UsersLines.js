@@ -4,7 +4,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
+import {
+  defaultTo, filter, lensProp, map, over, pathOr, pipe, propOr,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer, InfiniteLoader, List, WindowScroller,
@@ -42,6 +44,28 @@ class UsersLines extends Component {
     };
   }
 
+  filterList(list) {
+    const searchTerm = propOr('', 'searchTerm', this.props);
+    const filterByKeyword = n => searchTerm === ''
+      || n.node.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.firstname.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.lastname.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.email.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
+    if (searchTerm.length > 0) {
+      return pipe(
+        map(n => n.node),
+        map(n => over(lensProp('firstname'), defaultTo('-'))(n)),
+        map(n => over(lensProp('lastname'), defaultTo('-'))(n)),
+        map(n => over(lensProp('description'), defaultTo('-'))(n)),
+        map(n => over(lensProp('email'), defaultTo('-'))(n)),
+        map(n => ({ node: n })),
+        filter(filterByKeyword),
+      )(list);
+    }
+    return list;
+  }
+
   _setRef(windowScroller) {
     // noinspection JSUnusedGlobalSymbols
     this._windowScroller = windowScroller;
@@ -62,7 +86,7 @@ class UsersLines extends Component {
     if (this.props.dummy) {
       return true;
     }
-    const list = pathOr([], ['users', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['users', 'edges'], this.props.data));
     return !this.props.relay.hasMore() || index < list.length;
   }
 
@@ -72,7 +96,7 @@ class UsersLines extends Component {
       return <div key={key} style={style}><UserLineDummy/></div>;
     }
 
-    const list = pathOr([], ['users', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['users', 'edges'], this.props.data));
     if (!this._isRowLoaded({ index })) {
       return <div key={key} style={style}><UserLineDummy/></div>;
     }
@@ -87,7 +111,7 @@ class UsersLines extends Component {
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
-    const list = dummy ? [] : pathOr([], ['users', 'edges'], this.props.data);
+    const list = dummy ? [] : this.filterList(pathOr([], ['users', 'edges'], this.props.data));
     const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
@@ -135,6 +159,7 @@ UsersLines.propTypes = {
   relay: PropTypes.object,
   users: PropTypes.object,
   dummy: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const usersLinesQuery = graphql`
@@ -174,6 +199,11 @@ export default withStyles(styles)(createPaginationContainer(
             users(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode, isUser: $isUser) @connection(key: "Pagination_users") {
                 edges {
                     node {
+                        id
+                        name
+                        firstname
+                        lastname
+                        email
                         ...UserLine_user
                     }
                 }

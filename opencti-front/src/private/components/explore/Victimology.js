@@ -1,109 +1,153 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose, filter, append } from 'ramda';
+import graphql from 'babel-plugin-relay/macro';
+import { Route, Redirect, withRouter } from 'react-router-dom';
+import {
+  compose, map, pathOr, pipe, union,
+} from 'ramda';
+import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
+import { QueryRenderer, fetchQuery } from '../../../relay/environment';
+import Autocomplete from '../../../components/Autocomplete';
+import ExploreHeader from './ExploreHeader';
 import VictiomologyRightBar from './VictimologyRightBar';
-import EntityStixRelationsChart from '../stix_relation/EntityStixRelationsChart';
-import EntityStixRelationsPie from '../stix_relation/EntityStixRelationsPie';
+import VictimologyDistribution from './VictimologyDistribution';
 
 const styles = () => ({
   container: {
     margin: 0,
-  },
-  content: {
     paddingRight: 260,
   },
+  search: {
+    width: '100%',
+    position: 'absolute',
+    top: '46%',
+    left: 0,
+    padding: '0 290px 0 80px',
+    textAlign: 'center',
+    zIndex: 20,
+  },
 });
+
+const victimologyThreatActorsSearchQuery = graphql`
+    query VictimologyThreatActorsQuery($search: String) {
+        threatActors(search: $search) {
+            edges {
+                node {
+                    id
+                    name
+                    type
+                }
+            }
+        }
+    }
+`;
+
+const victimologyIntrusionSetsSearchQuery = graphql`
+    query VictimologyIntrusionSetsQuery($search: String) {
+        intrusionSets(search: $search) {
+            edges {
+                node {
+                    id
+                    name
+                    type
+                }
+            }
+        }
+    }
+`;
+
+const victimologyStixDomainEntityQuery = graphql`
+    query VictimologyStixDomainEntityQuery($id: String!) {
+        stixDomainEntity(id: $id) {
+            id
+            ...ExploreHeader_stixDomainEntity
+        }
+    }
+`;
 
 class Victimology extends Component {
   constructor(props) {
     super(props);
-    this.state = { selectedThreat: null, selectedTargetingTypes: null, selectedTargetTypes: null };
+    this.state = { selectedThreat: null, threats: [] };
+  }
+
+  searchThreats(event) {
+    fetchQuery(victimologyThreatActorsSearchQuery, {
+      search: event.target.value,
+      first: 10,
+    }).then((data) => {
+      const threatActors = pipe(
+        pathOr([], ['threatActors', 'edges']),
+        map(n => ({ label: n.node.name, value: n.node.id, type: n.node.type })),
+      )(data);
+      this.setState({ threats: union(this.state.threats, threatActors) });
+    });
+    fetchQuery(victimologyIntrusionSetsSearchQuery, {
+      search: event.target.value,
+      first: 10,
+    }).then((data) => {
+      const intrusionSets = pipe(
+        pathOr([], ['intrusionSets', 'edges']),
+        map(n => ({ label: n.node.name, value: n.node.id, type: n.node.type })),
+      )(data);
+      this.setState({ threats: union(this.state.threats, intrusionSets) });
+    });
   }
 
   handleSelectThreat(name, value) {
     this.setState({ selectedThreat: value.value });
   }
 
-  handleSelectTargetingType(targetingType) {
-    if (targetingType === 'All') {
-      this.setState({ selectedTargetingTypes: null });
-    } else if (this.state.selectedTargetingTypes !== null && this.state.selectedTargetingTypes.indexOf(targetingType) !== -1) {
-      this.setState({
-        selectedTargetingTypes: filter(t => t !== targetingType, this.state.selectedTargetingTypes),
-      });
-    } else {
-      this.setState({
-        selectedTargetingTypes: append(targetingType, this.state.selectedTargetingTypes),
-      });
-    }
-  }
-
-  handleSelectTargetType(targetType) {
-    if (targetType === 'All') {
-      this.setState({ selectedTargetTypes: null });
-    } else if (this.state.selectedTargetTypes !== null && this.state.selectedTargetTypes.indexOf(targetType) !== -1) {
-      this.setState({
-        selectedTargetTypes: filter(t => t !== targetType, this.state.selectedTargetTypes),
-      });
-    } else {
-      this.setState({
-        selectedTargetTypes: append(targetType, this.state.selectedTargetTypes),
-      });
-    }
-  }
-
   render() {
-    const { classes } = this.props;
-    const resolveInference = this.state.selectedThreat !== null
-      || this.state.selectedTargetingTypes !== null
-      || this.state.selectedTargetTypes !== null;
+    const { classes, t, match: { params: { stixDomainEntityId } } } = this.props;
+    const { selectedThreat } = this.state;
+    const threatId = stixDomainEntityId || selectedThreat;
     return (
       <div className={classes.container}>
-        <VictiomologyRightBar
-          handleSelectThreat={this.handleSelectThreat.bind(this)}
-          handleSelectTargetingType={this.handleSelectTargetingType.bind(this)}
-          selectedTargetingTypes={this.state.selectedTargetingTypes}
-          handleSelectTargetType={this.handleSelectTargetType.bind(this)}
-          selectedTargetTypes={this.state.selectedTargetTypes}
-        />
-        <div className={classes.content}>
-          <EntityStixRelationsChart
-            entityId={this.state.selectedThreat}
-            entityTypes={this.state.selectedTargetingTypes}
-            relationType='targets'
-            toTypes={['Identity']}
-            title='Targeted entities through time'
-            resolveInferences={resolveInference}
-            resolveRelationType='attributed-to'
+        {threatId === null
+          ? <div className={classes.search}>
+            <Formik
+              enableReinitialize={true}
+              initialValues={{ searchThreat: '' }}
+              render={() => (
+                <Form style={{ width: 500, margin: '0 auto' }}>
+                  <Field
+                    name='searchThreat'
+                    component={Autocomplete}
+                    labelDisplay={false}
+                    multiple={false}
+                    label={t('Search for a threat...')}
+                    options={this.state.threats}
+                    onInputChange={this.searchThreats.bind(this)}
+                    onChange={this.handleSelectThreat.bind(this)}
+                  />
+                </Form>
+              )}
+            />
+          </div>
+          : <QueryRenderer
+            query={victimologyStixDomainEntityQuery}
+            variables={{ id: threatId }}
+            render={({ props }) => {
+              if (props && props.stixDomainEntity) {
+                return (
+                  <div>
+                    <ExploreHeader stixDomainEntity={props.stixDomainEntity}/>
+                    <Route exact path='/dashboard/explore/victimology' render={() => (<Redirect to={`/dashboard/explore/victimology/${threatId}/distribution`}/>)}/>
+                    <Route exact path='/dashboard/explore/victimology/:stixDomainEntityId' render={() => (<Redirect to={`/dashboard/explore/victimology/${threatId}/distribution`}/>)}/>
+                    <Route exact path='/dashboard/explore/victimology/:stixDomainEntityId/distribution' render={routeProps => <VictimologyDistribution {...routeProps} stixDomainEntity={props.stixDomainEntity}/>}/>
+                  </div>
+                );
+              }
+              return (
+                <div> &nbsp; </div>
+              );
+            }}
           />
-          <Grid container={true} spacing={16} style={{ marginTop: 20 }}>
-            <Grid item={true} xs={6}>
-              <EntityStixRelationsPie
-                entityId={this.state.selectedThreat}
-                entityType='Sector'
-                entityTypes={this.state.selectedTargetingTypes}
-                relationType='targets'
-                field='name'
-                resolveInferences={resolveInference}
-                resolveRelationType='attributed-to'
-              />
-            </Grid>
-            <Grid item={true} xs={6}>
-              <EntityStixRelationsPie
-                entityId={this.state.selectedThreat}
-                entityType='Country'
-                entityTypes={this.state.selectedTargetingTypes}
-                relationType='targets'
-                field='name'
-                resolveInferences={resolveInference}
-                resolveRelationType='attributed-to'
-              />
-            </Grid>
-          </Grid>
-        </div>
+        }
+        <VictiomologyRightBar threatId={threatId}/>
       </div>
     );
   }
@@ -111,10 +155,12 @@ class Victimology extends Component {
 
 Victimology.propTypes = {
   classes: PropTypes.object,
+  match: PropTypes.object,
   t: PropTypes.func,
 };
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles),
 )(Victimology);

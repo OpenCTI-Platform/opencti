@@ -13,7 +13,7 @@ import {
   pipe,
   pluck,
   toPairs,
-  values,
+  values
 } from 'ramda';
 import moment from 'moment';
 import { offsetToCursor } from 'graphql-relay';
@@ -202,6 +202,48 @@ export const qk = (queryDef, infer = false) => {
     return false;
   });
 };
+
+/**
+ * Grakn query that generate json objects
+ * @param queryDef the query to process
+ * @param key the instance key to get id from.
+ * @param relationKey the key to bind relation result.
+ * @returns {Promise<AxiosResponse<any> | never | never>}
+ */
+export const qkObjSimple = (queryDef, key = 'x', relationKey, infer = false) =>
+  qk(queryDef, infer).then(result => {
+    if (result && result.data) {
+      return Promise.all(
+        map(line => {
+          const nodePromise = Promise.resolve({
+            id: line[key].id
+          });
+          const relationPromise = !relationKey
+            ? Promise.resolve(null)
+            : line[relationKey].inferred
+            ? Promise.resolve({
+                id: line[relationKey].id,
+                type: 'stix_relation',
+                relationship_type: line[relationKey].type.label,
+                inferred: true
+              })
+            : Promise.resolve({
+                id: line[relationKey].id,
+                type: 'stix_relation',
+                relationship_type: line[relationKey].type.label,
+                inferred: false
+              });
+          return Promise.all([nodePromise, relationPromise]).then(
+            ([node, relation]) => ({
+              node,
+              relation
+            })
+          );
+        })(result.data)
+      );
+    }
+    return Promise.resolve([]);
+  });
 
 /**
  * Grakn query that generate json objects
@@ -725,7 +767,7 @@ export const paginate = (
  * @param globalCount
  * @returns {{edges: *, pageInfo: *}}
  */
-const buildPaginationRelationships = (
+export const buildPaginationRelationships = (
   first,
   offset,
   instances,
@@ -760,7 +802,12 @@ const buildPaginationRelationships = (
  * @param options
  * @returns Promise
  */
-export const paginateRelationships = (query, options, extraRel = null) => {
+export const paginateRelationships = (
+  query,
+  options,
+  extraRel = null,
+  pagination = true
+) => {
   const {
     fromId,
     toId,
@@ -833,10 +880,22 @@ export const paginateRelationships = (query, options, extraRel = null) => {
     extraRel,
     inferred
   );
+  if (pagination) {
+    return Promise.all([count, elements]).then(data => {
+      const globalCount = data ? head(data) : 0;
+      const instances = data ? last(data) : [];
+      return buildPaginationRelationships(
+        first,
+        offset,
+        instances,
+        globalCount
+      );
+    });
+  }
   return Promise.all([count, elements]).then(data => {
     const globalCount = data ? head(data) : 0;
     const instances = data ? last(data) : [];
-    return buildPaginationRelationships(first, offset, instances, globalCount);
+    return { globalCount, instances };
   });
 };
 
@@ -865,9 +924,9 @@ export const timeSeries = (query, options) => {
  * @returns Promise
  */
 export const distribution = (query, options) => {
-  const { operation, field } = options;
+  const { operation, field, inferred } = options;
   const finalQuery = `${query}; $x has ${field} $g; aggregate group $g ${operation};`;
-  return qk(finalQuery, true).then(result => {
+  return qk(finalQuery, inferred).then(result => {
     const data = result.data.map(n => ({
       label: /Value\s\[(.*)\]/i.exec(head(head(toPairs(n))))[1],
       value: head(last(head(toPairs(n))))

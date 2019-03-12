@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos, Explore, BugReport } from '@material-ui/icons';
+import { BugReport } from '@material-ui/icons';
 import {
   ChessKnight,
   LockPattern,
@@ -54,39 +54,33 @@ class TopMenuExplore extends Component {
     const { t, location, classes } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/explore' variant={location.pathname === '/dashboard/explore' ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/explore' ? 'primary' : 'inherit'} classes={{ root: location.pathname === '/dashboard/explore' ? classes.buttonHomeActive : classes.buttonHome }}>
-          <Explore className={classes.icon} fontSize='small'/>
-          {t('Explore')}
-        </Button>
-        <ArrowForwardIos color='inherit' classes={{ root: classes.arrow }}/>
-        <Button component={Link} to='/dashboard/explore/victimology' variant={location.pathname === '/dashboard/explore/victimology' ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/explore/victimology' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to='/dashboard/explore/victimology' variant={location.pathname.includes('/dashboard/explore/victimology') ? 'contained' : 'text'} size="small"
+                color={location.pathname.includes('/dashboard/explore/victimology') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <Target className={classes.icon} fontSize='small'/>
           {t('Victimology')}
         </Button>
-        <Button component={Link} to='/dashboard/explore/campaigns' variant={location.pathname === '/dashboard/explore/campaigns' ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/explore/campaigns' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to='/dashboard/explore/campaigns' variant={location.pathname.includes('/dashboard/explore/campaigns') ? 'contained' : 'text'} size="small"
+                color={location.pathname.includes('/dashboard/explore/campaigns') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <ChessKnight className={classes.icon} fontSize='small'/>
           {t('Campaigns')}
         </Button>
-        <Button component={Link} to='/dashboard/explore/ttp' variant={location.pathname === '/dashboard/explore/ttp' ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/explore/ttp' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to='/dashboard/explore/ttp' variant={location.pathname.includes('/dashboard/explore/ttp') ? 'contained' : 'text'} size="small"
+                color={location.pathname.includes('/dashboard/explore/ttp') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <LockPattern className={classes.icon} fontSize='small'/>
           {t('Attack patterns')}
         </Button>
-        <Button component={Link} to='/dashboard/explore/killchains' variant={location.pathname === '/dashboard/explore/killchains' ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/explore/killchains' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to='/dashboard/explore/killchains' variant={location.pathname.includes('/dashboard/explore/killchains') ? 'contained' : 'text'} size="small"
+                color={location.pathname.includes('/dashboard/explore/killchains') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <SortAscending className={classes.icon} fontSize='small'/>
           {t('Kill chains')}
         </Button>
-        <Button component={Link} to='/dashboard/explore/vulnerabilities' variant={location.pathname === '/dashboard/explore/vulnerabilities' ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/explore/vulnerabilities' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to='/dashboard/explore/vulnerabilities' variant={location.pathname.includes('/dashboard/explore/vulnerabilities') ? 'contained' : 'text'} size="small"
+                color={location.pathname.includes('/dashboard/explore/vulnerabilities') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <BugReport className={classes.icon} fontSize='small'/>
           {t('Vulnerabilities')}
         </Button>
-        <Button component={Link} to='/dashboard/explore/observables' variant={location.pathname === '/dashboard/explore/observables' ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/explore/observables' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button component={Link} to='/dashboard/explore/observables' variant={location.pathname.includes('/dashboard/explore/observables') ? 'contained' : 'text'} size="small"
+                color={location.pathname.includes('/dashboard/explore/observables') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           <TagMultiple className={classes.icon} fontSize='small'/>
           {t('Observables')}
         </Button>

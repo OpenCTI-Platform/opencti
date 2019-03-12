@@ -10,6 +10,7 @@ import {
 import * as Yup from 'yup';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
+import DatePickerField from '../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation, WS_ACTIVATED } from '../../../relay/environment';
 import { dateFormat } from '../../../utils/Time';
@@ -66,8 +67,7 @@ const incidentValidation = t => Yup.object().shape({
   last_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  objective: Yup.string()
-    .required(t('This field is required')),
+  objective: Yup.string(),
 });
 
 class IncidentEditionIdentityComponent extends Component {
@@ -120,12 +120,12 @@ class IncidentEditionIdentityComponent extends Component {
           render={() => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field name='first_seen' component={TextField} label={t('First seen')}
-                       fullWidth={true} style={{ marginTop: 10 }}
+                <Field name='first_seen' component={DatePickerField} label={t('First seen')}
+                       fullWidth={true}
                        onFocus={this.handleChangeFocus.bind(this)}
                        onSubmit={this.handleSubmitField.bind(this)}
                        helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='first_seen'/>}/>
-                <Field name='last_seen' component={TextField} label={t('Last seen')}
+                <Field name='last_seen' component={DatePickerField} label={t('Last seen')}
                        fullWidth={true} style={{ marginTop: 10 }}
                        onFocus={this.handleChangeFocus.bind(this)}
                        onSubmit={this.handleSubmitField.bind(this)}
