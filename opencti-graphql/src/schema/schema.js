@@ -6,6 +6,7 @@ import ConstraintDirective from 'graphql-constraint-directive';
 import path from 'path';
 import settingsResolvers from '../resolvers/settings';
 import globalObjectResolvers from '../resolvers/globalObject';
+import stixEntityResolvers from '../resolvers/stixEntity';
 import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
 import stixRelationResolvers from '../resolvers/stixRelation';
 import workspaceResolvers from '../resolvers/workspace';
@@ -43,6 +44,7 @@ const resolvers = mergeResolvers([
   globalResolvers,
   settingsResolvers,
   globalObjectResolvers,
+  stixEntityResolvers,
   stixDomainEntityResolvers,
   stixRelationResolvers,
   workspaceResolvers,

@@ -9,7 +9,6 @@ import {
   pluck,
   forEach,
   assoc,
-  mergeWith,
   evolve,
   tail,
   curry,
@@ -17,7 +16,13 @@ import {
   prop,
   groupBy,
   reduce,
-  add
+  add,
+  take,
+  sortWith,
+  descend,
+  ascend,
+  pipe,
+  dropRepeats
 } from 'ramda';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import uuid from 'uuid/v4';
@@ -41,7 +46,8 @@ import {
   distribution,
   takeTx,
   qkObjSimple,
-  buildPaginationRelationships
+  buildPaginationRelationships,
+  createRelation
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -97,9 +103,8 @@ export const findAllWithInferences = async args => {
     null,
     false
   );
-  let viaPromise = Promise.resolve([{ globalCount: 0, instances: [] }]);
   if (args.resolveViaTypes) {
-    viaPromise = Promise.all(
+    const viaPromise = Promise.all(
       map(resolveViaType => {
         const viaQuery = `match $from; $rel($from, $entity) isa ${
           args.relationType ? args.relationType : 'stix_relation'
@@ -119,19 +124,55 @@ export const findAllWithInferences = async args => {
         );
       })(args.resolveViaTypes)
     );
+    const viaRelationQueries = map(
+      resolveViaType =>
+        `match $from; $rel($from, $entity) isa ${
+          args.relationType ? args.relationType : 'stix_relation'
+        }; ${join(
+          ' ',
+          map(fromId => `{ $from id ${fromId}; } or`, fromIds)
+        )} { $from id ${head(fromIds)}; }; $link(${
+          resolveViaType.relationRole
+        }: $rel, $to) isa ${resolveViaType.relationType}`
+    )(args.resolveViaTypes);
+    const viaOfRelationPromise = Promise.all(
+      map(viaRelationQuery =>
+        paginateRelationships(
+          viaRelationQuery,
+          omit(['fromId'], args),
+          null,
+          false
+        )
+      )(dropRepeats(viaRelationQueries))
+    );
+    return Promise.all([resultPromise, viaPromise, viaOfRelationPromise]).then(
+      ([result, via, viaRelation]) => {
+        const { first = 200, after } = args;
+        const offset = after ? cursorToOffset(after) : 0;
+        const globalCount =
+          result.globalCount +
+          sum(pluck('globalCount', via)) +
+          sum(pluck('globalCount', viaRelation));
+        let viaInstances = [];
+        forEach(n => {
+          viaInstances = concat(viaInstances, n.instances);
+        }, via);
+        let viaRelationInstances = [];
+        forEach(n => {
+          viaRelationInstances = concat(viaRelationInstances, n.instances);
+        }, viaRelation);
+        const instances = concat(viaInstances, viaRelationInstances);
+        const finalInstance = concat(result.instances, instances);
+        return buildPaginationRelationships(
+          first,
+          offset,
+          finalInstance,
+          globalCount
+        );
+      }
+    );
   }
-
-  return Promise.all([resultPromise, viaPromise]).then(([result, via]) => {
-    const { first = 200, after } = args;
-    const offset = after ? cursorToOffset(after) : 0;
-    const globalCount = result.globalCount + sum(pluck('globalCount', via));
-    let viaInstances = [];
-    forEach(n => {
-      viaInstances = concat(viaInstances, n.instances);
-    }, via);
-    const instances = concat(result.instances, viaInstances);
-    return buildPaginationRelationships(first, offset, instances, globalCount);
-  });
+  return resultPromise;
 };
 
 export const stixRelationsTimeSeries = args =>
@@ -177,21 +218,17 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
   }; ${join(
     ' ',
     map(fromId => `{ $from id ${fromId}; } or`, fromIds)
-  )} { $from id ${head(fromIds)}; }; ${
+  )} { $from id ${head(fromIds)}; }${
     args.toTypes
-      ? `${join(
+      ? `; ${join(
           ' ',
           map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
         )} { $x isa ${head(args.toTypes)}; }`
       : ''
   }`;
-  const resultPromise = timeSeries(
-    query,
-    assoc('inferred', false, omit(['fromId'], args))
-  );
-  let viaPromise = Promise.resolve([]);
+  const resultPromise = timeSeries(query, assoc('inferred', false, args));
   if (args.resolveViaTypes) {
-    viaPromise = Promise.all(
+    const viaPromise = Promise.all(
       map(resolveViaType => {
         const viaQuery = `match $from; $rel($from, $entity) isa ${
           args.relationType ? args.relationType : 'stix_relation'
@@ -209,24 +246,55 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
                 map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
               )} { $x isa ${head(args.toTypes)}; }`
             : ''
-        }`;
-        return timeSeries(viaQuery, omit(['fromId'], args));
+        }; $rel has first_seen $o`;
+        return timeSeries(viaQuery, assoc('inferred', true, args));
       })(args.resolveViaTypes)
     );
+    const viaRelationQueries = map(
+      resolveViaType =>
+        `match $from; $rel($from, $entity) isa ${
+          args.relationType ? args.relationType : 'stix_relation'
+        }; ${join(
+          ' ',
+          map(fromId => `{ $from id ${fromId}; } or`, fromIds)
+        )} { $from id ${head(fromIds)}; }; $link(${
+          resolveViaType.relationRole
+        }: $rel, $x) isa ${resolveViaType.relationType}; ${
+          args.toTypes
+            ? `${join(
+                ' ',
+                map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
+              )} { $x isa ${head(args.toTypes)}; }`
+            : ''
+        }; $rel has first_seen $o`
+    )(args.resolveViaTypes);
+    const viaOfRelationPromise = Promise.all(
+      map(viaRelationQuery =>
+        timeSeries(viaRelationQuery, assoc('inferred', true, args))
+      )(dropRepeats(viaRelationQueries))
+    );
+    return Promise.all([resultPromise, viaPromise, viaOfRelationPromise]).then(
+      ([result, via, viaRelation]) => {
+        let viaResult = [];
+        forEach(n => {
+          viaResult = concat(viaResult, n);
+        }, via);
+        let viaRelationResult = [];
+        forEach(n => {
+          viaRelationResult = concat(viaRelationResult, n);
+        }, viaRelation);
+        const data = concat(viaResult, viaRelationResult);
+        const finalData = concat(result, data);
+        return groupSumBy('date', 'value', finalData);
+      }
+    );
   }
-
-  return Promise.all([resultPromise, viaPromise]).then(([result, via]) => {
-    let viaResult = [];
-    forEach(n => {
-      viaResult = concat(viaResult, n);
-    }, via);
-    const finalResult = concat(result, viaResult);
-    return groupSumBy('date', 'value', finalResult);
-  });
+  return resultPromise;
 };
 
-export const stixRelationsDistribution = args =>
-  distribution(
+export const stixRelationsDistribution = args => {
+  const { limit = 10 } = args;
+  return distribution(
     `match $rel($from, $x) isa ${
       args.relationType ? args.relationType : 'stix_relation'
     }; ${
@@ -240,9 +308,15 @@ export const stixRelationsDistribution = args =>
       args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
     }`,
     args
-  );
-
+  ).then(result => {
+    if (args.order === 'asc') {
+      return take(limit, sortWith([ascend(prop('value'))])(result));
+    }
+    return take(limit, sortWith([descend(prop('value'))])(result));
+  });
+};
 export const stixRelationsDistributionWithInferences = async args => {
+  const { limit = 10 } = args;
   const entities = await qkObjSimple(
     `match $x; (${args.resolveRelationRole}: $from, $x) isa ${
       args.resolveRelationType
@@ -268,21 +342,17 @@ export const stixRelationsDistributionWithInferences = async args => {
   }; ${join(
     ' ',
     map(fromId => `{ $from id ${fromId}; } or`, fromIds)
-  )} { $from id ${head(fromIds)}; }; ${
+  )} { $from id ${head(fromIds)}; }${
     args.toTypes
-      ? `${join(
+      ? `; ${join(
           ' ',
           map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
         )} { $x isa ${head(args.toTypes)}; }`
       : ''
   }`;
-  const resultPromise = distribution(
-    query,
-    assoc('inferred', false, omit(['fromId'], args))
-  );
-  let viaPromise = Promise.resolve([]);
+  const resultPromise = distribution(query, assoc('inferred', false, args));
   if (args.resolveViaTypes) {
-    viaPromise = Promise.all(
+    const viaPromise = Promise.all(
       map(resolveViaType => {
         const viaQuery = `match $from; $rel($from, $entity) isa ${
           args.relationType ? args.relationType : 'stix_relation'
@@ -300,20 +370,66 @@ export const stixRelationsDistributionWithInferences = async args => {
                 map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
               )} { $x isa ${head(args.toTypes)}; }`
             : ''
-        }`;
-        return distribution(viaQuery, omit(['fromId'], args));
+        }; $rel has first_seen $o`;
+        return distribution(viaQuery, assoc('inferred', true, args));
       })(args.resolveViaTypes)
     );
+    const viaRelationQueries = map(
+      resolveViaType =>
+        `match $from; $rel($from, $entity) isa ${
+          args.relationType ? args.relationType : 'stix_relation'
+        }; ${join(
+          ' ',
+          map(fromId => `{ $from id ${fromId}; } or`, fromIds)
+        )} { $from id ${head(fromIds)}; }; $link(${
+          resolveViaType.relationRole
+        }: $rel, $x) isa ${resolveViaType.relationType}; ${
+          args.toTypes
+            ? `${join(
+                ' ',
+                map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
+              )} { $x isa ${head(args.toTypes)}; }`
+            : ''
+        }; $rel has first_seen $o`
+    )(args.resolveViaTypes);
+    const viaOfRelationPromise = Promise.all(
+      map(viaRelationQuery =>
+        distribution(viaRelationQuery, assoc('inferred', true, args))
+      )(dropRepeats(viaRelationQueries))
+    );
+    return Promise.all([resultPromise, viaPromise, viaOfRelationPromise]).then(
+      ([result, via, viaRelation]) => {
+        let viaResult = [];
+        forEach(n => {
+          viaResult = concat(viaResult, n);
+        }, via);
+        let viaRelationResult = [];
+        forEach(n => {
+          viaRelationResult = concat(viaRelationResult, n);
+        }, viaRelation);
+        const data = concat(viaResult, viaRelationResult);
+        const finalData = concat(result, data);
+        if (args.order === 'asc') {
+          return take(
+            limit,
+            sortWith([ascend(prop('value'))])(
+              groupSumBy('label', 'value', finalData)
+            )
+          );
+        }
+        return take(
+          limit,
+          sortWith([descend(prop('value'))])(
+            groupSumBy('label', 'value', finalData)
+          )
+        );
+      }
+    );
   }
-
-  return Promise.all([resultPromise, viaPromise]).then(([result, via]) => {
-    let viaResult = [];
-    forEach(n => {
-      viaResult = concat(viaResult, n);
-    }, via);
-    const finalResult = concat(result, viaResult);
-    return groupSumBy('label', 'value', finalResult);
-  });
+  if (args.order === 'asc') {
+    return take(limit, sortWith([ascend(prop('value'))])(resultPromise));
+  }
+  return take(limit, sortWith([descend(prop('value'))])(resultPromise));
 };
 
 export const findById = stixRelationId => loadRelationById(stixRelationId);
@@ -365,7 +481,9 @@ export const addStixRelation = async (user, stixRelation) => {
     stixRelation.toRole
   }: $to) 
     isa ${stixRelation.relationship_type} 
-    has relationship_type "${stixRelation.relationship_type.toLowerCase()}";
+    has relationship_type "${prepareString(
+      stixRelation.relationship_type.toLowerCase()
+    )}";
     $stixRelation has type "stix-relation";
     $stixRelation has stix_id "relationship--${uuid()}";
     $stixRelation has name "";
@@ -450,3 +568,14 @@ export const stixRelationEditField = (user, stixRelationId, input) =>
   editInputTx(stixRelationId, input).then(stixRelation =>
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user)
   );
+
+export const stixRelationAddRelation = (user, stixRelationId, input) => {
+  const finalInput = pipe(
+    assoc('fromId', stixRelationId),
+    assoc('relationship_type', input.through)
+  )(input);
+  return addStixRelation(user, finalInput).then(relationData => {
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
+    return relationData;
+  });
+};

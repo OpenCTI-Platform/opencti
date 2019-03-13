@@ -161,7 +161,7 @@ function MultiValue(props) {
 }
 
 function Menu(props) {
-  console.log(props)
+  console.log(props);
   return (
     <Paper square className={props.selectProps.reverseMenu ? props.selectProps.classes.paperReversed : props.selectProps.classes.paper} {...props.innerProps}>
         {props.children}
@@ -204,6 +204,7 @@ class Autocomplete extends Component {
       multiple,
       labelDisplay,
       reverseMenu,
+      variant,
     } = this.props;
     const errorText = errors[field.name];
     const hasError = dirty && errorText !== undefined;
@@ -242,6 +243,7 @@ class Autocomplete extends Component {
             textFieldProps={{
               onChange: onInputChange,
               label: displayLabel ? label : ' ',
+              variant,
               error: hasError,
               InputLabelProps: {
                 shrink: true,
@@ -297,6 +299,7 @@ Autocomplete.propTypes = {
   multiple: PropTypes.bool,
   labelDisplay: PropTypes.bool,
   reverseMenu: PropTypes.bool,
+  variant: PropTypes.string,
 };
 
 export default compose(

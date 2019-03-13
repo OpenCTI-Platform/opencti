@@ -24,6 +24,14 @@ const styles = theme => ({
     color: theme.palette.text.main,
     borderRadius: 6,
   },
+  tableHead: {
+    textTransform: 'uppercase',
+    height: 40,
+    fontSize: 11,
+  },
+  tableBody: {
+    fontSize: 15,
+  },
 });
 
 const entityStixRelationsTableStixRelationDistributionQuery = graphql`
@@ -66,8 +74,8 @@ class EntityStixRelationsTable extends Component {
     };
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h2' gutterBottom={true}>
-          {t('Top 10:')} <span style={{ color: '#ff3d00' }}>{t(`entity_${entityType}`)}</span>
+        <Typography variant='h4' gutterBottom={true}>
+          {t('Top 10:')} {t(`entity_${entityType}`)}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
@@ -75,17 +83,23 @@ class EntityStixRelationsTable extends Component {
             variables={stixRelationsDistributionVariables}
             render={({ props }) => {
               if (props && props.stixRelationsDistribution && props.stixRelationsDistribution.length > 0) {
-                console.log(props.stixRelationsDistribution);
                 return (
                   <Table className={classes.table}>
                     <TableHead>
-                      <TableRow>
+                      <TableRow className={classes.tableHead}>
                         <TableCell>{t(`entity_${entityType.toLowerCase()}`)}</TableCell>
                         <TableCell align='right'>{`${t('Number of')} ${t(`relation_${relationType}`)}s`}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-
+                      {props.stixRelationsDistribution.map(row => (
+                          <TableRow key={row.label} hover={true}>
+                            <TableCell component='th' scope='row' padding='dense' className={classes.tableBody}>
+                              {row.label}
+                            </TableCell>
+                            <TableCell align='right' padding='dense' className={classes.tableBody}>{row.value}</TableCell>
+                          </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 );

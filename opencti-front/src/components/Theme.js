@@ -12,7 +12,7 @@ export default {
     paper: { background: '#303a3d', disabled: '#181f22' },
     field: { background: '#265058' },
     action: { disabled: '#4f4f4f' },
-    divider: '#5c5c5c',
+    divider: 'rgba(255, 255, 255, 0.2)',
   },
   typography: {
     useNextVariants: true,

@@ -109,7 +109,7 @@ class ReportLineComponent extends Component {
               {fd(report.published)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.object_status}>
-              <ItemStatus status={report.object_status} label={t(`report_status_${report.object_status ? report.object_status : 0}`)}/>
+              <ItemStatus status={report.object_status} label={t(`report_status_${report.object_status ? report.object_status : 0}`)} variant='inList'/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.marking}>
               {take(1, pathOr([], ['markingDefinitions', 'edges'], report)).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} variant='inList'

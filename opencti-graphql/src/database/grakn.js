@@ -488,7 +488,7 @@ export const loadRelationInferredById = async id => {
   const inferences = explanationAnswers.map(explanationAnswer => {
     const explanationAnswerExplanation = explanationAnswer.explanation();
     let inferenceQuery = explanationAnswerExplanation.queryPattern();
-    const inferenceQueryRegex = /(\$(\d+)\s)?\([a-z_]+:\s\$(\w+),\s[a-z_]+:\s\$(\w+)\)\sisa\s([\w-]+);/i.exec(
+    const inferenceQueryRegex = /(\$(\d+|rel)\s)?\([a-z_]+:\s\$(\w+),\s[a-z_]+:\s\$(\w+)\)\sisa\s([\w-]+);/i.exec(
       inferenceQuery
     );
     let relationKey;

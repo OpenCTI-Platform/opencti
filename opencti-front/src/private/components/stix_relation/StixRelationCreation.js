@@ -234,7 +234,7 @@ class StixRelationCreation extends Component {
         toId: this.props.to.id,
       }).then((data) => {
         this.setState({
-          step: data.stixRelations.edges.length > 0 ? 1 : 2,
+          step: data.stixRelations.edges && data.stixRelations.edges.length > 0 ? 1 : 2,
           existingRelations: data.stixRelations.edges,
         });
       });

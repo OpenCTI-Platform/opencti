@@ -5,7 +5,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
-import { DeviceHub, AccountBalance, Flag } from '@material-ui/icons';
+import { DeviceHub, Flag } from '@material-ui/icons';
 import {
   SourcePull,
   TargetVariant,

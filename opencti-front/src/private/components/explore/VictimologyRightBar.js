@@ -7,8 +7,10 @@ import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
-import { Timeline, PieChart } from '@material-ui/icons';
+import { Compare }  from '@material-ui/icons';
+import { ChartTimeline, ChartDonutVariant, Hubspot } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
@@ -38,32 +40,56 @@ class VictimologyRightBar extends Component {
       <Drawer variant='permanent' anchor='right' classes={{ paper: classes.drawerPaper }}>
         <div className={classes.toolbar}/>
         <MenuList component='nav'>
-          <MenuItem style={{ padding: '20px 10px 20px 10px' }} component={Link} divider={true} disabled={!threatId} to={`/dashboard/explore/victimology/${threatId}/distribution`} selected={location.pathname === `/dashboard/explore/victimology/${threatId}/distribution` } dense={false}>
+          <MenuItem style={{ padding: '20px 10px 20px 10px' }} component={Link} disabled={!threatId} to={`/dashboard/explore/victimology/${threatId}/distribution`} selected={location.pathname === `/dashboard/explore/victimology/${threatId}/distribution` } dense={false}>
             <ListItemIcon classes={{ root: classes.listIcon }}>
-              <PieChart/>
+              <ChartDonutVariant/>
             </ListItemIcon>
             <ListItemText
               primary={t('Distribution')}
-              secondary={t('Distributions of targets')}
+              secondary={t('Targeting types')}
               classes={{ root: classes.listText }}
             />
           </MenuItem>
-          <MenuItem style={{ padding: '20px 10px 20px 10px' }} component={Link} divider={true} disabled={!threatId} to={`/dashboard/explore/victimology/${threatId}/time`} selected={location.pathname === `/dashboard/explore/victimology/${threatId}/time`} dense={false}>
+          <MenuItem style={{ padding: '20px 10px 20px 10px' }} component={Link} disabled={!threatId} to={`/dashboard/explore/victimology/${threatId}/time`} selected={location.pathname === `/dashboard/explore/victimology/${threatId}/time`} dense={false}>
             <ListItemIcon classes={{ root: classes.listIcon }}>
-              <Timeline/>
+              <ChartTimeline/>
             </ListItemIcon>
             <ListItemText
-              primary={t('Time series')}
-              secondary={t('Series of targeting events')}
+              primary={t('Evolution')}
+              secondary={t('Targeting through time')}
               classes={{ root: classes.listText }}
             />
           </MenuItem>
-          <MenuItem style={{ padding: '20px 10px 20px 10px' }} component={Link} divider={true} disabled={!threatId} to={`/dashboard/explore/victimology/${threatId}/localization`} selected={location.pathname === `/dashboard/explore/victimology/${threatId}/localization`} dense={false}>
+          <MenuItem style={{ padding: '20px 10px 20px 10px' }} component={Link} disabled={!threatId} to={`/dashboard/explore/victimology/${threatId}/knowledge`} selected={location.pathname === `/dashboard/explore/victimology/${threatId}/knowledge`} dense={false}>
             <ListItemIcon classes={{ root: classes.listIcon }}>
-              <Timeline/>
+              <Hubspot/>
             </ListItemIcon>
             <ListItemText
-              primary={t('Localization')}
+              primary={t('Graph')}
+              secondary={t('Targeting knowledge')}
+              classes={{ root: classes.listText }}
+            />
+          </MenuItem>
+        </MenuList>
+        <Divider/>
+        <MenuList component='nav'>
+          <MenuItem style={{ padding: '20px 10px 20px 10px' }} component={Link} disabled={!threatId} to={`/dashboard/explore/victimology/${threatId}/compare`} selected={location.pathname === `/dashboard/explore/victimology/${threatId}/compare` } dense={false}>
+            <ListItemIcon classes={{ root: classes.listIcon }}>
+              <Compare/>
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Compare')}
+              secondary={t('Threats targeting')}
+              classes={{ root: classes.listText }}
+            />
+          </MenuItem>
+          <MenuItem style={{ padding: '20px 10px 20px 10px' }} component={Link} disabled={!threatId} to={`/dashboard/explore/victimology/${threatId}/knowledge`} selected={location.pathname === `/dashboard/explore/victimology/${threatId}/knowledge`} dense={false}>
+            <ListItemIcon classes={{ root: classes.listIcon }}>
+              <Hubspot/>
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Graph')}
+              secondary={t('Targeting knowledge')}
               classes={{ root: classes.listText }}
             />
           </MenuItem>

@@ -10,7 +10,14 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
 import {
-  Explore, Assignment, DeviceHub, KeyboardArrowLeft, KeyboardArrowRight, Layers, ListAlt,
+  Explore,
+  Assignment,
+  DeviceHub,
+  KeyboardArrowLeft,
+  KeyboardArrowRight,
+  Layers,
+  ListAlt,
+  GroupWork,
 } from '@material-ui/icons';
 import {
   Settings, ClipboardArrowDown, Gauge, Database,
@@ -99,21 +106,6 @@ class LeftBar extends Component {
               </ListItemIcon>
               {this.state.open ? <ListItemText primary={t('Dashboard')} classes={{ root: classes.listText }}/> : ''}
             </MenuItem>
-            <MenuItem component={Link} to='/dashboard/explore' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/explore')} dense={false}>
-              <ListItemIcon classes={{ root: classes.listIcon }}>
-                <Explore/>
-              </ListItemIcon>
-              {this.state.open ? <ListItemText primary={t('Explore')} classes={{ root: classes.listText }}/> : ''}
-            </MenuItem>
-            <MenuItem component={Link} to='/dashboard/investigate' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/investigate')} dense={false}>
-              <ListItemIcon classes={{ root: classes.listIcon }}>
-                <DeviceHub/>
-              </ListItemIcon>
-              {this.state.open ? <ListItemText primary={t('Investigate')} classes={{ root: classes.listText }}/> : ''}
-            </MenuItem>
-          </MenuList>
-          <Divider/>
-          <MenuList component='nav'>
             <MenuItem component={Link} to='/dashboard/knowledge' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/knowledge')} dense={false}>
               <ListItemIcon classes={{ root: classes.listIcon }}>
                 <Database/>
@@ -137,6 +129,27 @@ class LeftBar extends Component {
                 <ListAlt/>
               </ListItemIcon>
               {this.state.open ? <ListItemText primary={t('Catalogs')} classes={{ root: classes.listText }}/> : ''}
+            </MenuItem>
+          </MenuList>
+          <Divider/>
+          <MenuList component='nav'>
+            <MenuItem component={Link} to='/dashboard/explore' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/explore')} dense={false}>
+              <ListItemIcon classes={{ root: classes.listIcon }}>
+                <Explore/>
+              </ListItemIcon>
+              {this.state.open ? <ListItemText primary={t('Explore')} classes={{ root: classes.listText }}/> : ''}
+            </MenuItem>
+            <MenuItem component={Link} to='/dashboard/investigate' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/investigate')} dense={false}>
+              <ListItemIcon classes={{ root: classes.listIcon }}>
+                <DeviceHub/>
+              </ListItemIcon>
+              {this.state.open ? <ListItemText primary={t('Investigate')} classes={{ root: classes.listText }}/> : ''}
+            </MenuItem>
+            <MenuItem component={Link} to='/dashboard/correlate' onClick={this.handleClickAway.bind(this)} selected={location.pathname.includes('/dashboard/correlate')} dense={false}>
+              <ListItemIcon classes={{ root: classes.listIcon }}>
+                <GroupWork/>
+              </ListItemIcon>
+              {this.state.open ? <ListItemText primary={t('Correlate')} classes={{ root: classes.listText }}/> : ''}
             </MenuItem>
           </MenuList>
           {includes('ROLE_ADMIN', propOr([], 'grant', me))

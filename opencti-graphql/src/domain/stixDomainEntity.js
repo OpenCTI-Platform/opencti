@@ -23,7 +23,6 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import {
   findAll as relationFindAll,
-  findByType as relationFindByType,
   search as relationSearch
 } from './stixRelation';
 
@@ -144,9 +143,6 @@ export const stixRelations = (stixDomainEntityId, args) => {
   const finalArgs = assoc('fromId', stixDomainEntityId, args);
   if (finalArgs.search && finalArgs.search.length > 0) {
     return relationSearch(finalArgs);
-  }
-  if (finalArgs.relationType && finalArgs.relationType.length > 0) {
-    return relationFindByType(finalArgs);
   }
   return relationFindAll(finalArgs);
 };

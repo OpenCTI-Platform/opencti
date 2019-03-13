@@ -174,7 +174,7 @@ class EntityReports extends Component {
         map(n => assoc('published', dateFormat(n.published))(n)),
         map(n => assoc('created', dateFormat(n.created))(n)),
         map(n => assoc('modified', dateFormat(n.modified))(n)),
-        map(n => assoc('createdByRef', n.createdByRef.node.name)(n)),
+        map(n => assoc('createdByRef', pathOr('-', ['createdByRef', 'node', 'name'], n))(n)),
         map(n => assoc('markingDefinitions', pipe(
           pathOr([], ['markingDefinitions', 'edges']),
           map(o => o.node.definition_name),

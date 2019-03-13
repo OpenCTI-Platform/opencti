@@ -306,6 +306,42 @@ class OpenCti:
         })
         return result['data']['intrusionSetAdd']
 
+    def create_campaign(self, name, description):
+        self.log('Creating campaign ' + name + '...')
+        query = """
+            mutation CampaignAdd($input: CampaignAddInput) {
+                campaignAdd(input: $input) {
+                    id
+                    alias
+                }
+            }
+        """
+        result = self.query(query, {
+            'input': {
+                'name': name,
+                'description': description
+            }
+        })
+        return result['data']['campaignAdd']
+
+    def create_malware(self, name, description):
+        self.log('Creating malware ' + name + '...')
+        query = """
+            mutation MalwareAdd($input: MalwareAddInput) {
+                malwareAdd(input: $input) {
+                    id
+                    alias
+                }
+            }
+        """
+        result = self.query(query, {
+            'input': {
+                'name': name,
+                'description': description
+            }
+        })
+        return result['data']['malwareAdd']
+
     def create_incident(self, data):
         self.log('Creating incident ' + data['name'] + '...')
         query = """

@@ -17,12 +17,12 @@ import {
   locations,
   stixRelationEditContext,
   stixRelationCleanContext,
-  stixRelationEditField
+  stixRelationEditField,
+  stixRelationAddRelation,
 } from '../domain/stixRelation';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import {
-  stixDomainEntityAddRelation,
   stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
 
@@ -86,7 +86,7 @@ const stixRelationResolvers = {
       fieldPatch: ({ input }) => stixRelationEditField(user, id, input),
       contextPatch: ({ input }) => stixRelationEditContext(user, id, input),
       contextClean: () => stixRelationCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
+      relationAdd: ({ input }) => stixRelationAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)
     }),

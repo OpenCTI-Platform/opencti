@@ -123,6 +123,15 @@ interface GlobalObject {
 }
 
 ### STIX objects
+interface StixEntity {
+    id: ID!
+    type: String!
+    name: String!
+    description: String
+    created_at: DateTime
+    updated_at: DateTime
+}
+
 enum StixDomainEntitiesOrdering {
     name,
     type,
@@ -181,7 +190,7 @@ type StixRelationEdge {
     node: StixRelation!
     relation: RelationEmbedded
 }
-type StixRelation implements GlobalObject {
+type StixRelation implements GlobalObject & StixEntity {
     id: ID!
     type: String!
     name: String!
@@ -199,8 +208,8 @@ type StixRelation implements GlobalObject {
     markingDefinitions: MarkingDefinitionConnection
     locations: IdentityConnection
     reports: ReportConnection
-    from: StixDomainEntity
-    to: StixDomainEntity
+    from: StixEntity
+    to: StixEntity
     inferences: StixRelationConnection
     created_at: DateTime!
     updated_at: DateTime!
@@ -312,7 +321,7 @@ type UserEdge {
     cursor: String!
     node: User!
 }
-type User implements GlobalObject & StixDomainEntity & Identity {
+type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     id: ID!
     type: String!
     name: String!
@@ -376,7 +385,7 @@ type OrganizationEdge {
     cursor: String!
     node: Organization!
 }
-type Organization implements GlobalObject & StixDomainEntity & Identity {
+type Organization implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     id: ID!
     type: String!
     name: String!
@@ -421,7 +430,7 @@ type SectorEdge {
     cursor: String!
     node: Sector!
 }
-type Sector implements GlobalObject & StixDomainEntity & Identity {
+type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     id: ID!
     type: String!
     name: String!
@@ -466,7 +475,7 @@ type CityEdge {
     cursor: String!
     node: City!
 }
-type City implements GlobalObject & StixDomainEntity & Identity {
+type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     id: ID!
     type: String!
     name: String!
@@ -511,7 +520,7 @@ type CountryEdge {
     cursor: String!
     node: Country!
 }
-type Country implements GlobalObject & StixDomainEntity & Identity {
+type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     id: ID!
     type: String!
     name: String!
@@ -556,7 +565,7 @@ type RegionEdge {
     cursor: String!
     node: Region!
 }
-type Region implements GlobalObject & StixDomainEntity & Identity {
+type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     id: ID!
     type: String!
     name: String!
@@ -598,7 +607,7 @@ type GroupEdge {
     node: Group!
     relation: RelationEmbedded!
 }
-type Group implements GlobalObject & StixDomainEntity {
+type Group implements GlobalObject & StixEntity & StixDomainEntity {
     id: ID!
     type: String!
     name: String!
@@ -771,7 +780,7 @@ type AttackPatternEdge {
     cursor: String!
     node: AttackPattern!
 }
-type AttackPattern implements GlobalObject & StixDomainEntity {
+type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
     id: ID!
     type: String!
     name: String!
@@ -821,7 +830,7 @@ type CourseOfActionEdge {
     cursor: String!
     node: CourseOfAction!
 }
-type CourseOfAction implements GlobalObject & StixDomainEntity {
+type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
     id: ID!
     type: String!
     name: String!
@@ -864,7 +873,7 @@ type ThreatActorEdge {
     cursor: String!
     node: ThreatActor!
 }
-type ThreatActor implements GlobalObject & StixDomainEntity & Identity {
+type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     id: ID!
     type: String!
     name: String!
@@ -915,7 +924,7 @@ type IntrusionSetEdge {
     cursor: String!
     node: IntrusionSet!
 }
-type IntrusionSet implements GlobalObject & StixDomainEntity {
+type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
     id: ID!
     type: String!
     name: String!
@@ -970,7 +979,7 @@ type CampaignEdge {
     cursor: String!
     node: Campaign!
 }
-type Campaign implements GlobalObject & StixDomainEntity {
+type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
     id: ID!
     type: String!
     name: String!
@@ -1022,7 +1031,7 @@ type IncidentEdge {
     cursor: String!
     node: Incident!
 }
-type Incident implements GlobalObject & StixDomainEntity {
+type Incident implements GlobalObject & StixEntity & StixDomainEntity {
     id: ID!
     type: String!
     name: String!
@@ -1071,7 +1080,7 @@ type MalwareEdge {
     cursor: String!
     node: Malware!
 }
-type Malware implements GlobalObject & StixDomainEntity {
+type Malware implements GlobalObject & StixEntity & StixDomainEntity {
     id: ID!
     type: String!
     name: String!
@@ -1117,7 +1126,7 @@ type ToolEdge {
     cursor: String!
     node: Tool!
 }
-type Tool implements GlobalObject & StixDomainEntity {
+type Tool implements GlobalObject & StixEntity & StixDomainEntity {
     id: ID!
     type: String!
     name: String!
@@ -1165,7 +1174,7 @@ type VulnerabilityEdge {
     cursor: String!
     node: Vulnerability!
 }
-type Vulnerability implements GlobalObject & StixDomainEntity {
+type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
     id: ID!
     type: String!
     name: String!
@@ -1216,7 +1225,7 @@ type ReportEdge {
 type ReportPayload {
     reportEdge: ReportEdge
 }
-type Report implements GlobalObject & StixDomainEntity {
+type Report implements GlobalObject & StixEntity & StixDomainEntity {
     id: ID!
     type: String!
     name: String!
@@ -1256,6 +1265,10 @@ input RelationAddInput {
     toId: ID!
     toRole: String!
     through: String!
+    first_seen: DateTime
+    last_seen: DateTime
+    description: String
+    weight: Int
 }
 input RelationsAddInput {
     fromRole: String!
@@ -1277,7 +1290,7 @@ type Query {
     stixRelation(id: String!): StixRelation @auth
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, inferred: Boolean, toId: String, fromTypes: [String], toTypes: [String], relationType: String, resolveInferences: Boolean, resolveRelationType: String, resolveRelationRole: String, resolveRelationToTypes: [String], resolveViaTypes: [EntityRelation], firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection @auth
     stixRelationsTimeSeries(fromId: String, relationType: String, resolveInferences: Boolean, resolveRelationType: String, resolveRelationRole: String, resolveRelationToTypes: [String], resolveViaTypes: [EntityRelation], entityTypes: [String], toTypes: [String], field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries] @auth
-    stixRelationsDistribution(fromId: String, relationType: String, resolveInferences: Boolean, resolveRelationType: String, resolveRelationRole: String, resolveRelationToTypes: [String], resolveViaTypes: [EntityRelation], entityTypes: [String], toTypes: [String], field: String!, operation: StatsOperation!): [Distribution] @auth
+    stixRelationsDistribution(fromId: String, relationType: String, resolveInferences: Boolean, resolveRelationType: String, resolveRelationRole: String, resolveRelationToTypes: [String], resolveViaTypes: [EntityRelation], entityTypes: [String], toTypes: [String], field: String!, operation: StatsOperation!, limit: Int, order: String): [Distribution] @auth
     # Workspaces
     workspace(id: String!): Workspace @auth
     workspaces(first: Int, after: ID, orderBy: WorkspacesOrdering, orderMode: OrderingMode, search: String): WorkspaceConnection @auth

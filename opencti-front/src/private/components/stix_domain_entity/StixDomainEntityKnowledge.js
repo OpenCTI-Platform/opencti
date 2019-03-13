@@ -97,7 +97,7 @@ class StixDomainEntityKnowledge extends Component {
       orderBy: 'first_seen',
       orderMode: 'asc',
     }).then((data) => {
-      if (data.stixRelations.edges.length > 0) {
+      if (data.stixRelations.edges && data.stixRelations.edges.length > 0) {
         this.setState({ firstSeenFirstYear: yearFormat(head(data.stixRelations.edges).node.first_seen) });
       }
     });
@@ -129,10 +129,10 @@ class StixDomainEntityKnowledge extends Component {
     if (includes('All', this.state.toTypes) || !includes('All', value)) {
       const toTypes = filter(v => v !== 'All', value);
       if (toTypes.length > 0) {
-        return this.setState({ toTypes });
+        return this.setState({ openToTypes: false, toTypes });
       }
     }
-    return this.setState({ toTypes: ['All'] });
+    return this.setState({ openToTypes: false, toTypes: ['All'] });
   }
 
   handleChangeYear(event) {

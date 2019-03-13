@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, head, map, includes, filter, pipe, assoc, omit, mergeRight,
+  compose, head, map, includes, pipe, assoc, omit, mergeRight,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { CSVLink } from 'react-csv';
@@ -177,8 +177,8 @@ class EntityStixRelations extends Component {
       firstSeenFirstYear: currentYear(),
       firstSeenStart: null,
       firstSeenStop: null,
-      openToTypes: false,
-      toTypes: ['All'],
+      openToType: false,
+      toType: 'All',
       inferred: true,
       resolveInferences: false,
       view: 'lines',
@@ -212,7 +212,7 @@ class EntityStixRelations extends Component {
       orderMode: 'asc',
       inferred: true,
     }).then((data) => {
-      if (data.stixRelations.edges.length > 0) {
+      if (data.stixRelations.edges && data.stixRelations.edges.length > 0) {
         this.setState({ firstSeenFirstYear: yearFormat(head(data.stixRelations.edges).node.first_seen) });
       }
     });
@@ -243,29 +243,20 @@ class EntityStixRelations extends Component {
     );
   }
 
-  handleOpenToTypes() {
-    this.setState({ openToTypes: true });
+  handleOpenToType() {
+    this.setState({ openToType: true });
   }
 
-  handleCloseToTypes() {
-    this.setState({ openToTypes: false });
+  handleCloseToType() {
+    this.setState({ openToType: false });
   }
 
   handleChangeEntities(event) {
     const { value } = event.target;
-    if (includes('All', this.state.toTypes) || !includes('All', value)) {
-      const toTypes = filter(v => v !== 'All', value);
-      if (toTypes.length > 0) {
-        if (this.props.targetEntityTypes.length > 1 && toTypes.length > 1) {
-          return this.setState({ resolveInferences: false, toTypes });
-        }
-        return this.setState({ toTypes });
-      }
+    if (value === 'All' && this.props.targetEntityTypes.length > 1) {
+      return this.setState({ resolveInferences: false, openToType: false, toType: 'All' });
     }
-    if (this.props.targetEntityTypes.length > 1) {
-      return this.setState({ resolveInferences: false, toTypes: ['All'] });
-    }
-    return this.setState({ toTypes: ['All'] });
+    return this.setState({ openToType: false, toType: value });
   }
 
   handleChangeYear(event) {
@@ -328,7 +319,7 @@ class EntityStixRelations extends Component {
       resolveRelationToTypes,
       resolveViaTypes,
       inferred: this.state.inferred,
-      toTypes: includes('All', this.state.toTypes) ? targetEntityTypes : this.state.toTypes,
+      toTypes: this.state.toType === 'All' ? targetEntityTypes : [this.state.toType],
       fromId: entityId,
       relationType,
       firstSeenStart: this.state.firstSeenStart || null,
@@ -369,7 +360,7 @@ class EntityStixRelations extends Component {
       resolveRelationToTypes,
       resolveViaTypes,
       inferred: this.state.inferred,
-      toTypes: includes('All', this.state.toTypes) ? targetEntityTypes : this.state.toTypes,
+      toTypes: this.state.toType === 'All' ? targetEntityTypes : [this.state.toType],
       fromId: entityId,
       relationType,
       firstSeenStart: this.state.firstSeenStart || null,
@@ -438,18 +429,15 @@ class EntityStixRelations extends Component {
               ? <Grid item={true} xs='auto'>
                 <Select
                   style={{ height: 50, marginRight: 15 }}
-                  multiple={true}
-                  value={this.state.toTypes}
-                  open={this.state.openToTypes}
-                  onClose={this.handleCloseToTypes.bind(this)}
-                  onOpen={this.handleOpenToTypes.bind(this)}
+                  value={this.state.toType}
+                  open={this.state.openToType}
+                  onClose={this.handleCloseToType.bind(this)}
+                  onOpen={this.handleOpenToType.bind(this)}
                   onChange={this.handleChangeEntities.bind(this)}
                   input={<Input id='entities'/>}
                   renderValue={selected => (
                     <div className={classes.chips}>
-                      {selected.map(value => (
-                        <Chip key={value} label={t(`entity_${value.toLowerCase()}`)} className={classes.chip}/>
-                      ))}
+                      <Chip key={selected} label={t(`entity_${selected.toLowerCase()}`)} className={classes.chip}/>
                     </div>
                   )}
                 >
@@ -470,7 +458,7 @@ class EntityStixRelations extends Component {
                   {includes('Attack-Pattern', targetEntityTypes) ? <MenuItem value='Attack-Pattern'>{t('Attack pattern')}</MenuItem> : ''}
                 </Select>
               </Grid> : ''}
-            {((this.state.toTypes.length === 1 && targetEntityTypes.length === 1) || (this.state.toTypes.length === 1 && !includes('All', this.state.toTypes)))
+            {this.state.toType !== 'All' || targetEntityTypes.length === 1
               ? <Grid item={true} xs='auto'>
                 <Select
                   style={{ width: 170, height: 50, marginRight: 15 }}
@@ -501,7 +489,7 @@ class EntityStixRelations extends Component {
             </Grid> : ''}
             {this.state.inferred
             && resolveRelationType
-            && ((this.state.toTypes.length === 1 && targetEntityTypes.length === 1) || (this.state.toTypes.length === 1 && !includes('All', this.state.toTypes)))
+            && (this.state.toType !== 'All' || targetEntityTypes.length === 1)
               ? <Grid item={true} xs='auto'>
                 <FormControlLabel
                   style={{ paddingTop: 5, marginRight: 15 }}

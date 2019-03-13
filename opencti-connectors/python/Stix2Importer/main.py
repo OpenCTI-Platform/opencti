@@ -106,6 +106,16 @@ def import_object(stix_object):
                 description
             )
             stix_object_id = stix_object_result['id']
+    elif stix_object['type'] == 'malware':
+        stix_object_result = opencti.search_stix_domain_entity(stix_object['name'], 'Malware')
+        if stix_object_result is not None:
+            stix_object_id = stix_object_result['id']
+        else:
+            stix_object_result = opencti.create_malware(
+                stix_object['name'],
+                description
+            )
+            stix_object_id = stix_object_result['id']
     elif stix_object['type'] == 'attack-pattern':
         stix_object_result = opencti.search_stix_domain_entity(stix_object['name'], 'Attack-Pattern')
         if stix_object_result is not None:

@@ -187,6 +187,10 @@ class StixRelationEditionContainer extends Component {
             toId: this.props.stixRelation.id,
             toRole: 'localized',
             through: 'localization',
+            first_seen: stixRelation.last_seen,
+            last_seen: stixRelation.last_seen,
+            description: stixRelation.description,
+            weight: stixRelation.weight,
           },
         },
       });

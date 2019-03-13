@@ -11,22 +11,29 @@ import inject18n from '../../../components/i18n';
 import { QueryRenderer, fetchQuery } from '../../../relay/environment';
 import Autocomplete from '../../../components/Autocomplete';
 import ExploreHeader from './ExploreHeader';
+import ExploreBottomBar from './ExploreBottomBar';
 import VictiomologyRightBar from './VictimologyRightBar';
 import VictimologyDistribution from './VictimologyDistribution';
 
 const styles = () => ({
   container: {
     margin: 0,
-    paddingRight: 260,
+    padding: '0 260px 100px 0',
   },
   search: {
     width: '100%',
     position: 'absolute',
-    top: '46%',
+    top: '40%',
     left: 0,
     padding: '0 290px 0 80px',
     textAlign: 'center',
     zIndex: 20,
+  },
+  input: {
+    padding: '10px 20px 10px 20px',
+  },
+  placeholder: {
+    padding: '10px 20px 10px 20px',
   },
 });
 
@@ -70,7 +77,7 @@ const victimologyStixDomainEntityQuery = graphql`
 class Victimology extends Component {
   constructor(props) {
     super(props);
-    this.state = { selectedThreat: null, threats: [] };
+    this.state = { selectedThreat: null, threats: [], inferred: true };
   }
 
   searchThreats(event) {
@@ -100,6 +107,15 @@ class Victimology extends Component {
     this.setState({ selectedThreat: value.value });
   }
 
+  handleChangeInferred() {
+    this.setState({ inferred: !this.state.inferred });
+  }
+
+  handleClear() {
+    this.setState({ selectedThreat: null });
+    this.props.history.push('/dashboard/explore/victimology');
+  }
+
   render() {
     const { classes, t, match: { params: { stixDomainEntityId } } } = this.props;
     const { selectedThreat } = this.state;
@@ -114,8 +130,10 @@ class Victimology extends Component {
               render={() => (
                 <Form style={{ width: 500, margin: '0 auto' }}>
                   <Field
+                    classes={{ input: classes.input, placeholder: classes.placeholder }}
                     name='searchThreat'
                     component={Autocomplete}
+                    variant='outlined'
                     labelDisplay={false}
                     multiple={false}
                     label={t('Search for a threat...')}
@@ -137,7 +155,8 @@ class Victimology extends Component {
                     <ExploreHeader stixDomainEntity={props.stixDomainEntity}/>
                     <Route exact path='/dashboard/explore/victimology' render={() => (<Redirect to={`/dashboard/explore/victimology/${threatId}/distribution`}/>)}/>
                     <Route exact path='/dashboard/explore/victimology/:stixDomainEntityId' render={() => (<Redirect to={`/dashboard/explore/victimology/${threatId}/distribution`}/>)}/>
-                    <Route exact path='/dashboard/explore/victimology/:stixDomainEntityId/distribution' render={routeProps => <VictimologyDistribution {...routeProps} stixDomainEntity={props.stixDomainEntity}/>}/>
+                    <Route exact path='/dashboard/explore/victimology/:stixDomainEntityId/distribution' render={routeProps => <VictimologyDistribution {...routeProps} stixDomainEntity={props.stixDomainEntity} inferred={this.state.inferred}/>
+                    }/>
                   </div>
                 );
               }
@@ -148,6 +167,12 @@ class Victimology extends Component {
           />
         }
         <VictiomologyRightBar threatId={threatId}/>
+        <ExploreBottomBar
+          entityId={threatId}
+          handleClear={this.handleClear.bind(this)}
+          inferred={this.state.inferred}
+          handleChangeInferred={this.handleChangeInferred.bind(this)}
+        />
       </div>
     );
   }
@@ -157,6 +182,7 @@ Victimology.propTypes = {
   classes: PropTypes.object,
   match: PropTypes.object,
   t: PropTypes.func,
+  history: PropTypes.object,
 };
 
 export default compose(

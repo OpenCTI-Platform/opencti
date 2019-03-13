@@ -8,6 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
 import ItemStatus from '../../../components/ItemStatus';
+import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
 
 const styles = theme => ({
   paper: {
@@ -40,13 +41,13 @@ class ReportIdentityComponent extends Component {
           </Typography>
           {pathOr('-', ['createdByRef', 'node', 'name'], report)}
           <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
-            {t('Processing state')}
+            {t('Processing status')}
           </Typography>
           <ItemStatus label={t(`${report.object_status ? `report_status_${report.object_status}` : 'report_status_0'}`)} status={report.object_status}/>
           <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
             {t('Confidence level')}
           </Typography>
-          {t(`${report.source_confidence_level ? `confidence_${report.source_confidence_level}` : 'confidence_unknown'}`)}
+          <ItemConfidenceLevel level={report.source_confidence_level} />
           </Paper>
       </div>
     );

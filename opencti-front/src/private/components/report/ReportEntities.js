@@ -17,11 +17,12 @@ import { ArrowDropDown, ArrowDropUp, KeyboardArrowRight } from '@material-ui/ico
 import { resolveLink } from '../../../utils/Entity';
 import inject18n from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
+import ReportHeader from './ReportHeader';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
 
 const styles = theme => ({
   linesContainer: {
-    paddingTop: 0,
+    marginTop: 10,
   },
   itemHead: {
     paddingLeft: 10,
@@ -159,6 +160,7 @@ class ReportEntitiesCompnent extends Component {
     const sortedObjectRefs = sort(objectRefs);
     return (
       <div>
+        <ReportHeader report={report}/>
         <List classes={{ root: classes.linesContainer }}>
           <ListItem classes={{ root: classes.itemHead }} divider={false} style={{ paddingTop: 0 }}>
             <ListItemIcon>
@@ -235,6 +237,7 @@ const ReportEntities = createFragmentContainer(ReportEntitiesCompnent, {
                   }
               }
           }
+          ...ReportHeader_report
       }
   `,
 });

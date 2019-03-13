@@ -14,7 +14,6 @@ const styles = () => ({
   chipInList: {
     fontSize: 12,
     height: 20,
-    float: 'right',
   },
 });
 
@@ -52,7 +51,7 @@ class ItemConfidenceLevel extends Component {
     let style = classes.chip;
     switch (variant) {
       case 'inList':
-        style = this.props.classes.chipInList;
+        style = classes.chipInList;
         break;
       default:
         style = classes.chip;

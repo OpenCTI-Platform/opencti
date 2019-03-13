@@ -133,9 +133,9 @@ IntrusionSetHeaderComponent.propTypes = {
 const IntrusionSetHeader = createFragmentContainer(IntrusionSetHeaderComponent, {
   intrusionSet: graphql`
       fragment IntrusionSetHeader_intrusionSet on IntrusionSet {
-          id,
-          name,
-          alias,
+          id
+          name
+          alias
       }
   `,
 });

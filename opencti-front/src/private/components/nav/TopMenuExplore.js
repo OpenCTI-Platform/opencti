@@ -79,11 +79,6 @@ class TopMenuExplore extends Component {
           <BugReport className={classes.icon} fontSize='small'/>
           {t('Vulnerabilities')}
         </Button>
-        <Button component={Link} to='/dashboard/explore/observables' variant={location.pathname.includes('/dashboard/explore/observables') ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes('/dashboard/explore/observables') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
-          <TagMultiple className={classes.icon} fontSize='small'/>
-          {t('Observables')}
-        </Button>
       </div>
     );
   }
