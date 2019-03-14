@@ -1,15 +1,15 @@
 import { assoc, map, join } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  deleteByID,
-  loadByID,
+  deleteEntityById,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
   notify,
   now,
   paginate,
-  takeTx,
+  takeWriteTx,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -27,29 +27,19 @@ export const findAll = args => {
   return paginate('match $a isa Attack-Pattern', args);
 };
 
-export const findById = attackPatternId => loadByID(attackPatternId);
+export const findById = attackPatternId => getById(attackPatternId);
 
 export const addAttackPattern = async (user, attackPattern) => {
-  const wTx = await takeTx();
+  const wTx = await takeWriteTx();
   const attackPatternIterator = await wTx.query(`insert $attackPattern isa Attack-Pattern 
     has type "attack-pattern";
     $attackPattern has stix_id "attack-patern--${uuid()}";
     $attackPattern has stix_label "";
-    $attackPattern has stix_label_lowercase "";
     $attackPattern has alias "";
-    $attackPattern has alias_lowercase "";
     $attackPattern has name "${prepareString(attackPattern.name)}";
     $attackPattern has description "${prepareString(
       attackPattern.description
     )}";
-    $attackPattern has name_lowercase "${prepareString(
-      attackPattern.name.toLowerCase()
-    )}";
-    $attackPattern has description_lowercase "${
-      attackPattern.description
-        ? prepareString(attackPattern.description.toLowerCase())
-        : ''
-    }";
     ${
       attackPattern.platform
         ? join(
@@ -123,10 +113,10 @@ export const addAttackPattern = async (user, attackPattern) => {
 
   await wTx.commit();
 
-  return loadByID(createdAttackPatternId).then(created =>
+  return getById(createdAttackPatternId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
 export const attackPatternDelete = attackPatternId =>
-  deleteByID(attackPatternId);
+  deleteEntityById(attackPatternId);

@@ -1,38 +1,32 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  deleteByID,
-  loadByID,
+  deleteEntityById,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
   notify,
   now,
   paginate,
-  takeTx,
+  takeWriteTx,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Tool', args);
 
-export const findById = toolId => loadByID(toolId);
+export const findById = toolId => getById(toolId);
 
 export const addTool = async (user, tool) => {
-  const wTx = await takeTx();
+  const wTx = await takeWriteTx();
   const toolIterator = await wTx.query(`insert $tool isa Tool 
     has type "tool";
     $tool has stix_id "tool--${uuid()}";
     $tool has stix_label "";
-    $tool has stix_label_lowercase "";
     $tool has alias "";
-    $tool has alias_lowercase "";
     $tool has name "${prepareString(tool.name)}";
     $tool has description "${prepareString(tool.description)}";
-    $tool has name_lowercase "${prepareString(tool.name.toLowerCase())}";
-    $tool has description_lowercase "${
-      tool.description ? prepareString(tool.description.toLowerCase()) : ''
-    }";
     $tool has created ${now()};
     $tool has modified ${now()};
     $tool has revoked false;
@@ -78,9 +72,9 @@ export const addTool = async (user, tool) => {
 
   await wTx.commit();
 
-  return loadByID(createdToolId).then(created =>
+  return getById(createdToolId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
-export const toolDelete = toolId => deleteByID(toolId);
+export const toolDelete = toolId => deleteEntityById(toolId);

@@ -1,8 +1,8 @@
 import { map, assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  deleteByID,
-  loadByID,
+  deleteEntityById,
+  getById,
   notify,
   now,
   paginate,
@@ -11,7 +11,7 @@ import {
   dayFormat,
   monthFormat,
   yearFormat,
-  takeTx,
+  takeWriteTx,
   prepareString,
   timeSeries
 } from '../database/grakn';
@@ -95,7 +95,7 @@ export const reportsTimeSeriesByEntity = args =>
     args
   );
 
-export const findById = reportId => loadByID(reportId);
+export const findById = reportId => getById(reportId);
 
 export const objectRefs = (reportId, args) =>
   paginate(
@@ -115,20 +115,14 @@ export const relationRefs = (reportId, args) =>
   );
 
 export const addReport = async (user, report) => {
-  const wTx = await takeTx();
+  const wTx = await takeWriteTx();
   const reportIterator = await wTx.query(`insert $report isa Report 
     has type "report";
     $report has stix_id "report--${uuid()}";
     $report has stix_label "";
-    $report has stix_label_lowercase "";
     $report has alias "";
-    $report has alias_lowercase "";
     $report has name "${prepareString(report.name)}";
     $report has description "${prepareString(report.description)}";
-    $report has name_lowercase "${prepareString(report.name.toLowerCase())}";
-    $report has description_lowercase "${
-      report.description ? prepareString(report.description.toLowerCase()) : ''
-    }";
     $report has published ${prepareDate(report.published)};
     $report has published_day "${dayFormat(report.published)}";
     $report has published_month "${monthFormat(report.published)}";
@@ -169,9 +163,9 @@ export const addReport = async (user, report) => {
 
   await wTx.commit();
 
-  return loadByID(createdReportId).then(created =>
+  return getById(createdReportId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
-export const reportDelete = reportId => deleteByID(reportId);
+export const reportDelete = reportId => deleteEntityById(reportId);

@@ -22,7 +22,9 @@ import DialogActions from '@material-ui/core/DialogActions';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import { ArrowDropDown, ArrowDropUp, TableChart, SaveAlt } from '@material-ui/icons';
+import {
+  ArrowDropDown, ArrowDropUp, TableChart, SaveAlt,
+} from '@material-ui/icons';
 import { fetchQuery, QueryRenderer } from '../../relay/environment';
 import UsersLines, { usersLinesQuery } from './user/UsersLines';
 import inject18n from '../../components/i18n';
@@ -30,7 +32,7 @@ import SearchInput from '../../components/SearchInput';
 import UserCreation from './user/UserCreation';
 import { dateFormat } from '../../utils/Time';
 
-const styles = () => ({
+const styles = theme => ({
   header: {
     margin: '0 0 10px 0',
   },
@@ -49,6 +51,17 @@ const styles = () => ({
   sortIcon: {
     float: 'left',
     margin: '-5px 0 0 15px',
+  },
+  export: {
+    width: '100%',
+    paddingTop: 10,
+    textAlign: 'center',
+  },
+  loaderCircle: {
+    display: 'inline-block',
+  },
+  rightIcon: {
+    marginLeft: theme.spacing.unit,
   },
 });
 

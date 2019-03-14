@@ -1,20 +1,20 @@
-import { head } from 'ramda';
+import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
-  deleteByID,
+  deleteEntityById,
   deleteRelation,
   editInputTx,
-  loadByID,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
   notify,
   now,
   paginate,
-  qk,
-  prepareString
+  prepareString,
+  takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -28,7 +28,7 @@ export const findByEntity = args =>
     args
   );
 
-export const findById = externalReferenceId => loadByID(externalReferenceId);
+export const findById = externalReferenceId => getById(externalReferenceId);
 
 export const search = args =>
   paginate(
@@ -44,23 +44,16 @@ export const search = args =>
   );
 
 export const addExternalReference = async (user, externalReference) => {
-  const createExternalReference = qk(`insert $externalReference isa External-Reference 
+  const wTx = await takeWriteTx();
+  const externalReferenceIterator = await wTx.query(`insert $externalReference isa External-Reference 
     has type "external-reference";
     $externalReference has stix_id "external-reference--${uuid()}";
     $externalReference has source_name "${prepareString(
       externalReference.source_name
     )}";
-    $externalReference has source_name_lowercase "${prepareString(
-      externalReference.source_name.toLowerCase()
-    )}";
     $externalReference has description "${prepareString(
       externalReference.description
     )}";
-    $externalReference has description_lowercase "${
-      externalReference.description
-        ? prepareString(externalReference.description.toLowerCase())
-        : ''
-    }";
     $externalReference has url "${
       externalReference.url
         ? prepareString(externalReference.url.toLowerCase())
@@ -70,11 +63,6 @@ export const addExternalReference = async (user, externalReference) => {
     $externalReference has external_id "${prepareString(
       externalReference.external_id
     )}";
-    $externalReference has external_id_lowercase "${
-      externalReference.external_id
-        ? prepareString(externalReference.external_id.toLowerCase())
-        : ''
-    }";
     $externalReference has created ${now()};
     $externalReference has modified ${now()};
     $externalReference has revoked false;
@@ -84,16 +72,39 @@ export const addExternalReference = async (user, externalReference) => {
     $externalReference has created_at_year "${yearFormat(now())}";    
     $externalReference has updated_at ${now()};
   `);
-  return createExternalReference.then(result => {
-    const { data } = result;
-    return loadByID(head(data).externalReference.id).then(created =>
-      notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created)
+  const createExternalReference = await externalReferenceIterator.next();
+  const createdExternalReferenceId = await createExternalReference
+    .map()
+    .get('externalReference').id;
+
+  if (externalReference.createdByRef) {
+    await wTx.query(`match $from id ${createdExternalReferenceId};
+         $to id ${externalReference.createdByRef};
+         insert (so: $from, creator: $to)
+         isa created_by_ref;`);
+  }
+
+  if (externalReference.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.query(
+        `match $from id ${createdExternalReferenceId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      externalReference.markingDefinitions
     );
-  });
+    await Promise.all(markingDefinitionsPromises);
+  }
+
+  await wTx.commit();
+
+  return getById(createdExternalReferenceId).then(created =>
+    notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user)
+  );
 };
 
 export const externalReferenceDelete = externalReferenceId =>
-  deleteByID(externalReferenceId);
+  deleteEntityById(externalReferenceId);
 
 export const externalReferenceAddRelation = (
   user,
@@ -117,7 +128,7 @@ export const externalReferenceDeleteRelation = (
 
 export const externalReferenceCleanContext = (user, externalReferenceId) => {
   delEditContext(user, externalReferenceId);
-  return loadByID(externalReferenceId).then(externalReference =>
+  return getById(externalReferenceId).then(externalReference =>
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
   );
 };
@@ -128,7 +139,7 @@ export const externalReferenceEditContext = (
   input
 ) => {
   setEditContext(user, externalReferenceId, input);
-  return loadByID(externalReferenceId).then(externalReference =>
+  return getById(externalReferenceId).then(externalReference =>
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
   );
 };

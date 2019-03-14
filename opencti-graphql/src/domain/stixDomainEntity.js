@@ -1,19 +1,19 @@
-import { assoc, head } from 'ramda';
+import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
-  deleteByID,
+  deleteEntityById,
   deleteRelation,
   editInputTx,
-  loadByID,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
   notify,
   now,
   paginate,
-  qk,
+  takeWriteTx,
   timeSeries,
   qkObjUnique,
   prepareString,
@@ -54,7 +54,7 @@ export const stixDomainEntitiesNumber = args => ({
   )
 });
 
-export const findById = stixDomainEntityId => loadByID(stixDomainEntityId);
+export const findById = stixDomainEntityId => getById(stixDomainEntityId);
 
 export const findByName = args =>
   paginate(
@@ -148,7 +148,8 @@ export const stixRelations = (stixDomainEntityId, args) => {
 };
 
 export const addStixDomainEntity = async (user, stixDomainEntity) => {
-  const createStixDomainEntity = qk(`insert $stixDomainEntity isa ${
+  const wTx = await takeWriteTx();
+  const stixDomainEntityIterator = await wTx.query(`insert $stixDomainEntity isa ${
     stixDomainEntity.type
   } 
     has type "${prepareString(stixDomainEntity.type.toLowerCase())}";
@@ -156,21 +157,11 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
       stixDomainEntity.type.toLowerCase()
     )}--${uuid()}";
     $stixDomainEntity has stix_label "";
-    $stixDomainEntity has stix_label_lowercase "";
     $stixDomainEntity has alias "";
-    $stixDomainEntity has alias_lowercase "";
     $stixDomainEntity has name "${prepareString(stixDomainEntity.name)}";
     $stixDomainEntity has description "${prepareString(
       stixDomainEntity.description
     )}";
-    $stixDomainEntity has name_lowercase "${prepareString(
-      stixDomainEntity.name.toLowerCase()
-    )}";
-    $stixDomainEntity has description_lowercase "${
-      stixDomainEntity.description
-        ? prepareString(stixDomainEntity.description.toLowerCase())
-        : ''
-    }";
     $stixDomainEntity has created ${now()};
     $stixDomainEntity has modified ${now()};
     $stixDomainEntity has revoked false;
@@ -180,16 +171,39 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     $stixDomainEntity has created_at_year "${yearFormat(now())}";      
     $stixDomainEntity has updated_at ${now()};
   `);
-  return createStixDomainEntity.then(result => {
-    const { data } = result;
-    return loadByID(head(data).stixDomainEntity.id).then(created =>
-      notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
+  const createStixDomainEntity = await stixDomainEntityIterator.next();
+  const createdStixDomainEntityId = await createStixDomainEntity
+    .map()
+    .get('stixDomainEntity').id;
+
+  if (stixDomainEntity.createdByRef) {
+    await wTx.query(`match $from id ${createdStixDomainEntityId};
+         $to id ${stixDomainEntity.createdByRef};
+         insert (so: $from, creator: $to)
+         isa created_by_ref;`);
+  }
+
+  if (stixDomainEntity.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.query(
+        `match $from id ${createdStixDomainEntityId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      stixDomainEntity.markingDefinitions
     );
-  });
+    await Promise.all(markingDefinitionsPromises);
+  }
+
+  await wTx.commit();
+
+  return getById(createdStixDomainEntityId).then(created =>
+    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
+  );
 };
 
 export const stixDomainEntityDelete = stixDomainEntityId =>
-  deleteByID(stixDomainEntityId);
+  deleteEntityById(stixDomainEntityId);
 
 export const stixDomainEntityAddRelation = (user, stixDomainEntityId, input) =>
   createRelation(stixDomainEntityId, input).then(relationData => {
@@ -209,7 +223,7 @@ export const stixDomainEntityDeleteRelation = (
 
 export const stixDomainEntityCleanContext = (user, stixDomainEntityId) => {
   delEditContext(user, stixDomainEntityId);
-  return loadByID(stixDomainEntityId).then(stixDomainEntity =>
+  return getById(stixDomainEntityId).then(stixDomainEntity =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user)
   );
 };
@@ -220,7 +234,7 @@ export const stixDomainEntityEditContext = (
   input
 ) => {
   setEditContext(user, stixDomainEntityId, input);
-  return loadByID(stixDomainEntityId).then(stixDomainEntity =>
+  return getById(stixDomainEntityId).then(stixDomainEntity =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user)
   );
 };

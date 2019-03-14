@@ -1,8 +1,8 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  deleteByID,
-  loadByID,
+  deleteEntityById,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -10,7 +10,7 @@ import {
   now,
   paginate,
   prepareDate,
-  takeTx,
+  takeWriteTx,
   prepareString,
   timeSeries
 } from '../database/grakn';
@@ -37,27 +37,17 @@ export const campaignsTimeSeriesByEntity = args =>
     args
   );
 
-export const findById = campaignId => loadByID(campaignId);
+export const findById = campaignId => getById(campaignId);
 
 export const addCampaign = async (user, campaign) => {
-  const wTx = await takeTx();
+  const wTx = await takeWriteTx();
   const campaignIterator = await wTx.query(`insert $campaign isa Campaign 
     has type "campaign";
     $campaign has stix_id "campaign--${uuid()}";
     $campaign has stix_label "";
-    $campaign has stix_label_lowercase "";
     $campaign has alias "";
-    $campaign has alias_lowercase "";
     $campaign has name "${prepareString(campaign.name)}";
     $campaign has description "${prepareString(campaign.description)}";
-    $campaign has name_lowercase "${prepareString(
-      campaign.name.toLowerCase()
-    )}";
-    $campaign has description_lowercase "${
-      campaign.description
-        ? prepareString(campaign.description.toLowerCase())
-        : ''
-    }";
     $campaign has first_seen ${prepareDate(campaign.first_seen)};
     $campaign has first_seen_day "${dayFormat(campaign.first_seen)}";
     $campaign has first_seen_month "${monthFormat(campaign.first_seen)}";
@@ -99,9 +89,9 @@ export const addCampaign = async (user, campaign) => {
 
   await wTx.commit();
 
-  return loadByID(createdCampaignId).then(created =>
+  return getById(createdCampaignId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
-export const campaignDelete = campaignId => deleteByID(campaignId);
+export const campaignDelete = campaignId => deleteEntityById(campaignId);

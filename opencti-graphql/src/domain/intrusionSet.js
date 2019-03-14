@@ -1,9 +1,9 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  takeTx,
-  deleteByID,
-  loadByID,
+  takeWriteTx,
+  deleteEntityById,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -25,27 +25,17 @@ export const markingDefinitions = (intrusionSetId, args) =>
     args
   );
 
-export const findById = intrusionSetId => loadByID(intrusionSetId);
+export const findById = intrusionSetId => getById(intrusionSetId);
 
 export const addIntrusionSet = async (user, intrusionSet) => {
-  const wTx = await takeTx();
+  const wTx = await takeWriteTx();
   const intrusionSetIterator = await wTx.query(`insert $intrusionSet isa Intrusion-Set 
     has type "intrusion-set";
     $intrusionSet has stix_id "intrusion-set--${uuid()}";
     $intrusionSet has stix_label "";
-    $intrusionSet has stix_label_lowercase "";
     $intrusionSet has alias "";
-    $intrusionSet has alias_lowercase "";
     $intrusionSet has name "${prepareString(intrusionSet.name)}";
     $intrusionSet has description "${prepareString(intrusionSet.description)}";
-    $intrusionSet has name_lowercase "${prepareString(
-      intrusionSet.name.toLowerCase()
-    )}";
-    $intrusionSet has description_lowercase "${
-      intrusionSet.description
-        ? prepareString(intrusionSet.description.toLowerCase())
-        : ''
-    }";
     $intrusionSet has first_seen ${prepareDate(intrusionSet.first_seen)};
     $intrusionSet has first_seen_day "${dayFormat(intrusionSet.first_seen)}";
     $intrusionSet has first_seen_month "${monthFormat(
@@ -91,9 +81,9 @@ export const addIntrusionSet = async (user, intrusionSet) => {
 
   await wTx.commit();
 
-  return loadByID(createIntrusionSetId).then(created =>
+  return getById(createIntrusionSetId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
-export const intrusionSetDelete = intrusionSetId => deleteByID(intrusionSetId);
+export const intrusionSetDelete = intrusionSetId => deleteEntityById(intrusionSetId);

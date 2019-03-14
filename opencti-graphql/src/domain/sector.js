@@ -1,22 +1,22 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  deleteByID,
-  loadByID,
+  deleteEntityById,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
   notify,
   now,
   paginate,
-  takeTx,
+  takeWriteTx,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Sector', args);
 
-export const findById = sectorId => loadByID(sectorId);
+export const findById = sectorId => getById(sectorId);
 
 export const markingDefinitions = (sectorId, args) =>
   paginate(
@@ -27,20 +27,14 @@ export const markingDefinitions = (sectorId, args) =>
   );
 
 export const addSector = async (user, sector) => {
-  const wTx = await takeTx();
+  const wTx = await takeWriteTx();
   const sectorIterator = await wTx.query(`insert $sector isa Sector 
     has type "sector";
     $sector has stix_id "sector--${uuid()}";
     $sector has stix_label "";
-    $sector has stix_label_lowercase "";
     $sector has alias "";
-    $sector has alias_lowercase "";
     $sector has name "${prepareString(sector.name)}";
     $sector has description "${prepareString(sector.description)}";
-    $sector has name_lowercase "${prepareString(sector.name.toLowerCase())}";
-    $sector has description_lowercase "${
-      sector.description ? prepareString(sector.description.toLowerCase()) : ''
-    }";
     $sector has created ${now()};
     $sector has modified ${now()};
     $sector has revoked false;
@@ -74,9 +68,9 @@ export const addSector = async (user, sector) => {
 
   await wTx.commit();
 
-  return loadByID(createdSectorId).then(created =>
+  return getById(createdSectorId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
-export const sectorDelete = sectorId => deleteByID(sectorId);
+export const sectorDelete = sectorId => deleteEntityById(sectorId);

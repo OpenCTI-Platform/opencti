@@ -1,22 +1,22 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  deleteByID,
-  loadByID,
+  deleteEntityById,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
   notify,
   now,
   paginate,
-  takeTx,
+  takeWriteTx,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Identity', args, false);
 
-export const findById = identityId => loadByID(identityId);
+export const findById = identityId => getById(identityId);
 
 export const search = args =>
   paginate(
@@ -30,26 +30,16 @@ export const search = args =>
   );
 
 export const addIdentity = async (user, identity) => {
-  const wTx = await takeTx();
+  const wTx = await takeWriteTx();
   const identityIterator = await wTx.query(`insert $identity isa ${
     identity.type
   } 
     has type "${identity.type.toLowerCase()}";
     $identity has stix_id "${identity.type.toLowerCase()}--${uuid()}";
     $identity has stix_label "";
-    $identity has stix_label_lowercase "";
     $identity has alias "";
-    $identity has alias_lowercase "";
     $identity has name "${prepareString(identity.name)}";
     $identity has description "${prepareString(identity.description)}";
-    $identity has name_lowercase "${prepareString(
-      identity.name.toLowerCase()
-    )}";
-    $identity has description_lowercase "${
-      identity.description
-        ? prepareString(identity.description.toLowerCase())
-        : ''
-    }";
     $identity has created ${now()};
     $identity has modified ${now()};
     $identity has revoked false;
@@ -83,9 +73,9 @@ export const addIdentity = async (user, identity) => {
 
   await wTx.commit();
 
-  return loadByID(createdIdentityId).then(created =>
+  return getById(createdIdentityId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
-export const identityDelete = identityId => deleteByID(identityId);
+export const identityDelete = identityId => deleteEntityById(identityId);

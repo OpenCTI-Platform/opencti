@@ -1,26 +1,26 @@
-import { head } from 'ramda';
+import { head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
-  deleteByID,
+  deleteEntityById,
   deleteRelation,
   editInputTx,
-  loadByID,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
   notify,
   now,
   paginate,
-  qk,
+  takeWriteTx,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Kill-Chain-Phase', args);
 
-export const findById = killChainPhaseId => loadByID(killChainPhaseId);
+export const findById = killChainPhaseId => getById(killChainPhaseId);
 
 export const findByPhaseName = args =>
   paginate(
@@ -41,7 +41,8 @@ export const markingDefinitions = (killChainPhaseId, args) =>
   );
 
 export const addKillChainPhase = async (user, killChainPhase) => {
-  const createKillChainPhase = qk(`insert $killChainPhase isa Kill-Chain-Phase
+  const wTx = await takeWriteTx();
+  const killChainPhaseIterator = await wTx.query(`insert $killChainPhase isa Kill-Chain-Phase
     has type "kill-chain-phase";
     $killChainPhase has stix_id "kill-chain-phase--${uuid()}";
     $killChainPhase has kill_chain_name "${prepareString(
@@ -60,16 +61,25 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     $killChainPhase has created_at_year "${yearFormat(now())}";       
     $killChainPhase has updated_at ${now()};
   `);
-  return createKillChainPhase.then(result => {
-    const { data } = result;
-    return loadByID(head(data).killChainPhase.id).then(created =>
-      notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created)
-    );
-  });
+  const createKillChainPhase = await killChainPhaseIterator.next();
+  const createdKillChainPhaseId = await createKillChainPhase.map().get('killChainPhase').id;
+
+  if (killChainPhase.createdByRef) {
+    await wTx.query(`match $from id ${createdKillChainPhaseId};
+         $to id ${killChainPhase.createdByRef};
+         insert (so: $from, creator: $to)
+         isa created_by_ref;`);
+  }
+
+  await wTx.commit();
+
+  return getById(createdKillChainPhaseId).then(created =>
+    notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created, user)
+  );
 };
 
 export const killChainPhaseDelete = killChainPhaseId =>
-  deleteByID(killChainPhaseId);
+  deleteEntityById(killChainPhaseId);
 
 export const killChainPhaseAddRelation = (user, killChainPhaseId, input) =>
   createRelation(killChainPhaseId, input).then(relationData => {
@@ -89,14 +99,14 @@ export const killChainPhaseDeleteRelation = (
 
 export const killChainPhaseCleanContext = (user, killChainPhaseId) => {
   delEditContext(user, killChainPhaseId);
-  return loadByID(killChainPhaseId).then(killChainPhase =>
+  return getById(killChainPhaseId).then(killChainPhase =>
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );
 };
 
 export const killChainPhaseEditContext = (user, killChainPhaseId, input) => {
   setEditContext(user, killChainPhaseId, input);
-  return loadByID(killChainPhaseId).then(killChainPhase =>
+  return getById(killChainPhaseId).then(killChainPhase =>
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );
 };

@@ -1,29 +1,30 @@
-import { head } from 'ramda';
+import { head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
-  deleteByID,
+  deleteEntityById,
   deleteRelation,
   editInputTx,
-  loadByID,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
   notify,
   now,
   paginate,
-  qk,
+  takeWriteTx,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args =>
   paginate('match $m isa Marking-Definition', args);
-export const findById = markingDefinitionId => loadByID(markingDefinitionId);
+export const findById = markingDefinitionId => getById(markingDefinitionId);
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
-  const createMarkingDefinition = qk(`insert $markingDefinition isa Marking-Definition 
+  const wTx = await takeWriteTx();
+  const markingDefinitionIterator = await wTx.query(`insert $markingDefinition isa Marking-Definition 
     has type "marking-definition";
     $markingDefinition has stix_id "marking-definition--${uuid()}";
     $markingDefinition has definition_type "${prepareString(
@@ -43,16 +44,27 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
     $markingDefinition has created_at_year "${yearFormat(now())}";       
     $markingDefinition has updated_at ${now()};
   `);
-  return createMarkingDefinition.then(result => {
-    const { data } = result;
-    return loadByID(head(data).markingDefinition.id).then(created =>
-      notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created)
-    );
-  });
+  const createMarkingDefinition = await markingDefinitionIterator.next();
+  const createdMarkingDefinitionId = await createMarkingDefinition
+    .map()
+    .get('markingDefinition').id;
+
+  if (markingDefinition.createdByRef) {
+    await wTx.query(`match $from id ${createdMarkingDefinitionId};
+         $to id ${markingDefinition.createdByRef};
+         insert (so: $from, creator: $to)
+         isa created_by_ref;`);
+  }
+
+  await wTx.commit();
+
+  return getById(createdMarkingDefinitionId).then(created =>
+    notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created, user)
+  );
 };
 
 export const markingDefinitionDelete = markingDefinitionId =>
-  deleteByID(markingDefinitionId);
+  deleteEntityById(markingDefinitionId);
 
 export const markingDefinitionAddRelation = (
   user,
@@ -76,7 +88,7 @@ export const markingDefinitionDeleteRelation = (
 
 export const markingDefinitionCleanContext = (user, markingDefinitionId) => {
   delEditContext(user, markingDefinitionId);
-  return loadByID(markingDefinitionId).then(markingDefinition =>
+  return getById(markingDefinitionId).then(markingDefinition =>
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );
 };
@@ -87,7 +99,7 @@ export const markingDefinitionEditContext = (
   input
 ) => {
   setEditContext(user, markingDefinitionId, input);
-  return loadByID(markingDefinitionId).then(markingDefinition =>
+  return getById(markingDefinitionId).then(markingDefinition =>
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );
 };

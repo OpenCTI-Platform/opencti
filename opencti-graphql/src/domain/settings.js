@@ -1,12 +1,11 @@
-import { head } from 'ramda';
 import {
-  deleteByID,
+  deleteEntityById,
   editInputTx,
-  loadByID,
+  getById,
   loadFirst,
   notify,
   now,
-  qk,
+  takeWriteTx,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -15,7 +14,8 @@ import { delEditContext, setEditContext } from '../database/redis';
 export const getSettings = () => loadFirst('Settings').then(result => result);
 
 export const addSettings = async (user, settings) => {
-  const createSettings = qk(`insert $settings isa Settings
+  const wTx = await takeWriteTx();
+  const settingsIterator = await wTx.query(`insert $settings isa Settings
     has type "settings";  
     $settings has platform_title "${prepareString(settings.platform_title)}";
     $settings has platform_email "${prepareString(settings.platform_email)}";
@@ -28,26 +28,28 @@ export const addSettings = async (user, settings) => {
     $settings has created_at ${now()};
     $settings has updated_at ${now()};
   `);
-  return createSettings.then(result => {
-    const { data } = result;
-    return loadByID(head(data).settings.id).then(created =>
-      notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user)
-    );
-  });
+  const createSettings = await settingsIterator.next();
+  const createdSettingsId = await createSettings.map().get('settings').id;
+
+  await wTx.commit();
+
+  return getById(createdSettingsId).then(created =>
+    notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user)
+  );
 };
 
-export const settingsDelete = settingsId => deleteByID(settingsId);
+export const settingsDelete = settingsId => deleteEntityById(settingsId);
 
 export const settingsCleanContext = (user, settingsId) => {
   delEditContext(user, settingsId);
-  return loadByID(settingsId).then(settings =>
+  return getById(settingsId).then(settings =>
     notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
   );
 };
 
 export const settingsEditContext = (user, settingsId, input) => {
   setEditContext(user, settingsId, input);
-  return loadByID(settingsId).then(settings =>
+  return getById(settingsId).then(settings =>
     notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
   );
 };

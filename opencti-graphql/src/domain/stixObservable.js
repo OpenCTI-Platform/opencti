@@ -1,19 +1,18 @@
-import { assoc, head } from 'ramda';
-import uuid from 'uuid/v4';
+import { assoc, map } from 'ramda';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
-  deleteByID,
+  deleteEntityById,
   deleteRelation,
   editInputTx,
-  loadByID,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
   notify,
   now,
   paginate,
-  qk,
+  takeWriteTx,
   timeSeries,
   qkObjUnique,
   prepareString
@@ -21,7 +20,6 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import {
   findAll as relationFindAll,
-  findByType as relationFindByType,
   search as relationSearch
 } from './stixRelation';
 
@@ -35,7 +33,7 @@ export const findAll = args =>
 export const stixObservablesTimeSeries = args =>
   timeSeries(`match $x isa ${args.type ? args.type : 'Stix-Observable'}`, args);
 
-export const findById = stixObservableId => loadByID(stixObservableId);
+export const findById = stixObservableId => getById(stixObservableId);
 
 export const findByValue = args =>
   paginate(
@@ -96,37 +94,53 @@ export const stixRelations = (stixObservableId, args) => {
   if (finalArgs.search && finalArgs.search.length > 0) {
     return relationSearch(finalArgs);
   }
-  if (finalArgs.relationType && finalArgs.relationType.length > 0) {
-    return relationFindByType(finalArgs);
-  }
   return relationFindAll(finalArgs);
 };
 
 export const addStixObservable = async (user, stixObservable) => {
-  const createStixObservable = qk(`insert $stixObservable isa ${
+  const wTx = await takeWriteTx();
+  const stixObservableIterator = await wTx.query(`insert $stixObservable isa ${
     stixObservable.type
   } 
     has type "${prepareString(stixObservable.type.toLowerCase())}";
     $stixObservable has value "${prepareString(stixObservable.value)}";
-    $stixObservable has value_lowercase "${prepareString(
-      stixObservable.value.toLowerCase()
-    )}";
     $stixObservable has created_at ${now()};
     $stixObservable has created_at_day "${dayFormat(now())}";
     $stixObservable has created_at_month "${monthFormat(now())}";
     $stixObservable has created_at_year "${yearFormat(now())}";      
     $stixObservable has updated_at ${now()};
   `);
-  return createStixObservable.then(result => {
-    const { data } = result;
-    return loadByID(head(data).stixObservable.id).then(created =>
-      notify(BUS_TOPICS.stixObservable.ADDED_TOPIC, created, user)
+  const createStixObservable = await stixObservableIterator.next();
+  const createdStixObservableId = await createStixObservable.map().get('stixObservable').id;
+
+  if (stixObservable.createdByRef) {
+    await wTx.query(`match $from id ${createdStixObservableId};
+         $to id ${stixObservable.createdByRef};
+         insert (so: $from, creator: $to)
+         isa created_by_ref;`);
+  }
+
+  if (stixObservable.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.query(
+        `match $from id ${createdStixObservableId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      stixObservable.markingDefinitions
     );
-  });
+    await Promise.all(markingDefinitionsPromises);
+  }
+
+  await wTx.commit();
+
+  return getById(createdStixObservableId).then(created =>
+    notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user)
+  );
 };
 
 export const stixObservableDelete = stixObservableId =>
-  deleteByID(stixObservableId);
+  deleteEntityById(stixObservableId);
 
 export const stixObservableAddRelation = (user, stixObservableId, input) =>
   createRelation(stixObservableId, input).then(relationData => {
@@ -146,14 +160,14 @@ export const stixObservableDeleteRelation = (
 
 export const stixObservableCleanContext = (user, stixObservableId) => {
   delEditContext(user, stixObservableId);
-  return loadByID(stixObservableId).then(stixObservable =>
+  return getById(stixObservableId).then(stixObservable =>
     notify(BUS_TOPICS.stixObservable.EDIT_TOPIC, stixObservable, user)
   );
 };
 
 export const stixObservableEditContext = (user, stixObservableId, input) => {
   setEditContext(user, stixObservableId, input);
-  return loadByID(stixObservableId).then(stixObservable =>
+  return getById(stixObservableId).then(stixObservable =>
     notify(BUS_TOPICS.stixObservable.EDIT_TOPIC, stixObservable, user)
   );
 };

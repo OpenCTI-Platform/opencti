@@ -46,7 +46,7 @@ class IncidentKnowledgeComponent extends Component {
           {location.pathname.includes('attribution') ? <EntityStixRelations
             entityId={incident.id}
             relationType='attributed-to'
-            targetEntityTypes={['Identity', 'Intrusion-Set', 'Campaign']}
+            targetEntityTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign']}
             entityLink={link}
           /> : ''}
 
@@ -58,9 +58,16 @@ class IncidentKnowledgeComponent extends Component {
           /> : ''}
 
           {location.pathname.includes('victimology') ? <EntityStixRelations
+            resolveRelationType='attributed-to'
+            resolveRelationRole='origin'
+            resolveViaTypes={[
+              { entityType: 'Organization', relationType: 'gathering', relationRole: 'part_of' },
+              { entityType: 'Organization', relationType: 'localization', relationRole: 'localized' },
+              { entityType: 'Country', relationType: 'localization', relationRole: 'localized' },
+            ]}
             entityId={incident.id}
             relationType='targets'
-            targetEntityTypes={['Identity']}
+            targetEntityTypes={['Organization', 'Sector', 'Country', 'Region']}
             entityLink={link}
           /> : ''}
 

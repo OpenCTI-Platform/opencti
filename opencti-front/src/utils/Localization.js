@@ -250,6 +250,8 @@ const i18n = {
       'All years': 'Toutes les années',
       'All entities': 'Toutes les entités',
       'All confidence levels': 'Tous les niveaux de confiance',
+      Month: 'Mois',
+      Year: 'Année',
       // Properties
       'Sort by': 'Trier par',
       'Filter by': 'Filtrer par',
@@ -347,6 +349,7 @@ const i18n = {
       'Types of the targets': 'Types de cibles',
       'Targeted entities types': 'Types d\'entités ciblées',
       'Targeted entities through time': 'Ciblages d\'entités à travers le temps',
+      'Number of targeting': 'Nombre de ciblages',
       Platforms: 'Systèmes d\'exploitation',
       Platform: 'Système d\'exploitation',
       'Required permissions': 'Permissions requises',

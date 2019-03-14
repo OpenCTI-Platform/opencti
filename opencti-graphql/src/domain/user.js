@@ -16,17 +16,18 @@ import conf, {
 } from '../config/conf';
 import {
   qkObjUnique,
-  deleteByID,
-  loadByID,
+  deleteEntityById,
+  getById,
   notify,
   now,
   paginate,
-  qk,
+  takeWriteTx,
   editInputTx,
   dayFormat,
   monthFormat,
   yearFormat,
-  prepareString
+  prepareString,
+  qk
 } from '../database/grakn';
 
 // Security related
@@ -60,7 +61,7 @@ export const findAll = args => {
   });
 };
 
-export const findById = userId => loadByID(userId);
+export const findById = userId => getById(userId);
 
 export const groups = (userId, args) =>
   paginate(
@@ -80,38 +81,41 @@ export const token = userId =>
   ).then(result => sign(result.node, conf.get('app:secret')));
 
 export const addPerson = async (user, newUser) => {
-  const createPerson = qk(`insert $user isa User 
+  const wTx = await takeWriteTx();
+  const userIterator = await wTx.query(`insert $user isa User 
     has type "user";
     $user has stix_id "user--${uuid()}";
     $user has stix_label "";
-    $user has stix_label_lowercase "";
     $user has alias "";
-    $user has alias_lowercase "";
     $user has name "${prepareString(newUser.name)}";
     $user has description "${prepareString(newUser.description)}";
-    $user has name_lowercase "${prepareString(newUser.name.toLowerCase())}";
-    $user has description_lowercase "${
-      newUser.description
-        ? prepareString(newUser.description.toLowerCase())
-        : ''
-    }";
     $user has created_at ${now()};
     $user has created_at_day "${dayFormat(now())}";
     $user has created_at_month "${monthFormat(now())}";
     $user has created_at_year "${yearFormat(now())}";   
     $user has updated_at ${now()};
   `);
-  return createPerson.then(result => {
-    const { data } = result;
-    return loadByID(head(data).user.id).then(created =>
-      notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-    );
-  });
+  const createUser = await userIterator.next();
+  const createdUserId = await createUser.map().get('user').id;
+
+  if (user.createdByRef) {
+    await wTx.query(`match $from id ${createdUserId};
+         $to id ${user.createdByRef};
+         insert (so: $from, creator: $to)
+         isa created_by_ref;`);
+  }
+
+  await wTx.commit();
+
+  return getById(createdUserId).then(created =>
+    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
+  );
 };
 
 export const addUser = async (user, newUser) => {
   const newToken = generateOpenCTIWebToken(newUser.email);
-  const createUser = qk(`insert $user isa User 
+  const wTx = await takeWriteTx();
+  const userIterator = await wTx.query(`insert $user isa User 
     has type "user";
     $user has stix_id "user--${uuid()}";
     $user has stix_label "";
@@ -149,7 +153,18 @@ export const addUser = async (user, newUser) => {
         : ''
     }
   `);
-  const createToken = qk(`insert $token isa Token 
+
+  const createUser = await userIterator.next();
+  const createdUserId = await createUser.map().get('user').id;
+
+  if (user.createdByRef) {
+    await wTx.query(`match $from id ${createdUserId};
+         $to id ${user.createdByRef};
+         insert (so: $from, creator: $to)
+         isa created_by_ref;`);
+  }
+
+  const tokenIterator = await wTx.query(`insert $token isa Token 
     has type "token"; 
     $token has uuid "${newToken.uuid}";
     $token has name "${newToken.name}";
@@ -160,20 +175,17 @@ export const addUser = async (user, newUser) => {
     $token has created_at ${now()};
     $token has updated_at ${now()};
   `);
-  // Execute user and token creation in parrallel, then create the relation.
-  const createPromise = Promise.all([createUser, createToken]);
-  return createPromise.then(([resultUser]) =>
-    // Create the relation
-    qk(`match $user isa User has email "${newUser.email}"; 
+
+  const createdToken = await tokenIterator.next();
+  await createdToken.map().get('token').id;
+  await wTx.query(`match $user isa User has email "${newUser.email}"; 
                    $token isa Token has uuid "${newToken.uuid}"; 
-                   insert (client: $user, authorization: $token) isa authorize;`).then(
-      () => {
-        const { data } = resultUser;
-        return loadByID(head(data).user.id).then(created =>
-          notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-        );
-      }
-    )
+                   insert (client: $user, authorization: $token) isa authorize;`);
+
+  await wTx.commit();
+
+  return getById(createdUserId).then(created =>
+    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
@@ -198,7 +210,7 @@ export const loginFromProvider = (email, name) => {
     }
     // We just need to return the current token
     const element = head(data);
-    return loadByID(element.token.id);
+    return getById(element.token.id);
   });
 };
 
@@ -218,7 +230,7 @@ export const login = (email, password) => {
     if (!match) {
       throw new AuthenticationFailure();
     }
-    return loadByID(element.token.id);
+    return getById(element.token.id);
   });
 };
 
@@ -228,7 +240,7 @@ export const logout = async (user, res) => {
   return user.id;
 };
 
-export const userDelete = userId => deleteByID(userId);
+export const userDelete = userId => deleteEntityById(userId);
 
 export const userEditField = (user, userId, input) => {
   const { key } = input;
@@ -269,6 +281,6 @@ export const findByTokenId = tokenId => {
     const maxDuration = moment.duration(element.duration.value);
     const currentDuration = moment.duration(moment().diff(creation));
     if (currentDuration > maxDuration) return undefined;
-    return loadByID(element.client.id);
+    return getById(element.client.id);
   });
 };

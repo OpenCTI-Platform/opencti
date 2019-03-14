@@ -1,14 +1,14 @@
 {
   "app": {
     "port": 4000,
-    "logs_directory": "./logs",
+    "logs": "./logs",
     "secret": "define your secret",
     "reactive": true,
     "cookie_secure": false
   },
   "grakn": {
-    "baseURL": "127.0.0.1:4567",
-    "driver": "127.0.0.1:48555",
+    "hostname": "127.0.0.1",
+    "port": 48555,
     "timeout": 30000
   },
   "redis": {

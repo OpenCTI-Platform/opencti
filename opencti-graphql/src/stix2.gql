@@ -34,7 +34,6 @@ define
   # STIX common properties
   "stix_id" sub attribute datatype string;
   "stix_label" sub attribute datatype string;
-  "stix_label_lowercase" sub attribute datatype string;
   "type" sub attribute datatype string;
   "created" sub attribute datatype date;
   "modified" sub attribute datatype date;
@@ -48,13 +47,10 @@ define
   "last_seen_month" sub attribute datatype string;
   "last_seen_year" sub attribute datatype string;
   "name" sub attribute datatype string;
-  "name_lowercase" sub attribute datatype string;
   "description" sub attribute datatype string;
-  "description_lowercase" sub attribute datatype string;
 
   # STIX SDO
   "alias" sub attribute datatype string;
-  "alias_lowercase" sub attribute datatype string;
   "stix_role" sub attribute datatype string;
   "objective" sub attribute datatype string;
   "goal" sub attribute datatype string;
@@ -72,11 +68,9 @@ define
   "level" sub attribute datatype long;
   "color" sub attribute datatype string;
   "source_name" sub attribute datatype string;
-  "source_name_lowercase" sub attribute datatype string;
   "url" sub attribute datatype string;
   "hash" sub attribute datatype string;
   "external_id" sub attribute datatype string;
-  "external_id_lowercase" sub attribute datatype string;
   "published" sub attribute datatype date;
   "published_day" sub attribute datatype string;
   "published_month" sub attribute datatype string;
@@ -256,9 +250,7 @@ define
     has "last_seen_month"
     has "last_seen_year"
     has "name"
-    has "name_lowercase"
     has "description"
-    has "description_lowercase"
     has "created_at"
     has "created_at_day"
     has "created_at_month"
@@ -293,9 +285,7 @@ define
     has "last_seen_month"
     has "last_seen_year"
     has "name"
-    has "name_lowercase"
     has "description"
-    has "description_lowercase"
     has "created_at"
     has "created_at_day"
     has "created_at_month"
@@ -392,9 +382,7 @@ define
   "Group" sub entity
     has "type"
     has "name"
-    has "name_lowercase"
     has "description"
-    has "description_lowercase"
     has "created_at"
     has "created_at_day"
     has "created_at_month"
@@ -406,9 +394,7 @@ define
   "Workspace" sub entity
     has "type"
     has "name"
-    has "name_lowercase"
     has "description"
-    has "description_lowercase"
     has "graph_data"
     has "created_at"
     has "created_at_day"
@@ -438,7 +424,6 @@ define
     is-abstract
     has "stix_id"
     has "stix_label"
-    has "stix_label_lowercase"
     has "type"
     has "created"
     has "modified"
@@ -456,22 +441,16 @@ define
   "Stix-Domain-Entity" sub "Stix-Domain"
     is-abstract
     has "name"
-    has "name_lowercase"
     has "description"
-    has "description_lowercase"
     has "alias"
-    has "alias_lowercase"
     has "graph_data";
 
   "External-Reference" sub "Stix-Domain"
     has "source_name"
-    has "source_name_lowercase"
     has "description"
-    has "description_lowercase"
     has "url"
     has "hash"
     has "external_id"
-    has "external_id_lowercase"
     plays "external_reference";
 
   "Kill-Chain-Phase" sub "Stix-Domain"

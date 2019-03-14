@@ -1,8 +1,8 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  deleteByID,
-  loadByID,
+  deleteEntityById,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -10,7 +10,7 @@ import {
   now,
   paginate,
   prepareDate,
-  takeTx,
+  takeWriteTx,
   prepareString,
   timeSeries
 } from '../database/grakn';
@@ -37,27 +37,17 @@ export const incidentsTimeSeriesByEntity = args =>
     args
   );
 
-export const findById = incidentId => loadByID(incidentId);
+export const findById = incidentId => getById(incidentId);
 
 export const addIncident = async (user, incident) => {
-  const wTx = await takeTx();
+  const wTx = await takeWriteTx();
   const incidentIterator = await wTx.query(`insert $incident isa Incident 
     has type "incident";
     $incident has stix_id "incident--${uuid()}";
     $incident has stix_label "";
-    $incident has stix_label_lowercase "";
     $incident has alias "";
-    $incident has alias_lowercase "";
     $incident has name "${prepareString(incident.name)}";
     $incident has description "${prepareString(incident.description)}";
-    $incident has name_lowercase "${prepareString(
-      incident.name.toLowerCase()
-    )}";
-    $incident has description_lowercase "${
-      incident.description
-        ? prepareString(incident.description.toLowerCase())
-        : ''
-    }";
     $incident has first_seen ${prepareDate(incident.first_seen)};
     $incident has first_seen_day "${dayFormat(incident.first_seen)}";
     $incident has first_seen_month "${monthFormat(incident.first_seen)}";
@@ -99,9 +89,9 @@ export const addIncident = async (user, incident) => {
 
   await wTx.commit();
 
-  return loadByID(createdIncidentId).then(created =>
+  return getById(createdIncidentId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
-export const incidentDelete = incidentId => deleteByID(incidentId);
+export const incidentDelete = incidentId => deleteEntityById(incidentId);

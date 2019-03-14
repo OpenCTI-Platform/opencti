@@ -28,9 +28,9 @@ import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
-  deleteOneById,
+  deleteById,
   editInputTx,
-  loadByID,
+  getById,
   loadRelationById,
   loadRelationInferredById,
   notify,
@@ -44,10 +44,9 @@ import {
   prepareString,
   timeSeries,
   distribution,
-  takeTx,
+  takeWriteTx,
   qkObjSimple,
-  buildPaginationRelationships,
-  createRelation
+  buildPaginationRelationships
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -213,7 +212,7 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
     true
   );
   const fromIds = append(args.fromId, map(e => e.node.id, entities));
-  const query = `match $rel($from, $x) isa ${
+  const query = `match $x($from, $to) isa ${
     args.relationType ? args.relationType : 'stix_relation'
   }; ${join(
     ' ',
@@ -222,56 +221,56 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
     args.toTypes
       ? `; ${join(
           ' ',
-          map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
-        )} { $x isa ${head(args.toTypes)}; }`
+          map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
+        )} { $to isa ${head(args.toTypes)}; }`
       : ''
   }`;
   const resultPromise = timeSeries(query, assoc('inferred', false, args));
   if (args.resolveViaTypes) {
     const viaPromise = Promise.all(
       map(resolveViaType => {
-        const viaQuery = `match $from; $rel($from, $entity) isa ${
+        const viaQuery = `match $from; $x($from, $entity) isa ${
           args.relationType ? args.relationType : 'stix_relation'
         }; ${join(
           ' ',
           map(fromId => `{ $from id ${fromId}; } or`, fromIds)
         )} { $from id ${head(fromIds)}; }; $entity isa ${
           resolveViaType.entityType
-        }; $link(${resolveViaType.relationRole}: $entity, $x) isa ${
+        }; $link(${resolveViaType.relationRole}: $entity, $to) isa ${
           resolveViaType.relationType
-        }; ${
+        } ${
           args.toTypes
-            ? `${join(
+            ? `; ${join(
                 ' ',
-                map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
-              )} { $x isa ${head(args.toTypes)}; }`
+                map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
+              )} { $to isa ${head(args.toTypes)}; }`
             : ''
-        }; $rel has first_seen $o`;
+        }`;
         return timeSeries(viaQuery, assoc('inferred', true, args));
       })(args.resolveViaTypes)
     );
     const viaRelationQueries = map(
       resolveViaType =>
-        `match $from; $rel($from, $entity) isa ${
+        `match $from; $x($from, $entity) isa ${
           args.relationType ? args.relationType : 'stix_relation'
         }; ${join(
           ' ',
           map(fromId => `{ $from id ${fromId}; } or`, fromIds)
         )} { $from id ${head(fromIds)}; }; $link(${
           resolveViaType.relationRole
-        }: $rel, $x) isa ${resolveViaType.relationType}; ${
+        }: $x, $to) isa ${resolveViaType.relationType} ${
           args.toTypes
-            ? `${join(
+            ? `; ${join(
                 ' ',
-                map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
-              )} { $x isa ${head(args.toTypes)}; }`
+                map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
+              )} { $to isa ${head(args.toTypes)}; }`
             : ''
-        }; $rel has first_seen $o`
+        }`
     )(args.resolveViaTypes);
     const viaOfRelationPromise = Promise.all(
-      map(viaRelationQuery =>
-        timeSeries(viaRelationQuery, assoc('inferred', true, args))
-      )(dropRepeats(viaRelationQueries))
+      map(viaRelationQuery => {
+        return timeSeries(viaRelationQuery, assoc('inferred', true, args));
+      })(dropRepeats(viaRelationQueries))
     );
     return Promise.all([resultPromise, viaPromise, viaOfRelationPromise]).then(
       ([result, via, viaRelation]) => {
@@ -368,9 +367,9 @@ export const stixRelationsDistributionWithInferences = async args => {
             ? `${join(
                 ' ',
                 map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
-              )} { $x isa ${head(args.toTypes)}; }`
+              )} { $x isa ${head(args.toTypes)}; };`
             : ''
-        }; $rel has first_seen $o`;
+        } $rel has first_seen $o`;
         return distribution(viaQuery, assoc('inferred', true, args));
       })(args.resolveViaTypes)
     );
@@ -388,9 +387,9 @@ export const stixRelationsDistributionWithInferences = async args => {
             ? `${join(
                 ' ',
                 map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
-              )} { $x isa ${head(args.toTypes)}; }`
+              )} { $x isa ${head(args.toTypes)}; };`
             : ''
-        }; $rel has first_seen $o`
+        } $rel has first_seen $o`
     )(args.resolveViaTypes);
     const viaOfRelationPromise = Promise.all(
       map(viaRelationQuery =>
@@ -476,7 +475,7 @@ export const locations = (stixRelationId, args) =>
   );
 
 export const addStixRelation = async (user, stixRelation) => {
-  const wTx = await takeTx();
+  const wTx = await takeWriteTx();
   const stixRelationIterator = await wTx.query(`match $from id ${
     stixRelation.fromId
   }; 
@@ -492,12 +491,6 @@ export const addStixRelation = async (user, stixRelation) => {
     $stixRelation has stix_id "relationship--${uuid()}";
     $stixRelation has name "";
     $stixRelation has description "${prepareString(stixRelation.description)}";
-    $stixRelation has name_lowercase "";
-    $stixRelation has description_lowercase "${
-      stixRelation.description
-        ? prepareString(stixRelation.description.toLowerCase())
-        : ''
-    }";
     $stixRelation has weight ${stixRelation.weight};
     $stixRelation has first_seen ${prepareDate(stixRelation.first_seen)};
     $stixRelation has first_seen_day "${dayFormat(stixRelation.first_seen)}";
@@ -546,24 +539,24 @@ export const addStixRelation = async (user, stixRelation) => {
 
   await wTx.commit();
 
-  return loadByID(createdStixRelationId).then(created =>
+  return getById(createdStixRelationId).then(created =>
     notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user)
   );
 };
 
 export const stixRelationDelete = stixRelationId =>
-  deleteOneById(stixRelationId);
+  deleteById(stixRelationId);
 
 export const stixRelationCleanContext = (user, stixRelationId) => {
   delEditContext(user, stixRelationId);
-  return loadByID(stixRelationId).then(stixRelation =>
+  return getById(stixRelationId).then(stixRelation =>
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user)
   );
 };
 
 export const stixRelationEditContext = (user, stixRelationId, input) => {
   setEditContext(user, stixRelationId, input);
-  return loadByID(stixRelationId).then(stixRelation =>
+  return getById(stixRelationId).then(stixRelation =>
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user)
   );
 };

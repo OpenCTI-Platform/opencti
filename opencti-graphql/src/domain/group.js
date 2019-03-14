@@ -1,21 +1,21 @@
-import { head } from 'ramda';
+import { map } from 'ramda';
 import {
-  deleteByID,
-  loadByID,
+  deleteEntityById,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
   notify,
   now,
   paginate,
-  qk,
+  takeWriteTx,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Group', args);
 
-export const findById = groupId => loadByID(groupId);
+export const findById = groupId => getById(groupId);
 
 export const members = (groupId, args) =>
   paginate(
@@ -34,26 +34,44 @@ export const permissions = (groupId, args) =>
   );
 
 export const addGroup = async (user, group) => {
-  const createGroup = qk(`insert $group isa Group 
+  const wTx = await takeWriteTx();
+  const groupIterator = await wTx.query(`insert $group isa Group 
     has type "group";
     $group has name "${prepareString(group.name)}";
     $group has description "${prepareString(group.description)}";
-    $group has name_lowercase "${prepareString(group.name.toLowerCase())}";
-    $group has description_lowercase "${
-      group.description ? prepareString(group.description.toLowerCase()) : ''
-    }";
     $group has created_at ${now()};
     $group has created_at_day "${dayFormat(now())}";
     $group has created_at_month "${monthFormat(now())}";
     $group has created_at_year "${yearFormat(now())}";    
     $group has updated_at ${now()};
   `);
-  return createGroup.then(result => {
-    const { data } = result;
-    return loadByID(head(data).group.id).then(created =>
-      notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
+  const createGroup = await groupIterator.next();
+  const createdGroupId = await createGroup.map().get('group').id;
+
+  if (group.createdByRef) {
+    await wTx.query(`match $from id ${createdGroupId};
+         $to id ${group.createdByRef};
+         insert (so: $from, creator: $to)
+         isa created_by_ref;`);
+  }
+
+  if (group.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.query(
+        `match $from id ${createdGroupId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      group.markingDefinitions
     );
-  });
+    await Promise.all(markingDefinitionsPromises);
+  }
+
+  await wTx.commit();
+
+  return getById(createdGroupId).then(created =>
+    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
+  );
 };
 
-export const groupDelete = groupId => deleteByID(groupId);
+export const groupDelete = groupId => deleteEntityById(groupId);

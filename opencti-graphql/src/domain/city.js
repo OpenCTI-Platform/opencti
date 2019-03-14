@@ -1,38 +1,32 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  deleteByID,
-  loadByID,
+  deleteEntityById,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
   notify,
   now,
   paginate,
-  takeTx,
+  takeWriteTx,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa City', args);
 
-export const findById = cityId => loadByID(cityId);
+export const findById = cityId => getById(cityId);
 
 export const addCity = async (user, city) => {
-  const wTx = await takeTx();
+  const wTx = await takeWriteTx();
   const cityIterator = await wTx.query(`insert $city isa City 
     has type "city";
     $city has stix_id "city--${uuid()}";
     $city has stix_label "";
-    $city has stix_label_lowercase "";
     $city has alias "";
-    $city has alias_lowercase "";
     $city has name "${prepareString(city.name)}";
     $city has description "${prepareString(city.description)}";
-    $city has name_lowercase "${prepareString(city.name.toLowerCase())}";
-    $city has description_lowercase "${
-      city.description ? prepareString(city.description.toLowerCase()) : ''
-    }";
     $city has created ${now()};
     $city has modified ${now()};
     $city has revoked false;
@@ -66,9 +60,9 @@ export const addCity = async (user, city) => {
 
   await wTx.commit();
 
-  return loadByID(createdCityId).then(created =>
+  return getById(createdCityId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
-export const cityDelete = cityId => deleteByID(cityId);
+export const cityDelete = cityId => deleteEntityById(cityId);

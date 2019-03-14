@@ -1,9 +1,9 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  takeTx,
-  deleteByID,
-  loadByID,
+  takeWriteTx,
+  deleteEntityById,
+  getById,
   notify,
   now,
   paginate,
@@ -24,27 +24,17 @@ export const markingDefinitions = (threatActorId, args) =>
     args
   );
 
-export const findById = threatActorId => loadByID(threatActorId);
+export const findById = threatActorId => getById(threatActorId);
 
 export const addThreatActor = async (user, threatActor) => {
-  const wTx = await takeTx();
+  const wTx = await takeWriteTx();
   const threatActorIterator = await wTx.query(`insert $threatActor isa Threat-Actor 
     has type "threat-actor";
     $threatActor has stix_id "threat-actor--${uuid()}";
     $threatActor has stix_label "";
-    $threatActor has stix_label_lowercase "";
     $threatActor has alias "";
-    $threatActor has alias_lowercase "";
     $threatActor has name "${prepareString(threatActor.name)}";
     $threatActor has description "${prepareString(threatActor.description)}";
-    $threatActor has name_lowercase "${prepareString(
-      threatActor.name.toLowerCase()
-    )}";
-    $threatActor has description_lowercase "${
-      threatActor.description
-        ? prepareString(threatActor.description.toLowerCase())
-        : ''
-    }";
     $threatActor has created ${now()};
     $threatActor has modified ${now()};
     $threatActor has revoked false;
@@ -79,9 +69,9 @@ export const addThreatActor = async (user, threatActor) => {
 
   await wTx.commit();
 
-  return loadByID(createThreatActorId).then(created =>
+  return getById(createThreatActorId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
-export const threatActorDelete = threatActorId => deleteByID(threatActorId);
+export const threatActorDelete = threatActorId => deleteEntityById(threatActorId);

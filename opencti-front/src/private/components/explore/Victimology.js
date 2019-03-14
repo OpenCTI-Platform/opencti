@@ -14,6 +14,7 @@ import ExploreHeader from './ExploreHeader';
 import ExploreBottomBar from './ExploreBottomBar';
 import VictiomologyRightBar from './VictimologyRightBar';
 import VictimologyDistribution from './VictimologyDistribution';
+import VictimologyTime from './VictimologyTime';
 
 const styles = () => ({
   container: {
@@ -155,8 +156,8 @@ class Victimology extends Component {
                     <ExploreHeader stixDomainEntity={props.stixDomainEntity}/>
                     <Route exact path='/dashboard/explore/victimology' render={() => (<Redirect to={`/dashboard/explore/victimology/${threatId}/distribution`}/>)}/>
                     <Route exact path='/dashboard/explore/victimology/:stixDomainEntityId' render={() => (<Redirect to={`/dashboard/explore/victimology/${threatId}/distribution`}/>)}/>
-                    <Route exact path='/dashboard/explore/victimology/:stixDomainEntityId/distribution' render={routeProps => <VictimologyDistribution {...routeProps} stixDomainEntity={props.stixDomainEntity} inferred={this.state.inferred}/>
-                    }/>
+                    <Route exact path='/dashboard/explore/victimology/:stixDomainEntityId/distribution' render={routeProps => <VictimologyDistribution {...routeProps} stixDomainEntity={props.stixDomainEntity} inferred={this.state.inferred}/>}/>
+                    <Route exact path='/dashboard/explore/victimology/:stixDomainEntityId/time' render={routeProps => <VictimologyTime {...routeProps} stixDomainEntity={props.stixDomainEntity} inferred={this.state.inferred}/>}/>
                   </div>
                 );
               }

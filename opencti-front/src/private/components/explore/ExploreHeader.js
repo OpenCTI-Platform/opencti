@@ -27,7 +27,7 @@ class ExploreHeaderComponent extends Component {
   render() {
     const { classes, stixDomainEntity } = this.props;
     return (
-      <div style={{ marginBottom: 5 }}>
+      <div style={{ marginBottom: 10 }}>
         <Typography variant='h1' gutterBottom={true} classes={{ root: classes.title }}>
           {stixDomainEntity.name}
         </Typography>

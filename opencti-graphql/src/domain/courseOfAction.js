@@ -1,44 +1,34 @@
 import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  deleteByID,
-  loadByID,
+  deleteEntityById,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
   notify,
   now,
   paginate,
-  takeTx,
+  takeWriteTx,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa CourseOfAction', args);
 
-export const findById = courseOfActionId => loadByID(courseOfActionId);
+export const findById = courseOfActionId => getById(courseOfActionId);
 
 export const addCourseOfAction = async (user, courseOfAction) => {
-  const wTx = await takeTx();
+  const wTx = await takeWriteTx();
   const courseOfActionIterator = await wTx.query(`insert $courseOfAction isa CourseOfAction 
-    has type "courseOfAction";
-    $courseOfAction has stix_id "courseOfAction--${uuid()}";
+    has type "Course-Of-Action";
+    $courseOfAction has stix_id "course-of-action--${uuid()}";
     $courseOfAction has stix_label "";
-    $courseOfAction has stix_label_lowercase "";
     $courseOfAction has alias "";
-    $courseOfAction has alias_lowercase "";
     $courseOfAction has name "${prepareString(courseOfAction.name)}";
     $courseOfAction has description "${prepareString(
       courseOfAction.description
     )}";
-    $courseOfAction has name_lowercase "${prepareString(
-      courseOfAction.name.toLowerCase()
-    )}";
-    $courseOfAction has description_lowercase "${
-      courseOfAction.description
-        ? prepareString(courseOfAction.description.toLowerCase())
-        : ''
-    }";
     $courseOfAction has created ${now()};
     $courseOfAction has modified ${now()};
     $courseOfAction has revoked false;
@@ -86,10 +76,10 @@ export const addCourseOfAction = async (user, courseOfAction) => {
 
   await wTx.commit();
 
-  return loadByID(createdCourseOfActionId).then(created =>
+  return getById(createdCourseOfActionId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
 export const courseOfActionDelete = courseOfActionId =>
-  deleteByID(courseOfActionId);
+  deleteEntityById(courseOfActionId);

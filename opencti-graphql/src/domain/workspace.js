@@ -2,10 +2,10 @@ import { map } from 'ramda';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
-  deleteByID,
+  deleteEntityById,
   deleteRelation,
   editInputTx,
-  loadByID,
+  getById,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -13,14 +13,14 @@ import {
   now,
   paginate,
   qkObjUnique,
-  takeTx,
+  takeWriteTx,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Workspace', args);
 
-export const findById = workspaceId => loadByID(workspaceId);
+export const findById = workspaceId => getById(workspaceId);
 
 export const ownedBy = workspaceId =>
   qkObjUnique(
@@ -50,19 +50,11 @@ export const objectRefs = (workspaceId, args) =>
   );
 
 export const addWorkspace = async (user, workspace) => {
-  const wTx = await takeTx();
+  const wTx = await takeWriteTx();
   const workspaceIterator = await wTx.query(`insert $workspace isa Workspace 
     has type "workspace";
     $workspace has name "${prepareString(workspace.name)}";
     $workspace has description "${prepareString(workspace.description)}";
-    $workspace has name_lowercase "${prepareString(
-      workspace.name.toLowerCase()
-    )}";
-    $workspace has description_lowercase "${
-      workspace.description
-        ? prepareString(workspace.description.toLowerCase())
-        : ''
-    }";
     $workspace has created_at ${now()};
     $workspace has created_at_day "${dayFormat(now())}";
     $workspace has created_at_month "${monthFormat(now())}";
@@ -91,12 +83,12 @@ export const addWorkspace = async (user, workspace) => {
 
   await wTx.commit();
 
-  return loadByID(createdWorkspaceId).then(created =>
+  return getById(createdWorkspaceId).then(created =>
     notify(BUS_TOPICS.Workspace.ADDED_TOPIC, created, user)
   );
 };
 
-export const workspaceDelete = workspaceId => deleteByID(workspaceId);
+export const workspaceDelete = workspaceId => deleteEntityById(workspaceId);
 
 export const workspaceAddRelation = (user, workspaceId, input) =>
   createRelation(workspaceId, input).then(relationData => {
@@ -115,7 +107,7 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
     input.toIds
   );
 
-  const wTx = await takeTx();
+  const wTx = await takeWriteTx();
   const createRelationPromise = relationInput =>
     wTx.query(`match $from id ${workspaceId}; 
          $to id ${relationInput.toId}; 
@@ -129,7 +121,7 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
 
   await wTx.commit();
 
-  return loadByID(workspaceId).then(workspace =>
+  return getById(workspaceId).then(workspace =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };
@@ -142,14 +134,14 @@ export const workspaceDeleteRelation = (user, workspaceId, relationId) =>
 
 export const workspaceCleanContext = (user, workspaceId) => {
   delEditContext(user, workspaceId);
-  return loadByID(workspaceId).then(workspace =>
+  return getById(workspaceId).then(workspace =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };
 
 export const workspaceEditContext = (user, workspaceId, input) => {
   setEditContext(user, workspaceId, input);
-  return loadByID(workspaceId).then(workspace =>
+  return getById(workspaceId).then(workspace =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };
