@@ -1,14 +1,38 @@
 {
   "app": {
     "port": 4000,
-    "logs": "./logs",
+    "logs_directory": "./logs",
     "secret": "define your secret",
-    "reactive": false,
+    "reactive": true,
     "cookie_secure": false
   },
   "grakn": {
-    "uri": "127.0.0.1:4567",
+    "baseURL": "127.0.0.1:4567",
     "driver": "127.0.0.1:48555",
-    "timeout": 20000
+    "timeout": 30000
+  },
+  "redis": {
+    "host": "127.0.0.1",
+    "port": "6379"
+  },
+  "jwt": {
+    "dev_token": "a token of a user for the GraphQL playground in dev mode"
+  },
+  "providers": {
+    "facebook": {
+      "client_id": "xxxxxx",
+      "client_secret": "xxxxxx",
+      "callback_uri": "http://localhost:4000/auth/facebook/callback"
+    },
+    "google": {
+      "client_id": "xxxxxx",
+      "client_secret": "xxxxxx",
+      "callback_uri": "http://localhost:4000/auth/google/callback"
+    },
+    "github": {
+      "client_id": "xxxxxx",
+      "client_secret": "xxxxxx",
+      "callback_uri": "http://localhost:4000/auth/github/callback"
+    }
   }
 }

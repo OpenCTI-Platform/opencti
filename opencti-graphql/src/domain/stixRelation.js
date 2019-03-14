@@ -427,9 +427,13 @@ export const stixRelationsDistributionWithInferences = async args => {
     );
   }
   if (args.order === 'asc') {
-    return take(limit, sortWith([ascend(prop('value'))])(resultPromise));
+    return resultPromise.then(data =>
+      take(limit, sortWith([ascend(prop('value'))])(data))
+    );
   }
-  return take(limit, sortWith([descend(prop('value'))])(resultPromise));
+  return resultPromise.then(data =>
+    take(limit, sortWith([descend(prop('value'))])(data))
+  );
 };
 
 export const findById = stixRelationId => loadRelationById(stixRelationId);

@@ -143,7 +143,7 @@ class ReportEditionIdentityComponent extends Component {
                     name: 'object_status',
                     id: 'object_status',
                   }}
-                  containerstyle={{ width: '100%' }}
+                  containerstyle={{ width: '100%', marginTop: 10 }}
                   helpertext={
                     <SubscriptionFocus
                       me={me}
@@ -168,7 +168,7 @@ class ReportEditionIdentityComponent extends Component {
                     name: 'source_confidence_level',
                     id: 'source_confidence_level',
                   }}
-                  containerstyle={{ width: '100%' }}
+                  containerstyle={{ width: '100%', marginTop: 10 }}
                   helpertext={
                     <SubscriptionFocus
                       me={me}

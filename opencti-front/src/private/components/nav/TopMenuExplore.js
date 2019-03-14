@@ -10,7 +10,6 @@ import {
   LockPattern,
   SortAscending,
   Target,
-  TagMultiple,
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 

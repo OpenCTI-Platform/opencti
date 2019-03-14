@@ -294,12 +294,7 @@ class StixRelationEditionContainer extends Component {
                        onFocus={this.handleChangeFocus.bind(this)}
                        onSubmit={this.handleSubmitField.bind(this)}
                        helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='last_seen'/>}/>
-                <Field name='description' component={TextField} label={t('Description')}
-                       fullWidth={true} multiline={true} rows={4} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='description'/>}/>
-                <Field
+                {stixRelation.relationship_type === 'targets' ? <Field
                   name='locations'
                   component={Autocomplete}
                   multiple={true}
@@ -309,7 +304,12 @@ class StixRelationEditionContainer extends Component {
                   onChange={this.handleChangeLocation.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
                   helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='locations'/>}
-                />
+                /> : ''}
+                <Field name='description' component={TextField} label={t('Description')}
+                       fullWidth={true} multiline={true} rows={4} style={{ marginTop: 10 }}
+                       onFocus={this.handleChangeFocus.bind(this)}
+                       onSubmit={this.handleSubmitField.bind(this)}
+                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='description'/>}/>
               </Form>
             )}
           />
@@ -346,6 +346,7 @@ const StixRelationEditionFragment = createFragmentContainer(StixRelationEditionC
           first_seen
           last_seen
           description
+          relationship_type
           locations {
               edges {
                   node {

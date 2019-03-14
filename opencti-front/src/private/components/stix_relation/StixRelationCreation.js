@@ -186,7 +186,9 @@ const stixRelationValidation = t => Yup.object().shape({
 class StixRelationCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = { step: 0, existingRelations: [], locations: [] };
+    this.state = {
+      step: 0, existingRelations: [], locations: [], currentType: '',
+    };
   }
 
   searchLocations(event) {
@@ -331,6 +333,9 @@ class StixRelationCreation extends Component {
                        id: 'relationship_type',
                      }}
                      containerstyle={{ marginTop: 20, width: '100%' }}
+                     onChange={(name, value) => {
+                       this.setState({ currentType: value });
+                     }}
               >
                 {map(type => (
                   <MenuItem key={type} value={type}>{t(`relation_${type}`)}</MenuItem>
@@ -356,15 +361,15 @@ class StixRelationCreation extends Component {
               </Field>
               <Field name='first_seen' component={DatePickerField} label={t('First seen')} fullWidth={true} style={{ marginTop: 20 }}/>
               <Field name='last_seen' component={DatePickerField} label={t('Last seen')} fullWidth={true} style={{ marginTop: 20 }}/>
-              <Field name='description' component={TextField} label={t('Description')} fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
-              <Field
+              {this.state.currentType === 'targets' ? <Field
                 name='locations'
                 component={Autocomplete}
                 multiple={true}
                 label={t('Locations')}
                 options={this.state.locations}
                 onInputChange={this.searchLocations.bind(this)}
-              />
+              /> : ''}
+              <Field name='description' component={TextField} label={t('Description')} fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
               <div className={classes.buttons}>
                 <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                   {t('Cancel')}
