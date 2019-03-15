@@ -14,7 +14,7 @@ import {
   paginate,
   takeWriteTx,
   timeSeries,
-  qkObjUnique,
+  getObject,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -39,7 +39,7 @@ export const findByValue = args =>
   paginate(
     `match $m isa ${
       args.type ? args.type : 'Stix-Observable'
-    }; $m has value_lowercase "${prepareString(args.value.toLowerCase())}"`,
+    }; $m has value "${prepareString(args.value)}"`,
     args,
     false
   );
@@ -47,16 +47,16 @@ export const findByValue = args =>
 export const search = args =>
   paginate(
     `match $m isa ${args.type ? args.type : 'Stix-Observable'}
-    has value_lowercase $value;
-    $m has alias_lowercase $alias;
-    { $name contains "${prepareString(args.search.toLowerCase())}"; } or
-    { $alias contains "${prepareString(args.search.toLowerCase())}"; }`,
+    has value $value;
+    $m has alias $alias;
+    { $name contains "${prepareString(args.search)}"; } or
+    { $alias contains "${prepareString(args.search)}"; }`,
     args,
     false
   );
 
 export const createdByRef = stixObservableId =>
-  qkObjUnique(
+  getObject(
     `match $x isa Identity; 
     $rel(creator:$x, so:$stixObservable) isa created_by_ref; 
     $stixObservable id ${stixObservableId}; offset 0; limit 1; get $x,$rel;`,

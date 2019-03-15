@@ -21,26 +21,78 @@ import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn';
 import conf, { logger } from '../config/conf';
 import { pubsub } from './redis';
-import { fillTimeSeries, randomKey, later } from './utils';
 
 // Global variables
-const dateFormat = 'YYYY-MM-DDTHH:mm:ss';
+const gkDateFormat = 'YYYY-MM-DDTHH:mm:ss';
+const gkDate = 'java.time.LocalDateTime';
+const gkBoolean = 'java.lang.Boolean';
 const String = 'String';
 const Date = 'Date';
-const Boolean = 'Boolean';
 export const now = () =>
   moment()
     .utc()
-    .format(dateFormat); // Format that accept grakn
+    .format(gkDateFormat); // Format that accept grakn
 export const prepareDate = date =>
   moment(date)
     .utc()
-    .format(dateFormat);
+    .format(gkDateFormat);
 export const yearFormat = date => moment(date).format('YYYY');
 export const monthFormat = date => moment(date).format('YYYY-MM');
 export const dayFormat = date => moment(date).format('YYYY-MM-DD');
 export const prepareString = s =>
   s ? s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') : '';
+
+export const fillTimeSeries = (startDate, endDate, interval, data) => {
+  const startDateParsed = moment(startDate);
+  const endDateParsed = moment(endDate);
+  let dateFormat = null;
+
+  switch (interval) {
+    case 'year':
+      dateFormat = 'YYYY';
+      break;
+    case 'month':
+      dateFormat = 'YYYY-MM';
+      break;
+    default:
+      dateFormat = 'YYYY-MM-DD';
+  }
+
+  const elementsOfInterval = endDateParsed.diff(
+    startDateParsed,
+    `${interval}s`,
+    false
+  );
+
+  const newData = [];
+  for (let i = 0; i <= elementsOfInterval; i++) {
+    let value = 0;
+    for (let j = 0; j < data.length; j++) {
+      if (data[j].date === startDateParsed.format(dateFormat)) {
+        value = data[j].value;
+      }
+    }
+    newData[i] = {
+      date: startDateParsed.startOf(interval).format(),
+      value
+    };
+    startDateParsed.add(1, `${interval}s`);
+  }
+  return newData;
+};
+
+export const later = delay =>
+  new Promise(resolve => {
+    setTimeout(resolve, delay);
+  });
+
+export const randomKey = number => {
+  let key = '';
+  for (let i = 0; i < number; i++) {
+    key += Math.floor(Math.random() * 10).toString();
+  }
+  return key;
+};
 
 // Attributes key that can contains multiple values.
 export const multipleAttributes = [
@@ -49,6 +101,15 @@ export const multipleAttributes = [
   'grant',
   'platform',
   'required_permission'
+];
+// TODO Remove this after https://github.com/graknlabs/grakn/issues/4828
+export const lowerCaseAttributes = [
+  'name', // Standard
+  'description', // Standard
+  'stix_label', // Standard
+  'alias', // Standard
+  'source_name', // External Reference
+  'external_id' // External Reference
 ];
 export const statsDateAttributes = [
   'first_seen', // Standard
@@ -61,9 +122,18 @@ const client = new Grakn(
   `${conf.get('grakn:hostname')}:${conf.get('grakn:port')}`
 );
 const session = client.session('grakn');
+const axiosInstance = axios.create({
+  baseURL: conf.get('grakn:baseURL'),
+  timeout: conf.get('grakn:timeout')
+});
+
+export const takeTx = async () => {
+  const wTx = await session.transaction(Grakn.txType.WRITE);
+  return wTx;
+};
 
 export const takeReadTx = async () => {
-  return session.transaction(Grakn.txType.READ);
+  return session.transaction(Grakn.txType.WRITE);
 };
 
 export const takeWriteTx = async () => {
@@ -73,87 +143,6 @@ export const takeWriteTx = async () => {
 export const notify = (topic, instance, user, context) => {
   if (pubsub) pubsub.publish(topic, { instance, user, context });
   return instance;
-};
-
-export const write = async query => {
-  const wTx = await takeWriteTx();
-  await wTx.query(query);
-  await wTx.commit();
-};
-
-/**
- * Load any grakn instance with internal grakn ID.
- * @param id
- * @returns {Promise<any[] | never>}
- */
-export const getById = async id => {
-  logger.debug(`Grakn getById: ${id}`);
-  const rTx = await takeReadTx();
-  const concept = await rTx.getConcept(id);
-  const attributesIterator = await concept.attributes();
-  const attributes = await attributesIterator.collect();
-  const attributesPromises = attributes.map(async attribute => {
-    const attributeType = await attribute.type();
-    return {
-      'data-type': await attributeType.dataType(),
-      type: await attributeType.label(),
-      value: await attribute.value()
-    };
-  });
-  const conceptResult = await Promise.all(attributesPromises).then(
-    attributesData => {
-      const transform = pipe(
-        map(attribute => {
-          let transformedVal = attribute.value;
-          const type = attribute['data-type'];
-          if (type === Date) {
-            transformedVal = `${moment(attribute.value).format(dateFormat)}Z`;
-          }
-          if (type === Boolean) {
-            transformedVal = attribute.value === 'true';
-          }
-          return { [attribute.type]: transformedVal };
-        }), // Extract values
-        chain(toPairs), // Convert to pairs for grouping
-        groupBy(head), // Group by key
-        map(pluck(1)), // Remove grouping boilerplate
-        mapObjIndexed((num, key, obj) =>
-          obj[key].length === 1 && !includes(key, multipleAttributes)
-            ? head(obj[key])
-            : obj[key]
-        ) // Remove extra list then contains only 1 element
-      )(attributesData);
-      return Promise.resolve(assoc('id', id, transform));
-    }
-  );
-  await rTx.close();
-  return conceptResult;
-};
-
-/**
- * Grakn generic function to delete an instance (and orphan relationships)
- * @param id
- * @returns {Promise<any[] | never>}
- */
-export const deleteEntityById = async id => {
-  logger.debug(`Grakn deleteEntityById: ${id}`);
-  const wTx = await takeWriteTx();
-  wTx.query(`match $x id ${id}; $z($x, $y); delete $z, $x;`);
-  await wTx.commit();
-  return Promise.resolve(id);
-};
-
-/**
- * Grakn generic function to delete an entity by id
- * @param id
- * @returns {Promise<any[] | never>}
- */
-export const deleteById = async id => {
-  logger.debug(`Grakn deleteById: ${id}`);
-  const wTx = await takeWriteTx();
-  wTx.query(`match $x id ${id}; delete $x;`);
-  await wTx.commit();
-  return Promise.resolve(id);
 };
 
 /**
@@ -172,106 +161,80 @@ export const getSingleValue = async (query, infer = false) => {
 };
 
 /**
- * Grakn query that generate json objects
- * @param query the query to process
- * @param key the instance key to get id from.
- * @param relationKey the key to bind relation result.
- * @returns {Promise<any[] | never>}
- */
-export const getObjects = async (
-  query,
-  key = 'x',
-  relationKey,
-  infer = false
-) => {
-  const rTx = await takeReadTx();
-  const iterator = await rTx.query(query, { infer });
-  const answers = await iterator.collect();
-  const answersPromises = await Promise.all(
-    answers.map(answer => {
-      console.log(answer);
-      const answerData = answer.map();
-      console.log(answerData);
-      const nodePromise = getById(answer.id);
-    })
-  );
-};
-
-/**
- * Pure building of pagination expected format.
- * @param first
- * @param offset
- * @param instances
- * @param globalCount
- * @returns {{edges: *, pageInfo: *}}
- */
-const buildPagination = (first, offset, instances, globalCount) => {
-  const edges = pipe(
-    mapObjIndexed((record, key) => {
-      const { node } = record;
-      const { relation } = record;
-      const nodeOffset = offset + parseInt(key, 10) + 1;
-      return { node, relation, cursor: offsetToCursor(nodeOffset) };
-    }),
-    values
-  )(instances);
-  const hasNextPage = first + offset < globalCount;
-  const hasPreviousPage = offset > 0;
-  const startCursor = edges.length > 0 ? head(edges).cursor : '';
-  const endCursor = edges.length > 0 ? last(edges).cursor : '';
-  const pageInfo = {
-    startCursor,
-    endCursor,
-    hasNextPage,
-    hasPreviousPage,
-    globalCount
-  };
-  return { edges, pageInfo };
-};
-
-/**
- * Grakn generic pagination query.
+ * Get a single value number
  * @param query
- * @param options
- * @param ordered
- * @param relationOrderingKey
  * @param infer
- * @returns Promise
+ * @returns number
  */
-export const paginate = (
-  query,
-  options,
-  ordered = true,
-  relationOrderingKey = null,
-  infer = false
-) => {
-  const { first = 200, after, orderBy = null, orderMode = 'asc' } = options;
-  const offset = after ? cursorToOffset(after) : 0;
-  const instanceKey = /match\s\$(\w+)\s/i.exec(query)[1]; // We need to resolve the key instance used in query.
-  const findRelationVariable = /\$(\w+)\((\w+):\$(\w+),[\s\w:$]+\)/i.exec(
-    query
-  );
-  const relationKey = findRelationVariable && findRelationVariable[1]; // Could be setup to get relation info
-  const count = getSingleValue(`${query}; aggregate count;`, infer).then(
-    result => result.number()
-  );
-  const ordering = relationOrderingKey
-    ? `$${relationOrderingKey} has ${orderBy} $o; order by $o ${orderMode};`
-    : `$${instanceKey} has ${orderBy} $o; order by $o ${orderMode};`;
-  const elements = getObjects(
-    `${query}; ${
-      ordered && orderBy ? ordering : ''
-    } offset ${offset}; limit ${first}; get $${instanceKey}${
-      relationKey ? `, $${relationKey}` : ''
-    };`,
-    instanceKey,
-    relationKey,
-    infer
-  );
-  return Promise.all([count, elements]).then(data => {
-    const globalCount = data ? head(data) : 0;
-    const instances = data ? last(data) : [];
-    return buildPagination(first, offset, instances, globalCount);
+export const getSingleValueNumber = async (query, infer = false) => {
+  return getSingleValue(query, infer).then(result => result.number());
+};
+
+/**
+ * API Grakn call to get all attributes for an instance.
+ * @param id
+ * @returns {AxiosPromise}
+ */
+const attrByID = id =>
+  axiosInstance({ method: 'get', url: `${id}/attributes` });
+
+/**
+ * Mapping function to generate a valid json objects base on Grakn response.
+ * @param id
+ * @param res
+ * @param withType
+ * @returns {Promise<any>}
+ */
+const attrMap = (id, res, withType = false) => {
+  const transform = pipe(
+    map(attr => {
+      let transformedVal = attr.value;
+      const type = attr['data-type'];
+      if (type === gkDate) {
+        // Patch for grakn LocalDate.
+        transformedVal = `${moment(attr.value).format(gkDateFormat)}Z`;
+      }
+      if (type === gkBoolean) {
+        transformedVal = attr.value === 'true';
+      }
+      return {
+        [attr.type.label]: withType
+          ? { type, val: transformedVal }
+          : transformedVal
+      };
+    }), // Extract values
+    chain(toPairs), // Convert to pairs for grouping
+    groupBy(head), // Group by key
+    map(pluck(1)), // Remove grouping boilerplate
+    mapObjIndexed((num, key, obj) =>
+      obj[key].length === 1 && !includes(key, multipleAttributes)
+        ? head(obj[key])
+        : obj[key]
+    ) // Remove extra list then contains only 1 element
+  )(res.data.attributes);
+  return Promise.resolve(assoc('id', id, transform));
+};
+
+/**
+ * Basic grakn query function
+ * @param queryDef
+ * @param infer
+ * @returns {Promise<AxiosResponse<any> | never>}
+ */
+export const qk = (queryDef, infer = false) => {
+  logger.debug(`Grakn query: ${queryDef}`);
+  return axiosInstance({
+    method: 'post',
+    url: `/kb/grakn/graql${infer ? '?infer=true' : ''}`,
+    data: queryDef
+  }).catch(async error => {
+    logger.error(`Grakn query error: ${queryDef}`, error);
+    // TODO: Workaround to avoid concurrency error on Grakn
+    if (infer && error.response.data.exception === null) {
+      await later(50);
+      return qk(queryDef, infer);
+    }
+    return false;
   });
 };
 
@@ -282,7 +245,49 @@ export const paginate = (
  * @param relationKey the key to bind relation result.
  * @returns {Promise<AxiosResponse<any> | never | never>}
  */
-export const qkObj = (queryDef, key = 'x', relationKey, infer = false) =>
+export const getObject = (queryDef, key = 'x', relationKey, infer = false) =>
+  qk(queryDef, infer).then(result => {
+    if (result && result.data) {
+      return Promise.all(
+        map(line => {
+          const nodePromise = Promise.resolve({
+            id: line[key].id
+          });
+          const relationPromise = !relationKey
+            ? Promise.resolve(null)
+            : line[relationKey].inferred
+            ? Promise.resolve({
+                id: line[relationKey].id,
+                type: 'stix_relation',
+                relationship_type: line[relationKey].type.label,
+                inferred: true
+              })
+            : Promise.resolve({
+                id: line[relationKey].id,
+                type: 'stix_relation',
+                relationship_type: line[relationKey].type.label,
+                inferred: false
+              });
+          return Promise.all([nodePromise, relationPromise]).then(
+            ([node, relation]) => ({
+              node,
+              relation
+            })
+          );
+        })(result.data)
+      );
+    }
+    return Promise.resolve([]);
+  });
+
+/**
+ * Grakn query that generate json objects
+ * @param queryDef the query to process
+ * @param key the instance key to get id from.
+ * @param relationKey the key to bind relation result.
+ * @returns {Promise<AxiosResponse<any> | never | never>}
+ */
+export const getObjects = (queryDef, key = 'x', relationKey, infer = false) =>
   qk(queryDef, infer).then(result => {
     if (result && result.data) {
       return Promise.all(
@@ -323,7 +328,7 @@ export const qkObj = (queryDef, key = 'x', relationKey, infer = false) =>
  * @param infer (get inferred relationships)
  * @returns {Promise<AxiosResponse<any> | never | never>}
  */
-export const qkRel = (
+export const getRelations = (
   queryDef,
   key = 'rel',
   fromKey = 'from',
@@ -388,7 +393,7 @@ export const qkRel = (
  * @returns {Promise<AxiosResponse<any> | never | never>}
  */
 export const qkObjUnique = (queryDef, key = 'x', relationKey) =>
-  qkObj(queryDef, key, relationKey).then(result => head(result));
+  getObjects(queryDef, key, relationKey).then(result => head(result));
 
 /**
  * Grakn query that fetch unique value like attribute count.
@@ -401,6 +406,26 @@ export const qkSingleValue = (queryDef, infer = false) =>
   );
 
 /**
+ * Grakn generic function to delete an instance (and orphan relationships)
+ * @param id
+ * @returns {Promise<AxiosResponse<any> | never | never>}
+ */
+export const deleteEntityById = id => {
+  const deleteQuery = qk(`match $x id ${id}; $z($x, $y); delete $z, $x;`);
+  return deleteQuery.then(() => id);
+};
+
+/**
+ * Grakn generic function to delete an entity by id
+ * @param id
+ * @returns {Promise<AxiosResponse<any> | never | never>}
+ */
+export const deleteById = id => {
+  const deleteQuery = qk(`match $x id ${id}; delete $x;`);
+  return deleteQuery.then(() => id);
+};
+
+/**
  * Load the first
  * @param type
  * @returns {Promise<any[] | never>}
@@ -411,6 +436,22 @@ export const loadFirst = type =>
       Promise.all(
         map(line =>
           attrByID(line.x['@id']).then(res => attrMap(line.x.id, res))
+        )(result.data)
+      ).then(r => head(r)) // Return the unique result
+  );
+
+/**
+ * Load any grakn instance with internal grakn ID.
+ * @param id
+ * @param withType
+ * @returns {Promise<any[] | never>}
+ */
+export const getById = (id, withType = false) =>
+  qk(`match $x id ${id}; get;`).then(
+    result =>
+      Promise.all(
+        map(line =>
+          attrByID(line.x['@id']).then(res => attrMap(id, res, withType))
         )(result.data)
       ).then(r => head(r)) // Return the unique result
   );
@@ -460,7 +501,7 @@ export const loadRelationInferredById = async id => {
   const fromKey = queryRegex[1];
   const toKey = queryRegex[2];
   const relationType = queryRegex[3];
-  const wTx = await takeWriteTx();
+  const wTx = await session.transaction(Grakn.txType.WRITE);
   const answerIterator = await wTx.query(query);
   const answer = await answerIterator.next();
   const fromId = answer.map().get(fromKey).id;
@@ -546,16 +587,23 @@ export const loadRelationInferredById = async id => {
   });
 };
 
+export const write = async query => {
+  const wTx = await takeTx();
+  await wTx.query(query);
+  await wTx.commit();
+};
+
 /**
  * Edit an attribute value.
  * @param id
  * @param input
+ * @param transaction
  * @returns the complete instance
  */
 export const editInputTx = async (id, input) => {
   const { key, value } = input; // value can be multi valued
   // 00. If the transaction already exist, just continue the process
-  const wTx = await takeWriteTx();
+  const wTx = await takeTx();
 
   // 01. We need to fetch the type to quote the string if needed.
   const labelTypeQuery = `match $x label "${key}" sub attribute; get;`;
@@ -674,6 +722,79 @@ export const deleteRelation = (id, relationId) => {
  * @param globalCount
  * @returns {{edges: *, pageInfo: *}}
  */
+const buildPagination = (first, offset, instances, globalCount) => {
+  const edges = pipe(
+    mapObjIndexed((record, key) => {
+      const { node } = record;
+      const { relation } = record;
+      const nodeOffset = offset + parseInt(key, 10) + 1;
+      return { node, relation, cursor: offsetToCursor(nodeOffset) };
+    }),
+    values
+  )(instances);
+  const hasNextPage = first + offset < globalCount;
+  const hasPreviousPage = offset > 0;
+  const startCursor = edges.length > 0 ? head(edges).cursor : '';
+  const endCursor = edges.length > 0 ? last(edges).cursor : '';
+  const pageInfo = {
+    startCursor,
+    endCursor,
+    hasNextPage,
+    hasPreviousPage,
+    globalCount
+  };
+  return { edges, pageInfo };
+};
+
+/**
+ * Grakn generic pagination query.
+ * @param query
+ * @param options
+ * @returns Promise
+ */
+export const paginate = (
+  query,
+  options,
+  ordered = true,
+  relationOrderingKey = null,
+  infer = false
+) => {
+  const { first = 200, after, orderBy = null, orderMode = 'asc' } = options;
+  const offset = after ? cursorToOffset(after) : 0;
+  const instanceKey = /match\s\$(\w+)\s/i.exec(query)[1]; // We need to resolve the key instance used in query.
+  const findRelationVariable = /\$(\w+)\((\w+):\$(\w+),[\s\w:$]+\)/i.exec(
+    query
+  );
+  const relationKey = findRelationVariable && findRelationVariable[1]; // Could be setup to get relation info
+  const count = qkSingleValue(`${query}; aggregate count;`, infer);
+  const ordering = relationOrderingKey
+    ? `$${relationOrderingKey} has ${orderBy} $o; order by $o ${orderMode};`
+    : `$${instanceKey} has ${orderBy} $o; order by $o ${orderMode};`;
+  const elements = getObjects(
+    `${query}; ${
+      ordered && orderBy ? ordering : ''
+    } offset ${offset}; limit ${first}; get $${instanceKey}${
+      relationKey ? `, $${relationKey}` : ''
+    };`,
+    instanceKey,
+    relationKey,
+    infer
+  );
+  return Promise.all([count, elements]).then(data => {
+    const globalCount = data ? head(data) : 0;
+    const instances = data ? last(data) : [];
+    return buildPagination(first, offset, instances, globalCount);
+  });
+};
+
+/**
+ * Pure building of pagination expected format.
+ * @param first
+ * @param offset
+ * @param instances
+ * @param globalCount
+ * @returns {{edges: *, pageInfo: *}}
+ */
 export const buildPaginationRelationships = (
   first,
   offset,
@@ -766,10 +887,10 @@ export const paginateRelationships = (
           ' ',
           map(weight => `{ $weight == ${weight}; } or`, weights)
         )} { $weight == 0; };`
-      : ''.catch
+      : ''
   }`;
   const count = qkSingleValue(`${finalQuery} aggregate count;`);
-  const elements = qkRel(
+  const elements = getRelations(
     `${finalQuery} ${
       orderBy
         ? `${
@@ -842,123 +963,4 @@ export const distribution = (query, options) => {
   });
 };
 
-// TODO: REMOVE (DEPRECATED)
-const gkDateFormat = 'YYYY-MM-DDTHH:mm:ss';
-const gkDate = 'java.time.LocalDateTime';
-const gkBoolean = 'java.lang.Boolean';
-
-/**
- * API Grakn call to get all attributes for an instance.
- * @param id
- * @returns {AxiosPromise}
- */
-const attrByID = id =>
-  axiosInstance({ method: 'get', url: `${id}/attributes` });
-
-/**
- * Mapping function to generate a valid json objects base on Grakn response.
- * @param id
- * @param res
- * @param withType
- * @returns {Promise<any>}
- */
-const attrMap = (id, res, withType = false) => {
-  const transform = pipe(
-    map(attr => {
-      let transformedVal = attr.value;
-      const type = attr['data-type'];
-      if (type === gkDate) {
-        // Patch for grakn LocalDate.
-        transformedVal = `${moment(attr.value).format(gkDateFormat)}Z`;
-      }
-      if (type === gkBoolean) {
-        transformedVal = attr.value === 'true';
-      }
-      return {
-        [attr.type.label]: withType
-          ? { type, val: transformedVal }
-          : transformedVal
-      };
-    }), // Extract values
-    chain(toPairs), // Convert to pairs for grouping
-    groupBy(head), // Group by key
-    map(pluck(1)), // Remove grouping boilerplate
-    mapObjIndexed((num, key, obj) =>
-      obj[key].length === 1 && !includes(key, multipleAttributes)
-        ? head(obj[key])
-        : obj[key]
-    ) // Remove extra list then contains only 1 element
-  )(res.data.attributes);
-  return Promise.resolve(assoc('id', id, transform));
-};
-
-/**
- * Basic grakn query function
- * @param queryDef
- * @param infer
- * @returns {Promise<AxiosResponse<any> | never>}
- */
-export const qk = async (queryDef, infer = false) => {
-  logger.debug(`Grakn query: ${queryDef}`);
-  return axiosInstance({
-    method: 'post',
-    url: `/kb/grakn/graql${infer ? '?infer=true' : ''}`,
-    data: queryDef
-  }).catch(async error => {
-    logger.error(`Grakn query error: ${queryDef}`, error);
-    // TODO: Workaround to avoid concurrency error on Grakn
-    if (infer && error.response.data.exception === null) {
-      await later(50);
-      return qk(queryDef, infer);
-    }
-    return false;
-  });
-};
-
-/**
- * Grakn query that generate json objects
- * @param queryDef the query to process
- * @param key the instance key to get id from.
- * @param relationKey the key to bind relation result.
- * @returns {Promise<AxiosResponse<any> | never | never>}
- */
-export const qkObjSimple = (queryDef, key = 'x', relationKey, infer = false) =>
-  qk(queryDef, infer).then(result => {
-    if (result && result.data) {
-      return Promise.all(
-        map(line => {
-          const nodePromise = Promise.resolve({
-            id: line[key].id
-          });
-          const relationPromise = !relationKey
-            ? Promise.resolve(null)
-            : line[relationKey].inferred
-            ? Promise.resolve({
-                id: line[relationKey].id,
-                type: 'stix_relation',
-                relationship_type: line[relationKey].type.label,
-                inferred: true
-              })
-            : Promise.resolve({
-                id: line[relationKey].id,
-                type: 'stix_relation',
-                relationship_type: line[relationKey].type.label,
-                inferred: false
-              });
-          return Promise.all([nodePromise, relationPromise]).then(
-            ([node, relation]) => ({
-              node,
-              relation
-            })
-          );
-        })(result.data)
-      );
-    }
-    return Promise.resolve([]);
-  });
-
-const axiosInstance = axios.create({
-  baseURL: conf.get('grakn:baseURL'),
-  timeout: conf.get('grakn:timeout')
-});
 export default axiosInstance;

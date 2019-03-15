@@ -21,10 +21,10 @@ export const findById = identityId => getById(identityId);
 export const search = args =>
   paginate(
     `match $m isa Identity
-    has name_lowercase $name;
-    $m has alias_lowercase $alias;
-    { $name contains "${prepareString(args.search.toLowerCase())}"; } or
-    { $alias contains "${prepareString(args.search.toLowerCase())}"; }`,
+    has name $name;
+    $m has alias $alias;
+    { $name contains "${prepareString(args.search)}"; } or
+    { $alias contains "${prepareString(args.search)}"; }`,
     args,
     false
   );

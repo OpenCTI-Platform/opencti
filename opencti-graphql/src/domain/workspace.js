@@ -12,7 +12,7 @@ import {
   notify,
   now,
   paginate,
-  qkObjUnique,
+  getObject,
   takeWriteTx,
   prepareString
 } from '../database/grakn';
@@ -23,7 +23,7 @@ export const findAll = args => paginate('match $m isa Workspace', args);
 export const findById = workspaceId => getById(workspaceId);
 
 export const ownedBy = workspaceId =>
-  qkObjUnique(
+  getObject(
     `match $x isa User; 
     $rel(owner:$x, to:$workspace) isa owned_by; 
     $workspace id ${workspaceId}; offset 0; limit 1; get $x,$rel;`,

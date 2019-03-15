@@ -33,12 +33,12 @@ export const findById = externalReferenceId => getById(externalReferenceId);
 export const search = args =>
   paginate(
     `match $m isa External-Reference 
-    has source_name_lowercase $sn;
-    $m has description_lowercase $desc;
+    has source_name $sn;
+    $m has description $desc;
     $m has url $url;
-    { $sn contains "${prepareString(args.search.toLowerCase())}"; } or
-    { $desc contains "${prepareString(args.search.toLowerCase())}"; } or
-    { $url contains "${prepareString(args.search.toLowerCase())}"; }`,
+    { $sn contains "${prepareString(args.search)}"; } or
+    { $desc contains "${prepareString(args.search)}"; } or
+    { $url contains "${prepareString(args.search)}"; }`,
     args,
     false
   );

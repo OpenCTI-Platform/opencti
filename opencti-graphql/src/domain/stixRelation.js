@@ -45,8 +45,8 @@ import {
   timeSeries,
   distribution,
   takeWriteTx,
-  qkObjSimple,
-  buildPaginationRelationships
+  getObject,
+  buildPagination
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -70,7 +70,7 @@ export const findAll = args =>
   );
 
 export const findAllWithInferences = async args => {
-  const entities = await qkObjSimple(
+  const entities = await getObject(
     `match $x; (${args.resolveRelationRole}: $from, $x) isa ${
       args.resolveRelationType
     }; ${
@@ -162,12 +162,7 @@ export const findAllWithInferences = async args => {
         }, viaRelation);
         const instances = concat(viaInstances, viaRelationInstances);
         const finalInstance = concat(result.instances, instances);
-        return buildPaginationRelationships(
-          first,
-          offset,
-          finalInstance,
-          globalCount
-        );
+        return buildPagination(first, offset, finalInstance, globalCount);
       }
     );
   }
@@ -192,7 +187,7 @@ export const stixRelationsTimeSeries = args =>
   );
 
 export const stixRelationsTimeSeriesWithInferences = async args => {
-  const entities = await qkObjSimple(
+  const entities = await getObject(
     `match $x; (${args.resolveRelationRole}: $from, $x) isa ${
       args.resolveRelationType
     }; ${
@@ -316,7 +311,7 @@ export const stixRelationsDistribution = args => {
 };
 export const stixRelationsDistributionWithInferences = async args => {
   const { limit = 10 } = args;
-  const entities = await qkObjSimple(
+  const entities = await getObject(
     `match $x; (${args.resolveRelationRole}: $from, $x) isa ${
       args.resolveRelationType
     }; ${
@@ -442,10 +437,10 @@ export const findByIdInferred = stixRelationId =>
 export const search = args =>
   paginateRelationships(
     `match $m isa Stix-Domain-Entity
-    has name_lowercase $name
-    has description_lowercase $desc;
-    { $name contains "${prepareString(args.search.toLowerCase())}"; } or
-    { $desc contains "${prepareString(args.search.toLowerCase())}"; }`,
+    has name $name
+    has description $desc;
+    { $name contains "${prepareString(args.search)}"; } or
+    { $desc contains "${prepareString(args.search)}"; }`,
     args
   );
 
@@ -544,8 +539,7 @@ export const addStixRelation = async (user, stixRelation) => {
   );
 };
 
-export const stixRelationDelete = stixRelationId =>
-  deleteById(stixRelationId);
+export const stixRelationDelete = stixRelationId => deleteById(stixRelationId);
 
 export const stixRelationCleanContext = (user, stixRelationId) => {
   delEditContext(user, stixRelationId);

@@ -15,9 +15,9 @@ import {
   paginate,
   takeWriteTx,
   timeSeries,
-  qkObjUnique,
+  getObject,
   prepareString,
-  qkSingleValue,
+  getSingleValueNumber,
   prepareDate
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -40,14 +40,14 @@ export const stixDomainEntitiesTimeSeries = args =>
   );
 
 export const stixDomainEntitiesNumber = args => ({
-  count: qkSingleValue(
+  count: getSingleValueNumber(
     `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'}; ${
       args.endDate
         ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};`
         : ''
     } aggregate count;`
   ),
-  total: qkSingleValue(
+  total: getSingleValueNumber(
     `match $x isa ${
       args.type ? args.type : 'Stix-Domain-Entity'
     }; aggregate count;`
@@ -60,7 +60,7 @@ export const findByName = args =>
   paginate(
     `match $m isa ${
       args.type ? args.type : 'Stix-Domain-Entity'
-    }; $m has name_lowercase "${prepareString(args.name.toLowerCase())}"`,
+    }; $m has name "${prepareString(args.name)}"`,
     args,
     false
   );
@@ -79,16 +79,16 @@ export const findByExternalReference = args =>
 export const search = args =>
   paginate(
     `match $m isa ${args.type ? args.type : 'Stix-Domain-Entity'}
-    has name_lowercase $name;
-    $m has alias_lowercase $alias;
-    { $name contains "${prepareString(args.search.toLowerCase())}"; } or
-    { $alias contains "${prepareString(args.search.toLowerCase())}"; }`,
+    has name $name;
+    $m has alias $alias;
+    { $name contains "${prepareString(args.search)}"; } or
+    { $alias contains "${prepareString(args.search)}"; }`,
     args,
     false
   );
 
 export const createdByRef = stixDomainEntityId =>
-  qkObjUnique(
+  getObject(
     `match $x isa Identity; 
     $rel(creator:$x, so:$stixDomainEntity) isa created_by_ref; 
     $stixDomainEntity id ${stixDomainEntityId}; offset 0; limit 1; get $x,$rel;`,

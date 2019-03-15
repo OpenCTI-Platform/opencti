@@ -15,7 +15,7 @@ import conf, {
   ROLE_USER
 } from '../config/conf';
 import {
-  qkObjUnique,
+  getObject,
   deleteEntityById,
   getById,
   notify,
@@ -72,7 +72,7 @@ export const groups = (userId, args) =>
   );
 
 export const token = userId =>
-  qkObjUnique(
+  getObject(
     `match $x isa Token; 
     $rel(authorization:$x, client:$client) isa authorize; 
     $client id ${userId}; offset 0; limit 1; get $x,$rel;`,
@@ -119,17 +119,9 @@ export const addUser = async (user, newUser) => {
     has type "user";
     $user has stix_id "user--${uuid()}";
     $user has stix_label "";
-    $user has stix_label_lowercase "";
     $user has alias "";
-    $user has alias_lowercase "";
     $user has name "${prepareString(newUser.name)}";
     $user has description "${prepareString(newUser.description)}";
-    $user has name_lowercase "${prepareString(newUser.name.toLowerCase())}";
-    $user has description_lowercase "${
-      newUser.description
-        ? prepareString(newUser.description.toLowerCase())
-        : ''
-    }";
     $user has email "${newUser.email}"; ${
     newUser.password
       ? `$user has password "${bcrypt.hashSync(newUser.password)}";`
@@ -264,7 +256,7 @@ export const deleteUserByEmail = email => {
 };
 
 // Token related
-export const findByTokenId = tokenId => {
+export const findByTokenId = async tokenId => {
   const userByToken = qk(
     `match $token isa Token has uuid "${tokenId}" has revoked false; 
                  $token has duration $duration; 

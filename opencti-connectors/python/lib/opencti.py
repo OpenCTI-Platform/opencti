@@ -324,6 +324,20 @@ class OpenCti:
         })
         return result['data']['campaignAdd']
 
+    def create_incident(self, data):
+        self.log('Creating incident ' + data['name'] + '...')
+        query = """
+               mutation IncidentAdd($input: IncidentAddInput) {
+                   incidentAdd(input: $input) {
+                       id
+                   }
+               }
+            """
+        result = self.query(query, {
+            'input': data
+        })
+        return result['data']['incidentAdd']
+
     def create_malware(self, name, description):
         self.log('Creating malware ' + name + '...')
         query = """
@@ -342,19 +356,23 @@ class OpenCti:
         })
         return result['data']['malwareAdd']
 
-    def create_incident(self, data):
-        self.log('Creating incident ' + data['name'] + '...')
+    def create_tool(self, name, description):
+        self.log('Creating tool ' + name + '...')
         query = """
-               mutation IncidentAdd($input: IncidentAddInput) {
-                   incidentAdd(input: $input) {
-                       id
-                   }
-               }
-            """
+            mutation ToolAdd($input: ToolAddInput) {
+                toolAdd(input: $input) {
+                    id
+                    alias
+                }
+            }
+        """
         result = self.query(query, {
-            'input': data
+            'input': {
+                'name': name,
+                'description': description
+            }
         })
-        return result['data']['incidentAdd']
+        return result['data']['toolAdd']
 
     def create_identity(self, type, name, description):
         self.log('Creating identity ' + name + '...')
@@ -532,3 +550,16 @@ class OpenCti:
         return text.\
             replace('<code>', '`').\
             replace('</code>', '`')
+
+    def resolveRole(self, relation_type, entity_type):
+        roles = {
+            'uses': {
+                'threat-actor': 'user',
+                'intrusion-set': 'user',
+                'campaign': 'user',
+                'incident': 'user',
+                'malware': 'user',
+                'attack-pattern': 'usage',
+                'attack-pattern': 'usage',
+            }
+        }

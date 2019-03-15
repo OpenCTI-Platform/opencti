@@ -37,6 +37,9 @@ if 'objects' not in data or len(data['objects']) == 0:
     opencti.log('JSON data objects is empty')
     exit(1)
 
+# Store corresponding IDS
+result_mapping = {}
+
 # Definition of the STIX2 object importer
 def import_object(stix_object):
     # Create external references of the object if not exist
@@ -116,6 +119,16 @@ def import_object(stix_object):
                 description
             )
             stix_object_id = stix_object_result['id']
+    elif stix_object['type'] == 'tool':
+        stix_object_result = opencti.search_stix_domain_entity(stix_object['name'], 'Tool')
+        if stix_object_result is not None:
+            stix_object_id = stix_object_result['id']
+        else:
+            stix_object_result = opencti.create_tool(
+                stix_object['name'],
+                description
+            )
+            stix_object_id = stix_object_result['id']
     elif stix_object['type'] == 'attack-pattern':
         stix_object_result = opencti.search_stix_domain_entity(stix_object['name'], 'Attack-Pattern')
         if stix_object_result is not None:
@@ -143,6 +156,7 @@ def import_object(stix_object):
 
     # Update entity aliases if any
     if stix_object_id is not None:
+        result_mapping[stix_object['id']] = {'id': stix_object_id, 'type': stix_object['type']}
         if 'aliases' in stix_object:
             new_aliases = stix_object_result['alias'] + list(set(stix_object['aliases']) - set(stix_object_result['alias']))
             opencti.update_stix_domain_entity_field(stix_object_id, 'alias', new_aliases)
@@ -153,6 +167,24 @@ def import_object(stix_object):
         # Add external references
         for external_reference_id in external_references_ids:
             opencti.add_external_reference(stix_object_id, external_reference_id)
+
+# Definition of the STIX2 relationship importer
+def import_relationship(stix_relation):
+    if stix_relation['type'] != 'relationship':
+        return
+
+    # Check mapping
+    if stix_relation['source_ref'] not in result_mapping or stix_relation['target_ref'] not in result_mapping:
+        return
+
+    stix_relation_id = None
+    source_id = result_mapping[stix_relation['source_ref']]['id']
+    target_id = result_mapping[stix_relation['target_ref']]['id']
+    stix_relation_result = opencti.get_relations(source_id, target_id)
+    if stix_relation_result is not None:
+        stix_relation_id = stix_relation_result['id']
+    else:
+        stix_relation_result = opencti.create_relation(source_id, '', target_id, '', )
 
 # Definition of the importer worker
 def importer():
