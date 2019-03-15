@@ -42,7 +42,7 @@ const styles = theme => ({
 });
 
 const entityStixRelationsTableTimeStixRelationTimeSeriesQuery = graphql`
-    query EntityStixRelationsChartStixRelationTimeSeriesQuery($fromId: String, $entityTypes: [String] $relationType: String, $resolveInferences: Boolean, $resolveRelationType: String, $resolveRelationRole: String, $resolveRelationToTypes: [String], $resolveViaTypes: [EntityRelation], $toTypes: [String], $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
+    query EntityStixRelationsTableTimeStixRelationTimeSeriesQuery($fromId: String, $entityTypes: [String] $relationType: String, $resolveInferences: Boolean, $resolveRelationType: String, $resolveRelationRole: String, $resolveRelationToTypes: [String], $resolveViaTypes: [EntityRelation], $toTypes: [String], $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
         stixRelationsTimeSeries(fromId: $fromId, entityTypes: $entityTypes, relationType: $relationType, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, resolveRelationRole: $resolveRelationRole, resolveRelationToTypes: $resolveRelationToTypes, resolveViaTypes: $resolveViaTypes, toTypes: $toTypes, field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
             date,
             value
