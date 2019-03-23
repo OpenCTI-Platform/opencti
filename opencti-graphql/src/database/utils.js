@@ -39,11 +39,6 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
   return newData;
 };
 
-export const later = delay =>
-  new Promise(resolve => {
-    setTimeout(resolve, delay);
-  });
-
 export const randomKey = number => {
   let key = '';
   for (let i = 0; i < number; i++) {

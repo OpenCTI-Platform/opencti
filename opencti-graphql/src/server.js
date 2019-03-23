@@ -49,6 +49,7 @@ app.get(
   (req, res, next) => {
     const { provider } = req.params;
     passport.authenticate(provider, (err, token) => {
+      console.log(err);
       if (err || !token) return res.status(err.status).send(err);
       setAuthenticationCookie(token, res);
       return res.redirect('/dashboard');

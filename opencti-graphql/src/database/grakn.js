@@ -1,5 +1,4 @@
 /* eslint-disable no-await-in-loop */
-import axios from 'axios';
 import {
   assoc,
   chain,
@@ -12,6 +11,7 @@ import {
   mapObjIndexed,
   pipe,
   pluck,
+  fromPairs,
   toPairs,
   values
 } from 'ramda';
@@ -21,13 +21,12 @@ import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn';
 import conf, { logger } from '../config/conf';
 import { pubsub } from './redis';
-import { fillTimeSeries, randomKey, later } from './utils';
+import { fillTimeSeries, randomKey } from './utils';
 
 // Global variables
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss';
 const String = 'String';
 const Date = 'Date';
-const Boolean = 'Boolean';
 export const now = () =>
   moment()
     .utc()
@@ -101,32 +100,86 @@ export const getById = async id => {
       value: await attribute.value()
     };
   });
-  const result = await Promise.all(attributesPromises).then(attributesData => {
-    const transform = pipe(
-      map(attribute => {
-        let transformedVal = attribute.value;
-        const type = attribute['data-type'];
-        if (type === Date) {
-          transformedVal = `${moment(attribute.value).format(dateFormat)}Z`;
-        }
-        if (type === Boolean) {
-          transformedVal = attribute.value === 'true';
-        }
-        return { [attribute.type]: transformedVal };
-      }), // Extract values
-      chain(toPairs), // Convert to pairs for grouping
-      groupBy(head), // Group by key
-      map(pluck(1)), // Remove grouping boilerplate
-      mapObjIndexed((num, key, obj) =>
-        obj[key].length === 1 && !includes(key, multipleAttributes)
-          ? head(obj[key])
-          : obj[key]
-      ) // Remove extra list then contains only 1 element
-    )(attributesData);
-    return Promise.resolve(assoc('id', id, transform));
+  return Promise.all(attributesPromises)
+    .then(attributesData => {
+      const transform = pipe(
+        map(attribute => {
+          let transformedVal = attribute.value;
+          const type = attribute['data-type'];
+          if (type === Date) {
+            transformedVal = `${moment(attribute.value).format(dateFormat)}Z`;
+          }
+          return { [attribute.type]: transformedVal };
+        }), // Extract values
+        chain(toPairs), // Convert to pairs for grouping
+        groupBy(head), // Group by key
+        map(pluck(1)), // Remove grouping boilerplate
+        mapObjIndexed((num, key, obj) =>
+          obj[key].length === 1 && !includes(key, multipleAttributes)
+            ? head(obj[key])
+            : obj[key]
+        ) // Remove extra list then contains only 1 element
+      )(attributesData);
+      return Promise.resolve(assoc('id', id, transform));
+    })
+    .finally(() => {
+      rTx.close();
+    });
+};
+
+/**
+ * Query and get entities of the first row
+ * @param query
+ * @param entities
+ * @returns {Promise<any[] | never>}
+ */
+export const queryOne = async (query, entities) => {
+  const rTx = await takeReadTx();
+  logger.debug(`[GRAKN - infer: false] ${query}`);
+  const iterator = await rTx.query(query);
+  const answer = await iterator.next();
+  const entitiesPromises = await entities.map(async entity => {
+    return [entity, await getById(answer.map().get(entity).id)];
   });
-  await rTx.close();
-  return Promise.resolve(result);
+  return Promise.all(entitiesPromises)
+    .then(data => {
+      return fromPairs(data);
+    })
+    .catch(() => {
+      return Promise.resolve({});
+    })
+    .finally(() => {
+      rTx.close();
+    });
+};
+
+/**
+ * Query and get entities
+ * @param query
+ * @param entities
+ * @returns {Promise<any[] | never>}
+ */
+export const queryMultiple = async (query, entities) => {
+  const rTx = await takeReadTx();
+  logger.debug(`[GRAKN - infer: false] ${query}`);
+  const iterator = await rTx.query(query);
+  const answers = await iterator.collect();
+  return Promise.all(
+    answers.map(async answer => {
+      const entitiesPromises = await entities.map(async entity => {
+        return [entity, await getById(answer.map().get(entity).id)];
+      });
+      return Promise.all(entitiesPromises).then(data => {
+        return fromPairs(data);
+      });
+    })
+  )
+    .catch(() => {
+      return Promise.resolve([]);
+    })
+    .finally(() => {
+      rTx.close();
+    });
 };
 
 /**
@@ -135,7 +188,7 @@ export const getById = async id => {
  * @returns {Promise<any[] | never>}
  */
 export const getRelationById = async id => {
-  const rTx = await takeWriteTx();
+  const rTx = await takeReadTx();
   const query = `match $x($from, $to); $x id ${id}; get;`;
   logger.debug(`[GRAKN - infer: false] ${query}`);
   const iterator = await rTx.query(query);
@@ -145,16 +198,16 @@ export const getRelationById = async id => {
   );
   const fromPromise = await getById(answer.map().get('from').id);
   const toPromise = await getById(answer.map().get('to').id);
-  const result = Promise.all([relationPromise, fromPromise, toPromise]).then(
-    ([relation, from, to]) => {
+  return Promise.all([relationPromise, fromPromise, toPromise])
+    .then(([relation, from, to]) => {
       return pipe(
         assoc('from', to),
         assoc('to', from)
       )(relation);
-    }
-  );
-  await rTx.close();
-  return Promise.resolve(result);
+    })
+    .finally(() => {
+      rTx.close();
+    });
 };
 
 /**
@@ -264,9 +317,10 @@ export const getSingleValue = async (query, infer = false) => {
   logger.debug(`[GRAKN - infer: ${infer}] ${query}`);
   const rTx = await (infer ? takeWriteTx() : takeReadTx());
   const iterator = await rTx.query(query, { infer });
-  const answers = await iterator.collect();
-  await rTx.close();
-  return Promise.resolve(answers[0]);
+  const answer = await iterator.next();
+  return Promise.resolve(answer).finally(() => {
+    rTx.close();
+  });
 };
 
 /**
@@ -297,7 +351,7 @@ export const getObjects = async (
   logger.debug(`[GRAKN - infer: ${infer}] ${query}`);
   const iterator = await rTx.query(query, { infer });
   const answers = await iterator.collect();
-  const result = await Promise.all(
+  return Promise.all(
     answers.map(async answer => {
       const nodePromise = await getById(answer.map().get(key).id);
       let relationPromise = await Promise.resolve(null);
@@ -332,9 +386,9 @@ export const getObjects = async (
         })
       );
     })
-  );
-  await rTx.close();
-  return Promise.resolve(result);
+  ).finally(() => {
+    rTx.close();
+  });
 };
 
 /**
@@ -355,7 +409,7 @@ export const getObjectsWithoutAttributes = async (
   logger.debug(`[GRAKN - infer: ${infer}] ${query}`);
   const iterator = await rTx.query(query, { infer });
   const answers = await iterator.collect();
-  const result = await Promise.all(
+  return Promise.all(
     answers.map(async answer => {
       const nodePromise = await Promise.resolve({
         id: answer.map().get(key).id
@@ -383,9 +437,9 @@ export const getObjectsWithoutAttributes = async (
         })
       );
     })
-  );
-  await rTx.close();
-  return Promise.resolve(result);
+  ).finally(() => {
+    rTx.close();
+  });
 };
 
 /**
@@ -398,19 +452,6 @@ export const getObjectsWithoutAttributes = async (
  */
 export const getObject = (query, key = 'x', relationKey, infer = false) =>
   getObjects(query, key, relationKey, infer).then(result => head(result));
-
-/**
- * Grakn query that generate a json object
- * @param query the query to process
- * @param key the instance key to get id from.
- * @param relationKey the key to bind relation result.
- * @param infer
- * @returns {Promise<any[] | never>}
- */
-export const getSimpleObject = (query, key = 'x', relationKey, infer = false) =>
-  getObjects(query, key, relationKey, infer).then(result =>
-    head(result) ? head(result).node : undefined
-  );
 
 /**
  * Pure building of pagination expected format.
@@ -510,7 +551,7 @@ export const getRelations = async (
   logger.debug(`[GRAKN - infer: ${infer}] ${query}`);
   const iterator = await rTx.query(query, { infer });
   const answers = await iterator.collect();
-  const result = await Promise.all(
+  return Promise.all(
     answers.map(async answer => {
       const relationObject = await answer.map().get(key);
       const relationType = await relationObject.type();
@@ -555,9 +596,9 @@ export const getRelations = async (
         };
       });
     })
-  );
-  await rTx.close();
-  return Promise.resolve(result);
+  ).finally(() => {
+    rTx.close();
+  });
 };
 
 /**
@@ -679,13 +720,12 @@ export const createRelation = async (id, input) => {
   await wTx.commit();
   const nodePromise = await getById(input.toId);
   const relationPromise = await getById(createdRelationId);
-  const result = Promise.all([nodePromise, relationPromise]).then(
+  return Promise.all([nodePromise, relationPromise]).then(
     ([node, relation]) => ({
       node,
       relation
     })
   );
-  return Promise.resolve(result);
 };
 
 /**
@@ -820,16 +860,31 @@ export const deleteRelationById = async (id, relationId) => {
  * @param options
  * @returns Promise
  */
-export const timeSeries = (query, options) => {
-  const { startDate, endDate, operation, field, interval } = options;
+export const timeSeries = async (query, options) => {
+  const {
+    startDate,
+    endDate,
+    operation,
+    field,
+    interval,
+    inferred = true
+  } = options;
+  const rTx = await (inferred ? takeWriteTx() : takeReadTx());
   const finalQuery = `${query}; $x has ${field}_${interval} $g; aggregate group $g ${operation};`;
-  return qk(finalQuery, true).then(result => {
-    const data = result.data.map(n => ({
-      date: /Value\s\[([\d-]+)\]/i.exec(head(head(toPairs(n))))[1],
-      value: head(last(head(toPairs(n))))
-    }));
-    return fillTimeSeries(startDate, endDate, interval, data);
-  });
+  logger.debug(`[GRAKN - infer: ${inferred}] ${finalQuery}`);
+  const iterator = await rTx.query(finalQuery, { infer: inferred });
+  const answer = await iterator.collect();
+  return Promise.all(
+    answer.map(async n => {
+      const date = await n.owner().value();
+      const number = await n.answers()[0].number();
+      return { date, value: number };
+    })
+  )
+    .then(result => fillTimeSeries(startDate, endDate, interval, result))
+    .finally(() => {
+      rTx.close();
+    });
 };
 
 /**
@@ -845,43 +900,13 @@ export const distribution = async (query, options) => {
   logger.debug(`[GRAKN - infer: ${inferred}] ${finalQuery}`);
   const iterator = await rTx.query(finalQuery, { infer: inferred });
   const answer = await iterator.collect();
-  const resultPromises = await Promise.all(
+  return Promise.all(
     answer.map(async n => {
       const label = await n.owner().value();
       const number = await n.answers()[0].number();
       return { label, value: number };
     })
-  );
-  await rTx.close();
-  return Promise.resolve(resultPromises);
-};
-
-// TODO: REMOVE (DEPRECATED)
-/**
- * Basic grakn query function
- * @param queryDef
- * @param infer
- * @returns {Promise<AxiosResponse<any> | never>}
- */
-export const qk = async (queryDef, infer = false) => {
-  logger.debug(`Grakn query: ${queryDef}`);
-  return axiosInstance({
-    method: 'post',
-    url: `/kb/grakn/graql${infer ? '?infer=true' : ''}`,
-    data: queryDef
-  }).catch(async error => {
-    logger.error(`Grakn query error: ${queryDef}`, error);
-    // TODO: Workaround to avoid concurrency error on Grakn
-    if (infer && error.response.data.exception === null) {
-      await later(50);
-      return qk(queryDef, infer);
-    }
-    return false;
+  ).finally(() => {
+    rTx.close();
   });
 };
-
-const axiosInstance = axios.create({
-  baseURL: conf.get('grakn:baseURL'),
-  timeout: conf.get('grakn:timeout')
-});
-export default axiosInstance;

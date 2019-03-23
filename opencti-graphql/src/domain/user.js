@@ -5,7 +5,7 @@ import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { delUserContext } from '../database/redis';
-import { MissingElement, AuthenticationFailure } from '../config/errors';
+import { AuthenticationFailure } from '../config/errors';
 import conf, {
   BUS_TOPICS,
   OPENCTI_DEFAULT_DURATION,
@@ -27,7 +27,7 @@ import {
   monthFormat,
   yearFormat,
   prepareString,
-  qk
+  queryOne
 } from '../database/grakn';
 
 // Security related
@@ -186,48 +186,37 @@ export const addUser = async (user, newUser) => {
 };
 
 // User related
-export const loginFromProvider = (email, name) => {
-  // Try to get the user.
-  const loginPromise = qk(`match $client isa User has email "${email}";
-      (authorization:$token, client:$client); 
-      get;`);
-  return loginPromise.then(result => {
-    const { data } = result;
-    if (isEmpty(data)) {
-      // We need to create the user because we trust the provider
-      const newUser = {
-        name,
-        email,
-        created: now(),
-        password: null
-      };
-      // Create the user then restart the login
-      return addUser({}, newUser).then(() => loginFromProvider(email, name));
-    }
-    // We just need to return the current token
-    const element = head(data);
-    return getById(element.token.id);
-  });
+export const loginFromProvider = async (email, name) => {
+  const result = await queryOne(
+    `match $client isa User has email "${email}"; (authorization:$token, client:$client); get;`,
+    ['client', 'token']
+  );
+  if (isEmpty(result)) {
+    const newUser = {
+      name,
+      email,
+      created: now(),
+      password: null
+    };
+    return addUser({}, newUser).then(() => loginFromProvider(email, name));
+  }
+  return Promise.resolve(result.token);
 };
 
-export const login = (email, password) => {
-  const loginPromise = qk(`match $client isa User has email "${email}";
-      $client has password $password;
-      (authorization:$token, client:$client); 
-      get;`);
-  return loginPromise.then(result => {
-    const { data } = result;
-    if (isEmpty(data)) {
-      throw new AuthenticationFailure();
-    }
-    const element = head(data);
-    const dbPassword = element.password.value;
-    const match = bcrypt.compareSync(password, dbPassword);
-    if (!match) {
-      throw new AuthenticationFailure();
-    }
-    return getById(element.token.id);
-  });
+export const login = async (email, password) => {
+  const result = await queryOne(
+    `match $client isa User has email "${email}"; (authorization:$token, client:$client); get;`,
+    ['client', 'token']
+  );
+  if (isEmpty(result)) {
+    throw new AuthenticationFailure();
+  }
+  const dbPassword = result.client.password;
+  const match = bcrypt.compareSync(password, dbPassword);
+  if (!match) {
+    throw new AuthenticationFailure();
+  }
+  return Promise.resolve(result.token);
 };
 
 export const logout = async (user, res) => {
@@ -248,35 +237,18 @@ export const userEditField = (user, userId, input) => {
   );
 };
 
-export const deleteUserByEmail = email => {
-  const delUser = qk(`match $x has email "${email}"; delete $x;`);
-  return delUser.then(result => {
-    if (isEmpty(result.data)) {
-      throw new MissingElement({ message: "User doesn't exist" });
-    } else {
-      return email;
-    }
-  });
-};
-
 // Token related
 export const findByTokenId = async tokenId => {
-  const userByToken = qk(
-    `match $token isa Token has uuid "${tokenId}" has revoked false; 
-                 $token has duration $duration; 
-                 $token has created $created; 
-                 (authorization:$token, client:$client); 
-                 get;`
+  const result = await queryOne(
+    `match $token isa Token has uuid "${tokenId}" has revoked false; (authorization:$token, client:$client); get;`,
+    ['client', 'token']
   );
-  return userByToken.then(result => {
-    const { data } = result;
-    if (isEmpty(data)) return undefined;
-    // Token duration validation
-    const element = head(data);
-    const creation = moment(element.created.value);
-    const maxDuration = moment.duration(element.duration.value);
-    const currentDuration = moment.duration(moment().diff(creation));
-    if (currentDuration > maxDuration) return undefined;
-    return getById(element.client.id);
-  });
+  if (isEmpty(result)) {
+    return undefined;
+  }
+  const { created } = result.token;
+  const maxDuration = moment.duration(result.token.duration);
+  const currentDuration = moment.duration(moment().diff(created));
+  if (currentDuration > maxDuration) return undefined;
+  return result.client;
 };
