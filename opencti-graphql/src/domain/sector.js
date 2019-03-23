@@ -30,7 +30,9 @@ export const addSector = async (user, sector) => {
   const wTx = await takeWriteTx();
   const sectorIterator = await wTx.query(`insert $sector isa Sector 
     has type "sector";
-    $sector has stix_id "sector--${uuid()}";
+    $sector has stix_id "${
+      sector.stix_id ? prepareString(sector.stix_id) : `sector--${uuid()}`
+    }";
     $sector has stix_label "";
     $sector has alias "";
     $sector has name "${prepareString(sector.name)}";

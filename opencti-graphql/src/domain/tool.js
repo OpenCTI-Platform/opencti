@@ -22,7 +22,9 @@ export const addTool = async (user, tool) => {
   const wTx = await takeWriteTx();
   const toolIterator = await wTx.query(`insert $tool isa Tool 
     has type "tool";
-    $tool has stix_id "tool--${uuid()}";
+    $tool has stix_id "${
+      tool.stix_id ? prepareString(tool.stix_id) : `tool--${uuid()}`
+    }";
     $tool has stix_label "";
     $tool has alias "";
     $tool has name "${prepareString(tool.name)}";

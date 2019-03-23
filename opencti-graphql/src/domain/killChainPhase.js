@@ -4,7 +4,7 @@ import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteEntityById,
-  deleteRelation,
+  deleteRelationById,
   editInputTx,
   getById,
   dayFormat,
@@ -44,7 +44,11 @@ export const addKillChainPhase = async (user, killChainPhase) => {
   const wTx = await takeWriteTx();
   const killChainPhaseIterator = await wTx.query(`insert $killChainPhase isa Kill-Chain-Phase
     has type "kill-chain-phase";
-    $killChainPhase has stix_id "kill-chain-phase--${uuid()}";
+    $killChainPhase has stix_id "${
+      killChainPhase.stix_id
+        ? prepareString(killChainPhase.stix_id)
+        : `kill-chain-phase--${uuid()}`
+    }";
     $killChainPhase has kill_chain_name "${prepareString(
       killChainPhase.kill_chain_name
     )}";
@@ -62,7 +66,9 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     $killChainPhase has updated_at ${now()};
   `);
   const createKillChainPhase = await killChainPhaseIterator.next();
-  const createdKillChainPhaseId = await createKillChainPhase.map().get('killChainPhase').id;
+  const createdKillChainPhaseId = await createKillChainPhase
+    .map()
+    .get('killChainPhase').id;
 
   if (killChainPhase.createdByRef) {
     await wTx.query(`match $from id ${createdKillChainPhaseId};
@@ -92,7 +98,7 @@ export const killChainPhaseDeleteRelation = (
   killChainPhaseId,
   relationId
 ) =>
-  deleteRelation(killChainPhaseId, relationId).then(relationData => {
+  deleteRelationById(killChainPhaseId, relationId).then(relationData => {
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });

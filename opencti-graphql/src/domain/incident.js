@@ -43,7 +43,9 @@ export const addIncident = async (user, incident) => {
   const wTx = await takeWriteTx();
   const incidentIterator = await wTx.query(`insert $incident isa Incident 
     has type "incident";
-    $incident has stix_id "incident--${uuid()}";
+    $incident has stix_id "${
+      incident.stix_id ? prepareString(incident.stix_id) : `incident--${uuid()}`
+    }";
     $incident has stix_label "";
     $incident has alias "";
     $incident has name "${prepareString(incident.name)}";

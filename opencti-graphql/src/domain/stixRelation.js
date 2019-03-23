@@ -31,12 +31,12 @@ import {
   deleteById,
   editInputTx,
   getById,
-  loadRelationById,
-  loadRelationInferredById,
+  getRelationById,
+  getRelationInferredById,
   notify,
   now,
-  paginateRelationships,
   paginate,
+  paginateRelationships,
   prepareDate,
   dayFormat,
   monthFormat,
@@ -45,7 +45,7 @@ import {
   timeSeries,
   distribution,
   takeWriteTx,
-  getObject,
+  getObjectsWithoutAttributes,
   buildPagination
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -70,7 +70,7 @@ export const findAll = args =>
   );
 
 export const findAllWithInferences = async args => {
-  const entities = await getObject(
+  const entities = await getObjectsWithoutAttributes(
     `match $x; (${args.resolveRelationRole}: $from, $x) isa ${
       args.resolveRelationType
     }; ${
@@ -96,15 +96,15 @@ export const findAllWithInferences = async args => {
     ' ',
     map(fromId => `{ $from id ${fromId}; } or`, fromIds)
   )} { $from id ${head(fromIds)}; }`;
-  const resultPromise = paginateRelationships(
+  const resultPromise = await paginateRelationships(
     query,
     assoc('inferred', false, omit(['fromId'], args)),
     null,
-    false
+    !args.resolveViaTypes
   );
   if (args.resolveViaTypes) {
     const viaPromise = Promise.all(
-      map(resolveViaType => {
+      map(async resolveViaType => {
         const viaQuery = `match $from; $rel($from, $entity) isa ${
           args.relationType ? args.relationType : 'stix_relation'
         }; ${join(
@@ -135,7 +135,7 @@ export const findAllWithInferences = async args => {
         }: $rel, $to) isa ${resolveViaType.relationType}`
     )(args.resolveViaTypes);
     const viaOfRelationPromise = Promise.all(
-      map(viaRelationQuery =>
+      map(async viaRelationQuery =>
         paginateRelationships(
           viaRelationQuery,
           omit(['fromId'], args),
@@ -161,8 +161,8 @@ export const findAllWithInferences = async args => {
           viaRelationInstances = concat(viaRelationInstances, n.instances);
         }, viaRelation);
         const instances = concat(viaInstances, viaRelationInstances);
-        const finalInstance = concat(result.instances, instances);
-        return buildPagination(first, offset, finalInstance, globalCount);
+        const finalInstances = concat(result.instances, instances);
+        return buildPagination(first, offset, finalInstances, globalCount);
       }
     );
   }
@@ -187,7 +187,7 @@ export const stixRelationsTimeSeries = args =>
   );
 
 export const stixRelationsTimeSeriesWithInferences = async args => {
-  const entities = await getObject(
+  const entities = await getObjectsWithoutAttributes(
     `match $x; (${args.resolveRelationRole}: $from, $x) isa ${
       args.resolveRelationType
     }; ${
@@ -311,7 +311,7 @@ export const stixRelationsDistribution = args => {
 };
 export const stixRelationsDistributionWithInferences = async args => {
   const { limit = 10 } = args;
-  const entities = await getObject(
+  const entities = await getObjectsWithoutAttributes(
     `match $x; (${args.resolveRelationRole}: $from, $x) isa ${
       args.resolveRelationType
     }; ${
@@ -430,9 +430,9 @@ export const stixRelationsDistributionWithInferences = async args => {
   );
 };
 
-export const findById = stixRelationId => loadRelationById(stixRelationId);
+export const findById = stixRelationId => getRelationById(stixRelationId);
 export const findByIdInferred = stixRelationId =>
-  loadRelationInferredById(stixRelationId);
+  getRelationInferredById(stixRelationId);
 
 export const search = args =>
   paginateRelationships(
@@ -483,7 +483,11 @@ export const addStixRelation = async (user, stixRelation) => {
       stixRelation.relationship_type.toLowerCase()
     )}";
     $stixRelation has type "stix-relation";
-    $stixRelation has stix_id "relationship--${uuid()}";
+    $stixRelation has stix_id "${
+      stixRelation.stix_id
+        ? prepareString(stixRelation.stix_id)
+        : `relationship--${uuid()}`
+    }";
     $stixRelation has name "";
     $stixRelation has description "${prepareString(stixRelation.description)}";
     $stixRelation has weight ${stixRelation.weight};

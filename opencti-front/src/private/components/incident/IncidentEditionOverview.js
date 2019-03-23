@@ -271,7 +271,7 @@ class IncidentEditionOverviewComponent extends Component {
           initialValues={initialValues}
           validationSchema={incidentValidation(t)}
           onSubmit={() => true}
-          render={setFieldValue => (
+          render={({ setFieldValue }) => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field name='name' component={TextField} label={t('Name')} fullWidth={true}

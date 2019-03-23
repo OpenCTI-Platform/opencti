@@ -1,6 +1,6 @@
 import { head, isEmpty, map, filter } from 'ramda';
 import migrate from 'migrate';
-import { qk } from './grakn';
+import { qk, write, getSimpleObject } from './grakn';
 import { logger } from '../config/conf';
 
 // noinspection JSUnusedGlobalSymbols
@@ -42,22 +42,28 @@ const graknStateStorage = {
     const mig = head(filter(m => m.title === set.lastRun, set.migrations));
 
     // Get the MigrationStatus. If exist, update last run, if not create it
-    const migrationStatus = await qk(`match $x isa MigrationStatus; get;`);
-    if (!isEmpty(migrationStatus.data)) {
-      await qk(`match $x isa MigrationStatus has lastRun $run; delete $run;`);
-      await qk(
+    const migrationStatus = await getSimpleObject(
+      `match $x isa MigrationStatus; get;`
+    );
+    if (migrationStatus !== undefined) {
+      await write(
+        `match $x isa MigrationStatus has lastRun $run; delete $run;`
+      );
+      await write(
         `match $x isa MigrationStatus; insert $x has lastRun "${set.lastRun}";`
       );
     } else {
-      await qk(`insert $x isa MigrationStatus has lastRun "${set.lastRun}";`);
+      await write(
+        `insert $x isa MigrationStatus has lastRun "${set.lastRun}";`
+      );
     }
 
-    await qk(
+    await write(
       `insert $x isa MigrationReference 
               has title "${mig.title}"; 
               $x has timestamp ${mig.timestamp};`
     );
-    await qk(
+    await write(
       `match $status isa MigrationStatus; 
               $ref isa MigrationReference has title "${mig.title}"; 
               insert (status: $status, state: $ref) isa migrate;`

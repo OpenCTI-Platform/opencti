@@ -5,6 +5,7 @@ import {
   stixDomainEntityDelete,
   findAll,
   findById,
+  findByStixId,
   findByName,
   findByExternalReference,
   search,
@@ -28,6 +29,9 @@ const stixDomainEntityResolvers = {
     stixDomainEntities: (_, args) => {
       if (args.search && args.search.length > 0) {
         return search(args);
+      }
+      if (args.stix_id && args.stix_id.length > 0) {
+        return findByStixId(args);
       }
       if (args.name && args.name.length > 0) {
         return findByName(args);

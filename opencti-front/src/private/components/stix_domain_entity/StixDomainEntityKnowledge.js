@@ -8,7 +8,6 @@ import { DiagramEngine } from 'storm-react-diagrams';
 import Drawer from '@material-ui/core/Drawer';
 import Grid from '@material-ui/core/Grid';
 import Select from '@material-ui/core/Select';
-import Input from '@material-ui/core/Input';
 import Chip from '@material-ui/core/Chip';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -79,8 +78,6 @@ class StixDomainEntityKnowledge extends Component {
     this.state = {
       engine,
       inferred: true,
-      openToTypes: false,
-      toTypes: ['Threat-Actor', 'Intrusion-Set', 'Campaign'],
       firstSeen: 'All years',
       firstSeenFirstYear: currentYear(),
       firstSeenStart: null,
@@ -101,38 +98,6 @@ class StixDomainEntityKnowledge extends Component {
         this.setState({ firstSeenFirstYear: yearFormat(head(data.stixRelations.edges).node.first_seen) });
       }
     });
-  }
-
-  isSavable() {
-    const {
-      firstSeenStart, firstSeenStop, toTypes, inferred,
-    } = this.state;
-    if (inferred === true
-      && firstSeenStart === null
-      && firstSeenStop === null
-      && equals(toTypes, ['Threat-Actor', 'Intrusion-Set', 'Campaign'])) {
-      return true;
-    }
-    return false;
-  }
-
-  handleOpenToTypes() {
-    this.setState({ openToTypes: true });
-  }
-
-  handleCloseToTypes() {
-    this.setState({ openToTypes: false });
-  }
-
-  handleChangeEntities(event) {
-    const { value } = event.target;
-    if (includes('All', this.state.toTypes) || !includes('All', value)) {
-      const toTypes = filter(v => v !== 'All', value);
-      if (toTypes.length > 0) {
-        return this.setState({ openToTypes: false, toTypes });
-      }
-    }
-    return this.setState({ openToTypes: false, toTypes: ['All'] });
   }
 
   handleChangeYear(event) {
@@ -169,7 +134,7 @@ class StixDomainEntityKnowledge extends Component {
       id: stixDomainEntityId,
       count: 100,
       inferred: this.state.inferred,
-      toTypes: includes('All', this.state.toTypes) ? null : this.state.toTypes,
+      toTypes: null,
       firstSeenStart: null,
       firstSeenStop: null,
     };
@@ -180,41 +145,7 @@ class StixDomainEntityKnowledge extends Component {
           <Grid container={true} spacing={8}>
             <Grid item={true} xs='auto'>
               <Select
-                style={{ height: 50 }}
-                multiple={true}
-                value={this.state.toTypes}
-                open={this.state.openToTypes}
-                onClose={this.handleCloseToTypes.bind(this)}
-                onOpen={this.handleOpenToTypes.bind(this)}
-                onChange={this.handleChangeEntities.bind(this)}
-                input={<Input id='entities'/>}
-                renderValue={selected => (
-                  <div className={classes.chips}>
-                    {selected.map(value => (
-                      <Chip key={value} label={t(`entity_${value.toLowerCase()}`)} className={classes.chip}/>
-                    ))}
-                  </div>
-                )}
-              >
-                <MenuItem value='All'>{t('All entities')}</MenuItem>
-                <MenuItem value='Country'>{t('Country')}</MenuItem>
-                <MenuItem value='City'>{t('City')}</MenuItem>
-                <MenuItem value='Sector'>{t('Sector')}</MenuItem>
-                <MenuItem value='Organization'>{t('Organization')}</MenuItem>
-                <MenuItem value='User'>{t('Person')}</MenuItem>
-                <MenuItem value='Threat-Actor'>{t('Threat actor')}</MenuItem>
-                <MenuItem value='Intrusion-Set'>{t('Intrusion set')}</MenuItem>
-                <MenuItem value='Campaign'>{t('Campaign')}</MenuItem>
-                <MenuItem value='Incident'>{t('Incident')}</MenuItem>
-                <MenuItem value='Malware'>{t('Malware')}</MenuItem>
-                <MenuItem value='Tool'>{t('Tool')}</MenuItem>
-                <MenuItem value='Vulnerability'>{t('Vulnerability')}</MenuItem>
-                <MenuItem value='Attack-Pattern'>{t('Attack pattern')}</MenuItem>
-              </Select>
-            </Grid>
-            <Grid item={true} xs='auto'>
-              <Select
-                style={{ width: 170, height: 50, marginLeft: 20 }}
+                style={{ width: 170, height: 50 }}
                 value={this.state.firstSeen}
                 onChange={this.handleChangeYear.bind(this)}
                 renderValue={selected => (
@@ -250,7 +181,6 @@ class StixDomainEntityKnowledge extends Component {
               return (
                 <StixDomainEntityKnowledgeGraph
                   engine={this.state.engine}
-                  isSavable={this.isSavable.bind(this)}
                   variables={variables}
                   stixDomainEntity={props.stixDomainEntity}
                   firstSeenYear={this.state.firstSeenStart ? yearFormat(this.state.firstSeenStart) : 'all'}

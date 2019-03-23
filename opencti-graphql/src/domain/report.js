@@ -118,7 +118,9 @@ export const addReport = async (user, report) => {
   const wTx = await takeWriteTx();
   const reportIterator = await wTx.query(`insert $report isa Report 
     has type "report";
-    $report has stix_id "report--${uuid()}";
+    $report has stix_id "${
+      report.stix_id ? prepareString(report.stix_id) : `report--${uuid()}`
+    }";
     $report has stix_label "";
     $report has alias "";
     $report has name "${prepareString(report.name)}";

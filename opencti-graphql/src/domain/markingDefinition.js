@@ -4,7 +4,7 @@ import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteEntityById,
-  deleteRelation,
+  deleteRelationById,
   editInputTx,
   getById,
   dayFormat,
@@ -26,7 +26,11 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   const wTx = await takeWriteTx();
   const markingDefinitionIterator = await wTx.query(`insert $markingDefinition isa Marking-Definition 
     has type "marking-definition";
-    $markingDefinition has stix_id "marking-definition--${uuid()}";
+    $markingDefinition has stix_id "${
+      markingDefinition.stix_id
+        ? prepareString(markingDefinition.stix_id)
+        : `marking-definition--${uuid()}`
+    }";
     $markingDefinition has definition_type "${prepareString(
       markingDefinition.definition_type
     )}";
@@ -81,7 +85,7 @@ export const markingDefinitionDeleteRelation = (
   markingDefinitionId,
   relationId
 ) =>
-  deleteRelation(markingDefinitionId, relationId).then(relationData => {
+  deleteRelationById(markingDefinitionId, relationId).then(relationData => {
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });

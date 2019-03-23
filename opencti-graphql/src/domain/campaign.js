@@ -14,7 +14,7 @@ import {
   prepareString,
   timeSeries
 } from '../database/grakn';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logger } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Campaign', args);
 
@@ -41,9 +41,11 @@ export const findById = campaignId => getById(campaignId);
 
 export const addCampaign = async (user, campaign) => {
   const wTx = await takeWriteTx();
-  const campaignIterator = await wTx.query(`insert $campaign isa Campaign 
+  const query = `insert $campaign isa Campaign 
     has type "campaign";
-    $campaign has stix_id "campaign--${uuid()}";
+    $campaign has stix_id "${
+      campaign.stix_id ? prepareString(campaign.stix_id) : `campaign--${uuid()}`
+    }";
     $campaign has stix_label "";
     $campaign has alias "";
     $campaign has name "${prepareString(campaign.name)}";
@@ -64,7 +66,9 @@ export const addCampaign = async (user, campaign) => {
     $campaign has created_at_month "${monthFormat(now())}";
     $campaign has created_at_year "${yearFormat(now())}";
     $campaign has updated_at ${now()};
-  `);
+  `;
+  logger.debug(`[GRAKN - infer: false] ${query}`);
+  const campaignIterator = await wTx.query(query);
   const createCampaign = await campaignIterator.next();
   const createdCampaignId = await createCampaign.map().get('campaign').id;
 

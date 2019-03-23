@@ -30,7 +30,11 @@ export const addThreatActor = async (user, threatActor) => {
   const wTx = await takeWriteTx();
   const threatActorIterator = await wTx.query(`insert $threatActor isa Threat-Actor 
     has type "threat-actor";
-    $threatActor has stix_id "threat-actor--${uuid()}";
+    $threatActor has stix_id "${
+      threatActor.stix_id
+        ? prepareString(threatActor.stix_id)
+        : `threat-actor--${uuid()}`
+    }";
     $threatActor has stix_label "";
     $threatActor has alias "";
     $threatActor has name "${prepareString(threatActor.name)}";
@@ -74,4 +78,5 @@ export const addThreatActor = async (user, threatActor) => {
   );
 };
 
-export const threatActorDelete = threatActorId => deleteEntityById(threatActorId);
+export const threatActorDelete = threatActorId =>
+  deleteEntityById(threatActorId);

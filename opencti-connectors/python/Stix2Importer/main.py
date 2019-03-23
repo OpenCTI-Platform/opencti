@@ -5,7 +5,7 @@ import os
 import json
 import urllib3
 import yaml
-from threading import Thread
+import datetime
 from queue import Queue
 from lib.opencti import OpenCti
 
@@ -22,7 +22,7 @@ config = yaml.load(open(os.path.dirname(__file__) + '/../lib/config.yml'))
 opencti = OpenCti(config)
 
 # Script configuration
-workers_number = 4
+workers_number = 1
 file_to_import = config['mitre']['repository_path_cti'] + '/enterprise-attack/enterprise-attack.json'
 
 # Load the file
@@ -39,6 +39,7 @@ if 'objects' not in data or len(data['objects']) == 0:
 
 # Store corresponding IDS
 result_mapping = {}
+
 
 # Definition of the STIX2 object importer
 def import_object(stix_object):
@@ -87,7 +88,7 @@ def import_object(stix_object):
     stix_object_result = {}
     description = ''
     if 'description' in stix_object:
-        description = opencti.convertMarkDown(stix_object['description'])
+        description = opencti.convert_markdown(stix_object['description'])
 
     if stix_object['type'] == 'threat-actor':
         stix_object_result = opencti.search_stix_domain_entity(stix_object['name'], 'Threat-Actor')
@@ -133,10 +134,10 @@ def import_object(stix_object):
         stix_object_result = opencti.search_stix_domain_entity(stix_object['name'], 'Attack-Pattern')
         if stix_object_result is not None:
             stix_object_id = stix_object_result['id']
-            opencti.update_stix_domain_entity_field(
-                stix_object_id, 'description',
-                description
-            )
+            # opencti.update_stix_domain_entity_field(
+            #    stix_object_id, 'description',
+            #    description
+            # )
         else:
             platforms = []
             if 'x_mitre_platforms' in stix_object:
@@ -158,15 +159,18 @@ def import_object(stix_object):
     if stix_object_id is not None:
         result_mapping[stix_object['id']] = {'id': stix_object_id, 'type': stix_object['type']}
         if 'aliases' in stix_object:
-            new_aliases = stix_object_result['alias'] + list(set(stix_object['aliases']) - set(stix_object_result['alias']))
+            new_aliases = stix_object_result['alias'] + list(
+                set(stix_object['aliases']) - set(stix_object_result['alias']))
             opencti.update_stix_domain_entity_field(stix_object_id, 'alias', new_aliases)
         elif 'x_mitre_aliases' in stix_object:
-            new_aliases = stix_object_result['alias'] + list(set(stix_object['x_mitre_aliases']) - set(stix_object_result['alias']))
+            new_aliases = stix_object_result['alias'] + list(
+                set(stix_object['x_mitre_aliases']) - set(stix_object_result['alias']))
             opencti.update_stix_domain_entity_field(stix_object_id, 'alias', new_aliases)
 
         # Add external references
         for external_reference_id in external_references_ids:
             opencti.add_external_reference(stix_object_id, external_reference_id)
+
 
 # Definition of the STIX2 relationship importer
 def import_relationship(stix_relation):
@@ -179,37 +183,35 @@ def import_relationship(stix_relation):
 
     stix_relation_id = None
     source_id = result_mapping[stix_relation['source_ref']]['id']
+    source_type = result_mapping[stix_relation['source_ref']]['type']
     target_id = result_mapping[stix_relation['target_ref']]['id']
+    target_type = result_mapping[stix_relation['target_ref']]['type']
     stix_relation_result = opencti.get_relations(source_id, target_id)
     if stix_relation_result is not None:
         stix_relation_id = stix_relation_result['id']
     else:
-        stix_relation_result = opencti.create_relation(source_id, '', target_id, '', )
+        roles = opencti.resolve_role(stix_relation['relationship_type'], source_type, target_type)
+        if roles is not None:
+            stix_relation_result = opencti.create_relation(
+                source_id,
+                roles['from_role'],
+                target_id,
+                roles['to_role'],
+                stix_relation['relationship_type'],
+                datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%S+02:00'),
+                datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%S+02:00'),
+                4
+            )
+            stix_relation_id = stix_relation_result['id']
 
-# Definition of the importer worker
-def importer():
-    while True:
-        stix_object = task_queue.get()
-        import_object(stix_object)
-        task_queue.task_done()
-
-
-# Start time
 start_time = time.time()
-
-# Create the worker threads
-threads = [Thread(target=importer) for _ in range(workers_number)]
-
-# Add the objects to import
-[task_queue.put(item) for item in data['objects']]
-
-# Start the workers
-[thread.start() for thread in threads]
-
-# Wait for all the tasks in the queue to be processed
-task_queue.join()
-
-# End time
+for item in data['objects']:
+    import_object(item)
 end_time = time.time()
+print("Object imported in: %ssecs" % (end_time - start_time))
 
-print("Data imported in: %ssecs" % (end_time - start_time))
+start_time = time.time()
+for item in data['objects']:
+    import_relationship(item)
+end_time = time.time()
+print("Relationships imported in: %ssecs" % (end_time - start_time))

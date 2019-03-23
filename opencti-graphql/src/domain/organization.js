@@ -22,7 +22,11 @@ export const addOrganization = async (user, organization) => {
   const wTx = await takeWriteTx();
   const organizationIterator = await wTx.query(`insert $organization isa Organization 
     has type "organization";
-    $organization has stix_id "organization--${uuid()}";
+    $organization has stix_id "${
+      organization.stix_id
+        ? prepareString(organization.stix_id)
+        : `organization--${uuid()}`
+    }";
     $organization has stix_label "";
     $organization has alias "";
     $organization has name "${prepareString(organization.name)}";
@@ -67,4 +71,5 @@ export const addOrganization = async (user, organization) => {
   );
 };
 
-export const organizationDelete = organizationId => deleteEntityById(organizationId);
+export const organizationDelete = organizationId =>
+  deleteEntityById(organizationId);

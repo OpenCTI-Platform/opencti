@@ -3,7 +3,7 @@ import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteEntityById,
-  deleteRelation,
+  deleteRelationById,
   editInputTx,
   getById,
   dayFormat,
@@ -127,7 +127,7 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
 };
 
 export const workspaceDeleteRelation = (user, workspaceId, relationId) =>
-  deleteRelation(workspaceId, relationId).then(relationData => {
+  deleteRelationById(workspaceId, relationId).then(relationData => {
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });

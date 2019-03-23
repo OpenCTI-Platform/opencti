@@ -31,7 +31,11 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   const wTx = await takeWriteTx();
   const intrusionSetIterator = await wTx.query(`insert $intrusionSet isa Intrusion-Set 
     has type "intrusion-set";
-    $intrusionSet has stix_id "intrusion-set--${uuid()}";
+    $intrusionSet has stix_id "${
+      intrusionSet.stix_id
+        ? prepareString(intrusionSet.stix_id)
+        : `intrusion-set--${uuid()}`
+    }";
     $intrusionSet has stix_label "";
     $intrusionSet has alias "";
     $intrusionSet has name "${prepareString(intrusionSet.name)}";
@@ -56,12 +60,12 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     $intrusionSet has updated_at ${now()};
   `);
   const createIntrusionSet = await intrusionSetIterator.next();
-  const createIntrusionSetId = await createIntrusionSet
+  const createdIntrusionSetId = await createIntrusionSet
     .map()
     .get('intrusionSet').id;
 
   if (intrusionSet.createdByRef) {
-    await wTx.query(`match $from id ${createIntrusionSetId};
+    await wTx.query(`match $from id ${createdIntrusionSetId};
          $to id ${intrusionSet.createdByRef};
          insert (so: $from, creator: $to)
          isa created_by_ref;`);
@@ -70,7 +74,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   if (intrusionSet.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
-        `match $from id ${createIntrusionSetId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+        `match $from id ${createdIntrusionSetId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,
@@ -81,9 +85,10 @@ export const addIntrusionSet = async (user, intrusionSet) => {
 
   await wTx.commit();
 
-  return getById(createIntrusionSetId).then(created =>
+  return getById(createdIntrusionSetId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };
 
-export const intrusionSetDelete = intrusionSetId => deleteEntityById(intrusionSetId);
+export const intrusionSetDelete = intrusionSetId =>
+  deleteEntityById(intrusionSetId);

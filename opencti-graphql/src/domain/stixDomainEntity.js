@@ -4,7 +4,7 @@ import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteEntityById,
-  deleteRelation,
+  deleteRelationById,
   editInputTx,
   getById,
   dayFormat,
@@ -55,6 +55,15 @@ export const stixDomainEntitiesNumber = args => ({
 });
 
 export const findById = stixDomainEntityId => getById(stixDomainEntityId);
+
+export const findByStixId = args =>
+  paginate(
+    `match $m isa ${
+      args.type ? args.type : 'Stix-Domain-Entity'
+    }; $m has stix_id "${prepareString(args.stix_id)}"`,
+    args,
+    false
+  );
 
 export const findByName = args =>
   paginate(
@@ -153,9 +162,11 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     stixDomainEntity.type
   } 
     has type "${prepareString(stixDomainEntity.type.toLowerCase())}";
-    $stixDomainEntity has stix_id "${prepareString(
-      stixDomainEntity.type.toLowerCase()
-    )}--${uuid()}";
+    $stixDomainEntity has stix_id "${
+      stixDomainEntity.stix_id
+        ? prepareString(stixDomainEntity.stix_id)
+        : `${prepareString(stixDomainEntity.type.toLowerCase())}--${uuid()}`
+    }";
     $stixDomainEntity has stix_label "";
     $stixDomainEntity has alias "";
     $stixDomainEntity has name "${prepareString(stixDomainEntity.name)}";
@@ -216,7 +227,7 @@ export const stixDomainEntityDeleteRelation = (
   stixDomainEntityId,
   relationId
 ) =>
-  deleteRelation(stixDomainEntityId, relationId).then(relationData => {
+  deleteRelationById(stixDomainEntityId, relationId).then(relationData => {
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });

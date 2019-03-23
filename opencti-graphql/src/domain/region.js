@@ -30,7 +30,9 @@ export const addRegion = async (user, region) => {
   const wTx = await takeWriteTx();
   const regionIterator = await wTx.query(`insert $region isa Region 
     has type "region";
-    $region has stix_id "region--${uuid()}";
+    $region has stix_id "${
+      region.stix_id ? prepareString(region.stix_id) : `region--${uuid()}`
+    }";
     $region has stix_label "";
     $region has alias "";
     $region has name "${prepareString(region.name)}";

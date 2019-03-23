@@ -4,7 +4,7 @@ import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteEntityById,
-  deleteRelation,
+  deleteRelationById,
   editInputTx,
   getById,
   dayFormat,
@@ -32,10 +32,10 @@ export const findById = externalReferenceId => getById(externalReferenceId);
 
 export const search = args =>
   paginate(
-    `match $m isa External-Reference 
+    `match $e isa External-Reference 
     has source_name $sn;
-    $m has description $desc;
-    $m has url $url;
+    $e has description $desc;
+    $e has url $url;
     { $sn contains "${prepareString(args.search)}"; } or
     { $desc contains "${prepareString(args.search)}"; } or
     { $url contains "${prepareString(args.search)}"; }`,
@@ -47,7 +47,11 @@ export const addExternalReference = async (user, externalReference) => {
   const wTx = await takeWriteTx();
   const externalReferenceIterator = await wTx.query(`insert $externalReference isa External-Reference 
     has type "external-reference";
-    $externalReference has stix_id "external-reference--${uuid()}";
+    $externalReference has stix_id "${
+      externalReference.stix_id
+        ? prepareString(externalReference.stix_id)
+        : `external-reference--${uuid()}`
+    }";
     $externalReference has source_name "${prepareString(
       externalReference.source_name
     )}";
@@ -121,7 +125,7 @@ export const externalReferenceDeleteRelation = (
   externalReferenceId,
   relationId
 ) =>
-  deleteRelation(externalReferenceId, relationId).then(relationData => {
+  deleteRelationById(externalReferenceId, relationId).then(relationData => {
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });

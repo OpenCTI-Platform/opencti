@@ -33,9 +33,13 @@ export const addIdentity = async (user, identity) => {
   const wTx = await takeWriteTx();
   const identityIterator = await wTx.query(`insert $identity isa ${
     identity.type
-  } 
+  }
     has type "${identity.type.toLowerCase()}";
-    $identity has stix_id "${identity.type.toLowerCase()}--${uuid()}";
+    $identity has stix_id "${
+      identity.stix_id
+        ? prepareString(identity.stix_id)
+        : `${prepareString(identity.type.toLowerCase())}--${uuid()}`
+    }";
     $identity has stix_label "";
     $identity has alias "";
     $identity has name "${prepareString(identity.name)}";

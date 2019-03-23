@@ -22,7 +22,9 @@ export const addCity = async (user, city) => {
   const wTx = await takeWriteTx();
   const cityIterator = await wTx.query(`insert $city isa City 
     has type "city";
-    $city has stix_id "city--${uuid()}";
+    $city has stix_id "${
+      city.stix_id ? prepareString(city.stix_id) : `city--${uuid()}`
+    }";
     $city has stix_label "";
     $city has alias "";
     $city has name "${prepareString(city.name)}";

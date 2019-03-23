@@ -2,7 +2,7 @@ import {
   deleteEntityById,
   editInputTx,
   getById,
-  loadFirst,
+  getObject,
   notify,
   now,
   takeWriteTx,
@@ -11,7 +11,10 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, setEditContext } from '../database/redis';
 
-export const getSettings = () => loadFirst('Settings').then(result => result);
+export const getSettings = () =>
+  getObject('match $x isa Settings; offset 0; limit 1; get;').then(
+    result => result.node
+  );
 
 export const addSettings = async (user, settings) => {
   const wTx = await takeWriteTx();

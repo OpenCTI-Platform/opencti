@@ -84,7 +84,9 @@ export const addPerson = async (user, newUser) => {
   const wTx = await takeWriteTx();
   const userIterator = await wTx.query(`insert $user isa User 
     has type "user";
-    $user has stix_id "user--${uuid()}";
+    $user has stix_id "${
+      user.stix_id ? prepareString(user.stix_id) : `user--${uuid()}`
+    }";
     $user has stix_label "";
     $user has alias "";
     $user has name "${prepareString(newUser.name)}";
@@ -117,7 +119,9 @@ export const addUser = async (user, newUser) => {
   const wTx = await takeWriteTx();
   const userIterator = await wTx.query(`insert $user isa User 
     has type "user";
-    $user has stix_id "user--${uuid()}";
+    $user has stix_id "${
+      user.stix_id ? prepareString(user.stix_id) : `user--${uuid()}`
+    }";
     $user has stix_label "";
     $user has alias "";
     $user has name "${prepareString(newUser.name)}";

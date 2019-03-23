@@ -30,7 +30,9 @@ export const addCountry = async (user, country) => {
   const wTx = await takeWriteTx();
   const countryIterator = await wTx.query(`insert $country isa Country 
     has type "country";
-    $country has stix_id "country--${uuid()}";
+    $country has stix_id "${
+      country.stix_id ? prepareString(country.stix_id) : `country--${uuid()}`
+    }";
     $country has stix_label "";
     $country has alias "";
     $country has name "${prepareString(country.name)}";

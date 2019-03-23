@@ -22,7 +22,11 @@ export const addCourseOfAction = async (user, courseOfAction) => {
   const wTx = await takeWriteTx();
   const courseOfActionIterator = await wTx.query(`insert $courseOfAction isa CourseOfAction 
     has type "Course-Of-Action";
-    $courseOfAction has stix_id "course-of-action--${uuid()}";
+    $courseOfAction has stix_id "${
+      courseOfAction.stix_id
+        ? prepareString(courseOfAction.stix_id)
+        : `course-of-action--${uuid()}`
+    }";
     $courseOfAction has stix_label "";
     $courseOfAction has alias "";
     $courseOfAction has name "${prepareString(courseOfAction.name)}";

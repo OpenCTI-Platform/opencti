@@ -271,7 +271,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
           initialValues={initialValues}
           validationSchema={intrusionSetValidation(t)}
           onSubmit={() => true}
-          render={setFieldValue => (
+          render={({ setFieldValue }) => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field name='name' component={TextField} label={t('Name')} fullWidth={true}

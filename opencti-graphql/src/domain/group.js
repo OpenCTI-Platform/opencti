@@ -1,4 +1,5 @@
 import { map } from 'ramda';
+import uuid from 'uuid/v4';
 import {
   deleteEntityById,
   getById,
@@ -37,6 +38,9 @@ export const addGroup = async (user, group) => {
   const wTx = await takeWriteTx();
   const groupIterator = await wTx.query(`insert $group isa Group 
     has type "group";
+    $group has stix_id "${
+      group.stix_id ? prepareString(group.stix_id) : `group--${uuid()}`
+    }";
     $group has name "${prepareString(group.name)}";
     $group has description "${prepareString(group.description)}";
     $group has created_at ${now()};

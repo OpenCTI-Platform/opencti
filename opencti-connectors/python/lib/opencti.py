@@ -73,6 +73,25 @@ class OpenCti:
         else:
             return None
 
+    def get_stix_domain_entity_by_stix_id(self, stix_id, type='Stix-Domain-Entity'):
+        query = """
+            query StixDomainEntities($stix_id: String, $type: String) {
+                stixDomainEntities(stix_id: $stix_id, type: $type) {
+                    edges {
+                        node {
+                            id
+                            alias
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'stix_id': stix_id, 'type': type})
+        if len(result['data']['stixDomainEntities']['edges']) > 0:
+            return result['data']['stixDomainEntities']['edges'][0]['node']
+        else:
+            return None
+
     def search_stix_domain_entity(self, nameOrAlias, type='Stix-Domain-Entity'):
         query = """
             query StixDomainEntities($search: String, $type: String) {
@@ -546,20 +565,28 @@ class OpenCti:
                 }
             })
 
-    def convertMarkDown(self, text):
-        return text.\
-            replace('<code>', '`').\
+    def convert_markdown(self, text):
+        return text. \
+            replace('<code>', '`'). \
             replace('</code>', '`')
 
-    def resolveRole(self, relation_type, entity_type):
-        roles = {
+    def resolve_role(self, relation_type, from_type, to_type):
+        mapping = {
             'uses': {
-                'threat-actor': 'user',
-                'intrusion-set': 'user',
-                'campaign': 'user',
-                'incident': 'user',
-                'malware': 'user',
-                'attack-pattern': 'usage',
-                'attack-pattern': 'usage',
+                'threat-actor': {
+                    'malware': {'from_role': 'user', 'to_role': 'usage'},
+                    'tool': {'from_role': 'user', 'to_role': 'usage'},
+                    'attack-pattern': {'from_role': 'user', 'to_role': 'usage'}
+                },
+                'intrusion-set': {
+                    'malware': {'from_role': 'user', 'to_role': 'usage'},
+                    'tool': {'from_role': 'user', 'to_role': 'usage'},
+                    'attack-pattern': {'from_role': 'user', 'to_role': 'usage'}
+                }
             }
         }
+        if relation_type in mapping and from_type in mapping[relation_type] and to_type in mapping[relation_type][
+            from_type]:
+            return mapping[relation_type][from_type][to_type]
+        else:
+            return None

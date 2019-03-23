@@ -275,17 +275,15 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
   }
 
   saveGraph() {
-    if (this.props.isSavable()) {
-      const model = this.props.engine.getDiagramModel();
-      const graphData = serializeGraph(model);
-      commitMutation({
-        mutation: stixDomainEntityMutationFieldPatch,
-        variables: {
-          id: this.props.stixDomainEntity.id,
-          input: { key: 'graph_data', value: graphData },
-        },
-      });
-    }
+    const model = this.props.engine.getDiagramModel();
+    const graphData = serializeGraph(model);
+    commitMutation({
+      mutation: stixDomainEntityMutationFieldPatch,
+      variables: {
+        id: this.props.stixDomainEntity.id,
+        input: { key: 'graph_data', value: graphData },
+      },
+    });
   }
 
   handleSaveGraph() {
@@ -427,7 +425,6 @@ StixDomainEntityKnowledgeGraphComponent.propTypes = {
   stixDomainEntity: PropTypes.object,
   engine: PropTypes.object,
   firstSeenYear: PropTypes.string,
-  isSavable: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

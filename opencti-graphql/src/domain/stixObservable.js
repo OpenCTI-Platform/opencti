@@ -3,7 +3,7 @@ import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteEntityById,
-  deleteRelation,
+  deleteRelationById,
   editInputTx,
   getById,
   dayFormat,
@@ -153,7 +153,7 @@ export const stixObservableDeleteRelation = (
   stixObservableId,
   relationId
 ) =>
-  deleteRelation(stixObservableId, relationId).then(relationData => {
+  deleteRelationById(stixObservableId, relationId).then(relationData => {
     notify(BUS_TOPICS.stixObservable.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });

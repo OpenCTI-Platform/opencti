@@ -269,7 +269,7 @@ define
   # STIX SRO relationships
   "stix_relation" sub relationship
     is-abstract
-    has "stix_id"
+    key "stix_id"
     has "created"
     has "modified"
     has "revoked"
@@ -406,7 +406,7 @@ define
     plays "knowledge_aggregation";
 
   "Token" sub entity
-    has "uuid"
+    key "uuid"
     has "type"
     has "name"
     has "revoked"
@@ -422,7 +422,7 @@ define
 
   "Stix-Domain" sub entity
     is-abstract
-    has "stix_id"
+    key "stix_id"
     has "stix_label"
     has "type"
     has "created"
@@ -549,7 +549,7 @@ define
 
   "User" sub "Identity"
     has "password"
-    has "email"
+    key "email"
     has "firstname"
     has "lastname"
     has "language"

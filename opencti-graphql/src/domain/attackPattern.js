@@ -12,7 +12,7 @@ import {
   takeWriteTx,
   prepareString
 } from '../database/grakn';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logger } from '../config/conf';
 
 export const findAll = args => {
   if (args.orderBy === 'killChainPhases') {
@@ -31,9 +31,13 @@ export const findById = attackPatternId => getById(attackPatternId);
 
 export const addAttackPattern = async (user, attackPattern) => {
   const wTx = await takeWriteTx();
-  const attackPatternIterator = await wTx.query(`insert $attackPattern isa Attack-Pattern 
+  const query = `insert $attackPattern isa Attack-Pattern 
     has type "attack-pattern";
-    $attackPattern has stix_id "attack-patern--${uuid()}";
+    $attackPattern has stix_id "${
+      attackPattern.stix_id
+        ? prepareString(attackPattern.stix_id)
+        : `attack-patern--${uuid()}`
+    }";
     $attackPattern has stix_label "";
     $attackPattern has alias "";
     $attackPattern has name "${prepareString(attackPattern.name)}";
@@ -74,7 +78,9 @@ export const addAttackPattern = async (user, attackPattern) => {
     $attackPattern has created_at_month "${monthFormat(now())}";
     $attackPattern has created_at_year "${yearFormat(now())}";
     $attackPattern has updated_at ${now()};
-  `);
+  `;
+  logger.debug(`[GRAKN - infer: false] ${query}`);
+  const attackPatternIterator = await wTx.query(query);
   const createAttackPattern = await attackPatternIterator.next();
   const createdAttackPatternId = await createAttackPattern
     .map()
