@@ -11,6 +11,7 @@ import {
   login,
   logout,
   userEditField,
+  userRenewToken,
   setAuthenticationCookie
 } from '../domain/user';
 import {
@@ -52,6 +53,7 @@ const userResolvers = {
       fieldPatch: ({ input }) => userEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
+      tokenRenew: () => userRenewToken(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)

@@ -58,18 +58,18 @@ export const findById = stixDomainEntityId => getById(stixDomainEntityId);
 
 export const findByStixId = args =>
   paginate(
-    `match $m isa ${
+    `match $x isa ${
       args.type ? args.type : 'Stix-Domain-Entity'
-    }; $m has stix_id "${prepareString(args.stix_id)}"`,
+    }; $x has stix_id "${prepareString(args.stix_id)}"`,
     args,
     false
   );
 
 export const findByName = args =>
   paginate(
-    `match $m isa ${
+    `match $x isa ${
       args.type ? args.type : 'Stix-Domain-Entity'
-    }; $m has name "${prepareString(args.name)}"`,
+    }; $x has name "${prepareString(args.name)}"`,
     args,
     false
   );

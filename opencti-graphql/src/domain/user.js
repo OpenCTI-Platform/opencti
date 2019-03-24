@@ -1,6 +1,5 @@
 import { head, isEmpty, join, map } from 'ramda';
 import uuid from 'uuid/v4';
-import uuidv5 from 'uuid/v5';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
@@ -11,8 +10,7 @@ import conf, {
   OPENCTI_DEFAULT_DURATION,
   OPENCTI_ISSUER,
   OPENCTI_TOKEN,
-  OPENCTI_WEB_TOKEN,
-  ROLE_USER
+  OPENCTI_WEB_TOKEN
 } from '../config/conf';
 import {
   getObject,
@@ -27,12 +25,13 @@ import {
   monthFormat,
   yearFormat,
   prepareString,
-  queryOne
+  queryOne,
+  write
 } from '../database/grakn';
 
 // Security related
-export const generateOpenCTIWebToken = email => ({
-  uuid: uuidv5(email, uuidv5.URL),
+export const generateOpenCTIWebToken = () => ({
+  uuid: uuid(),
   name: OPENCTI_WEB_TOKEN,
   created: now(),
   issuer: OPENCTI_ISSUER,
@@ -73,9 +72,7 @@ export const groups = (userId, args) =>
 
 export const token = userId =>
   getObject(
-    `match $x isa Token; 
-    $rel(authorization:$x, client:$client) isa authorize; 
-    $client id ${userId}; offset 0; limit 1; get $x,$rel;`,
+    `match $x isa Token; $rel(authorization:$x, client:$client) isa authorize; $client id ${userId}; offset 0; limit 1; get $x,$rel;`,
     'x',
     'rel'
   ).then(result => sign(result.node, conf.get('app:secret')));
@@ -115,7 +112,7 @@ export const addPerson = async (user, newUser) => {
 };
 
 export const addUser = async (user, newUser) => {
-  const newToken = generateOpenCTIWebToken(newUser.email);
+  const newToken = generateOpenCTIWebToken();
   const wTx = await takeWriteTx();
   const userIterator = await wTx.query(`insert $user isa User 
     has type "user";
@@ -223,6 +220,34 @@ export const logout = async (user, res) => {
   res.clearCookie(OPENCTI_TOKEN);
   await delUserContext(user);
   return user.id;
+};
+
+export const userRenewToken = async (user, userId) => {
+  const wTx = await takeWriteTx();
+  await wTx.query(
+    `match $user id ${userId}; $rel(authorization:$token, client:$user); delete $rel, $token;`
+  );
+  const newToken = generateOpenCTIWebToken();
+  const tokenIterator = await wTx.query(`insert $token isa Token 
+    has type "token"; 
+    $token has uuid "${newToken.uuid}";
+    $token has name "${newToken.name}";
+    $token has created ${newToken.created};
+    $token has issuer "${newToken.issuer}";
+    $token has revoked ${newToken.revoked};
+    $token has duration "${newToken.duration}";
+    $token has created_at ${now()};
+    $token has updated_at ${now()};
+  `);
+  const createdToken = await tokenIterator.next();
+  await createdToken.map().get('token').id;
+  await wTx.query(
+    `match $user id ${userId}"; $token isa Token has uuid "${
+      newToken.uuid
+    }"; insert (client: $user, authorization: $token) isa authorize;`
+  );
+  await wTx.commit();
+  return getById(userId);
 };
 
 export const userDelete = userId => deleteEntityById(userId);

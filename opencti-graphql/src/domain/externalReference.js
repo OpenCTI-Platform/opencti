@@ -22,9 +22,9 @@ export const findAll = args =>
   paginate('match $m isa External-Reference', args);
 export const findByEntity = args =>
   paginate(
-    `match $externalReference isa External-Reference; 
-    $rel(external_reference:$externalReference, so:$so) isa external_references; 
-    $so id ${args.objectId}`,
+    `match $externalReference isa External-Reference; $rel(external_reference:$externalReference, so:$so) isa external_references; $so id ${
+      args.objectId
+    }`,
     args
   );
 
@@ -32,13 +32,11 @@ export const findById = externalReferenceId => getById(externalReferenceId);
 
 export const search = args =>
   paginate(
-    `match $e isa External-Reference 
-    has source_name $sn;
-    $e has description $desc;
-    $e has url $url;
-    { $sn contains "${prepareString(args.search)}"; } or
-    { $desc contains "${prepareString(args.search)}"; } or
-    { $url contains "${prepareString(args.search)}"; }`,
+    `match $e isa External-Reference; $e has source_name $sn; $e has description $desc; $e has url $url; { $sn contains "${prepareString(
+      args.search
+    )}"; } or { $desc contains "${prepareString(
+      args.search
+    )}"; } or { $url contains "${prepareString(args.search)}"; }`,
     args,
     false
   );
@@ -59,9 +57,7 @@ export const addExternalReference = async (user, externalReference) => {
       externalReference.description
     )}";
     $externalReference has url "${
-      externalReference.url
-        ? prepareString(externalReference.url.toLowerCase())
-        : ''
+      externalReference.url ? prepareString(externalReference.url) : ''
     }";
     $externalReference has hash "${prepareString(externalReference.hash)}";
     $externalReference has external_id "${prepareString(

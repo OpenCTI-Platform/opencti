@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, filter, head, includes, map, equals,
-} from 'ramda';
+import { compose, head, map } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { DiagramEngine } from 'storm-react-diagrams';
 import Drawer from '@material-ui/core/Drawer';

@@ -69,6 +69,20 @@ export const findAll = args =>
     args
   );
 
+export const findByStixId = args =>
+  paginateRelationships(
+    `match $rel($from, $to); $rel has stix_id "${prepareString(args.stix_id)}"`,
+    args
+  );
+
+export const search = args =>
+  paginateRelationships(
+    `match $rel($from, $to); $rel has name $name; $rel has description $desc; { $name contains "${prepareString(
+      args.search
+    )}"; } or { $desc contains "${prepareString(args.search)}"; }`,
+    args
+  );
+
 export const findAllWithInferences = async args => {
   const entities = await getObjectsWithoutAttributes(
     `match $x; (${args.resolveRelationRole}: $from, $x) isa ${
@@ -433,16 +447,6 @@ export const stixRelationsDistributionWithInferences = async args => {
 export const findById = stixRelationId => getRelationById(stixRelationId);
 export const findByIdInferred = stixRelationId =>
   getRelationInferredById(stixRelationId);
-
-export const search = args =>
-  paginateRelationships(
-    `match $m isa Stix-Domain-Entity
-    has name $name
-    has description $desc;
-    { $name contains "${prepareString(args.search)}"; } or
-    { $desc contains "${prepareString(args.search)}"; }`,
-    args
-  );
 
 export const markingDefinitions = (stixRelationId, args) =>
   paginate(

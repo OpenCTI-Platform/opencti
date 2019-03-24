@@ -4,6 +4,7 @@ import {
   addStixRelation,
   stixRelationDelete,
   findAll,
+  findByStixId,
   findById,
   findByIdInferred,
   findAllWithInferences,
@@ -18,13 +19,11 @@ import {
   stixRelationEditContext,
   stixRelationCleanContext,
   stixRelationEditField,
-  stixRelationAddRelation,
+  stixRelationAddRelation
 } from '../domain/stixRelation';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
-import {
-  stixDomainEntityDeleteRelation
-} from '../domain/stixDomainEntity';
+import { stixDomainEntityDeleteRelation } from '../domain/stixDomainEntity';
 
 const stixRelationResolvers = {
   Query: {
@@ -37,6 +36,9 @@ const stixRelationResolvers = {
     stixRelations: (_, args) => {
       if (args.search && args.search.length > 0) {
         return search(args);
+      }
+      if (args.stix_id && args.stix_id.length > 0) {
+        return findByStixId(args);
       }
       if (
         args.resolveInferences &&

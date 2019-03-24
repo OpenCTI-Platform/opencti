@@ -1,7 +1,6 @@
 opencti:
   api_url: 'http://opencti.example.com'
   api_key : 'XXxxXxXXxxX'
-  default_identity: 'VXXXXXXXXX'
   verbose: true
 
 mitre:

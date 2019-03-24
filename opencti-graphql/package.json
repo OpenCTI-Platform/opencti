@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/server.js",
   "author": "Luatix",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "scripts": {
     "start": "babel-node -r node_modules/dotenv/config ./src/server.js",
     "build": "babel --out-dir ./dist ./src && pkg package.json --output ./build/opencti",

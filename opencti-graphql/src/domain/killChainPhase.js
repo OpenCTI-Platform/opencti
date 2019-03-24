@@ -18,7 +18,14 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa Kill-Chain-Phase', args);
+export const findAll = args => paginate('match $k isa Kill-Chain-Phase', args);
+export const findByEntity = args =>
+  paginate(
+    `match $killChainPhase isa Kill-Chain-Phase; 
+    $rel(kill_chain_phase:$killChainPhase, phase_belonging:$so) isa kill_chain_phases; 
+    $so id ${args.objectId}`,
+    args
+  );
 
 export const findById = killChainPhaseId => getById(killChainPhaseId);
 

@@ -4,6 +4,7 @@ import {
   addKillChainPhase,
   killChainPhaseDelete,
   findAll,
+  findByEntity,
   findById,
   findByPhaseName,
   markingDefinitions,
@@ -20,6 +21,9 @@ const killChainPhaseResolvers = {
   Query: {
     killChainPhase: (_, { id }) => findById(id),
     killChainPhases: (_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return findByEntity(args);
+      }
       if (args.phaseName && args.phaseName.length > 0) {
         return findByPhaseName(args);
       }

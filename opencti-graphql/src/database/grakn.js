@@ -709,10 +709,9 @@ export const paginateRelationships = (
  */
 export const createRelation = async (id, input) => {
   const wTx = await takeWriteTx();
-  const query = `match $from id ${id}; 
-         $to id ${input.toId}; 
-         insert $rel(${input.fromRole}: $from, ${input.toRole}: $to) 
-         isa ${input.through};`;
+  const query = `match $from id ${id}; $to id ${input.toId}; insert $rel(${
+    input.fromRole
+  }: $from, ${input.toRole}: $to) isa ${input.through};`;
   logger.debug(`[GRAKN - infer: false] ${query}`);
   const iterator = await wTx.query(query);
   const answer = await iterator.next();

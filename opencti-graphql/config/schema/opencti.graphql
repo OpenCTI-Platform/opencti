@@ -1333,7 +1333,7 @@ type Query {
     stixDomainEntitiesNumber(type: String, endDate: DateTime): Number @auth
     # StixRelations
     stixRelation(id: String!): StixRelation @auth
-    stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, fromId: String, inferred: Boolean, toId: String, fromTypes: [String], toTypes: [String], relationType: String, resolveInferences: Boolean, resolveRelationType: String, resolveRelationRole: String, resolveRelationToTypes: [String], resolveViaTypes: [EntityRelation], firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection @auth
+    stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, stix_id: String, fromId: String, inferred: Boolean, toId: String, fromTypes: [String], toTypes: [String], relationType: String, resolveInferences: Boolean, resolveRelationType: String, resolveRelationRole: String, resolveRelationToTypes: [String], resolveViaTypes: [EntityRelation], firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection @auth
     stixRelationsTimeSeries(fromId: String, relationType: String, resolveInferences: Boolean, resolveRelationType: String, resolveRelationRole: String, resolveRelationToTypes: [String], resolveViaTypes: [EntityRelation], entityTypes: [String], toTypes: [String], field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries] @auth
     stixRelationsDistribution(fromId: String, relationType: String, resolveInferences: Boolean, resolveRelationType: String, resolveRelationRole: String, resolveRelationToTypes: [String], resolveViaTypes: [EntityRelation], entityTypes: [String], toTypes: [String], field: String!, operation: StatsOperation!, limit: Int, order: String): [Distribution] @auth
     # Workspaces
@@ -1372,7 +1372,7 @@ type Query {
     externalReferences(first: Int, after: ID, orderBy: ExternalReferencesOrdering, orderMode: OrderingMode, objectId: String, search: String): ExternalReferenceConnection @auth
     # KillChainPhases
     killChainPhase(id: String!): KillChainPhase @auth
-    killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, search: String, phaseName: String): KillChainPhaseConnection @auth
+    killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, objectId: String, search: String, phaseName: String): KillChainPhaseConnection @auth
     # AttackPatterns
     attackPattern(id: String!): AttackPattern @auth
     attackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, search: String): AttackPatternConnection @auth
@@ -1475,6 +1475,7 @@ type UserEditMutations {
     fieldPatch(input: EditInput): User
     contextPatch(input: EditContext): User
     contextClean: User
+    tokenRenew: User
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
