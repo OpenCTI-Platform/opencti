@@ -7,6 +7,7 @@ import {
   notify,
   now,
   paginate,
+  prepareDate,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -39,8 +40,28 @@ export const addThreatActor = async (user, threatActor) => {
     $threatActor has alias "";
     $threatActor has name "${prepareString(threatActor.name)}";
     $threatActor has description "${prepareString(threatActor.description)}";
-    $threatActor has created ${now()};
-    $threatActor has modified ${now()};
+    $threatActor has goal "${prepareString(threatActor.goal)}";
+    $threatActor has sophistication "${prepareString(
+      threatActor.sophistication
+    )}";
+    $threatActor has resource_level "${prepareString(
+      threatActor.resource_level
+    )}";
+    $threatActor has primary_motivation "${prepareString(
+      threatActor.primary_motivation
+    )}";
+    $threatActor has secondary_motivation "${prepareString(
+      threatActor.secondary_motivation
+    )}";
+    $threatActor has personal_motivation "${prepareString(
+      threatActor.personal_motivation
+    )}";
+    $threatActor has created ${
+      threatActor.created ? prepareDate(threatActor.created) : now()
+    };
+    $threatActor has modified ${
+      threatActor.modified ? prepareDate(threatActor.modified) : now()
+    };
     $threatActor has revoked false;
     $threatActor has created_at ${now()};
     $threatActor has created_at_day "${dayFormat(now())}";

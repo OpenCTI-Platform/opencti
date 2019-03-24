@@ -3,6 +3,7 @@ import uuid from 'uuid/v4';
 import {
   deleteEntityById,
   getById,
+  prepareDate,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -37,8 +38,8 @@ export const addRegion = async (user, region) => {
     $region has alias "";
     $region has name "${prepareString(region.name)}";
     $region has description "${prepareString(region.description)}";
-    $region has created ${now()};
-    $region has modified ${now()};
+    $region has created ${region.created ? prepareDate(region.created) : now()};
+    $region has modified ${region.modified ? prepareDate(region.modified) : now()};
     $region has revoked false;
     $region has created_at ${now()};
     $region has created_at_day "${dayFormat(now())}";

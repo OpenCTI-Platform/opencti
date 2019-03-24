@@ -132,8 +132,10 @@ export const addReport = async (user, report) => {
     $report has report_class "${prepareString(report.report_class)}";
     $report has object_status 0;
     $report has graph_data "";
-    $report has created ${now()};
-    $report has modified ${now()};
+    $report has created ${report.created ? prepareDate(report.created) : now()};
+    $report has modified ${
+      report.modified ? prepareDate(report.modified) : now()
+    };
     $report has revoked false;
     $report has created_at ${now()};
     $report has created_at_day "${dayFormat(now())}";

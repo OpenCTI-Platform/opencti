@@ -4,7 +4,7 @@ import {
   createRelation,
   deleteEntityById,
   deleteRelationById,
-  editInputTx,
+  updateAttribute,
   getById,
   dayFormat,
   monthFormat,
@@ -147,6 +147,6 @@ export const workspaceEditContext = (user, workspaceId, input) => {
 };
 
 export const workspaceEditField = (user, workspaceId, input) =>
-  editInputTx(workspaceId, input).then(workspace =>
+  updateAttribute(workspaceId, input).then(workspace =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );

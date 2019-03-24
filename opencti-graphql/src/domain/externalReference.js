@@ -5,8 +5,9 @@ import {
   createRelation,
   deleteEntityById,
   deleteRelationById,
-  editInputTx,
+  updateAttribute,
   getById,
+  prepareDate,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -63,8 +64,14 @@ export const addExternalReference = async (user, externalReference) => {
     $externalReference has external_id "${prepareString(
       externalReference.external_id
     )}";
-    $externalReference has created ${now()};
-    $externalReference has modified ${now()};
+    $externalReference has created ${
+      externalReference.created ? prepareDate(externalReference.created) : now()
+    };
+    $externalReference has modified ${
+      externalReference.modified
+        ? prepareDate(externalReference.modified)
+        : now()
+    };
     $externalReference has revoked false;
     $externalReference has created_at ${now()};
     $externalReference has created_at_day "${dayFormat(now())}";
@@ -145,6 +152,6 @@ export const externalReferenceEditContext = (
 };
 
 export const externalReferenceEditField = (user, externalReferenceId, input) =>
-  editInputTx(externalReferenceId, input).then(externalReference =>
+  updateAttribute(externalReferenceId, input).then(externalReference =>
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
   );

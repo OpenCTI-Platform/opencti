@@ -4,8 +4,10 @@ import os
 import requests
 import datetime
 import json
+import uuid
 
 from pycti.stix2 import Stix2
+
 
 class OpenCti:
     """
@@ -351,6 +353,35 @@ class OpenCti:
             }
         })
         return result['data']['killChainPhaseAdd']
+
+    def get_threat_actors(self, limit=10000):
+        self.log('Getting threat actors...')
+        query = """
+            query ThreatActors($first: Int) {
+                threatActors(first: $first) {
+                    edges {
+                        node {
+                            id
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            goal
+                            sophistication
+                            resource_level
+                            primary_motivation
+                            secondary_motivation
+                            personal_motivation
+                            created
+                            modified
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'first': limit})
+        return self.parse_multiple(result['data']['threatActors'])
 
     def create_threat_actor(self, name, description, stix_id=None):
         self.log('Creating threat actor ' + name + '...')
@@ -781,7 +812,7 @@ class OpenCti:
         else:
             return None
 
-    def import_stix2_bundle(self, file_path):
+    def stix2_import_bundle(self, file_path):
         if not os.path.isfile(file_path):
             self.log('The bundle file does not exists')
             return None
@@ -791,3 +822,19 @@ class OpenCti:
 
         stix2 = Stix2(self)
         stix2.import_bundle(data)
+
+    def stix2_export_bundle(self, types=[]):
+        stix2 = Stix2(self)
+        bundle = {
+            'type': 'bundle',
+            'id': 'bundle--' + str(uuid.uuid4()),
+            'spec_version': '2.0',
+            'objects': []
+        }
+
+        if 'Threat-Actor' in types:
+            threat_actors = self.get_threat_actors()
+            for threat_actor in threat_actors:
+                bundle['objects'].append(stix2.export_threat_actor(threat_actor))
+
+        return bundle

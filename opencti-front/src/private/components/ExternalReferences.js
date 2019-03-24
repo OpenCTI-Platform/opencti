@@ -257,7 +257,7 @@ class ExternalReferences extends Component {
               {t('Cancel')}
             </Button>
             {this.state.exportCsvData !== null
-              ? <Button component={CSVLink} data={this.state.exportCsvData} separator={';'} enclosingCharacter={'"'} color='primary' filename={`${t('Reports')}.csv`}>
+              ? <Button component={CSVLink} data={this.state.exportCsvData} separator={';'} enclosingCharacter={'"'} color='primary' filename={`${t('External references')}.csv`}>
                 {t('Download')}
               </Button>
               : ''}

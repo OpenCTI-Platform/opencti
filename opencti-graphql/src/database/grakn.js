@@ -117,7 +117,9 @@ export const getById = async id => {
         mapObjIndexed((num, key, obj) =>
           obj[key].length === 1 && !includes(key, multipleAttributes)
             ? head(obj[key])
-            : obj[key]
+            : head(obj[key]) && head(obj[key]).length > 0
+            ? obj[key]
+            : []
         ) // Remove extra list then contains only 1 element
       )(attributesData);
       return Promise.resolve(assoc('id', id, transform));
@@ -733,7 +735,7 @@ export const createRelation = async (id, input) => {
  * @param input
  * @returns the complete instance
  */
-export const editInputTx = async (id, input) => {
+export const updateAttribute = async (id, input) => {
   const { key, value } = input; // value can be multi valued
   // 00. If the transaction already exist, just continue the process
   const wTx = await takeWriteTx();
@@ -798,11 +800,11 @@ export const editInputTx = async (id, input) => {
     const monthValue = monthFormat(head(value));
     const yearValue = yearFormat(head(value));
     const dayInput = { key: `${key}_day`, value: [dayValue] };
-    await editInputTx(id, dayInput);
+    await updateAttribute(id, dayInput);
     const monthInput = { key: `${key}_month`, value: [monthValue] };
-    await editInputTx(id, monthInput);
+    await updateAttribute(id, monthInput);
     const yearInput = { key: `${key}_year`, value: [yearValue] };
-    return editInputTx(id, yearInput);
+    return updateAttribute(id, yearInput);
   }
   return getById(id);
 };

@@ -3,6 +3,7 @@ import uuid from 'uuid/v4';
 import {
   deleteEntityById,
   getById,
+  prepareDate,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -37,8 +38,12 @@ export const addCountry = async (user, country) => {
     $country has alias "";
     $country has name "${prepareString(country.name)}";
     $country has description "${prepareString(country.description)}";
-    $country has created ${now()};
-    $country has modified ${now()};
+    $country has created ${
+      country.created ? prepareDate(country.created) : now()
+    };
+    $country has modified ${
+      country.modified ? prepareDate(country.modified) : now()
+    };
     $country has revoked false;
     $country has created_at ${now()};
     $country has created_at_day "${dayFormat(now())}";

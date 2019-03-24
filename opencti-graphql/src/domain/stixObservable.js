@@ -4,7 +4,7 @@ import {
   createRelation,
   deleteEntityById,
   deleteRelationById,
-  editInputTx,
+  updateAttribute,
   getById,
   dayFormat,
   monthFormat,
@@ -173,6 +173,6 @@ export const stixObservableEditContext = (user, stixObservableId, input) => {
 };
 
 export const stixObservableEditField = (user, stixObservableId, input) =>
-  editInputTx(stixObservableId, input).then(stixObservable =>
+  updateAttribute(stixObservableId, input).then(stixObservable =>
     notify(BUS_TOPICS.stixObservable.EDIT_TOPIC, stixObservable, user)
   );

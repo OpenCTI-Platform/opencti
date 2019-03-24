@@ -1,6 +1,6 @@
 import {
   deleteEntityById,
-  editInputTx,
+  updateAttribute,
   getById,
   getObject,
   notify,
@@ -58,6 +58,6 @@ export const settingsEditContext = (user, settingsId, input) => {
 };
 
 export const settingsEditField = (user, settingsId, input) =>
-  editInputTx(settingsId, input).then(settings =>
+  updateAttribute(settingsId, input).then(settings =>
     notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
   );

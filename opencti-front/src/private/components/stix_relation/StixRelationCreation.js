@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  compose, map, pathOr, pipe, pluck,
+  compose, map, pathOr, pipe, pluck, head,
 } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
@@ -260,15 +260,24 @@ class StixRelationCreation extends Component {
 
   renderForm() {
     const {
-      t, classes, from, to,
+      t,
+      classes,
+      from,
+      to,
+      weight,
+      firstSeen,
+      lastSeen,
     } = this.props;
     const relationshipTypes = resolveRelationsTypes(from.type, to.type);
-
+    const defaultRelationshipType = head(relationshipTypes) ? head(relationshipTypes) : 'related-to';
+    const defaultWeight = weight || 3;
+    const defaultFirstSeen = firstSeen || null;
+    const defaultLastSeen = lastSeen || null;
     return (
       <Formik
         enableReinitialize={true}
         initialValues={{
-          relationship_type: '', weight: '', first_seen: null, last_seen: null, description: '', locations: [],
+          relationship_type: defaultRelationshipType, weight: defaultWeight, first_seen: defaultFirstSeen, last_seen: defaultLastSeen, description: '', locations: [],
         }}
         validationSchema={stixRelationValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
@@ -553,6 +562,9 @@ StixRelationCreation.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,
+  firstSeen: PropTypes.string,
+  lastSeen: PropTypes.string,
+  weight: PropTypes.number,
 };
 
 export default compose(

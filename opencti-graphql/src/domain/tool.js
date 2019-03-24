@@ -3,6 +3,7 @@ import uuid from 'uuid/v4';
 import {
   deleteEntityById,
   getById,
+  prepareDate,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -29,8 +30,8 @@ export const addTool = async (user, tool) => {
     $tool has alias "";
     $tool has name "${prepareString(tool.name)}";
     $tool has description "${prepareString(tool.description)}";
-    $tool has created ${now()};
-    $tool has modified ${now()};
+    $tool has created ${tool.created ? prepareDate(tool.created) : now()};
+    $tool has modified ${tool.modified ? prepareDate(tool.modified) : now()};
     $tool has revoked false;
     $tool has created_at ${now()};
     $tool has created_at_day "${dayFormat(now())}";

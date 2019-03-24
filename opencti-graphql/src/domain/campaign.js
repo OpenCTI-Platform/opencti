@@ -58,8 +58,12 @@ export const addCampaign = async (user, campaign) => {
     $campaign has last_seen_day "${dayFormat(campaign.last_seen)}";
     $campaign has last_seen_month "${monthFormat(campaign.last_seen)}";
     $campaign has last_seen_year "${yearFormat(campaign.last_seen)}";
-    $campaign has created ${now()};
-    $campaign has modified ${now()};
+    $campaign has created ${
+      campaign.created ? prepareDate(campaign.created) : now()
+    };
+    $campaign has modified ${
+      campaign.modified ? prepareDate(campaign.modified) : now()
+    };
     $campaign has revoked false;
     $campaign has created_at ${now()};
     $campaign has created_at_day "${dayFormat(now())}";

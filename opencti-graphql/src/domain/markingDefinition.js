@@ -1,12 +1,12 @@
-import { head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteEntityById,
   deleteRelationById,
-  editInputTx,
+  updateAttribute,
   getById,
+  prepareDate,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -39,8 +39,14 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
     )}";
     $markingDefinition has color "${prepareString(markingDefinition.color)}";
     $markingDefinition has level ${markingDefinition.level};
-    $markingDefinition has created ${now()};
-    $markingDefinition has modified ${now()};
+    $markingDefinition has created ${
+      markingDefinition.created ? prepareDate(markingDefinition.created) : now()
+    };
+    $markingDefinition has modified ${
+      markingDefinition.modified
+        ? prepareDate(markingDefinition.modified)
+        : now()
+    };
     $markingDefinition has revoked false;
     $markingDefinition has created_at ${now()};
     $markingDefinition has created_at_day "${dayFormat(now())}";
@@ -109,6 +115,6 @@ export const markingDefinitionEditContext = (
 };
 
 export const markingDefinitionEditField = (user, markingDefinitionId, input) =>
-  editInputTx(markingDefinitionId, input).then(markingDefinition =>
+  updateAttribute(markingDefinitionId, input).then(markingDefinition =>
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );

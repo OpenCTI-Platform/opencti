@@ -20,13 +20,13 @@ import {
   now,
   paginate,
   takeWriteTx,
-  editInputTx,
+  updateAttribute,
+  prepareDate,
   dayFormat,
   monthFormat,
   yearFormat,
   prepareString,
-  queryOne,
-  write
+  queryOne
 } from '../database/grakn';
 
 // Security related
@@ -88,6 +88,11 @@ export const addPerson = async (user, newUser) => {
     $user has alias "";
     $user has name "${prepareString(newUser.name)}";
     $user has description "${prepareString(newUser.description)}";
+    $user has created ${newUser.created ? prepareDate(newUser.created) : now()};
+    $user has modified ${
+      newUser.modified ? prepareDate(newUser.modified) : now()
+    };
+    $user has revoked false;
     $user has created_at ${now()};
     $user has created_at_day "${dayFormat(now())}";
     $user has created_at_month "${monthFormat(now())}";
@@ -135,6 +140,13 @@ export const addUser = async (user, newUser) => {
         ? `$user has language "${prepareString(newUser.language)}";`
         : '$user has language "auto";'
     }
+        $user has created ${
+          newUser.created ? prepareDate(newUser.created) : now()
+        };
+    $user has modified ${
+      newUser.modified ? prepareDate(newUser.modified) : now()
+    };
+    $user has revoked false;
     $user has created_at ${now()};
     $user has created_at_day "${dayFormat(now())}";
     $user has created_at_month "${monthFormat(now())}";
@@ -257,7 +269,7 @@ export const userEditField = (user, userId, input) => {
   const value =
     key === 'password' ? [bcrypt.hashSync(head(input.value), 10)] : input.value;
   const finalInput = { key, value };
-  return editInputTx(userId, finalInput).then(userToEdit =>
+  return updateAttribute(userId, finalInput).then(userToEdit =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user)
   );
 };

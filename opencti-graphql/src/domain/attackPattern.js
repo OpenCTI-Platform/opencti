@@ -3,6 +3,7 @@ import uuid from 'uuid/v4';
 import {
   deleteEntityById,
   getById,
+  prepareDate,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -70,8 +71,12 @@ export const addAttackPattern = async (user, attackPattern) => {
           )
         : ''
     }
-    $attackPattern has created ${now()};
-    $attackPattern has modified ${now()};
+    $attackPattern has created ${
+      attackPattern.created ? prepareDate(attackPattern.created) : now()
+    };
+    $attackPattern has modified ${
+      attackPattern.modified ? prepareDate(attackPattern.modified) : now()
+    };
     $attackPattern has revoked false;
     $attackPattern has created_at ${now()};
     $attackPattern has created_at_day "${dayFormat(now())}";

@@ -1,8 +1,9 @@
-import { assoc, map } from 'ramda';
+import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   deleteEntityById,
   getById,
+  prepareDate,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -58,8 +59,8 @@ export const addIncident = async (user, incident) => {
     $incident has last_seen_day "${dayFormat(incident.last_seen)}";
     $incident has last_seen_month "${monthFormat(incident.last_seen)}";
     $incident has last_seen_year "${yearFormat(incident.last_seen)}";
-    $incident has created ${now()};
-    $incident has modified ${now()};
+    $incident has created ${incident.created ? prepareDate(incident.created) : now()};
+    $incident has modified ${incident.modified ? prepareDate(incident.modified) : now()};
     $incident has revoked false;
     $incident has created_at ${now()};
     $incident has created_at_day "${dayFormat(now())}";

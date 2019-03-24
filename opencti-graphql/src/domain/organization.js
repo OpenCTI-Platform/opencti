@@ -3,6 +3,7 @@ import uuid from 'uuid/v4';
 import {
   deleteEntityById,
   getById,
+  prepareDate,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -31,8 +32,12 @@ export const addOrganization = async (user, organization) => {
     $organization has alias "";
     $organization has name "${prepareString(organization.name)}";
     $organization has description "${prepareString(organization.description)}";
-    $organization has created ${now()};
-    $organization has modified ${now()};
+    $organization has created ${
+      organization.created ? prepareDate(organization.created) : now()
+    };
+    $organization has modified ${
+      organization.modified ? prepareDate(organization.modified) : now()
+    };
     $organization has revoked false;
     $organization has created_at ${now()};
     $organization has created_at_day "${dayFormat(now())}";

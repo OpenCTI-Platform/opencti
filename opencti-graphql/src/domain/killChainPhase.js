@@ -1,12 +1,12 @@
-import { head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteEntityById,
   deleteRelationById,
-  editInputTx,
+  updateAttribute,
   getById,
+  prepareDate,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -63,8 +63,12 @@ export const addKillChainPhase = async (user, killChainPhase) => {
       killChainPhase.phase_name
     )}";
     $killChainPhase has phase_order ${killChainPhase.phase_order};
-    $killChainPhase has created ${now()};
-    $killChainPhase has modified ${now()};
+    $killChainPhase has created ${
+      killChainPhase.created ? prepareDate(killChainPhase.created) : now()
+    };
+    $killChainPhase has modified ${
+      killChainPhase.modified ? prepareDate(killChainPhase.modified) : now()
+    };
     $killChainPhase has revoked false;
     $killChainPhase has created_at ${now()};
     $killChainPhase has created_at_day "${dayFormat(now())}";
@@ -125,6 +129,6 @@ export const killChainPhaseEditContext = (user, killChainPhaseId, input) => {
 };
 
 export const killChainPhaseEditField = (user, killChainPhaseId, input) =>
-  editInputTx(killChainPhaseId, input).then(killChainPhase =>
+  updateAttribute(killChainPhaseId, input).then(killChainPhase =>
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );

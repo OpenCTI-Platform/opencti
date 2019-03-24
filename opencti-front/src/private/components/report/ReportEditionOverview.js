@@ -326,6 +326,7 @@ class ReportEditionOverviewComponent extends Component {
                 handleClose={this.handleCloseIdentityCreation.bind(this)}
                 creationCallback={(data) => {
                   setFieldValue('createdByRef', { label: data.identityAdd.name, value: data.identityAdd.id });
+                  this.handleChangeCreatedByRef('createdByRef', { label: data.identityAdd.name, value: data.identityAdd.id });
                 }}
               />
             </div>

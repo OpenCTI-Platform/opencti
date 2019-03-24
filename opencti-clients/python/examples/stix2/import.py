@@ -15,4 +15,4 @@ file_to_import = config['mitre']['repository_path_cti'] + '/enterprise-attack/en
 opencti = OpenCti(config['opencti']['api_url'], config['opencti']['api_key'], config['opencti']['verbose'])
 
 # Import the bundle
-opencti.import_stix2_bundle(file_to_import)
+opencti.stix2_import_bundle(file_to_import)

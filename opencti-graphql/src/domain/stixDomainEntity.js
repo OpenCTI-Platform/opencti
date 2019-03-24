@@ -5,7 +5,7 @@ import {
   createRelation,
   deleteEntityById,
   deleteRelationById,
-  editInputTx,
+  updateAttribute,
   getById,
   dayFormat,
   monthFormat,
@@ -173,8 +173,12 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     $stixDomainEntity has description "${prepareString(
       stixDomainEntity.description
     )}";
-    $stixDomainEntity has created ${now()};
-    $stixDomainEntity has modified ${now()};
+    $stixDomainEntity has created ${
+      stixDomainEntity.created ? prepareDate(stixDomainEntity.created) : now()
+    };
+    $stixDomainEntity has modified ${
+      stixDomainEntity.modified ? prepareDate(stixDomainEntity.modified) : now()
+    };
     $stixDomainEntity has revoked false;
     $stixDomainEntity has created_at ${now()};
     $stixDomainEntity has created_at_day "${dayFormat(now())}";
@@ -251,6 +255,6 @@ export const stixDomainEntityEditContext = (
 };
 
 export const stixDomainEntityEditField = (user, stixDomainEntityId, input) =>
-  editInputTx(stixDomainEntityId, input).then(stixDomainEntity =>
+  updateAttribute(stixDomainEntityId, input).then(stixDomainEntity =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user)
   );

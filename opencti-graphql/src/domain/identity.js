@@ -3,6 +3,7 @@ import uuid from 'uuid/v4';
 import {
   deleteEntityById,
   getById,
+  prepareDate,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -44,8 +45,12 @@ export const addIdentity = async (user, identity) => {
     $identity has alias "";
     $identity has name "${prepareString(identity.name)}";
     $identity has description "${prepareString(identity.description)}";
-    $identity has created ${now()};
-    $identity has modified ${now()};
+    $identity has created ${
+      identity.created ? prepareDate(identity.created) : now()
+    };
+    $identity has modified ${
+      identity.modified ? prepareDate(identity.modified) : now()
+    };
     $identity has revoked false;
     $identity has created_at ${now()};
     $identity has created_at_day "${dayFormat(now())}";

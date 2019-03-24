@@ -288,6 +288,8 @@ interface Identity {
     id: ID!
     type: String!
     name: String!
+    stix_label: [String]
+    alias: [String]
     description: String
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
@@ -295,6 +297,7 @@ interface Identity {
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, inferred: Boolean, toId: String,fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
 }
 input IdentityAddInput  {
+    stix_id: String
     name: String!
     description: String
     type: String!
@@ -932,6 +935,12 @@ input ThreatActorAddInput {
     stix_id: String
     name: String!
     description: String!
+    goal: String
+    sophistication: String
+    resource_level: String
+    primary_motivation: String
+    secondary_motivation: String
+    personal_motivation: String
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String

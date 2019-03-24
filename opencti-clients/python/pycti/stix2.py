@@ -2,6 +2,7 @@
 
 import time
 import datetime
+import sys
 
 
 class Stix2:
@@ -13,6 +14,9 @@ class Stix2:
     def __init__(self, opencti):
         self.opencti = opencti
         self.mapping_cache = {}
+
+    def unknown_type(self, stix_object):
+        self.opencti.log('Unknown object type "' + stix_object['type'] + '", doing nothing...')
 
     def convert_markdown(self, text):
         return text. \
@@ -29,14 +33,14 @@ class Stix2:
         return stix_object
 
     def prepare_relationship(self, stix_relation):
-        if 'x-opencti-description' not in stix_relation:
-            stix_relation['x-opencti-description'] = None
-        if 'x-opencti-first-seen' not in stix_relation:
-            stix_relation['x-opencti-first-seen'] = None
-        if 'x-opencti-last-seen' not in stix_relation:
-            stix_relation['x-opencti-last-seen'] = None
-        if 'x-opencti-weight' not in stix_relation:
-            stix_relation['x-opencti-weight'] = None
+        if 'x_opencti_description' not in stix_relation:
+            stix_relation['x_opencti_description'] = None
+        if 'x_opencti_first_seen' not in stix_relation:
+            stix_relation['x_opencti_first_seen'] = None
+        if 'x_opencti_last_seen' not in stix_relation:
+            stix_relation['x_opencti_last_seen'] = None
+        if 'x_opencti_weight' not in stix_relation:
+            stix_relation['x_opencti_weight'] = None
 
         return stix_relation
 
@@ -45,25 +49,32 @@ class Stix2:
         external_references_ids = []
         if 'external_references' in stix_object:
             for external_reference in stix_object['external_references']:
-                url = ''
-                description = ''
-                external_id = ''
                 if 'url' in external_reference:
                     url = external_reference['url']
-                if 'description' in external_reference:
-                    description = external_reference['description']
-                if 'external_id' in external_reference:
-                    external_id = external_reference['external_id']
-
+                else:
+                    continue
                 external_reference_result = self.opencti.get_external_reference_by_url(url)
                 if external_reference_result is not None:
                     external_reference_id = external_reference_result['id']
                 else:
+                    if 'x_opencti_stix_id' in external_reference:
+                        stix_id = external_reference['x_opencti_stix_id']
+                    else:
+                        stix_id = None
+                    if 'description' in external_reference:
+                        description = external_reference['description']
+                    else:
+                        description = ''
+                    if 'external_id' in external_reference:
+                        external_id = external_reference['external_id']
+                    else:
+                        external_id = ''
                     external_reference_id = self.opencti.create_external_reference(
                         external_reference['source_name'],
                         url,
                         external_id,
                         description,
+                        stix_id
                     )['id']
                 external_references_ids.append(external_reference_id)
         # Kill Chain Phases
@@ -74,9 +85,14 @@ class Stix2:
                 if kill_chain_phase_result is not None:
                     kill_chain_phase_id = kill_chain_phase_result['id']
                 else:
+                    if 'x_opencti_stix_id' in kill_chain_phase:
+                        stix_id = kill_chain_phase['x_opencti_stix_id']
+                    else:
+                        stix_id = None
                     kill_chain_phase_id = self.opencti.create_kill_chain_phase(
                         kill_chain_phase['kill_chain_name'],
-                        kill_chain_phase['phase_name']
+                        kill_chain_phase['phase_name'],
+                        stix_id
                     )['id']
                 kill_chain_phases_ids.append(kill_chain_phase_id)
 
@@ -85,17 +101,18 @@ class Stix2:
         if stix_object_result is None:
             stix_object = self.prepare_object(stix_object)
             importer = {
-                'threat-actor': self.threat_actor,
-                'intrusion-set': self.intrusion_set,
-                'campaign': self.campaign,
-                'incident': self.incident,
-                'malware': self.malware,
-                'tool': self.tool,
-                'vulnerability': self.vulnerability,
-                'attack-pattern': self.attack_pattern,
-                'course-of-action': self.course_of_action,
+                'identity': self.create_identity,
+                'threat-actor': self.create_threat_actor,
+                'intrusion-set': self.create_intrusion_set,
+                'campaign': self.create_campaign,
+                'incident': self.create_incident,
+                'malware': self.create_malware,
+                'tool': self.create_tool,
+                'vulnerability': self.create_vulnerability,
+                'attack-pattern': self.create_attack_pattern,
+                'course-of-action': self.create_course_of_action,
             }
-            do_import = importer.get(stix_object['type'], lambda: 'Invalid entity type')
+            do_import = importer.get(stix_object['type'], lambda stix_object: self.unknown_type(stix_object))
             stix_object_result = do_import(stix_object)
 
         # Add embedded relationships
@@ -108,6 +125,9 @@ class Stix2:
             elif 'x_mitre_aliases' in stix_object:
                 new_aliases = stix_object_result['alias'] + list(set(stix_object['x_mitre_aliases']) - set(stix_object_result['alias']))
                 self.opencti.update_stix_domain_entity_field(stix_object_result['id'], 'alias', new_aliases)
+            elif 'x_opencti_aliases' in stix_object:
+                new_aliases = stix_object_result['alias'] + list(set(stix_object['x_opencti_aliases']) - set(stix_object_result['alias']))
+                self.opencti.update_stix_domain_entity_field(stix_object_result['id'], 'alias', new_aliases)
             # Add external references
             for external_reference_id in external_references_ids:
                 self.opencti.add_external_reference(stix_object_result['id'], external_reference_id)
@@ -117,7 +137,73 @@ class Stix2:
 
         return stix_object_result
 
-    def threat_actor(self, stix_object):
+    def export_identity(self, entity):
+        if entity['type'] == 'User':
+            identity_class = 'individual'
+        elif entity['type'] == 'Sector':
+            identity_class = 'class'
+        else:
+            identity_class = entity['type'].lower()
+
+        return {
+            'type': 'identity',
+            'labels': entity['stix_label'],
+            'name': entity['name'],
+            'description': entity['description'],
+            'identity_class': identity_class,
+            'created': entity['created'],
+            'moodified': entity['modified'],
+            'x_opencti_aliases': entity['alias']
+        }
+
+    def create_identity(self, stix_object):
+        stix_object_result = self.opencti.search_stix_domain_entity(stix_object['name'], 'Identity')
+        if stix_object_result is not None:
+            return stix_object_result
+        else:
+            if stix_object['identity_class'] == 'individual':
+                type = 'User'
+            elif stix_object['identity_class'] == 'organization':
+                type = 'Organization'
+            elif stix_object['identity_class'] == 'group':
+                type = 'Organization'
+            elif stix_object['identity_class'] == 'class':
+                type = 'Sector'
+            elif stix_object['identity_class'] == 'region':
+                type = 'Region'
+            elif stix_object['identity_class'] == 'country':
+                type = 'Country'
+            elif stix_object['identity_class'] == 'city':
+                type = 'City'
+            else:
+                type = 'Organization'
+            stix_object_result = self.opencti.create_identity(
+                type,
+                stix_object['name'],
+                stix_object['description'],
+                stix_object['id']
+            )
+            return stix_object_result
+
+    def export_threat_actor(self, entity):
+        return {
+            'id': entity['stix_id'],
+            'type': 'threat-actor',
+            'labels': entity['stix_label'],
+            'name': entity['name'],
+            'aliases': entity['alias'],
+            'description': entity['description'],
+            'goals': entity['goal'],
+            'sophistication': entity['sophistication'],
+            'resource_level': entity['resource_level'],
+            'primary_motivation': entity['primary_motivation'],
+            'secondary_motivations': entity['secondary_motivation'],
+            'personal_motivations': entity['personal_motivation'],
+            'created': entity['created'],
+            'moodified': entity['modified'],
+        }
+
+    def create_threat_actor(self, stix_object):
         stix_object_result = self.opencti.search_stix_domain_entity(stix_object['name'], 'Threat-Actor')
         if stix_object_result is not None:
             return stix_object_result
@@ -129,7 +215,7 @@ class Stix2:
             )
             return stix_object_result
 
-    def intrusion_set(self, stix_object):
+    def create_intrusion_set(self, stix_object):
         stix_object_result = self.opencti.search_stix_domain_entity(stix_object['name'], 'Intrusion-Set')
         if stix_object_result is not None:
             return stix_object_result
@@ -141,7 +227,7 @@ class Stix2:
             )
             return stix_object_result
 
-    def campaign(self, stix_object):
+    def create_campaign(self, stix_object):
         stix_object_result = self.opencti.search_stix_domain_entity(stix_object['name'], 'Campaign')
         if stix_object_result is not None:
             return stix_object_result
@@ -153,7 +239,7 @@ class Stix2:
             )
             return stix_object_result
 
-    def incident(self, stix_object):
+    def create_incident(self, stix_object):
         stix_object_result = self.opencti.search_stix_domain_entity(stix_object['name'], 'Incident')
         if stix_object_result is not None:
             return stix_object_result
@@ -171,7 +257,7 @@ class Stix2:
             )
             return stix_object_result
 
-    def malware(self, stix_object):
+    def create_malware(self, stix_object):
         stix_object_result = self.opencti.search_stix_domain_entity(stix_object['name'], 'Malware')
         if stix_object_result is not None:
             return stix_object_result
@@ -183,7 +269,7 @@ class Stix2:
             )
             return stix_object_result
 
-    def tool(self, stix_object):
+    def create_tool(self, stix_object):
         stix_object_result = self.opencti.search_stix_domain_entity(stix_object['name'], 'Tool')
         if stix_object_result is not None:
             return stix_object_result
@@ -195,7 +281,7 @@ class Stix2:
             )
             return stix_object_result
 
-    def vulnerability(self, stix_object):
+    def create_vulnerability(self, stix_object):
         stix_object_result = self.opencti.search_stix_domain_entity(stix_object['name'], 'Vulnerability')
         if stix_object_result is not None:
             return stix_object_result
@@ -207,7 +293,7 @@ class Stix2:
             )
             return stix_object_result
 
-    def attack_pattern(self, stix_object):
+    def create_attack_pattern(self, stix_object):
         stix_object_result = self.opencti.search_stix_domain_entity(stix_object['name'], 'Attack-Pattern')
         if stix_object_result is not None:
             return stix_object_result
@@ -227,7 +313,7 @@ class Stix2:
             )
             return stix_object_result
 
-    def course_of_action(self, stix_object):
+    def create_course_of_action(self, stix_object):
         stix_object_result = self.opencti.search_stix_domain_entity(stix_object['name'], 'Course-Of-Action')
         if stix_object_result is not None:
             return stix_object_result
@@ -275,8 +361,8 @@ class Stix2:
             source_id,
             target_id,
             stix_relation['relationship_type'],
-            stix_relation['x-opencti-first-seen'],
-            stix_relation['x-opencti-last-seen'],
+            stix_relation['x_opencti_first_seen'],
+            stix_relation['x_opencti_last_seen'],
         )
 
         if stix_relation_result is not None:
@@ -309,13 +395,21 @@ class Stix2:
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] != 'relationship':
-                self.import_object(item)
+                try:
+                    self.import_object(item)
+                except:
+                    self.opencti.log('Unexpected error: ' + sys.exc_info()[0])
+                    pass
         end_time = time.time()
         self.opencti.log("Objects imported in: %ssecs" % (end_time - start_time))
 
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'relationship':
-                self.import_object(item)
+                try:
+                    self.import_relationship(item)
+                except:
+                    self.opencti.log('Unexpected error: ' + sys.exc_info()[0])
+                    pass
         end_time = time.time()
         self.opencti.log("Relationships imported in: %ssecs" % (end_time - start_time))

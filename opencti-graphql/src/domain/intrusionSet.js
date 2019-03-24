@@ -50,8 +50,12 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     $intrusionSet has last_seen_day "${dayFormat(intrusionSet.last_seen)}";
     $intrusionSet has last_seen_month "${monthFormat(intrusionSet.last_seen)}";
     $intrusionSet has last_seen_year "${yearFormat(intrusionSet.last_seen)}";
-    $intrusionSet has created ${now()};
-    $intrusionSet has modified ${now()};
+    $intrusionSet has created ${
+      intrusionSet.created ? prepareDate(intrusionSet.created) : now()
+    };
+    $intrusionSet has modified ${
+      intrusionSet.modified ? prepareDate(intrusionSet.modified) : now()
+    };
     $intrusionSet has revoked false;
     $intrusionSet has created_at ${now()};
     $intrusionSet has created_at_day "${dayFormat(now())}";

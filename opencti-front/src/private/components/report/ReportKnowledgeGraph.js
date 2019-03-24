@@ -24,6 +24,7 @@ import EntityLabelModel from '../../../components/graph_node/EntityLabelModel';
 import EntityLinkModel from '../../../components/graph_node/EntityLinkModel';
 import { distributeElements } from '../../../utils/DagreHelper';
 import { serializeGraph } from '../../../utils/GraphHelper';
+import { dateFormat } from '../../../utils/Time';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
 import { reportMutationRelationAdd, reportMutationRelationDelete } from './ReportAddObjectRefsLines';
@@ -98,6 +99,7 @@ class ReportKnowledgeGraphComponent extends Component {
       editRelationId: null,
       currentLink: null,
     };
+    this.diagramContainer = React.createRef();
   }
 
   componentDidMount() {
@@ -108,6 +110,21 @@ class ReportKnowledgeGraphComponent extends Component {
           this.saveGraph();
         }
       },
+    });
+    // Fix Firefox zoom issue
+    this.diagramContainer.current.addEventListener('wheel', (event) => {
+      if (event.deltaMode === event.DOM_DELTA_LINE) {
+        event.stopPropagation();
+        const customScroll = new WheelEvent('wheel', {
+          bubbles: event.bubbles,
+          deltaMode: event.DOM_DELTA_PIXEL,
+          clientX: event.clientX,
+          clientY: event.clientY,
+          deltaX: event.deltaX,
+          deltaY: 20 * event.deltaY,
+        });
+        event.target.dispatchEvent(customScroll);
+      }
     });
   }
 
@@ -504,7 +521,7 @@ class ReportKnowledgeGraphComponent extends Component {
       openCreateRelation, createRelationFrom, createRelationTo, openEditRelation, editRelationId,
     } = this.state;
     return (
-      <div className={classes.container}>
+      <div className={classes.container} ref={this.diagramContainer}>
         <IconButton color='primary' className={classes.icon} onClick={this.zoomToFit.bind(this)} style={{ left: 90 }}>
           <AspectRatio/>
         </IconButton>
@@ -525,6 +542,9 @@ class ReportKnowledgeGraphComponent extends Component {
           open={openCreateRelation}
           from={createRelationFrom}
           to={createRelationTo}
+          firstSeen={dateFormat(report.published)}
+          lastSeen={dateFormat(report.published)}
+          weight={report.source_confidence_level}
           handleClose={this.handleCloseRelationCreation.bind(this)}
           handleResult={this.handleResultRelationCreation.bind(this)}
         />
@@ -552,6 +572,8 @@ const ReportKnowledgeGraph = createFragmentContainer(ReportKnowledgeGraphCompone
           id
           name
           graph_data
+          published
+          source_confidence_level
           objectRefs {
               edges {
                   node {

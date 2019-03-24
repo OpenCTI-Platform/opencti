@@ -29,7 +29,7 @@ import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   deleteById,
-  editInputTx,
+  updateAttribute,
   getById,
   getRelationById,
   getRelationInferredById,
@@ -505,8 +505,12 @@ export const addStixRelation = async (user, stixRelation) => {
     $stixRelation has last_seen_day "${dayFormat(stixRelation.last_seen)}";
     $stixRelation has last_seen_month "${monthFormat(stixRelation.last_seen)}";
     $stixRelation has last_seen_year "${yearFormat(stixRelation.last_seen)}";
-    $stixRelation has created ${now()};
-    $stixRelation has modified ${now()};
+    $stixRelation has created ${
+      stixRelation.created ? prepareDate(stixRelation.created) : now()
+    };
+    $stixRelation has modified ${
+      stixRelation.modified ? prepareDate(stixRelation.modified) : now()
+    };
     $stixRelation has revoked false;
     $stixRelation has created_at ${now()};
     $stixRelation has created_at_day "${dayFormat(now())}";
@@ -564,7 +568,7 @@ export const stixRelationEditContext = (user, stixRelationId, input) => {
 };
 
 export const stixRelationEditField = (user, stixRelationId, input) =>
-  editInputTx(stixRelationId, input).then(stixRelation =>
+  updateAttribute(stixRelationId, input).then(stixRelation =>
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user)
   );
 

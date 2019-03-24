@@ -3,6 +3,7 @@ import uuid from 'uuid/v4';
 import {
   deleteEntityById,
   getById,
+  prepareDate,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -37,8 +38,10 @@ export const addSector = async (user, sector) => {
     $sector has alias "";
     $sector has name "${prepareString(sector.name)}";
     $sector has description "${prepareString(sector.description)}";
-    $sector has created ${now()};
-    $sector has modified ${now()};
+    $sector has created ${sector.created ? prepareDate(sector.created) : now()};
+    $sector has modified ${
+      sector.modified ? prepareDate(sector.modified) : now()
+    };
     $sector has revoked false;
     $sector has created_at ${now()};
     $sector has created_at_day "${dayFormat(now())}";

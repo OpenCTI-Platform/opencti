@@ -549,7 +549,7 @@ define
 
   "User" sub "Identity"
     has "password"
-    key "email"
+    has "email"
     has "firstname"
     has "lastname"
     has "language"

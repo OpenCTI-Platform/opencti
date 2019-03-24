@@ -3,6 +3,7 @@ import uuid from 'uuid/v4';
 import {
   deleteEntityById,
   getById,
+  prepareDate,
   dayFormat,
   monthFormat,
   yearFormat,
@@ -20,8 +21,8 @@ export const findById = courseOfActionId => getById(courseOfActionId);
 
 export const addCourseOfAction = async (user, courseOfAction) => {
   const wTx = await takeWriteTx();
-  const courseOfActionIterator = await wTx.query(`insert $courseOfAction isa CourseOfAction 
-    has type "Course-Of-Action";
+  const courseOfActionIterator = await wTx.query(`insert $courseOfAction isa Course-Of-Action 
+    has type "course-of-action";
     $courseOfAction has stix_id "${
       courseOfAction.stix_id
         ? prepareString(courseOfAction.stix_id)
@@ -33,8 +34,12 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     $courseOfAction has description "${prepareString(
       courseOfAction.description
     )}";
-    $courseOfAction has created ${now()};
-    $courseOfAction has modified ${now()};
+    $courseOfAction has created ${
+      courseOfAction.created ? prepareDate(courseOfAction.created) : now()
+    };
+    $courseOfAction has modified ${
+      courseOfAction.modified ? prepareDate(courseOfAction.modified) : now()
+    };
     $courseOfAction has revoked false;
     $courseOfAction has created_at ${now()};
     $courseOfAction has created_at_day "${dayFormat(now())}";

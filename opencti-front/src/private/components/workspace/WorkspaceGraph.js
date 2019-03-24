@@ -126,6 +126,7 @@ class WorkspaceGraphComponent extends Component {
       editRelationId: null,
       currentLink: null,
     };
+    this.diagramContainer = React.createRef();
   }
 
   componentDidMount() {
@@ -136,6 +137,21 @@ class WorkspaceGraphComponent extends Component {
           this.saveGraph();
         }
       },
+    });
+    // Fix Firefox zoom issue
+    this.diagramContainer.current.addEventListener('wheel', (event) => {
+      if (event.deltaMode === event.DOM_DELTA_LINE) {
+        event.stopPropagation();
+        const customScroll = new WheelEvent('wheel', {
+          bubbles: event.bubbles,
+          deltaMode: event.DOM_DELTA_PIXEL,
+          clientX: event.clientX,
+          clientY: event.clientY,
+          deltaX: event.deltaX,
+          deltaY: 20 * event.deltaY,
+        });
+        event.target.dispatchEvent(customScroll);
+      }
     });
   }
 
@@ -609,7 +625,7 @@ class WorkspaceGraphComponent extends Component {
       editRelationId,
     } = this.state;
     return (
-      <div className={classes.container}>
+      <div className={classes.container} ref={this.diagramContainer}>
         <IconButton
           color="primary"
           className={classes.icon}
