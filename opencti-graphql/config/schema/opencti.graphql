@@ -168,6 +168,8 @@ input StixDomainEntityAddInput  {
     type: String!
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### STIX relations
@@ -231,6 +233,8 @@ input StixRelationAddInput  {
     markingDefinitions: [String]
     locations: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### Workspace
@@ -286,6 +290,7 @@ type IdentityEdge {
 }
 interface Identity {
     id: ID!
+    stix_id: String!
     type: String!
     name: String!
     stix_label: [String]
@@ -295,6 +300,8 @@ interface Identity {
     markingDefinitions: MarkingDefinitionConnection
     reports: ReportConnection
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, inferred: Boolean, toId: String,fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
+    created: DateTime
+    modified: DateTime
 }
 input IdentityAddInput  {
     stix_id: String
@@ -303,6 +310,8 @@ input IdentityAddInput  {
     type: String!
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### User
@@ -363,6 +372,8 @@ input UserAddInput {
     language: String
     grant: [UserRole]
     createdByRef: String
+    created: DateTime
+    modified: DateTime
 }
 input PersonAddInput {
     stix_id: String
@@ -421,6 +432,8 @@ input OrganizationAddInput  {
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### Sectors
@@ -468,6 +481,8 @@ input SectorAddInput  {
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### Cities
@@ -515,6 +530,8 @@ input CityAddInput  {
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### Countries
@@ -562,6 +579,8 @@ input CountryAddInput  {
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### Regions
@@ -609,6 +628,8 @@ input RegionAddInput  {
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### Group
@@ -695,8 +716,10 @@ input MarkingDefinitionAddInput {
     definition_type: String!
     definition: String!
     level: Int!
-    color: String!
+    color: String
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### ExternalReferences
@@ -745,6 +768,8 @@ input ExternalReferenceAddInput {
     hash: String
     external_id: String
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### KillChain Phases
@@ -787,6 +812,8 @@ input KillChainPhaseAddInput {
     phase_order: Int!
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### AttackPattern
@@ -840,6 +867,8 @@ input AttackPatternAddInput {
     markingDefinitions: [String]
     killChainPhases: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### CourseOfAction
@@ -885,6 +914,8 @@ input CourseOfActionAddInput {
     description: String!
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### Threat Actors
@@ -944,6 +975,8 @@ input ThreatActorAddInput {
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### IntrusionSets
@@ -996,9 +1029,17 @@ input IntrusionSetAddInput {
     description: String!
     first_seen: DateTime
     last_seen: DateTime
+    goal: String
+    sophistication: String
+    resource_level: String
+    primary_motivation: String
+    secondary_motivation: String
+    personal_motivation: String
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### Campaign
@@ -1053,6 +1094,8 @@ input CampaignAddInput {
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### Incident
@@ -1101,11 +1144,14 @@ input IncidentAddInput {
     stix_id: String
     name: String!
     description: String!
+    objective: String
     first_seen: DateTime
     last_seen: DateTime
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### Malware
@@ -1154,6 +1200,8 @@ input MalwareAddInput {
     markingDefinitions: [String]
     killChainPhases: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### Tool
@@ -1204,6 +1252,8 @@ input ToolAddInput {
     markingDefinitions: [String]
     killChainPhases: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### Vulnerability
@@ -1250,6 +1300,8 @@ input VulnerabilityAddInput {
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### Reports
@@ -1310,6 +1362,8 @@ input ReportAddInput {
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
+    created: DateTime
+    modified: DateTime
 }
 
 ### Relations
@@ -1375,7 +1429,7 @@ type Query {
     groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection @auth
     # MarkingDefinitions
     markingDefinition(id: String!): MarkingDefinition @auth
-    markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, search: String): MarkingDefinitionConnection @auth
+    markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, definition_type: String, definition: String, stix_id: String, objectId: String, search: String): MarkingDefinitionConnection @auth
     # ExternalReferences
     externalReference(id: String!): ExternalReference @auth
     externalReferences(first: Int, after: ID, orderBy: ExternalReferencesOrdering, orderMode: OrderingMode, objectId: String, search: String): ExternalReferenceConnection @auth

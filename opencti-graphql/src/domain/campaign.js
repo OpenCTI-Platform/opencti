@@ -50,6 +50,7 @@ export const addCampaign = async (user, campaign) => {
     $campaign has alias "";
     $campaign has name "${prepareString(campaign.name)}";
     $campaign has description "${prepareString(campaign.description)}";
+    $campaign has objective "${prepareString(campaign.objective)}";
     $campaign has first_seen ${prepareDate(campaign.first_seen)};
     $campaign has first_seen_day "${dayFormat(campaign.first_seen)}";
     $campaign has first_seen_month "${monthFormat(campaign.first_seen)}";

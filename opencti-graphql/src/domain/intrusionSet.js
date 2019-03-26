@@ -13,23 +13,15 @@ import {
   paginate,
   prepareString
 } from '../database/grakn';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logger } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Intrusion-Set', args);
-
-export const markingDefinitions = (intrusionSetId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    (marking:$marking, so:$intrusionSet) isa object_marking_refs; 
-    $intrusionSet id ${intrusionSetId}`,
-    args
-  );
 
 export const findById = intrusionSetId => getById(intrusionSetId);
 
 export const addIntrusionSet = async (user, intrusionSet) => {
   const wTx = await takeWriteTx();
-  const intrusionSetIterator = await wTx.query(`insert $intrusionSet isa Intrusion-Set 
+  const query = `insert $intrusionSet isa Intrusion-Set 
     has type "intrusion-set";
     $intrusionSet has stix_id "${
       intrusionSet.stix_id
@@ -50,6 +42,19 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     $intrusionSet has last_seen_day "${dayFormat(intrusionSet.last_seen)}";
     $intrusionSet has last_seen_month "${monthFormat(intrusionSet.last_seen)}";
     $intrusionSet has last_seen_year "${yearFormat(intrusionSet.last_seen)}";
+    $intrusionSet has goal "${prepareString(intrusionSet.goal)}";
+    $intrusionSet has sophistication "${prepareString(
+      intrusionSet.sophistication
+    )}";
+    $intrusionSet has resource_level "${prepareString(
+      intrusionSet.resource_level
+    )}";
+    $intrusionSet has primary_motivation "${prepareString(
+      intrusionSet.primary_motivation
+    )}";
+    $intrusionSet has secondary_motivation "${prepareString(
+      intrusionSet.secondary_motivation
+    )}";
     $intrusionSet has created ${
       intrusionSet.created ? prepareDate(intrusionSet.created) : now()
     };
@@ -62,7 +67,9 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     $intrusionSet has created_at_month "${monthFormat(now())}";
     $intrusionSet has created_at_year "${yearFormat(now())}";       
     $intrusionSet has updated_at ${now()};
-  `);
+  `;
+  logger.debug(`[GRAKN - infer: false] ${query}`);
+  const intrusionSetIterator = await wTx.query(query);
   const createIntrusionSet = await intrusionSetIterator.next();
   const createdIntrusionSetId = await createIntrusionSet
     .map()

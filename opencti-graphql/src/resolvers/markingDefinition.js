@@ -4,7 +4,10 @@ import {
   addMarkingDefinition,
   markingDefinitionDelete,
   findAll,
+  findByStixId,
+  findByDefinition,
   findById,
+  findByEntity,
   markingDefinitionEditContext,
   markingDefinitionEditField,
   markingDefinitionAddRelation,
@@ -17,7 +20,23 @@ import withCancel from '../schema/subscriptionWrapper';
 const markingDefinitionResolvers = {
   Query: {
     markingDefinition: (_, { id }) => findById(id),
-    markingDefinitions: (_, args) => findAll(args)
+    markingDefinitions: (_, args) => {
+      if (args.stix_id && args.stix_id.length > 0) {
+        return findByStixId(args);
+      }
+      if (
+        args.definition_type &&
+        args.definition_type.length > 0 &&
+        args.definition &&
+        args.definition.length > 0
+      ) {
+        return findByDefinition(args);
+      }
+      if (args.objectId && args.objectId.length > 0) {
+        return findByEntity(args);
+      }
+      return findAll(args);
+    }
   },
   MarkingDefinition: {
     editContext: markingDefinition => fetchEditContext(markingDefinition.id)

@@ -90,6 +90,9 @@ export const getById = async id => {
   const rTx = await takeReadTx();
   logger.debug(`[GRAKN - infer: false] getConcept(${id});`);
   const concept = await rTx.getConcept(id);
+  if (concept === null) {
+    return;
+  }
   const attributesIterator = await concept.attributes();
   const attributes = await attributesIterator.collect();
   const attributesPromises = attributes.map(async attribute => {
@@ -786,10 +789,13 @@ export const updateAttribute = async (id, input) => {
   }
 
   // Setup the new attribute
-  const typedValues = map(
+  let typedValues = map(
     v => (attrType === String ? `"${prepareString(v)}"` : v),
     value
   );
+  if (typedValues.length === 0) {
+    typedValues = [attrType === String ? '""' : ''];
+  }
   const graknValues = join(' ', map(val => `has ${key} ${val}`, typedValues));
   const createQuery = `match $m id ${id}; insert $m ${graknValues};`;
   await wTx.query(createQuery);

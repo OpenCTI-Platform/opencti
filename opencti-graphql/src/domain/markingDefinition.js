@@ -19,7 +19,33 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args =>
-  paginate('match $m isa Marking-Definition', args);
+  paginate('match $x isa Marking-Definition', args);
+export const findByEntity = args =>
+  paginate(
+    `match $markingDefinition isa Marking-Definition; $rel(marking:$markingDefinition, so:$so) isa object_marking_refs; $so id ${
+      args.objectId
+    }`,
+    args
+  );
+
+export const findByDefinition = args =>
+  paginate(
+    `match $x isa Marking-Definition; $x has definition_type "${prepareString(
+      args.definition_type
+    )}"; $x has definition "${prepareString(args.definition)}"`,
+    args,
+    false
+  );
+
+export const findByStixId = args =>
+  paginate(
+    `match $x isa Marking-Definition; $x has stix_id "${prepareString(
+      args.stix_id
+    )}"`,
+    args,
+    false
+  );
+
 export const findById = markingDefinitionId => getById(markingDefinitionId);
 
 export const addMarkingDefinition = async (user, markingDefinition) => {

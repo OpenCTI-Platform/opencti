@@ -13,7 +13,7 @@ import {
   takeWriteTx,
   prepareString
 } from '../database/grakn';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logger } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Identity', args, false);
 
@@ -32,9 +32,7 @@ export const search = args =>
 
 export const addIdentity = async (user, identity) => {
   const wTx = await takeWriteTx();
-  const identityIterator = await wTx.query(`insert $identity isa ${
-    identity.type
-  }
+  const query = `insert $identity isa ${identity.type}
     has type "${identity.type.toLowerCase()}";
     $identity has stix_id "${
       identity.stix_id
@@ -57,7 +55,9 @@ export const addIdentity = async (user, identity) => {
     $identity has created_at_month "${monthFormat(now())}";
     $identity has created_at_year "${yearFormat(now())}";   
     $identity has updated_at ${now()};
-  `);
+  `;
+  const identityIterator = await wTx.query(query);
+  logger.debug(`[GRAKN - infer: false] ${query}`);
   const createIdentity = await identityIterator.next();
   const createdIdentityId = await createIdentity.map().get('identity').id;
 

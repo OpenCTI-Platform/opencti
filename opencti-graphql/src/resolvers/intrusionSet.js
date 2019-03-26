@@ -2,10 +2,12 @@ import {
   addIntrusionSet,
   intrusionSetDelete,
   findAll,
-  findById,
-  markingDefinitions
+  findById
 } from '../domain/intrusionSet';
 import {
+  createdByRef,
+  markingDefinitions,
+  reports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -21,8 +23,10 @@ const intrusionSetResolvers = {
     intrusionSets: (_, args) => findAll(args)
   },
   IntrusionSet: {
+    createdByRef: (intrusionSet, args) => createdByRef(intrusionSet.id, args),
     markingDefinitions: (intrusionSet, args) =>
       markingDefinitions(intrusionSet.id, args),
+    reports: (intrusionSet, args) => reports(intrusionSet.id, args),
     stixRelations: (intrusionSet, args) => stixRelations(intrusionSet.id, args),
     editContext: intrusionSet => fetchEditContext(intrusionSet.id)
   },

@@ -4,7 +4,7 @@ import os
 import yaml
 import json
 
-from pycti.opencti import OpenCti
+from python.pycti.opencti import OpenCti
 
 # Load configuration
 config = yaml.load(open(os.path.dirname(__file__) + '/config.yml'))
@@ -27,6 +27,7 @@ bundle = opencti.stix2_export_bundle([
     'Vulnerability'
     'Attack-Pattern',
     'Course-Of-Action',
+    'Report'
 ])
 
 with open(export_file, 'w') as file:
