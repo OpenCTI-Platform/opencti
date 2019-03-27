@@ -8,13 +8,14 @@ import {
   createdByRef,
   killChainPhases,
   markingDefinitions,
+  externalReferences,
   reports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -27,6 +28,8 @@ const attackPatternResolvers = {
     createdByRef: (attackPattern, args) => createdByRef(attackPattern.id, args),
     markingDefinitions: (attackPattern, args) =>
       markingDefinitions(attackPattern.id, args),
+    externalReferences: (attackPattern, args) =>
+      externalReferences(attackPattern.id, args),
     killChainPhases: (attackPattern, args) =>
       killChainPhases(attackPattern.id, args),
     reports: (attackPattern, args) => reports(attackPattern.id, args),

@@ -81,6 +81,7 @@ class ThreatActorKnowledgeComponent extends Component {
             relationType='targets'
             targetEntityTypes={['Organization', 'Sector', 'Country', 'Region']}
             entityLink={link}
+            exploreLink={`/dashboard/explore/victimology/${threatActor.id}`}
           /> : ''}
 
           {location.pathname.includes('malwares') ? <EntityStixRelations

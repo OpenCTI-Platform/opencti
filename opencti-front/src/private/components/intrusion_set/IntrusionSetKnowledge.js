@@ -89,6 +89,7 @@ class IntrusionSetKnowledgeComponent extends Component {
             relationType='targets'
             targetEntityTypes={['Organization', 'Sector', 'Country', 'Region']}
             entityLink={link}
+            exploreLink={`/dashboard/explore/victimology/${intrusionSet.id}`}
           /> : ''}
 
           {location.pathname.includes('ttp') ? <EntityStixRelations

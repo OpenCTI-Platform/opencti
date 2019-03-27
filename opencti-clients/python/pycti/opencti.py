@@ -3,6 +3,7 @@
 import os
 import requests
 import datetime
+import dateutil.parser
 import json
 import uuid
 
@@ -38,7 +39,7 @@ class OpenCti:
 
     def parse_multiple(self, data):
         result = []
-        for edge in data['edges']:
+        for edge in data['edges'] if 'edges' in data else []:
             result.append(self.parse_stix_domain_entity(edge['node']))
         return result
 
@@ -51,6 +52,10 @@ class OpenCti:
             data['killChainPhases'] = self.parse_multiple(data['killChainPhases'])
         if 'externalReferences' in data:
             data['externalReferences'] = self.parse_multiple(data['externalReferences'])
+        if 'objectRefs' in data:
+            data['objectRefs'] = self.parse_multiple(data['objectRefs'])
+        if 'relationRefs' in data:
+            data['relationRefs'] = self.parse_multiple(data['relationRefs'])
         return data
 
     def get_stix_domain_entity(self, id):
@@ -205,26 +210,43 @@ class OpenCti:
         else:
             return None
 
-    def get_stix_relations(self, from_id, to_id, type='stix_relation', first_seen=None, last_seen=None):
-        try:
-            first_seen = datetime.datetime.strptime(first_seen, '%Y-%m-%d')
+    def get_stix_relations(self, from_id=None, to_id=None, type='stix_relation', first_seen=None, last_seen=None):
+        if first_seen is not None and last_seen is not None:
+            first_seen = dateutil.parser.parse(first_seen)
             first_seen_start = (first_seen + datetime.timedelta(days=-1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
             first_seen_stop = (first_seen + datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
-            last_seen = datetime.datetime.strptime(last_seen, '%Y-%m-%d')
+            last_seen = dateutil.parser.parse(last_seen)
             last_seen_start = (last_seen + datetime.timedelta(days=-1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
             last_seen_stop = (last_seen + datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
-        except:
+        else:
             first_seen_start = None
             first_seen_stop = None
             last_seen_start = None
             last_seen_stop = None
 
         query = """
-            query StixRelations($fromId: String, $toId: String, $relationType: String, $firstSeenStart, $firstSeenStop, $lastSeenStart, $lastSeenStop) {
+            query StixRelations($fromId: String, $toId: String, $relationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime) {
                 stixRelations(fromId: $fromId, toId: $toId, relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop) {
                     edges {
                         node {
                             id
+                            stix_id
+                            type
+                            relationship_type
+                            description
+                            weight
+                            first_seen
+                            last_seen
+                            created
+                            modified
+                            from {
+                                id
+                                stix_id
+                            }
+                            to {
+                                id
+                                stix_id
+                            }
                         }
                     }
                 }
@@ -248,14 +270,20 @@ class OpenCti:
         else:
             return None
 
-    def create_relation(self, from_id, from_role, to_id, to_role, type, first_seen, last_seen, weight, stix_id=None):
-        try:
-            first_seen = datetime.datetime.strptime(first_seen, '%Y-%m-%d')
-            last_seen = datetime.datetime.strptime(last_seen, '%Y-%m-%d')
-        except:
-            first_seen = None
-            last_seen = None
-
+    def create_relation(self,
+                        from_id,
+                        from_role,
+                        to_id,
+                        to_role,
+                        type,
+                        description,
+                        first_seen,
+                        last_seen,
+                        weight,
+                        stix_id=None,
+                        created=None,
+                        modified=None
+                        ):
         self.log('Creating relation ' + from_role + ' => ' + to_role + '...')
         query = """
              mutation StixRelationAdd($input: StixRelationAddInput!) {
@@ -271,10 +299,13 @@ class OpenCti:
                 'toId': to_id,
                 'toRole': to_role,
                 'relationship_type': type,
-                'first_seen': first_seen.strftime('%Y-%m-%dT%H:%M:%S+00:00'),
-                'last_seen': last_seen.strftime('%Y-%m-%dT%H:%M:%S+00:00'),
+                'description': description,
+                'first_seen': first_seen,
+                'last_seen': last_seen,
                 'weight': weight,
-                'stix_id': stix_id
+                'stix_id': stix_id,
+                'created': created,
+                'modified': modified
             }
         })
         return result['data']['stixRelationAdd']
@@ -326,8 +357,15 @@ class OpenCti:
         else:
             return None
 
-    def create_marking_definition(self, definition_type, definition, level, color=None, stix_id=None, created=None,
-                                  modified=None):
+    def create_marking_definition(self,
+                                  definition_type,
+                                  definition,
+                                  level,
+                                  color=None,
+                                  stix_id=None,
+                                  created=None,
+                                  modified=None
+                                  ):
         self.log('Creating marking definition ' + definition + '...')
         query = """
             mutation MarkingDefinitionAdd($input: MarkingDefinitionAddInput) {
@@ -367,8 +405,15 @@ class OpenCti:
         else:
             return None
 
-    def create_external_reference(self, source_name, url, external_id='', description='', stix_id=None, created=None,
-                                  modified=None):
+    def create_external_reference(self,
+                                  source_name,
+                                  url,
+                                  external_id='',
+                                  description='',
+                                  stix_id=None,
+                                  created=None,
+                                  modified=None
+                                  ):
         self.log('Creating external reference ' + source_name + '...')
         query = """
             mutation ExternalReferenceAdd($input: ExternalReferenceAddInput) {
@@ -408,7 +453,8 @@ class OpenCti:
         else:
             return None
 
-    def create_kill_chain_phase(self, kill_chain_name, phase_name, phase_order=None, stix_id=None, created=None, modified=None):
+    def create_kill_chain_phase(self, kill_chain_name, phase_name, phase_order=None, stix_id=None, created=None,
+                                modified=None):
         self.log('Creating kill chain phase ' + phase_name + '...')
         query = """
                mutation KillChainPhaseAdd($input: KillChainPhaseAddInput) {
@@ -428,6 +474,81 @@ class OpenCti:
             }
         })
         return result['data']['killChainPhaseAdd']
+
+    def get_identities(self, limit=10000):
+        self.log('Getting identities...')
+        query = """
+            query Identities($first: Int) {
+                identities(first: $first) {
+                    edges {
+                        node {
+                            id
+                            type
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                            createdByRef {
+                                node {
+                                    id
+                                    type
+                                    stix_id
+                                    stix_label
+                                    name
+                                    alias
+                                    description
+                                    created
+                                    modified
+                                }
+                            }
+                            markingDefinitions {
+                                edges {
+                                    node {
+                                        id
+                                        type
+                                        stix_id
+                                        definition_type
+                                        definition
+                                        level
+                                        color
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'first': limit})
+        return self.parse_multiple(result['data']['identities'])
+
+    def create_identity(self, type, name, description, stix_id=None, created=None, modified=None):
+        self.log('Creating identity ' + name + '...')
+        query = """
+            mutation IdentityAdd($input: IdentityAddInput) {
+                identityAdd(input: $input) {
+                    id
+                    type
+                    alias
+                }
+            }
+        """
+        result = self.query(query, {
+            'input': {
+                'name': name,
+                'description': description,
+                'type': type,
+                'stix_id': stix_id,
+                'created': created,
+                'modified': modified
+            }
+        })
+        return result['data']['identityAdd']
 
     def get_threat_actors(self, limit=10000):
         self.log('Getting threat actors...')
@@ -889,6 +1010,58 @@ class OpenCti:
         })
         return result['data']['malwareAdd']
 
+    def get_tools(self, limit=10000):
+        self.log('Getting tools...')
+        query = """
+            query Tools($first: Int) {
+                tools(first: $first) {
+                    edges {
+                        node {
+                            id
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            tool_version
+                            created
+                            modified
+                            createdByRef {
+                                node {
+                                    id
+                                    type
+                                    stix_id
+                                    stix_label
+                                    name
+                                    alias
+                                    description
+                                    created
+                                    modified
+                                }
+                            }
+                            markingDefinitions {
+                                edges {
+                                    node {
+                                        id
+                                        type
+                                        stix_id
+                                        definition_type
+                                        definition
+                                        level
+                                        color
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'first': limit})
+        return self.parse_multiple(result['data']['tools'])
+
     def create_tool(self, name, description, stix_id=None, created=None, modified=None):
         self.log('Creating tool ' + name + '...')
         query = """
@@ -911,33 +1084,11 @@ class OpenCti:
         })
         return result['data']['toolAdd']
 
-    def create_vulnerability(self, name, description, stix_id=None, created=None, modified=None):
-        self.log('Creating tool ' + name + '...')
+    def get_vulnerabilities(self, limit=10000):
+        self.log('Getting vulnerabilities...')
         query = """
-            mutation VulnerabilityAdd($input: VulnerabilityAddInput) {
-                vulnerabilityAdd(input: $input) {
-                   id
-                   type
-                   alias
-                }
-            }
-        """
-        result = self.query(query, {
-            'input': {
-                'name': name,
-                'description': description,
-                'stix_id': stix_id,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return result['data']['vulnerabilityAdd']
-
-    def get_attack_patterns(self, limit=10000):
-        self.log('Getting attack patterns...')
-        query = """
-            query AttackPatterns($first: Int) {
-                attackPatterns(first: $first) {
+            query Vulnerabilities($first: Int) {
+                vulnerabilities(first: $first) {
                     edges {
                         node {
                             id
@@ -976,6 +1127,81 @@ class OpenCti:
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'first': limit})
+        return self.parse_multiple(result['data']['vulnerabilities'])
+
+    def create_vulnerability(self, name, description, stix_id=None, created=None, modified=None):
+        self.log('Creating tool ' + name + '...')
+        query = """
+            mutation VulnerabilityAdd($input: VulnerabilityAddInput) {
+                vulnerabilityAdd(input: $input) {
+                   id
+                   type
+                   alias
+                }
+            }
+        """
+        result = self.query(query, {
+            'input': {
+                'name': name,
+                'description': description,
+                'stix_id': stix_id,
+                'created': created,
+                'modified': modified
+            }
+        })
+        return result['data']['vulnerabilityAdd']
+
+    def get_attack_patterns(self, limit=10000):
+        self.log('Getting attack patterns...')
+        query = """
+            query AttackPatterns($first: Int) {
+                attackPatterns(first: $first) {
+                    edges {
+                        node {
+                            id
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            platform
+                            required_permission
+                            created
+                            modified
+                            createdByRef {
+                                node {
+                                    id
+                                    type
+                                    stix_id
+                                    stix_label
+                                    name
+                                    alias
+                                    description
+                                    created
+                                    modified
+                                }
+                            }
+                            markingDefinitions {
+                                edges {
+                                    node {
+                                        id
+                                        type
+                                        stix_id
+                                        definition_type
+                                        definition
+                                        level
+                                        color
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
                             killChainPhases {
                                 edges {
                                     node {
@@ -984,6 +1210,23 @@ class OpenCti:
                                         stix_id
                                         kill_chain_name
                                         phase_name
+                                        phase_order
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                            externalReferences {
+                                edges {
+                                    node {
+                                        id
+                                        type
+                                        stix_id
+                                        source_name
+                                        description
+                                        url
+                                        hash
+                                        external_id
                                         created
                                         modified
                                     }
@@ -1022,6 +1265,57 @@ class OpenCti:
         })
         return result['data']['attackPatternAdd']
 
+    def get_course_of_actions(self, limit=10000):
+        self.log('Getting course of actions...')
+        query = """
+            query CourseOfActions($first: Int) {
+                courseOfActions(first: $first) {
+                    edges {
+                        node {
+                            id
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                            createdByRef {
+                                node {
+                                    id
+                                    type
+                                    stix_id
+                                    stix_label
+                                    name
+                                    alias
+                                    description
+                                    created
+                                    modified
+                                }
+                            }
+                            markingDefinitions {
+                                edges {
+                                    node {
+                                        id
+                                        type
+                                        stix_id
+                                        definition_type
+                                        definition
+                                        level
+                                        color
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'first': limit})
+        return self.parse_multiple(result['data']['courseOfActions'])
+
     def create_course_of_action(self, name, description, stix_id=None, created=None, modified=None):
         self.log('Creating course of action ' + name + '...')
         query = """
@@ -1044,28 +1338,115 @@ class OpenCti:
         })
         return result['data']['courseOfActionAdd']
 
-    def create_identity(self, type, name, description, stix_id=None, created=None, modified=None):
-        self.log('Creating identity ' + name + '...')
+    def get_reports(self, limit=10000):
+        self.log('Getting reports...')
         query = """
-            mutation IdentityAdd($input: IdentityAddInput) {
-                identityAdd(input: $input) {
-                    id
-                    type
-                    alias
+            query Reports($first: Int) {
+                reports(first: $first) {
+                    edges {
+                        node {
+                            id
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            report_class
+                            published
+                            object_status
+                            source_confidence_level
+                            graph_data
+                            created
+                            modified
+                            createdByRef {
+                                node {
+                                    id
+                                    type
+                                    stix_id
+                                    stix_label
+                                    name
+                                    alias
+                                    description
+                                    created
+                                    modified
+                                }
+                            }
+                            markingDefinitions {
+                                edges {
+                                    node {
+                                        id
+                                        type
+                                        stix_id
+                                        definition_type
+                                        definition
+                                        level
+                                        color
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                            objectRefs {
+                                edges {
+                                    node {
+                                        id
+                                        stix_id
+                                    }
+                                }
+                            }
+                            relationRefs {
+                                edges {
+                                    node {
+                                        id
+                                        stix_id
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
+        """
+        result = self.query(query, {'first': limit})
+        return self.parse_multiple(result['data']['reports'])
+
+    def create_report(self,
+                      name,
+                      description,
+                      published,
+                      report_class,
+                      object_status=None,
+                      source_confidence_level=None,
+                      graph_data=None,
+                      stix_id=None,
+                      created=None,
+                      modified=None
+                      ):
+        self.log('Creating report ' + name + '...')
+        query = """
+           mutation ReportAdd($input: ReportAddInput) {
+               reportAdd(input: $input) {
+                   id
+                   type
+                   alias
+               }
+           }
         """
         result = self.query(query, {
             'input': {
                 'name': name,
                 'description': description,
-                'type': type,
+                'published': published,
+                'report_class': report_class,
+                'object_status': object_status,
+                'source_confidence_level': source_confidence_level,
+                'graph_data': graph_data,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
             }
         })
-        return result['data']['identityAdd']
+        return result['data']['reportAdd']
 
     def update_stix_domain_entity_created_by_ref(self, object_id, identity_id):
         query = """
@@ -1323,10 +1704,97 @@ class OpenCti:
                     'tool': {'from_role': 'user', 'to_role': 'usage'},
                     'attack-pattern': {'from_role': 'user', 'to_role': 'usage'}
                 },
+                'campaign': {
+                    'malware': {'from_role': 'user', 'to_role': 'usage'},
+                    'tool': {'from_role': 'user', 'to_role': 'usage'},
+                    'attack-pattern': {'from_role': 'user', 'to_role': 'usage'}
+                },
+                'incident': {
+                    'malware': {'from_role': 'user', 'to_role': 'usage'},
+                    'tool': {'from_role': 'user', 'to_role': 'usage'},
+                    'attack-pattern': {'from_role': 'user', 'to_role': 'usage'}
+                },
+                'malware': {
+                    'tool': {'from_role': 'user', 'to_role': 'usage'},
+                    'attack-pattern': {'from_role': 'user', 'to_role': 'usage'}
+                },
+            },
+            'targets': {
+                'threat-actor': {
+                    'identity': {'from_role': 'source', 'to_role': 'target'},
+                    'sector': {'from_role': 'source', 'to_role': 'target'},
+                    'region': {'from_role': 'source', 'to_role': 'target'},
+                    'country': {'from_role': 'source', 'to_role': 'target'},
+                    'city': {'from_role': 'source', 'to_role': 'target'},
+                    'organization': {'from_role': 'source', 'to_role': 'target'},
+                },
+                'intrusion-set': {
+                    'identity': {'from_role': 'source', 'to_role': 'target'},
+                    'sector': {'from_role': 'source', 'to_role': 'target'},
+                    'region': {'from_role': 'source', 'to_role': 'target'},
+                    'country': {'from_role': 'source', 'to_role': 'target'},
+                    'city': {'from_role': 'source', 'to_role': 'target'},
+                    'organization': {'from_role': 'source', 'to_role': 'target'},
+                },
+                'campaign': {
+                    'identity': {'from_role': 'source', 'to_role': 'target'},
+                    'sector': {'from_role': 'source', 'to_role': 'target'},
+                    'region': {'from_role': 'source', 'to_role': 'target'},
+                    'country': {'from_role': 'source', 'to_role': 'target'},
+                    'city': {'from_role': 'source', 'to_role': 'target'},
+                    'organization': {'from_role': 'source', 'to_role': 'target'},
+                },
+                'incident': {
+                    'identity': {'from_role': 'source', 'to_role': 'target'},
+                    'sector': {'from_role': 'source', 'to_role': 'target'},
+                    'region': {'from_role': 'source', 'to_role': 'target'},
+                    'country': {'from_role': 'source', 'to_role': 'target'},
+                    'city': {'from_role': 'source', 'to_role': 'target'},
+                    'organization': {'from_role': 'source', 'to_role': 'target'},
+                },
+                'malware': {
+                    'identity': {'from_role': 'source', 'to_role': 'target'},
+                    'sector': {'from_role': 'source', 'to_role': 'target'},
+                    'region': {'from_role': 'source', 'to_role': 'target'},
+                    'country': {'from_role': 'source', 'to_role': 'target'},
+                    'city': {'from_role': 'source', 'to_role': 'target'},
+                    'organization': {'from_role': 'source', 'to_role': 'target'},
+                },
+            },
+            'attributed-to': {
+                'intrusion-set': {
+                    'identity': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'threat-actor': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'country': {'from_role': 'source', 'to_role': 'target'},
+                    'organization': {'from_role': 'origin', 'to_role': 'attribution'},
+                },
+                'campaign': {
+                    'identity': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'threat-actor': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'intrusion-set': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'country': {'from_role': 'source', 'to_role': 'target'},
+                    'organization': {'from_role': 'origin', 'to_role': 'attribution'},
+                },
+                'incident': {
+                    'identity': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'threat-actor': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'intrusion-set': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'campaign': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'country': {'from_role': 'source', 'to_role': 'target'},
+                    'organization': {'from_role': 'origin', 'to_role': 'attribution'},
+                },
             },
             'mitigates': {
                 'course-of-action': {
                     'attack-pattern': {'from_role': 'mitigation', 'to_role': 'problem'}
+                }
+            },
+            'localization': {
+                'region': {
+                    'country': {'from_role': 'location', 'to_role': 'localized'}
+                },
+                'country': {
+                    'country': {'from_role': 'location', 'to_role': 'localized'}
                 }
             }
         }
@@ -1374,6 +1842,13 @@ class OpenCti:
             'objects': []
         }
 
+        if 'Identity' in types:
+            identities = self.get_identities()
+            for identity in identities:
+                if identity['type'] != 'Threat-Actor':
+                    identity_bundle = self.stix2_filter_objects(uuids, stix2.export_identity(identity))
+                    uuids = uuids + [x['id'] for x in identity_bundle]
+                    bundle['objects'] = bundle['objects'] + identity_bundle
         if 'Threat-Actor' in types:
             threat_actors = self.get_threat_actors()
             for threat_actor in threat_actors:
@@ -1404,10 +1879,41 @@ class OpenCti:
                 malware_bundle = self.stix2_filter_objects(uuids, stix2.export_malware(malware))
                 uuids = uuids + [x['id'] for x in malware_bundle]
                 bundle['objects'] = bundle['objects'] + malware_bundle
+        if 'Tool' in types:
+            tools = self.get_tools()
+            for tool in tools:
+                tool_bundle = self.stix2_filter_objects(uuids, stix2.export_tool(tool))
+                uuids = uuids + [x['id'] for x in tool_bundle]
+                bundle['objects'] = bundle['objects'] + tool_bundle
+        if 'Vulnerability' in types:
+            vulnerabilities = self.get_vulnerabilities()
+            for vulnerability in vulnerabilities:
+                vulnerability_bundle = self.stix2_filter_objects(uuids, stix2.export_vulnerability(vulnerability))
+                uuids = uuids + [x['id'] for x in vulnerability_bundle]
+                bundle['objects'] = bundle['objects'] + vulnerability_bundle
         if 'Attack-Pattern' in types:
             attack_patterns = self.get_attack_patterns()
             for attack_pattern in attack_patterns:
                 attack_pattern_bundle = self.stix2_filter_objects(uuids, stix2.export_attack_pattern(attack_pattern))
                 uuids = uuids + [x['id'] for x in attack_pattern_bundle]
                 bundle['objects'] = bundle['objects'] + attack_pattern_bundle
+        if 'Course-Of-Action' in types:
+            course_of_actions = self.get_course_of_actions()
+            for course_of_action in course_of_actions:
+                course_of_action_bundle = self.stix2_filter_objects(uuids,
+                                                                    stix2.export_course_of_action(course_of_action))
+                uuids = uuids + [x['id'] for x in course_of_action_bundle]
+                bundle['objects'] = bundle['objects'] + course_of_action_bundle
+        if 'Report' in types:
+            reports = self.get_reports()
+            for report in reports:
+                report_bundle = self.stix2_filter_objects(uuids, stix2.export_report(report))
+                uuids = uuids + [x['id'] for x in report_bundle]
+                bundle['objects'] = bundle['objects'] + report_bundle
+        if 'Relationship' in types:
+            stix_relations = self.get_stix_relations()
+            for stix_relation in stix_relations:
+                stix_relation_bundle = self.stix2_filter_objects(uuids, stix2.export_stix_relation(stix_relation))
+                uuids = uuids + [x['id'] for x in stix_relation_bundle]
+                bundle['objects'] = bundle['objects'] + stix_relation_bundle
         return bundle

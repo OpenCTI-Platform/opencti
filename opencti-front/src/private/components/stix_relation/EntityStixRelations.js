@@ -2,6 +2,7 @@
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import {
   compose, head, map, includes, pipe, assoc, omit, mergeRight,
 } from 'ramda';
@@ -31,7 +32,7 @@ import Switch from '@material-ui/core/Switch';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import {
-  ArrowDropDown, ArrowDropUp, TableChart, SaveAlt,
+  ArrowDropDown, ArrowDropUp, TableChart, SaveAlt, Explore,
 } from '@material-ui/icons';
 import { QueryRenderer, fetchQuery } from '../../../relay/environment';
 import {
@@ -88,6 +89,10 @@ const styles = theme => ({
   },
   rightIcon: {
     marginLeft: theme.spacing.unit,
+  },
+  icon: {
+    marginRight: theme.spacing.unit,
+    fontSize: 20,
   },
 });
 
@@ -414,6 +419,7 @@ class EntityStixRelations extends Component {
       entityId,
       relationType,
       resolveRelationType,
+      exploreLink,
     } = this.props;
     const startYear = this.state.firstSeenFirstYear === currentYear() ? this.state.firstSeenFirstYear - 1 : this.state.firstSeenFirstYear;
     const yearsList = [];
@@ -504,6 +510,14 @@ class EntityStixRelations extends Component {
                 />
               </Grid> : ''}
           </Grid>
+          {exploreLink ? <div style={{
+            position: 'absolute', top: 22, right: 285, color: '#ffffff',
+          }}>
+            <Button variant='contained' size='small' color='primary' component={Link} to={exploreLink} className={classes.button} disabled={!entityId}>
+              <Explore className={classes.icon}/>
+              {t('Explore')}
+            </Button>
+          </div> : ''}
         </Drawer>
         <div className={classes.views}>
           <IconButton color={this.state.view === 'lines' ? 'secondary' : 'primary'}
@@ -567,6 +581,7 @@ EntityStixRelations.propTypes = {
   reportClass: PropTypes.string,
   t: PropTypes.func,
   history: PropTypes.object,
+  exploreLink: PropTypes.string,
 };
 
 export default compose(

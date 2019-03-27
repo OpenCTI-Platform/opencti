@@ -24,10 +24,11 @@ bundle = opencti.stix2_export_bundle([
     'Incident',
     'Malware',
     'Tool',
-    'Vulnerability'
+    'Vulnerability',
     'Attack-Pattern',
     'Course-Of-Action',
-    'Report'
+    'Report',
+    'Relationship'
 ])
 
 with open(export_file, 'w') as file:

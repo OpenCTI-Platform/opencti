@@ -15,7 +15,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa CourseOfAction', args);
+export const findAll = args => paginate('match $m isa Course-Of-Action', args);
 
 export const findById = courseOfActionId => getById(courseOfActionId);
 

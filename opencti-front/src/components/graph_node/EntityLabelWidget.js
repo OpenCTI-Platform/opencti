@@ -26,8 +26,8 @@ class EntityLabelWidget extends Component {
     const {
       t, nsd, classes, model, model: { extras },
     } = this.props;
+    const label = head(extras);
     if (extras.length === 1) {
-      const label = head(extras);
       return (
         <div className={classes.item} onClick={model.setSelected.bind(this, true)}>
           <strong>{t(`relation_${label.relationship_type}`)}</strong>
@@ -38,7 +38,8 @@ class EntityLabelWidget extends Component {
     }
     return (
       <div className={classes.item}>
-        <strong>{extras.length} {t('relations')}</strong>
+        <strong>{t(`relation_${label.relationship_type}`)}</strong>
+        <span><br/><em>{extras.length} {t('relations')}</em></span>
       </div>
     );
   }

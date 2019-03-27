@@ -48,7 +48,7 @@ import {
   getObjectsWithoutAttributes,
   buildPagination
 } from '../database/grakn';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logger } from '../config/conf';
 
 const sumBy = attribute => vals =>
   reduce(
@@ -475,9 +475,7 @@ export const locations = (stixRelationId, args) =>
 
 export const addStixRelation = async (user, stixRelation) => {
   const wTx = await takeWriteTx();
-  const stixRelationIterator = await wTx.query(`match $from id ${
-    stixRelation.fromId
-  }; 
+  const query = `match $from id ${stixRelation.fromId}; 
     $to id ${stixRelation.toId}; 
     insert $stixRelation(${stixRelation.fromRole}: $from, ${
     stixRelation.toRole
@@ -517,7 +515,9 @@ export const addStixRelation = async (user, stixRelation) => {
     $stixRelation has created_at_month "${monthFormat(now())}";
     $stixRelation has created_at_year "${yearFormat(now())}";        
     $stixRelation has updated_at ${now()};
-  `);
+  `;
+  logger.debug(`[GRAKN - infer: false] ${query}`);
+  const stixRelationIterator = await wTx.query(query);
   const createStixRelation = await stixRelationIterator.next();
   const createdStixRelationId = await createStixRelation
     .map()

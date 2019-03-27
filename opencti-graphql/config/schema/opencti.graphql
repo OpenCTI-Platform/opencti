@@ -150,6 +150,7 @@ type StixDomainEntityEdge {
 }
 interface StixDomainEntity {
     id: ID!
+    stix_id: String!
     type: String!
     name: String!
     description: String
@@ -851,6 +852,7 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
+    externalReferences: ExternalReferenceConnection
     killChainPhases: KillChainPhaseConnection
     reports: ReportConnection
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, inferred: Boolean, toId: String,fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
@@ -1333,6 +1335,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
     stix_id: String!
     type: String!
     name: String!
+    stix_label: [String]
     description: String
     report_class: String
     alias: [String]
@@ -1360,6 +1363,8 @@ input ReportAddInput {
     published: DateTime
     report_class: String
     graph_data: String
+    object_status: Int
+    source_confidence_level: Int
     createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String

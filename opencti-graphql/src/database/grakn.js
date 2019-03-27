@@ -22,6 +22,7 @@ import Grakn from 'grakn';
 import conf, { logger } from '../config/conf';
 import { pubsub } from './redis';
 import { fillTimeSeries, randomKey } from './utils';
+import { Unknown } from '../config/errors';
 
 // Global variables
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss';
@@ -131,7 +132,7 @@ export const getById = async id => {
     return result;
   } catch (error) {
     if (rTx) {
-      await rTx.close();
+      rTx.close();
     }
     return Promise.resolve({});
   }
@@ -160,7 +161,7 @@ export const queryOne = async (query, entities) => {
     return result;
   } catch (error) {
     if (rTx) {
-      await rTx.close();
+      rTx.close();
     }
     return Promise.resolve({});
   }
@@ -193,7 +194,7 @@ export const queryMultiple = async (query, entities) => {
     return result;
   } catch (error) {
     if (rTx) {
-      await rTx.close();
+      rTx.close();
     }
     return Promise.resolve([]);
   }
@@ -231,7 +232,7 @@ export const getRelationById = async id => {
     return result;
   } catch (error) {
     if (rTx) {
-      await rTx.close();
+      rTx.close();
     }
     return Promise.resolve({});
   }
@@ -257,16 +258,18 @@ export const getRelationInferredById = async id => {
     );
     const fromKey = queryRegex[1];
     const toKey = queryRegex[2];
-    const relationType = queryRegex[3];
     logger.debug(`[GRAKN - infer: true] ${query}`);
     const answerIterator = await rTx.query(query);
     const answer = await answerIterator.next();
+    const rel = answer.map().get('rel');
+    const relationType = await rel.type();
+    const relationTypeValue = await relationType.label();
     const fromId = answer.map().get(fromKey).id;
     const toId = answer.map().get(toKey).id;
     const relationPromise = Promise.resolve({
       id,
       type: 'stix_relation',
-      relationship_type: relationType,
+      relationship_type: relationTypeValue,
       inferred: true
     });
     const fromPromise = getById(fromId);
@@ -336,7 +339,7 @@ export const getRelationInferredById = async id => {
     return result;
   } catch (error) {
     if (rTx) {
-      await rTx.close();
+      rTx.close();
     }
     return Promise.resolve({});
   }
@@ -359,7 +362,7 @@ export const getSingleValue = async (query, infer = false) => {
     return result;
   } catch (error) {
     if (rTx) {
-      await rTx.close();
+      rTx.close();
     }
     return Promise.resolve({});
   }
@@ -439,7 +442,7 @@ export const getObjects = async (
     return result;
   } catch (error) {
     if (rTx) {
-      await rTx.close();
+      rTx.close();
     }
     return Promise.resolve([]);
   }
@@ -498,7 +501,7 @@ export const getObjectsWithoutAttributes = async (
     return result;
   } catch (error) {
     if (rTx) {
-      await rTx.close();
+      rTx.close();
     }
     return Promise.resolve([]);
   }
@@ -621,11 +624,14 @@ export const getRelations = async (
         const relationIsInferred = await relationObject.isInferred();
         let relationPromise = await Promise.resolve(null);
         if (relationIsInferred) {
-          console.log(answer);
           const explanation = await answer.explanation();
-          console.log(explanation);
-          const queryPattern = await explanation.queryPattern();
-          console.log(queryPattern);
+          let queryPattern = await explanation.queryPattern();
+          queryPattern = queryPattern.replace(
+            `$from id ${answer.map().get(fromKey).id};`,
+            `$from id ${answer.map().get(fromKey).id}; $to id ${
+              answer.map().get(toKey).id
+            };`
+          );
           relationPromise = await Promise.resolve({
             id: Buffer.from(queryPattern).toString('base64'),
             type: 'stix_relation',
@@ -665,7 +671,7 @@ export const getRelations = async (
     return result;
   } catch (error) {
     if (rTx) {
-      await rTx.close();
+      rTx.close();
     }
     return Promise.resolve([]);
   }
@@ -737,18 +743,18 @@ export const paginateRelationships = (
           map(weight => `{ $weight == ${weight}; } or`, weights)
         )} { $weight == 0; };`
       : ''
+  } ${
+    orderBy
+      ? `${
+          orderBy === 'first_seen' && firstSeenStart
+            ? `order by $fs ${orderMode}`
+            : `$rel has ${orderBy} $o; order by $o ${orderMode}`
+        };`
+      : ''
   }`;
   const count = getSingleValueNumber(`${finalQuery} aggregate count;`);
   const elements = getRelations(
-    `${finalQuery} ${
-      orderBy
-        ? `${
-            orderBy === 'first_seen' && firstSeenStart
-              ? `order by $fs ${orderMode}`
-              : `$rel has ${orderBy} $o; order by $o ${orderMode}`
-          };`
-        : ''
-    } offset ${offset}; limit ${first}; get $rel, $from, $to ${
+    `${finalQuery} offset ${offset}; limit ${first}; get $rel, $from, $to ${
       extraRel !== null ? `, $${extraRel}` : ''
     };`,
     'rel',
@@ -798,9 +804,9 @@ export const createRelation = async (id, input) => {
     );
   } catch (error) {
     if (wTx) {
-      await wTx.close();
+      wTx.close();
     }
-    return Promise.resolve({});
+    throw new Unknown();
   }
 };
 
@@ -888,9 +894,9 @@ export const updateAttribute = async (id, input) => {
     return getById(id);
   } catch (error) {
     if (wTx) {
-      await wTx.close();
+      wTx.close();
     }
-    return Promise.resolve({});
+    throw new Unknown();
   }
 };
 
@@ -909,9 +915,9 @@ export const deleteEntityById = async id => {
     return Promise.resolve(id);
   } catch (error) {
     if (wTx) {
-      await wTx.close();
+      wTx.close();
     }
-    return Promise.resolve(null);
+    throw new Unknown();
   }
 };
 
@@ -930,9 +936,9 @@ export const deleteById = async id => {
     return Promise.resolve(id);
   } catch (error) {
     if (wTx) {
-      await wTx.close();
+      wTx.close();
     }
-    return Promise.resolve(null);
+    throw new Unknown();
   }
 };
 
@@ -955,9 +961,9 @@ export const deleteRelationById = async (id, relationId) => {
     }));
   } catch (error) {
     if (wTx) {
-      await wTx.close();
+      wTx.close();
     }
-    return Promise.resolve({});
+    throw new Unknown();
   }
 };
 
@@ -994,7 +1000,7 @@ export const timeSeries = async (query, options) => {
     return result;
   } catch (error) {
     if (rTx) {
-      await rTx.close();
+      rTx.close();
     }
     return Promise.resolve([]);
   }
@@ -1026,7 +1032,7 @@ export const distribution = async (query, options) => {
     return result;
   } catch (error) {
     if (rTx) {
-      await rTx.close();
+      rTx.close();
     }
     return Promise.resolve([]);
   }
