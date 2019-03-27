@@ -12,6 +12,7 @@ import {
 import {
   createdByRef,
   markingDefinitions,
+  externalReferences,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
@@ -39,6 +40,7 @@ const reportResolvers = {
   Report: {
     createdByRef: (report, args) => createdByRef(report.id, args),
     markingDefinitions: (report, args) => markingDefinitions(report.id, args),
+    externalReferences: (report, args) => externalReferences(report.id, args),
     objectRefs: (report, args) => objectRefs(report.id, args),
     relationRefs: (report, args) => relationRefs(report.id, args),
     editContext: report => fetchEditContext(report.id)

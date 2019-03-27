@@ -47,6 +47,10 @@ class OpenCti:
             data['createdByRef'] = data['createdByRef']['node']
         if 'markingDefinitions' in data:
             data['markingDefinitions'] = self.parse_multiple(data['markingDefinitions'])
+        if 'killChainPhases' in data:
+            data['killChainPhases'] = self.parse_multiple(data['killChainPhases'])
+        if 'externalReferences' in data:
+            data['externalReferences'] = self.parse_multiple(data['externalReferences'])
         return data
 
     def get_stix_domain_entity(self, id):
@@ -404,7 +408,7 @@ class OpenCti:
         else:
             return None
 
-    def create_kill_chain_phase(self, kill_chain_name, phase_name, stix_id=None, created=None, modified=None):
+    def create_kill_chain_phase(self, kill_chain_name, phase_name, phase_order=None, stix_id=None, created=None, modified=None):
         self.log('Creating kill chain phase ' + phase_name + '...')
         query = """
                mutation KillChainPhaseAdd($input: KillChainPhaseAddInput) {
@@ -417,7 +421,7 @@ class OpenCti:
             'input': {
                 'kill_chain_name': kill_chain_name,
                 'phase_name': phase_name,
-                'phase_order': 0,
+                'phase_order': phase_order,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -711,6 +715,60 @@ class OpenCti:
         })
         return result['data']['campaignAdd']
 
+    def get_incidents(self, limit=10000):
+        self.log('Getting incidents...')
+        query = """
+            query Incidents($first: Int) {
+                incidents(first: $first) {
+                    edges {
+                        node {
+                            id
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            objective
+                            first_seen
+                            last_seen
+                            created
+                            modified
+                            createdByRef {
+                                node {
+                                    id
+                                    type
+                                    stix_id
+                                    stix_label
+                                    name
+                                    alias
+                                    description
+                                    created
+                                    modified
+                                }
+                            }
+                            markingDefinitions {
+                                edges {
+                                    node {
+                                        id
+                                        type
+                                        stix_id
+                                        definition_type
+                                        definition
+                                        level
+                                        color
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'first': limit})
+        return self.parse_multiple(result['data']['incidents'])
+
     def create_incident(self,
                         name,
                         description,
@@ -744,6 +802,70 @@ class OpenCti:
             }
         })
         return result['data']['incidentAdd']
+
+    def get_malwares(self, limit=10000):
+        self.log('Getting malwares...')
+        query = """
+            query Malwares($first: Int) {
+                malwares(first: $first) {
+                    edges {
+                        node {
+                            id
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                            createdByRef {
+                                node {
+                                    id
+                                    type
+                                    stix_id
+                                    stix_label
+                                    name
+                                    alias
+                                    description
+                                    created
+                                    modified
+                                }
+                            }
+                            markingDefinitions {
+                                edges {
+                                    node {
+                                        id
+                                        type
+                                        stix_id
+                                        definition_type
+                                        definition
+                                        level
+                                        color
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                            killChainPhases {
+                                edges {
+                                    node {
+                                        id
+                                        type
+                                        stix_id
+                                        kill_chain_name
+                                        phase_name
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'first': limit})
+        return self.parse_multiple(result['data']['malwares'])
 
     def create_malware(self, name, description, stix_id=None, created=None, modified=None):
         self.log('Creating malware ' + name + '...')
@@ -810,6 +932,70 @@ class OpenCti:
             }
         })
         return result['data']['vulnerabilityAdd']
+
+    def get_attack_patterns(self, limit=10000):
+        self.log('Getting attack patterns...')
+        query = """
+            query AttackPatterns($first: Int) {
+                attackPatterns(first: $first) {
+                    edges {
+                        node {
+                            id
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                            createdByRef {
+                                node {
+                                    id
+                                    type
+                                    stix_id
+                                    stix_label
+                                    name
+                                    alias
+                                    description
+                                    created
+                                    modified
+                                }
+                            }
+                            markingDefinitions {
+                                edges {
+                                    node {
+                                        id
+                                        type
+                                        stix_id
+                                        definition_type
+                                        definition
+                                        level
+                                        color
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                            killChainPhases {
+                                edges {
+                                    node {
+                                        id
+                                        type
+                                        stix_id
+                                        kill_chain_name
+                                        phase_name
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'first': limit})
+        return self.parse_multiple(result['data']['attackPatterns'])
 
     def create_attack_pattern(self, name, description, platform, required_permission, stix_id=None, created=None,
                               modified=None):
@@ -1206,5 +1392,22 @@ class OpenCti:
                 campaign_bundle = self.stix2_filter_objects(uuids, stix2.export_campaign(campaign))
                 uuids = uuids + [x['id'] for x in campaign_bundle]
                 bundle['objects'] = bundle['objects'] + campaign_bundle
-
+        if 'Incident' in types:
+            incidents = self.get_incidents()
+            for incident in incidents:
+                incident_bundle = self.stix2_filter_objects(uuids, stix2.export_incident(incident))
+                uuids = uuids + [x['id'] for x in incident_bundle]
+                bundle['objects'] = bundle['objects'] + incident_bundle
+        if 'Malware' in types:
+            malwares = self.get_malwares()
+            for malware in malwares:
+                malware_bundle = self.stix2_filter_objects(uuids, stix2.export_malware(malware))
+                uuids = uuids + [x['id'] for x in malware_bundle]
+                bundle['objects'] = bundle['objects'] + malware_bundle
+        if 'Attack-Pattern' in types:
+            attack_patterns = self.get_attack_patterns()
+            for attack_pattern in attack_patterns:
+                attack_pattern_bundle = self.stix2_filter_objects(uuids, stix2.export_attack_pattern(attack_pattern))
+                uuids = uuids + [x['id'] for x in attack_pattern_bundle]
+                bundle['objects'] = bundle['objects'] + attack_pattern_bundle
         return bundle

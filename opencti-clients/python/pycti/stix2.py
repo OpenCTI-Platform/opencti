@@ -62,6 +62,21 @@ class Stix2:
                 marking_definitions.append(marking_definition['id'])
                 result.append(marking_definition)
             stix_object['object_marking_refs'] = marking_definitions
+        if 'killChainPhases' in entity and len(entity['killChainPhases']) > 0:
+            kill_chain_phases = []
+            for entity_kill_chain_phase in entity['killChainPhases']:
+                print(entity_kill_chain_phase)
+                kill_chain_phase = {
+                    'kill_chain_name': entity_kill_chain_phase['kill_chain_name'],
+                    'phase_name': entity_kill_chain_phase['phase_name'],
+                    'x_opencti_phase_order': entity_kill_chain_phase['phase_order'],
+                    'x_opencti_id': entity_kill_chain_phase['stix_id'],
+                    'x_opencti_created': entity_kill_chain_phase['created'],
+                    'x_opencti_modified': entity_kill_chain_phase['modified'],
+                }
+                kill_chain_phases.append(kill_chain_phase)
+                result.append(kill_chain_phase)
+            stix_object['kill_chain_phases'] = kill_chain_phases
         result.append(stix_object)
 
         return result
@@ -82,7 +97,7 @@ class Stix2:
         # Created By Ref
         created_by_ref_id = None
         if 'created_by_ref' in stix_object:
-            created_by_ref_result = self.opencti.get_stix_domain_entity_by_stix_id(stix_object['created_by_ref'])
+            created_by_ref_result = self.opencti.get_stix_domain_entity_by_stix_id(stix_object['created_by_ref'].replace('identity', 'organization'))
             if created_by_ref_result is not None:
                 created_by_ref_id = created_by_ref_result['id']
 
@@ -126,7 +141,10 @@ class Stix2:
                     kill_chain_phase_id = self.opencti.create_kill_chain_phase(
                         kill_chain_phase['kill_chain_name'],
                         kill_chain_phase['phase_name'],
-                        kill_chain_phase['x_opencti_stix_id'] if 'x_opencti_stix_id' in kill_chain_phase else None
+                        kill_chain_phase['x_opencti_phase_order'] if 'x_opencti_phase_order' in kill_chain_phase else None,
+                        kill_chain_phase['x_opencti_id'] if 'x_opencti_id' in kill_chain_phase else None,
+                        kill_chain_phase['x_opencti_created'] if 'x_opencti_created' in kill_chain_phase else None,
+                        kill_chain_phase['x_opencti_modified'] if 'x_opencti_modified' in kill_chain_phase else None,
                     )['id']
                 kill_chain_phases_ids.append(kill_chain_phase_id)
 
@@ -214,11 +232,11 @@ class Stix2:
             'type': 'identity',
             'labels': entity['stix_label'],
             'name': entity['name'],
+            'x_opencti_aliases': entity['alias'],
             'description': entity['description'],
             'identity_class': identity_class,
             'created': entity['created'],
-            'moodified': entity['modified'],
-            'x_opencti_aliases': entity['alias']
+            'modified': entity['modified']
         }
 
     def create_identity(self, stix_object):
@@ -366,6 +384,22 @@ class Stix2:
             )
             return stix_object_result
 
+    def export_incident(self, entity):
+        incident = {
+            'id': entity['stix_id'],
+            'type': 'incident',
+            'labels': entity['stix_label'],
+            'name': entity['name'],
+            'aliases': entity['alias'],
+            'description': entity['description'],
+            'objective': entity['objective'],
+            'first_seen': entity['first_seen'],
+            'last_seen': entity['last_seen'],
+            'created': entity['created'],
+            'modified': entity['modified']
+        }
+        return self.prepare_export(entity, incident)
+
     def create_incident(self, stix_object):
         stix_object_result = self.opencti.search_stix_domain_entity(stix_object['name'], 'Incident')
         if stix_object_result is not None:
@@ -382,6 +416,19 @@ class Stix2:
                 stix_object['modified'] if 'modified' in stix_object else None,
             )
             return stix_object_result
+
+    def export_malware(self, entity):
+        malware = {
+            'id': entity['stix_id'],
+            'type': 'malware',
+            'labels': entity['stix_label'],
+            'name': entity['name'],
+            'x_opencti_aliases': entity['alias'],
+            'description': entity['description'],
+            'created': entity['created'],
+            'modified': entity['modified']
+        }
+        return self.prepare_export(entity, malware)
 
     def create_malware(self, stix_object):
         stix_object_result = self.opencti.search_stix_domain_entity(stix_object['name'], 'Malware')
@@ -424,6 +471,19 @@ class Stix2:
                 stix_object['modified'] if 'modified' in stix_object else None,
             )
             return stix_object_result
+
+    def export_attack_pattern(self, entity):
+        attack_pattern = {
+            'id': entity['stix_id'],
+            'type': 'attack-pattern',
+            'labels': entity['stix_label'],
+            'name': entity['name'],
+            'x_opencti_aliases': entity['alias'],
+            'description': entity['description'],
+            'created': entity['created'],
+            'modified': entity['modified']
+        }
+        return self.prepare_export(entity, attack_pattern)
 
     def create_attack_pattern(self, stix_object):
         stix_object_result = self.opencti.search_stix_domain_entity(stix_object['name'], 'Attack-Pattern')

@@ -1346,6 +1346,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
     editContext: [EditUserContext]
     createdByRef: createdByRef
     markingDefinitions: MarkingDefinitionConnection
+    externalReferences: ExternalReferenceConnection
     objectRefs: StixDomainEntityConnection
     relationRefs: StixRelationConnection
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, inferred: Boolean, toId: String,fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
