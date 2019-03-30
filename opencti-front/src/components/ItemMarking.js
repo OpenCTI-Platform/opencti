@@ -48,7 +48,13 @@ class ItemMarking extends Component {
     }
 
     if (this.props.color) {
-      return <Chip classes={{ root: style }} style={{ backgroundColor: this.props.color }} label={this.props.label}/>;
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={{ backgroundColor: this.props.color }}
+          label={this.props.label}
+        />
+      );
     }
 
     switch (this.props.label) {
@@ -57,18 +63,54 @@ class ItemMarking extends Component {
       case 'DR':
       case 'DR-SF':
       case 'TLP:RED':
-        return <Chip classes={{ root: style }} style={inlineStyles.red} label={this.props.label}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.red}
+            label={this.props.label}
+          />
+        );
       case 'TLP:AMBER':
-        return <Chip classes={{ root: style }} style={inlineStyles.orange} label={this.props.label}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.orange}
+            label={this.props.label}
+          />
+        );
       case 'NP':
       case 'TLP:GREEN':
-        return <Chip classes={{ root: style }} style={inlineStyles.green} label={this.props.label}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.green}
+            label={this.props.label}
+          />
+        );
       case 'TLP:WHITE':
-        return <Chip classes={{ root: style }} style={inlineStyles.white} label={this.props.label}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.white}
+            label={this.props.label}
+          />
+        );
       case 'SF':
-        return <Chip classes={{ root: style }} style={inlineStyles.blue} label={this.props.label}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.blue}
+            label={this.props.label}
+          />
+        );
       default:
-        return <Chip classes={{ root: style }} style={inlineStyles.white} label={this.props.label}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.white}
+            label={this.props.label}
+          />
+        );
     }
   }
 }

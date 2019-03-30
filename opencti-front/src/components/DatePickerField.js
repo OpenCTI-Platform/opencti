@@ -7,7 +7,19 @@ import inject18n from './i18n';
 class DatePickerField extends Component {
   render() {
     const {
-      t, fld, fsd, md, fd, yd, nsd, field, form, onFocus, onSubmit, onChange, ...other
+      t,
+      fld,
+      fsd,
+      md,
+      fd,
+      yd,
+      nsd,
+      field,
+      form,
+      onFocus,
+      onSubmit,
+      onChange,
+      ...other
     } = this.props;
     const currentError = form.errors[field.name];
     return (
@@ -25,27 +37,16 @@ class DatePickerField extends Component {
           }
         }}
         onBlur={() => {
-          form.setFieldTouched(
-            field.name,
-            true,
-            true,
-          );
+          form.setFieldTouched(field.name, true, true);
         }}
         onKeyPress={(event) => {
-          form.setFieldTouched(
-            field.name,
-            true,
-            true,
-          );
+          form.setFieldTouched(field.name, true, true);
           if (typeof onSubmit === 'function' && event.key === 'Enter') {
             onSubmit(field.name, event.target.value);
           }
         }}
         onChange={(date) => {
-          form.setFieldValue(
-            field.name,
-            date,
-          );
+          form.setFieldValue(field.name, date);
           if (typeof onChange === 'function') {
             onChange(field.name, date);
           }
@@ -53,9 +54,15 @@ class DatePickerField extends Component {
             onSubmit(field.name, dateFormat(date));
           }
         }}
-        format='YYYY-MM-DD'
-        helperText={form.errors[field.name] !== undefined && form.touched[field.name] ? currentError : ''}
-        error={form.errors[field.name] !== undefined && form.touched[field.name]}
+        format="YYYY-MM-DD"
+        helperText={
+          form.errors[field.name] !== undefined && form.touched[field.name]
+            ? currentError
+            : ''
+        }
+        error={
+          form.errors[field.name] !== undefined && form.touched[field.name]
+        }
         onError={(_, error) => form.setFieldError(field.name, error)}
         {...other}
       />

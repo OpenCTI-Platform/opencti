@@ -38,7 +38,10 @@ export default class EntityLabelModel extends LabelModel {
     this.props.model.parent.iterateListeners((listener, event) => {
       if (listener.selectionChanged) {
         listener.selectionChanged({
-          ...event, openEdit: true, inferred: this.props.model.parent.inferred, isSelected: selected,
+          ...event,
+          openEdit: true,
+          inferred: this.props.model.parent.inferred,
+          isSelected: selected,
         });
       }
     });

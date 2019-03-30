@@ -51,15 +51,45 @@ class ItemMarking extends Component {
 
     switch (status) {
       case 0:
-        return <Chip classes={{ root: style }} style={inlineStyles.orange} label={label}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.orange}
+            label={label}
+          />
+        );
       case 1:
-        return <Chip classes={{ root: style }} style={inlineStyles.blue} label={label}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.blue}
+            label={label}
+          />
+        );
       case 2:
-        return <Chip classes={{ root: style }} style={inlineStyles.green} label={label}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.green}
+            label={label}
+          />
+        );
       case 3:
-        return <Chip classes={{ root: style }} style={inlineStyles.grey} label={label}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.grey}
+            label={label}
+          />
+        );
       default:
-        return <Chip classes={{ root: style }} style={inlineStyles.blue} label={label}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.blue}
+            label={label}
+          />
+        );
     }
   }
 }

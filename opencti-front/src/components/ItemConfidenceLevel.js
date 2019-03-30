@@ -60,19 +60,61 @@ class ItemConfidenceLevel extends Component {
 
     switch (level) {
       case 1:
-        return <Chip classes={{ root: style }} style={inlineStyles.red} label={t('Very low')}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.red}
+            label={t('Very low')}
+          />
+        );
       case 2:
-        return <Chip classes={{ root: style }} style={inlineStyles.orange} label={t('Low')}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.orange}
+            label={t('Low')}
+          />
+        );
       case 3:
-        return <Chip classes={{ root: style }} style={inlineStyles.blue} label={t('Medium')}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.blue}
+            label={t('Medium')}
+          />
+        );
       case 4:
-        return <Chip classes={{ root: style }} style={inlineStyles.green} label={t('High')}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.green}
+            label={t('High')}
+          />
+        );
       case 5:
-        return <Chip classes={{ root: style }} style={inlineStyles.darkGreen} label={t('Very high')}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.darkGreen}
+            label={t('Very high')}
+          />
+        );
       case 99:
-        return <Chip classes={{ root: style }} style={inlineStyles.blueGrey} label={t('Inferred')}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.blueGrey}
+            label={t('Inferred')}
+          />
+        );
       default:
-        return <Chip classes={{ root: style }} style={inlineStyles.blue} label={t('Medium')}/>;
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles.blue}
+            label={t('Medium')}
+          />
+        );
     }
   }
 }

@@ -63,7 +63,9 @@ const relationsTypesMapping = {
   'attack-pattern_attack-pattern': ['comes-after'],
 };
 
-export const resolveRelationsTypes = (fromType, toType) => (relationsTypesMapping[`${fromType}_${toType}`] ? relationsTypesMapping[`${fromType}_${toType}`] : []);
+export const resolveRelationsTypes = (fromType, toType) => (relationsTypesMapping[`${fromType}_${toType}`]
+  ? relationsTypesMapping[`${fromType}_${toType}`]
+  : []);
 
 export const resolveRoles = (type) => {
   switch (type) {

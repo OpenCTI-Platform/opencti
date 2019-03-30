@@ -63,31 +63,62 @@ class EntityNodeWidget extends Component {
 
   render() {
     const {
-      node, node: { extras, expandable }, classes,
+      node,
+      node: { extras, expandable },
+      classes,
     } = this.props;
     const link = resolveLink(extras.type);
     return (
-      <div className={classes.node} style={{
-        backgroundColor: itemColor(extras.type, true),
-        border: node.selected ? '2px solid #00c0ff' : '2px solid #333333',
-        display: node.hidden ? 'none' : 'block',
-      }}>
+      <div
+        className={classes.node}
+        style={{
+          backgroundColor: itemColor(extras.type, true),
+          border: node.selected ? '2px solid #00c0ff' : '2px solid #333333',
+          display: node.hidden ? 'none' : 'block',
+        }}
+      >
         <div className={classes.content}>
-          <ItemIcon type={extras.type} color={itemColor(extras.type, false)} size='large'/>
-          <br/>
+          <ItemIcon
+            type={extras.type}
+            color={itemColor(extras.type, false)}
+            size="large"
+          />
+          <br />
           <span className={classes.name}>{truncate(extras.name, 30)}</span>
         </div>
-        <div className={classes.overlay} style={{ visibility: node.selected ? 'visible' : 'hidden', opacity: node.selected ? 1 : 0 }}>
-          <IconButton component={Link} to={`${link}/${extras.id}`} className={classes.button} style={{ marginTop: expandable ? 0 : 15 }}>
-            <Info fontSize='small'/>
+        <div
+          className={classes.overlay}
+          style={{
+            visibility: node.selected ? 'visible' : 'hidden',
+            opacity: node.selected ? 1 : 0,
+          }}
+        >
+          <IconButton
+            component={Link}
+            to={`${link}/${extras.id}`}
+            className={classes.button}
+            style={{ marginTop: expandable ? 0 : 15 }}
+          >
+            <Info fontSize="small" />
           </IconButton>
-          <br/>
-          {expandable ? <IconButton onClick={this.handleExpand.bind(this)} className={classes.button}>
-            <OpenWith fontSize='small'/>
-          </IconButton> : ''}
+          <br />
+          {expandable ? (
+            <IconButton
+              onClick={this.handleExpand.bind(this)}
+              className={classes.button}
+            >
+              <OpenWith fontSize="small" />
+            </IconButton>
+          ) : (
+            ''
+          )}
         </div>
-        <div className={classes.port} onClick={this.setSelected.bind(this)} style={{ display: node.selected ? 'none' : 'block' }}>
-          <PortWidget name='main' node={node}/>
+        <div
+          className={classes.port}
+          onClick={this.setSelected.bind(this)}
+          style={{ display: node.selected ? 'none' : 'block' }}
+        >
+          <PortWidget name="main" node={node} />
         </div>
       </div>
     );

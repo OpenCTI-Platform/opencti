@@ -85,9 +85,9 @@ export const findByEntity = args => {
 
 export const reportsTimeSeriesByEntity = args =>
   timeSeries(
-    `match $x isa Report; 
-    $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
-    $so id ${args.objectId} ${
+    `match $x isa Report; $rel(knowledge_aggregation:$x, so:$so) isa object_refs; $so id ${
+      args.objectId
+    } ${
       args.reportClass
         ? `; $x has report_class "${prepareString(args.reportClass)}"`
         : ''
@@ -99,17 +99,15 @@ export const findById = reportId => getById(reportId);
 
 export const objectRefs = (reportId, args) =>
   paginate(
-    `match $so isa Stix-Domain-Entity; 
-    $rel(so:$so, knowledge_aggregation:$report) isa object_refs; 
-    $report id ${reportId}`,
+    `match $so isa Stix-Domain-Entity; $rel(so:$so, knowledge_aggregation:$report) isa object_refs;  $report id ${reportId}`,
     args
   );
 
 export const relationRefs = (reportId, args) =>
   paginateRelationships(
-    `match $rel($from, $to) isa stix_relation; 
-    $extraRel(so:$rel, knowledge_aggregation:$report) isa object_refs; 
-    $report id ${reportId}`,
+    `match $rel($from, $to) isa ${
+      args.relationType ? args.relationType : 'stix_relation'
+    }; $extraRel(so:$rel, knowledge_aggregation:$report) isa object_refs; $report id ${reportId}`,
     args,
     'extraRel'
   );

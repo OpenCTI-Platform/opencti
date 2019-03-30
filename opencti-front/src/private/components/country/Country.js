@@ -28,27 +28,36 @@ class CountryComponent extends Component {
     const { classes, country } = this.props;
     return (
       <div className={classes.container}>
-        <CountryHeader country={country}/>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
+        <CountryHeader country={country} />
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={6}>
-            <CountryOverview country={country}/>
+            <CountryOverview country={country} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={country.id}/>
+            <EntityLastReports entityId={country.id} />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 20 }}
+        >
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart entityId={country.id}/>
+            <EntityCampaignsChart entityId={country.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={country.id}/>
+            <EntityIncidentsChart entityId={country.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={country.id}/>
+            <EntityReportsChart entityId={country.id} />
           </Grid>
         </Grid>
-        <CountryEdition countryId={country.id}/>
+        <CountryEdition countryId={country.id} />
       </div>
     );
   }
@@ -62,11 +71,11 @@ CountryComponent.propTypes = {
 
 const Country = createFragmentContainer(CountryComponent, {
   country: graphql`
-      fragment Country_country on Country {
-          id
-          ...CountryHeader_country
-          ...CountryOverview_country
-      }
+    fragment Country_country on Country {
+      id
+      ...CountryHeader_country
+      ...CountryOverview_country
+    }
   `,
 });
 

@@ -22,15 +22,20 @@ import DialogActions from '@material-ui/core/DialogActions';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import IconButton from '@material-ui/core/IconButton';
 import {
-  ArrowDropDown, ArrowDropUp, TableChart, SaveAlt,
+  ArrowDropDown,
+  ArrowDropUp,
+  TableChart,
+  SaveAlt,
 } from '@material-ui/icons';
+import { CSVLink } from 'react-csv';
 import { fetchQuery, QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 import SearchInput from '../../components/SearchInput';
-import VulnerabilitiesLines, { vulnerabilitiesLinesQuery } from './vulnerability/VulnerabilitiesLines';
+import VulnerabilitiesLines, {
+  vulnerabilitiesLinesQuery,
+} from './vulnerability/VulnerabilitiesLines';
 import VulnerabilityCreation from './vulnerability/VulnerabilityCreation';
 import { dateFormat } from '../../utils/Time';
-import { CSVLink } from "react-csv";
 
 const styles = theme => ({
   header: {
@@ -100,17 +105,27 @@ const inlineStyles = {
 };
 
 const exportVulnerabilitiesQuery = graphql`
-    query VulnerabilitiesExportVulnerabilitiesQuery($count: Int!, $cursor: ID, $orderBy: VulnerabilitiesOrdering, $orderMode: OrderingMode) {
-        vulnerabilities(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_vulnerabilities") {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                }
-            }
+  query VulnerabilitiesExportVulnerabilitiesQuery(
+    $count: Int!
+    $cursor: ID
+    $orderBy: VulnerabilitiesOrdering
+    $orderMode: OrderingMode
+  ) {
+    vulnerabilities(
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) @connection(key: "Pagination_vulnerabilities") {
+      edges {
+        node {
+          id
+          name
+          description
         }
+      }
     }
+  }
 `;
 
 class Vulnerabilities extends Component {
@@ -141,9 +156,20 @@ class Vulnerabilities extends Component {
   SortHeader(field, label) {
     const { t } = this.props;
     return (
-      <div style={inlineStyles[field]} onClick={this.reverseBy.bind(this, field)}>
+      <div
+        style={inlineStyles[field]}
+        onClick={this.reverseBy.bind(this, field)}
+      >
         <span>{t(label)}</span>
-        {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStyles.iconSort}/> : <ArrowDropUp style={inlineStyles.iconSort}/> : ''}
+        {this.state.sortBy === field ? (
+          this.state.orderAsc ? (
+            <ArrowDropDown style={inlineStyles.iconSort} />
+          ) : (
+            <ArrowDropUp style={inlineStyles.iconSort} />
+          )
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -167,7 +193,10 @@ class Vulnerabilities extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportVulnerabilitiesQuery, { count: 10000, ...paginationOptions }).then((data) => {
+    fetchQuery(exportVulnerabilitiesQuery, {
+      count: 10000,
+      ...paginationOptions,
+    }).then((data) => {
       const finalData = pipe(
         map(n => n.node),
         map(n => over(lensProp('description'), defaultTo('-'))(n)),
@@ -184,16 +213,25 @@ class Vulnerabilities extends Component {
       <div>
         <div className={classes.header}>
           <div style={{ float: 'left', marginTop: -10 }}>
-            <SearchInput variant='small' onChange={this.handleSearch.bind(this)}/>
+            <SearchInput
+              variant="small"
+              onChange={this.handleSearch.bind(this)}
+            />
           </div>
           <div style={{ float: 'right', marginTop: -20 }}>
-            <IconButton color={this.state.view === 'lines' ? 'secondary' : 'primary'}
-                        classes={{ root: classes.button }}
-                        onClick={this.handleChangeView.bind(this, 'lines')}>
-              <TableChart/>
+            <IconButton
+              color={this.state.view === 'lines' ? 'secondary' : 'primary'}
+              classes={{ root: classes.button }}
+              onClick={this.handleChangeView.bind(this, 'lines')}
+            >
+              <TableChart />
             </IconButton>
-            <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true' color='primary'>
-              <SaveAlt/>
+            <IconButton
+              onClick={this.handleOpenExport.bind(this)}
+              aria-haspopup="true"
+              color="primary"
+            >
+              <SaveAlt />
             </IconButton>
             <Menu
               anchorEl={this.state.anchorExport}
@@ -201,64 +239,116 @@ class Vulnerabilities extends Component {
               onClose={this.handleCloseExport.bind(this)}
               style={{ marginTop: 50 }}
             >
-              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>{t('CSV file')}</MenuItem>
+              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>
+                {t('CSV file')}
+              </MenuItem>
             </Menu>
           </div>
-          <div className='clearfix'/>
+          <div className="clearfix" />
         </div>
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
+          <ListItem
+            classes={{ default: classes.item }}
+            divider={false}
+            style={{ paddingTop: 0 }}
+          >
             <ListItemIcon>
-              <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
+              <span
+                style={{
+                  padding: '0 8px 0 8px',
+                  fontWeight: 700,
+                  fontSize: 12,
+                }}
+              >
+                #
+              </span>
             </ListItemIcon>
-            <ListItemText primary={
-              <div>
-                {this.SortHeader('name', 'Name')}
-                {this.SortHeader('created', 'Creation date')}
-                {this.SortHeader('modified', 'Modification date')}
-              </div>
-            }/>
+            <ListItemText
+              primary={
+                <div>
+                  {this.SortHeader('name', 'Name')}
+                  {this.SortHeader('created', 'Creation date')}
+                  {this.SortHeader('modified', 'Modification date')}
+                </div>
+              }
+            />
           </ListItem>
           <QueryRenderer
             query={vulnerabilitiesLinesQuery}
-            variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
+            variables={{
+              count: 25,
+              orderBy: this.state.sortBy,
+              orderMode: this.state.orderAsc ? 'asc' : 'desc',
+            }}
             render={({ props }) => {
               if (props) {
-                return <VulnerabilitiesLines data={props} searchTerm={this.state.searchTerm}/>;
+                return (
+                  <VulnerabilitiesLines
+                    data={props}
+                    searchTerm={this.state.searchTerm}
+                  />
+                );
               }
-              return <VulnerabilitiesLines data={null} dummy={true} searchTerm={this.state.searchTerm}/>;
+              return (
+                <VulnerabilitiesLines
+                  data={null}
+                  dummy={true}
+                  searchTerm={this.state.searchTerm}
+                />
+              );
             }}
           />
         </List>
         <VulnerabilityCreation
-            paginationOptions={{
-              orderBy: this.state.sortBy,
-              orderMode: this.state.orderAsc ? 'asc' : 'desc',
-            }}
+          paginationOptions={{
+            orderBy: this.state.sortBy,
+            orderMode: this.state.orderAsc ? 'asc' : 'desc',
+          }}
         />
         <Dialog
           open={this.state.exportCsvOpen}
           onClose={this.handleCloseExportCsv.bind(this)}
           fullWidth={true}
         >
-          <DialogTitle>
-            {t('Export data in CSV')}
-          </DialogTitle>
+          <DialogTitle>{t('Export data in CSV')}</DialogTitle>
           <DialogContent>
-            {this.state.exportCsvData === null
-              ? <div className={this.props.classes.export}><CircularProgress size={40} thickness={2} className={this.props.classes.loaderCircle}/></div>
-              : <DialogContentText>{t('The CSV file has been generated with the parameters of the view and is ready for download.')}</DialogContentText>
-            }
+            {this.state.exportCsvData === null ? (
+              <div className={this.props.classes.export}>
+                <CircularProgress
+                  size={40}
+                  thickness={2}
+                  className={this.props.classes.loaderCircle}
+                />
+              </div>
+            ) : (
+              <DialogContentText>
+                {t(
+                  'The CSV file has been generated with the parameters of the view and is ready for download.',
+                )}
+              </DialogContentText>
+            )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseExportCsv.bind(this)} color='primary'>
+            <Button
+              onClick={this.handleCloseExportCsv.bind(this)}
+              color="primary"
+            >
               {t('Cancel')}
             </Button>
-            {this.state.exportCsvData !== null
-              ? <Button component={CSVLink} data={this.state.exportCsvData} separator={';'} enclosingCharacter={'"'} color='primary' filename={`${t('Vulnerabilities')}.csv`}>
+            {this.state.exportCsvData !== null ? (
+              <Button
+                component={CSVLink}
+                data={this.state.exportCsvData}
+                separator={';'}
+                enclosingCharacter={'"'}
+                color="primary"
+                filename={`${t('Vulnerabilities')}.csv`}
+              >
                 {t('Download')}
               </Button>
-              : ''}
+            ) : (
+              ''
+            )}
           </DialogActions>
         </Dialog>
       </div>

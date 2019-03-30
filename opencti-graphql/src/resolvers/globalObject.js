@@ -1,7 +1,7 @@
 const globalObjectResolvers = {
   GlobalObject: {
     __resolveType(obj) {
-      if( obj.observable_value ) {
+      if (obj.observable_value) {
         return 'StixObservable';
       }
       if (obj.type) {

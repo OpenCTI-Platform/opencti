@@ -10,7 +10,15 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, pathOr, map, union, pipe, pluck, head, forEach, assoc,
+  compose,
+  pathOr,
+  map,
+  union,
+  pipe,
+  pluck,
+  head,
+  forEach,
+  assoc,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -67,120 +75,136 @@ const styles = theme => ({
 });
 
 const reportAddObservableThreatsSearchQuery = graphql`
-    query ReportAddObservableThreatsSearchQuery($search: String, $first: Int) {
-        threatActors(search: $search, first: $first) {
-            edges {
-                node {
-                    id
-                    name
-                    type
-                }
-            }
+  query ReportAddObservableThreatsSearchQuery($search: String, $first: Int) {
+    threatActors(search: $search, first: $first) {
+      edges {
+        node {
+          id
+          name
+          type
         }
-        intrusionSets(search: $search, first: $first) {
-            edges {
-                node {
-                    id
-                    name
-                    type
-                }
-            }
-        }
-        campaigns(search: $search, first: $first) {
-            edges {
-                node {
-                    id
-                    name
-                    type
-                }
-            }
-        }
-        incidents(search: $search, first: $first) {
-            edges {
-                node {
-                    id
-                    name
-                    type
-                }
-            }
-        }
-        malwares(search: $search, first: $first) {
-            edges {
-                node {
-                    id
-                    name
-                    type
-                }
-            }
-        }
+      }
     }
+    intrusionSets(search: $search, first: $first) {
+      edges {
+        node {
+          id
+          name
+          type
+        }
+      }
+    }
+    campaigns(search: $search, first: $first) {
+      edges {
+        node {
+          id
+          name
+          type
+        }
+      }
+    }
+    incidents(search: $search, first: $first) {
+      edges {
+        node {
+          id
+          name
+          type
+        }
+      }
+    }
+    malwares(search: $search, first: $first) {
+      edges {
+        node {
+          id
+          name
+          type
+        }
+      }
+    }
+  }
 `;
 
 const reportAddObservableObservableSearchQuery = graphql`
-    query ReportAddObservableObservableSearchQuery($observable_value: String) {
-        stixObservables(observable_value: $observable_value) {
-            edges {
-                node {
-                    id
-                    name
-                }
-            }
+  query ReportAddObservableObservableSearchQuery($observable_value: String) {
+    stixObservables(observable_value: $observable_value) {
+      edges {
+        node {
+          id
+          name
         }
+      }
     }
+  }
 `;
 
 const stixObservableMutation = graphql`
-    mutation ReportAddObservableMutation($input: StixObservableAddInput!) {
-        stixObservableAdd(input: $input) {
-            id
-        }
+  mutation ReportAddObservableMutation($input: StixObservableAddInput!) {
+    stixObservableAdd(input: $input) {
+      id
     }
+  }
 `;
 
 const reportAddObservableStixRelationSearchQuery = graphql`
-    query ReportAddObservableStixRelationSearchQuery($fromId: String, $toId: String, $relationType: String, $lastSeenStart: DateTime, $lastSeenStop: DateTime) {
-        stixRelations(fromId: $fromId, toId: $toId, relationType: $relationType, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop) {
-            edges {
-                node {
-                    id
-                }
-            }
+  query ReportAddObservableStixRelationSearchQuery(
+    $fromId: String
+    $toId: String
+    $relationType: String
+    $lastSeenStart: DateTime
+    $lastSeenStop: DateTime
+  ) {
+    stixRelations(
+      fromId: $fromId
+      toId: $toId
+      relationType: $relationType
+      lastSeenStart: $lastSeenStart
+      lastSeenStop: $lastSeenStop
+    ) {
+      edges {
+        node {
+          id
         }
+      }
     }
+  }
 `;
 
 const reportMutationRelationCreate = graphql`
-    mutation ReportAddObservableRelationCreateMutation($input: StixRelationAddInput!) {
-        stixRelationAdd(input: $input) {
-            id
-            relationship_type
-            weight
-            first_seen
-            last_seen
-        }
+  mutation ReportAddObservableRelationCreateMutation(
+    $input: StixRelationAddInput!
+  ) {
+    stixRelationAdd(input: $input) {
+      id
+      relationship_type
+      weight
+      first_seen
+      last_seen
     }
+  }
 `;
 
 const reportMutationRelationAdd = graphql`
-    mutation ReportAddObservableRelationAddMutation($id: ID!, $input: RelationAddInput!, $relationType: String) {
-        reportEdit(id: $id) {
-            relationAdd(input: $input) {
-                node {
-                    ...ReportObservables_report
-                }
-                relation {
-                    id
-                }
-            }
+  mutation ReportAddObservableRelationAddMutation(
+    $id: ID!
+    $input: RelationAddInput!
+    $relationType: String
+  ) {
+    reportEdit(id: $id) {
+      relationAdd(input: $input) {
+        node {
+          ...ReportObservables_report
         }
+        relation {
+          id
+        }
+      }
     }
+  }
 `;
 
 const reportValidation = t => Yup.object().shape({
-  type: Yup.string()
-    .required(t('This field is required')),
-  observable_value: Yup.string()
-    .required(t('This field is required')),
+  type: Yup.string().required(t('This field is required')),
+  observable_value: Yup.string().required(t('This field is required')),
   weight: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
@@ -192,8 +216,7 @@ const reportValidation = t => Yup.object().shape({
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   description: Yup.string(),
-  threats: Yup.array()
-    .required(t('This field is required')),
+  threats: Yup.array().required(t('This field is required')),
   markingDefinitions: Yup.array(),
 });
 
@@ -213,21 +236,27 @@ class ReportAddObservable extends Component {
         .concat(pathOr([], ['campaigns', 'edges'], data))
         .concat(pathOr([], ['incidents', 'edges'], data))
         .concat(pathOr([], ['malwares', 'edges'], data));
-      const threats = map(n => ({ label: n.node.name, value: n.node.id, type: n.node.type }), result);
+      const threats = map(
+        n => ({ label: n.node.name, value: n.node.id, type: n.node.type }),
+        result,
+      );
       this.setState({ threats: union(this.state.threats, threats) });
     });
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery,
-      { search: event.target.value }).then((data) => {
+    fetchQuery(markingDefinitionsLinesSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
         map(n => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({
-        markingDefinitions:
-          union(this.state.markingDefinitions, markingDefinitions),
+        markingDefinitions: union(
+          this.state.markingDefinitions,
+          markingDefinitions,
+        ),
       });
     });
   }
@@ -248,7 +277,9 @@ class ReportAddObservable extends Component {
       assoc('threats', pluck('value', values.threats)),
     )(values);
     setSubmitting(true);
-    fetchQuery(reportAddObservableObservableSearchQuery, { observable_value: finalValues.observable_value }).then((data) => {
+    fetchQuery(reportAddObservableObservableSearchQuery, {
+      observable_value: finalValues.observable_value,
+    }).then((data) => {
       if (data.stixObservables.edges.length === 0) {
         commitMutation({
           mutation: stixObservableMutation,
@@ -266,7 +297,12 @@ class ReportAddObservable extends Component {
         });
       } else {
         const observableId = head(data.stixObservables.edges).node.id;
-        this.createRelations(finalValues, observableId, setSubmitting, resetForm);
+        this.createRelations(
+          finalValues,
+          observableId,
+          setSubmitting,
+          resetForm,
+        );
       }
     });
   }
@@ -296,7 +332,26 @@ class ReportAddObservable extends Component {
               },
             },
             onCompleted: (data) => {
-              console.log(data);
+              const relationId = data.stixRelationAdd.id;
+              const input = {
+                fromRole: 'so',
+                toId: this.props.reportId,
+                toRole: 'knowledge_aggregation',
+                through: 'object_refs',
+              };
+              commitMutation({
+                mutation: reportMutationRelationAdd,
+                variables: {
+                  id: relationId,
+                  relationType: 'indicates',
+                  input,
+                },
+                onCompleted: () => {
+                  setSubmitting(false);
+                  resetForm();
+                  this.handleClose();
+                },
+              });
             },
           });
         } else {
@@ -338,17 +393,29 @@ class ReportAddObservable extends Component {
     const defaultLastSeen = lastSeen || null;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
-             color='secondary' aria-label='Add'
-             className={classes.createButton}><Add/></Fab>
-        <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}
+        >
+          <Add />
+        </Fab>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
           <div className={classes.header}>
-            <IconButton aria-label='Close' className={classes.closeButton} onClick={this.handleClose.bind(this)}>
-              <Close fontSize='small'/>
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={this.handleClose.bind(this)}
+            >
+              <Close fontSize="small" />
             </IconButton>
-            <Typography variant='h6'>
-              {t('Add observable')}
-            </Typography>
+            <Typography variant="h6">{t('Add observable')}</Typography>
           </div>
           <div className={classes.container}>
             <Formik
@@ -368,36 +435,44 @@ class ReportAddObservable extends Component {
               render={({ submitForm, handleReset, isSubmitting }) => (
                 <div>
                   <Form style={{ margin: '20px 0 20px 0' }}>
-                    <Field name='type'
-                           component={Select}
-                           label={t('Observable type')}
-                           fullWidth={true}
-                           displayEmpty={true}
-                           inputProps={{
-                             name: 'type',
-                             id: 'type',
-                           }}
-                           containerstyle={{ width: '100%' }}
+                    <Field
+                      name="type"
+                      component={Select}
+                      label={t('Observable type')}
+                      fullWidth={true}
+                      displayEmpty={true}
+                      inputProps={{
+                        name: 'type',
+                        id: 'type',
+                      }}
+                      containerstyle={{ width: '100%' }}
                     >
-                      <MenuItem value='Domain'>{t('Domain')}</MenuItem>
-                      <MenuItem value='IPv4-Addr'>{t('IPv4 address')}</MenuItem>
-                      <MenuItem value='IPv6-Addr'>{t('IPv6 address')}</MenuItem>
-                      <MenuItem value='URL'>{t('URL')}</MenuItem>
-                      <MenuItem value='Email'>{t('Email address')}</MenuItem>
-                      <MenuItem value='Mutex'>{t('Mutex')}</MenuItem>
-                      <MenuItem value='File'>{t('File hash')}</MenuItem>
+                      <MenuItem value="Domain">{t('Domain')}</MenuItem>
+                      <MenuItem value="IPv4-Addr">{t('IPv4 address')}</MenuItem>
+                      <MenuItem value="IPv6-Addr">{t('IPv6 address')}</MenuItem>
+                      <MenuItem value="URL">{t('URL')}</MenuItem>
+                      <MenuItem value="Email">{t('Email address')}</MenuItem>
+                      <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
+                      <MenuItem value="File">{t('File hash')}</MenuItem>
                     </Field>
-                    <Field name='observable_value' component={TextField} label={t('Observable value')} fullWidth={true} style={{ marginTop: 20 }}/>
-                    <Field name='weight'
-                           component={Select}
-                           label={t('Confidence level')}
-                           fullWidth={true}
-                           displayEmpty={true}
-                           inputProps={{
-                             name: 'weight',
-                             id: 'weight',
-                           }}
-                           containerstyle={{ marginTop: 20, width: '100%' }}
+                    <Field
+                      name="observable_value"
+                      component={TextField}
+                      label={t('Observable value')}
+                      fullWidth={true}
+                      style={{ marginTop: 20 }}
+                    />
+                    <Field
+                      name="weight"
+                      component={Select}
+                      label={t('Confidence level')}
+                      fullWidth={true}
+                      displayEmpty={true}
+                      inputProps={{
+                        name: 'weight',
+                        id: 'weight',
+                      }}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
                     >
                       <MenuItem value={1}>{t('Very low')}</MenuItem>
                       <MenuItem value={2}>{t('Low')}</MenuItem>
@@ -405,11 +480,31 @@ class ReportAddObservable extends Component {
                       <MenuItem value={4}>{t('High')}</MenuItem>
                       <MenuItem value={5}>{t('Very high')}</MenuItem>
                     </Field>
-                    <Field name='first_seen' component={DatePickerField} label={t('First seen')} fullWidth={true} style={{ marginTop: 20 }}/>
-                    <Field name='last_seen' component={DatePickerField} label={t('Last seen')} fullWidth={true} style={{ marginTop: 20 }}/>
-                    <Field name='description' component={TextField} label={t('Description')} fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
                     <Field
-                      name='threats'
+                      name="first_seen"
+                      component={DatePickerField}
+                      label={t('First seen')}
+                      fullWidth={true}
+                      style={{ marginTop: 20 }}
+                    />
+                    <Field
+                      name="last_seen"
+                      component={DatePickerField}
+                      label={t('Last seen')}
+                      fullWidth={true}
+                      style={{ marginTop: 20 }}
+                    />
+                    <Field
+                      name="description"
+                      component={TextField}
+                      label={t('Description')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      style={{ marginTop: 20 }}
+                    />
+                    <Field
+                      name="threats"
                       component={Autocomplete}
                       multiple={true}
                       label={t('Linked threat(s)')}
@@ -417,7 +512,7 @@ class ReportAddObservable extends Component {
                       onInputChange={this.searchThreats.bind(this)}
                     />
                     <Field
-                      name='markingDefinitions'
+                      name="markingDefinitions"
                       component={Autocomplete}
                       multiple={true}
                       label={t('Marking')}
@@ -425,10 +520,21 @@ class ReportAddObservable extends Component {
                       onInputChange={this.searchMarkingDefinitions.bind(this)}
                     />
                     <div className={classes.buttons}>
-                      <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                      <Button
+                        variant="contained"
+                        onClick={handleReset}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
                         {t('Cancel')}
                       </Button>
-                      <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
                         {t('Create')}
                       </Button>
                     </div>

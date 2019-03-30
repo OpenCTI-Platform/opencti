@@ -16,7 +16,11 @@ import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
-import { commitMutation, QueryRenderer, WS_ACTIVATED } from "../../../relay/environment";
+import {
+  commitMutation,
+  QueryRenderer,
+  WS_ACTIVATED,
+} from '../../../relay/environment';
 import CityEdition from './CityEdition';
 
 const styles = theme => ({
@@ -42,32 +46,32 @@ function Transition(props) {
 }
 
 const cityPopoverCleanContext = graphql`
-    mutation CityPopoverCleanContextMutation($id: ID!) {
-        cityEdit(id: $id) {
-            contextClean {
-                ...CityEdition_city
-            }
-        }
+  mutation CityPopoverCleanContextMutation($id: ID!) {
+    cityEdit(id: $id) {
+      contextClean {
+        ...CityEdition_city
+      }
     }
+  }
 `;
 
 const cityPopoverDeletionMutation = graphql`
-    mutation CityPopoverDeletionMutation($id: ID!) {
-        cityEdit(id: $id) {
-            delete
-        }
+  mutation CityPopoverDeletionMutation($id: ID!) {
+    cityEdit(id: $id) {
+      delete
     }
+  }
 `;
 
 const cityEditionQuery = graphql`
-    query CityPopoverEditionQuery($id: String!) {
-        city(id: $id) {
-            ...CityEdition_city
-        }
-        me {
-            ...CityEdition_me
-        }
+  query CityPopoverEditionQuery($id: String!) {
+    city(id: $id) {
+      ...CityEdition_city
     }
+    me {
+      ...CityEdition_me
+    }
+  }
 `;
 
 class CityPopover extends Component {
@@ -142,8 +146,8 @@ class CityPopover extends Component {
     const { classes, t, cityId } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
-          <MoreVert/>
+        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+          <MoreVert />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
@@ -151,19 +155,32 @@ class CityPopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
+          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
+            {t('Update')}
+          </MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+            {t('Delete')}
+          </MenuItem>
         </Menu>
-        <Drawer open={this.state.displayUpdate} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleCloseUpdate.bind(this)}>
+        <Drawer
+          open={this.state.displayUpdate}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleCloseUpdate.bind(this)}
+        >
           <QueryRenderer
             query={cityEditionQuery}
             variables={{ id: cityId }}
             render={({ props }) => {
-              if (props) { // Done
-                return <CityEdition me={props.me} city={props.city}
-                                     handleClose={this.handleCloseUpdate.bind(this)}/>;
+              if (props) {
+                return (
+                  <CityEdition
+                    me={props.me}
+                    city={props.city}
+                    handleClose={this.handleCloseUpdate.bind(this)}
+                  />
+                );
               }
-              // Loading
               return <div> &nbsp; </div>;
             }}
           />
@@ -180,10 +197,18 @@ class CityPopover extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseDelete.bind(this)} color='primary' disabled={this.state.deleting}>
+            <Button
+              onClick={this.handleCloseDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
               {t('Cancel')}
             </Button>
-            <Button onClick={this.submitDelete.bind(this)} color='primary' disabled={this.state.deleting}>
+            <Button
+              onClick={this.submitDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
               {t('Delete')}
             </Button>
           </DialogActions>

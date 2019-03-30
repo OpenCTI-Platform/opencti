@@ -34,14 +34,18 @@ const styles = theme => ({
   error: {
     color: theme.palette.primary.main,
     fontSize: 20,
-  }
+  },
 });
 
 class ErrorNotFound extends Component {
   render() {
     const { t, classes, variant } = this.props;
     return (
-      <div className={variant === 'inside' ? classes.containerInside : classes.container}>
+      <div
+        className={
+          variant === 'inside' ? classes.containerInside : classes.container
+        }
+      >
         <Particles
           className={classes.particlesContainer}
           params={{

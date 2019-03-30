@@ -51,21 +51,31 @@ class CountryEditionContainer extends Component {
     const { editContext } = country;
     // Add current user to the context if is not available yet.
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
+    const editUsers = missingMe
+      ? insert(0, { name: me.email }, editContext)
+      : editContext;
     return (
       <div>
         <div className={classes.header}>
-          <IconButton aria-label='Close' className={classes.closeButton} onClick={handleClose.bind(this)}>
-            <Close fontSize='small'/>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
           </IconButton>
-          <Typography variant='h6' classes={{ root: classes.title }}>
+          <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update an country')}
           </Typography>
-          <SubscriptionAvatars users={editUsers}/>
-          <div className='clearfix'/>
+          <SubscriptionAvatars users={editUsers} />
+          <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <CountryEditionOverview country={this.props.country} editUsers={editUsers} me={me}/>
+          <CountryEditionOverview
+            country={this.props.country}
+            editUsers={editUsers}
+            me={me}
+          />
         </div>
       </div>
     );
@@ -81,23 +91,26 @@ CountryEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const CountryEditionFragment = createFragmentContainer(CountryEditionContainer, {
-  country: graphql`
+const CountryEditionFragment = createFragmentContainer(
+  CountryEditionContainer,
+  {
+    country: graphql`
       fragment CountryEditionContainer_country on Country {
-          id
-          ...CountryEditionOverview_country
-          editContext {
-              name
-              focusOn
-          }
+        id
+        ...CountryEditionOverview_country
+        editContext {
+          name
+          focusOn
+        }
       }
-  `,
-  me: graphql`
+    `,
+    me: graphql`
       fragment CountryEditionContainer_me on User {
-          email
+        email
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

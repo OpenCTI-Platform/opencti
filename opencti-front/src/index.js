@@ -3,7 +3,11 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import './resources/css/index.css';
 import {
-  BrowserRouter, Redirect, Route, Switch, withRouter,
+  BrowserRouter,
+  Redirect,
+  Route,
+  Switch,
+  withRouter,
 } from 'react-router-dom';
 import 'storm-react-diagrams/dist/style.min.css';
 import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
@@ -41,22 +45,24 @@ RedirectManagerComponent.propTypes = {
 
 const RedirectManager = compose(withRouter)(RedirectManagerComponent);
 
-const App = () => (<MuiThemeProvider theme={createMuiTheme(theme)}>
+const App = () => (
+  <MuiThemeProvider theme={createMuiTheme(theme)}>
     <BrowserRouter>
-         <RedirectManager>
-             <CssBaseline/>
-             <Switch>
-                 <Redirect exact from='/' to='/dashboard'/>
-                 <Route exact path='/login' component={Login}/>
-                 <BoundaryRoute component={RootPrivate} />
-             </Switch>
-         </RedirectManager>
+      <RedirectManager>
+        <CssBaseline />
+        <Switch>
+          <Redirect exact from="/" to="/dashboard" />
+          <Route exact path="/login" component={Login} />
+          <BoundaryRoute component={RootPrivate} />
+        </Switch>
+      </RedirectManager>
     </BrowserRouter>
-</MuiThemeProvider>);
+  </MuiThemeProvider>
+);
 
 export default App;
 
-ReactDOM.render(<App/>, document.getElementById('root'));
+ReactDOM.render(<App />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

@@ -12,9 +12,16 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../components/i18n';
-import { commitMutation, requestSubscription, WS_ACTIVATED } from '../../../relay/environment';
+import {
+  commitMutation,
+  requestSubscription,
+  WS_ACTIVATED,
+} from '../../../relay/environment';
 import TextField from '../../../components/TextField';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../components/Subscription';
+import {
+  SubscriptionAvatars,
+  SubscriptionFocus,
+} from '../../../components/Subscription';
 
 const styles = theme => ({
   header: {
@@ -47,38 +54,37 @@ const styles = theme => ({
 });
 
 const subscription = graphql`
-    subscription CityEditionSubscription($id: ID!) {
-        stixDomainEntity(id: $id) {
-            ... on City {
-                ...CityEdition_city
-            }
-        }
+  subscription CityEditionSubscription($id: ID!) {
+    stixDomainEntity(id: $id) {
+      ... on City {
+        ...CityEdition_city
+      }
     }
+  }
 `;
 
 const cityMutationFieldPatch = graphql`
-    mutation CityEditionFieldPatchMutation($id: ID!, $input: EditInput!) {
-        cityEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...CityEdition_city
-            }
-        }
+  mutation CityEditionFieldPatchMutation($id: ID!, $input: EditInput!) {
+    cityEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...CityEdition_city
+      }
     }
+  }
 `;
 
 const cityEditionFocus = graphql`
-    mutation CityEditionFocusMutation($id: ID!, $input: EditContext!) {
-        cityEdit(id: $id) {
-            contextPatch(input : $input) {
-                ...CityEdition_city
-            }
-        }
+  mutation CityEditionFocusMutation($id: ID!, $input: EditContext!) {
+    cityEdit(id: $id) {
+      contextPatch(input: $input) {
+        ...CityEdition_city
+      }
     }
+  }
 `;
 
 const cityValidation = t => Yup.object().shape({
-  name: Yup.string()
-    .required(t('This field is required')),
+  name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });
 
@@ -110,12 +116,15 @@ class CityEditionContainer extends Component {
   }
 
   handleSubmitField(name, value) {
-    cityValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      commitMutation({
-        mutation: cityMutationFieldPatch,
-        variables: { id: this.props.city.id, input: { key: name, value } },
-      });
-    }).catch(() => false);
+    cityValidation(this.props.t)
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        commitMutation({
+          mutation: cityMutationFieldPatch,
+          variables: { id: this.props.city.id, input: { key: name, value } },
+        });
+      })
+      .catch(() => false);
   }
 
   render() {
@@ -125,19 +134,25 @@ class CityEditionContainer extends Component {
     const { editContext } = city;
     // Add current user to the context if is not available yet.
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
+    const editUsers = missingMe
+      ? insert(0, { name: me.email }, editContext)
+      : editContext;
     const initialValues = pick(['name', 'description'], city);
     return (
       <div>
         <div className={classes.header}>
-          <IconButton aria-label='Close' className={classes.closeButton} onClick={handleClose.bind(this)}>
-            <Close fontSize='small'/>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
           </IconButton>
-          <Typography variant='h6' classes={{ root: classes.title }}>
+          <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a city')}
           </Typography>
-          <SubscriptionAvatars users={editUsers}/>
-          <div className='clearfix'/>
+          <SubscriptionAvatars users={editUsers} />
+          <div className="clearfix" />
         </div>
         <div className={classes.container}>
           <Formik
@@ -147,15 +162,39 @@ class CityEditionContainer extends Component {
             onSubmit={() => true}
             render={() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field name='name' component={TextField} label={t('Name')} fullWidth={true}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='name'/>}/>
-                <Field name='description' component={TextField} label={t('Description')}
-                       fullWidth={true} multiline={true} rows={4} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='description'/>}/>
+                <Field
+                  name="name"
+                  component={TextField}
+                  label={t('Name')}
+                  fullWidth={true}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="name"
+                    />
+                  }
+                />
+                <Field
+                  name="description"
+                  component={TextField}
+                  label={t('Description')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows={4}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="description"
+                    />
+                  }
+                />
               </Form>
             )}
           />
@@ -176,20 +215,20 @@ CityEditionContainer.propTypes = {
 
 const CityEditionFragment = createFragmentContainer(CityEditionContainer, {
   city: graphql`
-      fragment CityEdition_city on City {
-          id
-          name
-          description
-          editContext {
-              name
-              focusOn
-          }
+    fragment CityEdition_city on City {
+      id
+      name
+      description
+      editContext {
+        name
+        focusOn
       }
+    }
   `,
   me: graphql`
-      fragment CityEdition_me on User {
-          email
-      }
+    fragment CityEdition_me on User {
+      email
+    }
   `,
 });
 

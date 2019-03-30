@@ -6,7 +6,11 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
+import {
+  commitMutation,
+  QueryRenderer,
+  WS_ACTIVATED,
+} from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import CountryEditionContainer from './CountryEditionContainer';
 import { countryEditionOverviewFocus } from './CountryEditionOverview';
@@ -32,14 +36,14 @@ const styles = theme => ({
 });
 
 export const countryEditionQuery = graphql`
-    query CountryEditionContainerQuery($id: String!) {
-        country(id: $id) {
-            ...CountryEditionContainer_country
-        }
-        me {
-            ...CountryEditionContainer_me
-        }
+  query CountryEditionContainerQuery($id: String!) {
+    country(id: $id) {
+      ...CountryEditionContainer_country
     }
+    me {
+      ...CountryEditionContainer_me
+    }
+  }
 `;
 
 class CountryEdition extends Component {
@@ -69,20 +73,32 @@ class CountryEdition extends Component {
     const { classes, countryId } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
-             color='secondary' aria-label='Edit'
-             className={classes.editButton}><Edit/></Fab>
-        <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Edit"
+          className={classes.editButton}
+        >
+          <Edit />
+        </Fab>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
           <QueryRenderer
             query={countryEditionQuery}
             variables={{ id: countryId }}
             render={({ props }) => {
               if (props) {
-                return <CountryEditionContainer
-                  me={props.me}
-                  country={props.country}
-                  handleClose={this.handleClose.bind(this)}
-                />;
+                return (
+                  <CountryEditionContainer
+                    me={props.me}
+                    country={props.country}
+                    handleClose={this.handleClose.bind(this)}
+                  />
+                );
               }
               return <div> &nbsp; </div>;
             }}

@@ -8,7 +8,9 @@ import { QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 import TopBar from './nav/TopBar';
 import Loader from '../Loader';
-import StixDomainEntitiesLines, { stixDomainEntitiesLinesQuery } from './stix_domain_entity/StixDomainEntitiesLines';
+import StixDomainEntitiesLines, {
+  stixDomainEntitiesLinesQuery,
+} from './stix_domain_entity/StixDomainEntitiesLines';
 
 const styles = () => ({
   linesContainer: {
@@ -19,11 +21,17 @@ const styles = () => ({
 
 class StixDomainEntities extends Component {
   render() {
-    const { t, me, match: { params: { keyword } } } = this.props;
+    const {
+      t,
+      me,
+      match: {
+        params: { keyword },
+      },
+    } = this.props;
     return (
       <div>
-        <TopBar me={me || null} keyword={keyword}/>
-        <Typography variant='h1' gutterBottom={true}>
+        <TopBar me={me || null} keyword={keyword} />
+        <Typography variant="h1" gutterBottom={true}>
           {t('Search for an entity')}
         </Typography>
         <QueryRenderer
@@ -36,9 +44,9 @@ class StixDomainEntities extends Component {
           }}
           render={({ props }) => {
             if (props) {
-              return <StixDomainEntitiesLines data={props}/>;
+              return <StixDomainEntitiesLines data={props} />;
             }
-            return <Loader variant='inside' />;
+            return <Loader variant="inside" />;
           }}
         />
       </div>

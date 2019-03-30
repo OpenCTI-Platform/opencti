@@ -7,7 +7,10 @@ import graphql from 'babel-plugin-relay/macro';
 import { filter, pathOr, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  AutoSizer, InfiniteLoader, List, WindowScroller,
+  AutoSizer,
+  InfiniteLoader,
+  List,
+  WindowScroller,
 } from 'react-virtualized';
 import { CountryLine, CountryLineDummy } from './CountryLine';
 
@@ -73,41 +76,69 @@ class CountriesLines extends Component {
     if (this.props.dummy) {
       return true;
     }
-    const list = this.filterList(pathOr([], ['countries', 'edges'], this.props.data));
+    const list = this.filterList(
+      pathOr([], ['countries', 'edges'], this.props.data),
+    );
     return !this.props.relay.hasMore() || index < list.length;
   }
 
   _rowRenderer({ index, key, style }) {
     const { dummy } = this.props;
     if (dummy) {
-      return <div key={key} style={style}><CountryLineDummy/></div>;
+      return (
+        <div key={key} style={style}>
+          <CountryLineDummy />
+        </div>
+      );
     }
 
-    const list = this.filterList(pathOr([], ['countries', 'edges'], this.props.data));
+    const list = this.filterList(
+      pathOr([], ['countries', 'edges'], this.props.data),
+    );
     if (!this._isRowLoaded({ index })) {
-      return <div key={key} style={style}><CountryLineDummy/></div>;
+      return (
+        <div key={key} style={style}>
+          <CountryLineDummy />
+        </div>
+      );
     }
     const countryNode = list[index];
     if (!countryNode) {
       return <div key={key}>&nbsp;</div>;
     }
     const country = countryNode.node;
-    return <div key={key} style={style}><CountryLine key={country.id} country={country}/></div>;
+    return (
+      <div key={key} style={style}>
+        <CountryLine key={country.id} country={country} />
+      </div>
+    );
   }
 
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
-    const list = dummy ? [] : this.filterList(pathOr([], ['countries', 'edges'], this.props.data));
-    const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
+    const list = dummy
+      ? []
+      : this.filterList(pathOr([], ['countries', 'edges'], this.props.data));
+    const rowCount = dummy
+      ? 20
+      : this.props.relay.isLoading()
+        ? list.length + 25
+        : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div className={styles.windowScrollerWrapper} key={this.props.searchTerm}>
-            <InfiniteLoader isRowLoaded={this._isRowLoaded}
-                            loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
+          <div
+            className={styles.windowScrollerWrapper}
+            key={this.props.searchTerm}
+          >
+            <InfiniteLoader
+              isRowLoaded={this._isRowLoaded}
+              loadMoreRows={this._loadMore}
+              rowCount={Number.MAX_SAFE_INTEGER}
+            >
               {({ onRowsRendered }) => (
                 <AutoSizer disableHeight>
                   {({ width }) => (
@@ -149,67 +180,86 @@ CountriesLines.propTypes = {
 };
 
 export const countriesLinesQuery = graphql`
-    query CountriesLinesPaginationQuery($count: Int!, $cursor: ID, $orderBy: CountriesOrdering, $orderMode: OrderingMode) {
-        ...CountriesLines_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
-    }
+  query CountriesLinesPaginationQuery(
+    $count: Int!
+    $cursor: ID
+    $orderBy: CountriesOrdering
+    $orderMode: OrderingMode
+  ) {
+    ...CountriesLines_data
+      @arguments(
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
+  }
 `;
 
 export const countriesLinesSearchQuery = graphql`
-    query CountriesLinesSearchQuery($search: String) {
-        countries(search: $search) {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                }
-            }
+  query CountriesLinesSearchQuery($search: String) {
+    countries(search: $search) {
+      edges {
+        node {
+          id
+          name
+          description
         }
+      }
     }
+  }
 `;
 
-export default withStyles(styles)(createPaginationContainer(
-  CountriesLines,
-  {
-    data: graphql`
-        fragment CountriesLines_data on Query @argumentDefinitions(
-            count: {type: "Int", defaultValue: 25}
-            cursor: {type: "ID"}
-            orderBy: {type: "CountriesOrdering", defaultValue: ID}
-            orderMode: {type: "OrderingMode", defaultValue: "asc"}
-        ) {
-            countries(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_countries") {
-                edges {
-                    node {
-                        id
-                        name
-                        description
-                        ...CountryLine_country
-                    }
-                }
+export default withStyles(styles)(
+  createPaginationContainer(
+    CountriesLines,
+    {
+      data: graphql`
+        fragment CountriesLines_data on Query
+          @argumentDefinitions(
+            count: { type: "Int", defaultValue: 25 }
+            cursor: { type: "ID" }
+            orderBy: { type: "CountriesOrdering", defaultValue: ID }
+            orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          ) {
+          countries(
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+          ) @connection(key: "Pagination_countries") {
+            edges {
+              node {
+                id
+                name
+                description
+                ...CountryLine_country
+              }
             }
+          }
         }
-    `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.countries;
+      `,
     },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
+    {
+      direction: 'forward',
+      getConnectionFromProps(props) {
+        return props.data && props.data.countries;
+      },
+      getFragmentVariables(prevVars, totalCount) {
+        return {
+          ...prevVars,
+          count: totalCount,
+        };
+      },
+      getVariables(props, { count, cursor }, fragmentVariables) {
+        return {
+          count,
+          cursor,
+          orderBy: fragmentVariables.orderBy,
+          orderMode: fragmentVariables.orderMode,
+        };
+      },
+      query: countriesLinesQuery,
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
-      return {
-        count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
-      };
-    },
-    query: countriesLinesQuery,
-  },
-));
+  ),
+);

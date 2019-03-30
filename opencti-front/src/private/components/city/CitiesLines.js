@@ -7,7 +7,10 @@ import graphql from 'babel-plugin-relay/macro';
 import { filter, pathOr, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  AutoSizer, InfiniteLoader, List, WindowScroller,
+  AutoSizer,
+  InfiniteLoader,
+  List,
+  WindowScroller,
 } from 'react-virtualized';
 import { CityLine, CityLineDummy } from './CityLine';
 
@@ -73,43 +76,73 @@ class CitiesLines extends Component {
     if (this.props.dummy) {
       return true;
     }
-    const list = this.filterList(pathOr([], ['cities', 'edges'], this.props.data));
+    const list = this.filterList(
+      pathOr([], ['cities', 'edges'], this.props.data),
+    );
     return !this.props.relay.hasMore() || index < list.length;
   }
 
   _rowRenderer({ index, key, style }) {
     const { dummy } = this.props;
     if (dummy) {
-      return <div key={key} style={style}><CityLineDummy/></div>;
+      return (
+        <div key={key} style={style}>
+          <CityLineDummy />
+        </div>
+      );
     }
 
-    const list = this.filterList(pathOr([], ['cities', 'edges'], this.props.data));
+    const list = this.filterList(
+      pathOr([], ['cities', 'edges'], this.props.data),
+    );
     if (!this._isRowLoaded({ index })) {
-      return <div key={key} style={style}><CityLineDummy/></div>;
+      return (
+        <div key={key} style={style}>
+          <CityLineDummy />
+        </div>
+      );
     }
     const cityNode = list[index];
     if (!cityNode) {
       return <div key={key}>&nbsp;</div>;
     }
     const city = cityNode.node;
-    return <div key={key} style={style}>
-      <CityLine key={city.id} city={city} paginationOptions={this.props.paginationOptions}/>
-    </div>;
+    return (
+      <div key={key} style={style}>
+        <CityLine
+          key={city.id}
+          city={city}
+          paginationOptions={this.props.paginationOptions}
+        />
+      </div>
+    );
   }
 
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
-    const list = dummy ? [] : this.filterList(pathOr([], ['cities', 'edges'], this.props.data));
-    const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
+    const list = dummy
+      ? []
+      : this.filterList(pathOr([], ['cities', 'edges'], this.props.data));
+    const rowCount = dummy
+      ? 20
+      : this.props.relay.isLoading()
+        ? list.length + 25
+        : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div className={styles.windowScrollerWrapper} key={this.props.searchTerm}>
-            <InfiniteLoader isRowLoaded={this._isRowLoaded}
-                            loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
+          <div
+            className={styles.windowScrollerWrapper}
+            key={this.props.searchTerm}
+          >
+            <InfiniteLoader
+              isRowLoaded={this._isRowLoaded}
+              loadMoreRows={this._loadMore}
+              rowCount={Number.MAX_SAFE_INTEGER}
+            >
               {({ onRowsRendered }) => (
                 <AutoSizer disableHeight>
                   {({ width }) => (
@@ -152,69 +185,88 @@ CitiesLines.propTypes = {
 };
 
 export const citiesLinesQuery = graphql`
-    query CitiesLinesPaginationQuery($count: Int!, $cursor: ID, $orderBy: CitiesOrdering, $orderMode: OrderingMode) {
-        ...CitiesLines_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
-    }
+  query CitiesLinesPaginationQuery(
+    $count: Int!
+    $cursor: ID
+    $orderBy: CitiesOrdering
+    $orderMode: OrderingMode
+  ) {
+    ...CitiesLines_data
+      @arguments(
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
+  }
 `;
 
 export const citiesLinesSearchQuery = graphql`
-    query CitiesLinesSearchQuery($search: String) {
-        cities(search: $search) {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                    created_at
-                    updated_at
-                }
-            }
+  query CitiesLinesSearchQuery($search: String) {
+    cities(search: $search) {
+      edges {
+        node {
+          id
+          name
+          description
+          created_at
+          updated_at
         }
+      }
     }
+  }
 `;
 
-export default withStyles(styles)(createPaginationContainer(
-  CitiesLines,
-  {
-    data: graphql`
-        fragment CitiesLines_data on Query @argumentDefinitions(
-            count: {type: "Int", defaultValue: 25}
-            cursor: {type: "ID"}
-            orderBy: {type: "CitiesOrdering", defaultValue: ID}
-            orderMode: {type: "OrderingMode", defaultValue: "asc"}
-        ) {
-            cities(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_cities") {
-                edges {
-                    node {
-                        id
-                        name
-                        description
-                        ...CityLine_city
-                    }
-                }
+export default withStyles(styles)(
+  createPaginationContainer(
+    CitiesLines,
+    {
+      data: graphql`
+        fragment CitiesLines_data on Query
+          @argumentDefinitions(
+            count: { type: "Int", defaultValue: 25 }
+            cursor: { type: "ID" }
+            orderBy: { type: "CitiesOrdering", defaultValue: ID }
+            orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          ) {
+          cities(
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+          ) @connection(key: "Pagination_cities") {
+            edges {
+              node {
+                id
+                name
+                description
+                ...CityLine_city
+              }
             }
+          }
         }
-    `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.cities;
+      `,
     },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
+    {
+      direction: 'forward',
+      getConnectionFromProps(props) {
+        return props.data && props.data.cities;
+      },
+      getFragmentVariables(prevVars, totalCount) {
+        return {
+          ...prevVars,
+          count: totalCount,
+        };
+      },
+      getVariables(props, { count, cursor }, fragmentVariables) {
+        return {
+          count,
+          cursor,
+          orderBy: fragmentVariables.orderBy,
+          orderMode: fragmentVariables.orderMode,
+        };
+      },
+      query: citiesLinesQuery,
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
-      return {
-        count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
-      };
-    },
-    query: citiesLinesQuery,
-  },
-));
+  ),
+);

@@ -25,14 +25,25 @@ import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import {
-  ArrowDropDown, ArrowDropUp, ArrowUpward, ArrowDownward, Dashboard, TableChart, SaveAlt,
+  ArrowDropDown,
+  ArrowDropUp,
+  ArrowUpward,
+  ArrowDownward,
+  Dashboard,
+  TableChart,
+  SaveAlt,
 } from '@material-ui/icons';
 import { CSVLink } from 'react-csv';
 import { fetchQuery, QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 import SearchInput from '../../components/SearchInput';
-import ThreatActorsLines, { threatActorsLinesQuery } from './threat_actor/ThreatActorsLines';
-import ThreatActorsCards, { threatActorsCardsQuery, nbCardsToLoad } from './threat_actor/ThreatActorsCards';
+import ThreatActorsLines, {
+  threatActorsLinesQuery,
+} from './threat_actor/ThreatActorsLines';
+import ThreatActorsCards, {
+  threatActorsCardsQuery,
+  nbCardsToLoad,
+} from './threat_actor/ThreatActorsCards';
 import ThreatActorCreation from './threat_actor/ThreatActorCreation';
 import { dateFormat } from '../../utils/Time';
 
@@ -109,17 +120,27 @@ const inlineStyles = {
 };
 
 const exportThreatActorsQuery = graphql`
-    query ThreatActorsExportThreatActorsQuery($count: Int!, $cursor: ID, $orderBy: ThreatActorsOrdering, $orderMode: OrderingMode) {
-        threatActors(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_threatActors") {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                }
-            }
+  query ThreatActorsExportThreatActorsQuery(
+    $count: Int!
+    $cursor: ID
+    $orderBy: ThreatActorsOrdering
+    $orderMode: OrderingMode
+  ) {
+    threatActors(
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) @connection(key: "Pagination_threatActors") {
+      edges {
+        node {
+          id
+          name
+          description
         }
+      }
     }
+  }
 `;
 
 class ThreatActors extends Component {
@@ -158,9 +179,20 @@ class ThreatActors extends Component {
   SortHeader(field, label) {
     const { t } = this.props;
     return (
-      <div style={inlineStyles[field]} onClick={this.reverseBy.bind(this, field)}>
+      <div
+        style={inlineStyles[field]}
+        onClick={this.reverseBy.bind(this, field)}
+      >
         <span>{t(label)}</span>
-        {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStyles.iconSort}/> : <ArrowDropUp style={inlineStyles.iconSort}/> : ''}
+        {this.state.sortBy === field ? (
+          this.state.orderAsc ? (
+            <ArrowDropDown style={inlineStyles.iconSort} />
+          ) : (
+            <ArrowDropUp style={inlineStyles.iconSort} />
+          )
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -184,7 +216,10 @@ class ThreatActors extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportThreatActorsQuery, { count: 10000, ...paginationOptions }).then((data) => {
+    fetchQuery(exportThreatActorsQuery, {
+      count: 10000,
+      ...paginationOptions,
+    }).then((data) => {
       const finalData = pipe(
         map(n => n.node),
         map(n => over(lensProp('description'), defaultTo('-'))(n)),
@@ -200,12 +235,17 @@ class ThreatActors extends Component {
     return (
       <div>
         <div style={{ float: 'left', marginRight: 20 }}>
-          <SearchInput variant='small' onChange={this.handleSearch.bind(this)}/>
+          <SearchInput
+            variant="small"
+            onChange={this.handleSearch.bind(this)}
+          />
         </div>
-        <InputLabel classes={{ root: classes.sortFieldLabel }}>{t('Sort by')}</InputLabel>
+        <InputLabel classes={{ root: classes.sortFieldLabel }}>
+          {t('Sort by')}
+        </InputLabel>
         <FormControl classes={{ root: classes.sortField }}>
           <Select
-            name='sort-by'
+            name="sort-by"
             value={this.state.sortBy}
             onChange={this.handleChangeSortBy.bind(this)}
             inputProps={{
@@ -213,13 +253,17 @@ class ThreatActors extends Component {
               id: 'sort-by',
             }}
           >
-            <MenuItem value='name'>{t('Name')}</MenuItem>
-            <MenuItem value='created'>{t('Creation date')}</MenuItem>
-            <MenuItem value='modified'>{t('Modification date')}</MenuItem>
+            <MenuItem value="name">{t('Name')}</MenuItem>
+            <MenuItem value="created">{t('Creation date')}</MenuItem>
+            <MenuItem value="modified">{t('Modification date')}</MenuItem>
           </Select>
         </FormControl>
-        <IconButton aria-label='Sort by' onClick={this.reverse.bind(this)} classes={{ root: classes.sortIcon }}>
-          {this.state.orderAsc ? <ArrowDownward/> : <ArrowUpward/>}
+        <IconButton
+          aria-label="Sort by"
+          onClick={this.reverse.bind(this)}
+          classes={{ root: classes.sortIcon }}
+        >
+          {this.state.orderAsc ? <ArrowDownward /> : <ArrowUpward />}
         </IconButton>
       </div>
     );
@@ -236,9 +280,21 @@ class ThreatActors extends Component {
         }}
         render={({ props }) => {
           if (props) {
-            return <ThreatActorsCards data={props} dummy={false} searchTerm={this.state.searchTerm}/>;
+            return (
+              <ThreatActorsCards
+                data={props}
+                dummy={false}
+                searchTerm={this.state.searchTerm}
+              />
+            );
           }
-          return <ThreatActorsCards data={null} dummy={true} searchTerm={this.state.searchTerm}/>;
+          return (
+            <ThreatActorsCards
+              data={null}
+              dummy={true}
+              searchTerm={this.state.searchTerm}
+            />
+          );
         }}
       />
     );
@@ -247,7 +303,7 @@ class ThreatActors extends Component {
   renderLinesParameters() {
     return (
       <div>
-        <SearchInput variant='small' onChange={this.handleSearch.bind(this)}/>
+        <SearchInput variant="small" onChange={this.handleSearch.bind(this)} />
       </div>
     );
   }
@@ -256,26 +312,51 @@ class ThreatActors extends Component {
     const { classes } = this.props;
     return (
       <List classes={{ root: classes.linesContainer }}>
-        <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
+        <ListItem
+          classes={{ default: classes.item }}
+          divider={false}
+          style={{ paddingTop: 0 }}
+        >
           <ListItemIcon>
-            <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
+            <span
+              style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}
+            >
+              #
+            </span>
           </ListItemIcon>
-          <ListItemText primary={
-            <div>
-              {this.SortHeader('name', 'Name')}
-              {this.SortHeader('created', 'Creation date')}
-              {this.SortHeader('modified', 'Modification date')}
-            </div>
-          }/>
+          <ListItemText
+            primary={
+              <div>
+                {this.SortHeader('name', 'Name')}
+                {this.SortHeader('created', 'Creation date')}
+                {this.SortHeader('modified', 'Modification date')}
+              </div>
+            }
+          />
         </ListItem>
         <QueryRenderer
           query={threatActorsLinesQuery}
-          variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
+          variables={{
+            count: 25,
+            orderBy: this.state.sortBy,
+            orderMode: this.state.orderAsc ? 'asc' : 'desc',
+          }}
           render={({ props }) => {
             if (props) {
-              return <ThreatActorsLines data={props} searchTerm={this.state.searchTerm}/>;
+              return (
+                <ThreatActorsLines
+                  data={props}
+                  searchTerm={this.state.searchTerm}
+                />
+              );
             }
-            return <ThreatActorsLines data={null} dummy={true} searchTerm={this.state.searchTerm}/>;
+            return (
+              <ThreatActorsLines
+                data={null}
+                dummy={true}
+                searchTerm={this.state.searchTerm}
+              />
+            );
           }}
         />
       </List>
@@ -291,18 +372,26 @@ class ThreatActors extends Component {
           {this.state.view === 'lines' ? this.renderLinesParameters() : ''}
         </div>
         <div className={classes.views}>
-          <IconButton color={this.state.view === 'cards' ? 'secondary' : 'primary'}
-                      classes={{ root: classes.button }}
-                      onClick={this.handleChangeView.bind(this, 'cards')}>
-            <Dashboard/>
+          <IconButton
+            color={this.state.view === 'cards' ? 'secondary' : 'primary'}
+            classes={{ root: classes.button }}
+            onClick={this.handleChangeView.bind(this, 'cards')}
+          >
+            <Dashboard />
           </IconButton>
-          <IconButton color={this.state.view === 'lines' ? 'secondary' : 'primary'}
-                      classes={{ root: classes.button }}
-                      onClick={this.handleChangeView.bind(this, 'lines')}>
-            <TableChart/>
+          <IconButton
+            color={this.state.view === 'lines' ? 'secondary' : 'primary'}
+            classes={{ root: classes.button }}
+            onClick={this.handleChangeView.bind(this, 'lines')}
+          >
+            <TableChart />
           </IconButton>
-          <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true' color='primary'>
-            <SaveAlt/>
+          <IconButton
+            onClick={this.handleOpenExport.bind(this)}
+            aria-haspopup="true"
+            color="primary"
+          >
+            <SaveAlt />
           </IconButton>
           <Menu
             anchorEl={this.state.anchorExport}
@@ -310,40 +399,64 @@ class ThreatActors extends Component {
             onClose={this.handleCloseExport.bind(this)}
             style={{ marginTop: 50 }}
           >
-            <MenuItem onClick={this.handleDownloadCSV.bind(this)}>{t('CSV file')}</MenuItem>
+            <MenuItem onClick={this.handleDownloadCSV.bind(this)}>
+              {t('CSV file')}
+            </MenuItem>
           </Menu>
         </div>
-        <div className='clearfix'/>
+        <div className="clearfix" />
         {this.state.view === 'cards' ? this.renderCards() : ''}
         {this.state.view === 'lines' ? this.renderLines() : ''}
         <ThreatActorCreation
           paginationOptions={{
             orderBy: this.state.sortBy,
             orderMode: this.state.orderAsc ? 'asc' : 'desc',
-          }}/>
+          }}
+        />
         <Dialog
           open={this.state.exportCsvOpen}
           onClose={this.handleCloseExportCsv.bind(this)}
           fullWidth={true}
         >
-          <DialogTitle>
-            {t('Export data in CSV')}
-          </DialogTitle>
+          <DialogTitle>{t('Export data in CSV')}</DialogTitle>
           <DialogContent>
-            {this.state.exportCsvData === null
-              ? <div className={this.props.classes.export}><CircularProgress size={40} thickness={2} className={this.props.classes.loaderCircle}/></div>
-              : <DialogContentText>{t('The CSV file has been generated with the parameters of the view and is ready for download.')}</DialogContentText>
-            }
+            {this.state.exportCsvData === null ? (
+              <div className={this.props.classes.export}>
+                <CircularProgress
+                  size={40}
+                  thickness={2}
+                  className={this.props.classes.loaderCircle}
+                />
+              </div>
+            ) : (
+              <DialogContentText>
+                {t(
+                  'The CSV file has been generated with the parameters of the view and is ready for download.',
+                )}
+              </DialogContentText>
+            )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseExportCsv.bind(this)} color='primary'>
+            <Button
+              onClick={this.handleCloseExportCsv.bind(this)}
+              color="primary"
+            >
               {t('Cancel')}
             </Button>
-            {this.state.exportCsvData !== null
-              ? <Button component={CSVLink} data={this.state.exportCsvData} separator={';'} enclosingCharacter={'"'} color='primary' filename={`${t('Threat actors')}.csv`}>
+            {this.state.exportCsvData !== null ? (
+              <Button
+                component={CSVLink}
+                data={this.state.exportCsvData}
+                separator={';'}
+                enclosingCharacter={'"'}
+                color="primary"
+                filename={`${t('Threat actors')}.csv`}
+              >
                 {t('Download')}
               </Button>
-              : ''}
+            ) : (
+              ''
+            )}
           </DialogActions>
         </Dialog>
       </div>

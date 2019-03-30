@@ -7,10 +7,7 @@ const TextField = props => (
     {...fieldToTextField(props)}
     onChange={(event) => {
       const { value } = event.target;
-      props.form.setFieldValue(
-        props.field.name,
-        value,
-      );
+      props.form.setFieldValue(props.field.name, value);
       if (typeof props.onChange === 'function') {
         props.onChange(props.field.name, value);
       }
@@ -21,21 +18,13 @@ const TextField = props => (
       }
     }}
     onKeyPress={(event) => {
-      props.form.setFieldTouched(
-        props.field.name,
-        true,
-        true,
-      );
+      props.form.setFieldTouched(props.field.name, true, true);
       if (typeof props.onSubmit === 'function' && event.key === 'Enter') {
         props.onSubmit(props.field.name, event.target.value);
       }
     }}
     onBlur={(event) => {
-      props.form.setFieldTouched(
-        props.field.name,
-        true,
-        true,
-      );
+      props.form.setFieldTouched(props.field.name, true, true);
       if (typeof props.onSubmit === 'function') {
         props.onSubmit(props.field.name, event.target.value);
       }

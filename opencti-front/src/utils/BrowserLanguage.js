@@ -6,7 +6,13 @@ import * as R from 'ramda';
 // 3. browserLanguage -> UI Language of IE
 // 4. userLanguage    -> Language of Windows Regional Options
 // 5. systemLanguage  -> UI Language of Windows
-const browserLanguagePropertyKeys = ['languages', 'language', 'browserLanguage', 'userLanguage', 'systemLanguage'];
+const browserLanguagePropertyKeys = [
+  'languages',
+  'language',
+  'browserLanguage',
+  'userLanguage',
+  'systemLanguage',
+];
 
 const availableLanguages = ['en', 'fr'];
 

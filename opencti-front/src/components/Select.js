@@ -6,7 +6,13 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import { fieldToSelect } from 'formik-material-ui';
 
 const Select = props => (
-  <FormControl style={props.containerstyle} error={props.form.errors[props.field.name] !== undefined && props.form.touched[props.field.name]}>
+  <FormControl
+    style={props.containerstyle}
+    error={
+      props.form.errors[props.field.name] !== undefined
+      && props.form.touched[props.field.name]
+    }
+  >
     <InputLabel style={{ color: props.disabled ? '#4f4f4f' : '' }}>
       {props.label}
     </InputLabel>
@@ -14,10 +20,7 @@ const Select = props => (
       {...fieldToSelect(props)}
       onChange={(event) => {
         const { value } = event.target;
-        props.form.setFieldValue(
-          props.field.name,
-          value,
-        );
+        props.form.setFieldValue(props.field.name, value);
         if (typeof props.onChange === 'function') {
           props.onChange(props.field.name, value);
         }
@@ -30,8 +33,17 @@ const Select = props => (
       classes={props.classes}
       className={props.className}
     />
-    {props.helpertext && props.form.errors[props.field.name] === undefined ? <FormHelperText>{props.helpertext}</FormHelperText> : ''}
-    {props.form.errors[props.field.name] !== undefined && props.form.touched[props.field.name] ? <FormHelperText>{props.form.errors[props.field.name]}</FormHelperText> : ''}
+    {props.helpertext && props.form.errors[props.field.name] === undefined ? (
+      <FormHelperText>{props.helpertext}</FormHelperText>
+    ) : (
+      ''
+    )}
+    {props.form.errors[props.field.name] !== undefined
+    && props.form.touched[props.field.name] ? (
+      <FormHelperText>{props.form.errors[props.field.name]}</FormHelperText>
+      ) : (
+        ''
+      )}
   </FormControl>
 );
 

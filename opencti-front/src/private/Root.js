@@ -75,17 +75,17 @@ const styles = theme => ({
 });
 
 const rootQuery = graphql`
-    query RootQuery {
-        me {
-            ...AppIntlProvider_me
-            ...TopBar_me
-            ...LeftBar_me
-        }
-        settings {
-            ...AppIntlProvider_settings
-            ...AppDocumentTitle_settings
-        }
+  query RootQuery {
+    me {
+      ...AppIntlProvider_me
+      ...TopBar_me
+      ...LeftBar_me
     }
+    settings {
+      ...AppIntlProvider_settings
+      ...AppDocumentTitle_settings
+    }
+  }
 `;
 
 class Root extends Component {
@@ -102,60 +102,279 @@ class Root extends Component {
               <ConnectedIntlProvider me={props.me} settings={props.settings}>
                 <ConnectedDocumentTitle settings={props.settings}>
                   <div className={classes.root}>
-                    <TopBar me={props.me}/>
-                    <LeftBar me={props.me}/>
-                    <Message/>
+                    <TopBar me={props.me} />
+                    <LeftBar me={props.me} />
+                    <Message />
                     <main className={classes.content} style={{ paddingRight }}>
-                      <div className={classes.toolbar}/>
+                      <div className={classes.toolbar} />
                       <Switch>
-                        <BoundaryRoute exact path='/dashboard' component={Dashboard}/>
-                        <BoundaryRoute exact path='/dashboard/search/:keyword' render={routeProps => <StixDomainEntities {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/explore' render={() => (<Redirect to='/dashboard/explore/victimology'/>)}/>
-                        <BoundaryRoute exact path='/dashboard/explore/victimology' component={ExploreVictimology}/>
-                        <BoundaryRoute path='/dashboard/explore/victimology/:stixDomainEntityId' component={ExploreVictimology}/>
-                        <BoundaryRoute exact path='/dashboard/investigate' component={Workspaces}/>
-                        <BoundaryRoute exact path='/dashboard/investigate/:workspaceId' component={RootWorkspace}/>
-                        <BoundaryRoute exact path='/dashboard/knowledge' render={() => (<Redirect to='/dashboard/knowledge/threat_actors'/>)}/>
-                        <BoundaryRoute exact path='/dashboard/knowledge/threat_actors' component={ThreatActors}/>
-                        <BoundaryRoute path='/dashboard/knowledge/threat_actors/:threatActorId' render={routeProps => <RootThreatActor {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/knowledge/sectors' component={Sectors}/>
-                        <BoundaryRoute path='/dashboard/knowledge/sectors/:sectorId' render={routeProps => <RootSector {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/knowledge/intrusion_sets' component={IntrusionSets}/>
-                        <BoundaryRoute path='/dashboard/knowledge/intrusion_sets/:intrusionSetId' render={routeProps => <RootIntrusionSet {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/knowledge/campaigns' component={Campaigns}/>
-                        <BoundaryRoute path='/dashboard/knowledge/campaigns/:campaignId' render={routeProps => <RootCampaign {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/knowledge/incidents' component={Incidents}/>
-                        <BoundaryRoute path='/dashboard/knowledge/incidents/:incidentId' render={routeProps => <RootIncident {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/knowledge/malwares' component={Malwares}/>
-                        <BoundaryRoute path='/dashboard/knowledge/malwares/:malwareId' render={routeProps => <RootMalware {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/reports' render={() => (<Redirect to='/dashboard/reports/all'/>)}/>
-                        <BoundaryRoute exact path='/dashboard/reports/all' component={Reports}/>
-                        <BoundaryRoute exact path='/dashboard/reports/internal' render={routeProps => <Reports {...routeProps} reportClass='internal'/>}/>
-                        <BoundaryRoute exact path='/dashboard/reports/external' render={routeProps => <Reports {...routeProps} reportClass='external'/>}/>
-                        <BoundaryRoute path='/dashboard/reports/all/:reportId' render={routeProps => <RootReport {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/reports/references' component={ExternalReferences}/>
-                        <BoundaryRoute exact path='/dashboard/catalogs' render={() => (<Redirect to='/dashboard/catalogs/attack_patterns'/>)}/>
-                        <BoundaryRoute exact path='/dashboard/catalogs/attack_patterns' component={AttackPatterns}/>
-                        <BoundaryRoute path='/dashboard/catalogs/attack_patterns/:attackPatternId' render={routeProps => <RootAttackPattern {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/catalogs/tools' component={Tools}/>
-                        <BoundaryRoute path='/dashboard/catalogs/tools/:toolId' render={routeProps => <RootTool {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/catalogs/vulnerabilities' component={Vulnerabilities}/>
-                        <BoundaryRoute path='/dashboard/catalogs/vulnerabilities/:vulnerabilityId' render={routeProps => <RootVulnerabilities {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/catalogs/regions' component={Regions}/>
-                        <BoundaryRoute path='/dashboard/catalogs/regions/:regionId' render={routeProps => <RootRegion {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/catalogs/countries' component={Countries}/>
-                        <BoundaryRoute path='/dashboard/catalogs/countries/:countryId' render={routeProps => <RootCountry {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/catalogs/cities' component={Cities}/>
-                        <BoundaryRoute exact path='/dashboard/catalogs/organizations' component={Organizations}/>
-                        <BoundaryRoute path='/dashboard/catalogs/organizations/:organizationId' render={routeProps => <RootOrganization {...routeProps} me={props.me}/>}/>
-                        <BoundaryRoute exact path='/dashboard/catalogs/persons' component={Persons}/>
-                        <BoundaryRoute exact path='/dashboard/settings' component={Settings}/>
-                        <BoundaryRoute exact path='/dashboard/settings/users' component={Users}/>
-                        <BoundaryRoute exact path='/dashboard/settings/groups' component={Groups}/>
-                        <BoundaryRoute exact path='/dashboard/settings/marking' component={MarkingDefinitions}/>
-                        <BoundaryRoute exact path='/dashboard/settings/killchains' component={KillChainPhases}/>
-                        <BoundaryRoute exact path='/dashboard/profile' render={routeProps => <Profile {...routeProps} me={props.me}/>}/>
-                        <Route component={NoMatch}/>
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard"
+                          component={Dashboard}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/search/:keyword"
+                          render={routeProps => (
+                            <StixDomainEntities {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/explore"
+                          render={() => (
+                            <Redirect to="/dashboard/explore/victimology" />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/explore/victimology"
+                          component={ExploreVictimology}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/explore/victimology/:stixDomainEntityId"
+                          component={ExploreVictimology}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/investigate"
+                          component={Workspaces}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/investigate/:workspaceId"
+                          component={RootWorkspace}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/knowledge"
+                          render={() => (
+                            <Redirect to="/dashboard/knowledge/threat_actors" />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/knowledge/threat_actors"
+                          component={ThreatActors}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/knowledge/threat_actors/:threatActorId"
+                          render={routeProps => (
+                            <RootThreatActor {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/knowledge/sectors"
+                          component={Sectors}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/knowledge/sectors/:sectorId"
+                          render={routeProps => (
+                            <RootSector {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/knowledge/intrusion_sets"
+                          component={IntrusionSets}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/knowledge/intrusion_sets/:intrusionSetId"
+                          render={routeProps => (
+                            <RootIntrusionSet {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/knowledge/campaigns"
+                          component={Campaigns}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/knowledge/campaigns/:campaignId"
+                          render={routeProps => (
+                            <RootCampaign {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/knowledge/incidents"
+                          component={Incidents}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/knowledge/incidents/:incidentId"
+                          render={routeProps => (
+                            <RootIncident {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/knowledge/malwares"
+                          component={Malwares}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/knowledge/malwares/:malwareId"
+                          render={routeProps => (
+                            <RootMalware {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/reports"
+                          render={() => (
+                            <Redirect to="/dashboard/reports/all" />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/reports/all"
+                          component={Reports}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/reports/internal"
+                          render={routeProps => (
+                            <Reports {...routeProps} reportClass="internal" />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/reports/external"
+                          render={routeProps => (
+                            <Reports {...routeProps} reportClass="external" />
+                          )}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/reports/all/:reportId"
+                          render={routeProps => (
+                            <RootReport {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/reports/references"
+                          component={ExternalReferences}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/catalogs"
+                          render={() => (
+                            <Redirect to="/dashboard/catalogs/attack_patterns" />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/catalogs/attack_patterns"
+                          component={AttackPatterns}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/catalogs/attack_patterns/:attackPatternId"
+                          render={routeProps => (
+                            <RootAttackPattern {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/catalogs/tools"
+                          component={Tools}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/catalogs/tools/:toolId"
+                          render={routeProps => (
+                            <RootTool {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/catalogs/vulnerabilities"
+                          component={Vulnerabilities}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/catalogs/vulnerabilities/:vulnerabilityId"
+                          render={routeProps => (
+                            <RootVulnerabilities
+                              {...routeProps}
+                              me={props.me}
+                            />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/catalogs/regions"
+                          component={Regions}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/catalogs/regions/:regionId"
+                          render={routeProps => (
+                            <RootRegion {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/catalogs/countries"
+                          component={Countries}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/catalogs/countries/:countryId"
+                          render={routeProps => (
+                            <RootCountry {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/catalogs/cities"
+                          component={Cities}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/catalogs/organizations"
+                          component={Organizations}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/catalogs/organizations/:organizationId"
+                          render={routeProps => (
+                            <RootOrganization {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/catalogs/persons"
+                          component={Persons}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/settings"
+                          component={Settings}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/settings/users"
+                          component={Users}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/settings/groups"
+                          component={Groups}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/settings/marking"
+                          component={MarkingDefinitions}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/settings/killchains"
+                          component={KillChainPhases}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/profile"
+                          render={routeProps => (
+                            <Profile {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <Route component={NoMatch} />
                       </Switch>
                     </main>
                   </div>
@@ -163,7 +382,7 @@ class Root extends Component {
               </ConnectedIntlProvider>
             );
           }
-          return <Loader/>;
+          return <Loader />;
         }}
       />
     );
@@ -175,6 +394,4 @@ Root.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  withStyles(styles),
-)(Root);
+export default compose(withStyles(styles))(Root);

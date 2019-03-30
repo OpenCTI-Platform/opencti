@@ -70,23 +70,25 @@ class CityLineComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <CityVariant/>
+          <CityVariant />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {city.name}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {city.name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+                {fd(city.created_at)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.updated_at}>
+                {fd(city.updated_at)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              {fd(city.created_at)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-              {fd(city.updated_at)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <CityPopover cityId={city.id} paginationOptions={paginationOptions}/>
+          <CityPopover cityId={city.id} paginationOptions={paginationOptions} />
         </ListItemIcon>
       </ListItem>
     );
@@ -103,12 +105,12 @@ CityLineComponent.propTypes = {
 
 const CityLineFragment = createFragmentContainer(CityLineComponent, {
   city: graphql`
-      fragment CityLine_city on City {
-          id
-          name
-          created_at
-          updated_at
-      }
+    fragment CityLine_city on City {
+      id
+      name
+      created_at
+      updated_at
+    }
   `,
 });
 
@@ -123,23 +125,25 @@ class CityLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <CityVariant/>
+          <CityVariant />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+                <div className="fakeItem" style={{ width: 80 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.updated_at}>
+                <div className="fakeItem" style={{ width: 80 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              <div className='fakeItem' style={{ width: 80 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-              <div className='fakeItem' style={{ width: 80 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <MoreVert/>
+          <MoreVert />
         </ListItemIcon>
       </ListItem>
     );

@@ -44,38 +44,45 @@ class ItemNumberDifference extends Component {
     if (difference < 0) {
       return (
         <div className={classes.diff}>
-          <ArrowDownward color='inherit' classes={{ root: classes.diffIcon }} style={inlineStyles.red}/>
+          <ArrowDownward
+            color="inherit"
+            classes={{ root: classes.diffIcon }}
+            style={inlineStyles.red}
+          />
           <div className={classes.diffNumber} style={inlineStyles.red}>
             {difference}
           </div>
-          <div className={classes.diffDescription}>
-            ({t('last 24h')})
-          </div>
+          <div className={classes.diffDescription}>({t('last 24h')})</div>
         </div>
       );
-    } if (difference === 0) {
+    }
+    if (difference === 0) {
       return (
         <div className={classes.diff}>
-          <ArrowForward color='inherit' classes={{ root: classes.diffIcon }} style={inlineStyles.blueGrey}/>
+          <ArrowForward
+            color="inherit"
+            classes={{ root: classes.diffIcon }}
+            style={inlineStyles.blueGrey}
+          />
           <div className={classes.diffNumber} style={inlineStyles.blueGrey}>
             {difference}
           </div>
-          <div className={classes.diffDescription}>
-            ({t('last 24h')})
-          </div>
+          <div className={classes.diffDescription}>({t('last 24h')})</div>
         </div>
       );
     }
     return (
-        <div className={classes.diff}>
-          <ArrowUpward color='inherit' classes={{ root: classes.diffIcon }} style={inlineStyles.green}/>
-          <div className={classes.diffNumber} style={inlineStyles.green}>
-            {difference}
-          </div>
-          <div className={classes.diffDescription}>
-            ({t('last 24h')})
-          </div>
+      <div className={classes.diff}>
+        <ArrowUpward
+          color="inherit"
+          classes={{ root: classes.diffIcon }}
+          style={inlineStyles.green}
+        />
+        <div className={classes.diffNumber} style={inlineStyles.green}>
+          {difference}
         </div>
+        <div className={classes.diffDescription}>({t('last 24h')})</div>
+      </div>
     );
   }
 }

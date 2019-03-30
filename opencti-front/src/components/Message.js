@@ -62,20 +62,28 @@ class Message extends Component {
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         open={this.state.open}
         onClose={this.handleCloseMessage.bind(this)}
-        autoHideDuration={3000}>
+        autoHideDuration={3000}
+      >
         <SnackbarContent
           className={this.state.error ? classes.error : classes.normal}
           message={
             <span className={classes.message}>
-              {this.state.error ? <ErrorOutline className={classes.messageIcon}/>
-                : <CheckCircle className={classes.messageIcon}/>}
+              {this.state.error ? (
+                <ErrorOutline className={classes.messageIcon} />
+              ) : (
+                <CheckCircle className={classes.messageIcon} />
+              )}
               {this.state.text}
             </span>
           }
           action={[
-            <IconButton key='close' aria-label='Close' color='inherit'
-              onClick={this.handleCloseMessage.bind(this)}>
-              <Close/>
+            <IconButton
+              key="close"
+              aria-label="Close"
+              color="inherit"
+              onClick={this.handleCloseMessage.bind(this)}
+            >
+              <Close />
             </IconButton>,
           ]}
         />

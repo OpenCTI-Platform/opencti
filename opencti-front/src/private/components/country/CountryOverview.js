@@ -27,26 +27,38 @@ class CountryOverviewComponent extends Component {
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant='h3' gutterBottom={true}>
+          <Typography variant="h3" gutterBottom={true}>
             {t('Creation date')}
           </Typography>
           {fld(country.created)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Modification date')}
           </Typography>
           {fld(country.modified)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Creator')}
           </Typography>
           {pathOr('-', ['createdByRef', 'node', 'name'], country)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Description')}
           </Typography>
-          <Markdown className='markdown' source={country.description}/>
+          <Markdown className="markdown" source={country.description} />
         </Paper>
       </div>
     );
@@ -62,18 +74,18 @@ CountryOverviewComponent.propTypes = {
 
 const CountryOverview = createFragmentContainer(CountryOverviewComponent, {
   country: graphql`
-      fragment CountryOverview_country on Country {
-          id
+    fragment CountryOverview_country on Country {
+      id
+      name
+      description
+      created
+      modified
+      createdByRef {
+        node {
           name
-          description
-          created
-          modified
-          createdByRef {
-              node {
-                  name
-              }
-          }
+        }
       }
+    }
   `,
 });
 

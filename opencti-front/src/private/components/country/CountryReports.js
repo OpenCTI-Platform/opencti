@@ -28,9 +28,9 @@ class CountryReportsComponent extends Component {
     const { classes, country } = this.props;
     return (
       <div className={classes.container}>
-        <CountryHeader country={country}/>
+        <CountryHeader country={country} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={country.id}/>
+          <EntityReports entityId={country.id} />
         </Paper>
       </div>
     );
@@ -45,10 +45,10 @@ CountryReportsComponent.propTypes = {
 
 const CountryReports = createFragmentContainer(CountryReportsComponent, {
   country: graphql`
-      fragment CountryReports_country on Country {
-          id
-          ...CountryHeader_country
-      }
+    fragment CountryReports_country on Country {
+      id
+      ...CountryHeader_country
+    }
   `,
 });
 

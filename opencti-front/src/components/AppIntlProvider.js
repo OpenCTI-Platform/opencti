@@ -18,18 +18,26 @@ addLocaleData([...enLocaleData, ...frLocaleData]);
 class AppIntlProvider extends Component {
   render() {
     const { children } = this.props;
-    const platformLanguage = pathOr(null, ['settings', 'platform_language'], this.props);
+    const platformLanguage = pathOr(
+      null,
+      ['settings', 'platform_language'],
+      this.props,
+    );
     const userLanguage = pathOr(null, ['me', 'language'], this.props);
 
-    const platformLang = platformLanguage !== null && platformLanguage !== 'auto' ? this.props.settings.platform_language : locale;
-    const lang = userLanguage !== null && userLanguage !== 'auto' ? this.props.me.language : platformLang;
+    const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
+      ? this.props.settings.platform_language
+      : locale;
+    const lang = userLanguage !== null && userLanguage !== 'auto'
+      ? this.props.me.language
+      : platformLang;
     return (
-      <IntlProvider
-        locale={lang}
-        key={lang}
-        messages={i18n.messages[lang]}
-      >
-        <MuiPickersUtilsProvider utils={MomentUtils} locale={lang} moment={moment}>
+      <IntlProvider locale={lang} key={lang} messages={i18n.messages[lang]}>
+        <MuiPickersUtilsProvider
+          utils={MomentUtils}
+          locale={lang}
+          moment={moment}
+        >
           {children}
         </MuiPickersUtilsProvider>
       </IntlProvider>
@@ -45,14 +53,14 @@ AppIntlProvider.propTypes = {
 
 export const ConnectedIntlProvider = createFragmentContainer(AppIntlProvider, {
   me: graphql`
-      fragment AppIntlProvider_me on User {
-          language
-      }
+    fragment AppIntlProvider_me on User {
+      language
+    }
   `,
   settings: graphql`
-      fragment AppIntlProvider_settings on Settings {
-          platform_language
-      }
+    fragment AppIntlProvider_settings on Settings {
+      platform_language
+    }
   `,
 });
 

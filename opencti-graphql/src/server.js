@@ -126,7 +126,7 @@ const server = new ApolloServer({
       token = token || extractTokenFromBearer(connectionParams.authorization);
       return { user: await authentication(token) };
     }
-  },
+  }
 });
 
 server.applyMiddleware({ app });

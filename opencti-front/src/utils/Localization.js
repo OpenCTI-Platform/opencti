@@ -2,37 +2,63 @@ const i18n = {
   messages: {
     fr: {
       // Titles
-      'OpenCTI - Cyber threat intelligence platform': "OpenCTI - Plateforme d'analyse de la cybermenace",
+      'OpenCTI - Cyber threat intelligence platform':
+        "OpenCTI - Plateforme d'analyse de la cybermenace",
       // Errors
       'Wrong name or password': "Nom d'utilisateur ou mot de passe incorrect",
-      'An unknown error has occurred!  Please try again later.': 'Une erreur est survenue ! Merci de rééssayer plus tard.',
-      'You must be logged in to do this.': 'Vous devez être authentifié pour faire cette action.',
-      'You are not allowed to do this.': 'Vous n\'ête pas autorisés à faire cette action.',
+      'An unknown error has occurred!  Please try again later.':
+        'Une erreur est survenue ! Merci de rééssayer plus tard.',
+      'You must be logged in to do this.':
+        'Vous devez être authentifié pour faire cette action.',
+      'You are not allowed to do this.':
+        "Vous n'ête pas autorisés à faire cette action.",
       // Interface
       Search: 'Rechercher',
       'Search for a threat...': 'Rechercher une menace...',
-      'Do you want to delete this user?': 'Souahitez-vous supprimer cet utilisateur ?',
-      'Do you want to delete this group?': 'Souahitez-vous supprimer ce groupe ?',
-      'Do you want to delete this threat actor?': 'Souhaitez-vous supprimer cet acteur ?',
-      'Do you want to delete this intrusion set?': 'Souhaitez-vous supprimer ce mode opératoire ?',
-      'Do you want to delete this campaign?': 'Souhaitez-vous supprimer cette campagne ?',
-      'Do you want to delete this incident?': 'Souhaitez-vous supprimer cet incident ?',
-      'Do you want to delete this malware?': 'Souhaitez-vous supprimer ce code malveillant ?',
-      'Do you want to delete this marking definition?': 'Souhaitez-vous supprimer ce marquage ?',
-      'Do you want to delete this kill chain phase?': 'Souhaitez-vous supprimer cette étape de kill chain ?',
-      'Do you want to delete this report?': 'Souhaitez-vous supprimer ce rapport ?',
-      'Do you want to delete this external reference?': 'Souhaitez-vous supprimer cette référence externe ?',
-      'Do you want to delete this region?': 'Souhaitez-vous supprimer cette région ?',
-      'Do you want to delete this country?': 'Souhaitez-vous supprimer ce pays ?',
-      'Do you want to delete this city?': 'Souhaitez-vous supprimer cette ville ?',
-      'Do you want to delete this sector?': 'Souhaitez-vous supprimer ce secteur ?',
-      'Do you want to delete this organization?': 'Souhaitez-vous supprimer cette organisation ?',
-      'Do you want to delete this person?': 'Souhaitez-vous supprimer cette personne ?',
-      'Do you want to delete this relation?': 'Souhaitez-vous supprimer cette relation ?',
-      'Do you want to delete this workspace?': 'Souhaitez-vous supprimer cet espace de travail ?',
-      'Do you want to delete this attack pattern?': 'Souhaitez-vous supprimer cette TTP ?',
-      'Do you want to delete this tool?': 'Souhaitez-vous supprimer cet outil ?',
-      'Do you want to delete this vulnerability?': 'Souhaitez-vous supprimer cette vulnérabilité ?',
+      'Do you want to delete this user?':
+        'Souahitez-vous supprimer cet utilisateur ?',
+      'Do you want to delete this group?':
+        'Souahitez-vous supprimer ce groupe ?',
+      'Do you want to delete this threat actor?':
+        'Souhaitez-vous supprimer cet acteur ?',
+      'Do you want to delete this intrusion set?':
+        'Souhaitez-vous supprimer ce mode opératoire ?',
+      'Do you want to delete this campaign?':
+        'Souhaitez-vous supprimer cette campagne ?',
+      'Do you want to delete this incident?':
+        'Souhaitez-vous supprimer cet incident ?',
+      'Do you want to delete this malware?':
+        'Souhaitez-vous supprimer ce code malveillant ?',
+      'Do you want to delete this marking definition?':
+        'Souhaitez-vous supprimer ce marquage ?',
+      'Do you want to delete this kill chain phase?':
+        'Souhaitez-vous supprimer cette étape de kill chain ?',
+      'Do you want to delete this report?':
+        'Souhaitez-vous supprimer ce rapport ?',
+      'Do you want to delete this external reference?':
+        'Souhaitez-vous supprimer cette référence externe ?',
+      'Do you want to delete this region?':
+        'Souhaitez-vous supprimer cette région ?',
+      'Do you want to delete this country?':
+        'Souhaitez-vous supprimer ce pays ?',
+      'Do you want to delete this city?':
+        'Souhaitez-vous supprimer cette ville ?',
+      'Do you want to delete this sector?':
+        'Souhaitez-vous supprimer ce secteur ?',
+      'Do you want to delete this organization?':
+        'Souhaitez-vous supprimer cette organisation ?',
+      'Do you want to delete this person?':
+        'Souhaitez-vous supprimer cette personne ?',
+      'Do you want to delete this relation?':
+        'Souhaitez-vous supprimer cette relation ?',
+      'Do you want to delete this workspace?':
+        'Souhaitez-vous supprimer cet espace de travail ?',
+      'Do you want to delete this attack pattern?':
+        'Souhaitez-vous supprimer cette TTP ?',
+      'Do you want to delete this tool?':
+        'Souhaitez-vous supprimer cet outil ?',
+      'Do you want to delete this vulnerability?':
+        'Souhaitez-vous supprimer cette vulnérabilité ?',
       Information: 'Informations',
       'Last internal reports': 'Derniers rapports internes',
       'Last external reports': 'Derniers rapports externes',
@@ -65,9 +91,11 @@ const i18n = {
       'The value is too short': 'La valeur est trop courte',
       'The value is too long': 'La valeur est trop longue',
       'The value must be a number': 'La valeur doit être un nombre',
-      'The value must be an email address': 'La valeur doit être une adresse email',
+      'The value must be an email address':
+        'La valeur doit être une adresse email',
       'The value must be an URL': 'La valeur doit être une URL',
-      'The value must be a date (YYYY-MM-DD)': 'La valeur doit être une date (AAAA-MM-JJ)',
+      'The value must be a date (YYYY-MM-DD)':
+        'La valeur doit être une date (AAAA-MM-JJ)',
       'The values do not match': 'Les valeurs ne correspondent pas',
       'No available options': 'Aucune option disponible',
       'Create a workspace': 'Créer un espace de travail',
@@ -158,7 +186,7 @@ const i18n = {
       Relationships: 'Relations',
       Entities: 'Entités',
       Observables: 'Observables',
-      'Entities types': 'Types d\'entités',
+      'Entities types': "Types d'entités",
       'Attack pattern usage': 'Usage de cette TTP',
       'Vulnerability usage': 'Usage de cette vulnérabilité',
       'Entity usage': 'Usage de cette entité',
@@ -237,9 +265,10 @@ const i18n = {
       Inferred: 'Inféré',
       'CSV file': 'Fichier CSV',
       'Export data in CSV': 'Exporter les données en CSV',
-      'The CSV file has been generated with the parameters of the view and is ready for download.': 'Le fichier CSV a été généré avec les paramètres de la vue et est prêt pour être téléchargé.',
+      'The CSV file has been generated with the parameters of the view and is ready for download.':
+        'Le fichier CSV a été généré avec les paramètres de la vue et est prêt pour être téléchargé.',
       Download: 'Télécharger',
-      'Inference explanation': 'Explication de l\'inférence',
+      'Inference explanation': "Explication de l'inférence",
       Relation: 'Relation',
       // User
       'Sign in': "S'identifier",
@@ -282,7 +311,8 @@ const i18n = {
       'Last obs.': 'Dernière obs.',
       Confirmation: 'Confirmation',
       'Kill chain': 'Kill chain',
-      'This feature is not available yet.': 'Cette fonctionnalité n\'est pas encore disponible.',
+      'This feature is not available yet.':
+        "Cette fonctionnalité n'est pas encore disponible.",
       'Phase name': "Nom de l'étape",
       'Kill chain name': 'Nom de la kill chain',
       Order: 'Ordre',
@@ -322,8 +352,8 @@ const i18n = {
       'Primary motivation': 'Motivation première',
       'Secondary motivation': 'Motivation secondaire',
       Goal: 'Objectif',
-      'Observable value': 'Valeur de l\'observable',
-      'Observable type': 'Type d\'observable',
+      'Observable value': "Valeur de l'observable",
+      'Observable type': "Type d'observable",
       Domain: 'Nom de domaine',
       'IPv4 address': 'Adresse IPv4',
       'IPv6 address': 'Adresse IPv6',
@@ -338,30 +368,38 @@ const i18n = {
       'Total investigations': "Nombre d'investigations",
       'Ingested entities': 'Entités stockées',
       'last 24h': 'dernières 24h',
-      'No entity was found for this search.': 'Aucune entité n\'a été trouvée pour cette recherche.',
-      'API access': 'Accès à l\'API',
+      'No entity was found for this search.':
+        "Aucune entité n'a été trouvée pour cette recherche.",
+      'API access': "Accès à l'API",
       Example: 'Exemple',
-      'API key': 'Clé d\'API',
+      'API key': "Clé d'API",
       Playground: 'Playground',
       Details: 'Détails',
       All: 'Tout',
-      'No entities of this type has been found.': 'Aucune entité de ce type n\'a été trouvée.',
+      'No entities of this type has been found.':
+        "Aucune entité de ce type n'a été trouvée.",
       // Explore
       'Kill chains': 'Kill chains',
-      'Explore the victims and the targets of the dataset through space and time.': 'Explorer les victimes et les cibles des données à travers l\'espace et le temps',
-      'Explore the attack campaigns of the dataset through time and involved entities.': 'Explorer les campagnes d\'attaques des données à travers le temps et les entités impliquées.',
-      'Explore the techniques, tactics and procedures of the dataset through time and entities who used its.': 'Explorer les techniques, tactiques et procédures des données à travers le temps et les entités qui les utilisent.',
-      'Explore the kill chains of entities through time and other contextual information like campaigns or incidents.': 'Explorer les kill chains des entités à travers le temps et d\'autres informations contextuelles comme les campagnes ou les incidents.',
-      'Explore the vulnerabilities used by entities through time and kill chain phases.': 'Explorer les vulnérabilités utilisées par les entités à travers le temps et les phases de la kill chain.',
-      'Explore the observables of the dataset though time to visualize clusters and correlations.': 'Explorer les observables des données à travers le temps pour visualiser des clusters et des corrélations.',
+      'Explore the victims and the targets of the dataset through space and time.':
+        "Explorer les victimes et les cibles des données à travers l'espace et le temps",
+      'Explore the attack campaigns of the dataset through time and involved entities.':
+        "Explorer les campagnes d'attaques des données à travers le temps et les entités impliquées.",
+      'Explore the techniques, tactics and procedures of the dataset through time and entities who used its.':
+        'Explorer les techniques, tactiques et procédures des données à travers le temps et les entités qui les utilisent.',
+      'Explore the kill chains of entities through time and other contextual information like campaigns or incidents.':
+        "Explorer les kill chains des entités à travers le temps et d'autres informations contextuelles comme les campagnes ou les incidents.",
+      'Explore the vulnerabilities used by entities through time and kill chain phases.':
+        'Explorer les vulnérabilités utilisées par les entités à travers le temps et les phases de la kill chain.',
+      'Explore the observables of the dataset though time to visualize clusters and correlations.':
+        'Explorer les observables des données à travers le temps pour visualiser des clusters et des corrélations.',
       'Origins of the targeting': 'Origines du ciblage',
       'Types of the targeting': 'Types de ciblage',
       'Types of the targets': 'Types de cibles',
-      'Targeted entities types': 'Types d\'entités ciblées',
-      'Targeted entities through time': 'Ciblages d\'entités à travers le temps',
+      'Targeted entities types': "Types d'entités ciblées",
+      'Targeted entities through time': "Ciblages d'entités à travers le temps",
       'Number of targeting': 'Nombre de ciblages',
-      Platforms: 'Systèmes d\'exploitation',
-      Platform: 'Système d\'exploitation',
+      Platforms: "Systèmes d'exploitation",
+      Platform: "Système d'exploitation",
       'Required permissions': 'Permissions requises',
       None: 'Aucun',
       // Types
@@ -383,8 +421,8 @@ const i18n = {
       entity_all: 'Toutes les entités',
       'entity_course-of-action': 'Mesure de mitigation',
       'entity_Kill-Chain-Phase': 'phases de kill chain',
-      'entity_Stix-Domain-Entity': 'types d\'entités',
-      entity_Sector: 'secteurs d\'activité',
+      'entity_Stix-Domain-Entity': "types d'entités",
+      entity_Sector: "secteurs d'activité",
       entity_Country: 'pays',
       entity_Region: 'régions',
       report_internal: 'Rapport interne',

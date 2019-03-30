@@ -40,7 +40,11 @@ class Loader extends Component {
   render() {
     const { classes, variant } = this.props;
     return (
-      <div className={variant === 'inside' ? classes.containerInside: classes.container}>
+      <div
+        className={
+          variant === 'inside' ? classes.containerInside : classes.container
+        }
+      >
         <Particles
           className={classes.particlesContainer}
           params={{
@@ -55,7 +59,11 @@ class Loader extends Component {
           }}
         />
         <div className={classes.loader}>
-          <CircularProgress size={80} thickness={1} className={this.props.classes.loaderCircle}/>
+          <CircularProgress
+            size={80}
+            thickness={1}
+            className={this.props.classes.loaderCircle}
+          />
         </div>
       </div>
     );

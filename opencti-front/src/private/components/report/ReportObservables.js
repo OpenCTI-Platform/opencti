@@ -3,7 +3,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, map, sortWith, ascend, descend, prop,
+  compose,
+  map,
+  sortWith,
+  ascend,
+  descend,
+  prop,
+  groupBy,
+  pipe,
+  values,
+  head,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
@@ -13,7 +22,11 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { ArrowDropDown, ArrowDropUp, KeyboardArrowRight } from '@material-ui/icons';
+import {
+  ArrowDropDown,
+  ArrowDropUp,
+  KeyboardArrowRight,
+} from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import ReportHeader from './ReportHeader';
@@ -166,9 +179,20 @@ class ReportObservablesComponent extends Component {
     const { t } = this.props;
     if (isSortable) {
       return (
-        <div style={inlineStylesHeaders[field]} onClick={this.reverseBy.bind(this, field)}>
+        <div
+          style={inlineStylesHeaders[field]}
+          onClick={this.reverseBy.bind(this, field)}
+        >
           <span>{t(label)}</span>
-          {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStylesHeaders.iconSort}/> : <ArrowDropUp style={inlineStylesHeaders.iconSort}/> : ''}
+          {this.state.sortBy === field ? (
+            this.state.orderAsc ? (
+              <ArrowDropDown style={inlineStylesHeaders.iconSort} />
+            ) : (
+              <ArrowDropUp style={inlineStylesHeaders.iconSort} />
+            )
+          ) : (
+            ''
+          )}
         </div>
       );
     }
@@ -183,56 +207,107 @@ class ReportObservablesComponent extends Component {
     const {
       t, fd, classes, report,
     } = this.props;
-    const relationRefs = map(n => n.node, report.relationRefs.edges);
-    const sort = sortWith(this.state.orderAsc ? [ascend(prop(this.state.sortBy))] : [descend(prop(this.state.sortBy))]);
+    const relationRefs = pipe(
+      map(n => n.node),
+      groupBy(prop('id')),
+      values,
+      map(n => head(n)),
+    )(report.relationRefs.edges);
+    console.log(relationRefs);
+    const sort = sortWith(
+      this.state.orderAsc
+        ? [ascend(prop(this.state.sortBy))]
+        : [descend(prop(this.state.sortBy))],
+    );
     const sortedRelationRefs = sort(relationRefs);
     return (
       <div>
-        <ReportHeader report={report}/>
+        <ReportHeader report={report} />
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem classes={{ root: classes.itemHead }} divider={false} style={{ paddingTop: 0 }}>
+          <ListItem
+            classes={{ root: classes.itemHead }}
+            divider={false}
+            style={{ paddingTop: 0 }}
+          >
             <ListItemIcon>
-              <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
+              <span
+                style={{
+                  padding: '0 8px 0 8px',
+                  fontWeight: 700,
+                  fontSize: 12,
+                }}
+              >
+                #
+              </span>
             </ListItemIcon>
-            <ListItemText primary={
-              <div>
-                {this.SortHeader('type', 'Type', true)}
-                {this.SortHeader('observable_value', 'Observable value', true)}
-                {this.SortHeader('threats', 'Linked threat(s)', true)}
-                {this.SortHeader('first_seen', 'First seen', true)}
-                {this.SortHeader('last_seen', 'Last seen', true)}
-                {this.SortHeader('weight', 'Confidence level', true)}
-              </div>
-            }/>
+            <ListItemText
+              primary={
+                <div>
+                  {this.SortHeader('type', 'Type', true)}
+                  {this.SortHeader(
+                    'observable_value',
+                    'Observable value',
+                    true,
+                  )}
+                  {this.SortHeader('threats', 'Linked threat(s)', true)}
+                  {this.SortHeader('first_seen', 'First seen', true)}
+                  {this.SortHeader('last_seen', 'Last seen', true)}
+                  {this.SortHeader('weight', 'Confidence level', true)}
+                </div>
+              }
+            />
           </ListItem>
           {sortedRelationRefs.map((relationRef) => {
             const link = '/dashboard/observables';
             return (
-              <ListItem key={relationRef.id} classes={{ root: classes.item }} divider={true} component={Link} to={`${link}/${relationRef.id}`}>
+              <ListItem
+                key={relationRef.id}
+                classes={{ root: classes.item }}
+                divider={true}
+                component={Link}
+                to={`${link}/${relationRef.id}`}
+              >
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <ItemIcon type={relationRef.type}/>
+                  <ItemIcon type={relationRef.type} />
                 </ListItemIcon>
-                <ListItemText primary={
-                  <div>
-                    <div className={classes.bodyItem} style={inlineStyles.type}>
-                      {t(`observable_${relationRef.type}`)}
+                <ListItemText
+                  primary={
+                    <div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.type}
+                      >
+                        {t(`observable_${relationRef.type}`)}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.observable_value}
+                      >
+                        {relationRef.observable_value}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.threats}
+                      >
+                        {relationRef.threats}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.first_seen}
+                      >
+                        {fd(relationRef.first_seen)}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.last_seen}
+                      >
+                        {fd(relationRef.last_seen)}
+                      </div>
                     </div>
-                    <div className={classes.bodyItem} style={inlineStyles.observable_value}>
-                      {relationRef.observable_value}
-                    </div>
-                    <div className={classes.bodyItem} style={inlineStyles.threats}>
-                      {relationRef.threats}
-                    </div>
-                    <div className={classes.bodyItem} style={inlineStyles.first_seen}>
-                      {fd(relationRef.first_seen)}
-                    </div>
-                    <div className={classes.bodyItem} style={inlineStyles.last_seen}>
-                      {fd(relationRef.last_seen)}
-                    </div>
-                  </div>
-                }/>
+                  }
+                />
                 <ListItemIcon classes={{ root: classes.goIcon }}>
-                  <KeyboardArrowRight/>
+                  <KeyboardArrowRight />
                 </ListItemIcon>
               </ListItem>
             );
@@ -259,39 +334,41 @@ ReportObservablesComponent.propTypes = {
 
 const ReportObservables = createFragmentContainer(ReportObservablesComponent, {
   report: graphql`
-      fragment ReportObservables_report on Report {
-          id
-          published
-          source_confidence_level
-          relationRefs(relationType: $relationType) {
-              edges {
-                  node {
-                      id
-                      type
-                      name
-                      created_at
-                      updated_at
-                      from {
-                          id
-                          type
-                          name
-                          ... on StixObservable {
-                            observable_value  
-                          }
-                      }
-                      to {
-                          id
-                          type
-                          name
-                          ... on StixObservable {
-                              observable_value
-                          }
-                      }
-                  }
+    fragment ReportObservables_report on Report {
+      id
+      published
+      source_confidence_level
+      relationRefs(relationType: $relationType) {
+        edges {
+          node {
+            id
+            type
+            name
+            first_seen
+            last_seen
+            created_at
+            updated_at
+            from {
+              id
+              type
+              name
+              ... on StixObservable {
+                observable_value
               }
+            }
+            to {
+              id
+              type
+              name
+              ... on StixObservable {
+                observable_value
+              }
+            }
           }
-          ...ReportHeader_report
+        }
       }
+      ...ReportHeader_report
+    }
   `,
 });
 

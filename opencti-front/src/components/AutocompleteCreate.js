@@ -36,7 +36,9 @@ const styles = theme => ({
   },
   chipFocused: {
     backgroundColor: emphasize(
-      theme.palette.type === 'light' ? theme.palette.grey[300] : theme.palette.grey[700],
+      theme.palette.type === 'light'
+        ? theme.palette.grey[300]
+        : theme.palette.grey[700],
       0.08,
     ),
   },
@@ -66,7 +68,7 @@ const styles = theme => ({
 function NoOptionsMessage(props) {
   return (
     <Typography
-      color='textSecondary'
+      color="textSecondary"
       className={props.selectProps.classes.noOptionsMessage}
       {...props.innerProps}
     >
@@ -128,14 +130,21 @@ function Placeholder(props) {
 
 function SingleValue(props) {
   return (
-    <Typography className={props.selectProps.classes.singleValue} {...props.innerProps}>
+    <Typography
+      className={props.selectProps.classes.singleValue}
+      {...props.innerProps}
+    >
       {props.children}
     </Typography>
   );
 }
 
 function ValueContainer(props) {
-  return <div className={props.selectProps.classes.valueContainer}>{props.children}</div>;
+  return (
+    <div className={props.selectProps.classes.valueContainer}>
+      {props.children}
+    </div>
+  );
 }
 
 function MultiValue(props) {
@@ -154,7 +163,11 @@ function MultiValue(props) {
 
 function Menu(props) {
   return (
-    <Paper square className={props.selectProps.classes.paper} {...props.innerProps}>
+    <Paper
+      square
+      className={props.selectProps.classes.paper}
+      {...props.innerProps}
+    >
       {props.children}
     </Paper>
   );
@@ -172,9 +185,7 @@ const components = {
 };
 
 class AutocompleteCreate extends Component {
-  handleCreateCallback(handleCreate, callback) {
-
-  }
+  handleCreateCallback(handleCreate, callback) {}
 
   render() {
     const {
@@ -185,11 +196,7 @@ class AutocompleteCreate extends Component {
       label,
       field,
       form: {
-        dirty,
-        errors,
-        values,
-        setFieldValue,
-        isSubmitting,
+        dirty, errors, values, setFieldValue, isSubmitting,
       },
       options,
       onInputChange,
@@ -215,7 +222,10 @@ class AutocompleteCreate extends Component {
     let displayLabel = false;
     if (Array.isArray(values[field.name]) && values[field.name].length > 0) {
       displayLabel = true;
-    } else if (!Array.isArray(values[field.name]) && values[field.name] !== '') {
+    } else if (
+      !Array.isArray(values[field.name])
+      && values[field.name] !== ''
+    ) {
       displayLabel = true;
     }
 
@@ -259,8 +269,16 @@ class AutocompleteCreate extends Component {
             openMenuOnClick={false}
             onCreateOption={handleCreate.bind(this)}
             isDisabled={isSubmitting}
-            noOptionsMessage={() => <span style={{ fontStyle: 'italic' }}>{t('No available options')}</span>}
-            formatCreateLabel={(inputValue) => <span style={{ fontStyle: 'italic' }}>{t('Create')} {inputValue}</span>}
+            noOptionsMessage={() => (
+              <span style={{ fontStyle: 'italic' }}>
+                {t('No available options')}
+              </span>
+            )}
+            formatCreateLabel={inputValue => (
+              <span style={{ fontStyle: 'italic' }}>
+                {t('Create')} {inputValue}
+              </span>
+            )}
           />
           {hasError && <FormHelperText>{errorText}</FormHelperText>}
         </FormControl>

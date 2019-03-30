@@ -8,7 +8,10 @@ const size = {
 
 function mapElements(model) {
   // dagre compatible format
-  return model.nodes.map(node => ({ id: node.id, metadata: { ...size, id: node.id } }));
+  return model.nodes.map(node => ({
+    id: node.id,
+    metadata: { ...size, id: node.id },
+  }));
 }
 
 function mapEdges(model) {
@@ -20,7 +23,8 @@ function mapEdges(model) {
       to: link.target,
     }))
     .filter(
-      item => model.nodes.find(node => node.id === item.from) && model.nodes.find(node => node.id === item.to),
+      item => model.nodes.find(node => node.id === item.from)
+        && model.nodes.find(node => node.id === item.to),
     );
 }
 

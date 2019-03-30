@@ -41,7 +41,7 @@ class SearchInput extends Component {
     } = this.props;
     return (
       <Input
-        name='keyword'
+        name="keyword"
         defaultValue={keyword}
         placeholder={`${t('Search')}...`}
         onChange={(event) => {
@@ -57,13 +57,17 @@ class SearchInput extends Component {
           }
         }}
         startAdornment={
-          <InputAdornment position='start'>
-            <Search/>
+          <InputAdornment position="start">
+            <Search />
           </InputAdornment>
         }
         classes={{
-          root: variant === 'inDrawer' ? classes.searchRootInDrawer : classes.searchRoot,
-          input: variant === 'small' ? classes.searchInputSmall : classes.searchInput,
+          root:
+            variant === 'inDrawer'
+              ? classes.searchRootInDrawer
+              : classes.searchRoot,
+          input:
+            variant === 'small' ? classes.searchInputSmall : classes.searchInput,
         }}
         disableUnderline={true}
       />

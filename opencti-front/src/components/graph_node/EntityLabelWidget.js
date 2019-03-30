@@ -24,22 +24,50 @@ const styles = () => ({
 class EntityLabelWidget extends Component {
   render() {
     const {
-      t, nsd, classes, model, model: { extras },
+      t,
+      nsd,
+      classes,
+      model,
+      model: { extras },
     } = this.props;
     const label = head(extras);
     if (extras.length === 1) {
       return (
-        <div className={classes.item} onClick={model.setSelected.bind(this, true)}>
+        <div
+          className={classes.item}
+          onClick={model.setSelected.bind(this, true)}
+        >
           <strong>{t(`relation_${label.relationship_type}`)}</strong>
-          {label.inferred === true ? <span><br/><em>{t('Inferred')}</em></span> : ''}
-          {label.first_seen ? <span><br/>{nsd(label.first_seen)}<br/>{nsd(label.last_seen)}</span> : ''}
+          {label.inferred === true ? (
+            <span>
+              <br />
+              <em>{t('Inferred')}</em>
+            </span>
+          ) : (
+            ''
+          )}
+          {label.first_seen ? (
+            <span>
+              <br />
+              {nsd(label.first_seen)}
+              <br />
+              {nsd(label.last_seen)}
+            </span>
+          ) : (
+            ''
+          )}
         </div>
       );
     }
     return (
       <div className={classes.item}>
         <strong>{t(`relation_${label.relationship_type}`)}</strong>
-        <span><br/><em>{extras.length} {t('relations')}</em></span>
+        <span>
+          <br />
+          <em>
+            {extras.length} {t('relations')}
+          </em>
+        </span>
       </div>
     );
   }

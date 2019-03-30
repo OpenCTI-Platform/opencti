@@ -35,12 +35,21 @@ class SubscriptionAvatarsComponent extends Component {
   render() {
     const { classes, users, variant } = this.props;
     return (
-      <div className={variant === 'inGraph' ? classes.avatarsGraph : classes.avatars}>
-        {users.map((user, i) => <Tooltip title={user.name} key={i}>
-          <Avatar classes={{ root: classes.avatar }} style={{ backgroundColor: stringToColour(user.name) }}>
-            {user.name.charAt(0)}
-          </Avatar>
-        </Tooltip>)}
+      <div
+        className={
+          variant === 'inGraph' ? classes.avatarsGraph : classes.avatars
+        }
+      >
+        {users.map((user, i) => (
+          <Tooltip title={user.name} key={i}>
+            <Avatar
+              classes={{ root: classes.avatar }}
+              style={{ backgroundColor: stringToColour(user.name) }}
+            >
+              {user.name.charAt(0)}
+            </Avatar>
+          </Tooltip>
+        ))}
       </div>
     );
   }
@@ -52,7 +61,9 @@ SubscriptionAvatarsComponent.propTypes = {
   variant: PropTypes.string,
 };
 
-export const SubscriptionAvatars = withStyles(SubscriptionAvatarsStyles)(SubscriptionAvatarsComponent);
+export const SubscriptionAvatars = withStyles(SubscriptionAvatarsStyles)(
+  SubscriptionAvatarsComponent,
+);
 
 class SubscriptionFocusComponent extends Component {
   render() {
@@ -70,7 +81,12 @@ class SubscriptionFocusComponent extends Component {
     return (
       <span>
         {focusedUsers.map((user, i) => (
-              <span key={i}><span style={{ color: stringToColour(user.name) }}>{user.name}</span><span>{i + 1 < focusedUsers.length ? ', ' : ' '}</span></span>
+          <span key={i}>
+            <span style={{ color: stringToColour(user.name) }}>
+              {user.name}
+            </span>
+            <span>{i + 1 < focusedUsers.length ? ', ' : ' '}</span>
+          </span>
         ))}
         {focusedUsers.length > 1 ? t('are updating...') : t('is updating...')}
       </span>

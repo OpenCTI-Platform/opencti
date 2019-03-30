@@ -36,51 +36,92 @@ class CountryKnowledgeComponent extends Component {
     const link = `/dashboard/catalogs/countries/${country.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <CountryHeader country={country} variant='noalias'/>
-        <CountryKnowledgeBar countryId={country.id}/>
+        <CountryHeader country={country} variant="noalias" />
+        <CountryKnowledgeBar countryId={country.id} />
         <div className={classes.content}>
-          <Route exact path='/dashboard/catalogs/countries/:countryId/knowledge/relations/:relationId' render={
-            routeProps => <StixRelation
-              entityId={country.id}
-              inversedRelations={inversedRelations}
-              {...routeProps}
+          <Route
+            exact
+            path="/dashboard/catalogs/countries/:countryId/knowledge/relations/:relationId"
+            render={routeProps => (
+              <StixRelation
+                entityId={country.id}
+                inversedRelations={inversedRelations}
+                {...routeProps}
               />
-          }/>
+            )}
+          />
 
-          {location.pathname.includes('overview') ? <StixDomainEntityKnowledge
-            stixDomainEntityId={country.id}
-          /> : ''}
+          {location.pathname.includes('overview') ? (
+            <StixDomainEntityKnowledge stixDomainEntityId={country.id} />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('organizations') ? <EntityStixRelations
-            resolveRelationType='localization'
-            resolveRelationRole='location'
-            entityId={country.id}
-            relationType='localization'
-            targetEntityTypes={['Organization']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('organizations') ? (
+            <EntityStixRelations
+              resolveRelationType="localization"
+              resolveRelationRole="location"
+              entityId={country.id}
+              relationType="localization"
+              targetEntityTypes={['Organization']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('threats') ? <EntityStixRelations
-            resolveRelationType='localization'
-            resolveRelationRole='location'
-            resolveViaTypes={[
-              { entityType: 'Intrusion-Set', relationType: 'attributed-to', relationRole: 'attribution' },
-              { entityType: 'Campaign', relationType: 'attributed-to', relationRole: 'attribution' },
-              { entityType: 'Incident', relationType: 'attributed-to', relationRole: 'attribution' },
-              { entityType: 'Malware', relationType: 'attributed-to', relationRole: 'attribution' },
-            ]}
-            entityId={country.id}
-            relationType='targets'
-            targetEntityTypes={['Country', 'Threat-Actor', 'Intrusion-Set', 'Campaign', 'Incident', 'Malware']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('threats') ? (
+            <EntityStixRelations
+              resolveRelationType="localization"
+              resolveRelationRole="location"
+              resolveViaTypes={[
+                {
+                  entityType: 'Intrusion-Set',
+                  relationType: 'attributed-to',
+                  relationRole: 'attribution',
+                },
+                {
+                  entityType: 'Campaign',
+                  relationType: 'attributed-to',
+                  relationRole: 'attribution',
+                },
+                {
+                  entityType: 'Incident',
+                  relationType: 'attributed-to',
+                  relationRole: 'attribution',
+                },
+                {
+                  entityType: 'Malware',
+                  relationType: 'attributed-to',
+                  relationRole: 'attribution',
+                },
+              ]}
+              entityId={country.id}
+              relationType="targets"
+              targetEntityTypes={[
+                'Country',
+                'Threat-Actor',
+                'Intrusion-Set',
+                'Campaign',
+                'Incident',
+                'Malware',
+              ]}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('entities') ? <EntityStixRelations
-            entityId={country.id}
-            relationType='related-to'
-            targetEntityTypes={['Identity']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('entities') ? (
+            <EntityStixRelations
+              entityId={country.id}
+              relationType="related-to"
+              targetEntityTypes={['Identity']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
         </div>
       </div>
     );
@@ -96,10 +137,10 @@ CountryKnowledgeComponent.propTypes = {
 
 const CountryKnowledge = createFragmentContainer(CountryKnowledgeComponent, {
   country: graphql`
-      fragment CountryKnowledge_country on Country {
-          id
-          ...CountryHeader_country
-      }
+    fragment CountryKnowledge_country on Country {
+      id
+      ...CountryHeader_country
+    }
   `,
 });
 

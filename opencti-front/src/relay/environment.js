@@ -10,7 +10,10 @@ import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import React, { Component } from 'react';
 import {
-  commitMutation as CM, QueryRenderer as QR, requestSubscription as RS, fetchQuery as FQ,
+  commitMutation as CM,
+  QueryRenderer as QR,
+  requestSubscription as RS,
+  fetchQuery as FQ,
 } from 'react-relay';
 import * as PropTypes from 'prop-types';
 import {
@@ -39,8 +42,10 @@ export class ApplicationError extends Error {
 }
 
 // Get access providers from backend.
-export const ACCESS_PROVIDERS = split(',', IN_DEV_MODE
-  ? process.env.REACT_APP_ACCESS_PROVIDERS : window.ACCESS_PROVIDERS);
+export const ACCESS_PROVIDERS = split(
+  ',',
+  IN_DEV_MODE ? process.env.REACT_APP_ACCESS_PROVIDERS : window.ACCESS_PROVIDERS,
+);
 
 // Network
 const networkFetch = (operation, variables) => fetch('/graphql', {
@@ -52,7 +57,8 @@ const networkFetch = (operation, variables) => fetch('/graphql', {
     query: operation.text,
     variables,
   }),
-}).then(response => response.json())
+})
+  .then(response => response.json())
   .then((json) => {
     if (json.errors) {
       return Promise.reject(json.errors);
@@ -61,11 +67,18 @@ const networkFetch = (operation, variables) => fetch('/graphql', {
   });
 // Subscription
 let networkSubscriptions = null;
-export const WS_ACTIVATED = IN_DEV_MODE ? (process.env.REACT_APP_WS_ACTIVATED === 'true') : window.WS_ACTIVATED === 'true';
+export const WS_ACTIVATED = IN_DEV_MODE
+  ? process.env.REACT_APP_WS_ACTIVATED === 'true'
+  : window.WS_ACTIVATED === 'true';
 if (WS_ACTIVATED) {
-  const subscriptionClient = new SubscriptionClient(`ws${window.location.protocol === 'https:' ? 's' : ''}://${window.location.host}/graphql`, {
-    reconnect: true,
-  });
+  const subscriptionClient = new SubscriptionClient(
+    `ws${window.location.protocol === 'https:' ? 's' : ''}://${
+      window.location.host
+    }/graphql`,
+    {
+      reconnect: true,
+    },
+  );
   const subscriptionLink = new WebSocketLink(subscriptionClient);
   networkSubscriptions = (operation, variables) => execute(subscriptionLink, {
     query: operation.text,
@@ -83,7 +96,11 @@ export class QueryRenderer extends Component {
     const {
       variables, query, render, managedErrorTypes,
     } = this.props;
-    return (<QR environment={environment} query={query} variables={variables}
+    return (
+      <QR
+        environment={environment}
+        query={query}
+        variables={variables}
         render={(data) => {
           const { error } = data;
           const types = error ? map(e => e.name, error) : [];
@@ -91,7 +108,8 @@ export class QueryRenderer extends Component {
           if (!isEmpty(unmanagedErrors)) throw new ApplicationError(error);
           return render(data);
         }}
-    />);
+      />
+    );
   }
 }
 QueryRenderer.propTypes = {
@@ -103,7 +121,13 @@ QueryRenderer.propTypes = {
 
 // Relay functions
 export const commitMutation = ({
-  mutation, variables, updater, optimisticUpdater, onCompleted, onError, setSubmitting,
+  mutation,
+  variables,
+  updater,
+  optimisticUpdater,
+  onCompleted,
+  onError,
+  setSubmitting,
 }) => CM(environment, {
   mutation,
   variables,
@@ -112,7 +136,10 @@ export const commitMutation = ({
   onCompleted,
   onError: (errors) => {
     if (setSubmitting) setSubmitting(false);
-    const authRequired = filter(e => e.data.type === 'authentication', errors);
+    const authRequired = filter(
+      e => e.data.type === 'authentication',
+      errors,
+    );
     if (!isEmpty(authRequired)) {
       MESSAGING$.redirect.next('/login');
     } else {
@@ -124,7 +151,6 @@ export const commitMutation = ({
 });
 
 const deactivateSubscription = { dispose: () => undefined };
-export const requestSubscription = args => (WS_ACTIVATED
-  ? RS(environment, args) : deactivateSubscription);
+export const requestSubscription = args => (WS_ACTIVATED ? RS(environment, args) : deactivateSubscription);
 
 export const fetchQuery = (query, args) => FQ(environment, query, args);

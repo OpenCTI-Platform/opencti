@@ -66,42 +66,100 @@ class CountryKnowledgeBar extends Component {
       t, location, classes, countryId,
     } = this.props;
     return (
-      <Drawer variant='permanent' anchor='right' classes={{ paper: classes.drawerPaper }}>
-        <div className={classes.toolbar}/>
-        <Paper classes={{ root: location.pathname === `/dashboard/catalogs/countries/${countryId}/knowledge/overview` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/catalogs/countries/${countryId}/knowledge/overview`}>
+      <Drawer
+        variant="permanent"
+        anchor="right"
+        classes={{ paper: classes.drawerPaper }}
+      >
+        <div className={classes.toolbar} />
+        <Paper
+          classes={{
+            root:
+              location.pathname
+              === `/dashboard/catalogs/countries/${countryId}/knowledge/overview`
+                ? classes.paperActive
+                : classes.paper,
+          }}
+          elevation={2}
+          component={Link}
+          to={`/dashboard/catalogs/countries/${countryId}/knowledge/overview`}
+        >
           <div className={classes.icon}>
-            <DeviceHub fontSize='default'/>
+            <DeviceHub fontSize="default" />
           </div>
           <div className={classes.content}>
-            <span className={classes.title}>{t('Overview')}</span><br />
+            <span className={classes.title}>{t('Overview')}</span>
+            <br />
             <span className={classes.subtitle}>{t('Knowledge graph')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/catalogs/countries/${countryId}/knowledge/organizations` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/catalogs/countries/${countryId}/knowledge/organizations`}>
+        <Paper
+          classes={{
+            root:
+              location.pathname
+              === `/dashboard/catalogs/countries/${countryId}/knowledge/organizations`
+                ? classes.paperActive
+                : classes.paper,
+          }}
+          elevation={2}
+          component={Link}
+          to={`/dashboard/catalogs/countries/${countryId}/knowledge/organizations`}
+        >
           <div className={classes.icon}>
-            <AccountBalance fontSize='default'/>
+            <AccountBalance fontSize="default" />
           </div>
           <div className={classes.content}>
-            <span className={classes.title}>{t('Organizations')}</span><br />
-            <span className={classes.subtitle}>{t('Localized in this country')}</span>
+            <span className={classes.title}>{t('Organizations')}</span>
+            <br />
+            <span className={classes.subtitle}>
+              {t('Localized in this country')}
+            </span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/catalogs/countries/${countryId}/knowledge/threats` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/catalogs/countries/${countryId}/knowledge/threats`}>
+        <Paper
+          classes={{
+            root:
+              location.pathname
+              === `/dashboard/catalogs/countries/${countryId}/knowledge/threats`
+                ? classes.paperActive
+                : classes.paper,
+          }}
+          elevation={2}
+          component={Link}
+          to={`/dashboard/catalogs/countries/${countryId}/knowledge/threats`}
+        >
           <div className={classes.icon}>
-            <TargetVariant fontSize='default'/>
+            <TargetVariant fontSize="default" />
           </div>
           <div className={classes.content}>
-            <span className={classes.title}>{t('Threats')}</span><br />
-            <span className={classes.subtitle}>{t('Targeting this country')}</span>
+            <span className={classes.title}>{t('Threats')}</span>
+            <br />
+            <span className={classes.subtitle}>
+              {t('Targeting this country')}
+            </span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/catalogs/countries/${countryId}/knowledge/entities` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/catalogs/countries/${countryId}/knowledge/entities`}>
+        <Paper
+          classes={{
+            root:
+              location.pathname
+              === `/dashboard/catalogs/countries/${countryId}/knowledge/entities`
+                ? classes.paperActive
+                : classes.paper,
+          }}
+          elevation={2}
+          component={Link}
+          to={`/dashboard/catalogs/countries/${countryId}/knowledge/entities`}
+        >
           <div className={classes.icon}>
-            <SourceFork fontSize='default'/>
+            <SourceFork fontSize="default" />
           </div>
           <div className={classes.content}>
-            <span className={classes.title}>{t('Entities')}</span><br />
-            <span className={classes.subtitle}>{t('Related to this country')}</span>
+            <span className={classes.title}>{t('Entities')}</span>
+            <br />
+            <span className={classes.subtitle}>
+              {t('Related to this country')}
+            </span>
           </div>
         </Paper>
       </Drawer>

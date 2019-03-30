@@ -23,7 +23,10 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import {
-  ArrowDropDown, ArrowDropUp, TableChart, SaveAlt,
+  ArrowDropDown,
+  ArrowDropUp,
+  TableChart,
+  SaveAlt,
 } from '@material-ui/icons';
 import { fetchQuery, QueryRenderer } from '../../relay/environment';
 import UsersLines, { usersLinesQuery } from './user/UsersLines';
@@ -104,20 +107,30 @@ const inlineStyles = {
 };
 
 const exportUsersQuery = graphql`
-    query UsersExportUsersQuery($count: Int!, $cursor: ID, $orderBy: UsersOrdering, $orderMode: OrderingMode) {
-        users(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_users") {
-            edges {
-                node {
-                    id
-                    name
-                    email
-                    firstname
-                    lastname
-                    description
-                }
-            }
+  query UsersExportUsersQuery(
+    $count: Int!
+    $cursor: ID
+    $orderBy: UsersOrdering
+    $orderMode: OrderingMode
+  ) {
+    users(
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) @connection(key: "Pagination_users") {
+      edges {
+        node {
+          id
+          name
+          email
+          firstname
+          lastname
+          description
         }
+      }
     }
+  }
 `;
 
 class Users extends Component {
@@ -148,9 +161,20 @@ class Users extends Component {
   SortHeader(field, label) {
     const { t } = this.props;
     return (
-      <div style={inlineStyles[field]} onClick={this.reverseBy.bind(this, field)}>
+      <div
+        style={inlineStyles[field]}
+        onClick={this.reverseBy.bind(this, field)}
+      >
         <span>{t(label)}</span>
-        {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStyles.iconSort}/> : <ArrowDropUp style={inlineStyles.iconSort}/> : ''}
+        {this.state.sortBy === field ? (
+          this.state.orderAsc ? (
+            <ArrowDropDown style={inlineStyles.iconSort} />
+          ) : (
+            <ArrowDropUp style={inlineStyles.iconSort} />
+          )
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -174,17 +198,19 @@ class Users extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportUsersQuery, { count: 10000, ...paginationOptions }).then((data) => {
-      const finalData = pipe(
-        map(n => n.node),
-        map(n => over(lensProp('firstname'), defaultTo('-'))(n)),
-        map(n => over(lensProp('lastname'), defaultTo('-'))(n)),
-        map(n => over(lensProp('description'), defaultTo('-'))(n)),
-        map(n => assoc('created', dateFormat(n.created))(n)),
-        map(n => assoc('modified', dateFormat(n.modified))(n)),
-      )(data.users.edges);
-      this.setState({ exportCsvData: finalData });
-    });
+    fetchQuery(exportUsersQuery, { count: 10000, ...paginationOptions }).then(
+      (data) => {
+        const finalData = pipe(
+          map(n => n.node),
+          map(n => over(lensProp('firstname'), defaultTo('-'))(n)),
+          map(n => over(lensProp('lastname'), defaultTo('-'))(n)),
+          map(n => over(lensProp('description'), defaultTo('-'))(n)),
+          map(n => assoc('created', dateFormat(n.created))(n)),
+          map(n => assoc('modified', dateFormat(n.modified))(n)),
+        )(data.users.edges);
+        this.setState({ exportCsvData: finalData });
+      },
+    );
   }
 
   render() {
@@ -198,16 +224,25 @@ class Users extends Component {
       <div>
         <div className={classes.header}>
           <div style={{ float: 'left', marginTop: -10 }}>
-            <SearchInput variant='small' onChange={this.handleSearch.bind(this)}/>
+            <SearchInput
+              variant="small"
+              onChange={this.handleSearch.bind(this)}
+            />
           </div>
           <div style={{ float: 'right', marginTop: -20 }}>
-            <IconButton color={this.state.view === 'lines' ? 'secondary' : 'primary'}
-                        classes={{ root: classes.button }}
-                        onClick={this.handleChangeView.bind(this, 'lines')}>
-              <TableChart/>
+            <IconButton
+              color={this.state.view === 'lines' ? 'secondary' : 'primary'}
+              classes={{ root: classes.button }}
+              onClick={this.handleChangeView.bind(this, 'lines')}
+            >
+              <TableChart />
             </IconButton>
-            <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true' color='primary'>
-              <SaveAlt/>
+            <IconButton
+              onClick={this.handleOpenExport.bind(this)}
+              aria-haspopup="true"
+              color="primary"
+            >
+              <SaveAlt />
             </IconButton>
             <Menu
               anchorEl={this.state.anchorExport}
@@ -215,61 +250,110 @@ class Users extends Component {
               onClose={this.handleCloseExport.bind(this)}
               style={{ marginTop: 50 }}
             >
-              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>{t('CSV file')}</MenuItem>
+              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>
+                {t('CSV file')}
+              </MenuItem>
             </Menu>
           </div>
-          <div className='clearfix'/>
+          <div className="clearfix" />
         </div>
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
+          <ListItem
+            classes={{ default: classes.item }}
+            divider={false}
+            style={{ paddingTop: 0 }}
+          >
             <ListItemIcon>
-              <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
+              <span
+                style={{
+                  padding: '0 8px 0 8px',
+                  fontWeight: 700,
+                  fontSize: 12,
+                }}
+              >
+                #
+              </span>
             </ListItemIcon>
-            <ListItemText primary={
-              <div>
-                {this.SortHeader('name', 'name')}
-                {this.SortHeader('email', 'Email address')}
-                {this.SortHeader('firstname', 'Firstname')}
-                {this.SortHeader('lastname', 'Lastname')}
-                {this.SortHeader('created_at', 'Creation date')}
-              </div>
-            }/>
+            <ListItemText
+              primary={
+                <div>
+                  {this.SortHeader('name', 'name')}
+                  {this.SortHeader('email', 'Email address')}
+                  {this.SortHeader('firstname', 'Firstname')}
+                  {this.SortHeader('lastname', 'Lastname')}
+                  {this.SortHeader('created_at', 'Creation date')}
+                </div>
+              }
+            />
           </ListItem>
           <QueryRenderer
             query={usersLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
               if (props) {
-                return <UsersLines data={props} paginationOptions={paginationOptions} searchTerm={this.state.searchTerm}/>;
+                return (
+                  <UsersLines
+                    data={props}
+                    paginationOptions={paginationOptions}
+                    searchTerm={this.state.searchTerm}
+                  />
+                );
               }
-              return <UsersLines data={null} dummy={true} searchTerm={this.state.searchTerm}/>;
+              return (
+                <UsersLines
+                  data={null}
+                  dummy={true}
+                  searchTerm={this.state.searchTerm}
+                />
+              );
             }}
           />
         </List>
-        <UserCreation paginationOptions={paginationOptions}/>
+        <UserCreation paginationOptions={paginationOptions} />
         <Dialog
           open={this.state.exportCsvOpen}
           onClose={this.handleCloseExportCsv.bind(this)}
           fullWidth={true}
         >
-          <DialogTitle>
-            {t('Export data in CSV')}
-          </DialogTitle>
+          <DialogTitle>{t('Export data in CSV')}</DialogTitle>
           <DialogContent>
-            {this.state.exportCsvData === null
-              ? <div className={this.props.classes.export}><CircularProgress size={40} thickness={2} className={this.props.classes.loaderCircle}/></div>
-              : <DialogContentText>{t('The CSV file has been generated with the parameters of the view and is ready for download.')}</DialogContentText>
-            }
+            {this.state.exportCsvData === null ? (
+              <div className={this.props.classes.export}>
+                <CircularProgress
+                  size={40}
+                  thickness={2}
+                  className={this.props.classes.loaderCircle}
+                />
+              </div>
+            ) : (
+              <DialogContentText>
+                {t(
+                  'The CSV file has been generated with the parameters of the view and is ready for download.',
+                )}
+              </DialogContentText>
+            )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseExportCsv.bind(this)} color='primary'>
+            <Button
+              onClick={this.handleCloseExportCsv.bind(this)}
+              color="primary"
+            >
               {t('Cancel')}
             </Button>
-            {this.state.exportCsvData !== null
-              ? <Button component={CSVLink} data={this.state.exportCsvData} separator={';'} enclosingCharacter={'"'} color='primary' filename={`${t('Users')}.csv`}>
+            {this.state.exportCsvData !== null ? (
+              <Button
+                component={CSVLink}
+                data={this.state.exportCsvData}
+                separator={';'}
+                enclosingCharacter={'"'}
+                color="primary"
+                filename={`${t('Users')}.csv`}
+              >
                 {t('Download')}
               </Button>
-              : ''}
+            ) : (
+              ''
+            )}
           </DialogActions>
         </Dialog>
       </div>

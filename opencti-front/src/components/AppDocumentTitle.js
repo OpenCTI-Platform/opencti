@@ -8,8 +8,14 @@ import { pathOr } from 'ramda';
 class AppDocumentTitle extends Component {
   render() {
     const { children } = this.props;
-    const platformTitle = pathOr(null, ['settings', 'platform_title'], this.props);
-    const title = platformTitle !== null ? `OpenCTI - ${this.props.settings.platform_title}` : 'OpenCTI - Cyber threat intelligence platform';
+    const platformTitle = pathOr(
+      null,
+      ['settings', 'platform_title'],
+      this.props,
+    );
+    const title = platformTitle !== null
+      ? `OpenCTI - ${this.props.settings.platform_title}`
+      : 'OpenCTI - Cyber threat intelligence platform';
     return <ReactDocumentTitle title={title}>{children}</ReactDocumentTitle>;
   }
 }
@@ -18,12 +24,15 @@ AppDocumentTitle.propTypes = {
   settings: PropTypes.object,
 };
 
-export const ConnectedDocumentTitle = createFragmentContainer(AppDocumentTitle, {
-  settings: graphql`
+export const ConnectedDocumentTitle = createFragmentContainer(
+  AppDocumentTitle,
+  {
+    settings: graphql`
       fragment AppDocumentTitle_settings on Settings {
-          platform_title
+        platform_title
       }
-  `,
-});
+    `,
+  },
+);
 
 export default AppDocumentTitle;

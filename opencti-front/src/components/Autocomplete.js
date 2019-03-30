@@ -36,7 +36,9 @@ const styles = theme => ({
   },
   chipFocused: {
     backgroundColor: emphasize(
-      theme.palette.type === 'light' ? theme.palette.grey[300] : theme.palette.grey[700],
+      theme.palette.type === 'light'
+        ? theme.palette.grey[300]
+        : theme.palette.grey[700],
       0.08,
     ),
   },
@@ -74,7 +76,7 @@ const styles = theme => ({
 function NoOptionsMessage(props) {
   return (
     <Typography
-      color='textSecondary'
+      color="textSecondary"
       className={props.selectProps.classes.noOptionsMessage}
       {...props.innerProps}
     >
@@ -136,14 +138,21 @@ function Placeholder(props) {
 
 function SingleValue(props) {
   return (
-    <Typography className={props.selectProps.classes.singleValue} {...props.innerProps}>
+    <Typography
+      className={props.selectProps.classes.singleValue}
+      {...props.innerProps}
+    >
       {props.children}
     </Typography>
   );
 }
 
 function ValueContainer(props) {
-  return <div className={props.selectProps.classes.valueContainer}>{props.children}</div>;
+  return (
+    <div className={props.selectProps.classes.valueContainer}>
+      {props.children}
+    </div>
+  );
 }
 
 function MultiValue(props) {
@@ -162,8 +171,16 @@ function MultiValue(props) {
 
 function Menu(props) {
   return (
-    <Paper square className={props.selectProps.reverseMenu ? props.selectProps.classes.paperReversed : props.selectProps.classes.paper} {...props.innerProps}>
-        {props.children}
+    <Paper
+      square
+      className={
+        props.selectProps.reverseMenu
+          ? props.selectProps.classes.paperReversed
+          : props.selectProps.classes.paper
+      }
+      {...props.innerProps}
+    >
+      {props.children}
     </Paper>
   );
 }
@@ -189,11 +206,7 @@ class Autocomplete extends Component {
       label,
       field,
       form: {
-        dirty,
-        errors,
-        values,
-        setFieldValue,
-        isSubmitting,
+        dirty, errors, values, setFieldValue, isSubmitting,
       },
       options,
       onInputChange,
@@ -221,9 +234,15 @@ class Autocomplete extends Component {
     let displayLabel = false;
     if (labelDisplay !== null && labelDisplay !== undefined) {
       displayLabel = labelDisplay;
-    } else if (Array.isArray(values[field.name]) && values[field.name].length > 0) {
+    } else if (
+      Array.isArray(values[field.name])
+      && values[field.name].length > 0
+    ) {
       displayLabel = true;
-    } else if (!Array.isArray(values[field.name]) && values[field.name] !== '') {
+    } else if (
+      !Array.isArray(values[field.name])
+      && values[field.name] !== ''
+    ) {
       displayLabel = true;
     }
 
@@ -268,7 +287,11 @@ class Autocomplete extends Component {
             openMenuOnClick={false}
             reverseMenu={reverseMenu}
             isDisabled={isSubmitting}
-            noOptionsMessage={() => <span style={{ fontStyle: 'italic' }}>{t('No available options')}</span>}
+            noOptionsMessage={() => (
+              <span style={{ fontStyle: 'italic' }}>
+                {t('No available options')}
+              </span>
+            )}
           />
           {hasError && <FormHelperText>{errorText}</FormHelperText>}
         </FormControl>

@@ -55,13 +55,13 @@ const styles = theme => ({
 });
 
 const LoginQuery = graphql`
-    query LoginQuery {
-        settings {
-            platform_external_auth
-            ...AppIntlProvider_settings
-            ...AppDocumentTitle_settings
-        }
+  query LoginQuery {
+    settings {
+      platform_external_auth
+      ...AppIntlProvider_settings
+      ...AppDocumentTitle_settings
     }
+  }
 `;
 
 class Login extends Component {
@@ -88,41 +88,77 @@ class Login extends Component {
     return (
       <div>
         <div style={{ marginTop: 20 }}>&nbsp;</div>
-        { includes('google', ACCESS_PROVIDERS)
-        && <Button className = { this.props.classes.buttonGoogle} variant='contained' size='small' component='a' href='/auth/google'>
-          <Google className={this.props.classes.iconSmall}/>Google
-        </Button>
-        }
-        {includes('facebook', ACCESS_PROVIDERS)
-        && <Button className={this.props.classes.buttonFacebook} variant='contained' size='small' component='a'
-                   href='/auth/facebook'>
-          <FacebookBox className={this.props.classes.iconSmall}/>Facebook
-        </Button>
-        }
-        {includes('github', ACCESS_PROVIDERS)
-        && <Button className={this.props.classes.buttonGithub} variant='contained' size='small' component='a'
-                   href='/auth/github'>
-          <GithubCircle className={this.props.classes.iconSmall}/>Github
-        </Button>
-        }
+        {includes('google', ACCESS_PROVIDERS) && (
+          <Button
+            className={this.props.classes.buttonGoogle}
+            variant="contained"
+            size="small"
+            component="a"
+            href="/auth/google"
+          >
+            <Google className={this.props.classes.iconSmall} />
+            Google
+          </Button>
+        )}
+        {includes('facebook', ACCESS_PROVIDERS) && (
+          <Button
+            className={this.props.classes.buttonFacebook}
+            variant="contained"
+            size="small"
+            component="a"
+            href="/auth/facebook"
+          >
+            <FacebookBox className={this.props.classes.iconSmall} />
+            Facebook
+          </Button>
+        )}
+        {includes('github', ACCESS_PROVIDERS) && (
+          <Button
+            className={this.props.classes.buttonGithub}
+            variant="contained"
+            size="small"
+            component="a"
+            href="/auth/github"
+          >
+            <GithubCircle className={this.props.classes.iconSmall} />
+            Github
+          </Button>
+        )}
       </div>
     );
   }
 
   render() {
-    const marginTop = (this.state.height / 2) - (loginHeight / 2) - 120;
+    const marginTop = this.state.height / 2 - loginHeight / 2 - 120;
     return (
       <QueryRenderer
         query={LoginQuery}
         variables={{}}
         render={({ props }) => (
-          <ConnectedIntlProvider me={props && props.me ? props.me : null}
-                                 settings={props && props.settings ? props.settings : null}>
-            <ConnectedDocumentTitle settings={props && props.settings ? props.settings : null}>
-              <div className={this.props.classes.container} style={{ marginTop }}>
-                <img src={logo} alt='logo' className={this.props.classes.logo}/>
-                <LoginForm/>
-                {pathOr(false, ['settings', 'platform_external_auth'], props) === true ? this.renderExternalAuth() : ''}
+          <ConnectedIntlProvider
+            me={props && props.me ? props.me : null}
+            settings={props && props.settings ? props.settings : null}
+          >
+            <ConnectedDocumentTitle
+              settings={props && props.settings ? props.settings : null}
+            >
+              <div
+                className={this.props.classes.container}
+                style={{ marginTop }}
+              >
+                <img
+                  src={logo}
+                  alt="logo"
+                  className={this.props.classes.logo}
+                />
+                <LoginForm />
+                {pathOr(
+                  false,
+                  ['settings', 'platform_external_auth'],
+                  props,
+                ) === true
+                  ? this.renderExternalAuth()
+                  : ''}
               </div>
             </ConnectedDocumentTitle>
           </ConnectedIntlProvider>
