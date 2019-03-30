@@ -25,7 +25,7 @@ const TextField = props => (
         props.field.name,
         true,
         true,
-      )
+      );
       if (typeof props.onSubmit === 'function' && event.key === 'Enter') {
         props.onSubmit(props.field.name, event.target.value);
       }
@@ -35,7 +35,7 @@ const TextField = props => (
         props.field.name,
         true,
         true,
-      )
+      );
       if (typeof props.onSubmit === 'function') {
         props.onSubmit(props.field.name, event.target.value);
       }

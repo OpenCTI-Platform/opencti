@@ -41,13 +41,13 @@ const styles = () => ({
 });
 
 const campaignMutation = graphql`
-    mutation CampaignHeaderFieldMutation($id: ID!, $input: EditInput!) {
-        campaignEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...CampaignHeader_campaign
-            }
-        }
+  mutation CampaignHeaderFieldMutation($id: ID!, $input: EditInput!) {
+    campaignEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...CampaignHeader_campaign
+      }
     }
+  }
 `;
 
 class CampaignHeaderComponent extends Component {
@@ -61,13 +61,18 @@ class CampaignHeaderComponent extends Component {
   }
 
   onSubmitCreateAlias(data) {
-    if (this.props.campaign.alias === null
-      || !this.props.campaign.alias.includes(data.new_alias)) {
+    if (
+      this.props.campaign.alias === null
+      || !this.props.campaign.alias.includes(data.new_alias)
+    ) {
       commitMutation({
         mutation: campaignMutation,
         variables: {
           id: this.props.campaign.id,
-          input: { key: 'alias', value: append(data.new_alias, this.props.campaign.alias) },
+          input: {
+            key: 'alias',
+            value: append(data.new_alias, this.props.campaign.alias),
+          },
         },
       });
     }
@@ -91,32 +96,66 @@ class CampaignHeaderComponent extends Component {
     } = this.props;
     return (
       <div>
-        <Typography variant='h1' gutterBottom={true} classes={{ root: classes.title }}>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
+        >
           {campaign.name}
         </Typography>
         <div className={classes.popover}>
-          <CampaignPopover campaignId={campaign.id}/>
+          <CampaignPopover campaignId={campaign.id} />
         </div>
-        {variant !== 'noalias'
-          ? <div className={classes.aliases}>
-            {propOr([], 'alias', campaign).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
-            <IconButton color='secondary' aria-label='Alias' onClick={this.handleToggleCreateAlias.bind(this)}>
-              {this.state.openAlias ? <Close fontSize='small'/> : <Add fontSize='small'/>}
+        {variant !== 'noalias' ? (
+          <div className={classes.aliases}>
+            {propOr([], 'alias', campaign).map(label => (label.length > 0 ? (
+                <Chip
+                  key={label}
+                  classes={{ root: classes.alias }}
+                  label={label}
+                  onDelete={this.deleteAlias.bind(this, label)}
+                />
+            ) : (
+              ''
+            )))}
+            <IconButton
+              color="secondary"
+              aria-label="Alias"
+              onClick={this.handleToggleCreateAlias.bind(this)}
+            >
+              {this.state.openAlias ? (
+                <Close fontSize="small" />
+              ) : (
+                <Add fontSize="small" />
+              )}
             </IconButton>
-            <Slide direction='left' in={this.state.openAlias} mountOnEnter={true} unmountOnExit={true}>
+            <Slide
+              direction="left"
+              in={this.state.openAlias}
+              mountOnEnter={true}
+              unmountOnExit={true}
+            >
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={this.onSubmitCreateAlias.bind(this)}
                 render={() => (
                   <Form style={{ float: 'right' }}>
-                    <Field name='new_alias' component={TextField} autoFocus={true} placeholder={t('New alias')} className={classes.aliasInput}/>
+                    <Field
+                      name="new_alias"
+                      component={TextField}
+                      autoFocus={true}
+                      placeholder={t('New alias')}
+                      className={classes.aliasInput}
+                    />
                   </Form>
                 )}
               />
             </Slide>
-          </div> : ''
-        }
-        <div className='clearfix'/>
+          </div>
+        ) : (
+          ''
+        )}
+        <div className="clearfix" />
       </div>
     );
   }
@@ -132,11 +171,11 @@ CampaignHeaderComponent.propTypes = {
 
 const CampaignHeader = createFragmentContainer(CampaignHeaderComponent, {
   campaign: graphql`
-      fragment CampaignHeader_campaign on Campaign {
-          id,
-          name,
-          alias,
-      }
+    fragment CampaignHeader_campaign on Campaign {
+      id
+      name
+      alias
+    }
   `,
 });
 

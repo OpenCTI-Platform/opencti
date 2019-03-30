@@ -28,9 +28,9 @@ class CampaignReportsComponent extends Component {
     const { classes, campaign } = this.props;
     return (
       <div className={classes.container}>
-        <CampaignHeader campaign={campaign}/>
+        <CampaignHeader campaign={campaign} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={campaign.id}/>
+          <EntityReports entityId={campaign.id} />
         </Paper>
       </div>
     );
@@ -45,10 +45,10 @@ CampaignReportsComponent.propTypes = {
 
 const CampaignReports = createFragmentContainer(CampaignReportsComponent, {
   campaign: graphql`
-      fragment CampaignReports_campaign on Campaign {
-          id
-          ...CampaignHeader_campaign
-      }
+    fragment CampaignReports_campaign on Campaign {
+      id
+      ...CampaignHeader_campaign
+    }
   `,
 });
 

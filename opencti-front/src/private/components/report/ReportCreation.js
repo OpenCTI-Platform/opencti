@@ -241,7 +241,7 @@ class ReportCreation extends Component {
                       onInputChange={this.searchMarkingDefinitions.bind(this)}
                     />
                     <div className={classes.buttons}>
-                      <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                      <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                         {t('Cancel')}
                       </Button>
                       <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>

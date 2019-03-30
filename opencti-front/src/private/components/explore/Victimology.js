@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { Route, Redirect, withRouter } from 'react-router-dom';
 import {
-  compose, map, pathOr, pipe, union,
+  compose, map, pathOr, union,
 } from 'ramda';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
@@ -38,9 +38,9 @@ const styles = () => ({
   },
 });
 
-const victimologyThreatActorsSearchQuery = graphql`
-    query VictimologyThreatActorsQuery($search: String) {
-        threatActors(search: $search) {
+const victimologyThreatsSearchQuery = graphql`
+    query VictimologyThreatsSearchQuery($search: String, $first: Int) {
+        threatActors(search: $search, first: $first) {
             edges {
                 node {
                     id
@@ -49,12 +49,16 @@ const victimologyThreatActorsSearchQuery = graphql`
                 }
             }
         }
-    }
-`;
-
-const victimologyIntrusionSetsSearchQuery = graphql`
-    query VictimologyIntrusionSetsQuery($search: String) {
-        intrusionSets(search: $search) {
+        intrusionSets(search: $search, first: $first) {
+            edges {
+                node {
+                    id
+                    name
+                    type
+                }
+            }
+        }
+        campaigns(search: $search, first: $first) {
             edges {
                 node {
                     id
@@ -82,25 +86,15 @@ class Victimology extends Component {
   }
 
   searchThreats(event) {
-    fetchQuery(victimologyThreatActorsSearchQuery, {
+    fetchQuery(victimologyThreatsSearchQuery, {
       search: event.target.value,
       first: 10,
     }).then((data) => {
-      const threatActors = pipe(
-        pathOr([], ['threatActors', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id, type: n.node.type })),
-      )(data);
-      this.setState({ threats: union(this.state.threats, threatActors) });
-    });
-    fetchQuery(victimologyIntrusionSetsSearchQuery, {
-      search: event.target.value,
-      first: 10,
-    }).then((data) => {
-      const intrusionSets = pipe(
-        pathOr([], ['intrusionSets', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id, type: n.node.type })),
-      )(data);
-      this.setState({ threats: union(this.state.threats, intrusionSets) });
+      const result = pathOr([], ['threatActors', 'edges'], data)
+        .concat(pathOr([], ['intrusionSets', 'edges'], data))
+        .concat(pathOr([], ['campaigns', 'edges'], data));
+      const threats = map(n => ({ label: n.node.name, value: n.node.id, type: n.node.type }), result);
+      this.setState({ threats: union(this.state.threats, threats) });
     });
   }
 

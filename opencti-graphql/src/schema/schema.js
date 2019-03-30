@@ -8,6 +8,7 @@ import settingsResolvers from '../resolvers/settings';
 import globalObjectResolvers from '../resolvers/globalObject';
 import stixEntityResolvers from '../resolvers/stixEntity';
 import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
+import stixObservableResolvers from '../resolvers/stixObservable';
 import stixRelationResolvers from '../resolvers/stixRelation';
 import workspaceResolvers from '../resolvers/workspace';
 import identityResolvers from '../resolvers/identity';
@@ -46,6 +47,7 @@ const resolvers = mergeResolvers([
   globalObjectResolvers,
   stixEntityResolvers,
   stixDomainEntityResolvers,
+  stixObservableResolvers,
   stixRelationResolvers,
   workspaceResolvers,
   identityResolvers,

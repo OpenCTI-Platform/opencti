@@ -63,30 +63,49 @@ class CampaignEditionContainer extends Component {
     } = this.props;
     const { editContext } = campaign;
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
+    const editUsers = missingMe
+      ? insert(0, { name: me.email }, editContext)
+      : editContext;
     return (
       <div>
         <div className={classes.header}>
-          <IconButton aria-label='Close' className={classes.closeButton} onClick={handleClose.bind(this)}>
-            <Close fontSize='small'/>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
           </IconButton>
-          <Typography variant='h6' classes={{ root: classes.title }}>
+          <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a campaign')}
           </Typography>
-          <SubscriptionAvatars users={editUsers}/>
-          <div className='clearfix'/>
+          <SubscriptionAvatars users={editUsers} />
+          <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <AppBar position='static' elevation={0} className={classes.appBar}>
-            <Tabs value={this.state.currentTab} onChange={this.handleChangeTab.bind(this)}>
-              <Tab label={t('Overview')}/>
-              <Tab label={t('Identity')}/>
+          <AppBar position="static" elevation={0} className={classes.appBar}>
+            <Tabs
+              value={this.state.currentTab}
+              onChange={this.handleChangeTab.bind(this)}
+            >
+              <Tab label={t('Overview')} />
+              <Tab label={t('Identity')} />
             </Tabs>
           </AppBar>
-          {this.state.currentTab === 0
-          && <CampaignEditionOverview campaign={campaign} editUsers={editUsers} me={me}/>}
-          {this.state.currentTab === 1
-          && <CampaignEditionIdentity campaign={campaign} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 0 && (
+            <CampaignEditionOverview
+              campaign={campaign}
+              editUsers={editUsers}
+              me={me}
+            />
+          )}
+          {this.state.currentTab === 1 && (
+            <CampaignEditionIdentity
+              campaign={campaign}
+              editUsers={editUsers}
+              me={me}
+            />
+          )}
         </div>
       </div>
     );
@@ -102,24 +121,27 @@ CampaignEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const CampaignEditionFragment = createFragmentContainer(CampaignEditionContainer, {
-  campaign: graphql`
+const CampaignEditionFragment = createFragmentContainer(
+  CampaignEditionContainer,
+  {
+    campaign: graphql`
       fragment CampaignEditionContainer_campaign on Campaign {
-          id
-          ...CampaignEditionOverview_campaign
-          ...CampaignEditionIdentity_campaign
-          editContext {
-              name
-              focusOn
-          }
+        id
+        ...CampaignEditionOverview_campaign
+        ...CampaignEditionIdentity_campaign
+        editContext {
+          name
+          focusOn
+        }
       }
-  `,
-  me: graphql`
+    `,
+    me: graphql`
       fragment CampaignEditionContainer_me on User {
-          email
+        email
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

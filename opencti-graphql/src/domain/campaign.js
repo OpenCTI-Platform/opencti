@@ -18,22 +18,31 @@ import { BUS_TOPICS, logger } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Campaign', args);
 
+export const search = args =>
+  paginate(
+    `match $x isa Campaign has name $name; $x has alias $alias; { $name contains "${prepareString(
+      args.search
+    )}"; } or { $alias contains "${prepareString(args.search)}"; }`,
+    args,
+    false
+  );
+
 export const campaignsTimeSeries = args =>
   timeSeries('match $x isa Campaign', args);
 
 export const findByEntity = args =>
   paginate(
-    `match $c isa Campaign; 
-    $rel($i, $to) isa stix_relation; 
-    $to id ${args.objectId}`,
+    `match $x isa Campaign; $rel($x, $to) isa stix_relation; $to id ${
+      args.objectId
+    }`,
     args
   );
 
 export const campaignsTimeSeriesByEntity = args =>
   timeSeries(
-    `match $x isa Campaign; 
-    $rel($x, $to) isa stix_relation; 
-    $to id ${args.objectId}`,
+    `match $x isa Campaign; $rel($x, $to) isa stix_relation; $to id ${
+      args.objectId
+    }`,
     args
   );
 
@@ -51,14 +60,32 @@ export const addCampaign = async (user, campaign) => {
     $campaign has name "${prepareString(campaign.name)}";
     $campaign has description "${prepareString(campaign.description)}";
     $campaign has objective "${prepareString(campaign.objective)}";
-    $campaign has first_seen ${prepareDate(campaign.first_seen)};
-    $campaign has first_seen_day "${dayFormat(campaign.first_seen)}";
-    $campaign has first_seen_month "${monthFormat(campaign.first_seen)}";
-    $campaign has first_seen_year "${yearFormat(campaign.first_seen)}";
-    $campaign has last_seen ${prepareDate(campaign.last_seen)};
-    $campaign has last_seen_day "${dayFormat(campaign.last_seen)}";
-    $campaign has last_seen_month "${monthFormat(campaign.last_seen)}";
-    $campaign has last_seen_year "${yearFormat(campaign.last_seen)}";
+    $campaign has first_seen ${
+      campaign.first_seen ? prepareDate(campaign.first_seen) : now()
+    };
+    $campaign has first_seen_day "${
+      campaign.first_seen ? dayFormat(campaign.first_seen) : dayFormat(now())
+    }";
+    $campaign has first_seen_month "${
+      campaign.first_seen
+        ? monthFormat(campaign.first_seen)
+        : monthFormat(now())
+    }";
+    $campaign has first_seen_year "${
+      campaign.first_seen ? yearFormat(campaign.first_seen) : yearFormat(now())
+    }";
+    $campaign has last_seen ${
+      campaign.last_seen ? prepareDate(campaign.last_seen) : now()
+    };
+    $campaign has last_seen_day "${
+      campaign.last_seen ? dayFormat(campaign.last_seen) : dayFormat(now())
+    }";
+    $campaign has last_seen_month "${
+      campaign.last_seen ? monthFormat(campaign.last_seen) : monthFormat(now())
+    }";
+    $campaign has last_seen_year "${
+      campaign.last_seen ? yearFormat(campaign.last_seen) : yearFormat(now())
+    }";
     $campaign has created ${
       campaign.created ? prepareDate(campaign.created) : now()
     };

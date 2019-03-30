@@ -75,15 +75,6 @@ class CountryKnowledgeComponent extends Component {
             entityLink={link}
           /> : ''}
 
-          {location.pathname.includes('attribution') ? <EntityStixRelations
-            resolveRelationType='attributed-to'
-            resolveRelationRole='origin'
-            entityId={country.id}
-            relationType='attributed-to'
-            targetEntityTypes={['Identity']}
-            entityLink={link}
-          /> : ''}
-
           {location.pathname.includes('entities') ? <EntityStixRelations
             entityId={country.id}
             relationType='related-to'

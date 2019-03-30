@@ -35,15 +35,23 @@ class CampaignIdentityComponent extends Component {
             {t('First seen')}
           </Typography>
           {fld(campaign.first_seen)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant='h3'
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Last seen')}
           </Typography>
           {fld(campaign.last_seen)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant='h3'
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Objective')}
           </Typography>
-          <Markdown className='markdown' source={campaign.objective}/>
-          </Paper>
+          <Markdown className='markdown' source={campaign.objective} />
+        </Paper>
       </div>
     );
   }
@@ -58,12 +66,12 @@ CampaignIdentityComponent.propTypes = {
 
 const CampaignIdentity = createFragmentContainer(CampaignIdentityComponent, {
   campaign: graphql`
-      fragment CampaignIdentity_campaign on Campaign {
-          id
-          first_seen
-          last_seen
-          objective
-      }
+    fragment CampaignIdentity_campaign on Campaign {
+      id
+      first_seen
+      last_seen
+      objective
+    }
   `,
 });
 

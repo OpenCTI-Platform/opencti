@@ -14,7 +14,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa Group', args);
+export const findAll = args => paginate('match $x isa Group', args);
 
 export const findById = groupId => getById(groupId);
 

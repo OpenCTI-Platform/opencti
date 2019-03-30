@@ -80,16 +80,28 @@ class CampaignCardComponent extends Component {
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
-        <CardActionArea classes={{ root: classes.area }} component={Link} to={`/dashboard/knowledge/campaigns/${campaign.id}`}>
+        <CardActionArea
+          classes={{ root: classes.area }}
+          component={Link}
+          to={`/dashboard/knowledge/campaigns/${campaign.id}`}
+        >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={<Avatar className={classes.avatar}>{campaign.name.charAt(0)}</Avatar>}
+            avatar={
+              <Avatar className={classes.avatar}>
+                {campaign.name.charAt(0)}
+              </Avatar>
+            }
             title={campaign.name}
             subheader={`${t('Updated the')} ${fsd(campaign.modified)}`}
-            action={<ChessKnight className={classes.icon}/>}
+            action={<ChessKnight className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.content }}>
-            <Markdown source={campaign.description} disallowedTypes={['link']} unwrapDisallowed={true}/>
+            <Markdown
+              source={campaign.description}
+              disallowedTypes={['link']}
+              unwrapDisallowed={true}
+            />
           </CardContent>
         </CardActionArea>
       </Card>
@@ -106,13 +118,13 @@ CampaignCardComponent.propTypes = {
 
 const CampaignCardFragment = createFragmentContainer(CampaignCardComponent, {
   campaign: graphql`
-      fragment CampaignCard_campaign on Campaign {
-          id
-          name
-          description
-          created
-          modified
-      }
+    fragment CampaignCard_campaign on Campaign {
+      id
+      name
+      description
+      created
+      modified
+    }
   `,
 });
 
@@ -120,7 +132,6 @@ export const CampaignCard = compose(
   inject18n,
   withStyles(styles),
 )(CampaignCardFragment);
-
 
 class CampaignCardDummyComponent extends Component {
   render() {
@@ -131,15 +142,25 @@ class CampaignCardDummyComponent extends Component {
           <CardHeader
             classes={{ root: classes.header }}
             avatar={<Avatar className={classes.avatarDisabled}>D</Avatar>}
-            title={<div className={classes.placeholderHeader} style={{ width: '85%' }}/>}
+            title={
+              <div
+                className={classes.placeholderHeader}
+                style={{ width: '85%' }}
+              />
+            }
             titleTypographyProps={{ color: 'inherit' }}
-            subheader={<div className={classes.placeholderHeaderDark} style={{ width: '70%' }}/>}
-            action={<ChessKnight className={classes.icon}/>}
+            subheader={
+              <div
+                className={classes.placeholderHeaderDark}
+                style={{ width: '70%' }}
+              />
+            }
+            action={<ChessKnight className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.contentDummy }}>
-            <div className='fakeItem' style={{ width: '90%' }}/>
-            <div className='fakeItem' style={{ width: '95%' }}/>
-            <div className='fakeItem' style={{ width: '90%' }}/>
+            <div className="fakeItem" style={{ width: '90%' }} />
+            <div className="fakeItem" style={{ width: '95%' }} />
+            <div className="fakeItem" style={{ width: '90%' }} />
           </CardContent>
         </CardActionArea>
       </Card>

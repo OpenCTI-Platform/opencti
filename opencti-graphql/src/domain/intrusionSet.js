@@ -17,6 +17,15 @@ import { BUS_TOPICS, logger } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Intrusion-Set', args);
 
+export const search = args =>
+  paginate(
+    `match $x isa Intrusion-Set has name $name; $x has alias $alias; { $name contains "${prepareString(
+      args.search
+    )}"; } or { $alias contains "${prepareString(args.search)}"; }`,
+    args,
+    false
+  );
+
 export const findById = intrusionSetId => getById(intrusionSetId);
 
 export const addIntrusionSet = async (user, intrusionSet) => {
@@ -32,16 +41,42 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     $intrusionSet has alias "";
     $intrusionSet has name "${prepareString(intrusionSet.name)}";
     $intrusionSet has description "${prepareString(intrusionSet.description)}";
-    $intrusionSet has first_seen ${prepareDate(intrusionSet.first_seen)};
-    $intrusionSet has first_seen_day "${dayFormat(intrusionSet.first_seen)}";
-    $intrusionSet has first_seen_month "${monthFormat(
+    $intrusionSet has first_seen ${
+      intrusionSet.first_seen ? prepareDate(intrusionSet.first_seen) : now()
+    };
+    $intrusionSet has first_seen_day "${
       intrusionSet.first_seen
-    )}";
-    $intrusionSet has first_seen_year "${yearFormat(intrusionSet.first_seen)}";
-    $intrusionSet has last_seen ${prepareDate(intrusionSet.last_seen)};
-    $intrusionSet has last_seen_day "${dayFormat(intrusionSet.last_seen)}";
-    $intrusionSet has last_seen_month "${monthFormat(intrusionSet.last_seen)}";
-    $intrusionSet has last_seen_year "${yearFormat(intrusionSet.last_seen)}";
+        ? dayFormat(intrusionSet.first_seen)
+        : dayFormat(now())
+    }";
+    $intrusionSet has first_seen_month "${
+      intrusionSet.first_seen
+        ? monthFormat(intrusionSet.first_seen)
+        : monthFormat(now())
+    }";
+    $intrusionSet has first_seen_year "${
+      intrusionSet.first_seen
+        ? yearFormat(intrusionSet.first_seen)
+        : yearFormat(now())
+    }";
+    $intrusionSet has last_seen ${
+      intrusionSet.last_seen ? prepareDate(intrusionSet.last_seen) : now()
+    };
+    $intrusionSet has last_seen_day "${
+      intrusionSet.last_seen
+        ? dayFormat(intrusionSet.last_seen)
+        : dayFormat(now())
+    }";
+    $intrusionSet has last_seen_month "${
+      intrusionSet.last_seen
+        ? monthFormat(intrusionSet.last_seen)
+        : monthFormat(now())
+    }";
+    $intrusionSet has last_seen_year "${
+      intrusionSet.last_seen
+        ? yearFormat(intrusionSet.last_seen)
+        : yearFormat(now())
+    }";
     $intrusionSet has goal "${prepareString(intrusionSet.goal)}";
     $intrusionSet has sophistication "${prepareString(
       intrusionSet.sophistication

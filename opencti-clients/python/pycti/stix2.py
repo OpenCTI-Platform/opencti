@@ -106,17 +106,25 @@ class Stix2:
         # Created By Ref
         created_by_ref_id = None
         if 'created_by_ref' in stix_object:
-            created_by_ref_result = self.opencti.get_stix_domain_entity_by_stix_id(
-                stix_object['created_by_ref'].replace('identity', 'organization'))
+            created_by_ref = stix_object['created_by_ref'].replace('identity', 'organization')
+            if created_by_ref in self.mapping_cache:
+                created_by_ref_result = self.mapping_cache[created_by_ref]
+            else:
+                created_by_ref_result = self.opencti.get_stix_domain_entity_by_stix_id(created_by_ref)
             if created_by_ref_result is not None:
+                self.mapping_cache[created_by_ref] = {'id': created_by_ref_result['id']}
                 created_by_ref_id = created_by_ref_result['id']
 
         # Object Marking Refs
         marking_definitions_ids = []
         if 'object_marking_refs' in stix_object:
             for object_marking_ref in stix_object['object_marking_refs']:
-                object_marking_ref_result = self.opencti.get_marking_definition_by_stix_id(object_marking_ref)
+                if object_marking_ref in self.mapping_cache:
+                    object_marking_ref_result = self.mapping_cache[object_marking_ref]
+                else:
+                    object_marking_ref_result = self.opencti.get_marking_definition_by_stix_id(object_marking_ref)
                 if object_marking_ref_result is not None:
+                    self.mapping_cache[object_marking_ref] = {'id': object_marking_ref_result['id']}
                     marking_definitions_ids.append(object_marking_ref_result['id'])
 
         # External References
@@ -128,7 +136,11 @@ class Stix2:
                     source_name = external_reference['source_name']
                 else:
                     continue
-                external_reference_result = self.opencti.get_external_reference_by_url(url)
+                if url in self.mapping_cache:
+                    external_reference_result = self.mapping_cache[url]
+                else:
+                    external_reference_result = self.opencti.get_external_reference_by_url(url)
+
                 if external_reference_result is not None:
                     external_reference_id = external_reference_result['id']
                 else:
@@ -141,12 +153,16 @@ class Stix2:
                         external_reference['x_opencti_created'] if 'x_opencti_created' in external_reference else None,
                         external_reference['x_opencti_modified'] if 'x_opencti_modified' in external_reference else None,
                     )['id']
+                self.mapping_cache[url] = {'id': external_reference_id}
                 external_references_ids.append(external_reference_id)
         # Kill Chain Phases
         kill_chain_phases_ids = []
         if 'kill_chain_phases' in stix_object:
             for kill_chain_phase in stix_object['kill_chain_phases']:
-                kill_chain_phase_result = self.opencti.get_kill_chain_phase(kill_chain_phase['phase_name'])
+                if kill_chain_phase['phase_name'] in self.mapping_cache:
+                    kill_chain_phase_result = self.mapping_cache[kill_chain_phase['phase_name']]
+                else:
+                    kill_chain_phase_result = self.opencti.get_kill_chain_phase(kill_chain_phase['phase_name'])
                 if kill_chain_phase_result is not None:
                     kill_chain_phase_id = kill_chain_phase_result['id']
                 else:
@@ -154,22 +170,26 @@ class Stix2:
                         kill_chain_phase['kill_chain_name'],
                         kill_chain_phase['phase_name'],
                         kill_chain_phase[
-                            'x_opencti_phase_order'] if 'x_opencti_phase_order' in kill_chain_phase else None,
+                            'x_opencti_phase_order'] if 'x_opencti_phase_order' in kill_chain_phase else 0,
                         kill_chain_phase['id'] if 'id' in kill_chain_phase else None,
                         kill_chain_phase['x_opencti_created'] if 'x_opencti_created' in kill_chain_phase else None,
                         kill_chain_phase['x_opencti_modified'] if 'x_opencti_modified' in kill_chain_phase else None,
                     )['id']
+                self.mapping_cache[kill_chain_phase['phase_name']] = {'id': kill_chain_phase_id}
                 kill_chain_phases_ids.append(kill_chain_phase_id)
         # Object refs
         object_refs_ids = []
         if 'object_refs' in stix_object:
             for object_ref in stix_object['object_refs']:
-                if 'relationship' in object_ref:
+                if object_ref in self.mapping_cache:
+                    object_ref_result = self.mapping_cache[object_ref]
+                elif 'relationship' in object_ref:
                     object_ref_result = self.opencti.get_stix_relation_by_stix_id(object_ref)
                 else:
                     object_ref_result = self.opencti.get_stix_domain_entity_by_stix_id(object_ref)
 
                 if object_ref_result is not None:
+                    self.mapping_cache[object_ref] = {'id': object_ref_result['id']}
                     object_refs_ids.append(object_ref_result['id'])
         # Import
         if stix_object['type'] == 'marking-definition':

@@ -23,9 +23,9 @@ export const incidentsTimeSeries = args =>
 
 export const findByEntity = args =>
   paginate(
-    `match $i isa Incident; 
-    $rel($i, $to) isa stix_relation; 
-    $to id ${args.objectId}`,
+    `match $x isa Incident; $rel($x, $to) isa stix_relation; $to id ${
+      args.objectId
+    }`,
     args
   );
 
@@ -50,16 +50,38 @@ export const addIncident = async (user, incident) => {
     $incident has alias "";
     $incident has name "${prepareString(incident.name)}";
     $incident has description "${prepareString(incident.description)}";
-    $incident has first_seen ${prepareDate(incident.first_seen)};
-    $incident has first_seen_day "${dayFormat(incident.first_seen)}";
-    $incident has first_seen_month "${monthFormat(incident.first_seen)}";
-    $incident has first_seen_year "${yearFormat(incident.first_seen)}";
-    $incident has last_seen ${prepareDate(incident.last_seen)};
-    $incident has last_seen_day "${dayFormat(incident.last_seen)}";
-    $incident has last_seen_month "${monthFormat(incident.last_seen)}";
-    $incident has last_seen_year "${yearFormat(incident.last_seen)}";
-    $incident has created ${incident.created ? prepareDate(incident.created) : now()};
-    $incident has modified ${incident.modified ? prepareDate(incident.modified) : now()};
+    $incident has first_seen ${
+      incident.first_seen ? prepareDate(incident.first_seen) : now()
+    };
+    $campaign has first_seen_day "${
+      incident.first_seen ? dayFormat(incident.first_seen) : dayFormat(now())
+    }";
+    $campaign has first_seen_month "${
+      incident.first_seen
+        ? monthFormat(incident.first_seen)
+        : monthFormat(now())
+    }";
+    $incident has first_seen_year "${
+      incident.first_seen ? yearFormat(incident.first_seen) : yearFormat(now())
+    }";
+    $incident has last_seen ${
+      incident.last_seen ? prepareDate(incident.last_seen) : now()
+    };
+    $incident has last_seen_day "${
+      incident.last_seen ? dayFormat(incident.last_seen) : dayFormat(now())
+    }";
+    $incident has last_seen_month "${
+      incident.last_seen ? monthFormat(incident.last_seen) : monthFormat(now())
+    }";
+    $incident has last_seen_year "${
+      incident.last_seen ? yearFormat(incident.last_seen) : yearFormat(now())
+    }";
+    $incident has created ${
+      incident.created ? prepareDate(incident.created) : now()
+    };
+    $incident has modified ${
+      incident.modified ? prepareDate(incident.modified) : now()
+    };
     $incident has revoked false;
     $incident has created_at ${now()};
     $incident has created_at_day "${dayFormat(now())}";

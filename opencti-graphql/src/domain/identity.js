@@ -21,11 +21,9 @@ export const findById = identityId => getById(identityId);
 
 export const search = args =>
   paginate(
-    `match $m isa Identity
-    has name $name;
-    $m has alias $alias;
-    { $name contains "${prepareString(args.search)}"; } or
-    { $alias contains "${prepareString(args.search)}"; }`,
+    `match $m isa Identity has name $name; $m has alias $alias; { $name contains "${prepareString(
+      args.search
+    )}"; } or { $alias contains "${prepareString(args.search)}"; }`,
     args,
     false
   );

@@ -17,7 +17,7 @@ import {
   getObject,
   prepareString
 } from '../database/grakn';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logger } from '../config/conf';
 import {
   findAll as relationFindAll,
   search as relationSearch
@@ -25,7 +25,7 @@ import {
 
 export const findAll = args =>
   paginate(
-    `match $m isa ${args.type ? args.type : 'Stix-Observable'}`,
+    `match $x isa ${args.type ? args.type : 'Stix-Observable'}`,
     args,
     false
   );
@@ -37,18 +37,18 @@ export const findById = stixObservableId => getById(stixObservableId);
 
 export const findByValue = args =>
   paginate(
-    `match $m isa ${
+    `match $x isa ${
       args.type ? args.type : 'Stix-Observable'
-    }; $m has value "${prepareString(args.value)}"`,
+    }; $x has observable_value "${prepareString(args.observable_value)}"`,
     args,
     false
   );
 
 export const search = args =>
   paginate(
-    `match $m isa ${args.type ? args.type : 'Stix-Observable'}
+    `match $x isa ${args.type ? args.type : 'Stix-Observable'}
     has value $value;
-    $m has alias $alias;
+    $x has alias $alias;
     { $name contains "${prepareString(args.search)}"; } or
     { $alias contains "${prepareString(args.search)}"; }`,
     args,
@@ -99,19 +99,25 @@ export const stixRelations = (stixObservableId, args) => {
 
 export const addStixObservable = async (user, stixObservable) => {
   const wTx = await takeWriteTx();
-  const stixObservableIterator = await wTx.query(`insert $stixObservable isa ${
-    stixObservable.type
-  } 
+  const query = `insert $stixObservable isa ${stixObservable.type} 
     has type "${prepareString(stixObservable.type.toLowerCase())}";
-    $stixObservable has value "${prepareString(stixObservable.value)}";
+    $stixObservable has name "";
+    $stixObservable has description "";
+    $stixObservable has observable_value "${prepareString(
+      stixObservable.observable_value
+    )}";
     $stixObservable has created_at ${now()};
     $stixObservable has created_at_day "${dayFormat(now())}";
     $stixObservable has created_at_month "${monthFormat(now())}";
     $stixObservable has created_at_year "${yearFormat(now())}";      
     $stixObservable has updated_at ${now()};
-  `);
+  `;
+  logger.debug(`[GRAKN - infer: false] ${query}`);
+  const stixObservableIterator = await wTx.query(query);
   const createStixObservable = await stixObservableIterator.next();
-  const createdStixObservableId = await createStixObservable.map().get('stixObservable').id;
+  const createdStixObservableId = await createStixObservable
+    .map()
+    .get('stixObservable').id;
 
   if (stixObservable.createdByRef) {
     await wTx.query(`match $from id ${createdStixObservableId};

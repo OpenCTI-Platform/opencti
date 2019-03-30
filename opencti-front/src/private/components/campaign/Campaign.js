@@ -29,30 +29,39 @@ class CampaignComponent extends Component {
     const { classes, campaign } = this.props;
     return (
       <div className={classes.container}>
-        <CampaignHeader campaign={campaign}/>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
+        <CampaignHeader campaign={campaign} />
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={3}>
-            <CampaignOverview campaign={campaign}/>
+            <CampaignOverview campaign={campaign} />
           </Grid>
           <Grid item={true} xs={3}>
-            <CampaignIdentity campaign={campaign}/>
+            <CampaignIdentity campaign={campaign} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={campaign.id}/>
+            <EntityLastReports entityId={campaign.id} />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 20 }}
+        >
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={campaign.id}/>
+            <EntityIncidentsChart entityId={campaign.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart entityId={campaign.id}/>
+            <EntityObservablesChart entityId={campaign.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={campaign.id}/>
+            <EntityReportsChart entityId={campaign.id} />
           </Grid>
         </Grid>
-        <CampaignEdition campaignId={campaign.id}/>
+        <CampaignEdition campaignId={campaign.id} />
       </div>
     );
   }
@@ -66,12 +75,12 @@ CampaignComponent.propTypes = {
 
 const Campaign = createFragmentContainer(CampaignComponent, {
   campaign: graphql`
-      fragment Campaign_campaign on Campaign {
-          id
-          ...CampaignHeader_campaign
-          ...CampaignOverview_campaign
-          ...CampaignIdentity_campaign
-      }
+    fragment Campaign_campaign on Campaign {
+      id
+      ...CampaignHeader_campaign
+      ...CampaignOverview_campaign
+      ...CampaignIdentity_campaign
+    }
   `,
 });
 

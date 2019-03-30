@@ -15,15 +15,13 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa Country', args);
+export const findAll = args => paginate('match $x isa Country', args);
 
 export const findById = countryId => getById(countryId);
 
 export const markingDefinitions = (countryId, args) =>
   paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(marking:$marking, so:$country) isa object_marking_refs; 
-    $country id ${countryId}`,
+    `match $marking isa Marking-Definition; $rel(marking:$marking, so:$country) isa object_marking_refs; $country id ${countryId}`,
     args
   );
 

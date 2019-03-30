@@ -41,23 +41,29 @@ const styles = theme => ({
 });
 
 const campaignMutationFieldPatch = graphql`
-    mutation CampaignEditionIdentityFieldPatchMutation($id: ID!, $input: EditInput!) {
-        campaignEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...CampaignEditionIdentity_campaign
-            }
-        }
+  mutation CampaignEditionIdentityFieldPatchMutation(
+    $id: ID!
+    $input: EditInput!
+  ) {
+    campaignEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...CampaignEditionIdentity_campaign
+      }
     }
+  }
 `;
 
 const campaignEditionIdentityFocus = graphql`
-    mutation CampaignEditionIdentityFocusMutation($id: ID!, $input: EditContext!) {
-        campaignEdit(id: $id) {
-            contextPatch(input: $input) {
-                ...CampaignEditionIdentity_campaign
-            }
-        }
+  mutation CampaignEditionIdentityFocusMutation(
+    $id: ID!
+    $input: EditContext!
+  ) {
+    campaignEdit(id: $id) {
+      contextPatch(input: $input) {
+        ...CampaignEditionIdentity_campaign
+      }
     }
+  }
 `;
 
 const campaignValidation = t => Yup.object().shape({
@@ -67,8 +73,7 @@ const campaignValidation = t => Yup.object().shape({
   last_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  objective: Yup.string()
-    .required(t('This field is required')),
+  objective: Yup.string().required(t('This field is required')),
 });
 
 class CampaignEditionIdentityComponent extends Component {
@@ -121,21 +126,56 @@ class CampaignEditionIdentityComponent extends Component {
           render={() => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field name='first_seen' component={DatePickerField} label={t('First seen')}
-                       fullWidth={true} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='first_seen'/>}/>
-                <Field name='last_seen' component={DatePickerField} label={t('Last seen')}
-                       fullWidth={true} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='last_seen'/>}/>
-                <Field name='objective' component={TextField} label={t('Objective')}
-                       fullWidth={true} multiline={true} rows={4} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='objective'/>}/>
+                <Field
+                  name="first_seen"
+                  component={DatePickerField}
+                  label={t('First seen')}
+                  fullWidth={true}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="first_seen"
+                    />
+                  }
+                />
+                <Field
+                  name="last_seen"
+                  component={DatePickerField}
+                  label={t('Last seen')}
+                  fullWidth={true}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="last_seen"
+                    />
+                  }
+                />
+                <Field
+                  name="objective"
+                  component={TextField}
+                  label={t('Objective')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows={4}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="objective"
+                    />
+                  }
+                />
               </Form>
             </div>
           )}
@@ -158,12 +198,12 @@ const CampaignEditionIdentity = createFragmentContainer(
   CampaignEditionIdentityComponent,
   {
     campaign: graphql`
-        fragment CampaignEditionIdentity_campaign on Campaign {
-            id
-            first_seen
-            last_seen
-            objective
-        }
+      fragment CampaignEditionIdentity_campaign on Campaign {
+        id
+        first_seen
+        last_seen
+        objective
+      }
     `,
   },
 );

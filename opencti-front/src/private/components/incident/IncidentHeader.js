@@ -133,9 +133,9 @@ IncidentHeaderComponent.propTypes = {
 const IncidentHeader = createFragmentContainer(IncidentHeaderComponent, {
   incident: graphql`
       fragment IncidentHeader_incident on Incident {
-          id,
-          name,
-          alias,
+          id
+          name
+          alias
       }
   `,
 });

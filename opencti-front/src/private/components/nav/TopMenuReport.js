@@ -52,13 +52,13 @@ class TopMenuReport extends Component {
                 color={location.pathname === `/dashboard/reports/all/${reportId}/entities` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('Entities')}
         </Button>
-        <Button component={Link} to={`/dashboard/reports/all/${reportId}/knowledge`} variant={location.pathname === `/dashboard/reports/all/${reportId}/knowledge` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/reports/all/${reportId}/knowledge` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
-          {t('Knowledge')}
-        </Button>
         <Button component={Link} to={`/dashboard/reports/all/${reportId}/observables`} variant={location.pathname === `/dashboard/reports/all/${reportId}/observables` ? 'contained' : 'text'} size="small"
                 color={location.pathname === `/dashboard/reports/all/${reportId}/observables` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
           {t('Observables')}
+        </Button>
+        <Button component={Link} to={`/dashboard/reports/all/${reportId}/knowledge`} variant={location.pathname === `/dashboard/reports/all/${reportId}/knowledge` ? 'contained' : 'text'} size="small"
+                color={location.pathname === `/dashboard/reports/all/${reportId}/knowledge` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+          {t('Knowledge')}
         </Button>
       </div>
     );

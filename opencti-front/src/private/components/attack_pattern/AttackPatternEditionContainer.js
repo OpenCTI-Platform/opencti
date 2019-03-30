@@ -56,7 +56,7 @@ class AttackPatternEditionContainer extends Component {
   handleChangeTab(event, value) {
     this.setState({ currentTab: value });
   }
-  
+
   render() {
     const {
       t, classes, handleClose, attackPattern, me,
@@ -64,30 +64,49 @@ class AttackPatternEditionContainer extends Component {
     const { editContext } = attackPattern;
     // Add current user to the context if is not available yet.
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
+    const editUsers = missingMe
+      ? insert(0, { name: me.email }, editContext)
+      : editContext;
     return (
       <div>
         <div className={classes.header}>
-          <IconButton aria-label='Close' className={classes.closeButton} onClick={handleClose.bind(this)}>
-            <Close fontSize='small'/>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
           </IconButton>
-          <Typography variant='h6' classes={{ root: classes.title }}>
+          <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update an attack pattern')}
           </Typography>
-          <SubscriptionAvatars users={editUsers}/>
-          <div className='clearfix'/>
+          <SubscriptionAvatars users={editUsers} />
+          <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <AppBar position='static' elevation={0} className={classes.appBar}>
-            <Tabs value={this.state.currentTab} onChange={this.handleChangeTab.bind(this)}>
-              <Tab label={t('Overview')}/>
-              <Tab label={t('Identity')}/>
+          <AppBar position="static" elevation={0} className={classes.appBar}>
+            <Tabs
+              value={this.state.currentTab}
+              onChange={this.handleChangeTab.bind(this)}
+            >
+              <Tab label={t('Overview')} />
+              <Tab label={t('Identity')} />
             </Tabs>
           </AppBar>
-          {this.state.currentTab === 0
-          && <AttackPatternEditionOverview attackPattern={attackPattern} editUsers={editUsers} me={me}/>}
-          {this.state.currentTab === 1
-          && <AttackPatternEditionIdentity attackPattern={attackPattern} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 0 && (
+            <AttackPatternEditionOverview
+              attackPattern={attackPattern}
+              editUsers={editUsers}
+              me={me}
+            />
+          )}
+          {this.state.currentTab === 1 && (
+            <AttackPatternEditionIdentity
+              attackPattern={attackPattern}
+              editUsers={editUsers}
+              me={me}
+            />
+          )}
         </div>
       </div>
     );
@@ -103,24 +122,27 @@ AttackPatternEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const AttackPatternEditionFragment = createFragmentContainer(AttackPatternEditionContainer, {
-  attackPattern: graphql`
+const AttackPatternEditionFragment = createFragmentContainer(
+  AttackPatternEditionContainer,
+  {
+    attackPattern: graphql`
       fragment AttackPatternEditionContainer_attackPattern on AttackPattern {
-          id
-          ...AttackPatternEditionOverview_attackPattern
-          ...AttackPatternEditionIdentity_attackPattern
-          editContext {
-              name
-              focusOn
-          }
+        id
+        ...AttackPatternEditionOverview_attackPattern
+        ...AttackPatternEditionIdentity_attackPattern
+        editContext {
+          name
+          focusOn
+        }
       }
-  `,
-  me: graphql`
+    `,
+    me: graphql`
       fragment AttackPatternEditionContainer_me on User {
-          email
+        email
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

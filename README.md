@@ -18,7 +18,7 @@ The releases are available on the [Github releases page](https://github.com/Luat
 
 ## Status & Bugs
 
-Currently OpenCTI is under heavy development, if you wish to report bugs or ask for new features, you can find the product bug tracker here: https://projects.luatix.org/projects/CTI or directly use the Github issues module.
+Currently OpenCTI is under heavy development, if you wish to report bugs or ask for new features, you can directly use the Github issues module.
 
 ## About
 

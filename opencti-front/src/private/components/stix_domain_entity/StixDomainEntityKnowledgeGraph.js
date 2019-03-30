@@ -458,7 +458,7 @@ const StixDomainEntityKnowledgeGraph = createFragmentContainer(
             lastSeenStart: { type: "DateTime" }
             lastSeenStop: { type: "DateTime" }
             weights: { type: "[Int]" }
-            count: { type: "Int", defaultValue: 50 }
+            count: { type: "Int", defaultValue: 200 }
         ) {
             id
             type

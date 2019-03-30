@@ -1,0 +1,28 @@
+version: '3'
+services:
+  pgsql:
+    image: postgres
+    environment:
+      - POSTGRES_USER=openex
+      - POSTGRES_PASSWORD=openex
+      - POSTGRES_DB=openex
+    volumes:
+      - "./sql:/docker-entrypoint-initdb.d:ro"
+    restart: always
+  openex:
+    image: luatix/openex
+    build:
+      context: .
+    environment:
+      - RUN_USER=www-data
+      - RUN_GROUP=www-data
+      - PROTOCOL=http
+    ports:
+      - "8080:80"
+    volumes:
+      - "./properties:/var/openex/openex-worker/openex:rw"  
+    depends_on:
+      - pgsql
+    links:
+     - pgsql:pgsql
+    restart: always

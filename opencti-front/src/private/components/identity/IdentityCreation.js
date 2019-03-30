@@ -217,7 +217,7 @@ class IdentityCreation extends Component {
           onReset={this.onResetContextual.bind(this)}
           render={({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <Dialog open={open} onClose={this.handleClose.bind(this)}>
+              <Dialog open={open} onClose={this.handleClose.bind(this)} fullWidth={true}>
                 <DialogTitle>
                   {t('Create an entity')}
                 </DialogTitle>

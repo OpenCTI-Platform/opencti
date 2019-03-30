@@ -14,11 +14,11 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { ArrowDropDown, ArrowDropUp, KeyboardArrowRight } from '@material-ui/icons';
-import { resolveLink } from '../../../utils/Entity';
 import inject18n from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import ReportHeader from './ReportHeader';
-import ReportAddObjectRefs from './ReportAddObjectRefs';
+import ReportAddObservable from './ReportAddObservable';
+import { dateFormat } from '../../../utils/Time';
 
 const styles = theme => ({
   linesContainer: {
@@ -65,25 +65,37 @@ const inlineStylesHeaders = {
     padding: 0,
     top: '0px',
   },
-  name: {
-    float: 'left',
-    width: '40%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
   type: {
-    float: 'left',
-    width: '20%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  created_at: {
     float: 'left',
     width: '15%',
     fontSize: 12,
     fontWeight: '700',
   },
-  updated_at: {
+  observable_value: {
+    float: 'left',
+    width: '20%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  threats: {
+    float: 'left',
+    width: '20%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  first_seen: {
+    float: 'left',
+    width: '15%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  last_seen: {
+    float: 'left',
+    width: '15%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  weight: {
     float: 'left',
     fontSize: 12,
     fontWeight: '700',
@@ -91,23 +103,7 @@ const inlineStylesHeaders = {
 };
 
 const inlineStyles = {
-  name: {
-    float: 'left',
-    width: '40%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
   type: {
-    float: 'left',
-    width: '20%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created_at: {
     float: 'left',
     width: '15%',
     height: 20,
@@ -115,7 +111,39 @@ const inlineStyles = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  updated_at: {
+  observable_value: {
+    float: 'left',
+    width: '20%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  threats: {
+    float: 'left',
+    width: '20%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  first_seen: {
+    float: 'left',
+    width: '15%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  last_seen: {
+    float: 'left',
+    width: '15%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  weight: {
     float: 'left',
     height: 20,
     whiteSpace: 'nowrap',
@@ -124,7 +152,7 @@ const inlineStyles = {
   },
 };
 
-class ReportEntitiesComponent extends Component {
+class ReportObservablesComponent extends Component {
   constructor(props) {
     super(props);
     this.state = { sortBy: 'name', orderAsc: false };
@@ -155,9 +183,9 @@ class ReportEntitiesComponent extends Component {
     const {
       t, fd, classes, report,
     } = this.props;
-    const objectRefs = map(n => n.node, report.objectRefs.edges);
+    const relationRefs = map(n => n.node, report.relationRefs.edges);
     const sort = sortWith(this.state.orderAsc ? [ascend(prop(this.state.sortBy))] : [descend(prop(this.state.sortBy))]);
-    const sortedObjectRefs = sort(objectRefs);
+    const sortedRelationRefs = sort(relationRefs);
     return (
       <div>
         <ReportHeader report={report}/>
@@ -168,33 +196,38 @@ class ReportEntitiesComponent extends Component {
             </ListItemIcon>
             <ListItemText primary={
               <div>
-                {this.SortHeader('name', 'Name', true)}
-                {this.SortHeader('type', 'Entity type', true)}
-                {this.SortHeader('created_at', 'Creation date', true)}
-                {this.SortHeader('updated_at', 'Modification date', true)}
+                {this.SortHeader('type', 'Type', true)}
+                {this.SortHeader('observable_value', 'Observable value', true)}
+                {this.SortHeader('threats', 'Linked threat(s)', true)}
+                {this.SortHeader('first_seen', 'First seen', true)}
+                {this.SortHeader('last_seen', 'Last seen', true)}
+                {this.SortHeader('weight', 'Confidence level', true)}
               </div>
             }/>
           </ListItem>
-          {sortedObjectRefs.map((objectRef) => {
-            const link = resolveLink(objectRef.type);
+          {sortedRelationRefs.map((relationRef) => {
+            const link = '/dashboard/observables';
             return (
-              <ListItem key={objectRef.id} classes={{ root: classes.item }} divider={true} component={Link} to={`${link}/${objectRef.id}`}>
+              <ListItem key={relationRef.id} classes={{ root: classes.item }} divider={true} component={Link} to={`${link}/${relationRef.id}`}>
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <ItemIcon type={objectRef.type}/>
+                  <ItemIcon type={relationRef.type}/>
                 </ListItemIcon>
                 <ListItemText primary={
                   <div>
-                    <div className={classes.bodyItem} style={inlineStyles.name}>
-                      {objectRef.name}
-                    </div>
                     <div className={classes.bodyItem} style={inlineStyles.type}>
-                      {t(`entity_${objectRef.type}`)}
+                      {t(`observable_${relationRef.type}`)}
                     </div>
-                    <div className={classes.bodyItem} style={inlineStyles.created_at}>
-                      {fd(objectRef.created_at)}
+                    <div className={classes.bodyItem} style={inlineStyles.observable_value}>
+                      {relationRef.observable_value}
                     </div>
-                    <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-                      {fd(objectRef.updated_at)}
+                    <div className={classes.bodyItem} style={inlineStyles.threats}>
+                      {relationRef.threats}
+                    </div>
+                    <div className={classes.bodyItem} style={inlineStyles.first_seen}>
+                      {fd(relationRef.first_seen)}
+                    </div>
+                    <div className={classes.bodyItem} style={inlineStyles.last_seen}>
+                      {fd(relationRef.last_seen)}
                     </div>
                   </div>
                 }/>
@@ -205,16 +238,18 @@ class ReportEntitiesComponent extends Component {
             );
           })}
         </List>
-        <ReportAddObjectRefs
+        <ReportAddObservable
           reportId={report.id}
-          reportObjectRefs={report.objectRefs.edges}
+          firstSeen={dateFormat(report.published)}
+          lastSeen={dateFormat(report.published)}
+          weight={report.source_confidence_level}
         />
       </div>
     );
   }
 }
 
-ReportEntitiesComponent.propTypes = {
+ReportObservablesComponent.propTypes = {
   report: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -222,11 +257,13 @@ ReportEntitiesComponent.propTypes = {
   history: PropTypes.object,
 };
 
-const ReportEntities = createFragmentContainer(ReportEntitiesComponent, {
+const ReportObservables = createFragmentContainer(ReportObservablesComponent, {
   report: graphql`
-      fragment ReportEntities_report on Report {
+      fragment ReportObservables_report on Report {
           id
-          objectRefs {
+          published
+          source_confidence_level
+          relationRefs(relationType: $relationType) {
               edges {
                   node {
                       id
@@ -234,6 +271,22 @@ const ReportEntities = createFragmentContainer(ReportEntitiesComponent, {
                       name
                       created_at
                       updated_at
+                      from {
+                          id
+                          type
+                          name
+                          ... on StixObservable {
+                            observable_value  
+                          }
+                      }
+                      to {
+                          id
+                          type
+                          name
+                          ... on StixObservable {
+                              observable_value
+                          }
+                      }
                   }
               }
           }
@@ -245,4 +298,4 @@ const ReportEntities = createFragmentContainer(ReportEntitiesComponent, {
 export default compose(
   inject18n,
   withStyles(styles),
-)(ReportEntities);
+)(ReportObservables);

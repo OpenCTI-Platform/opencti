@@ -15,7 +15,7 @@ const relationsTypesMapping = {
   'intrusion-set_city': ['targets', 'localization', 'attributed-to'],
   'intrusion-set_sector': ['targets'],
   'intrusion-set_organization': ['targets', 'attributed-to'],
-  'intrusion-set_threat-actor': ['targets', 'attributed-to'],
+  'intrusion-set_threat-actor': ['attributed-to', 'targets'],
   'intrusion-set_user': ['targets', 'attributed-to'],
   'intrusion-set_tool': ['uses'],
   'intrusion-set_malware': ['uses'],

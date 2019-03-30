@@ -29,30 +29,46 @@ class AttackPatternComponent extends Component {
     const { classes, attackPattern } = this.props;
     return (
       <div className={classes.container}>
-        <AttackPatternHeader attackPattern={attackPattern}/>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
+        <AttackPatternHeader attackPattern={attackPattern} />
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={4}>
-            <AttackPatternOverview attackPattern={attackPattern}/>
+            <AttackPatternOverview attackPattern={attackPattern} />
           </Grid>
           <Grid item={true} xs={4}>
-            <AttackPatternIdentity attackPattern={attackPattern}/>
+            <AttackPatternIdentity attackPattern={attackPattern} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityExternalReferences entityId={attackPattern.id}/>
-          </Grid>
-        </Grid>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
-          <Grid item={true} xs={4}>
-            <EntityStixRelationsChart entityId={attackPattern.id} relationType='uses' />
-          </Grid>
-          <Grid item={true} xs={4}>
-            <EntityStixRelationsPie entityId={attackPattern.id} entityType='Stix-Domain-Entity' field='type'/>
-          </Grid>
-          <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={attackPattern.id}/>
+            <EntityExternalReferences entityId={attackPattern.id} />
           </Grid>
         </Grid>
-        <AttackPatternEdition attackPatternId={attackPattern.id}/>
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 20 }}
+        >
+          <Grid item={true} xs={4}>
+            <EntityStixRelationsChart
+              entityId={attackPattern.id}
+              relationType="uses"
+            />
+          </Grid>
+          <Grid item={true} xs={4}>
+            <EntityStixRelationsPie
+              entityId={attackPattern.id}
+              entityType="Stix-Domain-Entity"
+              field="type"
+            />
+          </Grid>
+          <Grid item={true} xs={4}>
+            <EntityReportsChart entityId={attackPattern.id} />
+          </Grid>
+        </Grid>
+        <AttackPatternEdition attackPatternId={attackPattern.id} />
       </div>
     );
   }
@@ -66,12 +82,12 @@ AttackPatternComponent.propTypes = {
 
 const AttackPattern = createFragmentContainer(AttackPatternComponent, {
   attackPattern: graphql`
-      fragment AttackPattern_attackPattern on AttackPattern {
-          id
-          ...AttackPatternHeader_attackPattern
-          ...AttackPatternOverview_attackPattern
-          ...AttackPatternIdentity_attackPattern
-      }
+    fragment AttackPattern_attackPattern on AttackPattern {
+      id
+      ...AttackPatternHeader_attackPattern
+      ...AttackPatternOverview_attackPattern
+      ...AttackPatternIdentity_attackPattern
+    }
   `,
 });
 

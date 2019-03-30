@@ -223,7 +223,7 @@ class ReportKnowledgeGraphComponent extends Component {
     // add relations
     const createdRelations = [];
     forEach((l) => {
-      if (!includes(l.relation.id, createdRelations)) {
+      if (!includes(l.relation.id, createdRelations) && l.node.relationship_type !== 'indicates') {
         const fromPort = finalNodesObject[l.node.from.id] ? finalNodesObject[l.node.from.id].node.getPort('main') : null;
         const toPort = finalNodesObject[l.node.to.id] ? finalNodesObject[l.node.to.id].node.getPort('main') : null;
         const newLink = new EntityLinkModel();
@@ -581,6 +581,8 @@ const ReportKnowledgeGraph = createFragmentContainer(ReportKnowledgeGraphCompone
                       type
                       name
                       description
+                      created_at
+                      updated_at
                   }
                   relation {
                       id

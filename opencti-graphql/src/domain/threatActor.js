@@ -17,6 +17,15 @@ import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args => paginate('match $m isa Threat-Actor', args);
 
+export const search = args =>
+  paginate(
+    `match $x isa Threat-Actor has name $name; $x has alias $alias; { $name contains "${prepareString(
+      args.search
+    )}"; } or { $alias contains "${prepareString(args.search)}"; }`,
+    args,
+    false
+  );
+
 export const markingDefinitions = (threatActorId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 

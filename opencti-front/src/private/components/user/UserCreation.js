@@ -8,13 +8,19 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { compose } from 'ramda';
+import { compose, pluck } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
+import Autocomplete from '../../../components/Autocomplete';
+
+const roles = [
+  { label: 'ROLE_ROOT', value: 'ROLE_ROOT' },
+  { label: 'ROLE_ADMIN', value: 'ROLE_ADMIN' },
+];
 
 const styles = theme => ({
   drawerPaper: {
@@ -76,6 +82,12 @@ const userValidation = t => Yup.object().shape({
   firstname: Yup.string(),
   lastname: Yup.string(),
   description: Yup.string(),
+  grant: Yup.array(),
+  password: Yup.string()
+    .required(t('This field is required')),
+  confirmation: Yup.string()
+    .oneOf([Yup.ref('password'), null], t('The values do not match'))
+    .required(t('This field is required')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -103,6 +115,8 @@ class UserCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    values.grant = pluck('value', values.grant);
+    delete (values.confirmation);
     commitMutation({
       mutation: userMutation,
       variables: {
@@ -146,7 +160,7 @@ class UserCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
-                name: '', email: '', firstname: '', lastname: '', description: '',
+                name: '', email: '', firstname: '', lastname: '', description: '', grant: [], password: '', confirmation: '',
               }}
               validationSchema={userValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -157,7 +171,9 @@ class UserCreation extends Component {
                   <Field name='email' component={TextField} label={t('Email address')} fullWidth={true} style={{ marginTop: 20 }}/>
                   <Field name='firstname' component={TextField} label={t('Firstname')} fullWidth={true} style={{ marginTop: 20 }}/>
                   <Field name='lastname' component={TextField} label={t('Lastname')} fullWidth={true} style={{ marginTop: 20 }}/>
-                  <Field name='description' component={TextField} label={t('Description')} fullWidth={true} multiline={true} rows={4} style={{ marginTop: 20 }}/>
+                  <Field name='grant' component={Autocomplete} multiple={true} label={t('Roles')} options={roles} style={{ marginTop: 20 }}/>
+                  <Field name='password' component={TextField} label={t('Password')} type='password' fullWidth={true} style={{ marginTop: 20 }}/>
+                  <Field name='confirmation' component={TextField} label={t('Confirmation')} type='password' fullWidth={true} style={{ marginTop: 20 }}/>
                   <div className={classes.buttons}>
                     <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
                       {t('Cancel')}

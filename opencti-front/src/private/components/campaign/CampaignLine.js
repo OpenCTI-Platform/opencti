@@ -67,25 +67,32 @@ class CampaignLineComponent extends Component {
   render() {
     const { fd, classes, campaign } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/knowledge/campaigns/${campaign.id}`}>
+      <ListItem
+        classes={{ default: classes.item }}
+        divider={true}
+        component={Link}
+        to={`/dashboard/knowledge/campaigns/${campaign.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ChessKnight/>
+          <ChessKnight />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {campaign.name}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {campaign.name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                {fd(campaign.created)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                {fd(campaign.modified)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              {fd(campaign.created)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              {fd(campaign.modified)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );
@@ -100,12 +107,12 @@ CampaignLineComponent.propTypes = {
 
 const CampaignLineFragment = createFragmentContainer(CampaignLineComponent, {
   campaign: graphql`
-      fragment CampaignLine_campaign on Campaign {
-          id
-          name
-          created
-          modified
-      }
+    fragment CampaignLine_campaign on Campaign {
+      id
+      name
+      created
+      modified
+    }
   `,
 });
 
@@ -120,23 +127,25 @@ class CampaignLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <ChessKnight/>
+          <ChessKnight />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );

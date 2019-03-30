@@ -32,58 +32,86 @@ const inversedRelations = [
 class AttackPatternKnowledgeComponent extends Component {
   render() {
     const { classes, attackPattern, location } = this.props;
-    const link = `/dashboard/knowledge/attack_patterns/${attackPattern.id}/knowledge`;
+    const link = `/dashboard/knowledge/attack_patterns/${
+      attackPattern.id
+    }/knowledge`;
     return (
       <div className={classes.container}>
-        <AttackPatternHeader attackPattern={attackPattern} variant='noalias'/>
-        <AttackPatternKnowledgeBar attackPatternId={attackPattern.id}/>
+        <AttackPatternHeader attackPattern={attackPattern} variant="noalias" />
+        <AttackPatternKnowledgeBar attackPatternId={attackPattern.id} />
         <div className={classes.content}>
-          <Route exact path='/dashboard/catalogs/attack_patterns/:attackPatternId/knowledge/relations/:relationId' render={
-            routeProps => <StixRelation
+          <Route
+            exact
+            path="/dashboard/catalogs/attack_patterns/:attackPatternId/knowledge/relations/:relationId"
+            render={routeProps => (
+              <StixRelation
+                entityId={attackPattern.id}
+                inversedRelations={inversedRelations}
+                {...routeProps}
+              />
+            )}
+          />
+
+          {location.pathname.includes('overview') ? (
+            <StixDomainEntityKnowledge stixDomainEntityId={attackPattern.id} />
+          ) : (
+            ''
+          )}
+
+          {location.pathname.includes('intrusion_sets') ? (
+            <EntityStixRelations
               entityId={attackPattern.id}
-              inversedRelations={inversedRelations}
-              {...routeProps}
+              relationType="uses"
+              targetEntityTypes={['Intrusion-Set']}
+              entityLink={link}
             />
-          }/>
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('overview') ? <StixDomainEntityKnowledge
-            stixDomainEntityId={attackPattern.id}
-          /> : ''}
+          {location.pathname.includes('campaigns') ? (
+            <EntityStixRelations
+              entityId={attackPattern.id}
+              relationType="uses"
+              targetEntityTypes={['Campaign']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('intrusion_sets') ? <EntityStixRelations
-            entityId={attackPattern.id}
-            relationType='uses'
-            targetEntityTypes={['Intrusion-Set']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('incidents') ? (
+            <EntityStixRelations
+              entityId={attackPattern.id}
+              relationType="uses"
+              targetEntityTypes={['Incident']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('campaigns') ? <EntityStixRelations
-            entityId={attackPattern.id}
-            relationType='uses'
-            targetEntityTypes={['Campaign']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('malwares') ? (
+            <EntityStixRelations
+              entityId={attackPattern.id}
+              relationType="uses"
+              targetEntityTypes={['Malware']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('incidents') ? <EntityStixRelations
-            entityId={attackPattern.id}
-            relationType='uses'
-            targetEntityTypes={['Incident']}
-            entityLink={link}
-          /> : ''}
-
-          {location.pathname.includes('malwares') ? <EntityStixRelations
-            entityId={attackPattern.id}
-            relationType='uses'
-            targetEntityTypes={['Malware']}
-            entityLink={link}/> : ''
-          }
-
-          {location.pathname.includes('tools') ? <EntityStixRelations
-            entityId={attackPattern.id}
-            relationType='uses'
-            targetEntityTypes={['Tools']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('tools') ? (
+            <EntityStixRelations
+              entityId={attackPattern.id}
+              relationType="uses"
+              targetEntityTypes={['Tools']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
         </div>
       </div>
     );
@@ -97,14 +125,17 @@ AttackPatternKnowledgeComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const AttackPatternKnowledge = createFragmentContainer(AttackPatternKnowledgeComponent, {
-  attackPattern: graphql`
+const AttackPatternKnowledge = createFragmentContainer(
+  AttackPatternKnowledgeComponent,
+  {
+    attackPattern: graphql`
       fragment AttackPatternKnowledge_attackPattern on AttackPattern {
-          id
-          ...AttackPatternHeader_attackPattern
+        id
+        ...AttackPatternHeader_attackPattern
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

@@ -85,28 +85,38 @@ class AttackPatternLineComponent extends Component {
       join(', '),
     )(attackPattern);
     return (
-      <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/catalogs/attack_patterns/${attackPattern.id}`}>
+      <ListItem
+        classes={{ default: classes.item }}
+        divider={true}
+        component={Link}
+        to={`/dashboard/catalogs/attack_patterns/${attackPattern.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <LockPattern/>
+          <LockPattern />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.killChainPhases}>
-              {killchainPhases}
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.killChainPhases}
+              >
+                {killchainPhases}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {attackPattern.name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                {fd(attackPattern.created)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                {fd(attackPattern.modified)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {attackPattern.name}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              {fd(attackPattern.created)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              {fd(attackPattern.modified)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );
@@ -120,25 +130,28 @@ AttackPatternLineComponent.propTypes = {
   orderAsc: PropTypes.bool,
 };
 
-const AttackPatternLineFragment = createFragmentContainer(AttackPatternLineComponent, {
-  attackPattern: graphql`
+const AttackPatternLineFragment = createFragmentContainer(
+  AttackPatternLineComponent,
+  {
+    attackPattern: graphql`
       fragment AttackPatternLine_attackPattern on AttackPattern {
-          id
-          name
-          created
-          modified
-          killChainPhases {
-              edges {
-                  node {
-                      id
-                      kill_chain_name
-                      phase_name
-                  }
-              }
+        id
+        name
+        created
+        modified
+        killChainPhases {
+          edges {
+            node {
+              id
+              kill_chain_name
+              phase_name
+            }
           }
+        }
       }
-  `,
-});
+    `,
+  },
+);
 
 export const AttackPatternLine = compose(
   inject18n,
@@ -151,26 +164,31 @@ class AttackPatternLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <LockPattern/>
+          <LockPattern />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.killChainPhases}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.killChainPhases}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );

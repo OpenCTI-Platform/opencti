@@ -2,6 +2,7 @@ import {
   addCampaign,
   campaignDelete,
   findAll,
+  search,
   findById,
   campaignsTimeSeries,
   campaignsTimeSeriesByEntity
@@ -22,7 +23,12 @@ import { fetchEditContext } from '../database/redis';
 const campaignResolvers = {
   Query: {
     campaign: (_, { id }) => findById(id),
-    campaigns: (_, args) => findAll(args),
+    campaigns: (_, args) => {
+      if (args.search && args.search.length > 0) {
+        return search(args);
+      }
+      return findAll(args);
+    },
     campaignsTimeSeries: (_, args) => {
       if (args.objectId && args.objectId.length > 0) {
         return campaignsTimeSeriesByEntity(args);

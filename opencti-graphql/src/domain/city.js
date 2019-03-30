@@ -15,7 +15,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa City', args);
+export const findAll = args => paginate('match $x isa City', args);
 
 export const findById = cityId => getById(cityId);
 

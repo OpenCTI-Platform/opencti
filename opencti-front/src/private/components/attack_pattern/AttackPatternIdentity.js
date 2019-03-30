@@ -33,16 +33,14 @@ const styles = theme => ({
 
 class AttackPatternIdentityComponent extends Component {
   render() {
-    const {
-      t, classes, attackPattern,
-    } = this.props;
+    const { t, classes, attackPattern } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Identity')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant='h3' gutterBottom={true}>
+          <Typography variant="h3" gutterBottom={true}>
             {t('Kill chain phases')}
           </Typography>
           <List>
@@ -56,48 +54,58 @@ class AttackPatternIdentityComponent extends Component {
                   classes={{ default: classes.item }}
                 >
                   <ListItemIcon classes={{ root: classes.itemIcon }}>
-                    <Launch/>
+                    <Launch />
                   </ListItemIcon>
-                  <ListItemText primary={killChainPhase.phase_name}/>
+                  <ListItemText primary={killChainPhase.phase_name} />
                 </ListItem>
               );
             })}
           </List>
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Platforms')}
           </Typography>
           <List>
             {propOr([], 'platform', attackPattern).map(platform => (
-                <ListItem
-                  key={platform}
-                  dense={true}
-                  divider={true}
-                  classes={{ default: classes.item }}
-                >
-                  <ListItemIcon classes={{ root: classes.itemIcon }}>
-                    <SettingsApplications/>
-                  </ListItemIcon>
-                  <ListItemText primary={platform}/>
-                </ListItem>
-            ))}
-          </List>
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
-            {t('Required permissions')}
-          </Typography>
-          <List>
-            {propOr([], 'required_permission', attackPattern).map(permission => (
               <ListItem
-                key={permission}
+                key={platform}
                 dense={true}
                 divider={true}
                 classes={{ default: classes.item }}
               >
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <PermIdentity/>
+                  <SettingsApplications />
                 </ListItemIcon>
-                <ListItemText primary={permission}/>
+                <ListItemText primary={platform} />
               </ListItem>
             ))}
+          </List>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Required permissions')}
+          </Typography>
+          <List>
+            {propOr([], 'required_permission', attackPattern).map(
+              permission => (
+                <ListItem
+                  key={permission}
+                  dense={true}
+                  divider={true}
+                  classes={{ default: classes.item }}
+                >
+                  <ListItemIcon classes={{ root: classes.itemIcon }}>
+                    <PermIdentity />
+                  </ListItemIcon>
+                  <ListItemText primary={permission} />
+                </ListItem>
+              ),
+            )}
           </List>
         </Paper>
       </div>
@@ -112,24 +120,27 @@ AttackPatternIdentityComponent.propTypes = {
   fld: PropTypes.func,
 };
 
-const AttackPatternIdentity = createFragmentContainer(AttackPatternIdentityComponent, {
-  attackPattern: graphql`
+const AttackPatternIdentity = createFragmentContainer(
+  AttackPatternIdentityComponent,
+  {
+    attackPattern: graphql`
       fragment AttackPatternIdentity_attackPattern on AttackPattern {
-          platform
-          required_permission
-          killChainPhases {
-              edges {
-                  node {
-                      id
-                      kill_chain_name
-                      phase_name
-                      phase_order
-                  }
-              }
+        platform
+        required_permission
+        killChainPhases {
+          edges {
+            node {
+              id
+              kill_chain_name
+              phase_name
+              phase_order
+            }
           }
+        }
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

@@ -18,6 +18,10 @@ export const dayAgo = () => moment().subtract(1, 'days').format();
 
 export const monthsAgo = number => moment().subtract(number, 'months').format();
 
+export const dateMonthsAgo = (date, number) => moment(date).subtract(number, 'months').format();
+
+export const dateMonthsAfter = (date, number) => moment(date).add(number, 'months').format();
+
 export const yearsAgo = number => moment().subtract(number, 'years').format();
 
 export const dayFormat = data => (data && data !== '-' ? parse(data).format(dayDateFormat) : '');

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose, pathOr } from "ramda";
+import { compose, pathOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
@@ -27,26 +27,38 @@ class CampaignOverviewComponent extends Component {
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant='h3' gutterBottom={true}>
+          <Typography variant="h3" gutterBottom={true}>
             {t('Creation date')}
           </Typography>
           {fld(campaign.created)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Modification date')}
           </Typography>
           {fld(campaign.modified)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Creator')}
           </Typography>
           {pathOr('-', ['createdByRef', 'node', 'name'], campaign)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Description')}
           </Typography>
-          <Markdown className='markdown' source={campaign.description}/>
+          <Markdown className="markdown" source={campaign.description} />
         </Paper>
       </div>
     );
@@ -62,18 +74,18 @@ CampaignOverviewComponent.propTypes = {
 
 const CampaignOverview = createFragmentContainer(CampaignOverviewComponent, {
   campaign: graphql`
-      fragment CampaignOverview_campaign on Campaign {
-          id
+    fragment CampaignOverview_campaign on Campaign {
+      id
+      name
+      description
+      created
+      modified
+      createdByRef {
+        node {
           name
-          description
-          created
-          modified
-          createdByRef {
-              node {
-                  name
-              }
-          }
+        }
       }
+    }
   `,
 });
 

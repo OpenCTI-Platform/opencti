@@ -28,9 +28,9 @@ class AttackPatternReportsComponent extends Component {
     const { classes, attackPattern } = this.props;
     return (
       <div className={classes.container}>
-        <AttackPatternHeader attackPattern={attackPattern}/>
+        <AttackPatternHeader attackPattern={attackPattern} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={attackPattern.id}/>
+          <EntityReports entityId={attackPattern.id} />
         </Paper>
       </div>
     );
@@ -43,14 +43,17 @@ AttackPatternReportsComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const AttackPatternReports = createFragmentContainer(AttackPatternReportsComponent, {
-  attackPattern: graphql`
+const AttackPatternReports = createFragmentContainer(
+  AttackPatternReportsComponent,
+  {
+    attackPattern: graphql`
       fragment AttackPatternReports_attackPattern on AttackPattern {
-          id
-          ...AttackPatternHeader_attackPattern
+        id
+        ...AttackPatternHeader_attackPattern
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

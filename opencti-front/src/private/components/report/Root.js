@@ -5,8 +5,9 @@ import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import Report from './Report';
-import ReportKnowledge from './ReportKnowledge';
 import ReportEntities from './ReportEntities';
+import ReportKnowledge from './ReportKnowledge';
+import ReportObservables from './ReportObservables';
 
 const subscription = graphql`
     subscription RootReportSubscription($id: ID!) {
@@ -21,7 +22,7 @@ const subscription = graphql`
 `;
 
 const reportQuery = graphql`
-    query RootReportQuery($id: String!) {
+    query RootReportQuery($id: String!, $relationType: String) {
         report(id: $id) {
             ...Report_report
             ...ReportHeader_report
@@ -29,7 +30,7 @@ const reportQuery = graphql`
             ...ReportIdentity_report
             ...ReportKnowledge_report
             ...ReportEntities_report
-            
+            ...ReportObservables_report
         },
         me {
             ...ReportKnowledge_me
@@ -58,7 +59,7 @@ class RootReport extends Component {
         <TopBar me={me || null}/>
         <QueryRenderer
           query={reportQuery}
-          variables={{ id: reportId }}
+          variables={{ id: reportId, relationType: 'indicates' }}
           render={({ props }) => {
             if (props && props.report) {
               return (
@@ -66,11 +67,14 @@ class RootReport extends Component {
                   <Route exact path='/dashboard/reports/all/:reportId' render={
                     routeProps => <Report {...routeProps} report={props.report}/>
                   }/>
+                  <Route exact path='/dashboard/reports/all/:reportId/entities' render={
+                    routeProps => <ReportEntities {...routeProps} report={props.report} me={props.me}/>
+                  }/>
                   <Route exact path='/dashboard/reports/all/:reportId/knowledge' render={
                     routeProps => <ReportKnowledge {...routeProps} report={props.report} me={props.me}/>
                   }/>
-                  <Route exact path='/dashboard/reports/all/:reportId/entities' render={
-                    routeProps => <ReportEntities {...routeProps} report={props.report} me={props.me}/>
+                  <Route exact path='/dashboard/reports/all/:reportId/observables' render={
+                    routeProps => <ReportObservables {...routeProps} report={props.report} me={props.me}/>
                   }/>
                 </div>
               );

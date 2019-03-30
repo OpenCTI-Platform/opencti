@@ -9,33 +9,37 @@ import AttackPatternReports from './AttackPatternReports';
 import AttackPatternKnowledge from './AttackPatternKnowledge';
 
 const subscription = graphql`
-    subscription RootAttackPatternSubscription($id: ID!) {
-        stixDomainEntity(id: $id) {
-            ...on AttackPattern {
-                ...AttackPattern_attackPattern
-                ...AttackPatternEditionContainer_attackPattern
-            }
-            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
-        }
+  subscription RootAttackPatternSubscription($id: ID!) {
+    stixDomainEntity(id: $id) {
+      ... on AttackPattern {
+        ...AttackPattern_attackPattern
+        ...AttackPatternEditionContainer_attackPattern
+      }
+      ...StixDomainEntityKnowledgeGraph_stixDomainEntity
     }
+  }
 `;
 
 const attackPatternQuery = graphql`
-    query RootAttackPatternQuery($id: String!) {
-        attackPattern(id: $id) {
-            ...AttackPattern_attackPattern
-            ...AttackPatternHeader_attackPattern
-            ...AttackPatternOverview_attackPattern
-            ...AttackPatternIdentity_attackPattern
-            ...AttackPatternReports_attackPattern
-            ...AttackPatternKnowledge_attackPattern
-        }
+  query RootAttackPatternQuery($id: String!) {
+    attackPattern(id: $id) {
+      ...AttackPattern_attackPattern
+      ...AttackPatternHeader_attackPattern
+      ...AttackPatternOverview_attackPattern
+      ...AttackPatternIdentity_attackPattern
+      ...AttackPatternReports_attackPattern
+      ...AttackPatternKnowledge_attackPattern
     }
+  }
 `;
 
 class RootAttackPattern extends Component {
   componentDidMount() {
-    const { match: { params: { attackPatternId } } } = this.props;
+    const {
+      match: {
+        params: { attackPatternId },
+      },
+    } = this.props;
     const sub = requestSubscription({
       subscription,
       variables: { id: attackPatternId },
@@ -48,10 +52,15 @@ class RootAttackPattern extends Component {
   }
 
   render() {
-    const { me, match: { params: { attackPatternId } } } = this.props;
+    const {
+      me,
+      match: {
+        params: { attackPatternId },
+      },
+    } = this.props;
     return (
       <div>
-        <TopBar me={me || null}/>
+        <TopBar me={me || null} />
         <QueryRenderer
           query={attackPatternQuery}
           variables={{ id: attackPatternId }}
@@ -59,24 +68,48 @@ class RootAttackPattern extends Component {
             if (props && props.attackPattern) {
               return (
                 <div>
-                  <Route exact path='/dashboard/catalogs/attack_patterns/:attackPatternId' render={
-                    routeProps => <AttackPattern {...routeProps} attackPattern={props.attackPattern}/>
-                  }/>
-                  <Route exact path='/dashboard/catalogs/attack_patterns/:attackPatternId/reports' render={
-                    routeProps => <AttackPatternReports {...routeProps} attackPattern={props.attackPattern}/>
-                  }/>
-                  <Route exact path='/dashboard/catalogs/attack_patterns/:attackPatternId/knowledge' render={
-                    () => (<Redirect to={`/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge/overview`}/>)
-                  }/>
-                  <Route path='/dashboard/catalogs/attack_patterns/:attackPatternId/knowledge' render={
-                    routeProps => <AttackPatternKnowledge {...routeProps} attackPattern={props.attackPattern}/>
-                  }/>
+                  <Route
+                    exact
+                    path="/dashboard/catalogs/attack_patterns/:attackPatternId"
+                    render={routeProps => (
+                      <AttackPattern
+                        {...routeProps}
+                        attackPattern={props.attackPattern}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/catalogs/attack_patterns/:attackPatternId/reports"
+                    render={routeProps => (
+                      <AttackPatternReports
+                        {...routeProps}
+                        attackPattern={props.attackPattern}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/catalogs/attack_patterns/:attackPatternId/knowledge"
+                    render={() => (
+                      <Redirect
+                        to={`/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge/overview`}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/catalogs/attack_patterns/:attackPatternId/knowledge"
+                    render={routeProps => (
+                      <AttackPatternKnowledge
+                        {...routeProps}
+                        attackPattern={props.attackPattern}
+                      />
+                    )}
+                  />
                 </div>
               );
             }
-            return (
-              <div> &nbsp; </div>
-            );
+            return <div> &nbsp; </div>;
           }}
         />
       </div>

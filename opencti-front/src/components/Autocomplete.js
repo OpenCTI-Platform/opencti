@@ -161,7 +161,6 @@ function MultiValue(props) {
 }
 
 function Menu(props) {
-  console.log(props);
   return (
     <Paper square className={props.selectProps.reverseMenu ? props.selectProps.classes.paperReversed : props.selectProps.classes.paper} {...props.innerProps}>
         {props.children}

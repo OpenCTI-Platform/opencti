@@ -58,7 +58,7 @@ BoundaryRoute.propTypes = {
 };
 
 // 404
-export const NoMatch = () => <ErrorNotFound/>
+export const NoMatch = () => <ErrorNotFound/>;
 
 // Really simple error display
 export const SimpleError = () => <div>ERROR</div>;

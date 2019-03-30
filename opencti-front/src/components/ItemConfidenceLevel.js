@@ -14,6 +14,7 @@ const styles = () => ({
   chipInList: {
     fontSize: 12,
     height: 20,
+    float: 'right',
   },
 });
 

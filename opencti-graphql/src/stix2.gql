@@ -85,12 +85,15 @@ define
 
   # STIX SRO
   "relationship_type" sub attribute datatype string;
+  "role_played" sub attribute datatype string;
   "weight" sub attribute datatype long;
 
   # STIX SOO
   "number" sub attribute datatype long;
   "rir" sub attribute datatype string;
+  "observable_value" sub attribute datatype string;
   "value" sub attribute datatype string;
+  "hash_type" sub attribute datatype string;
 
   ## ROLES
 
@@ -314,15 +317,16 @@ define
     relates "problem"
     relates "mitigation";
 
-  # indicates
-  "indicates" sub "stix_relation"
-    relates "characterize"
-    relates "indicator";
-
   # impersonates
   "impersonates" sub "stix_relation"
     relates "genuine"
     relates "dummy";
+
+  # indicates
+  "indicates" sub "stix_relation"
+    has "role_played"
+    relates "characterize"
+    relates "indicator";
 
   # comes-after
   "comes-after" sub "stix_relation"
@@ -634,7 +638,9 @@ define
    "Stix-Observable" sub entity
     is-abstract
     has "type"
-    has "value"
+    has "name"
+    has "description"
+    has "observable_value"
     has "created_at"
     has "created_at_day"
     has "created_at_month"
@@ -653,6 +659,13 @@ define
     plays "resolves_to";
 
     "URL" sub "Stix-Observable";
+
+    "Email" sub "Stix-Observable";
+
+    "Mutex" sub "Stix-Observable";
+
+    "File" sub "Stix-Observable"
+    has "hash_type";
 
     "Stix-Observable-Data" sub entity
     is-abstract
@@ -693,6 +706,23 @@ define
       ("user": $origin, "usage": $object) isa "uses";
     };
 
+    ## INDICATES RULES
+    "AttributionIndicatesRule" sub rule
+    when {
+      ("origin": $origin, "attribution": $entity) isa "attributed-to";
+      ("characterize": $entity, "indicator": $object) isa "indicates";
+    } then {
+      ("characterize": $origin, "indicator": $object) isa "indicates";
+    };
+
+    "UsageIndicatesRule" sub rule
+    when {
+      ("user": $origin, "usage": $entity) isa "uses";
+      ("characterize": $entity, "indicator": $object) isa "indicates";
+    } then {
+      ("characterize": $origin, "indicator": $object) isa "indicates";
+    };
+
     ## TARGETS RULES
     "AttributionTargetsRule" sub rule
     when {
@@ -705,9 +735,9 @@ define
     "GatheringTargetsRule" sub rule
     when {
       ("gather": $parent, "part_of": $entity) isa "gathering";
-      ("source": $entity, "target": $target) isa "targets";
+      ("source": $source, "target": $entity) isa "targets";
     } then {
-      ("source": $parent, "target": $target) isa "targets";
+      ("source": $source, "target": $parent) isa "targets";
     };
 
     "LocalizationTargetsRule" sub rule

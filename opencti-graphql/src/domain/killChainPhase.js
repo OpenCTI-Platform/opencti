@@ -18,7 +18,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $k isa Kill-Chain-Phase', args);
+export const findAll = args => paginate('match $x isa Kill-Chain-Phase', args);
 export const findByEntity = args =>
   paginate(
     `match $killChainPhase isa Kill-Chain-Phase; 
@@ -31,7 +31,7 @@ export const findById = killChainPhaseId => getById(killChainPhaseId);
 
 export const findByPhaseName = args =>
   paginate(
-    `match $m isa Kill-Chain-Phase; $m has phase_name "${prepareString(
+    `match $x isa Kill-Chain-Phase; $x has phase_name "${prepareString(
       args.phaseName
     )}"`,
     args,

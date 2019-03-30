@@ -260,6 +260,7 @@ export const getRelationInferredById = async id => {
     const toKey = queryRegex[2];
     logger.debug(`[GRAKN - infer: true] ${query}`);
     const answerIterator = await rTx.query(query);
+    console.log(query);
     const answer = await answerIterator.next();
     const rel = answer.map().get('rel');
     const relationType = await rel.type();
@@ -279,6 +280,7 @@ export const getRelationInferredById = async id => {
     const inferences = explanationAnswers.map(explanationAnswer => {
       const explanationAnswerExplanation = explanationAnswer.explanation();
       let inferenceQuery = explanationAnswerExplanation.queryPattern();
+      console.log(inferenceQuery);
       const inferenceQueryRegex = /(\$(\d+|rel)\s)?\([a-z_]+:\s\$(\w+),\s[a-z_]+:\s\$(\w+)\)\sisa\s([\w-]+);/i.exec(
         inferenceQuery
       );
@@ -298,6 +300,7 @@ export const getRelationInferredById = async id => {
       };
     });
     const inferencesQueries = pluck('inferenceQuery', inferences);
+    console.log(inferencesQueries);
     const inferencesQuery = `match {${join('; ', inferencesQueries)}; }; get;`;
     const inferencesAnswerIterator = await rTx.query(inferencesQuery);
     const inferencesAnswer = await inferencesAnswerIterator.next();

@@ -453,7 +453,7 @@ class OpenCti:
         else:
             return None
 
-    def create_kill_chain_phase(self, kill_chain_name, phase_name, phase_order=None, stix_id=None, created=None,
+    def create_kill_chain_phase(self, kill_chain_name, phase_name, phase_order, stix_id=None, created=None,
                                 modified=None):
         self.log('Creating kill chain phase ' + phase_name + '...')
         query = """

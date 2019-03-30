@@ -120,6 +120,7 @@ const i18n = {
       'Select a relationship': 'Sélectionner une relation',
       'Add external references': 'Ajouter des références externes',
       'Add entities': 'Ajouter des entités',
+      'Add observable': 'Ajouter un observable',
       'The password has been updated': 'Le mot de passe a été modifié',
       'Settings have been updated': 'Les paramètres ont été mis à jour',
       // Menu
@@ -321,6 +322,15 @@ const i18n = {
       'Primary motivation': 'Motivation première',
       'Secondary motivation': 'Motivation secondaire',
       Goal: 'Objectif',
+      'Observable value': 'Valeur de l\'observable',
+      'Observable type': 'Type d\'observable',
+      Domain: 'Nom de domaine',
+      'IPv4 address': 'Adresse IPv4',
+      'IPv6 address': 'Adresse IPv6',
+      Mutex: 'Mutex',
+      'File hash': 'Condensat de fichier',
+      Value: 'Value',
+      'Linked threat(s)': 'Menace(s) liée(s)',
       // Statistics
       'Total entities': "Nombre d'entités",
       'Total observables': "Nombre d'observables",

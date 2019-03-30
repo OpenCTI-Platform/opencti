@@ -27,26 +27,38 @@ class AttackPatternOverviewComponent extends Component {
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant='h3' gutterBottom={true}>
+          <Typography variant="h3" gutterBottom={true}>
             {t('Creation date')}
           </Typography>
           {fld(attackPattern.created)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Modification date')}
           </Typography>
           {fld(attackPattern.modified)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Creator')}
           </Typography>
           {pathOr('-', ['createdByRef', 'node', 'name'], attackPattern)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Description')}
           </Typography>
-          <Markdown className='markdown' source={attackPattern.description}/>
+          <Markdown className="markdown" source={attackPattern.description} />
         </Paper>
       </div>
     );
@@ -60,22 +72,25 @@ AttackPatternOverviewComponent.propTypes = {
   fld: PropTypes.func,
 };
 
-const AttackPatternOverview = createFragmentContainer(AttackPatternOverviewComponent, {
-  attackPattern: graphql`
+const AttackPatternOverview = createFragmentContainer(
+  AttackPatternOverviewComponent,
+  {
+    attackPattern: graphql`
       fragment AttackPatternOverview_attackPattern on AttackPattern {
-          id
-          name
-          description
-          created
-          modified
-          createdByRef {
-              node {
-                  name
-              }
+        id
+        name
+        description
+        created
+        modified
+        createdByRef {
+          node {
+            name
           }
+        }
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

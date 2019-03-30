@@ -41,13 +41,13 @@ const styles = () => ({
 });
 
 const attackPatternMutation = graphql`
-    mutation AttackPatternHeaderFieldMutation($id: ID!, $input: EditInput!) {
-        attackPatternEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...AttackPatternHeader_attackPattern
-            }
-        }
+  mutation AttackPatternHeaderFieldMutation($id: ID!, $input: EditInput!) {
+    attackPatternEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...AttackPatternHeader_attackPattern
+      }
     }
+  }
 `;
 
 class AttackPatternHeaderComponent extends Component {
@@ -61,13 +61,18 @@ class AttackPatternHeaderComponent extends Component {
   }
 
   onSubmitCreateAlias(data) {
-    if (this.props.attackPattern.alias === null
-      || !this.props.attackPattern.alias.includes(data.new_alias)) {
+    if (
+      this.props.attackPattern.alias === null
+      || !this.props.attackPattern.alias.includes(data.new_alias)
+    ) {
       commitMutation({
         mutation: attackPatternMutation,
         variables: {
           id: this.props.attackPattern.id,
-          input: { key: 'alias', value: append(data.new_alias, this.props.attackPattern.alias) },
+          input: {
+            key: 'alias',
+            value: append(data.new_alias, this.props.attackPattern.alias),
+          },
         },
       });
     }
@@ -91,32 +96,66 @@ class AttackPatternHeaderComponent extends Component {
     } = this.props;
     return (
       <div>
-        <Typography variant='h1' gutterBottom={true} classes={{ root: classes.title }}>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
+        >
           {attackPattern.name}
         </Typography>
         <div className={classes.popover}>
-          <AttackPatternPopover attackPatternId={attackPattern.id}/>
+          <AttackPatternPopover attackPatternId={attackPattern.id} />
         </div>
-        {variant !== 'noalias'
-          ? <div className={classes.aliases}>
-            {propOr([], 'alias', attackPattern).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
-            <IconButton color='secondary' aria-label='Alias' onClick={this.handleToggleCreateAlias.bind(this)}>
-              {this.state.openAlias ? <Close fontSize='small'/> : <Add fontSize='small'/>}
+        {variant !== 'noalias' ? (
+          <div className={classes.aliases}>
+            {propOr([], 'alias', attackPattern).map(label => (label.length > 0 ? (
+                <Chip
+                  key={label}
+                  classes={{ root: classes.alias }}
+                  label={label}
+                  onDelete={this.deleteAlias.bind(this, label)}
+                />
+            ) : (
+              ''
+            )))}
+            <IconButton
+              color="secondary"
+              aria-label="Alias"
+              onClick={this.handleToggleCreateAlias.bind(this)}
+            >
+              {this.state.openAlias ? (
+                <Close fontSize="small" />
+              ) : (
+                <Add fontSize="small" />
+              )}
             </IconButton>
-            <Slide direction='left' in={this.state.openAlias} mountOnEnter={true} unmountOnExit={true}>
+            <Slide
+              direction="left"
+              in={this.state.openAlias}
+              mountOnEnter={true}
+              unmountOnExit={true}
+            >
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={this.onSubmitCreateAlias.bind(this)}
                 render={() => (
                   <Form style={{ float: 'right' }}>
-                    <Field name='new_alias' component={TextField} autoFocus={true} placeholder={t('New alias')} className={classes.aliasInput}/>
+                    <Field
+                      name="new_alias"
+                      component={TextField}
+                      autoFocus={true}
+                      placeholder={t('New alias')}
+                      className={classes.aliasInput}
+                    />
                   </Form>
                 )}
               />
             </Slide>
-          </div> : ''
-        }
-        <div className='clearfix'/>
+          </div>
+        ) : (
+          ''
+        )}
+        <div className="clearfix" />
       </div>
     );
   }
@@ -130,15 +169,18 @@ AttackPatternHeaderComponent.propTypes = {
   fld: PropTypes.func,
 };
 
-const AttackPatternHeader = createFragmentContainer(AttackPatternHeaderComponent, {
-  attackPattern: graphql`
+const AttackPatternHeader = createFragmentContainer(
+  AttackPatternHeaderComponent,
+  {
+    attackPattern: graphql`
       fragment AttackPatternHeader_attackPattern on AttackPattern {
-          id,
-          name,
-          alias,
+        id
+        name
+        alias
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

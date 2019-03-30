@@ -173,6 +173,46 @@ input StixDomainEntityAddInput  {
     modified: DateTime
 }
 
+### STIX obseravables
+enum StixObservablesOrdering {
+    name,
+    type,
+    value,
+    created_at,
+    updated_at
+}
+type StixObservableConnection {
+    pageInfo: PageInfo!
+    edges: [StixObservableEdge]
+}
+type StixObservableEdge {
+    cursor: String!
+    node: StixObservable!
+    relation: RelationEmbedded!
+}
+type StixObservable implements GlobalObject & StixEntity {
+    id: ID!
+    stix_id: String!
+    type: String!
+    name: String!
+    observable_value: String!
+    description: String
+    editContext: [EditUserContext]
+    createdByRef: createdByRef
+    markingDefinitions: MarkingDefinitionConnection
+    stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, inferred: Boolean, toId: String,fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+input StixObservableAddInput  {
+    type: String!
+    observable_value: String!
+    markingDefinitions: [String]
+    clientMutationId: String
+    created: DateTime
+    modified: DateTime
+}
+
 ### STIX relations
 enum StixRelationsOrdering {
     stix_id,
@@ -368,6 +408,7 @@ input UserAddInput {
     email: String @constraint(minLength: 5, format: "email")
     name: String!  @constraint(minLength: 3)
     description: String
+    password: String
     firstname: String
     lastname: String
     language: String
@@ -1351,7 +1392,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
     markingDefinitions: MarkingDefinitionConnection
     externalReferences: ExternalReferenceConnection
     objectRefs: StixDomainEntityConnection
-    relationRefs: StixRelationConnection
+    relationRefs(relationType: String): StixRelationConnection
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, inferred: Boolean, toId: String,fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
     created_at: DateTime!
     updated_at: DateTime!
@@ -1400,6 +1441,11 @@ type Query {
     stixDomainEntities(first: Int, after: ID, orderBy: StixDomainEntitiesOrdering, orderMode: OrderingMode, name: String, stix_id: String, search: String, externalReferenceId: String, type: String): StixDomainEntityConnection @auth
     stixDomainEntitiesTimeSeries(type: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries] @auth
     stixDomainEntitiesNumber(type: String, endDate: DateTime): Number @auth
+    # StixObservables
+    stixObservable(id: String): StixObservable @auth
+    stixObservables(first: Int, after: ID, orderBy: StixObservablesOrdering, orderMode: OrderingMode, type: String, observable_value: String): StixObservableConnection  @auth
+    stixObservablesTimeSeries(type: String): [TimeSeries] @auth
+    stixObservablesDistribution(type: String): [Distribution] @auth
     # StixRelations
     stixRelation(id: String!): StixRelation @auth
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, stix_id: String, fromId: String, inferred: Boolean, toId: String, fromTypes: [String], toTypes: [String], relationType: String, resolveInferences: Boolean, resolveRelationType: String, resolveRelationRole: String, resolveRelationToTypes: [String], resolveViaTypes: [EntityRelation], firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection @auth
@@ -1483,6 +1529,7 @@ type Subscription {
     markingDefinition(id: ID!): MarkingDefinition @auth(for: ROLE_ADMIN)
     killChainPhase(id: ID!): KillChainPhase @auth(for: ROLE_ADMIN)
     stixDomainEntity(id: ID!): StixDomainEntity @auth
+    stixObservable(id: ID!): StixObservable @auth
     stixRelation(id: ID!): StixRelation @auth
     workspace(id: ID!): Workspace @auth
     externalReference(id: ID!): ExternalReference  @auth
@@ -1503,6 +1550,16 @@ type StixDomainEntityEditMutations {
     fieldPatch(input: EditInput): StixDomainEntity
     contextPatch(input: EditContext): StixDomainEntity
     contextClean: StixDomainEntity
+    relationAdd(input: RelationAddInput): RelationData
+    relationDelete(relationId: ID!): RelationData
+}
+
+# StixObservable
+type StixObservableEditMutations {
+    delete: ID
+    fieldPatch(input: EditInput): StixObservable
+    contextPatch(input: EditContext): StixObservable
+    contextClean: StixObservable
     relationAdd(input: RelationAddInput): RelationData
     relationDelete(relationId: ID!): RelationData
 }
@@ -1749,6 +1806,9 @@ type Mutation {
     # StixDomainEntity
     stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth
     stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations @auth
+    # StixObservable
+    stixObservableAdd(input: StixObservableAddInput): StixObservable @auth
+    stixObservableEdit(id: ID!): StixObservableEditMutations @auth
     # StixRelation
     stixRelationAdd(input: StixRelationAddInput): StixRelation @auth
     stixRelationEdit(id: ID!): StixRelationEditMutations @auth

@@ -33,6 +33,17 @@ export const findAll = args =>
     false
   );
 
+export const search = args =>
+  paginate(
+    `match $m isa ${args.type ? args.type : 'Stix-Domain-Entity'}
+    has name $name;
+    $m has alias $alias;
+    { $name contains "${prepareString(args.search)}"; } or
+    { $alias contains "${prepareString(args.search)}"; }`,
+    args,
+    false
+  );
+
 export const stixDomainEntitiesTimeSeries = args =>
   timeSeries(
     `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'}`,
@@ -81,17 +92,6 @@ export const findByExternalReference = args =>
     };
      $rel(external_reference:$externalReference, so:$stixDomainEntity) isa external_references;
      $externalReference id "${prepareString(args.externalReferenceId)}"`,
-    args,
-    false
-  );
-
-export const search = args =>
-  paginate(
-    `match $m isa ${args.type ? args.type : 'Stix-Domain-Entity'}
-    has name $name;
-    $m has alias $alias;
-    { $name contains "${prepareString(args.search)}"; } or
-    { $alias contains "${prepareString(args.search)}"; }`,
     args,
     false
   );

@@ -6,11 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
 import { DeviceHub, AccountBalance } from '@material-ui/icons';
-import {
-  SourcePull,
-  TargetVariant,
-  SourceFork,
-} from 'mdi-material-ui';
+import { TargetVariant, SourceFork } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
@@ -81,7 +77,7 @@ class CountryKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Knowledge graph')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/catalogs/countries/${countryId}/knowledge/organizations` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/catalogs/countries/${countryId}/knowledge/organizations`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/catalogs/countries/${countryId}/knowledge/organizations` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/catalogs/countries/${countryId}/knowledge/organizations`}>
           <div className={classes.icon}>
             <AccountBalance fontSize='default'/>
           </div>
@@ -99,16 +95,7 @@ class CountryKnowledgeBar extends Component {
             <span className={classes.subtitle}>{t('Targeting this country')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/catalogs/countries/${countryId}/knowledge/attribution` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/catalogs/countries/${countryId}/knowledge/attribution`}>
-          <div className={classes.icon}>
-            <SourcePull fontSize='default'/>
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Threats')}</span><br />
-            <span className={classes.subtitle}>{t('Attributed to this country')}</span>
-          </div>
-        </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/catalogs/countries/${countryId}/knowledge/entities` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/catalogs/countries/${countryId}/knowledge/entities`}>
+        <Paper classes={{ root: location.pathname === `/dashboard/catalogs/countries/${countryId}/knowledge/entities` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/catalogs/countries/${countryId}/knowledge/entities`}>
           <div className={classes.icon}>
             <SourceFork fontSize='default'/>
           </div>

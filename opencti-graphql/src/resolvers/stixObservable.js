@@ -27,7 +27,7 @@ const stixObservableResolvers = {
       if (args.search && args.search.length > 0) {
         return search(args);
       }
-      if (args.value && args.value.length > 0) {
+      if (args.observable_value && args.observable_value.length > 0) {
         return findByValue(args);
       }
       return findAll(args);
@@ -35,15 +35,7 @@ const stixObservableResolvers = {
     stixObservablesTimeSeries: (_, args) =>
       stixObservablesTimeSeries(args)
   },
-  stixObservable: {
-    __resolveType(obj) {
-      if (obj.type) {
-        return obj.type.replace(/(?:^|-)(\w)/g, (matches, letter) =>
-          letter.toUpperCase()
-        );
-      }
-      return 'Unknown';
-    },
+  StixObservable: {
     createdByRef: (stixObservable, args) =>
       createdByRef(stixObservable.id, args),
     markingDefinitions: (stixObservable, args) =>
