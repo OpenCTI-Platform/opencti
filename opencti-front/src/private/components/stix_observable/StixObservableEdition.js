@@ -12,8 +12,8 @@ import {
   WS_ACTIVATED,
 } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
-import OrganizationEditionContainer from './OrganizationEditionContainer';
-import { organizationEditionOverviewFocus } from './OrganizationEditionOverview';
+import StixObservableEditionContainer from './StixObservableEditionContainer';
+import { stixObservableEditionOverviewFocus } from './StixObservableEditionOverview';
 
 const styles = theme => ({
   editButton: {
@@ -35,18 +35,18 @@ const styles = theme => ({
   },
 });
 
-export const organizationEditionQuery = graphql`
-  query OrganizationEditionContainerQuery($id: String!) {
-    organization(id: $id) {
-      ...OrganizationEditionContainer_organization
+export const stixObservableEditionQuery = graphql`
+  query StixObservableEditionContainerQuery($id: String!) {
+    stixObservable(id: $id) {
+      ...StixObservableEditionContainer_stixObservable
     }
     me {
-      ...OrganizationEditionContainer_me
+      ...StixObservableEditionContainer_me
     }
   }
 `;
 
-class OrganizationEdition extends Component {
+class StixObservableEdition extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -59,9 +59,9 @@ class OrganizationEdition extends Component {
   handleClose() {
     if (WS_ACTIVATED) {
       commitMutation({
-        mutation: organizationEditionOverviewFocus,
+        mutation: stixObservableEditionOverviewFocus,
         variables: {
-          id: this.props.organizationId,
+          id: this.props.stixObservableId,
           input: { focusOn: '' },
         },
       });
@@ -70,7 +70,7 @@ class OrganizationEdition extends Component {
   }
 
   render() {
-    const { classes, organizationId } = this.props;
+    const { classes, stixObservableId } = this.props;
     return (
       <div>
         <Fab
@@ -88,14 +88,14 @@ class OrganizationEdition extends Component {
           onClose={this.handleClose.bind(this)}
         >
           <QueryRenderer
-            query={organizationEditionQuery}
-            variables={{ id: organizationId }}
+            query={stixObservableEditionQuery}
+            variables={{ id: stixObservableId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <OrganizationEditionContainer
+                  <StixObservableEditionContainer
                     me={props.me}
-                    organization={props.organization}
+                    stixObservable={props.stixObservable}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );
@@ -109,8 +109,8 @@ class OrganizationEdition extends Component {
   }
 }
 
-OrganizationEdition.propTypes = {
-  organizationId: PropTypes.string,
+StixObservableEdition.propTypes = {
+  stixObservableId: PropTypes.string,
   me: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -120,4 +120,4 @@ OrganizationEdition.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(OrganizationEdition);
+)(StixObservableEdition);

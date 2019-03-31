@@ -34,26 +34,85 @@ const styles = theme => ({
 class TopMenuCountry extends Component {
   render() {
     const {
-      t, location, match: { params: { countryId } }, classes,
+      t,
+      location,
+      match: {
+        params: { countryId },
+      },
+      classes,
     } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/catalogs/countries' variant='contained' size="small"
-                color='inherit' classes={{ root: classes.buttonHome }}>
-          <Flag className={classes.icon} fontSize='small'/>
+        <Button
+          component={Link}
+          to="/dashboard/catalogs/countries"
+          variant="contained"
+          size="small"
+          color="inherit"
+          classes={{ root: classes.buttonHome }}
+        >
+          <Flag className={classes.icon} fontSize="small" />
           {t('Countries')}
         </Button>
-        <ArrowForwardIos color='inherit' classes={{ root: classes.arrow }}/>
-        <Button component={Link} to={`/dashboard/catalogs/countries/${countryId}`} variant={location.pathname === `/dashboard/catalogs/countries/${countryId}` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/catalogs/countries/${countryId}` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <Button
+          component={Link}
+          to={`/dashboard/catalogs/countries/${countryId}`}
+          variant={
+            location.pathname === `/dashboard/catalogs/countries/${countryId}`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === `/dashboard/catalogs/countries/${countryId}`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Overview')}
         </Button>
-        <Button component={Link} to={`/dashboard/catalogs/countries/${countryId}/reports`} variant={location.pathname === `/dashboard/catalogs/countries/${countryId}/reports` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/catalogs/countries/${countryId}/reports` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/catalogs/countries/${countryId}/reports`}
+          variant={
+            location.pathname
+            === `/dashboard/catalogs/countries/${countryId}/reports`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/catalogs/countries/${countryId}/reports`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Reports')}
         </Button>
-        <Button component={Link} to={`/dashboard/catalogs/countries/${countryId}/knowledge`} variant={location.pathname.includes(`/dashboard/catalogs/countries/${countryId}/knowledge`) ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes(`/dashboard/catalogs/countries/${countryId}/knowledge`) ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/catalogs/countries/${countryId}/knowledge`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/catalogs/countries/${countryId}/knowledge`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/catalogs/countries/${countryId}/knowledge`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Knowledge')}
         </Button>
       </div>

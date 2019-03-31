@@ -6,7 +6,11 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
+import {
+  commitMutation,
+  QueryRenderer,
+  WS_ACTIVATED,
+} from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import RegionEditionContainer from './RegionEditionContainer';
 import { regionEditionOverviewFocus } from './RegionEditionOverview';
@@ -32,14 +36,14 @@ const styles = theme => ({
 });
 
 export const regionEditionQuery = graphql`
-    query RegionEditionContainerQuery($id: String!) {
-        region(id: $id) {
-            ...RegionEditionContainer_region
-        }
-        me {
-            ...RegionEditionContainer_me
-        }
+  query RegionEditionContainerQuery($id: String!) {
+    region(id: $id) {
+      ...RegionEditionContainer_region
     }
+    me {
+      ...RegionEditionContainer_me
+    }
+  }
 `;
 
 class RegionEdition extends Component {
@@ -69,20 +73,32 @@ class RegionEdition extends Component {
     const { classes, regionId } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
-             color='secondary' aria-label='Edit'
-             className={classes.editButton}><Edit/></Fab>
-        <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Edit"
+          className={classes.editButton}
+        >
+          <Edit />
+        </Fab>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
           <QueryRenderer
             query={regionEditionQuery}
             variables={{ id: regionId }}
             render={({ props }) => {
               if (props) {
-                return <RegionEditionContainer
-                  me={props.me}
-                  region={props.region}
-                  handleClose={this.handleClose.bind(this)}
-                />;
+                return (
+                  <RegionEditionContainer
+                    me={props.me}
+                    region={props.region}
+                    handleClose={this.handleClose.bind(this)}
+                  />
+                );
               }
               return <div> &nbsp; </div>;
             }}

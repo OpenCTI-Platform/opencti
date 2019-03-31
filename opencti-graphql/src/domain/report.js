@@ -103,6 +103,12 @@ export const objectRefs = (reportId, args) =>
     args
   );
 
+export const observableRefs = (reportId, args) =>
+  paginate(
+    `match $so isa Stix-Observable; $rel(so:$so, knowledge_aggregation:$report) isa object_refs;  $report id ${reportId}`,
+    args
+  );
+
 export const relationRefs = (reportId, args) =>
   paginateRelationships(
     `match $rel($from, $to) isa ${

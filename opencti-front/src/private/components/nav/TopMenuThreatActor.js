@@ -34,30 +34,107 @@ const styles = theme => ({
 class TopMenuThreatActor extends Component {
   render() {
     const {
-      t, location, match: { params: { threatActorId } }, classes,
+      t,
+      location,
+      match: {
+        params: { threatActorId },
+      },
+      classes,
     } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/knowledge/threat_actors' variant='contained' size="small"
-                color='inherit' classes={{ root: classes.buttonHome }}>
-          <Public className={classes.icon} fontSize='small'/>
+        <Button
+          component={Link}
+          to="/dashboard/knowledge/threat_actors"
+          variant="contained"
+          size="small"
+          color="inherit"
+          classes={{ root: classes.buttonHome }}
+        >
+          <Public className={classes.icon} fontSize="small" />
           {t('Threat actors')}
         </Button>
-        <ArrowForwardIos color='inherit' classes={{ root: classes.arrow }}/>
-        <Button component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}`} variant={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <Button
+          component={Link}
+          to={`/dashboard/knowledge/threat_actors/${threatActorId}`}
+          variant={
+            location.pathname
+            === `/dashboard/knowledge/threat_actors/${threatActorId}`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/knowledge/threat_actors/${threatActorId}`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Overview')}
         </Button>
-        <Button component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/reports`} variant={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/reports` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/reports` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/knowledge/threat_actors/${threatActorId}/reports`}
+          variant={
+            location.pathname
+            === `/dashboard/knowledge/threat_actors/${threatActorId}/reports`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/knowledge/threat_actors/${threatActorId}/reports`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Reports')}
         </Button>
-        <Button component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge`} variant={location.pathname.includes(`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge`) ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes(`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge`) ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Knowledge')}
         </Button>
-        <Button component={Link} to={`/dashboard/knowledge/threat_actors/${threatActorId}/observables`} variant={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/observables` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/knowledge/threat_actors/${threatActorId}/observables` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/knowledge/threat_actors/${threatActorId}/observables`}
+          variant={
+            location.pathname
+            === `/dashboard/knowledge/threat_actors/${threatActorId}/observables`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/knowledge/threat_actors/${threatActorId}/observables`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Observables')}
         </Button>
       </div>

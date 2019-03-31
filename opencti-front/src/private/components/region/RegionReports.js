@@ -28,9 +28,9 @@ class RegionReportsComponent extends Component {
     const { classes, region } = this.props;
     return (
       <div className={classes.container}>
-        <RegionHeader region={region}/>
+        <RegionHeader region={region} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={region.id}/>
+          <EntityReports entityId={region.id} />
         </Paper>
       </div>
     );
@@ -45,10 +45,10 @@ RegionReportsComponent.propTypes = {
 
 const RegionReports = createFragmentContainer(RegionReportsComponent, {
   region: graphql`
-      fragment RegionReports_region on Region {
-          id
-          ...RegionHeader_region
-      }
+    fragment RegionReports_region on Region {
+      id
+      ...RegionHeader_region
+    }
   `,
 });
 

@@ -20,10 +20,10 @@ const styles = theme => ({
   },
 });
 
-class OrganizationOverviewComponent extends Component {
+class StixObservableOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, organization,
+      t, fld, classes, stixObservable,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -34,7 +34,7 @@ class OrganizationOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Creation date')}
           </Typography>
-          {fld(organization.created)}
+          {fld(stixObservable.created_at)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -42,7 +42,7 @@ class OrganizationOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(organization.modified)}
+          {fld(stixObservable.updated_at)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -50,7 +50,7 @@ class OrganizationOverviewComponent extends Component {
           >
             {t('Creator')}
           </Typography>
-          {pathOr('-', ['createdByRef', 'node', 'name'], organization)}
+          {pathOr('-', ['createdByRef', 'node', 'name'], stixObservable)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -58,41 +58,38 @@ class OrganizationOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <Markdown className="markdown" source={organization.description} />
+          <Markdown className="markdown" source={stixObservable.description} />
         </Paper>
       </div>
     );
   }
 }
 
-OrganizationOverviewComponent.propTypes = {
-  organization: PropTypes.object,
+StixObservableOverviewComponent.propTypes = {
+  stixObservable: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const OrganizationOverview = createFragmentContainer(
-  OrganizationOverviewComponent,
-  {
-    organization: graphql`
-      fragment OrganizationOverview_organization on Organization {
-        id
-        name
-        description
-        created
-        modified
-        createdByRef {
-          node {
-            name
-          }
+const StixObservableOverview = createFragmentContainer(StixObservableOverviewComponent, {
+  stixObservable: graphql`
+    fragment StixObservableOverview_stixObservable on StixObservable {
+      id
+      name
+      description
+      created_at
+      updated_at
+      createdByRef {
+        node {
+          name
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(OrganizationOverview);
+)(StixObservableOverview);

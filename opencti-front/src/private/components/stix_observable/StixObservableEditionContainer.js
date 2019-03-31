@@ -11,7 +11,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import { SubscriptionAvatars } from '../../../components/Subscription';
-import RegionEditionOverview from './RegionEditionOverview';
+import StixObservableEditionOverview from './StixObservableEditionOverview';
 
 const styles = theme => ({
   header: {
@@ -43,13 +43,12 @@ const styles = theme => ({
   },
 });
 
-class RegionEditionContainer extends Component {
+class StixObservableEditionContainer extends Component {
   render() {
     const {
-      t, classes, handleClose, region, me,
+      t, classes, handleClose, stixObservable, me,
     } = this.props;
-    const { editContext } = region;
-    // Add current user to the context if is not available yet.
+    const { editContext } = stixObservable;
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
     const editUsers = missingMe
       ? insert(0, { name: me.email }, editContext)
@@ -65,14 +64,14 @@ class RegionEditionContainer extends Component {
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update an region')}
+            {t('Update a stixObservable')}
           </Typography>
           <SubscriptionAvatars users={editUsers} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <RegionEditionOverview
-            region={this.props.region}
+          <StixObservableEditionOverview
+            stixObservable={this.props.stixObservable}
             editUsers={editUsers}
             me={me}
           />
@@ -82,34 +81,37 @@ class RegionEditionContainer extends Component {
   }
 }
 
-RegionEditionContainer.propTypes = {
+StixObservableEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
-  region: PropTypes.object,
+  stixObservable: PropTypes.object,
   me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
 
-const RegionEditionFragment = createFragmentContainer(RegionEditionContainer, {
-  region: graphql`
-    fragment RegionEditionContainer_region on Region {
-      id
-      ...RegionEditionOverview_region
-      editContext {
-        name
-        focusOn
+const StixObservableEditionFragment = createFragmentContainer(
+  StixObservableEditionContainer,
+  {
+    stixObservable: graphql`
+      fragment StixObservableEditionContainer_stixObservable on StixObservable {
+        id
+        ...StixObservableEditionOverview_stixObservable
+        editContext {
+          name
+          focusOn
+        }
       }
-    }
-  `,
-  me: graphql`
-    fragment RegionEditionContainer_me on User {
-      email
-    }
-  `,
-});
+    `,
+    me: graphql`
+      fragment StixObservableEditionContainer_me on User {
+        email
+      }
+    `,
+  },
+);
 
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(RegionEditionFragment);
+)(StixObservableEditionFragment);

@@ -121,7 +121,6 @@ export const exportStixObservablesQuery = graphql`
           type
           observable_value
           created_at
-          updated_at
           markingDefinitions {
             edges {
               node {
@@ -205,6 +204,7 @@ class StixObservables extends Component {
     this.handleCloseExport();
     this.setState({ exportCsvOpen: true });
     const paginationOptions = {
+      type: this.props.type || null,
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
@@ -229,9 +229,9 @@ class StixObservables extends Component {
   }
 
   render() {
-    const { classes, stixObservableClass, t } = this.props;
+    const { classes, type, t } = this.props;
     const paginationOptions = {
-      stixObservableClass: stixObservableClass || '',
+      type: type || null,
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
@@ -360,7 +360,7 @@ class StixObservables extends Component {
                 separator={';'}
                 enclosingCharacter={'"'}
                 color="primary"
-                filename={`${t('StixObservables')}.csv`}
+                filename={`${t('Observables')}.csv`}
               >
                 {t('Download')}
               </Button>
@@ -376,7 +376,7 @@ class StixObservables extends Component {
 
 StixObservables.propTypes = {
   classes: PropTypes.object,
-  stixObservableClass: PropTypes.string,
+  type: PropTypes.string,
   t: PropTypes.func,
   history: PropTypes.object,
 };

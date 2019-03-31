@@ -14,7 +14,7 @@ import Slide from '@material-ui/core/Slide';
 import { Add, Close } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
-import RegionPopover from './RegionPopover';
+import StixObservablePopover from './StixObservablePopover';
 import { commitMutation } from '../../../relay/environment';
 
 const styles = () => ({
@@ -40,17 +40,17 @@ const styles = () => ({
   },
 });
 
-const regionMutation = graphql`
-  mutation RegionHeaderFieldMutation($id: ID!, $input: EditInput!) {
-    regionEdit(id: $id) {
+const stixObservableMutation = graphql`
+  mutation StixObservableHeaderFieldMutation($id: ID!, $input: EditInput!) {
+    stixObservableEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...RegionHeader_region
+        ...StixObservableHeader_stixObservable
       }
     }
   }
 `;
 
-class RegionHeaderComponent extends Component {
+class StixObservableHeaderComponent extends Component {
   constructor(props) {
     super(props);
     this.state = { openAlias: false };
@@ -62,16 +62,16 @@ class RegionHeaderComponent extends Component {
 
   onSubmitCreateAlias(data) {
     if (
-      this.props.region.alias === null
-      || !this.props.region.alias.includes(data.new_alias)
+      this.props.stixObservable.alias === null
+      || !this.props.stixObservable.alias.includes(data.new_alias)
     ) {
       commitMutation({
-        mutation: regionMutation,
+        mutation: stixObservableMutation,
         variables: {
-          id: this.props.region.id,
+          id: this.props.stixObservable.id,
           input: {
             key: 'alias',
-            value: append(data.new_alias, this.props.region.alias),
+            value: append(data.new_alias, this.props.stixObservable.alias),
           },
         },
       });
@@ -80,11 +80,11 @@ class RegionHeaderComponent extends Component {
   }
 
   deleteAlias(alias) {
-    const aliases = filter(a => a !== alias, this.props.region.alias);
+    const aliases = filter(a => a !== alias, this.props.stixObservable.alias);
     commitMutation({
-      mutation: regionMutation,
+      mutation: stixObservableMutation,
       variables: {
-        id: this.props.region.id,
+        id: this.props.stixObservable.id,
         input: { key: 'alias', value: aliases },
       },
     });
@@ -92,7 +92,7 @@ class RegionHeaderComponent extends Component {
 
   render() {
     const {
-      t, classes, variant, region,
+      t, classes, variant, stixObservable,
     } = this.props;
     return (
       <div>
@@ -101,14 +101,14 @@ class RegionHeaderComponent extends Component {
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {region.name}
+          {stixObservable.name}
         </Typography>
         <div className={classes.popover}>
-          <RegionPopover regionId={region.id} />
+          <StixObservablePopover stixObservableId={stixObservable.id} />
         </div>
         {variant !== 'noalias' ? (
           <div className={classes.aliases}>
-            {propOr([], 'alias', region).map(label => (label.length > 0 ? (
+            {propOr([], 'alias', stixObservable).map(label => (label.length > 0 ? (
                 <Chip
                   key={label}
                   classes={{ root: classes.alias }}
@@ -161,25 +161,35 @@ class RegionHeaderComponent extends Component {
   }
 }
 
-RegionHeaderComponent.propTypes = {
-  region: PropTypes.object,
+StixObservableHeaderComponent.propTypes = {
+  stixObservable: PropTypes.object,
   variant: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const RegionHeader = createFragmentContainer(RegionHeaderComponent, {
-  region: graphql`
-    fragment RegionHeader_region on Region {
-      id
-      name
-      alias
-    }
-  `,
-});
+const StixObservableHeader = createFragmentContainer(
+  StixObservableHeaderComponent,
+  {
+    stixObservable: graphql`
+      fragment StixObservableHeader_stixObservable on StixObservable {
+        id
+        observable_value
+        markingDefinitions {
+          edges {
+            node {
+              id
+              definition
+            }
+          }
+        }
+      }
+    `,
+  },
+);
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(RegionHeader);
+)(StixObservableHeader);

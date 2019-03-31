@@ -214,17 +214,18 @@ class Sectors extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportSectorsQuery, { count: 2147483647, ...paginationOptions }).then(
-      (data) => {
-        const finalData = pipe(
-          map(n => n.node),
-          map(n => over(lensProp('description'), defaultTo('-'))(n)),
-          map(n => assoc('created', dateFormat(n.created))(n)),
-          map(n => assoc('modified', dateFormat(n.modified))(n)),
-        )(data.sectors.edges);
-        this.setState({ exportCsvData: finalData });
-      },
-    );
+    fetchQuery(exportSectorsQuery, {
+      count: 2147483647,
+      ...paginationOptions,
+    }).then((data) => {
+      const finalData = pipe(
+        map(n => n.node),
+        map(n => over(lensProp('description'), defaultTo('-'))(n)),
+        map(n => assoc('created', dateFormat(n.created))(n)),
+        map(n => assoc('modified', dateFormat(n.modified))(n)),
+      )(data.sectors.edges);
+      this.setState({ exportCsvData: finalData });
+    });
   }
 
   renderCardParameters() {

@@ -9,32 +9,36 @@ import RegionReports from './RegionReports';
 import RegionKnowledge from './RegionKnowledge';
 
 const subscription = graphql`
-    subscription RootRegionsSubscription($id: ID!) {
-        stixDomainEntity(id: $id) {
-            ...on Region {
-                ...Region_region
-                ...RegionEditionContainer_region
-            }
-            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
-        }
+  subscription RootRegionsSubscription($id: ID!) {
+    stixDomainEntity(id: $id) {
+      ... on Region {
+        ...Region_region
+        ...RegionEditionContainer_region
+      }
+      ...StixDomainEntityKnowledgeGraph_stixDomainEntity
     }
+  }
 `;
 
 const regionQuery = graphql`
-    query RootRegionQuery($id: String!) {
-        region(id: $id) {
-            ...Region_region
-            ...RegionHeader_region
-            ...RegionOverview_region
-            ...RegionReports_region
-            ...RegionKnowledge_region
-        }
+  query RootRegionQuery($id: String!) {
+    region(id: $id) {
+      ...Region_region
+      ...RegionHeader_region
+      ...RegionOverview_region
+      ...RegionReports_region
+      ...RegionKnowledge_region
     }
+  }
 `;
 
 class RootRegion extends Component {
   componentDidMount() {
-    const { match: { params: { regionId } } } = this.props;
+    const {
+      match: {
+        params: { regionId },
+      },
+    } = this.props;
     const sub = requestSubscription({
       subscription,
       variables: { id: regionId },
@@ -47,10 +51,15 @@ class RootRegion extends Component {
   }
 
   render() {
-    const { me, match: { params: { regionId } } } = this.props;
+    const {
+      me,
+      match: {
+        params: { regionId },
+      },
+    } = this.props;
     return (
       <div>
-        <TopBar me={me || null}/>
+        <TopBar me={me || null} />
         <QueryRenderer
           query={regionQuery}
           variables={{ id: regionId }}
@@ -58,24 +67,39 @@ class RootRegion extends Component {
             if (props && props.region) {
               return (
                 <div>
-                  <Route exact path='/dashboard/catalogs/regions/:regionId' render={
-                    routeProps => <Region {...routeProps} region={props.region}/>
-                  }/>
-                  <Route exact path='/dashboard/catalogs/regions/:regionId/reports' render={
-                    routeProps => <RegionReports {...routeProps} region={props.region}/>
-                  }/>
-                  <Route exact path='/dashboard/catalogs/regions/:regionId/knowledge' render={
-                    () => (<Redirect to={`/dashboard/catalogs/regions/${regionId}/knowledge/overview`}/>)
-                  }/>
-                  <Route path='/dashboard/catalogs/regions/:regionId/knowledge' render={
-                    routeProps => <RegionKnowledge {...routeProps} region={props.region}/>
-                  }/>
+                  <Route
+                    exact
+                    path="/dashboard/catalogs/regions/:regionId"
+                    render={routeProps => (
+                      <Region {...routeProps} region={props.region} />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/catalogs/regions/:regionId/reports"
+                    render={routeProps => (
+                      <RegionReports {...routeProps} region={props.region} />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/catalogs/regions/:regionId/knowledge"
+                    render={() => (
+                      <Redirect
+                        to={`/dashboard/catalogs/regions/${regionId}/knowledge/overview`}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/catalogs/regions/:regionId/knowledge"
+                    render={routeProps => (
+                      <RegionKnowledge {...routeProps} region={props.region} />
+                    )}
+                  />
                 </div>
               );
             }
-            return (
-              <div> &nbsp; </div>
-            );
+            return <div> &nbsp; </div>;
           }}
         />
       </div>

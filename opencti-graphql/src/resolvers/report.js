@@ -7,6 +7,7 @@ import {
   reportsTimeSeriesByEntity,
   findById,
   objectRefs,
+  observableRefs,
   relationRefs
 } from '../domain/report';
 import {
@@ -42,6 +43,7 @@ const reportResolvers = {
     markingDefinitions: (report, args) => markingDefinitions(report.id, args),
     externalReferences: (report, args) => externalReferences(report.id, args),
     objectRefs: (report, args) => objectRefs(report.id, args),
+    observableRefs: (report, args) => observableRefs(report.id, args),
     relationRefs: (report, args) => relationRefs(report.id, args),
     editContext: report => fetchEditContext(report.id)
   },

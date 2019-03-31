@@ -24,7 +24,9 @@ import TextField from '../../../components/TextField';
 import DatePickerField from '../../../components/DatePickerField';
 import Select from '../../../components/Select';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
-import IdentityCreation, { identityCreationIdentitiesSearchQuery } from '../identity/IdentityCreation';
+import IdentityCreation, {
+  identityCreationIdentitiesSearchQuery,
+} from '../identity/IdentityCreation';
 
 const styles = theme => ({
   drawerPaper: {
@@ -70,21 +72,19 @@ const styles = theme => ({
 });
 
 const reportMutation = graphql`
-    mutation ReportCreationMutation($input: ReportAddInput!) {
-        reportAdd(input: $input) {
-            ...ReportLine_report
-        }
+  mutation ReportCreationMutation($input: ReportAddInput!) {
+    reportAdd(input: $input) {
+      ...ReportLine_report
     }
+  }
 `;
 
 const reportValidation = t => Yup.object().shape({
-  name: Yup.string()
-    .required(t('This field is required')),
+  name: Yup.string().required(t('This field is required')),
   published: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  report_class: Yup.string()
-    .required(t('This field is required')),
+  report_class: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });
 
@@ -102,7 +102,11 @@ class ReportCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      open: false, identities: [], identityCreation: false, identityInput: '', markingDefinitions: [],
+      open: false,
+      identities: [],
+      identityCreation: false,
+      identityInput: '',
+      markingDefinitions: [],
     };
   }
 
@@ -161,7 +165,12 @@ class ReportCreation extends Component {
         const payload = store.getRootField('reportAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
-        sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
+        sharedUpdater(
+          store,
+          container.getDataID(),
+          this.props.paginationOptions,
+          newEdge,
+        );
       },
       setSubmitting,
       onCompleted: () => {
@@ -180,51 +189,94 @@ class ReportCreation extends Component {
     const { t, classes } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
-             color='secondary' aria-label='Add'
-             className={classes.createButton}><Add/></Fab>
-        <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}
+        >
+          <Add />
+        </Fab>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
           <div className={classes.header}>
-            <IconButton aria-label='Close' className={classes.closeButton} onClick={this.handleClose.bind(this)}>
-              <Close fontSize='small'/>
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={this.handleClose.bind(this)}
+            >
+              <Close fontSize="small" />
             </IconButton>
-            <Typography variant='h6'>
-              {t('Create a report')}
-            </Typography>
+            <Typography variant="h6">{t('Create a report')}</Typography>
           </div>
           <div className={classes.container}>
             <Formik
               initialValues={{
-                name: '', published: null, description: '', report_class: '', createdByRef: '', markingDefinitions: [],
+                name: '',
+                published: null,
+                description: '',
+                report_class: '',
+                createdByRef: '',
+                markingDefinitions: [],
               }}
               validationSchema={reportValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
               render={({
-                submitForm, handleReset, isSubmitting, setFieldValue,
+                submitForm,
+                handleReset,
+                isSubmitting,
+                setFieldValue,
               }) => (
                 <div>
                   <Form style={{ margin: '20px 0 20px 0' }}>
-                    <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
-                    <Field name='published' component={DatePickerField} label={t('Publication date')} fullWidth={true} style={{ marginTop: 20 }}/>
-                    <Field name='report_class'
-                           component={Select}
-                           label={t('Report type')}
-                           fullWidth={true}
-                           displayEmpty={true}
-                           inputProps={{
-                             name: 'report_class',
-                             id: 'report_class',
-                           }}
-                           containerstyle={{ marginTop: 20, width: '100%' }}
-                    >
-                      <MenuItem value='internal'>{t('Internal report')}</MenuItem>
-                      <MenuItem value='external'>{t('External source')}</MenuItem>
-                    </Field>
-                    <Field name='description' component={TextField} label={t('Description')}
-                           fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
                     <Field
-                      name='createdByRef'
+                      name="name"
+                      component={TextField}
+                      label={t('Name')}
+                      fullWidth={true}
+                    />
+                    <Field
+                      name="published"
+                      component={DatePickerField}
+                      label={t('Publication date')}
+                      fullWidth={true}
+                      style={{ marginTop: 20 }}
+                    />
+                    <Field
+                      name="report_class"
+                      component={Select}
+                      label={t('Report type')}
+                      fullWidth={true}
+                      displayEmpty={true}
+                      inputProps={{
+                        name: 'report_class',
+                        id: 'report_class',
+                      }}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
+                    >
+                      <MenuItem value="internal">
+                        {t('Internal report')}
+                      </MenuItem>
+                      <MenuItem value="external">
+                        {t('External source')}
+                      </MenuItem>
+                    </Field>
+                    <Field
+                      name="description"
+                      component={TextField}
+                      label={t('Description')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      style={{ marginTop: 20 }}
+                    />
+                    <Field
+                      name="createdByRef"
                       component={AutocompleteCreate}
                       multiple={false}
                       handleCreate={this.handleOpenIdentityCreation.bind(this)}
@@ -233,7 +285,7 @@ class ReportCreation extends Component {
                       onInputChange={this.searchIdentities.bind(this)}
                     />
                     <Field
-                      name='markingDefinitions'
+                      name="markingDefinitions"
                       component={Autocomplete}
                       multiple={true}
                       label={t('Marking')}
@@ -241,10 +293,21 @@ class ReportCreation extends Component {
                       onInputChange={this.searchMarkingDefinitions.bind(this)}
                     />
                     <div className={classes.buttons}>
-                      <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                      <Button
+                        variant="contained"
+                        onClick={handleReset}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
                         {t('Cancel')}
                       </Button>
-                      <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
                         {t('Create')}
                       </Button>
                     </div>
@@ -255,7 +318,10 @@ class ReportCreation extends Component {
                     open={this.state.identityCreation}
                     handleClose={this.handleCloseIdentityCreation.bind(this)}
                     creationCallback={(data) => {
-                      setFieldValue('createdByRef', { label: data.identityAdd.name, value: data.identityAdd.id });
+                      setFieldValue('createdByRef', {
+                        label: data.identityAdd.name,
+                        value: data.identityAdd.id,
+                      });
                     }}
                   />
                 </div>

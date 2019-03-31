@@ -63,30 +63,49 @@ class ReportEditionContainer extends Component {
     } = this.props;
     const { editContext } = report;
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
+    const editUsers = missingMe
+      ? insert(0, { name: me.email }, editContext)
+      : editContext;
     return (
       <div>
         <div className={classes.header}>
-          <IconButton aria-label='Close' className={classes.closeButton} onClick={handleClose.bind(this)}>
-            <Close fontSize='small'/>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
           </IconButton>
-          <Typography variant='h6' classes={{ root: classes.title }}>
+          <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a report')}
           </Typography>
-          <SubscriptionAvatars users={editUsers}/>
-          <div className='clearfix'/>
+          <SubscriptionAvatars users={editUsers} />
+          <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <AppBar position='static' elevation={0} className={classes.appBar}>
-            <Tabs value={this.state.currentTab} onChange={this.handleChangeTab.bind(this)}>
-              <Tab label={t('Overview')}/>
-              <Tab label={t('Identity')}/>
+          <AppBar position="static" elevation={0} className={classes.appBar}>
+            <Tabs
+              value={this.state.currentTab}
+              onChange={this.handleChangeTab.bind(this)}
+            >
+              <Tab label={t('Overview')} />
+              <Tab label={t('Identity')} />
             </Tabs>
           </AppBar>
-          {this.state.currentTab === 0
-          && <ReportEditionOverview report={this.props.report} editUsers={editUsers} me={me}/>}
-          {this.state.currentTab === 1
-          && <ReportEditionIdentity report={this.props.report} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 0 && (
+            <ReportEditionOverview
+              report={this.props.report}
+              editUsers={editUsers}
+              me={me}
+            />
+          )}
+          {this.state.currentTab === 1 && (
+            <ReportEditionIdentity
+              report={this.props.report}
+              editUsers={editUsers}
+              me={me}
+            />
+          )}
         </div>
       </div>
     );
@@ -104,20 +123,20 @@ ReportEditionContainer.propTypes = {
 
 const ReportEditionFragment = createFragmentContainer(ReportEditionContainer, {
   report: graphql`
-      fragment ReportEditionContainer_report on Report {
-          id
-          ...ReportEditionOverview_report
-          ...ReportEditionIdentity_report
-          editContext {
-              name
-              focusOn
-          }
+    fragment ReportEditionContainer_report on Report {
+      id
+      ...ReportEditionOverview_report
+      ...ReportEditionIdentity_report
+      editContext {
+        name
+        focusOn
       }
+    }
   `,
   me: graphql`
-      fragment ReportEditionContainer_me on User {
-          email
-      }
+    fragment ReportEditionContainer_me on User {
+      email
+    }
   `,
 });
 

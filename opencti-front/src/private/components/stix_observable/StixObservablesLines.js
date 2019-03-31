@@ -211,8 +211,7 @@ StixObservablesLines.propTypes = {
 
 export const stixObservablesLinesQuery = graphql`
   query StixObservablesLinesPaginationQuery(
-    $objectId: String
-    $stixObservableClass: String
+    $type: String
     $count: Int!
     $cursor: ID
     $orderBy: StixObservablesOrdering
@@ -220,8 +219,7 @@ export const stixObservablesLinesQuery = graphql`
   ) {
     ...StixObservablesLines_data
       @arguments(
-        objectId: $objectId
-        stixObservableClass: $stixObservableClass
+        type: $type
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -253,14 +251,14 @@ export default withStyles(styles)(
       data: graphql`
         fragment StixObservablesLines_data on Query
           @argumentDefinitions(
-            objectId: { type: "String" }
-            stixObservableClass: { type: "String" }
+            type: { type: "String" }
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
             orderBy: { type: "StixObservablesOrdering", defaultValue: ID }
             orderMode: { type: "OrderingMode", defaultValue: "asc" }
           ) {
           stixObservables(
+            type: $type
             first: $count
             after: $cursor
             orderBy: $orderBy
@@ -300,8 +298,7 @@ export default withStyles(styles)(
       },
       getVariables(props, { count, cursor }, fragmentVariables) {
         return {
-          objectId: fragmentVariables.objectId,
-          stixObservableClass: fragmentVariables.stixObservableClass,
+          type: fragmentVariables.type,
           count,
           cursor,
           orderBy: fragmentVariables.orderBy,

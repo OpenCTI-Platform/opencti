@@ -20,7 +20,22 @@ class TopMenuWorkspaces extends Component {
     const { t, location, classes } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/investigate' variant={location.pathname === '/dashboard/investigate' ? 'contained' : 'text'} size="small" color={location.pathname === '/dashboard/investigate' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to="/dashboard/investigate"
+          variant={
+            location.pathname === '/dashboard/investigate'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/investigate'
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Workspaces')}
         </Button>
       </div>

@@ -41,13 +41,13 @@ const styles = () => ({
 });
 
 const organizationMutation = graphql`
-    mutation OrganizationHeaderFieldMutation($id: ID!, $input: EditInput!) {
-        organizationEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...OrganizationHeader_organization
-            }
-        }
+  mutation OrganizationHeaderFieldMutation($id: ID!, $input: EditInput!) {
+    organizationEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...OrganizationHeader_organization
+      }
     }
+  }
 `;
 
 class OrganizationHeaderComponent extends Component {
@@ -61,13 +61,18 @@ class OrganizationHeaderComponent extends Component {
   }
 
   onSubmitCreateAlias(data) {
-    if (this.props.organization.alias === null
-      || !this.props.organization.alias.includes(data.new_alias)) {
+    if (
+      this.props.organization.alias === null
+      || !this.props.organization.alias.includes(data.new_alias)
+    ) {
       commitMutation({
         mutation: organizationMutation,
         variables: {
           id: this.props.organization.id,
-          input: { key: 'alias', value: append(data.new_alias, this.props.organization.alias) },
+          input: {
+            key: 'alias',
+            value: append(data.new_alias, this.props.organization.alias),
+          },
         },
       });
     }
@@ -91,32 +96,66 @@ class OrganizationHeaderComponent extends Component {
     } = this.props;
     return (
       <div>
-        <Typography variant='h1' gutterBottom={true} classes={{ root: classes.title }}>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
+        >
           {organization.name}
         </Typography>
         <div className={classes.popover}>
-          <OrganizationPopover organizationId={organization.id}/>
+          <OrganizationPopover organizationId={organization.id} />
         </div>
-        {variant !== 'noalias'
-          ? <div className={classes.aliases}>
-            {propOr([], 'alias', organization).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
-            <IconButton color='secondary' aria-label='Alias' onClick={this.handleToggleCreateAlias.bind(this)}>
-              {this.state.openAlias ? <Close fontSize='small'/> : <Add fontSize='small'/>}
+        {variant !== 'noalias' ? (
+          <div className={classes.aliases}>
+            {propOr([], 'alias', organization).map(label => (label.length > 0 ? (
+                <Chip
+                  key={label}
+                  classes={{ root: classes.alias }}
+                  label={label}
+                  onDelete={this.deleteAlias.bind(this, label)}
+                />
+            ) : (
+              ''
+            )))}
+            <IconButton
+              color="secondary"
+              aria-label="Alias"
+              onClick={this.handleToggleCreateAlias.bind(this)}
+            >
+              {this.state.openAlias ? (
+                <Close fontSize="small" />
+              ) : (
+                <Add fontSize="small" />
+              )}
             </IconButton>
-            <Slide direction='left' in={this.state.openAlias} mountOnEnter={true} unmountOnExit={true}>
+            <Slide
+              direction="left"
+              in={this.state.openAlias}
+              mountOnEnter={true}
+              unmountOnExit={true}
+            >
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={this.onSubmitCreateAlias.bind(this)}
                 render={() => (
                   <Form style={{ float: 'right' }}>
-                    <Field name='new_alias' component={TextField} autoFocus={true} placeholder={t('New alias')} className={classes.aliasInput}/>
+                    <Field
+                      name="new_alias"
+                      component={TextField}
+                      autoFocus={true}
+                      placeholder={t('New alias')}
+                      className={classes.aliasInput}
+                    />
                   </Form>
                 )}
               />
             </Slide>
-          </div> : ''
-        }
-        <div className='clearfix'/>
+          </div>
+        ) : (
+          ''
+        )}
+        <div className="clearfix" />
       </div>
     );
   }
@@ -130,15 +169,18 @@ OrganizationHeaderComponent.propTypes = {
   fld: PropTypes.func,
 };
 
-const OrganizationHeader = createFragmentContainer(OrganizationHeaderComponent, {
-  organization: graphql`
+const OrganizationHeader = createFragmentContainer(
+  OrganizationHeaderComponent,
+  {
+    organization: graphql`
       fragment OrganizationHeader_organization on Organization {
-          id,
-          name,
-          alias,
+        id
+        name
+        alias
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

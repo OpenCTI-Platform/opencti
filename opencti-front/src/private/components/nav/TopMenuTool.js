@@ -35,30 +35,103 @@ const styles = theme => ({
 class TopMenuTool extends Component {
   render() {
     const {
-      t, location, match: { params: { toolId } }, classes,
+      t,
+      location,
+      match: {
+        params: { toolId },
+      },
+      classes,
     } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/catalogs/tools' variant='contained' size="small"
-                color='inherit' classes={{ root: classes.buttonHome }}>
-          <Application className={classes.icon} fontSize='small'/>
+        <Button
+          component={Link}
+          to="/dashboard/catalogs/tools"
+          variant="contained"
+          size="small"
+          color="inherit"
+          classes={{ root: classes.buttonHome }}
+        >
+          <Application className={classes.icon} fontSize="small" />
           {t('Tools')}
         </Button>
-        <ArrowForwardIos color='inherit' classes={{ root: classes.arrow }}/>
-        <Button component={Link} to={`/dashboard/catalogs/tools/${toolId}`} variant={location.pathname === `/dashboard/catalogs/tools/${toolId}` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/catalogs/tools/${toolId}` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <Button
+          component={Link}
+          to={`/dashboard/catalogs/tools/${toolId}`}
+          variant={
+            location.pathname === `/dashboard/catalogs/tools/${toolId}`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === `/dashboard/catalogs/tools/${toolId}`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Overview')}
         </Button>
-        <Button component={Link} to={`/dashboard/catalogs/tools/${toolId}/reports`} variant={location.pathname === `/dashboard/catalogs/tools/${toolId}/reports` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/catalogs/tools/${toolId}/reports` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/catalogs/tools/${toolId}/reports`}
+          variant={
+            location.pathname === `/dashboard/catalogs/tools/${toolId}/reports`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === `/dashboard/catalogs/tools/${toolId}/reports`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Reports')}
         </Button>
-        <Button component={Link} to={`/dashboard/catalogs/tools/${toolId}/knowledge`} variant={location.pathname.includes(`/dashboard/catalogs/tools/${toolId}/knowledge`) ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes(`/dashboard/catalogs/tools/${toolId}/knowledge`) ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/catalogs/tools/${toolId}/knowledge`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/catalogs/tools/${toolId}/knowledge`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/catalogs/tools/${toolId}/knowledge`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Knowledge')}
         </Button>
-        <Button component={Link} to={`/dashboard/catalogs/tools/${toolId}/observables`} variant={location.pathname === `/dashboard/catalogs/tools/${toolId}/observables` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/catalogs/tools/${toolId}/observables` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/catalogs/tools/${toolId}/observables`}
+          variant={
+            location.pathname
+            === `/dashboard/catalogs/tools/${toolId}/observables`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/catalogs/tools/${toolId}/observables`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Observables')}
         </Button>
       </div>

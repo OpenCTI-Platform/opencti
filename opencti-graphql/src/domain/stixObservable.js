@@ -66,18 +66,14 @@ export const createdByRef = stixObservableId =>
 
 export const markingDefinitions = (stixObservableId, args) =>
   paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(marking:$marking, so:$stixObservable) isa object_marking_refs; 
-    $stixObservable id ${stixObservableId}`,
+    `match $marking isa Marking-Definition; $rel(marking:$marking, so:$stixObservable) isa object_marking_refs; $stixObservable id ${stixObservableId}`,
     args,
     false
   );
 
 export const reports = (stixObservableId, args) =>
   paginate(
-    `match $report isa Report; 
-    $rel(knowledge_aggregation:$report, so:$stixObservable) isa object_refs; 
-    $stixObservable id ${stixObservableId}`,
+    `match $report isa Report; $rel(knowledge_aggregation:$report, so:$stixObservable) isa object_refs; $stixObservable id ${stixObservableId}`,
     args
   );
 

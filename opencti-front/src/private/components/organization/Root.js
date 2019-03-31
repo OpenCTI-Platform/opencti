@@ -9,32 +9,36 @@ import OrganizationReports from './OrganizationReports';
 import OrganizationKnowledge from './OrganizationKnowledge';
 
 const subscription = graphql`
-    subscription RootOrganizationSubscription($id: ID!) {
-        stixDomainEntity(id: $id) {
-            ...on Organization {
-                ...Organization_organization
-                ...OrganizationEditionContainer_organization
-            }
-            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
-        }
+  subscription RootOrganizationSubscription($id: ID!) {
+    stixDomainEntity(id: $id) {
+      ... on Organization {
+        ...Organization_organization
+        ...OrganizationEditionContainer_organization
+      }
+      ...StixDomainEntityKnowledgeGraph_stixDomainEntity
     }
+  }
 `;
 
 const organizationQuery = graphql`
-    query RootOrganizationQuery($id: String!) {
-        organization(id: $id) {
-            ...Organization_organization
-            ...OrganizationHeader_organization
-            ...OrganizationOverview_organization
-            ...OrganizationReports_organization
-            ...OrganizationKnowledge_organization
-        }
+  query RootOrganizationQuery($id: String!) {
+    organization(id: $id) {
+      ...Organization_organization
+      ...OrganizationHeader_organization
+      ...OrganizationOverview_organization
+      ...OrganizationReports_organization
+      ...OrganizationKnowledge_organization
     }
+  }
 `;
 
 class RootOrganization extends Component {
   componentDidMount() {
-    const { match: { params: { organizationId } } } = this.props;
+    const {
+      match: {
+        params: { organizationId },
+      },
+    } = this.props;
     const sub = requestSubscription({
       subscription,
       variables: { id: organizationId },
@@ -47,10 +51,15 @@ class RootOrganization extends Component {
   }
 
   render() {
-    const { me, match: { params: { organizationId } } } = this.props;
+    const {
+      me,
+      match: {
+        params: { organizationId },
+      },
+    } = this.props;
     return (
       <div>
-        <TopBar me={me || null}/>
+        <TopBar me={me || null} />
         <QueryRenderer
           query={organizationQuery}
           variables={{ id: organizationId }}
@@ -58,24 +67,48 @@ class RootOrganization extends Component {
             if (props && props.organization) {
               return (
                 <div>
-                  <Route exact path='/dashboard/catalogs/organizations/:organizationId' render={
-                    routeProps => <Organization {...routeProps} organization={props.organization}/>
-                  }/>
-                  <Route exact path='/dashboard/catalogs/organizations/:organizationId/reports' render={
-                    routeProps => <OrganizationReports {...routeProps} organization={props.organization}/>
-                  }/>
-                  <Route exact path='/dashboard/catalogs/organizations/:organizationId/knowledge' render={
-                    () => (<Redirect to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/overview`}/>)
-                  }/>
-                  <Route path='/dashboard/catalogs/organizations/:organizationId/knowledge' render={
-                    routeProps => <OrganizationKnowledge {...routeProps} organization={props.organization}/>
-                  }/>
+                  <Route
+                    exact
+                    path="/dashboard/catalogs/organizations/:organizationId"
+                    render={routeProps => (
+                      <Organization
+                        {...routeProps}
+                        organization={props.organization}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/catalogs/organizations/:organizationId/reports"
+                    render={routeProps => (
+                      <OrganizationReports
+                        {...routeProps}
+                        organization={props.organization}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/catalogs/organizations/:organizationId/knowledge"
+                    render={() => (
+                      <Redirect
+                        to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/overview`}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/catalogs/organizations/:organizationId/knowledge"
+                    render={routeProps => (
+                      <OrganizationKnowledge
+                        {...routeProps}
+                        organization={props.organization}
+                      />
+                    )}
+                  />
                 </div>
               );
             }
-            return (
-              <div> &nbsp; </div>
-            );
+            return <div> &nbsp; </div>;
           }}
         />
       </div>

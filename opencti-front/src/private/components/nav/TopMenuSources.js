@@ -23,8 +23,18 @@ class TopMenuSources extends Component {
     const { t, location, classes } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/sources' variant={location.pathname === '/dashboard/sources' ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/sources' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to="/dashboard/sources"
+          variant={
+            location.pathname === '/dashboard/sources' ? 'contained' : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/sources' ? 'primary' : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Configuration')}
         </Button>
       </div>

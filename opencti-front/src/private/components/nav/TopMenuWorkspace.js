@@ -34,18 +34,43 @@ const styles = theme => ({
 class TopMenuWorkspace extends Component {
   render() {
     const {
-      t, location, match: { params: { workspaceId } }, classes,
+      t,
+      location,
+      match: {
+        params: { workspaceId },
+      },
+      classes,
     } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/investigate' variant='contained' size="small"
-                color='inherit' classes={{ root: classes.buttonHome }}>
-          <Work className={classes.icon} fontSize='small'/>
+        <Button
+          component={Link}
+          to="/dashboard/investigate"
+          variant="contained"
+          size="small"
+          color="inherit"
+          classes={{ root: classes.buttonHome }}
+        >
+          <Work className={classes.icon} fontSize="small" />
           {t('Workspaces')}
         </Button>
-        <ArrowForwardIos color='inherit' classes={{ root: classes.arrow }}/>
-        <Button component={Link} to={`/dashboard/investigate/${workspaceId}`} variant={location.pathname === `/dashboard/investigate/${workspaceId}` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/investigate/${workspaceId}` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <Button
+          component={Link}
+          to={`/dashboard/investigate/${workspaceId}`}
+          variant={
+            location.pathname === `/dashboard/investigate/${workspaceId}`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === `/dashboard/investigate/${workspaceId}`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Knowledge')}
         </Button>
       </div>

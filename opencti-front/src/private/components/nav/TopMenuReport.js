@@ -34,30 +34,99 @@ const styles = theme => ({
 class TopMenuReport extends Component {
   render() {
     const {
-      t, location, match: { params: { reportId } }, classes,
+      t,
+      location,
+      match: {
+        params: { reportId },
+      },
+      classes,
     } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/reports/all' variant='contained' size="small"
-                color='inherit' classes={{ root: classes.buttonHome }}>
-          <Description className={classes.icon} fontSize='small'/>
+        <Button
+          component={Link}
+          to="/dashboard/reports/all"
+          variant="contained"
+          size="small"
+          color="inherit"
+          classes={{ root: classes.buttonHome }}
+        >
+          <Description className={classes.icon} fontSize="small" />
           {t('Reports')}
         </Button>
-        <ArrowForwardIos color='inherit' classes={{ root: classes.arrow }}/>
-        <Button component={Link} to={`/dashboard/reports/all/${reportId}`} variant={location.pathname === `/dashboard/reports/all/${reportId}` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/reports/all/${reportId}` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <Button
+          component={Link}
+          to={`/dashboard/reports/all/${reportId}`}
+          variant={
+            location.pathname === `/dashboard/reports/all/${reportId}`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === `/dashboard/reports/all/${reportId}`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Overview')}
         </Button>
-        <Button component={Link} to={`/dashboard/reports/all/${reportId}/entities`} variant={location.pathname === `/dashboard/reports/all/${reportId}/entities` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/reports/all/${reportId}/entities` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/reports/all/${reportId}/entities`}
+          variant={
+            location.pathname === `/dashboard/reports/all/${reportId}/entities`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === `/dashboard/reports/all/${reportId}/entities`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Entities')}
         </Button>
-        <Button component={Link} to={`/dashboard/reports/all/${reportId}/observables`} variant={location.pathname === `/dashboard/reports/all/${reportId}/observables` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/reports/all/${reportId}/observables` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/reports/all/${reportId}/observables`}
+          variant={
+            location.pathname
+            === `/dashboard/reports/all/${reportId}/observables`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/reports/all/${reportId}/observables`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Observables')}
         </Button>
-        <Button component={Link} to={`/dashboard/reports/all/${reportId}/knowledge`} variant={location.pathname === `/dashboard/reports/all/${reportId}/knowledge` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/reports/all/${reportId}/knowledge` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/reports/all/${reportId}/knowledge`}
+          variant={
+            location.pathname === `/dashboard/reports/all/${reportId}/knowledge`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === `/dashboard/reports/all/${reportId}/knowledge`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Knowledge')}
         </Button>
       </div>

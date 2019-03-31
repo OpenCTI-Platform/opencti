@@ -13,6 +13,9 @@ import {
   pick,
   difference,
   head,
+  sortWith,
+  ascend,
+  path,
   union,
 } from 'ramda';
 import * as Yup from 'yup';
@@ -25,6 +28,7 @@ import {
   fetchQuery,
   WS_ACTIVATED,
 } from '../../../relay/environment';
+import { killChainPhasesLinesSearchQuery } from '../kill_chain_phase/KillChainPhasesLines';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import IdentityCreation, {
@@ -56,63 +60,60 @@ const styles = theme => ({
   },
 });
 
-const organizationMutationFieldPatch = graphql`
-  mutation OrganizationEditionOverviewFieldPatchMutation(
+const stixObservableMutationFieldPatch = graphql`
+  mutation StixObservableEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
-    organizationEdit(id: $id) {
+    stixObservableEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...OrganizationEditionOverview_organization
+        ...StixObservableEditionOverview_stixObservable
       }
     }
   }
 `;
 
-export const organizationEditionOverviewFocus = graphql`
-  mutation OrganizationEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
-    organizationEdit(id: $id) {
+export const stixObservableEditionOverviewFocus = graphql`
+  mutation StixObservableEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
+    stixObservableEdit(id: $id) {
       contextPatch(input: $input) {
-        ...OrganizationEditionOverview_organization
+        ...StixObservableEditionOverview_stixObservable
       }
     }
   }
 `;
 
-const organizationMutationRelationAdd = graphql`
-  mutation OrganizationEditionOverviewRelationAddMutation(
+const stixObservableMutationRelationAdd = graphql`
+  mutation StixObservableEditionOverviewRelationAddMutation(
     $id: ID!
     $input: RelationAddInput!
   ) {
-    organizationEdit(id: $id) {
+    stixObservableEdit(id: $id) {
       relationAdd(input: $input) {
         node {
-          ...OrganizationEditionOverview_organization
+          ...StixObservableEditionOverview_stixObservable
         }
       }
     }
   }
 `;
 
-const organizationMutationRelationDelete = graphql`
-  mutation OrganizationEditionOverviewRelationDeleteMutation(
+const stixObservableMutationRelationDelete = graphql`
+  mutation StixObservableEditionOverviewRelationDeleteMutation(
     $id: ID!
     $relationId: ID!
   ) {
-    organizationEdit(id: $id) {
+    stixObservableEdit(id: $id) {
       relationDelete(relationId: $relationId) {
         node {
-          ...OrganizationEditionOverview_organization
+          ...StixObservableEditionOverview_stixObservable
         }
       }
     }
   }
 `;
 
-const organizationValidation = t => Yup.object().shape({
+const stixObservableValidation = t => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -120,7 +121,7 @@ const organizationValidation = t => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-class OrganizationEditionOverviewComponent extends Component {
+class StixObservableEditionOverviewComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -152,6 +153,24 @@ class OrganizationEditionOverviewComponent extends Component {
     this.setState({ identityCreation: false });
   }
 
+  searchKillChainPhases(event) {
+    fetchQuery(killChainPhasesLinesSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
+      const killChainPhases = pipe(
+        pathOr([], ['killChainPhases', 'edges']),
+        sortWith([ascend(path(['node', 'phase_order']))]),
+        map(n => ({
+          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+          value: n.node.id,
+        })),
+      )(data);
+      this.setState({
+        killChainPhases: union(this.state.killChainPhases, killChainPhases),
+      });
+    });
+  }
+
   searchMarkingDefinitions(event) {
     fetchQuery(markingDefinitionsLinesSearchQuery, {
       search: event.target.value,
@@ -172,9 +191,9 @@ class OrganizationEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
     if (WS_ACTIVATED) {
       commitMutation({
-        mutation: organizationEditionOverviewFocus,
+        mutation: stixObservableEditionOverviewFocus,
         variables: {
-          id: this.props.organization.id,
+          id: this.props.stixObservable.id,
           input: {
             focusOn: name,
           },
@@ -184,36 +203,33 @@ class OrganizationEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    organizationValidation(this.props.t)
+    stixObservableValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: organizationMutationFieldPatch,
-          variables: {
-            id: this.props.organization.id,
-            input: { key: name, value },
-          },
+          mutation: stixObservableMutationFieldPatch,
+          variables: { id: this.props.stixObservable.id, input: { key: name, value } },
         });
       })
       .catch(() => false);
   }
 
   handleChangeCreatedByRef(name, value) {
-    const { organization } = this.props;
+    const { stixObservable } = this.props;
     const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], organization),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], organization),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], organization),
+      label: pathOr(null, ['createdByRef', 'node', 'name'], stixObservable),
+      value: pathOr(null, ['createdByRef', 'node', 'id'], stixObservable),
+      relation: pathOr(null, ['createdByRef', 'relation', 'id'], stixObservable),
     };
 
     if (currentCreatedByRef.value === null) {
       commitMutation({
-        mutation: organizationMutationRelationAdd,
+        mutation: stixObservableMutationRelationAdd,
         variables: {
           id: value.value,
           input: {
             fromRole: 'creator',
-            toId: this.props.organization.id,
+            toId: this.props.stixObservable.id,
             toRole: 'so',
             through: 'created_by_ref',
           },
@@ -221,19 +237,19 @@ class OrganizationEditionOverviewComponent extends Component {
       });
     } else if (currentCreatedByRef.value !== value.value) {
       commitMutation({
-        mutation: organizationMutationRelationDelete,
+        mutation: stixObservableMutationRelationDelete,
         variables: {
-          id: this.props.organization.id,
+          id: this.props.stixObservable.id,
           relationId: currentCreatedByRef.relation,
         },
       });
       commitMutation({
-        mutation: organizationMutationRelationAdd,
+        mutation: stixObservableMutationRelationAdd,
         variables: {
           id: value.value,
           input: {
             fromRole: 'creator',
-            toId: this.props.organization.id,
+            toId: this.props.stixObservable.id,
             toRole: 'so',
             through: 'created_by_ref',
           },
@@ -242,8 +258,48 @@ class OrganizationEditionOverviewComponent extends Component {
     }
   }
 
+  handleChangeKillChainPhases(name, values) {
+    const { stixObservable } = this.props;
+    const currentKillChainPhases = pipe(
+      pathOr([], ['killChainPhases', 'edges']),
+      map(n => ({
+        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+        value: n.node.id,
+        relationId: n.relation.id,
+      })),
+    )(stixObservable);
+
+    const added = difference(values, currentKillChainPhases);
+    const removed = difference(currentKillChainPhases, values);
+
+    if (added.length > 0) {
+      commitMutation({
+        mutation: stixObservableMutationRelationAdd,
+        variables: {
+          id: head(added).value,
+          input: {
+            fromRole: 'kill_chain_phase',
+            toId: this.props.stixObservable.id,
+            toRole: 'phase_belonging',
+            through: 'kill_chain_phases',
+          },
+        },
+      });
+    }
+
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: stixObservableMutationRelationDelete,
+        variables: {
+          id: this.props.stixObservable.id,
+          relationId: head(removed).relationId,
+        },
+      });
+    }
+  }
+
   handleChangeMarkingDefinition(name, values) {
-    const { organization } = this.props;
+    const { stixObservable } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map(n => ({
@@ -251,19 +307,19 @@ class OrganizationEditionOverviewComponent extends Component {
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(organization);
+    )(stixObservable);
 
     const added = difference(values, currentMarkingDefinitions);
     const removed = difference(currentMarkingDefinitions, values);
 
     if (added.length > 0) {
       commitMutation({
-        mutation: organizationMutationRelationAdd,
+        mutation: stixObservableMutationRelationAdd,
         variables: {
           id: head(added).value,
           input: {
             fromRole: 'marking',
-            toId: this.props.organization.id,
+            toId: this.props.stixObservable.id,
             toRole: 'so',
             through: 'object_marking_refs',
           },
@@ -273,9 +329,9 @@ class OrganizationEditionOverviewComponent extends Component {
 
     if (removed.length > 0) {
       commitMutation({
-        mutation: organizationMutationRelationDelete,
+        mutation: stixObservableMutationRelationDelete,
         variables: {
-          id: this.props.organization.id,
+          id: this.props.stixObservable.id,
           relationId: head(removed).relationId,
         },
       });
@@ -284,19 +340,23 @@ class OrganizationEditionOverviewComponent extends Component {
 
   render() {
     const {
-      t, organization, editUsers, me,
+      t, stixObservable, editUsers, me,
     } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], organization) === null
+    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], stixObservable) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], organization),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], organization),
-        relation: pathOr(
-          null,
-          ['createdByRef', 'relation', 'id'],
-          organization,
-        ),
+        label: pathOr(null, ['createdByRef', 'node', 'name'], stixObservable),
+        value: pathOr(null, ['createdByRef', 'node', 'id'], stixObservable),
+        relation: pathOr(null, ['createdByRef', 'relation', 'id'], stixObservable),
       };
+    const killChainPhases = pipe(
+      pathOr([], ['killChainPhases', 'edges']),
+      map(n => ({
+        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+        value: n.node.id,
+        relationId: n.relation.id,
+      })),
+    )(stixObservable);
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map(n => ({
@@ -304,18 +364,25 @@ class OrganizationEditionOverviewComponent extends Component {
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(organization);
+    )(stixObservable);
     const initialValues = pipe(
       assoc('createdByRef', createdByRef),
+      assoc('killChainPhases', killChainPhases),
       assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'description', 'createdByRef', 'markingDefinitions']),
-    )(organization);
+      pick([
+        'name',
+        'description',
+        'createdByRef',
+        'killChainPhases',
+        'markingDefinitions',
+      ]),
+    )(stixObservable);
     return (
       <div>
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={organizationValidation(t)}
+          validationSchema={stixObservableValidation(t)}
           onSubmit={() => true}
           render={({ setFieldValue }) => (
             <div>
@@ -372,6 +439,23 @@ class OrganizationEditionOverviewComponent extends Component {
                   }
                 />
                 <Field
+                  name="killChainPhases"
+                  component={Autocomplete}
+                  multiple={true}
+                  label={t('Kill chain phases')}
+                  options={this.state.killChainPhases}
+                  onInputChange={this.searchKillChainPhases.bind(this)}
+                  onChange={this.handleChangeKillChainPhases.bind(this)}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="killChainPhases"
+                    />
+                  }
+                />
+                <Field
                   name="markingDefinitions"
                   component={Autocomplete}
                   multiple={true}
@@ -413,22 +497,22 @@ class OrganizationEditionOverviewComponent extends Component {
   }
 }
 
-OrganizationEditionOverviewComponent.propTypes = {
+StixObservableEditionOverviewComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  organization: PropTypes.object,
+  stixObservable: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
 };
 
-const OrganizationEditionOverview = createFragmentContainer(
-  OrganizationEditionOverviewComponent,
+const StixObservableEditionOverview = createFragmentContainer(
+  StixObservableEditionOverviewComponent,
   {
-    organization: graphql`
-      fragment OrganizationEditionOverview_organization on Organization {
+    stixObservable: graphql`
+      fragment StixObservableEditionOverview_stixObservable on StixObservable {
         id
-        name
+        observable_value
         description
         createdByRef {
           node {
@@ -459,4 +543,4 @@ const OrganizationEditionOverview = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(OrganizationEditionOverview);
+)(StixObservableEditionOverview);

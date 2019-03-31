@@ -4,8 +4,15 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { CSVLink } from 'react-csv';
 import {
-  assoc, compose, defaultTo, join,
-  lensProp, map, over, pathOr, pipe,
+  assoc,
+  compose,
+  defaultTo,
+  join,
+  lensProp,
+  map,
+  over,
+  pathOr,
+  pipe,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Menu from '@material-ui/core/Menu';
@@ -23,7 +30,10 @@ import IconButton from '@material-ui/core/IconButton';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Button from '@material-ui/core/Button';
 import {
-  ArrowDropDown, ArrowDropUp, TableChart, SaveAlt,
+  ArrowDropDown,
+  ArrowDropUp,
+  TableChart,
+  SaveAlt,
 } from '@material-ui/icons';
 import { fetchQuery, QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
@@ -133,9 +143,20 @@ class EntityReports extends Component {
     const { t } = this.props;
     if (isSortable) {
       return (
-        <div style={inlineStyles[field]} onClick={this.reverseBy.bind(this, field)}>
+        <div
+          style={inlineStyles[field]}
+          onClick={this.reverseBy.bind(this, field)}
+        >
           <span>{t(label)}</span>
-          {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStyles.iconSort}/> : <ArrowDropUp style={inlineStyles.iconSort}/> : ''}
+          {this.state.sortBy === field ? (
+            this.state.orderAsc ? (
+              <ArrowDropDown style={inlineStyles.iconSort} />
+            ) : (
+              <ArrowDropUp style={inlineStyles.iconSort} />
+            )
+          ) : (
+            ''
+          )}
         </div>
       );
     }
@@ -167,22 +188,30 @@ class EntityReports extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportReportsQuery, { count: 10000, ...paginationOptions }).then((data) => {
-      const finalData = pipe(
-        map(n => n.node),
-        map(n => over(lensProp('description'), defaultTo('-'))(n)),
-        map(n => assoc('published', dateFormat(n.published))(n)),
-        map(n => assoc('created', dateFormat(n.created))(n)),
-        map(n => assoc('modified', dateFormat(n.modified))(n)),
-        map(n => assoc('createdByRef', pathOr('-', ['createdByRef', 'node', 'name'], n))(n)),
-        map(n => assoc('markingDefinitions', pipe(
-          pathOr([], ['markingDefinitions', 'edges']),
-          map(o => o.node.definition_name),
-          join(', '),
-        )(n))(n)),
-      )(data.reports.edges);
-      this.setState({ exportCsvData: finalData });
-    });
+    fetchQuery(exportReportsQuery, { count: 10000, ...paginationOptions }).then(
+      (data) => {
+        const finalData = pipe(
+          map(n => n.node),
+          map(n => over(lensProp('description'), defaultTo('-'))(n)),
+          map(n => assoc('published', dateFormat(n.published))(n)),
+          map(n => assoc('created', dateFormat(n.created))(n)),
+          map(n => assoc('modified', dateFormat(n.modified))(n)),
+          map(n => assoc(
+            'createdByRef',
+            pathOr('-', ['createdByRef', 'node', 'name'], n),
+          )(n)),
+          map(n => assoc(
+            'markingDefinitions',
+            pipe(
+              pathOr([], ['markingDefinitions', 'edges']),
+              map(o => o.node.definition_name),
+              join(', '),
+            )(n),
+          )(n)),
+        )(data.reports.edges);
+        this.setState({ exportCsvData: finalData });
+      },
+    );
   }
 
   render() {
@@ -199,16 +228,25 @@ class EntityReports extends Component {
       <div>
         <div className={classes.header}>
           <div style={{ float: 'left' }}>
-            <SearchInput variant='small' onChange={this.handleSearch.bind(this)}/>
+            <SearchInput
+              variant="small"
+              onChange={this.handleSearch.bind(this)}
+            />
           </div>
           <div style={{ float: 'right', marginTop: -10 }}>
-            <IconButton color={this.state.view === 'lines' ? 'secondary' : 'primary'}
-                        classes={{ root: classes.button }}
-                        onClick={this.handleChangeView.bind(this, 'lines')}>
-              <TableChart/>
+            <IconButton
+              color={this.state.view === 'lines' ? 'secondary' : 'primary'}
+              classes={{ root: classes.button }}
+              onClick={this.handleChangeView.bind(this, 'lines')}
+            >
+              <TableChart />
             </IconButton>
-            <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true' color='primary'>
-              <SaveAlt/>
+            <IconButton
+              onClick={this.handleOpenExport.bind(this)}
+              aria-haspopup="true"
+              color="primary"
+            >
+              <SaveAlt />
             </IconButton>
             <Menu
               anchorEl={this.state.anchorExport}
@@ -216,34 +254,62 @@ class EntityReports extends Component {
               onClose={this.handleCloseExport.bind(this)}
               style={{ marginTop: 50 }}
             >
-              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>{t('CSV file')}</MenuItem>
+              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>
+                {t('CSV file')}
+              </MenuItem>
             </Menu>
           </div>
-          <div className='clearfix'/>
+          <div className="clearfix" />
         </div>
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
+          <ListItem
+            classes={{ default: classes.item }}
+            divider={false}
+            style={{ paddingTop: 0 }}
+          >
             <ListItemIcon>
-              <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
+              <span
+                style={{
+                  padding: '0 8px 0 8px',
+                  fontWeight: 700,
+                  fontSize: 12,
+                }}
+              >
+                #
+              </span>
             </ListItemIcon>
-            <ListItemText primary={
-              <div>
-                {this.SortHeader('name', 'Name', true)}
-                {this.SortHeader('createdByRef', 'Author', true)}
-                {this.SortHeader('published', 'Publication', true)}
-                {this.SortHeader('object_status', 'Status', true)}
-                {this.SortHeader('marking', 'Marking', false)}
-              </div>
-            }/>
+            <ListItemText
+              primary={
+                <div>
+                  {this.SortHeader('name', 'Name', true)}
+                  {this.SortHeader('createdByRef', 'Author', true)}
+                  {this.SortHeader('published', 'Publication', true)}
+                  {this.SortHeader('object_status', 'Status', true)}
+                  {this.SortHeader('marking', 'Marking', false)}
+                </div>
+              }
+            />
           </ListItem>
           <QueryRenderer
             query={reportsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
               if (props) {
-                return <ReportsLines data={props} paginationOptions={paginationOptions} searchTerm={this.state.searchTerm}/>;
+                return (
+                  <ReportsLines
+                    data={props}
+                    paginationOptions={paginationOptions}
+                    searchTerm={this.state.searchTerm}
+                  />
+                );
               }
-              return <ReportsLines data={null} dummy={true} searchTerm={this.state.searchTerm}/>;
+              return (
+                <ReportsLines
+                  data={null}
+                  dummy={true}
+                  searchTerm={this.state.searchTerm}
+                />
+              );
             }}
           />
         </List>
@@ -252,24 +318,45 @@ class EntityReports extends Component {
           onClose={this.handleCloseExportCsv.bind(this)}
           fullWidth={true}
         >
-          <DialogTitle>
-            {t('Export data in CSV')}
-          </DialogTitle>
+          <DialogTitle>{t('Export data in CSV')}</DialogTitle>
           <DialogContent>
-            {this.state.exportCsvData === null
-              ? <div className={this.props.classes.export}><CircularProgress size={40} thickness={2} className={this.props.classes.loaderCircle}/></div>
-              : <DialogContentText>{t('The CSV file has been generated with the parameters of the view and is ready for download.')}</DialogContentText>
-            }
+            {this.state.exportCsvData === null ? (
+              <div className={this.props.classes.export}>
+                <CircularProgress
+                  size={40}
+                  thickness={2}
+                  className={this.props.classes.loaderCircle}
+                />
+              </div>
+            ) : (
+              <DialogContentText>
+                {t(
+                  'The CSV file has been generated with the parameters of the view and is ready for download.',
+                )}
+              </DialogContentText>
+            )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseExportCsv.bind(this)} color='primary'>
+            <Button
+              onClick={this.handleCloseExportCsv.bind(this)}
+              color="primary"
+            >
               {t('Cancel')}
             </Button>
-            {this.state.exportCsvData !== null
-              ? <Button component={CSVLink} data={this.state.exportCsvData} separator={';'} enclosingCharacter={'"'} color='primary' filename={`${t('Reports')}.csv`}>
+            {this.state.exportCsvData !== null ? (
+              <Button
+                component={CSVLink}
+                data={this.state.exportCsvData}
+                separator={';'}
+                enclosingCharacter={'"'}
+                color="primary"
+                filename={`${t('Reports')}.csv`}
+              >
                 {t('Download')}
               </Button>
-              : ''}
+            ) : (
+              ''
+            )}
           </DialogActions>
         </Dialog>
       </div>

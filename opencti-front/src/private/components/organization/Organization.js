@@ -28,27 +28,36 @@ class OrganizationComponent extends Component {
     const { classes, organization } = this.props;
     return (
       <div className={classes.container}>
-        <OrganizationHeader organization={organization}/>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
+        <OrganizationHeader organization={organization} />
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={6}>
-            <OrganizationOverview organization={organization}/>
+            <OrganizationOverview organization={organization} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={organization.id}/>
+            <EntityLastReports entityId={organization.id} />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 20 }}
+        >
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart entityId={organization.id}/>
+            <EntityCampaignsChart entityId={organization.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={organization.id}/>
+            <EntityIncidentsChart entityId={organization.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={organization.id}/>
+            <EntityReportsChart entityId={organization.id} />
           </Grid>
         </Grid>
-        <OrganizationEdition organizationId={organization.id}/>
+        <OrganizationEdition organizationId={organization.id} />
       </div>
     );
   }
@@ -62,11 +71,11 @@ OrganizationComponent.propTypes = {
 
 const Organization = createFragmentContainer(OrganizationComponent, {
   organization: graphql`
-      fragment Organization_organization on Organization {
-          id
-          ...OrganizationHeader_organization
-          ...OrganizationOverview_organization
-      }
+    fragment Organization_organization on Organization {
+      id
+      ...OrganizationHeader_organization
+      ...OrganizationOverview_organization
+    }
   `,
 });
 

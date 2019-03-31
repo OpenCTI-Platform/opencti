@@ -29,43 +29,52 @@ class ReportComponent extends Component {
     const { classes, report } = this.props;
     return (
       <div className={classes.container}>
-        <ReportHeader report={report}/>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
+        <ReportHeader report={report} />
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={4}>
-            <ReportOverview report={report}/>
+            <ReportOverview report={report} />
           </Grid>
           <Grid item={true} xs={2}>
-            <ReportIdentity report={report}/>
+            <ReportIdentity report={report} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityExternalReferences entityId={report.id}/>
+            <EntityExternalReferences entityId={report.id} />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 20 }}
+        >
           <Grid item={true} xs={4}>
-            <EntityObservablesChart entityId={report.id}/>
+            <EntityObservablesChart entityId={report.id} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsRadar
               entityId={report.id}
-              entityType='Kill-Chain-Phase'
-              relationType='kill_chain_phases'
-              field='phase_name'
+              entityType="Kill-Chain-Phase"
+              relationType="kill_chain_phases"
+              field="phase_name"
               resolveInferences={true}
-              resolveRelationType='object_refs'
-              resolveRelationRole='knowledge_aggregation'
+              resolveRelationType="object_refs"
+              resolveRelationRole="knowledge_aggregation"
             />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsPie
               entityId={report.id}
-              entityType='Stix-Domain-Entity'
-              relationType='object_refs'
-              field='type'
+              entityType="Stix-Domain-Entity"
+              relationType="object_refs"
+              field="type"
             />
           </Grid>
         </Grid>
-        <ReportEdition reportId={report.id}/>
+        <ReportEdition reportId={report.id} />
       </div>
     );
   }
@@ -79,12 +88,12 @@ ReportComponent.propTypes = {
 
 const Report = createFragmentContainer(ReportComponent, {
   report: graphql`
-      fragment Report_report on Report {
-          id
-          ...ReportHeader_report
-          ...ReportOverview_report
-          ...ReportIdentity_report
-      }
+    fragment Report_report on Report {
+      id
+      ...ReportHeader_report
+      ...ReportOverview_report
+      ...ReportIdentity_report
+    }
   `,
 });
 

@@ -36,57 +36,102 @@ class RegionKnowledgeComponent extends Component {
     const link = `/dashboard/catalogs/regions/${region.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <RegionHeader region={region} variant='noalias'/>
-        <RegionKnowledgeBar regionId={region.id}/>
+        <RegionHeader region={region} variant="noalias" />
+        <RegionKnowledgeBar regionId={region.id} />
         <div className={classes.content}>
-          <Route exact path='/dashboard/catalogs/regions/:regionId/knowledge/relations/:relationId' render={
-            routeProps => <StixRelation
+          <Route
+            exact
+            path="/dashboard/catalogs/regions/:regionId/knowledge/relations/:relationId"
+            render={routeProps => (
+              <StixRelation
+                entityId={region.id}
+                {...routeProps}
+                inversedRelations={inversedRelations}
+              />
+            )}
+          />
+
+          {location.pathname.includes('overview') ? (
+            <StixDomainEntityKnowledge stixDomainEntityId={region.id} />
+          ) : (
+            ''
+          )}
+
+          {location.pathname.includes('countries') ? (
+            <EntityStixRelations
               entityId={region.id}
-              {...routeProps}
-              inversedRelations={inversedRelations}
+              relationType="localization"
+              targetEntityTypes={['Country']}
+              entityLink={link}
             />
-          }/>
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('overview') ? <StixDomainEntityKnowledge
-            stixDomainEntityId={region.id}
-          /> : ''}
+          {location.pathname.includes('threats') ? (
+            <EntityStixRelations
+              resolveRelationType="localization"
+              resolveRelationRole="location"
+              entityId={region.id}
+              relationType="targets"
+              targetEntityTypes={[
+                'Country',
+                'Threat-Actor',
+                'Intrusion-Set',
+                'Campaign',
+                'Incident',
+                'Malware',
+              ]}
+              entityLink={link}
+              resolveViaTypes={[
+                {
+                  entityType: 'Intrusion-Set',
+                  relationType: 'attributed-to',
+                  relationRole: 'attribution',
+                },
+                {
+                  entityType: 'Campaign',
+                  relationType: 'attributed-to',
+                  relationRole: 'attribution',
+                },
+                {
+                  entityType: 'Incident',
+                  relationType: 'attributed-to',
+                  relationRole: 'attribution',
+                },
+                {
+                  entityType: 'Malware',
+                  relationType: 'attributed-to',
+                  relationRole: 'attribution',
+                },
+              ]}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('countries') ? <EntityStixRelations
-            entityId={region.id}
-            relationType='localization'
-            targetEntityTypes={['Country']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('attribution') ? (
+            <EntityStixRelations
+              resolveRelationType="attributed-to"
+              entityId={region.id}
+              relationType="attributed-to"
+              targetEntityTypes={['Identity']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('threats') ? <EntityStixRelations
-            resolveRelationType='localization'
-            resolveRelationRole='location'
-            entityId={region.id}
-            relationType='targets'
-            targetEntityTypes={['Country', 'Threat-Actor', 'Intrusion-Set', 'Campaign', 'Incident', 'Malware']}
-            entityLink={link}
-            resolveViaTypes={[
-              { entityType: 'Intrusion-Set', relationType: 'attributed-to', relationRole: 'attribution' },
-              { entityType: 'Campaign', relationType: 'attributed-to', relationRole: 'attribution' },
-              { entityType: 'Incident', relationType: 'attributed-to', relationRole: 'attribution' },
-              { entityType: 'Malware', relationType: 'attributed-to', relationRole: 'attribution' },
-            ]}
-          /> : ''}
-
-          {location.pathname.includes('attribution') ? <EntityStixRelations
-            resolveRelationType='attributed-to'
-            entityId={region.id}
-            relationType='attributed-to'
-            targetEntityTypes={['Identity']}
-            entityLink={link}
-          /> : ''}
-
-          {location.pathname.includes('entities') ? <EntityStixRelations
-            entityId={region.id}
-            relationType='related-to'
-            targetEntityTypes={['Identity']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('entities') ? (
+            <EntityStixRelations
+              entityId={region.id}
+              relationType="related-to"
+              targetEntityTypes={['Identity']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
         </div>
       </div>
     );
@@ -102,10 +147,10 @@ RegionKnowledgeComponent.propTypes = {
 
 const RegionKnowledge = createFragmentContainer(RegionKnowledgeComponent, {
   region: graphql`
-      fragment RegionKnowledge_region on Region {
-          id
-          ...RegionHeader_region
-      }
+    fragment RegionKnowledge_region on Region {
+      id
+      ...RegionHeader_region
+    }
   `,
 });
 

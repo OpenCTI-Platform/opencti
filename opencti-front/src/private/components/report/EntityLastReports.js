@@ -55,25 +55,35 @@ const inlineStyles = {
 };
 
 const entityLastReportsQuery = graphql`
-    query EntityLastReportsQuery($objectId: String!, $first: Int, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {
-        reports(objectId: $objectId, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
+  query EntityLastReportsQuery(
+    $objectId: String!
+    $first: Int
+    $orderBy: ReportsOrdering
+    $orderMode: OrderingMode
+  ) {
+    reports(
+      objectId: $objectId
+      first: $first
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) {
+      edges {
+        node {
+          id
+          name
+          description
+          published
+          markingDefinitions {
             edges {
-                node {
-                    id
-                    name
-                    description
-                    published
-                    markingDefinitions {
-                        edges {
-                            node {
-                                definition
-                            }
-                        }
-                    }
-                }
+              node {
+                definition
+              }
             }
+          }
         }
+      }
     }
+  }
 `;
 
 class EntityLastReports extends Component {
@@ -83,14 +93,17 @@ class EntityLastReports extends Component {
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Last reports')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
             query={entityLastReportsQuery}
             variables={{
-              objectId: entityId, first: 8, orderBy: 'published', orderMode: 'desc',
+              objectId: entityId,
+              first: 8,
+              orderBy: 'published',
+              orderMode: 'desc',
             }}
             render={({ props }) => {
               if (props && props.reports) {
@@ -98,7 +111,9 @@ class EntityLastReports extends Component {
                   <List>
                     {props.reports.edges.map((reportEdge) => {
                       const report = reportEdge.node;
-                      const markingDefinition = head(pathOr([], ['markingDefinitions', 'edges'], report));
+                      const markingDefinition = head(
+                        pathOr([], ['markingDefinitions', 'edges'], report),
+                      );
                       return (
                         <ListItem
                           key={report.id}
@@ -109,22 +124,32 @@ class EntityLastReports extends Component {
                           to={`/dashboard/reports/all/${report.id}`}
                         >
                           <ListItemIcon classes={{ root: classes.itemIcon }}>
-                            <Description/>
+                            <Description />
                           </ListItemIcon>
-                          <ListItemText primary={truncate(report.name, 70)} secondary={truncate(report.description, 70)}/>
+                          <ListItemText
+                            primary={truncate(report.name, 70)}
+                            secondary={truncate(report.description, 70)}
+                          />
                           <div style={{ minWidth: 100 }}>
-                            {markingDefinition ? <ItemMarking key={markingDefinition.node.id} label={markingDefinition.node.definition}/> : ''}
+                            {markingDefinition ? (
+                              <ItemMarking
+                                key={markingDefinition.node.id}
+                                label={markingDefinition.node.definition}
+                              />
+                            ) : (
+                              ''
+                            )}
                           </div>
-                          <div style={inlineStyles.itemDate}>{nsd(report.published)}</div>
+                          <div style={inlineStyles.itemDate}>
+                            {nsd(report.published)}
+                          </div>
                         </ListItem>
                       );
                     })}
                   </List>
                 );
               }
-              return (
-                <div> &nbsp; </div>
-              );
+              return <div> &nbsp; </div>;
             }}
           />
         </Paper>

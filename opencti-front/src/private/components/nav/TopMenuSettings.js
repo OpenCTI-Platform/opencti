@@ -23,24 +23,90 @@ class TopMenuSettings extends Component {
     const { t, location, classes } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/settings' variant={location.pathname === '/dashboard/settings' ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/settings' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to="/dashboard/settings"
+          variant={
+            location.pathname === '/dashboard/settings' ? 'contained' : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/settings' ? 'primary' : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Parameters')}
         </Button>
-        <Button component={Link} to='/dashboard/settings/users' variant={location.pathname.includes('/dashboard/settings/users') ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes('/dashboard/settings/users') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to="/dashboard/settings/users"
+          variant={
+            location.pathname.includes('/dashboard/settings/users')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/dashboard/settings/users')
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Users')}
         </Button>
-        <Button component={Link} to='/dashboard/settings/groups' variant={location.pathname.includes('/dashboard/settings/groups') ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes('/dashboard/settings/groups') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to="/dashboard/settings/groups"
+          variant={
+            location.pathname.includes('/dashboard/settings/groups')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/dashboard/settings/groups')
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Groups')}
         </Button>
-        <Button component={Link} to='/dashboard/settings/marking' variant={location.pathname.includes('/dashboard/settings/marking') ? 'contained' : 'text'} size="small"
-                color={location.pathname === '/dashboard/settings/marking' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to="/dashboard/settings/marking"
+          variant={
+            location.pathname.includes('/dashboard/settings/marking')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/settings/marking'
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Marking')}
         </Button>
-        <Button component={Link} to='/dashboard/settings/killchains' variant={location.pathname.includes('/dashboard/settings/killchains') ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes('/dashboard/settings/killchains') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to="/dashboard/settings/killchains"
+          variant={
+            location.pathname.includes('/dashboard/settings/killchains')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/dashboard/settings/killchains')
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Kill chain phases')}
         </Button>
       </div>

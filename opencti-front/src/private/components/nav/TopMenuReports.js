@@ -20,17 +20,76 @@ class TopMenuReports extends Component {
     const { t, location, classes } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/reports/all' variant={location.pathname === '/dashboard/reports/all' ? 'contained' : 'text'} size="small" color={location.pathname === '/dashboard/reports/all' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to="/dashboard/reports/all"
+          variant={
+            location.pathname === '/dashboard/reports/all'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/reports/all'
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('All reports')}
         </Button>
-        <Button component={Link} to='/dashboard/reports/internal' variant={location.pathname === '/dashboard/reports/internal' ? 'contained' : 'text'} size="small" color={location.pathname === '/dashboard/reports/internal' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to="/dashboard/reports/internal"
+          variant={
+            location.pathname === '/dashboard/reports/internal'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/reports/internal'
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Internal productions')}
         </Button>
-        <Button component={Link} to='/dashboard/reports/external' variant={location.pathname === '/dashboard/reports/external' ? 'contained' : 'text'} size="small" color={location.pathname === '/dashboard/reports/external' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to="/dashboard/reports/external"
+          variant={
+            location.pathname === '/dashboard/reports/external'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/reports/external'
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('External sources')}
         </Button>
-        <Button component={Link} to='/dashboard/reports/references' variant={location.pathname === '/dashboard/reports/references' ? 'contained' : 'text'} size='small'
-                color={location.pathname === '/dashboard/reports/references' ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to="/dashboard/reports/references"
+          variant={
+            location.pathname === '/dashboard/reports/references'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/reports/references'
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('References')}
         </Button>
       </div>

@@ -8,7 +8,11 @@ import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
 import ReportEditionContainer from './ReportEditionContainer';
-import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
+import {
+  commitMutation,
+  QueryRenderer,
+  WS_ACTIVATED,
+} from '../../../relay/environment';
 import { reportEditionOverviewFocus } from './ReportEditionOverview';
 
 const styles = theme => ({
@@ -69,23 +73,35 @@ class ReportEdition extends Component {
     const { classes, reportId } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
-             color='secondary' aria-label='Edit'
-             className={classes.editButton}><Edit/></Fab>
-        <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Edit"
+          className={classes.editButton}
+        >
+          <Edit />
+        </Fab>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
           <QueryRenderer
-              query={reportEditionQuery}
-              variables={{ id: reportId }}
-              render={({ props }) => {
-                if (props) {
-                  return <ReportEditionContainer
+            query={reportEditionQuery}
+            variables={{ id: reportId }}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <ReportEditionContainer
                     me={props.me}
                     report={props.report}
                     handleClose={this.handleClose.bind(this)}
-                  />;
-                }
-                return <div> &nbsp; </div>;
-              }}
+                  />
+                );
+              }
+              return <div> &nbsp; </div>;
+            }}
           />
         </Drawer>
       </div>

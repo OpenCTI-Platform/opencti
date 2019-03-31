@@ -71,25 +71,32 @@ class RegionLineComponent extends Component {
   render() {
     const { fd, classes, region } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/catalogs/regions/${region.id}`}>
+      <ListItem
+        classes={{ default: classes.item }}
+        divider={true}
+        component={Link}
+        to={`/dashboard/catalogs/regions/${region.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Map/>
+          <Map />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {region.name}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {region.name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                {fd(region.created)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                {fd(region.modified)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              {fd(region.created)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              {fd(region.modified)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );
@@ -104,12 +111,12 @@ RegionLineComponent.propTypes = {
 
 const RegionLineFragment = createFragmentContainer(RegionLineComponent, {
   region: graphql`
-      fragment RegionLine_region on Region {
-          id
-          name
-          created
-          modified
-      }
+    fragment RegionLine_region on Region {
+      id
+      name
+      created
+      modified
+    }
   `,
 });
 
@@ -124,23 +131,25 @@ class RegionLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Map/>
+          <Map />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );

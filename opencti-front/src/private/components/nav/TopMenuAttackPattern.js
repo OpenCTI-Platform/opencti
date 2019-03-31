@@ -35,26 +35,87 @@ const styles = theme => ({
 class TopMenuAttackPattern extends Component {
   render() {
     const {
-      t, location, match: { params: { attackPatternId } }, classes,
+      t,
+      location,
+      match: {
+        params: { attackPatternId },
+      },
+      classes,
     } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/catalogs/attack_patterns' variant='contained' size="small"
-                color='inherit' classes={{ root: classes.buttonHome }}>
-          <LockPattern className={classes.icon} fontSize='small'/>
+        <Button
+          component={Link}
+          to="/dashboard/catalogs/attack_patterns"
+          variant="contained"
+          size="small"
+          color="inherit"
+          classes={{ root: classes.buttonHome }}
+        >
+          <LockPattern className={classes.icon} fontSize="small" />
           {t('Attack patterns')}
         </Button>
-        <ArrowForwardIos color='inherit' classes={{ root: classes.arrow }}/>
-        <Button component={Link} to={`/dashboard/catalogs/attack_patterns/${attackPatternId}`} variant={location.pathname === `/dashboard/catalogs/attack_patterns/${attackPatternId}` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/catalogs/attack_patterns/${attackPatternId}` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <Button
+          component={Link}
+          to={`/dashboard/catalogs/attack_patterns/${attackPatternId}`}
+          variant={
+            location.pathname
+            === `/dashboard/catalogs/attack_patterns/${attackPatternId}`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/catalogs/attack_patterns/${attackPatternId}`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Overview')}
         </Button>
-        <Button component={Link} to={`/dashboard/catalogs/attack_patterns/${attackPatternId}/reports`} variant={location.pathname === `/dashboard/catalogs/attack_patterns/${attackPatternId}/reports` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/catalogs/attack_patterns/${attackPatternId}/reports` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/catalogs/attack_patterns/${attackPatternId}/reports`}
+          variant={
+            location.pathname
+            === `/dashboard/catalogs/attack_patterns/${attackPatternId}/reports`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/catalogs/attack_patterns/${attackPatternId}/reports`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Reports')}
         </Button>
-        <Button component={Link} to={`/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge`} variant={location.pathname.includes(`/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge`) ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes(`/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge`) ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Knowledge')}
         </Button>
       </div>

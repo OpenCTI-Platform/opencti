@@ -21,7 +21,12 @@ class TopMenuProfile extends Component {
     const { t, classes } = this.props;
     return (
       <div>
-        <Button variant='contained' size='small' color='primary' classes={{ root: classes.button }}>
+        <Button
+          variant="contained"
+          size="small"
+          color="primary"
+          classes={{ root: classes.button }}
+        >
           {t('Profile')}
         </Button>
       </div>

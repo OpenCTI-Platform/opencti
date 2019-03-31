@@ -1,23 +1,24 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { ConnectionHandler } from 'relay-runtime';
+import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles/index';
-import Drawer from '@material-ui/core/Drawer';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
+import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
+import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../relay/environment';
-import MarkingDefinitionEdition from './MarkingDefinitionEdition';
+import { QueryRenderer, commitMutation } from '../../../relay/environment';
+import { stixObservableEditionQuery } from './StixObservableEdition';
+import StixObservableEditionContainer from './StixObservableEditionContainer';
 
 const styles = theme => ({
   container: {
@@ -41,32 +42,21 @@ function Transition(props) {
   return <Slide direction="up" {...props} />;
 }
 
-const markingDefinitionPopoverDeletionMutation = graphql`
-  mutation MarkingDefinitionPopoverDeletionMutation($id: ID!) {
-    markingDefinitionEdit(id: $id) {
+const StixObservablePopoverDeletionMutation = graphql`
+  mutation StixObservablePopoverDeletionMutation($id: ID!) {
+    stixObservableEdit(id: $id) {
       delete
     }
   }
 `;
 
-const markingDefinitionEditionQuery = graphql`
-  query MarkingDefinitionPopoverEditionQuery($id: String!) {
-    markingDefinition(id: $id) {
-      ...MarkingDefinitionEdition_markingDefinition
-    }
-    me {
-      ...MarkingDefinitionEdition_me
-    }
-  }
-`;
-
-class MarkingDefinitionPopover extends Component {
+class StixObservablePopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
       anchorEl: null,
-      displayUpdate: false,
       displayDelete: false,
+      displayEdit: false,
       deleting: false,
     };
   }
@@ -77,15 +67,6 @@ class MarkingDefinitionPopover extends Component {
 
   handleClose() {
     this.setState({ anchorEl: null });
-  }
-
-  handleOpenUpdate() {
-    this.setState({ displayUpdate: true });
-    this.handleClose();
-  }
-
-  handleCloseUpdate() {
-    this.setState({ displayUpdate: false });
   }
 
   handleOpenDelete() {
@@ -100,30 +81,29 @@ class MarkingDefinitionPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: markingDefinitionPopoverDeletionMutation,
+      mutation: StixObservablePopoverDeletionMutation,
       variables: {
-        id: this.props.markingDefinitionId,
-      },
-      updater: (store) => {
-        const container = store.getRoot();
-        const payload = store.getRootField('markingDefinitionEdit');
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_markingDefinitions',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+        id: this.props.stixObservableId,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
-        this.handleCloseDelete();
+        this.handleClose();
+        this.props.history.push('/dashboard/observables/all');
       },
     });
   }
 
+  handleOpenEdit() {
+    this.setState({ displayEdit: true });
+    this.handleClose();
+  }
+
+  handleCloseEdit() {
+    this.setState({ displayEdit: false });
+  }
+
   render() {
-    const { classes, t, markingDefinitionId } = this.props;
+    const { classes, t, stixObservableId } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
@@ -135,38 +115,13 @@ class MarkingDefinitionPopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
+          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <Drawer
-          open={this.state.displayUpdate}
-          anchor="right"
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}
-        >
-          <QueryRenderer
-            query={markingDefinitionEditionQuery}
-            variables={{ id: markingDefinitionId }}
-            render={({ props }) => {
-              if (props) {
-                // Done
-                return (
-                  <MarkingDefinitionEdition
-                    me={props.me}
-                    markingDefinition={props.markingDefinition}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                  />
-                );
-              }
-              // Loading
-              return <div> &nbsp; </div>;
-            }}
-          />
-        </Drawer>
         <Dialog
           open={this.state.displayDelete}
           keepMounted={true}
@@ -175,7 +130,7 @@ class MarkingDefinitionPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this marking definition?')}
+              {t('Do you want to delete this observable?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -195,19 +150,43 @@ class MarkingDefinitionPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <Drawer
+          open={this.state.displayEdit}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleCloseEdit.bind(this)}
+        >
+          <QueryRenderer
+            query={stixObservableEditionQuery}
+            variables={{ id: stixObservableId }}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <StixObservableEditionContainer
+                    me={props.me}
+                    stixObservable={props.stixObservable}
+                    handleClose={this.handleCloseEdit.bind(this)}
+                  />
+                );
+              }
+              return <div> &nbsp; </div>;
+            }}
+          />
+        </Drawer>
       </div>
     );
   }
 }
 
-MarkingDefinitionPopover.propTypes = {
-  markingDefinitionId: PropTypes.string,
-  paginationOptions: PropTypes.object,
+StixObservablePopover.propTypes = {
+  stixObservableId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
+  history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles),
-)(MarkingDefinitionPopover);
+)(StixObservablePopover);

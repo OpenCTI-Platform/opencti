@@ -207,6 +207,7 @@ type StixObservable implements GlobalObject & StixEntity {
 input StixObservableAddInput  {
     type: String!
     observable_value: String!
+    createdByRef: String
     markingDefinitions: [String]
     clientMutationId: String
     created: DateTime
@@ -1392,6 +1393,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
     markingDefinitions: MarkingDefinitionConnection
     externalReferences: ExternalReferenceConnection
     objectRefs: StixDomainEntityConnection
+    observableRefs: StixObservableConnection
     relationRefs(relationType: String): StixRelationConnection
     stixRelations(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode, inferred: Boolean, toId: String,fromTypes: [String], toTypes: [String], relationType: String, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, weights: [Int], search: String): StixRelationConnection
     created_at: DateTime!

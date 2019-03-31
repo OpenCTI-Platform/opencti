@@ -90,27 +90,32 @@ class MarkingDefinitionLineComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <CenterFocusStrong/>
+          <CenterFocusStrong />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.definition_type}>
-              {markingDefinition.definition_type}
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.definition_type}
+              >
+                {markingDefinition.definition_type}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.definition}>
+                {markingDefinition.definition}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.color}>
+                {markingDefinition.color}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.level}>
+                {markingDefinition.level}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                {fd(markingDefinition.created)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.definition}>
-              {markingDefinition.definition}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.color}>
-              {markingDefinition.color}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.level}>
-              {markingDefinition.level}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              {fd(markingDefinition.created)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <MarkingDefinitionPopover
             markingDefinitionId={markingDefinition.id}
@@ -130,19 +135,22 @@ MarkingDefinitionLineComponent.propTypes = {
   fd: PropTypes.func,
 };
 
-const MarkingDefinitionLineFragment = createFragmentContainer(MarkingDefinitionLineComponent, {
-  markingDefinition: graphql`
+const MarkingDefinitionLineFragment = createFragmentContainer(
+  MarkingDefinitionLineComponent,
+  {
+    markingDefinition: graphql`
       fragment MarkingDefinitionLine_markingDefinition on MarkingDefinition {
-          id
-          definition_type
-          definition
-          level
-          color
-          created
-          modified
+        id
+        definition_type
+        definition
+        level
+        color
+        created
+        modified
       }
-  `,
-});
+    `,
+  },
+);
 
 export const MarkingDefinitionLine = compose(
   inject18n,
@@ -155,29 +163,34 @@ class MarkingDefinitionLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <CenterFocusStrong/>
+          <CenterFocusStrong />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.definition_type}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.definition_type}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.definition}>
+                <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.color}>
+                <div className="fakeItem" style={{ width: '60%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.level}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.definition}>
-              <div className='fakeItem' style={{ width: '70%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.color}>
-              <div className='fakeItem' style={{ width: '60%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.level}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <MoreVert/>
+          <MoreVert />
         </ListItemIcon>
       </ListItem>
     );

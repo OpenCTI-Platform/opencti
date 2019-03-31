@@ -66,25 +66,32 @@ class OrganizationLineComponent extends Component {
   render() {
     const { fd, classes, organization } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/catalogs/organizations/${organization.id}`}>
+      <ListItem
+        classes={{ default: classes.item }}
+        divider={true}
+        component={Link}
+        to={`/dashboard/catalogs/organizations/${organization.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <AccountBalance/>
+          <AccountBalance />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {organization.name}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {organization.name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                {fd(organization.created)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                {fd(organization.modified)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              {fd(organization.created)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              {fd(organization.modified)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );
@@ -97,16 +104,19 @@ OrganizationLineComponent.propTypes = {
   fd: PropTypes.func,
 };
 
-const OrganizationLineFragment = createFragmentContainer(OrganizationLineComponent, {
-  organization: graphql`
+const OrganizationLineFragment = createFragmentContainer(
+  OrganizationLineComponent,
+  {
+    organization: graphql`
       fragment OrganizationLine_organization on Organization {
-          id
-          name
-          created
-          modified
+        id
+        name
+        created
+        modified
       }
-  `,
-});
+    `,
+  },
+);
 
 export const OrganizationLine = compose(
   inject18n,
@@ -119,23 +129,25 @@ class OrganizationLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <AccountBalance/>
+          <AccountBalance />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );

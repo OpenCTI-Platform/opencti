@@ -28,9 +28,9 @@ class OrganizationReportsComponent extends Component {
     const { classes, organization } = this.props;
     return (
       <div className={classes.container}>
-        <OrganizationHeader organization={organization}/>
+        <OrganizationHeader organization={organization} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={organization.id}/>
+          <EntityReports entityId={organization.id} />
         </Paper>
       </div>
     );
@@ -43,14 +43,17 @@ OrganizationReportsComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const OrganizationReports = createFragmentContainer(OrganizationReportsComponent, {
-  organization: graphql`
+const OrganizationReports = createFragmentContainer(
+  OrganizationReportsComponent,
+  {
+    organization: graphql`
       fragment OrganizationReports_organization on Organization {
-          id
-          ...OrganizationHeader_organization
+        id
+        ...OrganizationHeader_organization
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

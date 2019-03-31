@@ -53,29 +53,99 @@ class TopMenuExplore extends Component {
     const { t, location, classes } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/explore/victimology' variant={location.pathname.includes('/dashboard/explore/victimology') ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes('/dashboard/explore/victimology') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
-          <Target className={classes.icon} fontSize='small'/>
+        <Button
+          component={Link}
+          to="/dashboard/explore/victimology"
+          variant={
+            location.pathname.includes('/dashboard/explore/victimology')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/dashboard/explore/victimology')
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          <Target className={classes.icon} fontSize="small" />
           {t('Victimology')}
         </Button>
-        <Button component={Link} to='/dashboard/explore/campaigns' variant={location.pathname.includes('/dashboard/explore/campaigns') ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes('/dashboard/explore/campaigns') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
-          <ChessKnight className={classes.icon} fontSize='small'/>
+        <Button
+          component={Link}
+          to="/dashboard/explore/campaigns"
+          variant={
+            location.pathname.includes('/dashboard/explore/campaigns')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/dashboard/explore/campaigns')
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          <ChessKnight className={classes.icon} fontSize="small" />
           {t('Campaigns')}
         </Button>
-        <Button component={Link} to='/dashboard/explore/ttp' variant={location.pathname.includes('/dashboard/explore/ttp') ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes('/dashboard/explore/ttp') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
-          <LockPattern className={classes.icon} fontSize='small'/>
+        <Button
+          component={Link}
+          to="/dashboard/explore/ttp"
+          variant={
+            location.pathname.includes('/dashboard/explore/ttp')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/dashboard/explore/ttp')
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          <LockPattern className={classes.icon} fontSize="small" />
           {t('Attack patterns')}
         </Button>
-        <Button component={Link} to='/dashboard/explore/killchains' variant={location.pathname.includes('/dashboard/explore/killchains') ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes('/dashboard/explore/killchains') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
-          <SortAscending className={classes.icon} fontSize='small'/>
+        <Button
+          component={Link}
+          to="/dashboard/explore/killchains"
+          variant={
+            location.pathname.includes('/dashboard/explore/killchains')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/dashboard/explore/killchains')
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          <SortAscending className={classes.icon} fontSize="small" />
           {t('Kill chains')}
         </Button>
-        <Button component={Link} to='/dashboard/explore/vulnerabilities' variant={location.pathname.includes('/dashboard/explore/vulnerabilities') ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes('/dashboard/explore/vulnerabilities') ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
-          <BugReport className={classes.icon} fontSize='small'/>
+        <Button
+          component={Link}
+          to="/dashboard/explore/vulnerabilities"
+          variant={
+            location.pathname.includes('/dashboard/explore/vulnerabilities')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/dashboard/explore/vulnerabilities')
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          <BugReport className={classes.icon} fontSize="small" />
           {t('Vulnerabilities')}
         </Button>
       </div>

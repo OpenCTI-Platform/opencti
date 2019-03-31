@@ -34,26 +34,87 @@ const styles = theme => ({
 class TopMenuOrganization extends Component {
   render() {
     const {
-      t, location, match: { params: { organizationId } }, classes,
+      t,
+      location,
+      match: {
+        params: { organizationId },
+      },
+      classes,
     } = this.props;
     return (
       <div>
-        <Button component={Link} to='/dashboard/catalogs/organizations' variant='contained' size="small"
-                color='inherit' classes={{ root: classes.buttonHome }}>
-          <AccountBalance className={classes.icon} fontSize='small'/>
+        <Button
+          component={Link}
+          to="/dashboard/catalogs/organizations"
+          variant="contained"
+          size="small"
+          color="inherit"
+          classes={{ root: classes.buttonHome }}
+        >
+          <AccountBalance className={classes.icon} fontSize="small" />
           {t('Organizations')}
         </Button>
-        <ArrowForwardIos color='inherit' classes={{ root: classes.arrow }}/>
-        <Button component={Link} to={`/dashboard/catalogs/organizations/${organizationId}`} variant={location.pathname === `/dashboard/catalogs/organizations/${organizationId}` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/catalogs/organizations/${organizationId}` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <Button
+          component={Link}
+          to={`/dashboard/catalogs/organizations/${organizationId}`}
+          variant={
+            location.pathname
+            === `/dashboard/catalogs/organizations/${organizationId}`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/catalogs/organizations/${organizationId}`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Overview')}
         </Button>
-        <Button component={Link} to={`/dashboard/catalogs/organizations/${organizationId}/reports`} variant={location.pathname === `/dashboard/catalogs/organizations/${organizationId}/reports` ? 'contained' : 'text'} size="small"
-                color={location.pathname === `/dashboard/catalogs/organizations/${organizationId}/reports` ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/catalogs/organizations/${organizationId}/reports`}
+          variant={
+            location.pathname
+            === `/dashboard/catalogs/organizations/${organizationId}/reports`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/catalogs/organizations/${organizationId}/reports`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Reports')}
         </Button>
-        <Button component={Link} to={`/dashboard/catalogs/organizations/${organizationId}/knowledge`} variant={location.pathname.includes(`/dashboard/catalogs/organizations/${organizationId}/knowledge`) ? 'contained' : 'text'} size="small"
-                color={location.pathname.includes(`/dashboard/catalogs/organizations/${organizationId}/knowledge`) ? 'primary' : 'inherit'} classes={{ root: classes.button }}>
+        <Button
+          component={Link}
+          to={`/dashboard/catalogs/organizations/${organizationId}/knowledge`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/catalogs/organizations/${organizationId}/knowledge`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/catalogs/organizations/${organizationId}/knowledge`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
           {t('Knowledge')}
         </Button>
       </div>

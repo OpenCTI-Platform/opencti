@@ -85,29 +85,47 @@ class StixObservableLineComponent extends Component {
     } = this.props;
 
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} component={Link} to={`/dashboard/stixObservables/all/${stixObservable.id}`}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        component={Link}
+        to={`/dashboard/observables/all/${stixObservable.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Tag/>
+          <Tag />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.type}>
-              {t(`observable_${stixObservable.type}`)}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.type}>
+                {t(`observable_${stixObservable.type}`)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.observable_value}
+              >
+                {stixObservable.observable_value}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+                {fd(stixObservable.created_at)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.marking}>
+                {take(
+                  1,
+                  pathOr([], ['markingDefinitions', 'edges'], stixObservable),
+                ).map(markingDefinition => (
+                  <ItemMarking
+                    key={markingDefinition.node.id}
+                    variant="inList"
+                    label={markingDefinition.node.definition}
+                  />
+                ))}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.observable_value}>
-              {stixObservable.observable_value}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              {fd(stixObservable.created_at)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.marking}>
-              {take(1, pathOr([], ['markingDefinitions', 'edges'], stixObservable)).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} variant='inList'
-                                                                                                                  label={markingDefinition.node.definition}/>)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );
@@ -121,24 +139,27 @@ StixObservableLineComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const StixObservableLineFragment = createFragmentContainer(StixObservableLineComponent, {
-  stixObservable: graphql`
+const StixObservableLineFragment = createFragmentContainer(
+  StixObservableLineComponent,
+  {
+    stixObservable: graphql`
       fragment StixObservableLine_stixObservable on StixObservable {
-          id
-          type
-          observable_value
-          created_at
-          markingDefinitions {
-              edges {
-                  node {
-                      id
-                      definition
-                  }
-              }
+        id
+        type
+        observable_value
+        created_at
+        markingDefinitions {
+          edges {
+            node {
+              id
+              definition
+            }
           }
+        }
       }
-  `,
-});
+    `,
+  },
+);
 
 export const StixObservableLine = compose(
   inject18n,
@@ -151,26 +172,31 @@ class StixObservableLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Tag/>
+          <Tag />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.type}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.type}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.observable_value}
+              >
+                <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.marking}>
+                <div className="fakeItem" style={{ width: 100 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.observable_value}>
-              <div className='fakeItem' style={{ width: '70%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.marking}>
-              <div className='fakeItem' style={{ width: 100 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );

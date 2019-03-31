@@ -28,27 +28,36 @@ class RegionComponent extends Component {
     const { classes, region } = this.props;
     return (
       <div className={classes.container}>
-        <RegionHeader region={region}/>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
+        <RegionHeader region={region} />
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={6}>
-            <RegionOverview region={region}/>
+            <RegionOverview region={region} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={region.id}/>
+            <EntityLastReports entityId={region.id} />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 20 }}
+        >
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart entityId={region.id}/>
+            <EntityCampaignsChart entityId={region.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={region.id}/>
+            <EntityIncidentsChart entityId={region.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={region.id}/>
+            <EntityReportsChart entityId={region.id} />
           </Grid>
         </Grid>
-        <RegionEdition regionId={region.id}/>
+        <RegionEdition regionId={region.id} />
       </div>
     );
   }
@@ -62,11 +71,11 @@ RegionComponent.propTypes = {
 
 const Region = createFragmentContainer(RegionComponent, {
   region: graphql`
-      fragment Region_region on Region {
-          id
-          ...RegionHeader_region
-          ...RegionOverview_region
-      }
+    fragment Region_region on Region {
+      id
+      ...RegionHeader_region
+      ...RegionOverview_region
+    }
   `,
 });
 
