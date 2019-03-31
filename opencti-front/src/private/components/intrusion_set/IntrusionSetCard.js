@@ -85,16 +85,28 @@ class IntrusionSetCardComponent extends Component {
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
-        <CardActionArea classes={{ root: classes.area }} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSet.id}`}>
+        <CardActionArea
+          classes={{ root: classes.area }}
+          component={Link}
+          to={`/dashboard/knowledge/intrusion_sets/${intrusionSet.id}`}
+        >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={<Avatar className={classes.avatar}>{intrusionSet.name.charAt(0)}</Avatar>}
+            avatar={
+              <Avatar className={classes.avatar}>
+                {intrusionSet.name.charAt(0)}
+              </Avatar>
+            }
             title={intrusionSet.name}
             subheader={`${t('Updated the')} ${fsd(intrusionSet.modified)}`}
-            action={<Diamond className={classes.icon}/>}
+            action={<Diamond className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.content }}>
-            <Markdown source={intrusionSet.description} disallowedTypes={['link']} unwrapDisallowed={true}/>
+            <Markdown
+              source={intrusionSet.description}
+              disallowedTypes={['link']}
+              unwrapDisallowed={true}
+            />
           </CardContent>
         </CardActionArea>
       </Card>
@@ -109,23 +121,25 @@ IntrusionSetCardComponent.propTypes = {
   fsd: PropTypes.func,
 };
 
-const IntrusionSetCardFragment = createFragmentContainer(IntrusionSetCardComponent, {
-  intrusionSet: graphql`
+const IntrusionSetCardFragment = createFragmentContainer(
+  IntrusionSetCardComponent,
+  {
+    intrusionSet: graphql`
       fragment IntrusionSetCard_intrusionSet on IntrusionSet {
-          id
-          name
-          description
-          created
-          modified
+        id
+        name
+        description
+        created
+        modified
       }
-  `,
-});
+    `,
+  },
+);
 
 export const IntrusionSetCard = compose(
   inject18n,
   withStyles(styles),
 )(IntrusionSetCardFragment);
-
 
 class IntrusionSetCardDummyComponent extends Component {
   render() {
@@ -136,15 +150,25 @@ class IntrusionSetCardDummyComponent extends Component {
           <CardHeader
             classes={{ root: classes.header }}
             avatar={<Avatar className={classes.avatarDisabled}>D</Avatar>}
-            title={<div className={classes.placeholderHeader} style={{ width: '85%' }}/>}
+            title={
+              <div
+                className={classes.placeholderHeader}
+                style={{ width: '85%' }}
+              />
+            }
             titleTypographyProps={{ color: 'inherit' }}
-            subheader={<div className={classes.placeholderHeaderDark} style={{ width: '70%' }}/>}
-            action={<Diamond className={classes.icon}/>}
+            subheader={
+              <div
+                className={classes.placeholderHeaderDark}
+                style={{ width: '70%' }}
+              />
+            }
+            action={<Diamond className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.contentDummy }}>
-            <div className='fakeItem' style={{ width: '90%' }}/>
-            <div className='fakeItem' style={{ width: '95%' }}/>
-            <div className='fakeItem' style={{ width: '90%' }}/>
+            <div className="fakeItem" style={{ width: '90%' }} />
+            <div className="fakeItem" style={{ width: '95%' }} />
+            <div className="fakeItem" style={{ width: '90%' }} />
           </CardContent>
         </CardActionArea>
       </Card>

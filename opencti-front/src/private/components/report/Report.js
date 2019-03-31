@@ -11,7 +11,7 @@ import ReportOverview from './ReportOverview';
 import ReportIdentity from './ReportIdentity';
 import ReportEdition from './ReportEdition';
 import EntityExternalReferences from '../external_reference/EntityExternalReferences';
-import EntityObservablesChart from '../observable/EntityObservablesChart';
+import EntityObservablesChart from '../stix_observable/EntityStixObservablesChart';
 import EntityStixRelationsPie from '../stix_relation/EntityStixRelationsPie';
 import EntityStixRelationsRadar from '../stix_relation/EntityStixRelationsRadar';
 

@@ -39,7 +39,7 @@ class OpenCti:
 
     def parse_multiple(self, data):
         result = []
-        for edge in data['edges'] if 'edges' in data else []:
+        for edge in data['edges'] if 'edges' in data and data['edges'] is not None else []:
             result.append(self.parse_stix_domain_entity(edge['node']))
         return result
 

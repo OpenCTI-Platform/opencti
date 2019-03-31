@@ -13,6 +13,7 @@ import Dashboard from './components/Dashboard';
 import StixDomainEntities from './components/StixDomainEntities';
 import ExploreVictimology from './components/explore/Victimology';
 import Workspaces from './components/Workspaces';
+import StixObservables from './components/StixObservables';
 import RootWorkspace from './components/workspace/Root';
 import ThreatActors from './components/ThreatActors';
 import RootThreatActor from './components/threat_actor/Root';
@@ -122,32 +123,6 @@ class Root extends Component {
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/explore"
-                          render={() => (
-                            <Redirect to="/dashboard/explore/victimology" />
-                          )}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/explore/victimology"
-                          component={ExploreVictimology}
-                        />
-                        <BoundaryRoute
-                          path="/dashboard/explore/victimology/:stixDomainEntityId"
-                          component={ExploreVictimology}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/investigate"
-                          component={Workspaces}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/investigate/:workspaceId"
-                          component={RootWorkspace}
-                        />
-                        <BoundaryRoute
-                          exact
                           path="/dashboard/knowledge"
                           render={() => (
                             <Redirect to="/dashboard/knowledge/threat_actors" />
@@ -218,6 +193,11 @@ class Root extends Component {
                           render={routeProps => (
                             <RootMalware {...routeProps} me={props.me} />
                           )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/observables"
+                          component={StixObservables}
                         />
                         <BoundaryRoute
                           exact
@@ -341,6 +321,32 @@ class Root extends Component {
                           exact
                           path="/dashboard/catalogs/persons"
                           component={Persons}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/explore"
+                          render={() => (
+                            <Redirect to="/dashboard/explore/victimology" />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/explore/victimology"
+                          component={ExploreVictimology}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/explore/victimology/:stixDomainEntityId"
+                          component={ExploreVictimology}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/investigate"
+                          component={Workspaces}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/investigate/:workspaceId"
+                          component={RootWorkspace}
                         />
                         <BoundaryRoute
                           exact

@@ -6,7 +6,11 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
+import {
+  commitMutation,
+  QueryRenderer,
+  WS_ACTIVATED,
+} from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import IntrusionSetEditionContainer from './IntrusionSetEditionContainer';
 import { intrusionSetEditionOverviewFocus } from './IntrusionSetEditionOverview';
@@ -69,23 +73,35 @@ class IntrusionSetEdition extends Component {
     const { classes, intrusionSetId } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
-             color='secondary' aria-label='Edit'
-             className={classes.editButton}><Edit/></Fab>
-        <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Edit"
+          className={classes.editButton}
+        >
+          <Edit />
+        </Fab>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
           <QueryRenderer
-              query={intrusionSetEditionQuery}
-              variables={{ id: intrusionSetId }}
-              render={({ props }) => {
-                if (props) {
-                  return <IntrusionSetEditionContainer
+            query={intrusionSetEditionQuery}
+            variables={{ id: intrusionSetId }}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <IntrusionSetEditionContainer
                     me={props.me}
                     intrusionSet={props.intrusionSet}
                     handleClose={this.handleClose.bind(this)}
-                  />;
-                }
-                return <div> &nbsp; </div>;
-              }}
+                  />
+                );
+              }
+              return <div> &nbsp; </div>;
+            }}
           />
         </Drawer>
       </div>

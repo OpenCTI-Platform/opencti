@@ -11,7 +11,7 @@ import IncidentOverview from './IncidentOverview';
 import IncidentIdentity from './IncidentIdentity';
 import IncidentEdition from './IncidentEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import EntityObservablesChart from '../observable/EntityObservablesChart';
+import EntityObservablesChart from '../stix_observable/EntityStixObservablesChart';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityStixRelationsRadar from '../stix_relation/EntityStixRelationsRadar';
 

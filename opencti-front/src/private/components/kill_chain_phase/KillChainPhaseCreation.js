@@ -60,18 +60,16 @@ const styles = theme => ({
 });
 
 const killChainPhaseMutation = graphql`
-    mutation KillChainPhaseCreationMutation($input: KillChainPhaseAddInput!) {
-        killChainPhaseAdd(input: $input) {
-            ...KillChainPhaseLine_killChainPhase
-        }
+  mutation KillChainPhaseCreationMutation($input: KillChainPhaseAddInput!) {
+    killChainPhaseAdd(input: $input) {
+      ...KillChainPhaseLine_killChainPhase
     }
+  }
 `;
 
 const killChainPhaseValidation = t => Yup.object().shape({
-  kill_chain_name: Yup.string()
-    .required(t('This field is required')),
-  phase_name: Yup.string()
-    .required(t('This field is required')),
+  kill_chain_name: Yup.string().required(t('This field is required')),
+  phase_name: Yup.string().required(t('This field is required')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -110,7 +108,12 @@ class KillChainPhaseCreation extends Component {
         const payload = store.getRootField('killChainPhaseAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
-        sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
+        sharedUpdater(
+          store,
+          container.getDataID(),
+          this.props.paginationOptions,
+          newEdge,
+        );
       },
       setSubmitting,
       onCompleted: () => {
@@ -129,36 +132,81 @@ class KillChainPhaseCreation extends Component {
     const { t, classes } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
-             color='secondary' aria-label='Add'
-             className={classes.createButton}><Add/></Fab>
-        <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}
+        >
+          <Add />
+        </Fab>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
           <div className={classes.header}>
-            <IconButton aria-label='Close' className={classes.closeButton} onClick={this.handleClose.bind(this)}>
-              <Close fontSize='small'/>
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={this.handleClose.bind(this)}
+            >
+              <Close fontSize="small" />
             </IconButton>
-            <Typography variant='h6'>
+            <Typography variant="h6">
               {t('Create a kill chain phase')}
             </Typography>
           </div>
           <div className={classes.container}>
             <Formik
               initialValues={{
-                kill_chain_name: '', phase_name: '', phase_order: '',
+                kill_chain_name: '',
+                phase_name: '',
+                phase_order: '',
               }}
               validationSchema={killChainPhaseValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
               render={({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field name='kill_chain_name' component={TextField} label={t('Kill chain name')} fullWidth={true}/>
-                  <Field name='phase_name' component={TextField} label={t('Phase name')} fullWidth={true} style={{ marginTop: 20 }}/>
-                  <Field name='phase_order' component={TextField} label={t('Order')} fullWidth={true} type='number' style={{ marginTop: 20 }}/>
+                  <Field
+                    name="kill_chain_name"
+                    component={TextField}
+                    label={t('Kill chain name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    name="phase_name"
+                    component={TextField}
+                    label={t('Phase name')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="phase_order"
+                    component={TextField}
+                    label={t('Order')}
+                    fullWidth={true}
+                    type="number"
+                    style={{ marginTop: 20 }}
+                  />
                   <div className={classes.buttons}>
-                    <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                    <Button
+                      variant="contained"
+                      onClick={handleReset}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
                       {t('Cancel')}
                     </Button>
-                    <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
                       {t('Create')}
                     </Button>
                   </div>

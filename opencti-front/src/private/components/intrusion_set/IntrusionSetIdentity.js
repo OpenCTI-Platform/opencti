@@ -26,35 +26,79 @@ class IntrusionSetIdentityComponent extends Component {
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Identity')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant='h3' gutterBottom={true}>
+          <Typography variant="h3" gutterBottom={true}>
             {t('First seen')}
           </Typography>
           {fld(intrusionSet.first_seen)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Last seen')}
           </Typography>
           {fld(intrusionSet.last_seen)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Sophistication')}
           </Typography>
-          {t(`${intrusionSet.sophistication ? `sophistication_${intrusionSet.sophistication}` : 'sophistication_unkown'}`)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          {t(
+            `${
+              intrusionSet.sophistication
+                ? `sophistication_${intrusionSet.sophistication}`
+                : 'sophistication_unkown'
+            }`,
+          )}
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Resource level')}
           </Typography>
-          {t(`${intrusionSet.resource_level ? `resource_${intrusionSet.resource_level}` : 'resource_unkown'}`)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          {t(
+            `${
+              intrusionSet.resource_level
+                ? `resource_${intrusionSet.resource_level}`
+                : 'resource_unkown'
+            }`,
+          )}
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Primary motivation')}
           </Typography>
-          {t(`${intrusionSet.primary_motivation ? `motivation_${intrusionSet.primary_motivation}` : 'motivation_unpredictable'}`)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          {t(
+            `${
+              intrusionSet.primary_motivation
+                ? `motivation_${intrusionSet.primary_motivation}`
+                : 'motivation_unpredictable'
+            }`,
+          )}
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Secondary motivation')}
           </Typography>
-          {t(`${intrusionSet.secondary_motivation ? `motivation_${intrusionSet.secondary_motivation}` : 'motivation_unknown'}`)}
-          </Paper>
+          {t(
+            `${
+              intrusionSet.secondary_motivation
+                ? `motivation_${intrusionSet.secondary_motivation}`
+                : 'motivation_unknown'
+            }`,
+          )}
+        </Paper>
       </div>
     );
   }
@@ -67,19 +111,22 @@ IntrusionSetIdentityComponent.propTypes = {
   fld: PropTypes.func,
 };
 
-const IntrusionSetIdentity = createFragmentContainer(IntrusionSetIdentityComponent, {
-  intrusionSet: graphql`
+const IntrusionSetIdentity = createFragmentContainer(
+  IntrusionSetIdentityComponent,
+  {
+    intrusionSet: graphql`
       fragment IntrusionSetIdentity_intrusionSet on IntrusionSet {
-          id
-          first_seen
-          last_seen
-          sophistication
-          resource_level
-          primary_motivation
-          secondary_motivation
+        id
+        first_seen
+        last_seen
+        sophistication
+        resource_level
+        primary_motivation
+        secondary_motivation
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

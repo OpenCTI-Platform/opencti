@@ -43,11 +43,11 @@ function Transition(props) {
 }
 
 const IntrusionSetPopoverDeletionMutation = graphql`
-    mutation IntrusionSetPopoverDeletionMutation($id: ID!) {
-        intrusionSetEdit(id: $id) {
-            delete
-        }
+  mutation IntrusionSetPopoverDeletionMutation($id: ID!) {
+    intrusionSetEdit(id: $id) {
+      delete
     }
+  }
 `;
 
 class IntrusionSetPopover extends Component {
@@ -106,8 +106,8 @@ class IntrusionSetPopover extends Component {
     const { classes, t, intrusionSetId } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
-          <MoreVert/>
+        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+          <MoreVert />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
@@ -115,8 +115,12 @@ class IntrusionSetPopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>{t('Update')}</MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
+          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
+            {t('Update')}
+          </MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+            {t('Delete')}
+          </MenuItem>
         </Menu>
         <Dialog
           open={this.state.displayDelete}
@@ -130,25 +134,40 @@ class IntrusionSetPopover extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseDelete.bind(this)} color='primary' disabled={this.state.deleting}>
+            <Button
+              onClick={this.handleCloseDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
               {t('Cancel')}
             </Button>
-            <Button onClick={this.submitDelete.bind(this)} color='primary' disabled={this.state.deleting}>
+            <Button
+              onClick={this.submitDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
               {t('Delete')}
             </Button>
           </DialogActions>
         </Dialog>
-        <Drawer open={this.state.displayEdit} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleCloseEdit.bind(this)}>
+        <Drawer
+          open={this.state.displayEdit}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleCloseEdit.bind(this)}
+        >
           <QueryRenderer
             query={intrusionSetEditionQuery}
             variables={{ id: intrusionSetId }}
             render={({ props }) => {
               if (props) {
-                return <IntrusionSetEditionContainer
-                  me={props.me}
-                  intrusionSet={props.intrusionSet}
-                  handleClose={this.handleCloseEdit.bind(this)}
-                />;
+                return (
+                  <IntrusionSetEditionContainer
+                    me={props.me}
+                    intrusionSet={props.intrusionSet}
+                    handleClose={this.handleCloseEdit.bind(this)}
+                  />
+                );
               }
               return <div> &nbsp; </div>;
             }}

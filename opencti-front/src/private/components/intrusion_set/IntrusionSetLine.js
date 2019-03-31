@@ -72,25 +72,32 @@ class IntrusionSetLineComponent extends Component {
   render() {
     const { fd, classes, intrusionSet } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/knowledge/intrusion_sets/${intrusionSet.id}`}>
+      <ListItem
+        classes={{ default: classes.item }}
+        divider={true}
+        component={Link}
+        to={`/dashboard/knowledge/intrusion_sets/${intrusionSet.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Diamond/>
+          <Diamond />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {intrusionSet.name}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {intrusionSet.name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                {fd(intrusionSet.created)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                {fd(intrusionSet.modified)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              {fd(intrusionSet.created)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              {fd(intrusionSet.modified)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );
@@ -103,16 +110,19 @@ IntrusionSetLineComponent.propTypes = {
   fd: PropTypes.func,
 };
 
-const IntrusionSetLineFragment = createFragmentContainer(IntrusionSetLineComponent, {
-  intrusionSet: graphql`
+const IntrusionSetLineFragment = createFragmentContainer(
+  IntrusionSetLineComponent,
+  {
+    intrusionSet: graphql`
       fragment IntrusionSetLine_intrusionSet on IntrusionSet {
-          id
-          name
-          created
-          modified
+        id
+        name
+        created
+        modified
       }
-  `,
-});
+    `,
+  },
+);
 
 export const IntrusionSetLine = compose(
   inject18n,
@@ -125,23 +135,25 @@ class IntrusionSetLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Diamond/>
+          <Diamond />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );

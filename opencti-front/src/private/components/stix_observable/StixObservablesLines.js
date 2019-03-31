@@ -14,7 +14,10 @@ import {
   List,
   WindowScroller,
 } from 'react-virtualized';
-import { ReportLine, ReportLineDummy } from './ReportLine';
+import {
+  StixObservableLine,
+  StixObservableLineDummy,
+} from './StixObservableLine';
 
 const styles = () => ({
   windowScrollerWrapper: {
@@ -34,7 +37,7 @@ const styles = () => ({
   },
 });
 
-class ReportsLines extends Component {
+class StixObservablesLines extends Component {
   constructor(props) {
     super(props);
     this._isRowLoaded = this._isRowLoaded.bind(this);
@@ -50,20 +53,13 @@ class ReportsLines extends Component {
   filterList(list) {
     const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''
-      || n.node.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || n.node.createdByRef_inline
-        .toLowerCase()
-        .indexOf(searchTerm.toLowerCase()) !== -1
-      || n.node.markingDefinitions_inline
+      || n.node.type.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.observable_value
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;
     if (searchTerm.length > 0) {
       return pipe(
         map(n => n.node),
-        map(n => assoc(
-          'createdByRef_inline',
-          pathOr('-', ['createdByRef', 'node', 'name'], n),
-        )(n)),
         map(n => assoc(
           'markingDefinitions_inline',
           join(
@@ -100,7 +96,7 @@ class ReportsLines extends Component {
       return true;
     }
     const list = this.filterList(
-      pathOr([], ['reports', 'edges'], this.props.data),
+      pathOr([], ['stixObservables', 'edges'], this.props.data),
     );
     return !this.props.relay.hasMore() || index < list.length;
   }
@@ -110,31 +106,31 @@ class ReportsLines extends Component {
     if (dummy) {
       return (
         <div key={key} style={style}>
-          <ReportLineDummy />
+          <StixObservableLineDummy />
         </div>
       );
     }
 
     const list = this.filterList(
-      pathOr([], ['reports', 'edges'], this.props.data),
+      pathOr([], ['stixObservables', 'edges'], this.props.data),
     );
     if (!this._isRowLoaded({ index })) {
       return (
         <div key={key} style={style}>
-          <ReportLineDummy />
+          <StixObservableLineDummy />
         </div>
       );
     }
-    const reportNode = list[index];
-    if (!reportNode) {
+    const stixObservableNode = list[index];
+    if (!stixObservableNode) {
       return <div key={key}>&nbsp;</div>;
     }
-    const report = reportNode.node;
+    const stixObservable = stixObservableNode.node;
     return (
       <div key={key} style={style}>
-        <ReportLine
-          key={report.id}
-          report={report}
+        <StixObservableLine
+          key={stixObservable.id}
+          stixObservable={stixObservable}
           paginationOptions={this.props.paginationOptions}
         />
       </div>
@@ -146,7 +142,9 @@ class ReportsLines extends Component {
     const { scrollToIndex } = this.state;
     const list = dummy
       ? []
-      : this.filterList(pathOr([], ['reports', 'edges'], this.props.data));
+      : this.filterList(
+        pathOr([], ['stixObservables', 'edges'], this.props.data),
+      );
     const rowCount = dummy
       ? 20
       : this.props.relay.isLoading()
@@ -201,29 +199,29 @@ class ReportsLines extends Component {
   }
 }
 
-ReportsLines.propTypes = {
+StixObservablesLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   data: PropTypes.object,
   relay: PropTypes.object,
-  reports: PropTypes.object,
+  stixObservables: PropTypes.object,
   dummy: PropTypes.bool,
   searchTerm: PropTypes.string,
 };
 
-export const reportsLinesQuery = graphql`
-  query ReportsLinesPaginationQuery(
+export const stixObservablesLinesQuery = graphql`
+  query StixObservablesLinesPaginationQuery(
     $objectId: String
-    $reportClass: String
+    $stixObservableClass: String
     $count: Int!
     $cursor: ID
-    $orderBy: ReportsOrdering
+    $orderBy: StixObservablesOrdering
     $orderMode: OrderingMode
   ) {
-    ...ReportsLines_data
+    ...StixObservablesLines_data
       @arguments(
         objectId: $objectId
-        reportClass: $reportClass
+        stixObservableClass: $stixObservableClass
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -232,19 +230,14 @@ export const reportsLinesQuery = graphql`
   }
 `;
 
-export const reportsLinesSearchQuery = graphql`
-  query ReportsLinesSearchQuery($search: String) {
-    reports(search: $search) {
+export const stixObservablesLinesSearchQuery = graphql`
+  query StixObservablesLinesSearchQuery($search: String) {
+    stixObservables(search: $search) {
       edges {
         node {
           id
-          name
-          createdByRef {
-            node {
-              name
-            }
-          }
-          published
+          type
+          observable_value
           created_at
           updated_at
         }
@@ -255,36 +248,30 @@ export const reportsLinesSearchQuery = graphql`
 
 export default withStyles(styles)(
   createPaginationContainer(
-    ReportsLines,
+    StixObservablesLines,
     {
       data: graphql`
-        fragment ReportsLines_data on Query
+        fragment StixObservablesLines_data on Query
           @argumentDefinitions(
             objectId: { type: "String" }
-            reportClass: { type: "String" }
+            stixObservableClass: { type: "String" }
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
-            orderBy: { type: "ReportsOrdering", defaultValue: ID }
+            orderBy: { type: "StixObservablesOrdering", defaultValue: ID }
             orderMode: { type: "OrderingMode", defaultValue: "asc" }
           ) {
-          reports(
-            objectId: $objectId
-            reportClass: $reportClass
+          stixObservables(
             first: $count
             after: $cursor
             orderBy: $orderBy
             orderMode: $orderMode
-          ) @connection(key: "Pagination_reports") {
+          ) @connection(key: "Pagination_stixObservables") {
             edges {
               node {
                 id
-                name
-                published
-                createdByRef {
-                  node {
-                    name
-                  }
-                }
+                type
+                observable_value
+                created_at
                 markingDefinitions {
                   edges {
                     node {
@@ -293,7 +280,7 @@ export default withStyles(styles)(
                     }
                   }
                 }
-                ...ReportLine_report
+                ...StixObservableLine_stixObservable
               }
             }
           }
@@ -303,7 +290,7 @@ export default withStyles(styles)(
     {
       direction: 'forward',
       getConnectionFromProps(props) {
-        return props.data && props.data.reports;
+        return props.data && props.data.stixObservables;
       },
       getFragmentVariables(prevVars, totalCount) {
         return {
@@ -314,14 +301,14 @@ export default withStyles(styles)(
       getVariables(props, { count, cursor }, fragmentVariables) {
         return {
           objectId: fragmentVariables.objectId,
-          reportClass: fragmentVariables.reportClass,
+          stixObservableClass: fragmentVariables.stixObservableClass,
           count,
           cursor,
           orderBy: fragmentVariables.orderBy,
           orderMode: fragmentVariables.orderMode,
         };
       },
-      query: reportsLinesQuery,
+      query: stixObservablesLinesQuery,
     },
   ),
 );

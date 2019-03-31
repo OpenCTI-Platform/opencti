@@ -198,7 +198,7 @@ class Tools extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportToolsQuery, { count: 10000, ...paginationOptions }).then(
+    fetchQuery(exportToolsQuery, { count: 2147483647, ...paginationOptions }).then(
       (data) => {
         const finalData = pipe(
           map(n => n.node),

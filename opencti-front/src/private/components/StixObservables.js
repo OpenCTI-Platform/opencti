@@ -2,26 +2,26 @@
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
 import { CSVLink } from 'react-csv';
 import {
-  assoc, compose, defaultTo, lensProp, map, over, pipe,
+  assoc, compose, join, map, pathOr, pipe,
 } from 'ramda';
+import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import IconButton from '@material-ui/core/IconButton';
-import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
+import IconButton from '@material-ui/core/IconButton';
+import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
 import {
   ArrowDropDown,
   ArrowDropUp,
@@ -29,10 +29,11 @@ import {
   SaveAlt,
 } from '@material-ui/icons';
 import { fetchQuery, QueryRenderer } from '../../relay/environment';
-import UsersLines, { usersLinesQuery } from './user/UsersLines';
-import inject18n from '../../components/i18n';
+import StixObservablesLines, {
+  stixObservablesLinesQuery,
+} from './stix_observable/StixObservablesLines';
 import SearchInput from '../../components/SearchInput';
-import UserCreation from './user/UserCreation';
+import inject18n from '../../components/i18n';
 import { dateFormat } from '../../utils/Time';
 
 const styles = theme => ({
@@ -75,70 +76,72 @@ const inlineStyles = {
     padding: 0,
     top: '0px',
   },
-  name: {
+  type: {
     float: 'left',
     width: '20%',
     fontSize: 12,
     fontWeight: '700',
   },
-  email: {
+  observable_value: {
     float: 'left',
-    width: '30%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  firstname: {
-    float: 'left',
-    width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  lastname: {
-    float: 'left',
-    width: '15%',
+    width: '40%',
     fontSize: 12,
     fontWeight: '700',
   },
   created_at: {
     float: 'left',
+    width: '15%',
     fontSize: 12,
     fontWeight: '700',
   },
+  marking: {
+    float: 'left',
+    fontSize: 12,
+    fontWeight: '700',
+    cursor: 'default',
+  },
 };
 
-const exportUsersQuery = graphql`
-  query UsersExportUsersQuery(
+export const exportStixObservablesQuery = graphql`
+  query StixObservablesExportStixObservablesQuery(
     $count: Int!
     $cursor: ID
-    $orderBy: UsersOrdering
+    $orderBy: StixObservablesOrdering
     $orderMode: OrderingMode
   ) {
-    users(
+    stixObservables(
       first: $count
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
-    ) @connection(key: "Pagination_users") {
+    ) @connection(key: "Pagination_stixObservables") {
       edges {
         node {
           id
-          name
-          email
-          firstname
-          lastname
-          description
+          type
+          observable_value
+          created_at
+          updated_at
+          markingDefinitions {
+            edges {
+              node {
+                id
+                definition
+              }
+            }
+          }
         }
       }
     }
   }
 `;
 
-class Users extends Component {
+class StixObservables extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      sortBy: 'name',
-      orderAsc: true,
+      sortBy: 'created_at',
+      orderAsc: false,
       searchTerm: '',
       view: 'lines',
       exportCsvOpen: false,
@@ -158,23 +161,30 @@ class Users extends Component {
     this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
   }
 
-  SortHeader(field, label) {
+  SortHeader(field, label, isSortable) {
     const { t } = this.props;
-    return (
-      <div
-        style={inlineStyles[field]}
-        onClick={this.reverseBy.bind(this, field)}
-      >
-        <span>{t(label)}</span>
-        {this.state.sortBy === field ? (
-          this.state.orderAsc ? (
-            <ArrowDropDown style={inlineStyles.iconSort} />
+    if (isSortable) {
+      return (
+        <div
+          style={inlineStyles[field]}
+          onClick={this.reverseBy.bind(this, field)}
+        >
+          <span>{t(label)}</span>
+          {this.state.sortBy === field ? (
+            this.state.orderAsc ? (
+              <ArrowDropDown style={inlineStyles.iconSort} />
+            ) : (
+              <ArrowDropUp style={inlineStyles.iconSort} />
+            )
           ) : (
-            <ArrowDropUp style={inlineStyles.iconSort} />
-          )
-        ) : (
-          ''
-        )}
+            ''
+          )}
+        </div>
+      );
+    }
+    return (
+      <div style={inlineStyles[field]}>
+        <span>{t(label)}</span>
       </div>
     );
   }
@@ -198,25 +208,30 @@ class Users extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportUsersQuery, { count: 2147483647, ...paginationOptions }).then(
-      (data) => {
-        const finalData = pipe(
-          map(n => n.node),
-          map(n => over(lensProp('firstname'), defaultTo('-'))(n)),
-          map(n => over(lensProp('lastname'), defaultTo('-'))(n)),
-          map(n => over(lensProp('description'), defaultTo('-'))(n)),
-          map(n => assoc('created', dateFormat(n.created))(n)),
-          map(n => assoc('modified', dateFormat(n.modified))(n)),
-        )(data.users.edges);
-        this.setState({ exportCsvData: finalData });
-      },
-    );
+    fetchQuery(exportStixObservablesQuery, {
+      count: 10000,
+      ...paginationOptions,
+    }).then((data) => {
+      const finalData = pipe(
+        map(n => n.node),
+        map(n => assoc('created_at', dateFormat(n.created_at))(n)),
+        map(n => assoc(
+          'markingDefinitions',
+          pipe(
+            pathOr([], ['markingDefinitions', 'edges']),
+            map(o => o.node.definition_name),
+            join(', '),
+          )(n),
+        )(n)),
+      )(data.stixObservables.edges);
+      this.setState({ exportCsvData: finalData });
+    });
   }
 
   render() {
-    const { classes, t } = this.props;
+    const { classes, stixObservableClass, t } = this.props;
     const paginationOptions = {
-      isUser: true,
+      stixObservableClass: stixObservableClass || '',
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
@@ -277,22 +292,21 @@ class Users extends Component {
             <ListItemText
               primary={
                 <div>
-                  {this.SortHeader('name', 'name')}
-                  {this.SortHeader('email', 'Email address')}
-                  {this.SortHeader('firstname', 'Firstname')}
-                  {this.SortHeader('lastname', 'Lastname')}
-                  {this.SortHeader('created_at', 'Creation date')}
+                  {this.SortHeader('type', 'Type', true)}
+                  {this.SortHeader('observable_value', 'Value', true)}
+                  {this.SortHeader('created_at', 'Creation date', true)}
+                  {this.SortHeader('marking', 'Marking', false)}
                 </div>
               }
             />
           </ListItem>
           <QueryRenderer
-            query={usersLinesQuery}
+            query={stixObservablesLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <UsersLines
+                  <StixObservablesLines
                     data={props}
                     paginationOptions={paginationOptions}
                     searchTerm={this.state.searchTerm}
@@ -300,7 +314,7 @@ class Users extends Component {
                 );
               }
               return (
-                <UsersLines
+                <StixObservablesLines
                   data={null}
                   dummy={true}
                   searchTerm={this.state.searchTerm}
@@ -309,7 +323,6 @@ class Users extends Component {
             }}
           />
         </List>
-        <UserCreation paginationOptions={paginationOptions} />
         <Dialog
           open={this.state.exportCsvOpen}
           onClose={this.handleCloseExportCsv.bind(this)}
@@ -347,7 +360,7 @@ class Users extends Component {
                 separator={';'}
                 enclosingCharacter={'"'}
                 color="primary"
-                filename={`${t('Users')}.csv`}
+                filename={`${t('StixObservables')}.csv`}
               >
                 {t('Download')}
               </Button>
@@ -361,8 +374,9 @@ class Users extends Component {
   }
 }
 
-Users.propTypes = {
+StixObservables.propTypes = {
   classes: PropTypes.object,
+  stixObservableClass: PropTypes.string,
   t: PropTypes.func,
   history: PropTypes.object,
 };
@@ -370,4 +384,4 @@ Users.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(Users);
+)(StixObservables);

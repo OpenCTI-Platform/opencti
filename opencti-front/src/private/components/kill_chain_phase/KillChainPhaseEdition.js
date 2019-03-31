@@ -4,7 +4,14 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import {
-  compose, insert, find, propEq, pickAll, over, lensProp, defaultTo,
+  compose,
+  insert,
+  find,
+  propEq,
+  pickAll,
+  over,
+  lensProp,
+  defaultTo,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -12,9 +19,16 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../components/i18n';
-import { commitMutation, requestSubscription, WS_ACTIVATED } from '../../../relay/environment';
+import {
+  commitMutation,
+  requestSubscription,
+  WS_ACTIVATED,
+} from '../../../relay/environment';
 import TextField from '../../../components/TextField';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../components/Subscription';
+import {
+  SubscriptionAvatars,
+  SubscriptionFocus,
+} from '../../../components/Subscription';
 
 const styles = theme => ({
   header: {
@@ -47,38 +61,39 @@ const styles = theme => ({
 });
 
 const subscription = graphql`
-    subscription KillChainPhaseEditionSubscription($id: ID!) {
-        killChainPhase(id: $id) {
-            ...KillChainPhaseEdition_killChainPhase
-        }
+  subscription KillChainPhaseEditionSubscription($id: ID!) {
+    killChainPhase(id: $id) {
+      ...KillChainPhaseEdition_killChainPhase
     }
+  }
 `;
 
 const killChainPhaseMutationFieldPatch = graphql`
-    mutation KillChainPhaseEditionFieldPatchMutation($id: ID!, $input: EditInput!) {
-        killChainPhaseEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...KillChainPhaseEdition_killChainPhase
-            }
-        }
+  mutation KillChainPhaseEditionFieldPatchMutation(
+    $id: ID!
+    $input: EditInput!
+  ) {
+    killChainPhaseEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...KillChainPhaseEdition_killChainPhase
+      }
     }
+  }
 `;
 
 const killChainPhaseEditionFocus = graphql`
-    mutation KillChainPhaseEditionFocusMutation($id: ID!, $input: EditContext!) {
-        killChainPhaseEdit(id: $id) {
-            contextPatch(input : $input) {
-                ...KillChainPhaseEdition_killChainPhase
-            }
-        }
+  mutation KillChainPhaseEditionFocusMutation($id: ID!, $input: EditContext!) {
+    killChainPhaseEdit(id: $id) {
+      contextPatch(input: $input) {
+        ...KillChainPhaseEdition_killChainPhase
+      }
     }
+  }
 `;
 
 const killChainPhaseValidation = t => Yup.object().shape({
-  kill_chain_name: Yup.string()
-    .required(t('This field is required')),
-  phase_name: Yup.string()
-    .required(t('This field is required')),
+  kill_chain_name: Yup.string().required(t('This field is required')),
+  phase_name: Yup.string().required(t('This field is required')),
   phase_order: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
@@ -91,7 +106,7 @@ class KillChainPhaseEditionContainer extends Component {
       subscription,
       variables: {
         // eslint-disable-next-line
-          id: this.props.killChainPhase.id
+        id: this.props.killChainPhase.id
       },
     });
     this.setState({ sub });
@@ -116,12 +131,18 @@ class KillChainPhaseEditionContainer extends Component {
   }
 
   handleSubmitField(name, value) {
-    killChainPhaseValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      commitMutation({
-        mutation: killChainPhaseMutationFieldPatch,
-        variables: { id: this.props.killChainPhase.id, input: { key: name, value } },
-      });
-    }).catch(() => false);
+    killChainPhaseValidation(this.props.t)
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        commitMutation({
+          mutation: killChainPhaseMutationFieldPatch,
+          variables: {
+            id: this.props.killChainPhase.id,
+            input: { key: name, value },
+          },
+        });
+      })
+      .catch(() => false);
   }
 
   render() {
@@ -130,19 +151,29 @@ class KillChainPhaseEditionContainer extends Component {
     } = this.props;
     const { editContext } = killChainPhase;
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
-    const initialValues = over(lensProp('phase_order'), defaultTo(''), pickAll(['kill_chain_name', 'phase_name', 'phase_order'], killChainPhase));
+    const editUsers = missingMe
+      ? insert(0, { name: me.email }, editContext)
+      : editContext;
+    const initialValues = over(
+      lensProp('phase_order'),
+      defaultTo(''),
+      pickAll(['kill_chain_name', 'phase_name', 'phase_order'], killChainPhase),
+    );
     return (
       <div>
         <div className={classes.header}>
-          <IconButton aria-label='Close' className={classes.closeButton} onClick={handleClose.bind(this)}>
-            <Close fontSize='small'/>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
           </IconButton>
-          <Typography variant='h6' classes={{ root: classes.title }}>
+          <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a kill chain phase')}
           </Typography>
-          <SubscriptionAvatars users={editUsers}/>
-          <div className='clearfix'/>
+          <SubscriptionAvatars users={editUsers} />
+          <div className="clearfix" />
         </div>
         <div className={classes.container}>
           <Formik
@@ -151,20 +182,54 @@ class KillChainPhaseEditionContainer extends Component {
             validationSchema={killChainPhaseValidation(t)}
             render={() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field name='kill_chain_name' component={TextField} label={t('Kill chain name')} fullWidth={true}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='kill_chain_name'/>}/>
-                <Field name='phase_name' component={TextField} label={t('Phase name')}
-                       fullWidth={true} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='phase_name'/>}/>
-                <Field name='phase_order' component={TextField} label={t('Order')}
-                       fullWidth={true} type='number' style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='phase_order'/>}/>
+                <Field
+                  name="kill_chain_name"
+                  component={TextField}
+                  label={t('Kill chain name')}
+                  fullWidth={true}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="kill_chain_name"
+                    />
+                  }
+                />
+                <Field
+                  name="phase_name"
+                  component={TextField}
+                  label={t('Phase name')}
+                  fullWidth={true}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="phase_name"
+                    />
+                  }
+                />
+                <Field
+                  name="phase_order"
+                  component={TextField}
+                  label={t('Order')}
+                  fullWidth={true}
+                  type="number"
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="phase_order"
+                    />
+                  }
+                />
               </Form>
             )}
           />
@@ -183,25 +248,28 @@ KillChainPhaseEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const KillChainPhaseEditionFragment = createFragmentContainer(KillChainPhaseEditionContainer, {
-  killChainPhase: graphql`
+const KillChainPhaseEditionFragment = createFragmentContainer(
+  KillChainPhaseEditionContainer,
+  {
+    killChainPhase: graphql`
       fragment KillChainPhaseEdition_killChainPhase on KillChainPhase {
-          id
-          kill_chain_name
-          phase_name
-          phase_order
-          editContext {
-              name
-              focusOn
-          }
+        id
+        kill_chain_name
+        phase_name
+        phase_order
+        editContext {
+          name
+          focusOn
+        }
       }
-  `,
-  me: graphql`
+    `,
+    me: graphql`
       fragment KillChainPhaseEdition_me on User {
-          email
+        email
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

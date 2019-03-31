@@ -30,7 +30,6 @@ import {
 } from '@material-ui/icons';
 import { Tag } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
-import ItemIcon from '../../../components/ItemIcon';
 import ReportHeader from './ReportHeader';
 import ReportAddObservable from './ReportAddObservable';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';

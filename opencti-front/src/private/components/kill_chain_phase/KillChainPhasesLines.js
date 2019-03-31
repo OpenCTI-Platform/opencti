@@ -7,9 +7,15 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  AutoSizer, InfiniteLoader, List, WindowScroller,
+  AutoSizer,
+  InfiniteLoader,
+  List,
+  WindowScroller,
 } from 'react-virtualized';
-import { KillChainPhaseLine, KillChainPhaseLineDummy } from './KillChainPhaseLine';
+import {
+  KillChainPhaseLine,
+  KillChainPhaseLineDummy,
+} from './KillChainPhaseLine';
 
 const styles = () => ({
   windowScrollerWrapper: {
@@ -51,11 +57,9 @@ class KillChainPhasesLines extends Component {
     if (!this.props.relay.hasMore() || this.props.relay.isLoading()) {
       return;
     }
-
-    // Fetch the next 10 feed items
-    this.props.relay.loadMore(25, () => {
-      // console.log(error);
-    });
+    this.props.relay.loadMore(
+      this.props.searchTerm.length > 0 ? 2147483647 : 25,
+    );
   }
 
   _isRowLoaded({ index }) {
@@ -69,34 +73,59 @@ class KillChainPhasesLines extends Component {
   _rowRenderer({ index, key, style }) {
     const { dummy } = this.props;
     if (dummy) {
-      return <div key={key} style={style}><KillChainPhaseLineDummy/></div>;
+      return (
+        <div key={key} style={style}>
+          <KillChainPhaseLineDummy />
+        </div>
+      );
     }
 
     const list = pathOr([], ['killChainPhases', 'edges'], this.props.data);
     if (!this._isRowLoaded({ index })) {
-      return <div key={key} style={style}><KillChainPhaseLineDummy/></div>;
+      return (
+        <div key={key} style={style}>
+          <KillChainPhaseLineDummy />
+        </div>
+      );
     }
     const killChainPhaseNode = list[index];
     if (!killChainPhaseNode) {
       return <div key={key}>&nbsp;</div>;
     }
     const killChainPhase = killChainPhaseNode.node;
-    return <div key={key} style={style}><KillChainPhaseLine key={killChainPhase.id} killChainPhase={killChainPhase} paginationOptions={this.props.paginationOptions}/></div>;
+    return (
+      <div key={key} style={style}>
+        <KillChainPhaseLine
+          key={killChainPhase.id}
+          killChainPhase={killChainPhase}
+          paginationOptions={this.props.paginationOptions}
+        />
+      </div>
+    );
   }
 
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
-    const list = dummy ? [] : pathOr([], ['killChainPhases', 'edges'], this.props.data);
-    const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 5 : list.length;
+    const list = dummy
+      ? []
+      : pathOr([], ['killChainPhases', 'edges'], this.props.data);
+    const rowCount = dummy
+      ? 20
+      : this.props.relay.isLoading()
+        ? list.length + 5
+        : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
           <div className={styles.windowScrollerWrapper}>
-            <InfiniteLoader isRowLoaded={this._isRowLoaded}
-                            loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
+            <InfiniteLoader
+              isRowLoaded={this._isRowLoaded}
+              loadMoreRows={this._loadMore}
+              rowCount={Number.MAX_SAFE_INTEGER}
+            >
               {({ onRowsRendered }) => (
                 <AutoSizer disableHeight>
                   {({ width }) => (
@@ -135,67 +164,87 @@ KillChainPhasesLines.propTypes = {
   relay: PropTypes.object,
   killChainPhases: PropTypes.object,
   dummy: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const killChainPhasesLinesQuery = graphql`
-    query KillChainPhasesLinesPaginationQuery($count: Int!, $cursor: ID, $orderBy: KillChainPhasesOrdering, $orderMode: OrderingMode) {
-        ...KillChainPhasesLines_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
-    }
+  query KillChainPhasesLinesPaginationQuery(
+    $count: Int!
+    $cursor: ID
+    $orderBy: KillChainPhasesOrdering
+    $orderMode: OrderingMode
+  ) {
+    ...KillChainPhasesLines_data
+      @arguments(
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
+  }
 `;
 
 export const killChainPhasesLinesSearchQuery = graphql`
-    query KillChainPhasesLinesSearchQuery($search: String) {
-        killChainPhases(search: $search) {
-            edges {
-                node {
-                    id,
-                    kill_chain_name,
-                    phase_name
-                }
-            }
+  query KillChainPhasesLinesSearchQuery($search: String) {
+    killChainPhases(search: $search) {
+      edges {
+        node {
+          id
+          kill_chain_name
+          phase_name
         }
+      }
     }
+  }
 `;
 
-export default withStyles(styles)(createPaginationContainer(
-  KillChainPhasesLines,
-  {
-    data: graphql`
-        fragment KillChainPhasesLines_data on Query @argumentDefinitions(
-            count: {type: "Int", defaultValue: 25}
-            cursor: {type: "ID"}
-            orderBy: {type: "KillChainPhasesOrdering", defaultValue: ID}
-            orderMode: {type: "OrderingMode", defaultValue: "asc"}
-        ) {
-            killChainPhases(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_killChainPhases") {
-                edges {
-                    node {
-                        ...KillChainPhaseLine_killChainPhase
-                    }
-                }
+export default withStyles(styles)(
+  createPaginationContainer(
+    KillChainPhasesLines,
+    {
+      data: graphql`
+        fragment KillChainPhasesLines_data on Query
+          @argumentDefinitions(
+            count: { type: "Int", defaultValue: 25 }
+            cursor: { type: "ID" }
+            orderBy: { type: "KillChainPhasesOrdering", defaultValue: ID }
+            orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          ) {
+          killChainPhases(
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+          ) @connection(key: "Pagination_killChainPhases") {
+            edges {
+              node {
+                ...KillChainPhaseLine_killChainPhase
+              }
             }
+          }
         }
-    `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.killChainPhases;
+      `,
     },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
+    {
+      direction: 'forward',
+      getConnectionFromProps(props) {
+        return props.data && props.data.killChainPhases;
+      },
+      getFragmentVariables(prevVars, totalCount) {
+        return {
+          ...prevVars,
+          count: totalCount,
+        };
+      },
+      getVariables(props, { count, cursor }, fragmentVariables) {
+        return {
+          count,
+          cursor,
+          orderBy: fragmentVariables.orderBy,
+          orderMode: fragmentVariables.orderMode,
+        };
+      },
+      query: killChainPhasesLinesQuery,
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
-      return {
-        count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
-      };
-    },
-    query: killChainPhasesLinesQuery,
-  },
-));
+  ),
+);

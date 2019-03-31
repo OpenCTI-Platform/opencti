@@ -42,29 +42,29 @@ const styles = theme => ({
 });
 
 const intrusionSetMutationFieldPatch = graphql`
-    mutation IntrusionSetEditionIdentityFieldPatchMutation(
+  mutation IntrusionSetEditionIdentityFieldPatchMutation(
     $id: ID!
     $input: EditInput!
-    ) {
-        intrusionSetEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...IntrusionSetEditionIdentity_intrusionSet
-            }
-        }
+  ) {
+    intrusionSetEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...IntrusionSetEditionIdentity_intrusionSet
+      }
     }
+  }
 `;
 
 const intrusionSetEditionIdentityFocus = graphql`
-    mutation IntrusionSetEditionIdentityFocusMutation(
+  mutation IntrusionSetEditionIdentityFocusMutation(
     $id: ID!
     $input: EditContext!
-    ) {
-        intrusionSetEdit(id: $id) {
-            contextPatch(input: $input) {
-                ...IntrusionSetEditionIdentity_intrusionSet
-            }
-        }
+  ) {
+    intrusionSetEdit(id: $id) {
+      contextPatch(input: $input) {
+        ...IntrusionSetEditionIdentity_intrusionSet
+      }
     }
+  }
 `;
 
 const intrusionSetValidation = t => Yup.object().shape({
@@ -138,18 +138,39 @@ class IntrusionSetEditionIdentityComponent extends Component {
           render={() => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field name='first_seen' component={DatePickerField} label={t('First seen')}
-                       fullWidth={true}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='first_seen'/>}/>
-                <Field name='last_seen' component={DatePickerField} label={t('Last seen')}
-                       fullWidth={true} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='last_seen'/>}/>
                 <Field
-                  name='sophistication'
+                  name="first_seen"
+                  component={DatePickerField}
+                  label={t('First seen')}
+                  fullWidth={true}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="first_seen"
+                    />
+                  }
+                />
+                <Field
+                  name="last_seen"
+                  component={DatePickerField}
+                  label={t('Last seen')}
+                  fullWidth={true}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="last_seen"
+                    />
+                  }
+                />
+                <Field
+                  name="sophistication"
                   component={Select}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -168,16 +189,30 @@ class IntrusionSetEditionIdentityComponent extends Component {
                     />
                   }
                 >
-                  <MenuItem key='none' value='none'>{t('sophistication_none')}</MenuItem>
-                  <MenuItem key='minimal' value='minimal'>{t('sophistication_minimal')}</MenuItem>
-                  <MenuItem key='intermediate' value='intermediate'>{t('sophistication_intermediate')}</MenuItem>
-                  <MenuItem key='advanced' value='advanced'>{t('sophistication_advanced')}</MenuItem>
-                  <MenuItem key='expert' value='expert'>{t('sophistication_expert')}</MenuItem>
-                  <MenuItem key='innovator' value='innovator'>{t('sophistication_innovator')}</MenuItem>
-                  <MenuItem key='strategic' value='strategic'>{t('sophistication_strategic')}</MenuItem>
+                  <MenuItem key="none" value="none">
+                    {t('sophistication_none')}
+                  </MenuItem>
+                  <MenuItem key="minimal" value="minimal">
+                    {t('sophistication_minimal')}
+                  </MenuItem>
+                  <MenuItem key="intermediate" value="intermediate">
+                    {t('sophistication_intermediate')}
+                  </MenuItem>
+                  <MenuItem key="advanced" value="advanced">
+                    {t('sophistication_advanced')}
+                  </MenuItem>
+                  <MenuItem key="expert" value="expert">
+                    {t('sophistication_expert')}
+                  </MenuItem>
+                  <MenuItem key="innovator" value="innovator">
+                    {t('sophistication_innovator')}
+                  </MenuItem>
+                  <MenuItem key="strategic" value="strategic">
+                    {t('sophistication_strategic')}
+                  </MenuItem>
                 </Field>
                 <Field
-                  name='resource_level'
+                  name="resource_level"
                   component={Select}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -196,16 +231,30 @@ class IntrusionSetEditionIdentityComponent extends Component {
                     />
                   }
                 >
-                  <MenuItem key='none' value=''>{t('None')}</MenuItem>
-                  <MenuItem key='individual' value='individual'>{t('resource_individual')}</MenuItem>
-                  <MenuItem key='club' value='club'>{t('resource_club')}</MenuItem>
-                  <MenuItem key='contest' value='contest'>{t('resource_contest')}</MenuItem>
-                  <MenuItem key='team' value='team'>{t('resource_team')}</MenuItem>
-                  <MenuItem key='organization' value='organization'>{t('resource_organization')}</MenuItem>
-                  <MenuItem key='government' value='government'>{t('resource_government')}</MenuItem>
+                  <MenuItem key="none" value="">
+                    {t('None')}
+                  </MenuItem>
+                  <MenuItem key="individual" value="individual">
+                    {t('resource_individual')}
+                  </MenuItem>
+                  <MenuItem key="club" value="club">
+                    {t('resource_club')}
+                  </MenuItem>
+                  <MenuItem key="contest" value="contest">
+                    {t('resource_contest')}
+                  </MenuItem>
+                  <MenuItem key="team" value="team">
+                    {t('resource_team')}
+                  </MenuItem>
+                  <MenuItem key="organization" value="organization">
+                    {t('resource_organization')}
+                  </MenuItem>
+                  <MenuItem key="government" value="government">
+                    {t('resource_government')}
+                  </MenuItem>
                 </Field>
                 <Field
-                  name='primary_motivation'
+                  name="primary_motivation"
                   component={Select}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -224,20 +273,48 @@ class IntrusionSetEditionIdentityComponent extends Component {
                     />
                   }
                 >
-                  <MenuItem key='none' value=''>{t('None')}</MenuItem>
-                  <MenuItem key='accidental' value='accidental'>{t('motivation_accidental')}</MenuItem>
-                  <MenuItem key='coercion' value='coercion'>{t('motivation_coercion')}</MenuItem>
-                  <MenuItem key='dominance' value='dominance'>{t('motivation_dominance')}</MenuItem>
-                  <MenuItem key='ideology' value='ideology'>{t('motivation_ideology')}</MenuItem>
-                  <MenuItem key='notoriety' value='notoriety'>{t('motivation_notoriety')}</MenuItem>
-                  <MenuItem key='organizational-gain' value='organizational-gain'>{t('motivation_organizational-gain')}</MenuItem>
-                  <MenuItem key='personal-gain' value='personal-gain'>{t('motivation_personal-gain')}</MenuItem>
-                  <MenuItem key='personal-satisfaction' value='personal-satisfaction'>{t('motivation_personal-satisfaction')}</MenuItem>
-                  <MenuItem key='revenge' value='revenge'>{t('motivation_revenge')}</MenuItem>
-                  <MenuItem key='unpredictable' value='unpredictable'>{t('motivation_unpredictable')}</MenuItem>
+                  <MenuItem key="none" value="">
+                    {t('None')}
+                  </MenuItem>
+                  <MenuItem key="accidental" value="accidental">
+                    {t('motivation_accidental')}
+                  </MenuItem>
+                  <MenuItem key="coercion" value="coercion">
+                    {t('motivation_coercion')}
+                  </MenuItem>
+                  <MenuItem key="dominance" value="dominance">
+                    {t('motivation_dominance')}
+                  </MenuItem>
+                  <MenuItem key="ideology" value="ideology">
+                    {t('motivation_ideology')}
+                  </MenuItem>
+                  <MenuItem key="notoriety" value="notoriety">
+                    {t('motivation_notoriety')}
+                  </MenuItem>
+                  <MenuItem
+                    key="organizational-gain"
+                    value="organizational-gain"
+                  >
+                    {t('motivation_organizational-gain')}
+                  </MenuItem>
+                  <MenuItem key="personal-gain" value="personal-gain">
+                    {t('motivation_personal-gain')}
+                  </MenuItem>
+                  <MenuItem
+                    key="personal-satisfaction"
+                    value="personal-satisfaction"
+                  >
+                    {t('motivation_personal-satisfaction')}
+                  </MenuItem>
+                  <MenuItem key="revenge" value="revenge">
+                    {t('motivation_revenge')}
+                  </MenuItem>
+                  <MenuItem key="unpredictable" value="unpredictable">
+                    {t('motivation_unpredictable')}
+                  </MenuItem>
                 </Field>
                 <Field
-                  name='secondary_motivation'
+                  name="secondary_motivation"
                   component={Select}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -256,17 +333,45 @@ class IntrusionSetEditionIdentityComponent extends Component {
                     />
                   }
                 >
-                  <MenuItem key='none' value=''>{t('None')}</MenuItem>
-                  <MenuItem key='accidental' value='accidental'>{t('motivation_accidental')}</MenuItem>
-                  <MenuItem key='coercion' value='coercion'>{t('motivation_coercion')}</MenuItem>
-                  <MenuItem key='dominance' value='dominance'>{t('motivation_dominance')}</MenuItem>
-                  <MenuItem key='ideology' value='ideology'>{t('motivation_ideology')}</MenuItem>
-                  <MenuItem key='notoriety' value='notoriety'>{t('motivation_notoriety')}</MenuItem>
-                  <MenuItem key='organizational-gain' value='organizational-gain'>{t('motivation_organizational-gain')}</MenuItem>
-                  <MenuItem key='personal-gain' value='personal-gain'>{t('motivation_personal-gain')}</MenuItem>
-                  <MenuItem key='personal-satisfaction' value='personal-satisfaction'>{t('motivation_personal-satisfaction')}</MenuItem>
-                  <MenuItem key='revenge' value='revenge'>{t('motivation_revenge')}</MenuItem>
-                  <MenuItem key='unpredictable' value='unpredictable'>{t('motivation_unpredictable')}</MenuItem>
+                  <MenuItem key="none" value="">
+                    {t('None')}
+                  </MenuItem>
+                  <MenuItem key="accidental" value="accidental">
+                    {t('motivation_accidental')}
+                  </MenuItem>
+                  <MenuItem key="coercion" value="coercion">
+                    {t('motivation_coercion')}
+                  </MenuItem>
+                  <MenuItem key="dominance" value="dominance">
+                    {t('motivation_dominance')}
+                  </MenuItem>
+                  <MenuItem key="ideology" value="ideology">
+                    {t('motivation_ideology')}
+                  </MenuItem>
+                  <MenuItem key="notoriety" value="notoriety">
+                    {t('motivation_notoriety')}
+                  </MenuItem>
+                  <MenuItem
+                    key="organizational-gain"
+                    value="organizational-gain"
+                  >
+                    {t('motivation_organizational-gain')}
+                  </MenuItem>
+                  <MenuItem key="personal-gain" value="personal-gain">
+                    {t('motivation_personal-gain')}
+                  </MenuItem>
+                  <MenuItem
+                    key="personal-satisfaction"
+                    value="personal-satisfaction"
+                  >
+                    {t('motivation_personal-satisfaction')}
+                  </MenuItem>
+                  <MenuItem key="revenge" value="revenge">
+                    {t('motivation_revenge')}
+                  </MenuItem>
+                  <MenuItem key="unpredictable" value="unpredictable">
+                    {t('motivation_unpredictable')}
+                  </MenuItem>
                 </Field>
               </Form>
             </div>
@@ -290,15 +395,15 @@ const IntrusionSetEditionIdentity = createFragmentContainer(
   IntrusionSetEditionIdentityComponent,
   {
     intrusionSet: graphql`
-        fragment IntrusionSetEditionIdentity_intrusionSet on IntrusionSet {
-            id
-            first_seen
-            last_seen
-            sophistication
-            resource_level
-            primary_motivation
-            secondary_motivation
-        }
+      fragment IntrusionSetEditionIdentity_intrusionSet on IntrusionSet {
+        id
+        first_seen
+        last_seen
+        sophistication
+        resource_level
+        primary_motivation
+        secondary_motivation
+      }
     `,
   },
 );

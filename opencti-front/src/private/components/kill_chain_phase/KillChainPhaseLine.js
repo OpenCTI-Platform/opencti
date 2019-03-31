@@ -83,24 +83,32 @@ class KillChainPhaseLineComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Launch/>
+          <Launch />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.kill_chain_name}>
-              {killChainPhase.kill_chain_name}
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.kill_chain_name}
+              >
+                {killChainPhase.kill_chain_name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.phase_name}>
+                {killChainPhase.phase_name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.phase_order}
+              >
+                {killChainPhase.phase_order}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                {fd(killChainPhase.created)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.phase_name}>
-              {killChainPhase.phase_name}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.phase_order}>
-              {killChainPhase.phase_order}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              {fd(killChainPhase.created)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <KillChainPhasePopover
             killChainPhaseId={killChainPhase.id}
@@ -120,18 +128,21 @@ KillChainPhaseLineComponent.propTypes = {
   fd: PropTypes.func,
 };
 
-const KillChainPhaseLineFragment = createFragmentContainer(KillChainPhaseLineComponent, {
-  killChainPhase: graphql`
+const KillChainPhaseLineFragment = createFragmentContainer(
+  KillChainPhaseLineComponent,
+  {
+    killChainPhase: graphql`
       fragment KillChainPhaseLine_killChainPhase on KillChainPhase {
-          id
-          kill_chain_name
-          phase_name
-          phase_order
-          created
-          modified
+        id
+        kill_chain_name
+        phase_name
+        phase_order
+        created
+        modified
       }
-  `,
-});
+    `,
+  },
+);
 
 export const KillChainPhaseLine = compose(
   inject18n,
@@ -144,26 +155,34 @@ class KillChainPhaseLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Launch/>
+          <Launch />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.kill_chain_name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.kill_chain_name}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.phase_name}>
+                <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.phase_order}
+              >
+                <div className="fakeItem" style={{ width: '90%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.phase_name}>
-              <div className='fakeItem' style={{ width: '70%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.phase_order}>
-              <div className='fakeItem' style={{ width: '90%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <MoreVert/>
+          <MoreVert />
         </ListItemIcon>
       </ListItem>
     );

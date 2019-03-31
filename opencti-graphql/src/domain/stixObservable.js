@@ -47,8 +47,8 @@ export const findByValue = args =>
 export const search = args =>
   paginate(
     `match $x isa ${args.type ? args.type : 'Stix-Observable'}
-    has value $value;
-    $x has alias $alias;
+    has observable_value $value;
+    $x has name $name;
     { $name contains "${prepareString(args.search)}"; } or
     { $alias contains "${prepareString(args.search)}"; }`,
     args,

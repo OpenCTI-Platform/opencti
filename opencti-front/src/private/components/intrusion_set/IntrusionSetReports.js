@@ -28,9 +28,9 @@ class IntrusionSetReportsComponent extends Component {
     const { classes, intrusionSet } = this.props;
     return (
       <div className={classes.container}>
-        <IntrusionSetHeader intrusionSet={intrusionSet}/>
+        <IntrusionSetHeader intrusionSet={intrusionSet} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={intrusionSet.id}/>
+          <EntityReports entityId={intrusionSet.id} />
         </Paper>
       </div>
     );
@@ -43,14 +43,17 @@ IntrusionSetReportsComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const IntrusionSetReports = createFragmentContainer(IntrusionSetReportsComponent, {
-  intrusionSet: graphql`
+const IntrusionSetReports = createFragmentContainer(
+  IntrusionSetReportsComponent,
+  {
+    intrusionSet: graphql`
       fragment IntrusionSetReports_intrusionSet on IntrusionSet {
-          id
-          ...IntrusionSetHeader_intrusionSet
+        id
+        ...IntrusionSetHeader_intrusionSet
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose, pathOr } from "ramda";
+import { compose, pathOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
@@ -27,26 +27,38 @@ class IntrusionSetOverviewComponent extends Component {
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant='h3' gutterBottom={true}>
+          <Typography variant="h3" gutterBottom={true}>
             {t('Creation date')}
           </Typography>
           {fld(intrusionSet.created)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Modification date')}
           </Typography>
           {fld(intrusionSet.modified)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Creator')}
           </Typography>
           {pathOr('-', ['createdByRef', 'node', 'name'], intrusionSet)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Description')}
           </Typography>
-          <Markdown className='markdown' source={intrusionSet.description}/>
+          <Markdown className="markdown" source={intrusionSet.description} />
         </Paper>
       </div>
     );
@@ -60,22 +72,25 @@ IntrusionSetOverviewComponent.propTypes = {
   fld: PropTypes.func,
 };
 
-const IntrusionSetOverview = createFragmentContainer(IntrusionSetOverviewComponent, {
-  intrusionSet: graphql`
+const IntrusionSetOverview = createFragmentContainer(
+  IntrusionSetOverviewComponent,
+  {
+    intrusionSet: graphql`
       fragment IntrusionSetOverview_intrusionSet on IntrusionSet {
-          id
-          name
-          description
-          created
-          modified
-          createdByRef {
-              node {
-                  name
-              }
+        id
+        name
+        description
+        created
+        modified
+        createdByRef {
+          node {
+            name
           }
+        }
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

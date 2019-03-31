@@ -42,22 +42,22 @@ function Transition(props) {
 }
 
 const killChainPhasePopoverDeletionMutation = graphql`
-    mutation KillChainPhasePopoverDeletionMutation($id: ID!) {
-        killChainPhaseEdit(id: $id) {
-            delete
-        }
+  mutation KillChainPhasePopoverDeletionMutation($id: ID!) {
+    killChainPhaseEdit(id: $id) {
+      delete
     }
+  }
 `;
 
 const killChainPhaseEditionQuery = graphql`
-    query KillChainPhasePopoverEditionQuery($id: String!) {
-        killChainPhase(id: $id) {
-            ...KillChainPhaseEdition_killChainPhase
-        }
-        me {
-            ...KillChainPhaseEdition_me
-        }
+  query KillChainPhasePopoverEditionQuery($id: String!) {
+    killChainPhase(id: $id) {
+      ...KillChainPhaseEdition_killChainPhase
     }
+    me {
+      ...KillChainPhaseEdition_me
+    }
+  }
 `;
 
 class KillChainPhasePopover extends Component {
@@ -126,8 +126,8 @@ class KillChainPhasePopover extends Component {
     const { classes, t, killChainPhaseId } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
-          <MoreVert/>
+        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+          <MoreVert />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
@@ -135,18 +135,32 @@ class KillChainPhasePopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
+          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
+            {t('Update')}
+          </MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+            {t('Delete')}
+          </MenuItem>
         </Menu>
-        <Drawer open={this.state.displayUpdate} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleCloseUpdate.bind(this)}>
+        <Drawer
+          open={this.state.displayUpdate}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleCloseUpdate.bind(this)}
+        >
           <QueryRenderer
             query={killChainPhaseEditionQuery}
             variables={{ id: killChainPhaseId }}
             render={({ props }) => {
-              if (props) { // Done
-                return <KillChainPhaseEdition me={props.me}
-                                              killChainPhase={props.killChainPhase}
-                                              handleClose={this.handleCloseUpdate.bind(this)}/>;
+              if (props) {
+                // Done
+                return (
+                  <KillChainPhaseEdition
+                    me={props.me}
+                    killChainPhase={props.killChainPhase}
+                    handleClose={this.handleCloseUpdate.bind(this)}
+                  />
+                );
               }
               // Loading
               return <div> &nbsp; </div>;
@@ -165,10 +179,18 @@ class KillChainPhasePopover extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseDelete.bind(this)} color="primary" disabled={this.state.deleting}>
+            <Button
+              onClick={this.handleCloseDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
               {t('Cancel')}
             </Button>
-            <Button onClick={this.submitDelete.bind(this)} color="primary" disabled={this.state.deleting}>
+            <Button
+              onClick={this.submitDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
               {t('Delete')}
             </Button>
           </DialogActions>

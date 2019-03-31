@@ -159,7 +159,7 @@ class Regions extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportRegionsQuery, { count: 10000, ...paginationOptions }).then((data) => {
+    fetchQuery(exportRegionsQuery, { count: 2147483647, ...paginationOptions }).then((data) => {
       const finalData = pipe(
         map(n => n.node),
         map(n => over(lensProp('description'), defaultTo('-'))(n)),

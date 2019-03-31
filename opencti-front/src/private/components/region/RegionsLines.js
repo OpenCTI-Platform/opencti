@@ -7,7 +7,10 @@ import graphql from 'babel-plugin-relay/macro';
 import { filter, pathOr, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  AutoSizer, InfiniteLoader, List, WindowScroller,
+  AutoSizer,
+  InfiniteLoader,
+  List,
+  WindowScroller,
 } from 'react-virtualized';
 import { RegionLine, RegionLineDummy } from './RegionLine';
 
@@ -62,52 +65,78 @@ class RegionsLines extends Component {
     if (!this.props.relay.hasMore() || this.props.relay.isLoading()) {
       return;
     }
-
-    // Fetch the next 10 feed items
-    this.props.relay.loadMore(25, () => {
-      // console.log(error);
-    });
+    this.props.relay.loadMore(
+      this.props.searchTerm.length > 0 ? 2147483647 : 25,
+    );
   }
 
   _isRowLoaded({ index }) {
     if (this.props.dummy) {
       return true;
     }
-    const list = this.filterList(pathOr([], ['regions', 'edges'], this.props.data));
+    const list = this.filterList(
+      pathOr([], ['regions', 'edges'], this.props.data),
+    );
     return !this.props.relay.hasMore() || index < list.length;
   }
 
   _rowRenderer({ index, key, style }) {
     const { dummy } = this.props;
     if (dummy) {
-      return <div key={key} style={style}><RegionLineDummy/></div>;
+      return (
+        <div key={key} style={style}>
+          <RegionLineDummy />
+        </div>
+      );
     }
 
-    const list = this.filterList(pathOr([], ['regions', 'edges'], this.props.data));
+    const list = this.filterList(
+      pathOr([], ['regions', 'edges'], this.props.data),
+    );
     if (!this._isRowLoaded({ index })) {
-      return <div key={key} style={style}><RegionLineDummy/></div>;
+      return (
+        <div key={key} style={style}>
+          <RegionLineDummy />
+        </div>
+      );
     }
     const regionNode = list[index];
     if (!regionNode) {
       return <div key={key}>&nbsp;</div>;
     }
     const region = regionNode.node;
-    return <div key={key} style={style}><RegionLine key={region.id} region={region}/></div>;
+    return (
+      <div key={key} style={style}>
+        <RegionLine key={region.id} region={region} />
+      </div>
+    );
   }
 
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
-    const list = dummy ? [] : this.filterList(pathOr([], ['regions', 'edges'], this.props.data));
-    const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
+    const list = dummy
+      ? []
+      : this.filterList(pathOr([], ['regions', 'edges'], this.props.data));
+    const rowCount = dummy
+      ? 20
+      : this.props.relay.isLoading()
+        ? list.length + 25
+        : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div className={styles.windowScrollerWrapper} key={this.props.searchTerm}>
-            <InfiniteLoader isRowLoaded={this._isRowLoaded}
-                            loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
+          <div
+            className={styles.windowScrollerWrapper}
+            key={this.props.searchTerm}
+          >
+            <InfiniteLoader
+              isRowLoaded={this._isRowLoaded}
+              loadMoreRows={this._loadMore}
+              rowCount={Number.MAX_SAFE_INTEGER}
+            >
               {({ onRowsRendered }) => (
                 <AutoSizer disableHeight>
                   {({ width }) => (
@@ -149,67 +178,86 @@ RegionsLines.propTypes = {
 };
 
 export const regionsLinesQuery = graphql`
-    query RegionsLinesPaginationQuery($count: Int!, $cursor: ID, $orderBy: RegionsOrdering, $orderMode: OrderingMode) {
-        ...RegionsLines_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
-    }
+  query RegionsLinesPaginationQuery(
+    $count: Int!
+    $cursor: ID
+    $orderBy: RegionsOrdering
+    $orderMode: OrderingMode
+  ) {
+    ...RegionsLines_data
+      @arguments(
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
+  }
 `;
 
 export const regionsLinesSearchQuery = graphql`
-    query RegionsLinesSearchQuery($search: String) {
-        regions(search: $search) {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                }
-            }
+  query RegionsLinesSearchQuery($search: String) {
+    regions(search: $search) {
+      edges {
+        node {
+          id
+          name
+          description
         }
+      }
     }
+  }
 `;
 
-export default withStyles(styles)(createPaginationContainer(
-  RegionsLines,
-  {
-    data: graphql`
-        fragment RegionsLines_data on Query @argumentDefinitions(
-            count: {type: "Int", defaultValue: 25}
-            cursor: {type: "ID"}
-            orderBy: {type: "RegionsOrdering", defaultValue: ID}
-            orderMode: {type: "OrderingMode", defaultValue: "asc"}
-        ) {
-            regions(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_regions") {
-                edges {
-                    node {
-                        id
-                        name
-                        description
-                        ...RegionLine_region
-                    }
-                }
+export default withStyles(styles)(
+  createPaginationContainer(
+    RegionsLines,
+    {
+      data: graphql`
+        fragment RegionsLines_data on Query
+          @argumentDefinitions(
+            count: { type: "Int", defaultValue: 25 }
+            cursor: { type: "ID" }
+            orderBy: { type: "RegionsOrdering", defaultValue: ID }
+            orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          ) {
+          regions(
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+          ) @connection(key: "Pagination_regions") {
+            edges {
+              node {
+                id
+                name
+                description
+                ...RegionLine_region
+              }
             }
+          }
         }
-    `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.regions;
+      `,
     },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
+    {
+      direction: 'forward',
+      getConnectionFromProps(props) {
+        return props.data && props.data.regions;
+      },
+      getFragmentVariables(prevVars, totalCount) {
+        return {
+          ...prevVars,
+          count: totalCount,
+        };
+      },
+      getVariables(props, { count, cursor }, fragmentVariables) {
+        return {
+          count,
+          cursor,
+          orderBy: fragmentVariables.orderBy,
+          orderMode: fragmentVariables.orderMode,
+        };
+      },
+      query: regionsLinesQuery,
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
-      return {
-        count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
-      };
-    },
-    query: regionsLinesQuery,
-  },
-));
+  ),
+);

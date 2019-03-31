@@ -198,7 +198,7 @@ class Reports extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportReportsQuery, { count: 10000, ...paginationOptions }).then((data) => {
+    fetchQuery(exportReportsQuery, { count: 2147483647, ...paginationOptions }).then((data) => {
       const finalData = pipe(
         map(n => n.node),
         map(n => over(lensProp('description'), defaultTo('-'))(n)),

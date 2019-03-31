@@ -217,7 +217,7 @@ class ThreatActors extends Component {
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
     fetchQuery(exportThreatActorsQuery, {
-      count: 10000,
+      count: 2147483647,
       ...paginationOptions,
     }).then((data) => {
       const finalData = pipe(

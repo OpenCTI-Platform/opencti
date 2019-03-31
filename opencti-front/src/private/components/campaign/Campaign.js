@@ -11,7 +11,7 @@ import CampaignOverview from './CampaignOverview';
 import CampaignIdentity from './CampaignIdentity';
 import CampaignEdition from './CampaignEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import EntityObservablesChart from '../observable/EntityObservablesChart';
+import EntityObservablesChart from '../stix_observable/EntityStixObservablesChart';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityIncidentsChart from '../incident/EntityIncidentsChart';
 

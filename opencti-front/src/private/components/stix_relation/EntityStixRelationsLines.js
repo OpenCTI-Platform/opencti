@@ -7,9 +7,15 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  AutoSizer, InfiniteLoader, List, WindowScroller,
+  AutoSizer,
+  InfiniteLoader,
+  List,
+  WindowScroller,
 } from 'react-virtualized';
-import { EntityStixRelationLine, EntityStixRelationLineDummy } from './EntityStixRelationLine';
+import {
+  EntityStixRelationLine,
+  EntityStixRelationLineDummy,
+} from './EntityStixRelationLine';
 
 const styles = () => ({
   windowScrollerWrapper: {
@@ -51,11 +57,7 @@ class EntityStixRelationsLines extends Component {
     if (!this.props.relay.hasMore() || this.props.relay.isLoading()) {
       return;
     }
-
-    // Fetch the next 10 feed items
-    this.props.relay.loadMore(25, () => {
-      // console.log(error);
-    });
+    this.props.relay.loadMore(25);
   }
 
   _isRowLoaded({ index }) {
@@ -69,12 +71,20 @@ class EntityStixRelationsLines extends Component {
   _rowRenderer({ index, key, style }) {
     const { dummy, entityLink } = this.props;
     if (dummy) {
-      return <div key={key} style={style}><EntityStixRelationLineDummy/></div>;
+      return (
+        <div key={key} style={style}>
+          <EntityStixRelationLineDummy />
+        </div>
+      );
     }
 
     const list = pathOr([], ['stixRelations', 'edges'], this.props.data);
     if (!this._isRowLoaded({ index })) {
-      return <div key={key} style={style}><EntityStixRelationLineDummy/></div>;
+      return (
+        <div key={key} style={style}>
+          <EntityStixRelationLineDummy />
+        </div>
+      );
     }
     const stixRelationNode = list[index];
     if (!stixRelationNode) {
@@ -83,7 +93,8 @@ class EntityStixRelationsLines extends Component {
     const stixRelation = stixRelationNode.node;
     const stixDomainEntity = stixRelationNode.node.to;
     const stixDomainEntityFrom = stixRelationNode.node.from;
-    return <div key={key} style={style}>
+    return (
+      <div key={key} style={style}>
         <EntityStixRelationLine
           key={stixRelation.id}
           stixRelation={stixRelation}
@@ -93,22 +104,32 @@ class EntityStixRelationsLines extends Component {
           entityLink={entityLink}
           paginationOptions={this.props.paginationOptions}
         />
-    </div>;
+      </div>
+    );
   }
 
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
-    const list = dummy ? [] : pathOr([], ['stixRelations', 'edges'], this.props.data);
-    const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
+    const list = dummy
+      ? []
+      : pathOr([], ['stixRelations', 'edges'], this.props.data);
+    const rowCount = dummy
+      ? 20
+      : this.props.relay.isLoading()
+        ? list.length + 25
+        : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
           <div className={styles.windowScrollerWrapper}>
-            <InfiniteLoader isRowLoaded={this._isRowLoaded}
-                            loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
+            <InfiniteLoader
+              isRowLoaded={this._isRowLoaded}
+              loadMoreRows={this._loadMore}
+              rowCount={Number.MAX_SAFE_INTEGER}
+            >
               {({ onRowsRendered }) => (
                 <AutoSizer disableHeight>
                   {({ width }) => (
@@ -152,83 +173,144 @@ EntityStixRelationsLines.propTypes = {
 };
 
 export const entityStixRelationsLinesQuery = graphql`
-    query EntityStixRelationsLinesPaginationQuery($fromId: String, $toTypes: [String], $inferred: Boolean, $relationType: String, $resolveInferences: Boolean, $resolveRelationType: String, $resolveRelationRole: String, $resolveRelationToTypes: [String], $resolveViaTypes: [EntityRelation], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $weights: [Int], $count: Int!, $cursor: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
-        ...EntityStixRelationsLines_data @arguments(fromId: $fromId, toTypes: $toTypes, inferred: $inferred, relationType: $relationType, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, resolveRelationRole: $resolveRelationRole, resolveRelationToTypes: $resolveRelationToTypes, resolveViaTypes: $resolveViaTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
-    }
+  query EntityStixRelationsLinesPaginationQuery(
+    $fromId: String
+    $toTypes: [String]
+    $inferred: Boolean
+    $relationType: String
+    $resolveInferences: Boolean
+    $resolveRelationType: String
+    $resolveRelationRole: String
+    $resolveRelationToTypes: [String]
+    $resolveViaTypes: [EntityRelation]
+    $firstSeenStart: DateTime
+    $firstSeenStop: DateTime
+    $lastSeenStart: DateTime
+    $lastSeenStop: DateTime
+    $weights: [Int]
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixRelationsOrdering
+    $orderMode: OrderingMode
+  ) {
+    ...EntityStixRelationsLines_data
+      @arguments(
+        fromId: $fromId
+        toTypes: $toTypes
+        inferred: $inferred
+        relationType: $relationType
+        resolveInferences: $resolveInferences
+        resolveRelationType: $resolveRelationType
+        resolveRelationRole: $resolveRelationRole
+        resolveRelationToTypes: $resolveRelationToTypes
+        resolveViaTypes: $resolveViaTypes
+        firstSeenStart: $firstSeenStart
+        firstSeenStop: $firstSeenStop
+        lastSeenStart: $lastSeenStart
+        lastSeenStop: $lastSeenStop
+        weights: $weights
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
+  }
 `;
 
-export default withStyles(styles)(createPaginationContainer(
-  EntityStixRelationsLines,
-  {
-    data: graphql`
-        fragment EntityStixRelationsLines_data on Query @argumentDefinitions(
-            fromId: {type: "String"},
-            toTypes: {type: "[String]"},
-            inferred: {type: "Boolean"},
-            relationType: {type: "String"},
-            resolveInferences: {type: "Boolean"},
-            resolveRelationType: {type: "String"},
-            resolveRelationRole: {type: "String"},
-            resolveRelationToTypes: {type: "[String]"}
-            resolveViaTypes: {type: "[EntityRelation]"}
-            firstSeenStart: {type: "DateTime"},
-            firstSeenStop: {type: "DateTime"},
-            lastSeenStart: {type: "DateTime"},
-            lastSeenStop: {type: "DateTime"},
-            weights: {type: "[Int]"},
-            count: {type: "Int", defaultValue: 25}
-            cursor: {type: "ID"}
-            orderBy: {type: "StixRelationsOrdering", defaultValue: ID}
-            orderMode: {type: "OrderingMode", defaultValue: "asc"}
-        ) {
-            stixRelations(fromId: $fromId, toTypes: $toTypes, inferred: $inferred, relationType: $relationType, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, resolveRelationRole: $resolveRelationRole, resolveRelationToTypes: $resolveRelationToTypes, resolveViaTypes: $resolveViaTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_stixRelations") {
-                edges {
-                    node {
-                        ...EntityStixRelationLine_stixRelation
-                        to {
-                            ...EntityStixRelationLine_stixDomainEntity
-                        }
-                        from {
-                            ...EntityStixRelationLine_stixDomainEntityFrom
-                        }
-                    }
+export default withStyles(styles)(
+  createPaginationContainer(
+    EntityStixRelationsLines,
+    {
+      data: graphql`
+        fragment EntityStixRelationsLines_data on Query
+          @argumentDefinitions(
+            fromId: { type: "String" }
+            toTypes: { type: "[String]" }
+            inferred: { type: "Boolean" }
+            relationType: { type: "String" }
+            resolveInferences: { type: "Boolean" }
+            resolveRelationType: { type: "String" }
+            resolveRelationRole: { type: "String" }
+            resolveRelationToTypes: { type: "[String]" }
+            resolveViaTypes: { type: "[EntityRelation]" }
+            firstSeenStart: { type: "DateTime" }
+            firstSeenStop: { type: "DateTime" }
+            lastSeenStart: { type: "DateTime" }
+            lastSeenStop: { type: "DateTime" }
+            weights: { type: "[Int]" }
+            count: { type: "Int", defaultValue: 25 }
+            cursor: { type: "ID" }
+            orderBy: { type: "StixRelationsOrdering", defaultValue: ID }
+            orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          ) {
+          stixRelations(
+            fromId: $fromId
+            toTypes: $toTypes
+            inferred: $inferred
+            relationType: $relationType
+            resolveInferences: $resolveInferences
+            resolveRelationType: $resolveRelationType
+            resolveRelationRole: $resolveRelationRole
+            resolveRelationToTypes: $resolveRelationToTypes
+            resolveViaTypes: $resolveViaTypes
+            firstSeenStart: $firstSeenStart
+            firstSeenStop: $firstSeenStop
+            lastSeenStart: $lastSeenStart
+            lastSeenStop: $lastSeenStop
+            weights: $weights
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+          ) @connection(key: "Pagination_stixRelations") {
+            edges {
+              node {
+                ...EntityStixRelationLine_stixRelation
+                to {
+                  ...EntityStixRelationLine_stixDomainEntity
                 }
+                from {
+                  ...EntityStixRelationLine_stixDomainEntityFrom
+                }
+              }
             }
+          }
         }
-    `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.stixRelations;
+      `,
     },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
+    {
+      direction: 'forward',
+      getConnectionFromProps(props) {
+        return props.data && props.data.stixRelations;
+      },
+      getFragmentVariables(prevVars, totalCount) {
+        return {
+          ...prevVars,
+          count: totalCount,
+        };
+      },
+      getVariables(props, { count, cursor }, fragmentVariables) {
+        return {
+          fromId: fragmentVariables.fromId,
+          toTypes: fragmentVariables.toTypes,
+          relationType: fragmentVariables.relationType,
+          resolveInferences: fragmentVariables.resolveInferences,
+          resolveRelationType: fragmentVariables.resolveRelationType,
+          resolveRelationRole: fragmentVariables.resolveRelationRole,
+          resolveRelationToTypes: fragmentVariables.resolveRelationToTypes,
+          resolveViaTypes: fragmentVariables.resolveViaTypes,
+          firstSeenStart: fragmentVariables.firstSeenStart,
+          firstSeenStop: fragmentVariables.firstSeenStop,
+          lastSeenStart: fragmentVariables.lastSeenStart,
+          lastSeenStop: fragmentVariables.lastSeenStop,
+          weights: fragmentVariables.weights,
+          count,
+          cursor,
+          orderBy: fragmentVariables.orderBy,
+          orderMode: fragmentVariables.orderMode,
+        };
+      },
+      query: entityStixRelationsLinesQuery,
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
-      return {
-        fromId: fragmentVariables.fromId,
-        toTypes: fragmentVariables.toTypes,
-        relationType: fragmentVariables.relationType,
-        resolveInferences: fragmentVariables.resolveInferences,
-        resolveRelationType: fragmentVariables.resolveRelationType,
-        resolveRelationRole: fragmentVariables.resolveRelationRole,
-        resolveRelationToTypes: fragmentVariables.resolveRelationToTypes,
-        resolveViaTypes: fragmentVariables.resolveViaTypes,
-        firstSeenStart: fragmentVariables.firstSeenStart,
-        firstSeenStop: fragmentVariables.firstSeenStop,
-        lastSeenStart: fragmentVariables.lastSeenStart,
-        lastSeenStop: fragmentVariables.lastSeenStop,
-        weights: fragmentVariables.weights,
-        count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
-      };
-    },
-    query: entityStixRelationsLinesQuery,
-  },
-));
+  ),
+);

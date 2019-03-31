@@ -1443,7 +1443,7 @@ type Query {
     stixDomainEntitiesNumber(type: String, endDate: DateTime): Number @auth
     # StixObservables
     stixObservable(id: String): StixObservable @auth
-    stixObservables(first: Int, after: ID, orderBy: StixObservablesOrdering, orderMode: OrderingMode, type: String, observable_value: String): StixObservableConnection  @auth
+    stixObservables(first: Int, after: ID, orderBy: StixObservablesOrdering, orderMode: OrderingMode, type: String, observable_value: String, search: String): StixObservableConnection  @auth
     stixObservablesTimeSeries(type: String): [TimeSeries] @auth
     stixObservablesDistribution(type: String): [Distribution] @auth
     # StixRelations

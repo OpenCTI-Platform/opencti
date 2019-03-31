@@ -31,7 +31,7 @@ const colors = {
   URL: '#FF9800',
 };
 
-class EntityObservablesChartComponent extends Component {
+class EntityStixObservablesChartComponent extends Component {
   constructor(props) {
     super(props);
     this.renderLabel = this.renderLabel.bind(this);
@@ -99,16 +99,16 @@ class EntityObservablesChartComponent extends Component {
   }
 }
 
-EntityObservablesChartComponent.propTypes = {
+EntityStixObservablesChartComponent.propTypes = {
   observablesStats: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const EntityObservablesChart = createFragmentContainer(EntityObservablesChartComponent, {
-  observablesStats: graphql`
-      fragment EntityObservablesChart_observablesStats on Malware {
+const EntityStixObservablesChart = createFragmentContainer(EntityStixObservablesChartComponent, {
+  stixObservablesStats: graphql`
+      fragment EntityStixObservablesChart_stixObservablesStats on Malware {
           id,
           name,
           description,
@@ -121,4 +121,4 @@ const EntityObservablesChart = createFragmentContainer(EntityObservablesChartCom
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityObservablesChart);
+)(EntityStixObservablesChart);

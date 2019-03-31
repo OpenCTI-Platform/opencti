@@ -68,10 +68,9 @@ class IncidentsCards extends Component {
     if (!this.props.relay.hasMore() || this.props.relay.isLoading()) {
       return;
     }
-    // Fetch the next {nbCardsToLoad} feed items
-    this.props.relay.loadMore(nbCardsToLoad, () => {
-      // console.log(error);
-    });
+    this.props.relay.loadMore(
+      this.props.searchTerm.length > 0 ? 2147483647 : nbCardsToLoad,
+    );
   }
 
   _onSectionRendered({

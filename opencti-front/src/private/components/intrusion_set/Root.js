@@ -9,33 +9,37 @@ import IntrusionSetReports from './IntrusionSetReports';
 import IntrusionSetKnowledge from './IntrusionSetKnowledge';
 
 const subscription = graphql`
-    subscription RootIntrusionSetSubscription($id: ID!) {
-        stixDomainEntity(id: $id) {
-            ...on IntrusionSet {
-                ...IntrusionSet_intrusionSet
-                ...IntrusionSetEditionContainer_intrusionSet
-            }
-            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
-        }
+  subscription RootIntrusionSetSubscription($id: ID!) {
+    stixDomainEntity(id: $id) {
+      ... on IntrusionSet {
+        ...IntrusionSet_intrusionSet
+        ...IntrusionSetEditionContainer_intrusionSet
+      }
+      ...StixDomainEntityKnowledgeGraph_stixDomainEntity
     }
+  }
 `;
 
 const intrusionSetQuery = graphql`
-    query RootIntrusionSetQuery($id: String!) {
-        intrusionSet(id: $id) {
-            ...IntrusionSet_intrusionSet
-            ...IntrusionSetHeader_intrusionSet
-            ...IntrusionSetOverview_intrusionSet
-            ...IntrusionSetIdentity_intrusionSet
-            ...IntrusionSetReports_intrusionSet
-            ...IntrusionSetKnowledge_intrusionSet
-        }
+  query RootIntrusionSetQuery($id: String!) {
+    intrusionSet(id: $id) {
+      ...IntrusionSet_intrusionSet
+      ...IntrusionSetHeader_intrusionSet
+      ...IntrusionSetOverview_intrusionSet
+      ...IntrusionSetIdentity_intrusionSet
+      ...IntrusionSetReports_intrusionSet
+      ...IntrusionSetKnowledge_intrusionSet
     }
+  }
 `;
 
 class RootIntrusionSet extends Component {
   componentDidMount() {
-    const { match: { params: { intrusionSetId } } } = this.props;
+    const {
+      match: {
+        params: { intrusionSetId },
+      },
+    } = this.props;
     const sub = requestSubscription({
       subscription,
       variables: { id: intrusionSetId },
@@ -48,10 +52,15 @@ class RootIntrusionSet extends Component {
   }
 
   render() {
-    const { me, match: { params: { intrusionSetId } } } = this.props;
+    const {
+      me,
+      match: {
+        params: { intrusionSetId },
+      },
+    } = this.props;
     return (
       <div>
-        <TopBar me={me || null}/>
+        <TopBar me={me || null} />
         <QueryRenderer
           query={intrusionSetQuery}
           variables={{ id: intrusionSetId }}
@@ -59,24 +68,48 @@ class RootIntrusionSet extends Component {
             if (props && props.intrusionSet) {
               return (
                 <div>
-                  <Route exact path='/dashboard/knowledge/intrusion_sets/:intrusionSetId' render={
-                    routeProps => <IntrusionSet {...routeProps} intrusionSet={props.intrusionSet}/>
-                  }/>
-                  <Route exact path='/dashboard/knowledge/intrusion_sets/:intrusionSetId/reports' render={
-                    routeProps => <IntrusionSetReports {...routeProps} intrusionSet={props.intrusionSet}/>
-                  }/>
-                  <Route exact path='/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge' render={
-                    () => (<Redirect to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/overview`}/>)
-                  }/>
-                  <Route path='/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge' render={
-                    routeProps => <IntrusionSetKnowledge {...routeProps} intrusionSet={props.intrusionSet}/>
-                  }/>
+                  <Route
+                    exact
+                    path="/dashboard/knowledge/intrusion_sets/:intrusionSetId"
+                    render={routeProps => (
+                      <IntrusionSet
+                        {...routeProps}
+                        intrusionSet={props.intrusionSet}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/reports"
+                    render={routeProps => (
+                      <IntrusionSetReports
+                        {...routeProps}
+                        intrusionSet={props.intrusionSet}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge"
+                    render={() => (
+                      <Redirect
+                        to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/overview`}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge"
+                    render={routeProps => (
+                      <IntrusionSetKnowledge
+                        {...routeProps}
+                        intrusionSet={props.intrusionSet}
+                      />
+                    )}
+                  />
                 </div>
               );
             }
-            return (
-              <div> &nbsp; </div>
-            );
+            return <div> &nbsp; </div>;
           }}
         />
       </div>

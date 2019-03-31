@@ -65,11 +65,9 @@ class CampaignsLines extends Component {
     if (!this.props.relay.hasMore() || this.props.relay.isLoading()) {
       return;
     }
-
-    // Fetch the next 10 feed items
-    this.props.relay.loadMore(25, () => {
-      // console.log(error);
-    });
+    this.props.relay.loadMore(
+      this.props.searchTerm.length > 0 ? 2147483647 : 25,
+    );
   }
 
   _isRowLoaded({ index }) {

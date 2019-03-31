@@ -148,7 +148,7 @@ class Persons extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportPersonsQuery, { count: 10000, ...paginationOptions }).then((data) => {
+    fetchQuery(exportPersonsQuery, { count: 2147483647, ...paginationOptions }).then((data) => {
       const finalData = pipe(
         map(n => n.node),
         map(n => over(lensProp('description'), defaultTo('-'))(n)),

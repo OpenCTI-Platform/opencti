@@ -214,7 +214,7 @@ class Sectors extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportSectorsQuery, { count: 10000, ...paginationOptions }).then(
+    fetchQuery(exportSectorsQuery, { count: 2147483647, ...paginationOptions }).then(
       (data) => {
         const finalData = pipe(
           map(n => n.node),

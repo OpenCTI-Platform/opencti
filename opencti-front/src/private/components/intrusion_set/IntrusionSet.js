@@ -11,7 +11,7 @@ import IntrusionSetOverview from './IntrusionSetOverview';
 import IntrusionSetIdentity from './IntrusionSetIdentity';
 import IntrusionSetEdition from './IntrusionSetEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import EntityObservablesChart from '../observable/EntityObservablesChart';
+import EntityObservablesChart from '../stix_observable/EntityStixObservablesChart';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityStixRelationsRadar from '../stix_relation/EntityStixRelationsRadar';
 
@@ -29,38 +29,47 @@ class IntrusionSetComponent extends Component {
     const { classes, intrusionSet } = this.props;
     return (
       <div className={classes.container}>
-        <IntrusionSetHeader intrusionSet={intrusionSet}/>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
+        <IntrusionSetHeader intrusionSet={intrusionSet} />
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={3}>
-            <IntrusionSetOverview intrusionSet={intrusionSet}/>
+            <IntrusionSetOverview intrusionSet={intrusionSet} />
           </Grid>
           <Grid item={true} xs={3}>
-            <IntrusionSetIdentity intrusionSet={intrusionSet}/>
+            <IntrusionSetIdentity intrusionSet={intrusionSet} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={intrusionSet.id}/>
+            <EntityLastReports entityId={intrusionSet.id} />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 20 }}
+        >
           <Grid item={true} xs={4}>
             <EntityStixRelationsRadar
               entityId={intrusionSet.id}
-              entityType='Kill-Chain-Phase'
-              relationType='kill_chain_phases'
-              field='phase_name'
+              entityType="Kill-Chain-Phase"
+              relationType="kill_chain_phases"
+              field="phase_name"
               resolveInferences={true}
-              resolveRelationType='uses'
-              resolveRelationRole='user'
+              resolveRelationType="uses"
+              resolveRelationRole="user"
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart entityId={intrusionSet.id}/>
+            <EntityObservablesChart entityId={intrusionSet.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={intrusionSet.id}/>
+            <EntityReportsChart entityId={intrusionSet.id} />
           </Grid>
         </Grid>
-        <IntrusionSetEdition intrusionSetId={intrusionSet.id}/>
+        <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
       </div>
     );
   }
@@ -74,12 +83,12 @@ IntrusionSetComponent.propTypes = {
 
 const IntrusionSet = createFragmentContainer(IntrusionSetComponent, {
   intrusionSet: graphql`
-      fragment IntrusionSet_intrusionSet on IntrusionSet {
-          id
-          ...IntrusionSetHeader_intrusionSet
-          ...IntrusionSetOverview_intrusionSet
-          ...IntrusionSetIdentity_intrusionSet
-      }
+    fragment IntrusionSet_intrusionSet on IntrusionSet {
+      id
+      ...IntrusionSetHeader_intrusionSet
+      ...IntrusionSetOverview_intrusionSet
+      ...IntrusionSetIdentity_intrusionSet
+    }
   `,
 });
 
