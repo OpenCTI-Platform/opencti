@@ -28,9 +28,9 @@ class IncidentReportsComponent extends Component {
     const { classes, incident } = this.props;
     return (
       <div className={classes.container}>
-        <IncidentHeader incident={incident}/>
+        <IncidentHeader incident={incident} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={incident.id}/>
+          <EntityReports entityId={incident.id} />
         </Paper>
       </div>
     );
@@ -45,10 +45,10 @@ IncidentReportsComponent.propTypes = {
 
 const IncidentReports = createFragmentContainer(IncidentReportsComponent, {
   incident: graphql`
-      fragment IncidentReports_incident on Incident {
-          id
-          ...IncidentHeader_incident
-      }
+    fragment IncidentReports_incident on Incident {
+      id
+      ...IncidentHeader_incident
+    }
   `,
 });
 

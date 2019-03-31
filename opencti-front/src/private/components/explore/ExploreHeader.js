@@ -28,13 +28,25 @@ class ExploreHeaderComponent extends Component {
     const { classes, stixDomainEntity } = this.props;
     return (
       <div style={{ marginBottom: 10 }}>
-        <Typography variant='h1' gutterBottom={true} classes={{ root: classes.title }}>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
+        >
           {stixDomainEntity.name}
         </Typography>
         <div className={classes.aliases}>
-          {propOr([], 'alias', stixDomainEntity).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label}/> : ''))}
+          {propOr([], 'alias', stixDomainEntity).map(label => (label.length > 0 ? (
+              <Chip
+                key={label}
+                classes={{ root: classes.alias }}
+                label={label}
+              />
+          ) : (
+            ''
+          )))}
         </div>
-        <div className='clearfix'/>
+        <div className="clearfix" />
       </div>
     );
   }
@@ -49,11 +61,11 @@ ExploreHeaderComponent.propTypes = {
 
 const ExploreHeader = createFragmentContainer(ExploreHeaderComponent, {
   stixDomainEntity: graphql`
-      fragment ExploreHeader_stixDomainEntity on StixDomainEntity {
-          id
-          name
-          alias
-      }
+    fragment ExploreHeader_stixDomainEntity on StixDomainEntity {
+      id
+      name
+      alias
+    }
   `,
 });
 

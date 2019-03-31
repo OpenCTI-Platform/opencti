@@ -11,7 +11,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
-import EntityExternalReferencesLines, { entityExternalReferencesLinesQuery } from './EntityExternalReferencesLines';
+import EntityExternalReferencesLines, {
+  entityExternalReferencesLinesQuery,
+} from './EntityExternalReferencesLines';
 
 const styles = theme => ({
   paper: {
@@ -41,7 +43,11 @@ const styles = theme => ({
 class EntityExternalReferences extends Component {
   render() {
     const { t, classes, entityId } = this.props;
-    const paginationOptions = { objectId: entityId, orderBy: 'created_at', orderMode: 'desc' };
+    const paginationOptions = {
+      objectId: entityId,
+      orderBy: 'created_at',
+      orderMode: 'desc',
+    };
     return (
       <QueryRenderer
         query={entityExternalReferencesLinesQuery}
@@ -63,10 +69,14 @@ class EntityExternalReferences extends Component {
           }
           return (
             <div style={{ height: '100%' }}>
-              <Typography variant='h4' gutterBottom={true} style={{ float: 'left' }}>
+              <Typography
+                variant="h4"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
                 {t('External references')}
               </Typography>
-              <div className='clearfix'/>
+              <div className="clearfix" />
               <Paper classes={{ root: classes.paper }} elevation={2}>
                 <List>
                   {Array.from(Array(5), (e, i) => (
@@ -77,11 +87,17 @@ class EntityExternalReferences extends Component {
                       button={false}
                     >
                       <ListItemIcon>
-                        <Avatar classes={{ root: classes.avatarDisabled }}>{i}</Avatar>
+                        <Avatar classes={{ root: classes.avatarDisabled }}>
+                          {i}
+                        </Avatar>
                       </ListItemIcon>
                       <ListItemText
-                        primary={<span className='fakeItem' style={{ width: '80%' }}/>}
-                        secondary={<span className='fakeItem' style={{ width: '90%' }}/>}
+                        primary={
+                          <span className="fakeItem" style={{ width: '80%' }} />
+                        }
+                        secondary={
+                          <span className="fakeItem" style={{ width: '90%' }} />
+                        }
                       />
                     </ListItem>
                   ))}

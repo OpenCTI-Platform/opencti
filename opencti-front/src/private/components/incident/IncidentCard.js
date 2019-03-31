@@ -86,16 +86,28 @@ class IncidentCardComponent extends Component {
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
-        <CardActionArea classes={{ root: classes.area }} component={Link} to={`/dashboard/knowledge/incidents/${incident.id}`}>
+        <CardActionArea
+          classes={{ root: classes.area }}
+          component={Link}
+          to={`/dashboard/knowledge/incidents/${incident.id}`}
+        >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={<Avatar className={classes.avatar}>{incident.name.charAt(0)}</Avatar>}
+            avatar={
+              <Avatar className={classes.avatar}>
+                {incident.name.charAt(0)}
+              </Avatar>
+            }
             title={truncate(incident.name, 50)}
             subheader={`${t('Updated the')} ${fsd(incident.modified)}`}
-            action={<Fire className={classes.icon}/>}
+            action={<Fire className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.content }}>
-            <Markdown source={truncate(incident.description, 50)} disallowedTypes={['link']} unwrapDisallowed={true}/>
+            <Markdown
+              source={truncate(incident.description, 50)}
+              disallowedTypes={['link']}
+              unwrapDisallowed={true}
+            />
           </CardContent>
         </CardActionArea>
       </Card>
@@ -112,13 +124,13 @@ IncidentCardComponent.propTypes = {
 
 const IncidentCardFragment = createFragmentContainer(IncidentCardComponent, {
   incident: graphql`
-      fragment IncidentCard_incident on Incident {
-          id
-          name
-          description
-          created
-          modified
-      }
+    fragment IncidentCard_incident on Incident {
+      id
+      name
+      description
+      created
+      modified
+    }
   `,
 });
 
@@ -126,7 +138,6 @@ export const IncidentCard = compose(
   inject18n,
   withStyles(styles),
 )(IncidentCardFragment);
-
 
 class IncidentCardDummyComponent extends Component {
   render() {
@@ -137,15 +148,25 @@ class IncidentCardDummyComponent extends Component {
           <CardHeader
             classes={{ root: classes.header }}
             avatar={<Avatar className={classes.avatarDisabled}>D</Avatar>}
-            title={<div className={classes.placeholderHeader} style={{ width: '85%' }}/>}
+            title={
+              <div
+                className={classes.placeholderHeader}
+                style={{ width: '85%' }}
+              />
+            }
             titleTypographyProps={{ color: 'inherit' }}
-            subheader={<div className={classes.placeholderHeaderDark} style={{ width: '70%' }}/>}
-            action={<Fire className={classes.icon}/>}
+            subheader={
+              <div
+                className={classes.placeholderHeaderDark}
+                style={{ width: '70%' }}
+              />
+            }
+            action={<Fire className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.contentDummy }}>
-            <div className='fakeItem' style={{ width: '90%' }}/>
-            <div className='fakeItem' style={{ width: '95%' }}/>
-            <div className='fakeItem' style={{ width: '90%' }}/>
+            <div className="fakeItem" style={{ width: '90%' }} />
+            <div className="fakeItem" style={{ width: '95%' }} />
+            <div className="fakeItem" style={{ width: '90%' }} />
           </CardContent>
         </CardActionArea>
       </Card>

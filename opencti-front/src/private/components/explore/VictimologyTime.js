@@ -15,20 +15,30 @@ const styles = () => ({
 
 class VictimologyTime extends Component {
   render() {
-    const { classes, t, stixDomainEntity, inferred } = this.props;
+    const {
+      classes, t, stixDomainEntity, inferred,
+    } = this.props;
     return (
       <div className={classes.container}>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={4}>
             <EntityStixRelationsTableTime
               title={t('Number of targeting')}
               entityId={stixDomainEntity.id}
-              relationType='targets'
+              relationType="targets"
               resolveInferences={inferred}
-              resolveRelationType='attributed-to'
-              resolveRelationRole='origin'
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
               resolveViaTypes={[
-                { entityType: 'Organization', relationType: 'gathering', relationRole: 'part_of' },
+                {
+                  entityType: 'Organization',
+                  relationType: 'gathering',
+                  relationRole: 'part_of',
+                },
               ]}
             />
           </Grid>
@@ -36,20 +46,21 @@ class VictimologyTime extends Component {
             <EntityStixRelationsChart
               title={t('Targeted entities through time')}
               entityId={stixDomainEntity.id}
-              relationType='targets'
+              relationType="targets"
               resolveInferences={inferred}
-              resolveRelationType='attributed-to'
-              resolveRelationRole='origin'
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
               resolveViaTypes={[
-                { entityType: 'Organization', relationType: 'gathering', relationRole: 'part_of' },
+                {
+                  entityType: 'Organization',
+                  relationType: 'gathering',
+                  relationRole: 'part_of',
+                },
               ]}
             />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={32} style={{ marginTop: 30 }}>
-
-
-        </Grid>
+        <Grid container={true} spacing={32} style={{ marginTop: 30 }} />
       </div>
     );
   }

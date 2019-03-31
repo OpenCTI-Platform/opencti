@@ -41,23 +41,29 @@ const styles = theme => ({
 });
 
 const incidentMutationFieldPatch = graphql`
-    mutation IncidentEditionIdentityFieldPatchMutation($id: ID!, $input: EditInput!) {
-        incidentEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...IncidentEditionIdentity_incident
-            }
-        }
+  mutation IncidentEditionIdentityFieldPatchMutation(
+    $id: ID!
+    $input: EditInput!
+  ) {
+    incidentEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...IncidentEditionIdentity_incident
+      }
     }
+  }
 `;
 
 const incidentEditionIdentityFocus = graphql`
-    mutation IncidentEditionIdentityFocusMutation($id: ID!, $input: EditContext!) {
-        incidentEdit(id: $id) {
-            contextPatch(input: $input) {
-                ...IncidentEditionIdentity_incident
-            }
-        }
+  mutation IncidentEditionIdentityFocusMutation(
+    $id: ID!
+    $input: EditContext!
+  ) {
+    incidentEdit(id: $id) {
+      contextPatch(input: $input) {
+        ...IncidentEditionIdentity_incident
+      }
     }
+  }
 `;
 
 const incidentValidation = t => Yup.object().shape({
@@ -120,21 +126,55 @@ class IncidentEditionIdentityComponent extends Component {
           render={() => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field name='first_seen' component={DatePickerField} label={t('First seen')}
-                       fullWidth={true}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='first_seen'/>}/>
-                <Field name='last_seen' component={DatePickerField} label={t('Last seen')}
-                       fullWidth={true} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='last_seen'/>}/>
-                <Field name='objective' component={TextField} label={t('Objective')}
-                       fullWidth={true} multiline={true} rows={4} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='objective'/>}/>
+                <Field
+                  name="first_seen"
+                  component={DatePickerField}
+                  label={t('First seen')}
+                  fullWidth={true}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="first_seen"
+                    />
+                  }
+                />
+                <Field
+                  name="last_seen"
+                  component={DatePickerField}
+                  label={t('Last seen')}
+                  fullWidth={true}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="last_seen"
+                    />
+                  }
+                />
+                <Field
+                  name="objective"
+                  component={TextField}
+                  label={t('Objective')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows={4}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="objective"
+                    />
+                  }
+                />
               </Form>
             </div>
           )}
@@ -157,12 +197,12 @@ const IncidentEditionIdentity = createFragmentContainer(
   IncidentEditionIdentityComponent,
   {
     incident: graphql`
-        fragment IncidentEditionIdentity_incident on Incident {
-            id
-            first_seen
-            last_seen
-            objective
-        }
+      fragment IncidentEditionIdentity_incident on Incident {
+        id
+        first_seen
+        last_seen
+        objective
+      }
     `,
   },
 );

@@ -16,7 +16,11 @@ import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
-import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
+import {
+  commitMutation,
+  QueryRenderer,
+  WS_ACTIVATED,
+} from '../../../relay/environment';
 import GroupEdition from './GroupEdition';
 
 const styles = theme => ({
@@ -42,32 +46,32 @@ function Transition(props) {
 }
 
 const groupPopoverCleanContext = graphql`
-    mutation GroupPopoverCleanContextMutation($id: ID!) {
-        groupEdit(id: $id) {
-            contextClean {
-                ...GroupEdition_group
-            }
-        }
+  mutation GroupPopoverCleanContextMutation($id: ID!) {
+    groupEdit(id: $id) {
+      contextClean {
+        ...GroupEdition_group
+      }
     }
+  }
 `;
 
 const groupPopoverDeletionMutation = graphql`
-    mutation GroupPopoverDeletionMutation($id: ID!) {
-        groupEdit(id: $id) {
-            delete
-        }
+  mutation GroupPopoverDeletionMutation($id: ID!) {
+    groupEdit(id: $id) {
+      delete
     }
+  }
 `;
 
 const groupEditionQuery = graphql`
-    query GroupPopoverEditionQuery($id: String!) {
-        group(id: $id) {
-            ...GroupEdition_group
-        }
-        me {
-            ...GroupEdition_me
-        }
+  query GroupPopoverEditionQuery($id: String!) {
+    group(id: $id) {
+      ...GroupEdition_group
     }
+    me {
+      ...GroupEdition_me
+    }
+  }
 `;
 
 class GroupPopover extends Component {
@@ -142,8 +146,8 @@ class GroupPopover extends Component {
     const { classes, t, groupId } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
-          <MoreVert/>
+        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+          <MoreVert />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
@@ -151,20 +155,31 @@ class GroupPopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
+          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
+            {t('Update')}
+          </MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+            {t('Delete')}
+          </MenuItem>
         </Menu>
-        <Drawer open={this.state.displayUpdate} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleCloseUpdate.bind(this)}>
+        <Drawer
+          open={this.state.displayUpdate}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleCloseUpdate.bind(this)}
+        >
           <QueryRenderer
             query={groupEditionQuery}
             variables={{ id: groupId }}
             render={({ props }) => {
               if (props) {
-                return <GroupEdition
-                  me={props.me}
-                  group={props.group}
-                  handleClose={this.handleCloseUpdate.bind(this)}
-                />;
+                return (
+                  <GroupEdition
+                    me={props.me}
+                    group={props.group}
+                    handleClose={this.handleCloseUpdate.bind(this)}
+                  />
+                );
               }
               return <div> &nbsp; </div>;
             }}
@@ -182,10 +197,18 @@ class GroupPopover extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseDelete.bind(this)} color="primary" disabled={this.state.deleting}>
+            <Button
+              onClick={this.handleCloseDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
               {t('Cancel')}
             </Button>
-            <Button onClick={this.submitDelete.bind(this)} color="primary" disabled={this.state.deleting}>
+            <Button
+              onClick={this.submitDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
               {t('Delete')}
             </Button>
           </DialogActions>

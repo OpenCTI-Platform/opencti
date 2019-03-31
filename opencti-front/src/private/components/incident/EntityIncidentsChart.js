@@ -37,12 +37,26 @@ const styles = theme => ({
 });
 
 const entityIncidentsChartIncidentsTimeSeriesQuery = graphql`
-    query EntityIncidentsChartIncidentsTimeSeriesQuery($objectId: String, $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
-        incidentsTimeSeries(objectId: $objectId, field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
-            date,
-            value
-        }
+  query EntityIncidentsChartIncidentsTimeSeriesQuery(
+    $objectId: String
+    $field: String!
+    $operation: StatsOperation!
+    $startDate: DateTime!
+    $endDate: DateTime!
+    $interval: String!
+  ) {
+    incidentsTimeSeries(
+      objectId: $objectId
+      field: $field
+      operation: $operation
+      startDate: $startDate
+      endDate: $endDate
+      interval: $interval
+    ) {
+      date
+      value
     }
+  }
 `;
 
 class EntityIncidentsChart extends Component {
@@ -83,15 +97,39 @@ class EntityIncidentsChart extends Component {
     };
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true} style={{ float: 'left' }}>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Incidents')}
         </Typography>
         <div style={{ float: 'right', marginTop: -6 }}>
-          <Chip classes={{ root: classes.chip }} style={{ backgroundColor: this.state.period === 12 ? '#795548' : '#757575' }} label='12M' component='button' onClick={this.changePeriod.bind(this, 12)}/>
-          <Chip classes={{ root: classes.chip }} style={{ backgroundColor: this.state.period === 24 ? '#795548' : '#757575' }} label='24M' component='button' onClick={this.changePeriod.bind(this, 24)}/>
-          <Chip classes={{ root: classes.chip }} style={{ backgroundColor: this.state.period === 36 ? '#795548' : '#757575' }} label='36M' component='button' onClick={this.changePeriod.bind(this, 36)}/>
+          <Chip
+            classes={{ root: classes.chip }}
+            style={{
+              backgroundColor: this.state.period === 12 ? '#795548' : '#757575',
+            }}
+            label="12M"
+            component="button"
+            onClick={this.changePeriod.bind(this, 12)}
+          />
+          <Chip
+            classes={{ root: classes.chip }}
+            style={{
+              backgroundColor: this.state.period === 24 ? '#795548' : '#757575',
+            }}
+            label="24M"
+            component="button"
+            onClick={this.changePeriod.bind(this, 24)}
+          />
+          <Chip
+            classes={{ root: classes.chip }}
+            style={{
+              backgroundColor: this.state.period === 36 ? '#795548' : '#757575',
+            }}
+            label="36M"
+            component="button"
+            onClick={this.changePeriod.bind(this, 36)}
+          />
         </div>
-        <div className='clearfix'/>
+        <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
             query={entityIncidentsChartIncidentsTimeSeriesQuery}
@@ -99,37 +137,78 @@ class EntityIncidentsChart extends Component {
             render={({ props }) => {
               if (props && props.incidentsTimeSeries) {
                 return (
-                  <ResponsiveContainer height={330} width='100%'>
-                    <AreaChart data={props.incidentsTimeSeries} margin={{
-                      top: 20, right: 50, bottom: 20, left: -10,
-                    }}>
-                      <CartesianGrid strokeDasharray='2 2' stroke='#0f181f'/>
-                      <XAxis dataKey='date' stroke='#ffffff' interval={this.state.interval} angle={-45} textAnchor='end' tickFormatter={md}/>
-                      <YAxis stroke='#ffffff'/>
+                  <ResponsiveContainer height={330} width="100%">
+                    <AreaChart
+                      data={props.incidentsTimeSeries}
+                      margin={{
+                        top: 20,
+                        right: 50,
+                        bottom: 20,
+                        left: -10,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
+                      <XAxis
+                        dataKey="date"
+                        stroke="#ffffff"
+                        interval={this.state.interval}
+                        angle={-45}
+                        textAnchor="end"
+                        tickFormatter={md}
+                      />
+                      <YAxis stroke="#ffffff" />
                       <Tooltip
-                        cursor={{ fill: 'rgba(0, 0, 0, 0.2)', stroke: 'rgba(0, 0, 0, 0.2)', strokeWidth: 2 }}
-                        contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', fontSize: 12, borderRadius: 10 }}
+                        cursor={{
+                          fill: 'rgba(0, 0, 0, 0.2)',
+                          stroke: 'rgba(0, 0, 0, 0.2)',
+                          strokeWidth: 2,
+                        }}
+                        contentStyle={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                          fontSize: 12,
+                          borderRadius: 10,
+                        }}
                         labelFormatter={md}
                       />
-                      <Area type='monotone' stroke={Theme.palette.primary.main} dataKey='value'/>
+                      <Area
+                        type="monotone"
+                        stroke={Theme.palette.primary.main}
+                        dataKey="value"
+                      />
                     </AreaChart>
                   </ResponsiveContainer>
                 );
               }
               if (props) {
                 return (
-                  <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                  <div
+                    style={{ display: 'table', height: '100%', width: '100%' }}
+                  >
+                    <span
+                      style={{
+                        display: 'table-cell',
+                        verticalAlign: 'middle',
+                        textAlign: 'center',
+                      }}
+                    >
                       {t('No entities of this type has been found.')}
                     </span>
                   </div>
                 );
               }
               return (
-                <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-                      <CircularProgress size={40} thickness={2}/>
-                    </span>
+                <div
+                  style={{ display: 'table', height: '100%', width: '100%' }}
+                >
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <CircularProgress size={40} thickness={2} />
+                  </span>
                 </div>
               );
             }}

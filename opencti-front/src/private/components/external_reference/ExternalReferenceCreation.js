@@ -68,24 +68,24 @@ const styles = theme => ({
 });
 
 const externalReferenceCreationMutation = graphql`
-    mutation ExternalReferenceCreationMutation($input: ExternalReferenceAddInput!) {
-        externalReferenceAdd(input: $input) {
-            id
-            source_name
-            description
-            url
-            external_id
-            created
-        }
+  mutation ExternalReferenceCreationMutation(
+    $input: ExternalReferenceAddInput!
+  ) {
+    externalReferenceAdd(input: $input) {
+      id
+      source_name
+      description
+      url
+      external_id
+      created
     }
+  }
 `;
 
 const externalReferenceValidation = t => Yup.object().shape({
-  source_name: Yup.string()
-    .required(t('This field is required')),
+  source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string(),
-  url: Yup.string()
-    .url(t('The value must be an URL')),
+  url: Yup.string().url(t('The value must be an URL')),
   description: Yup.string(),
 });
 
@@ -123,7 +123,12 @@ class ExternalReferenceCreation extends Component {
         const payload = store.getRootField('externalReferenceAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
-        sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
+        sharedUpdater(
+          store,
+          container.getDataID(),
+          this.props.paginationOptions,
+          newEdge,
+        );
       },
       setSubmitting,
       onCompleted: () => {
@@ -146,38 +151,90 @@ class ExternalReferenceCreation extends Component {
     const { t, classes } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
-             color='secondary' aria-label='Add'
-             className={classes.createButton}><Add/></Fab>
-        <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}
+        >
+          <Add />
+        </Fab>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
           <div className={classes.header}>
-            <IconButton aria-label='Close' className={classes.closeButton} onClick={this.handleClose.bind(this)}>
-              <Close fontSize='small'/>
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={this.handleClose.bind(this)}
+            >
+              <Close fontSize="small" />
             </IconButton>
-            <Typography variant='h6'>
+            <Typography variant="h6">
               {t('Create an external reference')}
             </Typography>
           </div>
           <div className={classes.container}>
             <Formik
               initialValues={{
-                source_name: '', external_id: '', url: '', description: '',
+                source_name: '',
+                external_id: '',
+                url: '',
+                description: '',
               }}
               validationSchema={externalReferenceValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
               render={({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field name='source_name' component={TextField} label={t('Source name')} fullWidth={true}/>
-                  <Field name='external_id' component={TextField} label={t('External ID')} fullWidth={true} style={{ marginTop: 20 }}/>
-                  <Field name='url' component={TextField} label={t('URL')} fullWidth={true} style={{ marginTop: 20 }}/>
-                  <Field name='description' component={TextField} label={t('Description')}
-                         fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
+                  <Field
+                    name="source_name"
+                    component={TextField}
+                    label={t('Source name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    name="external_id"
+                    component={TextField}
+                    label={t('External ID')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="url"
+                    component={TextField}
+                    label={t('URL')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="description"
+                    component={TextField}
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                  />
                   <div className={classes.buttons}>
-                    <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                    <Button
+                      variant="contained"
+                      onClick={handleReset}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
                       {t('Cancel')}
                     </Button>
-                    <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
                       {t('Create')}
                     </Button>
                   </div>
@@ -196,35 +253,76 @@ class ExternalReferenceCreation extends Component {
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab onClick={this.handleOpen.bind(this)}
-             color='secondary' aria-label='Add'
-             className={classes.createButton}><Add/></Fab>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}
+        >
+          <Add />
+        </Fab>
         <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
           <Formik
             enableReinitialize={true}
             initialValues={{
-              source_name: inputValue, external_id: '', url: '', description: '',
+              source_name: inputValue,
+              external_id: '',
+              url: '',
+              description: '',
             }}
             validationSchema={externalReferenceValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
             render={({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <DialogTitle>
-                  {t('Create an external reference')}
-                </DialogTitle>
+                <DialogTitle>{t('Create an external reference')}</DialogTitle>
                 <DialogContent>
-                  <Field name='source_name' component={TextField} label={t('Source name')} fullWidth={true}/>
-                  <Field name='external_id' component={TextField} label={t('External ID')} fullWidth={true} style={{ marginTop: 20 }}/>
-                  <Field name='url' component={TextField} label={t('URL')} fullWidth={true} style={{ marginTop: 20 }}/>
-                  <Field name='description' component={TextField} label={t('Description')}
-                         fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
+                  <Field
+                    name="source_name"
+                    component={TextField}
+                    label={t('Source name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    name="external_id"
+                    component={TextField}
+                    label={t('External ID')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="url"
+                    component={TextField}
+                    label={t('URL')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="description"
+                    component={TextField}
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                  />
                 </DialogContent>
                 <DialogActions classes={{ root: classes.dialogActions }}>
-                  <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
                     {t('Cancel')}
                   </Button>
-                  <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
                     {t('Create')}
                   </Button>
                 </DialogActions>

@@ -13,6 +13,7 @@ import {
   pipe,
   values,
   head,
+  merge,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
@@ -27,10 +28,12 @@ import {
   ArrowDropUp,
   KeyboardArrowRight,
 } from '@material-ui/icons';
+import { Tag } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import ReportHeader from './ReportHeader';
 import ReportAddObservable from './ReportAddObservable';
+import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
 import { dateFormat } from '../../../utils/Time';
 
 const styles = theme => ({
@@ -90,7 +93,7 @@ const inlineStylesHeaders = {
     fontSize: 12,
     fontWeight: '700',
   },
-  threats: {
+  threat: {
     float: 'left',
     width: '20%',
     fontSize: 12,
@@ -132,7 +135,7 @@ const inlineStyles = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  threats: {
+  threat: {
     float: 'left',
     width: '20%',
     height: 20,
@@ -168,7 +171,7 @@ const inlineStyles = {
 class ReportObservablesComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'name', orderAsc: false };
+    this.state = { sortBy: 'type', orderAsc: false };
   }
 
   reverseBy(field) {
@@ -212,8 +215,18 @@ class ReportObservablesComponent extends Component {
       groupBy(prop('id')),
       values,
       map(n => head(n)),
+      map(n => (n.to.observable_value
+        ? merge(n, {
+          type: n.to.type,
+          threat: n.from.name,
+          observable_value: n.to.observable_value,
+        })
+        : merge(n, {
+          type: n.from.type,
+          threat: n.to.name,
+          observable_value: n.from.observable_value,
+        }))),
     )(report.relationRefs.edges);
-    console.log(relationRefs);
     const sort = sortWith(
       this.state.orderAsc
         ? [ascend(prop(this.state.sortBy))]
@@ -244,12 +257,8 @@ class ReportObservablesComponent extends Component {
               primary={
                 <div>
                   {this.SortHeader('type', 'Type', true)}
-                  {this.SortHeader(
-                    'observable_value',
-                    'Observable value',
-                    true,
-                  )}
-                  {this.SortHeader('threats', 'Linked threat(s)', true)}
+                  {this.SortHeader('observable_value', 'Value', true)}
+                  {this.SortHeader('threat', 'Linked threat', true)}
                   {this.SortHeader('first_seen', 'First seen', true)}
                   {this.SortHeader('last_seen', 'Last seen', true)}
                   {this.SortHeader('weight', 'Confidence level', true)}
@@ -268,7 +277,7 @@ class ReportObservablesComponent extends Component {
                 to={`${link}/${relationRef.id}`}
               >
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <ItemIcon type={relationRef.type} />
+                  <Tag />
                 </ListItemIcon>
                 <ListItemText
                   primary={
@@ -287,9 +296,9 @@ class ReportObservablesComponent extends Component {
                       </div>
                       <div
                         className={classes.bodyItem}
-                        style={inlineStyles.threats}
+                        style={inlineStyles.threat}
                       >
-                        {relationRef.threats}
+                        {relationRef.threat}
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -302,6 +311,15 @@ class ReportObservablesComponent extends Component {
                         style={inlineStyles.last_seen}
                       >
                         {fd(relationRef.last_seen)}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.weight}
+                      >
+                        <ItemConfidenceLevel
+                          level={relationRef.inferred ? 99 : relationRef.weight}
+                          variant="inList"
+                        />
                       </div>
                     </div>
                   }
@@ -344,8 +362,10 @@ const ReportObservables = createFragmentContainer(ReportObservablesComponent, {
             id
             type
             name
+            relationship_type
             first_seen
             last_seen
+            weight
             created_at
             updated_at
             from {

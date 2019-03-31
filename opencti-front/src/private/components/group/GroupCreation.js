@@ -60,16 +60,15 @@ const styles = theme => ({
 });
 
 const groupMutation = graphql`
-    mutation GroupCreationMutation($input: GroupAddInput!) {
-        groupAdd(input: $input) {
-            ...GroupLine_group
-        }
+  mutation GroupCreationMutation($input: GroupAddInput!) {
+    groupAdd(input: $input) {
+      ...GroupLine_group
     }
+  }
 `;
 
 const groupValidation = t => Yup.object().shape({
-  name: Yup.string()
-    .required(t('This field is required')),
+  name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });
 
@@ -107,7 +106,12 @@ class GroupCreation extends Component {
         const payload = store.getRootField('groupAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
-        sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
+        sharedUpdater(
+          store,
+          container.getDataID(),
+          this.props.paginationOptions,
+          newEdge,
+        );
       },
       setSubmitting,
       onCompleted: () => {
@@ -126,17 +130,29 @@ class GroupCreation extends Component {
     const { t, classes } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
-             color='secondary' aria-label='Add'
-             className={classes.createButton}><Add/></Fab>
-        <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}
+        >
+          <Add />
+        </Fab>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
           <div className={classes.header}>
-            <IconButton aria-label='Close' className={classes.closeButton} onClick={this.handleClose.bind(this)}>
-              <Close fontSize='small'/>
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={this.handleClose.bind(this)}
+            >
+              <Close fontSize="small" />
             </IconButton>
-            <Typography variant='h6'>
-              {t('Create a group')}
-            </Typography>
+            <Typography variant="h6">{t('Create a group')}</Typography>
           </div>
           <div className={classes.container}>
             <Formik
@@ -146,13 +162,37 @@ class GroupCreation extends Component {
               onReset={this.onReset.bind(this)}
               render={({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
-                  <Field name='description' component={TextField} label={t('Description')} fullWidth={true} multiline={true} rows={4} style={{ marginTop: 20 }}/>
+                  <Field
+                    name="name"
+                    component={TextField}
+                    label={t('Name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    name="description"
+                    component={TextField}
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows={4}
+                    style={{ marginTop: 20 }}
+                  />
                   <div className={classes.buttons}>
-                    <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                    <Button
+                      variant="contained"
+                      onClick={handleReset}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
                       {t('Cancel')}
                     </Button>
-                    <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
                       {t('Create')}
                     </Button>
                   </div>

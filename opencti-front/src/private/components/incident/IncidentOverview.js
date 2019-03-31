@@ -28,26 +28,41 @@ class IncidentOverviewComponent extends Component {
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant='h3' gutterBottom={true}>
+          <Typography variant="h3" gutterBottom={true}>
             {t('Creation date')}
           </Typography>
           {fld(incident.created)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Modification date')}
           </Typography>
           {fld(incident.modified)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Creator')}
           </Typography>
           {pathOr('-', ['createdByRef', 'node', 'name'], incident)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Description')}
           </Typography>
-          <Markdown className='markdown' source={truncate(incident.description, 250)}/>
+          <Markdown
+            className="markdown"
+            source={truncate(incident.description, 250)}
+          />
         </Paper>
       </div>
     );
@@ -63,18 +78,18 @@ IncidentOverviewComponent.propTypes = {
 
 const IncidentOverview = createFragmentContainer(IncidentOverviewComponent, {
   incident: graphql`
-      fragment IncidentOverview_incident on Incident {
-          id
+    fragment IncidentOverview_incident on Incident {
+      id
+      name
+      description
+      created
+      modified
+      createdByRef {
+        node {
           name
-          description
-          created
-          modified
-          createdByRef {
-              node {
-                  name
-              }
-          }
+        }
       }
+    }
   `,
 });
 

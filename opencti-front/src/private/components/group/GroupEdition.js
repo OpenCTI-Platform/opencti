@@ -49,13 +49,13 @@ const styles = theme => ({
 });
 
 const subscription = graphql`
-    subscription GroupEditionSubscription($id: ID!) {
-        stixDomainEntity(id: $id) {
-            ... on Group {
-                ...GroupEdition_group
-            }
-        }
+  subscription GroupEditionSubscription($id: ID!) {
+    stixDomainEntity(id: $id) {
+      ... on Group {
+        ...GroupEdition_group
+      }
     }
+  }
 `;
 
 class GroupEdition extends Component {
@@ -86,30 +86,49 @@ class GroupEdition extends Component {
     } = this.props;
     const { editContext } = group;
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
+    const editUsers = missingMe
+      ? insert(0, { name: me.email }, editContext)
+      : editContext;
     return (
       <div>
         <div className={classes.header}>
-          <IconButton aria-label='Close' className={classes.closeButton} onClick={handleClose.bind(this)}>
-            <Close fontSize='small'/>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
           </IconButton>
-          <Typography variant='h6' classes={{ root: classes.title }}>
+          <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a group')}
           </Typography>
-          <SubscriptionAvatars users={editUsers}/>
-          <div className='clearfix'/>
+          <SubscriptionAvatars users={editUsers} />
+          <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <AppBar position='static' elevation={0} className={classes.appBar}>
-            <Tabs value={this.state.currentTab} onChange={this.handleChangeTab.bind(this)}>
-              <Tab label={t('Overview')}/>
-              <Tab label={t('Permissions')}/>
+          <AppBar position="static" elevation={0} className={classes.appBar}>
+            <Tabs
+              value={this.state.currentTab}
+              onChange={this.handleChangeTab.bind(this)}
+            >
+              <Tab label={t('Overview')} />
+              <Tab label={t('Permissions')} />
             </Tabs>
           </AppBar>
-          {this.state.currentTab === 0
-          && <GroupEditionOverview group={this.props.group} editUsers={editUsers} me={me}/>}
-          {this.state.currentTab === 1
-          && <GroupEditionPermissions group={this.props.group} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 0 && (
+            <GroupEditionOverview
+              group={this.props.group}
+              editUsers={editUsers}
+              me={me}
+            />
+          )}
+          {this.state.currentTab === 1 && (
+            <GroupEditionPermissions
+              group={this.props.group}
+              editUsers={editUsers}
+              me={me}
+            />
+          )}
         </div>
       </div>
     );
@@ -127,20 +146,20 @@ GroupEdition.propTypes = {
 
 const GroupEditionFragment = createFragmentContainer(GroupEdition, {
   group: graphql`
-      fragment GroupEdition_group on Group {
-          id
-          ...GroupEditionOverview_group
-          ...GroupEditionPermissions_group
-          editContext {
-              name,
-              focusOn
-          }
+    fragment GroupEdition_group on Group {
+      id
+      ...GroupEditionOverview_group
+      ...GroupEditionPermissions_group
+      editContext {
+        name
+        focusOn
       }
+    }
   `,
   me: graphql`
-      fragment GroupEdition_me on User {
-          email
-      }
+    fragment GroupEdition_me on User {
+      email
+    }
   `,
 });
 

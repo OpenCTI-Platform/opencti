@@ -292,7 +292,12 @@ class ReportAddObservable extends Component {
           },
           onCompleted: (result) => {
             const observableId = result.stixObservableAdd.id;
-            this.createRelations(finalValues, observableId);
+            this.createRelations(
+              finalValues,
+              observableId,
+              setSubmitting,
+              resetForm,
+            );
           },
         });
       } else {
@@ -334,15 +339,15 @@ class ReportAddObservable extends Component {
             onCompleted: (data) => {
               const relationId = data.stixRelationAdd.id;
               const input = {
-                fromRole: 'so',
-                toId: this.props.reportId,
-                toRole: 'knowledge_aggregation',
+                fromRole: 'knowledge_aggregation',
+                toId: relationId,
+                toRole: 'so',
                 through: 'object_refs',
               };
               commitMutation({
                 mutation: reportMutationRelationAdd,
                 variables: {
-                  id: relationId,
+                  id: this.props.reportId,
                   relationType: 'indicates',
                   input,
                 },
@@ -357,15 +362,15 @@ class ReportAddObservable extends Component {
         } else {
           const relationId = head(result.stixRelations.edges).node.id;
           const input = {
-            fromRole: 'so',
-            toId: this.props.reportId,
-            toRole: 'knowledge_aggregation',
+            fromRole: 'knowledge_aggregation',
+            toId: relationId,
+            toRole: 'so',
             through: 'object_refs',
           };
           commitMutation({
             mutation: reportMutationRelationAdd,
             variables: {
-              id: relationId,
+              id: this.props.reportId,
               relationType: 'indicates',
               input,
             },

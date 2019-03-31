@@ -42,22 +42,22 @@ function Transition(props) {
 }
 
 const externalReferencePopoverDeletionMutation = graphql`
-    mutation ExternalReferencePopoverDeletionMutation($id: ID!) {
-        externalReferenceEdit(id: $id) {
-            delete
-        }
+  mutation ExternalReferencePopoverDeletionMutation($id: ID!) {
+    externalReferenceEdit(id: $id) {
+      delete
     }
+  }
 `;
 
 const externalReferenceEditionQuery = graphql`
-    query ExternalReferencePopoverEditionQuery($id: String!) {
-        externalReference(id: $id) {
-            ...ExternalReferenceEdition_externalReference
-        }
-        me {
-            ...ExternalReferenceEdition_me
-        }
+  query ExternalReferencePopoverEditionQuery($id: String!) {
+    externalReference(id: $id) {
+      ...ExternalReferenceEdition_externalReference
     }
+    me {
+      ...ExternalReferenceEdition_me
+    }
+  }
 `;
 
 class ExternalReferencePopover extends Component {
@@ -126,26 +126,41 @@ class ExternalReferencePopover extends Component {
     const { classes, t, externalReferenceId } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
-          <MoreVert/>
+        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+          <MoreVert />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}>
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
+          style={{ marginTop: 50 }}
+        >
+          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
+            {t('Update')}
+          </MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+            {t('Delete')}
+          </MenuItem>
         </Menu>
-        <Drawer open={this.state.displayUpdate} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleCloseUpdate.bind(this)}>
+        <Drawer
+          open={this.state.displayUpdate}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleCloseUpdate.bind(this)}
+        >
           <QueryRenderer
             query={externalReferenceEditionQuery}
             variables={{ id: externalReferenceId }}
             render={({ props }) => {
-              if (props) { // Done
-                return <ExternalReferenceEdition me={props.me}
-                                                 externalReference={props.externalReference}
-                                                 handleClose={this.handleCloseUpdate.bind(this)}/>;
+              if (props) {
+                // Done
+                return (
+                  <ExternalReferenceEdition
+                    me={props.me}
+                    externalReference={props.externalReference}
+                    handleClose={this.handleCloseUpdate.bind(this)}
+                  />
+                );
               }
               // Loading
               return <div> &nbsp; </div>;
@@ -164,10 +179,18 @@ class ExternalReferencePopover extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseDelete.bind(this)} color="primary" disabled={this.state.deleting}>
+            <Button
+              onClick={this.handleCloseDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
               {t('Cancel')}
             </Button>
-            <Button onClick={this.submitDelete.bind(this)} color="primary" disabled={this.state.deleting}>
+            <Button
+              onClick={this.submitDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
               {t('Delete')}
             </Button>
           </DialogActions>

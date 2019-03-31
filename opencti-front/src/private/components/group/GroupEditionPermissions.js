@@ -29,27 +29,33 @@ const styles = theme => ({
 });
 
 const groupMutationRelationAdd = graphql`
-    mutation GroupEditionPermissionsMarkingDefinitionsRelationAddMutation($id: ID!, $input: RelationAddInput!) {
-        groupEdit(id: $id) {
-            relationAdd(input: $input) {
-                node {
-                    ...GroupEditionPermissions_group
-                }
-            }
+  mutation GroupEditionPermissionsMarkingDefinitionsRelationAddMutation(
+    $id: ID!
+    $input: RelationAddInput!
+  ) {
+    groupEdit(id: $id) {
+      relationAdd(input: $input) {
+        node {
+          ...GroupEditionPermissions_group
         }
+      }
     }
+  }
 `;
 
 const groupMutationRelationDelete = graphql`
-    mutation GroupEditionPermissionsMarkingDefinitionsRelationDeleteMutation($id: ID!, $relationId: ID!) {
-        groupEdit(id: $id) {
-            relationDelete(relationId: $relationId)  {
-                node {
-                    ...GroupEditionPermissions_group
-                }
-            }
+  mutation GroupEditionPermissionsMarkingDefinitionsRelationDeleteMutation(
+    $id: ID!
+    $relationId: ID!
+  ) {
+    groupEdit(id: $id) {
+      relationDelete(relationId: $relationId) {
+        node {
+          ...GroupEditionPermissions_group
         }
+      }
     }
+  }
 `;
 
 class GroupEditionPermissionsComponent extends Component {
@@ -91,7 +97,8 @@ class GroupEditionPermissionsComponent extends Component {
           query={markingDefinitionsLinesSearchQuery}
           variables={{ search: '' }}
           render={({ props }) => {
-            if (props) { // Done
+            if (props) {
+              // Done
               const markingDefinitions = pipe(
                 pathOr([], ['markingDefinitions', 'edges']),
                 map(n => n.node),
@@ -99,15 +106,17 @@ class GroupEditionPermissionsComponent extends Component {
               return (
                 <List dense={true} className={classes.root}>
                   {markingDefinitions.map((markingDefinition) => {
-                    const groupMarkingDefinition = find(propEq('id', markingDefinition.id))(groupMarkingDefinitions);
+                    const groupMarkingDefinition = find(
+                      propEq('id', markingDefinition.id),
+                    )(groupMarkingDefinitions);
                     return (
                       <ListItem key={markingDefinition.id} divider={true}>
                         <ListItemAvatar>
                           <Avatar className={classes.avatar}>
-                              {markingDefinition.definition.charAt(0)}
+                            {markingDefinition.definition.charAt(0)}
                           </Avatar>
                         </ListItemAvatar>
-                        <ListItemText primary={markingDefinition.definition}/>
+                        <ListItemText primary={markingDefinition.definition} />
                         <ListItemSecondaryAction>
                           <Checkbox
                             onChange={this.handleToggle.bind(
@@ -142,25 +151,28 @@ GroupEditionPermissionsComponent.propTypes = {
   me: PropTypes.object,
 };
 
-const GroupEditionPermissions = createFragmentContainer(GroupEditionPermissionsComponent, {
-  group: graphql`
+const GroupEditionPermissions = createFragmentContainer(
+  GroupEditionPermissionsComponent,
+  {
+    group: graphql`
       fragment GroupEditionPermissions_group on Group {
-          id
-          permissions {
-              edges {
-                  node {
-                      id
-                      definition
-                      definition_type
-                  }
-                  relation {
-                      id
-                  }
-              }
+        id
+        permissions {
+          edges {
+            node {
+              id
+              definition
+              definition_type
+            }
+            relation {
+              id
+            }
           }
+        }
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

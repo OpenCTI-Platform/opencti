@@ -27,23 +27,31 @@ class IncidentIdentityComponent extends Component {
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Identity')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant='h3' gutterBottom={true}>
+          <Typography variant="h3" gutterBottom={true}>
             {t('First seen')}
           </Typography>
           {fld(incident.first_seen)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Last seen')}
           </Typography>
           {fld(incident.last_seen)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Objective')}
           </Typography>
-          <Markdown className='markdown' source={incident.objective}/>
-          </Paper>
+          <Markdown className="markdown" source={incident.objective} />
+        </Paper>
       </div>
     );
   }
@@ -58,12 +66,12 @@ IncidentIdentityComponent.propTypes = {
 
 const IncidentIdentity = createFragmentContainer(IncidentIdentityComponent, {
   incident: graphql`
-      fragment IncidentIdentity_incident on Incident {
-          id
-          first_seen
-          last_seen
-          objective
-      }
+    fragment IncidentIdentity_incident on Incident {
+      id
+      first_seen
+      last_seen
+      objective
+    }
   `,
 });
 

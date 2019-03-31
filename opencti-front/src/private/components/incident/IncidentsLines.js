@@ -4,10 +4,13 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { filter, pathOr, propOr } from "ramda";
+import { filter, pathOr, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  AutoSizer, InfiniteLoader, List, WindowScroller,
+  AutoSizer,
+  InfiniteLoader,
+  List,
+  WindowScroller,
 } from 'react-virtualized';
 import { IncidentLine, IncidentLineDummy } from './IncidentLine';
 
@@ -73,41 +76,70 @@ class IncidentsLines extends Component {
     if (this.props.dummy) {
       return true;
     }
-    const list = this.filterList(pathOr([], ['incidents', 'edges'], this.props.data));
+    const list = this.filterList(
+      pathOr([], ['incidents', 'edges'], this.props.data),
+    );
     return !this.props.relay.hasMore() || index < list.length;
   }
 
   _rowRenderer({ index, key, style }) {
     const { dummy } = this.props;
     if (dummy) {
-      return <div key={key} style={style}><IncidentLineDummy/></div>;
+      return (
+        <div key={key} style={style}>
+          <IncidentLineDummy />
+        </div>
+      );
     }
 
-    const list = this.filterList(pathOr([], ['incidents', 'edges'], this.props.data));
+    const list = this.filterList(
+      pathOr([], ['incidents', 'edges'], this.props.data),
+    );
     if (!this._isRowLoaded({ index })) {
-      return <div key={key} style={style}><IncidentLineDummy/></div>;
+      return (
+        <div key={key} style={style}>
+          <IncidentLineDummy />
+        </div>
+      );
     }
     const incidentNode = list[index];
     if (!incidentNode) {
       return <div key={key}>&nbsp;</div>;
     }
     const incident = incidentNode.node;
-    return <div key={key} style={style}><IncidentLine key={incident.id} incident={incident}/></div>;
+    return (
+      <div key={key} style={style}>
+        <IncidentLine key={incident.id} incident={incident} />
+      </div>
+    );
   }
 
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
-    const list = dummy ? [] : this.filterList(pathOr([], ['incidents', 'edges'], this.props.data));
-    const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
+    const list = dummy
+      ? []
+      : this.filterList(pathOr([], ['incidents', 'edges'], this.props.data));
+    const rowCount = dummy
+      ? 20
+      : this.props.relay.isLoading()
+        ? list.length + 25
+        : list.length;
     return (
-      <WindowScroller ref={this._setRef} scrollElement={window} key={this.props.searchTerm}>
+      <WindowScroller
+        ref={this._setRef}
+        scrollElement={window}
+        key={this.props.searchTerm}
+      >
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
           <div className={styles.windowScrollerWrapper}>
-            <InfiniteLoader isRowLoaded={this._isRowLoaded}
-                            loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
+            <InfiniteLoader
+              isRowLoaded={this._isRowLoaded}
+              loadMoreRows={this._loadMore}
+              rowCount={Number.MAX_SAFE_INTEGER}
+            >
               {({ onRowsRendered }) => (
                 <AutoSizer disableHeight>
                   {({ width }) => (
@@ -149,53 +181,72 @@ IncidentsLines.propTypes = {
 };
 
 export const incidentsLinesQuery = graphql`
-    query IncidentsLinesPaginationQuery($count: Int!, $cursor: ID, $orderBy: IncidentsOrdering, $orderMode: OrderingMode) {
-        ...IncidentsLines_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
-    }
+  query IncidentsLinesPaginationQuery(
+    $count: Int!
+    $cursor: ID
+    $orderBy: IncidentsOrdering
+    $orderMode: OrderingMode
+  ) {
+    ...IncidentsLines_data
+      @arguments(
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
+  }
 `;
 
-export default withStyles(styles)(createPaginationContainer(
-  IncidentsLines,
-  {
-    data: graphql`
-        fragment IncidentsLines_data on Query @argumentDefinitions(
-            count: {type: "Int", defaultValue: 25}
-            cursor: {type: "ID"}
-            orderBy: {type: "IncidentsOrdering", defaultValue: ID}
-            orderMode: {type: "OrderingMode", defaultValue: "asc"}
-        ) {
-            incidents(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_incidents") {
-                edges {
-                    node {
-                        id
-                        name
-                        description
-                        ...IncidentLine_incident
-                    }
-                }
+export default withStyles(styles)(
+  createPaginationContainer(
+    IncidentsLines,
+    {
+      data: graphql`
+        fragment IncidentsLines_data on Query
+          @argumentDefinitions(
+            count: { type: "Int", defaultValue: 25 }
+            cursor: { type: "ID" }
+            orderBy: { type: "IncidentsOrdering", defaultValue: ID }
+            orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          ) {
+          incidents(
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+          ) @connection(key: "Pagination_incidents") {
+            edges {
+              node {
+                id
+                name
+                description
+                ...IncidentLine_incident
+              }
             }
+          }
         }
-    `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.incidents;
+      `,
     },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
+    {
+      direction: 'forward',
+      getConnectionFromProps(props) {
+        return props.data && props.data.incidents;
+      },
+      getFragmentVariables(prevVars, totalCount) {
+        return {
+          ...prevVars,
+          count: totalCount,
+        };
+      },
+      getVariables(props, { count, cursor }, fragmentVariables) {
+        return {
+          count,
+          cursor,
+          orderBy: fragmentVariables.orderBy,
+          orderMode: fragmentVariables.orderMode,
+        };
+      },
+      query: incidentsLinesQuery,
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
-      return {
-        count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
-      };
-    },
-    query: incidentsLinesQuery,
-  },
-));
+  ),
+);

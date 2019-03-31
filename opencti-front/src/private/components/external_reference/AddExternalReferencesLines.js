@@ -28,39 +28,45 @@ const styles = theme => ({
 });
 
 const externalReferenceLinesMutationRelationAdd = graphql`
-    mutation AddExternalReferencesLinesRelationAddMutation($id: ID!, $input: RelationAddInput!) {
-        externalReferenceEdit(id: $id) {
-            relationAdd(input: $input) {
-                node {
-                    ... on ExternalReference {
-                        id
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                    }
-                }
-                relation {
-                    id
-                }
-            }
+  mutation AddExternalReferencesLinesRelationAddMutation(
+    $id: ID!
+    $input: RelationAddInput!
+  ) {
+    externalReferenceEdit(id: $id) {
+      relationAdd(input: $input) {
+        node {
+          ... on ExternalReference {
+            id
+            source_name
+            description
+            url
+            hash
+            external_id
+          }
         }
+        relation {
+          id
+        }
+      }
     }
+  }
 `;
 
 export const externalReferenceMutationRelationDelete = graphql`
-    mutation AddExternalReferencesLinesRelationDeleteMutation($id: ID!, $relationId: ID!) {
-        externalReferenceEdit(id: $id) {
-            relationDelete(relationId: $relationId) {
-                node {
-                    ... on ExternalReference {
-                        id
-                    }
-                }
-            }
+  mutation AddExternalReferencesLinesRelationDeleteMutation(
+    $id: ID!
+    $relationId: ID!
+  ) {
+    externalReferenceEdit(id: $id) {
+      relationDelete(relationId: $relationId) {
+        node {
+          ... on ExternalReference {
+            id
+          }
         }
+      }
     }
+  }
 `;
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -75,13 +81,25 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 
 class AddExternalReferencesLinesContainer extends Component {
   toggleExternalReference(externalReference) {
-    const { entityId, entityExternalReferences, entityPaginationOptions } = this.props;
-    const entityExternalReferencesIds = map(n => n.node.id, entityExternalReferences);
-    const alreadyAdded = entityExternalReferencesIds.includes(externalReference.id);
+    const {
+      entityId,
+      entityExternalReferences,
+      entityPaginationOptions,
+    } = this.props;
+    const entityExternalReferencesIds = map(
+      n => n.node.id,
+      entityExternalReferences,
+    );
+    const alreadyAdded = entityExternalReferencesIds.includes(
+      externalReference.id,
+    );
 
     if (alreadyAdded) {
       const existingExternalReference = head(
-        filter(n => n.node.id === externalReference.id, entityExternalReferences),
+        filter(
+          n => n.node.id === externalReference.id,
+          entityExternalReferences,
+        ),
       );
       commitMutation({
         mutation: externalReferenceMutationRelationDelete,
@@ -114,44 +132,68 @@ class AddExternalReferencesLinesContainer extends Component {
           input,
         },
         updater: (store) => {
-          const payload = store.getRootField('externalReferenceEdit')
+          const payload = store
+            .getRootField('externalReferenceEdit')
             .getLinkedRecord('relationAdd', { input });
           const container = store.getRoot();
-          sharedUpdater(store, container.getDataID(), entityPaginationOptions, payload);
+          sharedUpdater(
+            store,
+            container.getDataID(),
+            entityPaginationOptions,
+            payload,
+          );
         },
       });
     }
   }
 
   render() {
-    const {
-      classes, data, entityExternalReferences,
-    } = this.props;
-    const entityExternalReferencesIds = map(n => n.node.id, entityExternalReferences);
+    const { classes, data, entityExternalReferences } = this.props;
+    const entityExternalReferencesIds = map(
+      n => n.node.id,
+      entityExternalReferences,
+    );
     return (
       <List>
         {data.externalReferences.edges.map((externalReferenceNode) => {
           const externalReference = externalReferenceNode.node;
-          const alreadyAdded = entityExternalReferencesIds.includes(externalReference.id);
-          const externalReferenceId = externalReference.external_id ? `(${externalReference.external_id})` : '';
+          const alreadyAdded = entityExternalReferencesIds.includes(
+            externalReference.id,
+          );
+          const externalReferenceId = externalReference.external_id
+            ? `(${externalReference.external_id})`
+            : '';
           return (
             <ListItem
               key={externalReference.id}
               classes={{ root: classes.menuItem }}
               divider={true}
               button={true}
-              onClick={this.toggleExternalReference.bind(this, externalReference)}>
+              onClick={this.toggleExternalReference.bind(
+                this,
+                externalReference,
+              )}
+            >
               <ListItemIcon>
-                {alreadyAdded ? <CheckCircle classes={{ root: classes.icon }}/>
-                  : <Avatar classes={{ root: classes.avatar }}>
-                        {externalReference.source_name.substring(0, 1)}
-                  </Avatar>}
+                {alreadyAdded ? (
+                  <CheckCircle classes={{ root: classes.icon }} />
+                ) : (
+                  <Avatar classes={{ root: classes.avatar }}>
+                    {externalReference.source_name.substring(0, 1)}
+                  </Avatar>
+                )}
               </ListItemIcon>
               <ListItemText
-                primary={`${externalReference.source_name} ${externalReferenceId}`}
-                secondary={truncate(externalReference.description !== null
+                primary={`${
+                  externalReference.source_name
+                } ${externalReferenceId}`}
+                secondary={truncate(
+                  externalReference.description !== null
                     && externalReference.description.length > 0
-                  ? externalReference.description : externalReference.url, 120)}
+                    ? externalReference.description
+                    : externalReference.url,
+                  120,
+                )}
               />
             </ListItem>
           );
@@ -173,51 +215,63 @@ AddExternalReferencesLinesContainer.propTypes = {
 };
 
 export const addExternalReferencesLinesQuery = graphql`
-    query AddExternalReferencesLinesQuery($search: String, $count: Int!, $cursor: ID) {
-        ...AddExternalReferencesLines_data @arguments(search: $search, count: $count, cursor: $cursor)
-    }
+  query AddExternalReferencesLinesQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+  ) {
+    ...AddExternalReferencesLines_data
+      @arguments(search: $search, count: $count, cursor: $cursor)
+  }
 `;
 
-const AddExternalReferencesLines = createPaginationContainer(AddExternalReferencesLinesContainer, {
-  data: graphql`
-      fragment AddExternalReferencesLines_data on Query @argumentDefinitions(
-          search: {type: "String"}
-          count: {type: "Int", defaultValue: 25}
-          cursor: {type: "ID"}) {
-          externalReferences(search: $search, first: $count, after: $cursor) @connection(key: "Pagination_externalReferences") {
-              edges {
-                  node {
-                      id
-                      source_name
-                      description
-                      url
-                      external_id
-                  }
-              }
+const AddExternalReferencesLines = createPaginationContainer(
+  AddExternalReferencesLinesContainer,
+  {
+    data: graphql`
+      fragment AddExternalReferencesLines_data on Query
+        @argumentDefinitions(
+          search: { type: "String" }
+          count: { type: "Int", defaultValue: 25 }
+          cursor: { type: "ID" }
+        ) {
+        externalReferences(search: $search, first: $count, after: $cursor)
+          @connection(key: "Pagination_externalReferences") {
+          edges {
+            node {
+              id
+              source_name
+              description
+              url
+              external_id
+            }
           }
+        }
       }
-  `,
-}, {
-  direction: 'forward',
-  getConnectionFromProps(props) {
-    return props.data && props.data.externalReferences;
+    `,
   },
-  getFragmentVariables(prevVars, totalCount) {
-    return {
-      ...prevVars,
-      count: totalCount,
-    };
+  {
+    direction: 'forward',
+    getConnectionFromProps(props) {
+      return props.data && props.data.externalReferences;
+    },
+    getFragmentVariables(prevVars, totalCount) {
+      return {
+        ...prevVars,
+        count: totalCount,
+      };
+    },
+    getVariables(props, { count, cursor }, fragmentVariables) {
+      return {
+        count,
+        cursor,
+        orderBy: fragmentVariables.orderBy,
+        orderMode: fragmentVariables.orderMode,
+      };
+    },
+    query: addExternalReferencesLinesQuery,
   },
-  getVariables(props, { count, cursor }, fragmentVariables) {
-    return {
-      count,
-      cursor,
-      orderBy: fragmentVariables.orderBy,
-      orderMode: fragmentVariables.orderMode,
-    };
-  },
-  query: addExternalReferencesLinesQuery,
-});
+);
 
 export default compose(
   inject18n,

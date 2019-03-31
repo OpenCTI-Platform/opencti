@@ -92,24 +92,34 @@ class ExternalReferenceLineComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Avatar classes={{ root: classes.avatar }}>{externalReference.source_name.substring(0, 1)}</Avatar>
+          <Avatar classes={{ root: classes.avatar }}>
+            {externalReference.source_name.substring(0, 1)}
+          </Avatar>
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.source_name}>
-              {externalReference.source_name}
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.source_name}
+              >
+                {externalReference.source_name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.external_id}
+              >
+                {externalReference.external_id}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.url}>
+                {externalReference.url}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                {fd(externalReference.created)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.external_id}>
-              {externalReference.external_id}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.url}>
-              {externalReference.url}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              {fd(externalReference.created)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <ExternalReferencePopover
             externalReferenceId={externalReference.id}
@@ -129,17 +139,20 @@ ExternalReferenceLineComponent.propTypes = {
   fd: PropTypes.func,
 };
 
-const ExternalReferenceLineFragment = createFragmentContainer(ExternalReferenceLineComponent, {
-  externalReference: graphql`
+const ExternalReferenceLineFragment = createFragmentContainer(
+  ExternalReferenceLineComponent,
+  {
+    externalReference: graphql`
       fragment ExternalReferenceLine_externalReference on ExternalReference {
-          id
-          source_name
-          external_id
-          url
-          created
+        id
+        source_name
+        external_id
+        url
+        created
       }
-  `,
-});
+    `,
+  },
+);
 
 export const ExternalReferenceLine = compose(
   inject18n,
@@ -154,24 +167,32 @@ class ExternalReferenceLineDummyComponent extends Component {
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <Avatar classes={{ root: classes.avatarDisabled }}>A</Avatar>
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.source_name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.source_name}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.external_id}
+              >
+                <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.url}>
+                <div className="fakeItem" style={{ width: '60%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.external_id}>
-              <div className='fakeItem' style={{ width: '70%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.url}>
-              <div className='fakeItem' style={{ width: '60%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <MoreVert/>
+          <MoreVert />
         </ListItemIcon>
       </ListItem>
     );

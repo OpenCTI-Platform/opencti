@@ -6,7 +6,11 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, QueryRenderer, WS_ACTIVATED } from '../../../relay/environment';
+import {
+  commitMutation,
+  QueryRenderer,
+  WS_ACTIVATED,
+} from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import IncidentEditionContainer from './IncidentEditionContainer';
 import { incidentEditionOverviewFocus } from './IncidentEditionOverview';
@@ -32,14 +36,14 @@ const styles = theme => ({
 });
 
 export const incidentEditionQuery = graphql`
-    query IncidentEditionContainerQuery($id: String!) {
-        incident(id: $id) {
-            ...IncidentEditionContainer_incident
-        }
-        me {
-            ...IncidentEditionContainer_me
-        }
+  query IncidentEditionContainerQuery($id: String!) {
+    incident(id: $id) {
+      ...IncidentEditionContainer_incident
     }
+    me {
+      ...IncidentEditionContainer_me
+    }
+  }
 `;
 
 class IncidentEdition extends Component {
@@ -69,20 +73,32 @@ class IncidentEdition extends Component {
     const { classes, incidentId } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
-             color='secondary' aria-label='Edit'
-             className={classes.editButton}><Edit/></Fab>
-        <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Edit"
+          className={classes.editButton}
+        >
+          <Edit />
+        </Fab>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
           <QueryRenderer
             query={incidentEditionQuery}
             variables={{ id: incidentId }}
             render={({ props }) => {
               if (props) {
-                return <IncidentEditionContainer
-                  me={props.me}
-                  incident={props.incident}
-                  handleClose={this.handleClose.bind(this)}
-                />;
+                return (
+                  <IncidentEditionContainer
+                    me={props.me}
+                    incident={props.incident}
+                    handleClose={this.handleClose.bind(this)}
+                  />
+                );
               }
               return <div> &nbsp; </div>;
             }}

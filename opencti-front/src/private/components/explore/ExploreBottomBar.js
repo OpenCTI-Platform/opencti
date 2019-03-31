@@ -35,8 +35,12 @@ class ExploreBottomBar extends Component {
       entityId,
     } = this.props;
     return (
-      <Drawer anchor='bottom' variant='permanent' classes={{ paper: classes.bottomNav }}>
-        <Grid item={true} xs='auto'>
+      <Drawer
+        anchor="bottom"
+        variant="permanent"
+        classes={{ paper: classes.bottomNav }}
+      >
+        <Grid item={true} xs="auto">
           <FormControlLabel
             style={{ paddingTop: 5, marginRight: 15 }}
             control={
@@ -44,17 +48,28 @@ class ExploreBottomBar extends Component {
                 disabled={!entityId}
                 checked={inferred}
                 onChange={handleChangeInferred.bind(this)}
-                color='primary'
+                color="primary"
               />
             }
             label={t('Inferences')}
           />
         </Grid>
-        <div style={{
-          position: 'absolute', top: 25, right: 285, color: '#ffffff',
-        }}>
-          <Button variant='contained' size='small' className={classes.button} onClick={handleClear.bind(this)} disabled={!entityId}>
-            <Clear className={classes.icon}/>
+        <div
+          style={{
+            position: 'absolute',
+            top: 25,
+            right: 285,
+            color: '#ffffff',
+          }}
+        >
+          <Button
+            variant="contained"
+            size="small"
+            className={classes.button}
+            onClick={handleClear.bind(this)}
+            disabled={!entityId}
+          >
+            <Clear className={classes.icon} />
             {t('Close')}
           </Button>
         </div>

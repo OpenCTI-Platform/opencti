@@ -41,13 +41,13 @@ const styles = () => ({
 });
 
 const incidentMutation = graphql`
-    mutation IncidentHeaderFieldMutation($id: ID!, $input: EditInput!) {
-        incidentEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...IncidentHeader_incident
-            }
-        }
+  mutation IncidentHeaderFieldMutation($id: ID!, $input: EditInput!) {
+    incidentEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...IncidentHeader_incident
+      }
     }
+  }
 `;
 
 class IncidentHeaderComponent extends Component {
@@ -61,13 +61,18 @@ class IncidentHeaderComponent extends Component {
   }
 
   onSubmitCreateAlias(data) {
-    if (this.props.incident.alias === null
-      || !this.props.incident.alias.includes(data.new_alias)) {
+    if (
+      this.props.incident.alias === null
+      || !this.props.incident.alias.includes(data.new_alias)
+    ) {
       commitMutation({
         mutation: incidentMutation,
         variables: {
           id: this.props.incident.id,
-          input: { key: 'alias', value: append(data.new_alias, this.props.incident.alias) },
+          input: {
+            key: 'alias',
+            value: append(data.new_alias, this.props.incident.alias),
+          },
         },
       });
     }
@@ -91,32 +96,66 @@ class IncidentHeaderComponent extends Component {
     } = this.props;
     return (
       <div>
-        <Typography variant='h1' gutterBottom={true} classes={{ root: classes.title }}>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
+        >
           {incident.name}
         </Typography>
         <div className={classes.popover}>
-          <IncidentPopover incidentId={incident.id}/>
+          <IncidentPopover incidentId={incident.id} />
         </div>
-        {variant !== 'noalias'
-          ? <div className={classes.aliases}>
-            {propOr([], 'alias', incident).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
-            <IconButton color='secondary' aria-label='Alias' onClick={this.handleToggleCreateAlias.bind(this)}>
-              {this.state.openAlias ? <Close fontSize='small'/> : <Add fontSize='small'/>}
+        {variant !== 'noalias' ? (
+          <div className={classes.aliases}>
+            {propOr([], 'alias', incident).map(label => (label.length > 0 ? (
+                <Chip
+                  key={label}
+                  classes={{ root: classes.alias }}
+                  label={label}
+                  onDelete={this.deleteAlias.bind(this, label)}
+                />
+            ) : (
+              ''
+            )))}
+            <IconButton
+              color="secondary"
+              aria-label="Alias"
+              onClick={this.handleToggleCreateAlias.bind(this)}
+            >
+              {this.state.openAlias ? (
+                <Close fontSize="small" />
+              ) : (
+                <Add fontSize="small" />
+              )}
             </IconButton>
-            <Slide direction='left' in={this.state.openAlias} mountOnEnter={true} unmountOnExit={true}>
+            <Slide
+              direction="left"
+              in={this.state.openAlias}
+              mountOnEnter={true}
+              unmountOnExit={true}
+            >
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={this.onSubmitCreateAlias.bind(this)}
                 render={() => (
                   <Form style={{ float: 'right' }}>
-                    <Field name='new_alias' component={TextField} autoFocus={true} placeholder={t('New alias')} className={classes.aliasInput}/>
+                    <Field
+                      name="new_alias"
+                      component={TextField}
+                      autoFocus={true}
+                      placeholder={t('New alias')}
+                      className={classes.aliasInput}
+                    />
                   </Form>
                 )}
               />
             </Slide>
-          </div> : ''
-        }
-        <div className='clearfix'/>
+          </div>
+        ) : (
+          ''
+        )}
+        <div className="clearfix" />
       </div>
     );
   }
@@ -132,11 +171,11 @@ IncidentHeaderComponent.propTypes = {
 
 const IncidentHeader = createFragmentContainer(IncidentHeaderComponent, {
   incident: graphql`
-      fragment IncidentHeader_incident on Incident {
-          id
-          name
-          alias
-      }
+    fragment IncidentHeader_incident on Incident {
+      id
+      name
+      alias
+    }
   `,
 });
 

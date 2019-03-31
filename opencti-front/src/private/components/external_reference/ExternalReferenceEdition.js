@@ -12,9 +12,15 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../components/i18n';
-import { commitMutation, requestSubscription } from '../../../relay/environment';
+import {
+  commitMutation,
+  requestSubscription,
+} from '../../../relay/environment';
 import TextField from '../../../components/TextField';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../components/Subscription';
+import {
+  SubscriptionAvatars,
+  SubscriptionFocus,
+} from '../../../components/Subscription';
 
 const styles = theme => ({
   header: {
@@ -47,39 +53,43 @@ const styles = theme => ({
 });
 
 const subscription = graphql`
-    subscription ExternalReferenceEditionSubscription($id: ID!) {
-        externalReference(id: $id) {
-            ...ExternalReferenceEdition_externalReference
-        }
+  subscription ExternalReferenceEditionSubscription($id: ID!) {
+    externalReference(id: $id) {
+      ...ExternalReferenceEdition_externalReference
     }
+  }
 `;
 
 const externalReferenceMutationFieldPatch = graphql`
-    mutation ExternalReferenceEditionFieldPatchMutation($id: ID!, $input: EditInput!) {
-        externalReferenceEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...ExternalReferenceEdition_externalReference
-            }
-        }
+  mutation ExternalReferenceEditionFieldPatchMutation(
+    $id: ID!
+    $input: EditInput!
+  ) {
+    externalReferenceEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...ExternalReferenceEdition_externalReference
+      }
     }
+  }
 `;
 
 const externalReferenceEditionFocus = graphql`
-    mutation ExternalReferenceEditionFocusMutation($id: ID!, $input: EditContext!) {
-        externalReferenceEdit(id: $id) {
-            contextPatch(input : $input) {
-                ...ExternalReferenceEdition_externalReference
-            }
-        }
+  mutation ExternalReferenceEditionFocusMutation(
+    $id: ID!
+    $input: EditContext!
+  ) {
+    externalReferenceEdit(id: $id) {
+      contextPatch(input: $input) {
+        ...ExternalReferenceEdition_externalReference
+      }
     }
+  }
 `;
 
 const externalReferenceValidation = t => Yup.object().shape({
-  source_name: Yup.string()
-    .required(t('This field is required')),
+  source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string(),
-  url: Yup.string()
-    .url(t('The value must be an URL')),
+  url: Yup.string().url(t('The value must be an URL')),
   description: Yup.string(),
 });
 
@@ -89,7 +99,7 @@ class ExternalReferenceEditionContainer extends Component {
       subscription,
       variables: {
         // eslint-disable-next-line
-          id: this.props.externalReference.id
+        id: this.props.externalReference.id
       },
     });
     this.setState({ sub });
@@ -112,12 +122,18 @@ class ExternalReferenceEditionContainer extends Component {
   }
 
   handleSubmitField(name, value) {
-    externalReferenceValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      commitMutation({
-        mutation: externalReferenceMutationFieldPatch,
-        variables: { id: this.props.externalReference.id, input: { key: name, value } },
-      });
-    }).catch(() => false);
+    externalReferenceValidation(this.props.t)
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        commitMutation({
+          mutation: externalReferenceMutationFieldPatch,
+          variables: {
+            id: this.props.externalReference.id,
+            input: { key: name, value },
+          },
+        });
+      })
+      .catch(() => false);
   }
 
   render() {
@@ -127,19 +143,28 @@ class ExternalReferenceEditionContainer extends Component {
     const { editContext } = externalReference;
     // Add current user to the context if is not available yet.
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
-    const initialValues = pick(['source_name', 'external_id', 'url', 'description'], externalReference);
+    const editUsers = missingMe
+      ? insert(0, { name: me.email }, editContext)
+      : editContext;
+    const initialValues = pick(
+      ['source_name', 'external_id', 'url', 'description'],
+      externalReference,
+    );
     return (
       <div>
         <div className={classes.header}>
-          <IconButton aria-label='Close' className={classes.closeButton} onClick={handleClose.bind(this)}>
-            <Close fontSize='small'/>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
           </IconButton>
-          <Typography variant='h6' classes={{ root: classes.title }}>
+          <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update an external reference')}
           </Typography>
-          <SubscriptionAvatars users={editUsers}/>
-          <div className='clearfix'/>
+          <SubscriptionAvatars users={editUsers} />
+          <div className="clearfix" />
         </div>
         <div className={classes.container}>
           <Formik
@@ -148,25 +173,71 @@ class ExternalReferenceEditionContainer extends Component {
             validationSchema={externalReferenceValidation(t)}
             render={() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field name='source_name' component={TextField} label={t('Source name')} fullWidth={true}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='source_name'/>}/>
-                <Field name='external_id' component={TextField} label={t('External ID')}
-                       fullWidth={true} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='external_id'/>}/>
-                <Field name='url' component={TextField} label={t('URL')}
-                       fullWidth={true} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='url'/>}/>
-                <Field name='description' component={TextField} label={t('Description')}
-                       fullWidth={true} multiline={true} rows={4} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='description'/>}/>
+                <Field
+                  name="source_name"
+                  component={TextField}
+                  label={t('Source name')}
+                  fullWidth={true}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="source_name"
+                    />
+                  }
+                />
+                <Field
+                  name="external_id"
+                  component={TextField}
+                  label={t('External ID')}
+                  fullWidth={true}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="external_id"
+                    />
+                  }
+                />
+                <Field
+                  name="url"
+                  component={TextField}
+                  label={t('URL')}
+                  fullWidth={true}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="url"
+                    />
+                  }
+                />
+                <Field
+                  name="description"
+                  component={TextField}
+                  label={t('Description')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows={4}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="description"
+                    />
+                  }
+                />
               </Form>
             )}
           />
@@ -185,26 +256,29 @@ ExternalReferenceEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const ExternalReferenceEditionFragment = createFragmentContainer(ExternalReferenceEditionContainer, {
-  externalReference: graphql`
+const ExternalReferenceEditionFragment = createFragmentContainer(
+  ExternalReferenceEditionContainer,
+  {
+    externalReference: graphql`
       fragment ExternalReferenceEdition_externalReference on ExternalReference {
-          id
-          source_name
-          url
-          external_id
-          description
-          editContext {
-              name
-              focusOn
-          }
+        id
+        source_name
+        url
+        external_id
+        description
+        editContext {
+          name
+          focusOn
+        }
       }
-  `,
-  me: graphql`
+    `,
+    me: graphql`
       fragment ExternalReferenceEdition_me on User {
-          email
+        email
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

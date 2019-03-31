@@ -14,7 +14,9 @@ import { Add, Close } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { QueryRenderer } from '../../../relay/environment';
-import AddExternalReferencesLines, { addExternalReferencesLinesQuery } from './AddExternalReferencesLines';
+import AddExternalReferencesLines, {
+  addExternalReferencesLinesQuery,
+} from './AddExternalReferencesLines';
 import ExternalReferenceCreation from './ExternalReferenceCreation';
 
 const styles = theme => ({
@@ -82,24 +84,50 @@ class AddExternalReferences extends Component {
 
   render() {
     const {
-      t, classes, entityId, entityExternalReferences, entityPaginationOptions,
+      t,
+      classes,
+      entityId,
+      entityExternalReferences,
+      entityPaginationOptions,
     } = this.props;
-    const paginationOptions = { search: this.state.search, orderBy: 'created_at', orderMode: 'desc' };
+    const paginationOptions = {
+      search: this.state.search,
+      orderBy: 'created_at',
+      orderMode: 'desc',
+    };
     return (
       <div>
-        <IconButton color='secondary' aria-label='Add' onClick={this.handleOpen.bind(this)} classes={{ root: classes.createButton }}>
-          <Add fontSize='small'/>
+        <IconButton
+          color="secondary"
+          aria-label="Add"
+          onClick={this.handleOpen.bind(this)}
+          classes={{ root: classes.createButton }}
+        >
+          <Add fontSize="small" />
         </IconButton>
-        <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
           <div className={classes.header}>
-            <IconButton aria-label='Close' className={classes.closeButton} onClick={this.handleClose.bind(this)}>
-              <Close fontSize='small'/>
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={this.handleClose.bind(this)}
+            >
+              <Close fontSize="small" />
             </IconButton>
-            <Typography variant='h6' classes={{ root: classes.title }}>
+            <Typography variant="h6" classes={{ root: classes.title }}>
               {t('Add external references')}
             </Typography>
             <div className={classes.search}>
-              <SearchInput variant='inDrawer' placeholder={`${t('Search')}...`} onSubmit={this.handleSearch.bind(this)}/>
+              <SearchInput
+                variant="inDrawer"
+                placeholder={`${t('Search')}...`}
+                onSubmit={this.handleSearch.bind(this)}
+              />
             </div>
           </div>
           <div className={classes.container}>
@@ -123,17 +151,25 @@ class AddExternalReferences extends Component {
                 return (
                   <List>
                     {Array.from(Array(20), (e, i) => (
-                      <ListItem
-                        key={i}
-                        divider={true}
-                        button={false}
-                      >
+                      <ListItem key={i} divider={true} button={false}>
                         <ListItemIcon>
-                          <Avatar classes={{ root: classes.avatar }}>{i}</Avatar>
+                          <Avatar classes={{ root: classes.avatar }}>
+                            {i}
+                          </Avatar>
                         </ListItemIcon>
                         <ListItemText
-                          primary={<span className='fakeItem' style={{ width: '80%' }}/>}
-                          secondary={<span className='fakeItem' style={{ width: '90%' }}/>}
+                          primary={
+                            <span
+                              className="fakeItem"
+                              style={{ width: '80%' }}
+                            />
+                          }
+                          secondary={
+                            <span
+                              className="fakeItem"
+                              style={{ width: '90%' }}
+                            />
+                          }
                         />
                       </ListItem>
                     ))}

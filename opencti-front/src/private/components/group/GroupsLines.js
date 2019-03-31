@@ -7,7 +7,10 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  AutoSizer, InfiniteLoader, List, WindowScroller,
+  AutoSizer,
+  InfiniteLoader,
+  List,
+  WindowScroller,
 } from 'react-virtualized';
 import { GroupLine, GroupLineDummy } from './GroupLine';
 
@@ -69,36 +72,57 @@ class GroupsLines extends Component {
   _rowRenderer({ index, key, style }) {
     const { dummy } = this.props;
     if (dummy) {
-      return <div key={key} style={style}><GroupLineDummy/></div>;
+      return (
+        <div key={key} style={style}>
+          <GroupLineDummy />
+        </div>
+      );
     }
 
     const list = pathOr([], ['groups', 'edges'], this.props.data);
     if (!this._isRowLoaded({ index })) {
-      return <div key={key} style={style}><GroupLineDummy/></div>;
+      return (
+        <div key={key} style={style}>
+          <GroupLineDummy />
+        </div>
+      );
     }
     const groupNode = list[index];
     if (!groupNode) {
       return <div key={key}>&nbsp;</div>;
     }
     const group = groupNode.node;
-    return <div key={key} style={style}>
-        <GroupLine key={group.id} group={group} paginationOptions={this.props.paginationOptions}/>
-    </div>;
+    return (
+      <div key={key} style={style}>
+        <GroupLine
+          key={group.id}
+          group={group}
+          paginationOptions={this.props.paginationOptions}
+        />
+      </div>
+    );
   }
 
   render() {
     const { dummy } = this.props;
     const { scrollToIndex } = this.state;
     const list = dummy ? [] : pathOr([], ['groups', 'edges'], this.props.data);
-    const rowCount = dummy ? 20 : this.props.relay.isLoading() ? list.length + 25 : list.length;
+    const rowCount = dummy
+      ? 20
+      : this.props.relay.isLoading()
+        ? list.length + 25
+        : list.length;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
           <div className={styles.windowScrollerWrapper}>
-            <InfiniteLoader isRowLoaded={this._isRowLoaded}
-                            loadMoreRows={this._loadMore} rowCount={Number.MAX_SAFE_INTEGER}>
+            <InfiniteLoader
+              isRowLoaded={this._isRowLoaded}
+              loadMoreRows={this._loadMore}
+              rowCount={Number.MAX_SAFE_INTEGER}
+            >
               {({ onRowsRendered }) => (
                 <AutoSizer disableHeight>
                   {({ width }) => (
@@ -141,66 +165,85 @@ GroupsLines.propTypes = {
 };
 
 export const groupsLinesQuery = graphql`
-    query GroupsLinesPaginationQuery($count: Int!, $cursor: ID, $orderBy: GroupsOrdering, $orderMode: OrderingMode) {
-        ...GroupsLines_data @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
-    }
+  query GroupsLinesPaginationQuery(
+    $count: Int!
+    $cursor: ID
+    $orderBy: GroupsOrdering
+    $orderMode: OrderingMode
+  ) {
+    ...GroupsLines_data
+      @arguments(
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
+  }
 `;
 
 export const groupsLinesSearchQuery = graphql`
-    query GroupsLinesSearchQuery($search: String) {
-        groups(search: $search) {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                    created_at
-                    updated_at
-                }
-            }
+  query GroupsLinesSearchQuery($search: String) {
+    groups(search: $search) {
+      edges {
+        node {
+          id
+          name
+          description
+          created_at
+          updated_at
         }
+      }
     }
+  }
 `;
 
-export default withStyles(styles)(createPaginationContainer(
-  GroupsLines,
-  {
-    data: graphql`
-        fragment GroupsLines_data on Query @argumentDefinitions(
-            count: {type: "Int", defaultValue: 25}
-            cursor: {type: "ID"}
-            orderBy: {type: "GroupsOrdering", defaultValue: ID}
-            orderMode: {type: "OrderingMode", defaultValue: "asc"}
-        ) {
-            groups(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_groups") {
-                edges {
-                    node {
-                        ...GroupLine_group
-                    }
-                }
+export default withStyles(styles)(
+  createPaginationContainer(
+    GroupsLines,
+    {
+      data: graphql`
+        fragment GroupsLines_data on Query
+          @argumentDefinitions(
+            count: { type: "Int", defaultValue: 25 }
+            cursor: { type: "ID" }
+            orderBy: { type: "GroupsOrdering", defaultValue: ID }
+            orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          ) {
+          groups(
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+          ) @connection(key: "Pagination_groups") {
+            edges {
+              node {
+                ...GroupLine_group
+              }
             }
+          }
         }
-    `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.groups;
+      `,
     },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
+    {
+      direction: 'forward',
+      getConnectionFromProps(props) {
+        return props.data && props.data.groups;
+      },
+      getFragmentVariables(prevVars, totalCount) {
+        return {
+          ...prevVars,
+          count: totalCount,
+        };
+      },
+      getVariables(props, { count, cursor }, fragmentVariables) {
+        return {
+          count,
+          cursor,
+          orderBy: fragmentVariables.orderBy,
+          orderMode: fragmentVariables.orderMode,
+        };
+      },
+      query: groupsLinesQuery,
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
-      return {
-        count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
-      };
-    },
-    query: groupsLinesQuery,
-  },
-));
+  ),
+);

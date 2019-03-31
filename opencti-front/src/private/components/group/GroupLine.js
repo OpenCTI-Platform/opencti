@@ -74,23 +74,28 @@ class GroupLineComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Group/>
+          <Group />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {group.name}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {group.name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+                {fd(group.created_at)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.updated_at}>
+                {fd(group.updated_at)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              {fd(group.created_at)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-              {fd(group.updated_at)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <GroupPopover groupId={group.id} paginationOptions={paginationOptions}/>
+          <GroupPopover
+            groupId={group.id}
+            paginationOptions={paginationOptions}
+          />
         </ListItemIcon>
       </ListItem>
     );
@@ -107,12 +112,12 @@ GroupLineComponent.propTypes = {
 
 const GroupLineFragment = createFragmentContainer(GroupLineComponent, {
   group: graphql`
-      fragment GroupLine_group on Group {
-          id
-          name
-          created_at
-          updated_at
-      }
+    fragment GroupLine_group on Group {
+      id
+      name
+      created_at
+      updated_at
+    }
   `,
 });
 
@@ -127,23 +132,25 @@ class GroupLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Group/>
+          <Group />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+                <div className="fakeItem" style={{ width: 80 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.updated_at}>
+                <div className="fakeItem" style={{ width: 80 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              <div className='fakeItem' style={{ width: 80 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-              <div className='fakeItem' style={{ width: 80 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <MoreVert/>
+          <MoreVert />
         </ListItemIcon>
       </ListItem>
     );

@@ -18,47 +18,67 @@ class VictimologyDistribution extends Component {
     const { classes, stixDomainEntity, inferred } = this.props;
     return (
       <div className={classes.container}>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={4}>
             <EntityStixRelationsTable
               entityId={stixDomainEntity.id}
-              entityType='Sector'
-              relationType='targets'
-              field='name'
+              entityType="Sector"
+              relationType="targets"
+              field="name"
               resolveInferences={inferred}
-              resolveRelationType='attributed-to'
-              resolveRelationRole='origin'
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
               resolveViaTypes={[
-                { entityType: 'Organization', relationType: 'gathering', relationRole: 'part_of' },
+                {
+                  entityType: 'Organization',
+                  relationType: 'gathering',
+                  relationRole: 'part_of',
+                },
               ]}
             />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsTable
               entityId={stixDomainEntity.id}
-              entityType='Region'
-              relationType='targets'
-              field='name'
+              entityType="Region"
+              relationType="targets"
+              field="name"
               resolveInferences={inferred}
-              resolveRelationType='attributed-to'
-              resolveRelationRole='origin'
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
               resolveViaTypes={[
-                { entityType: 'Organization', relationType: 'localization', relationRole: 'localized' },
-                { entityType: 'Country', relationType: 'localization', relationRole: 'localized' },
+                {
+                  entityType: 'Organization',
+                  relationType: 'localization',
+                  relationRole: 'localized',
+                },
+                {
+                  entityType: 'Country',
+                  relationType: 'localization',
+                  relationRole: 'localized',
+                },
               ]}
             />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsTable
               entityId={stixDomainEntity.id}
-              entityType='Country'
-              relationType='targets'
-              field='name'
+              entityType="Country"
+              relationType="targets"
+              field="name"
               resolveInferences={inferred}
-              resolveRelationType='attributed-to'
-              resolveRelationRole='origin'
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
               resolveViaTypes={[
-                { entityType: 'Organization', relationType: 'localization', relationRole: 'localized' },
+                {
+                  entityType: 'Organization',
+                  relationType: 'localization',
+                  relationRole: 'localized',
+                },
               ]}
             />
           </Grid>
@@ -67,42 +87,54 @@ class VictimologyDistribution extends Component {
           <Grid item={true} xs={4}>
             <EntityStixRelationsPie
               entityId={stixDomainEntity.id}
-              entityType='Sector'
-              relationType='targets'
-              field='name'
+              entityType="Sector"
+              relationType="targets"
+              field="name"
               resolveInferences={inferred}
-              resolveRelationType='attributed-to'
-              resolveRelationRole='origin'
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
               resolveViaTypes={[
-                { entityType: 'Organization', relationType: 'gathering', relationRole: 'part_of' },
+                {
+                  entityType: 'Organization',
+                  relationType: 'gathering',
+                  relationRole: 'part_of',
+                },
               ]}
             />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsPie
               entityId={stixDomainEntity.id}
-              entityType='Region'
-              relationType='targets'
-              field='name'
+              entityType="Region"
+              relationType="targets"
+              field="name"
               resolveInferences={inferred}
-              resolveRelationType='attributed-to'
-              resolveRelationRole='origin'
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
               resolveViaTypes={[
-                { entityType: 'Organization', relationType: 'localization', relationRole: 'localized' },
+                {
+                  entityType: 'Organization',
+                  relationType: 'localization',
+                  relationRole: 'localized',
+                },
               ]}
             />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsPie
               entityId={stixDomainEntity.id}
-              entityType='Country'
-              relationType='targets'
-              field='name'
+              entityType="Country"
+              relationType="targets"
+              field="name"
               resolveInferences={inferred}
-              resolveRelationType='attributed-to'
-              resolveRelationRole='origin'
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
               resolveViaTypes={[
-                { entityType: 'Organization', relationType: 'localization', relationRole: 'localized' },
+                {
+                  entityType: 'Organization',
+                  relationType: 'localization',
+                  relationRole: 'localized',
+                },
               ]}
             />
           </Grid>

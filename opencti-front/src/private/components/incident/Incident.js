@@ -29,38 +29,47 @@ class IncidentComponent extends Component {
     const { classes, incident } = this.props;
     return (
       <div className={classes.container}>
-        <IncidentHeader incident={incident}/>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
+        <IncidentHeader incident={incident} />
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={3}>
-            <IncidentOverview incident={incident}/>
+            <IncidentOverview incident={incident} />
           </Grid>
           <Grid item={true} xs={3}>
-            <IncidentIdentity incident={incident}/>
+            <IncidentIdentity incident={incident} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={incident.id}/>
+            <EntityLastReports entityId={incident.id} />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 20 }}
+        >
           <Grid item={true} xs={4}>
             <EntityStixRelationsRadar
               entityId={incident.id}
-              entityType='Kill-Chain-Phase'
-              relationType='kill_chain_phases'
-              field='phase_name'
+              entityType="Kill-Chain-Phase"
+              relationType="kill_chain_phases"
+              field="phase_name"
               resolveInferences={true}
-              resolveRelationType='uses'
-              resolveRelationRole='user'
+              resolveRelationType="uses"
+              resolveRelationRole="user"
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart entityId={incident.id}/>
+            <EntityObservablesChart entityId={incident.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={incident.id}/>
+            <EntityReportsChart entityId={incident.id} />
           </Grid>
         </Grid>
-        <IncidentEdition incidentId={incident.id}/>
+        <IncidentEdition incidentId={incident.id} />
       </div>
     );
   }
@@ -74,12 +83,12 @@ IncidentComponent.propTypes = {
 
 const Incident = createFragmentContainer(IncidentComponent, {
   incident: graphql`
-      fragment Incident_incident on Incident {
-          id
-          ...IncidentHeader_incident
-          ...IncidentOverview_incident
-          ...IncidentIdentity_incident
-      }
+    fragment Incident_incident on Incident {
+      id
+      ...IncidentHeader_incident
+      ...IncidentOverview_incident
+      ...IncidentIdentity_incident
+    }
   `,
 });
 

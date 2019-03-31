@@ -76,18 +76,22 @@ class EntityExternalReferencesLinesContainer extends Component {
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true} style={{ float: 'left' }}>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('External references')}
         </Typography>
-        <AddExternalReferences entityId={entityId}
-                               entityExternalReferences={data.externalReferences.edges}
-                               entityPaginationOptions={paginationOptions}/>
-        <div className='clearfix'/>
+        <AddExternalReferences
+          entityId={entityId}
+          entityExternalReferences={data.externalReferences.edges}
+          entityPaginationOptions={paginationOptions}
+        />
+        <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List classes={{ root: classes.list }}>
             {data.externalReferences.edges.map((externalReferenceEdge) => {
               const externalReference = externalReferenceEdge.node;
-              const externalReferenceId = externalReference.external_id ? `(${externalReference.external_id})` : '';
+              const externalReferenceId = externalReference.external_id
+                ? `(${externalReference.external_id})`
+                : '';
               if (externalReference.url) {
                 return (
                   <ListItem
@@ -95,23 +99,35 @@ class EntityExternalReferencesLinesContainer extends Component {
                     dense={true}
                     divider={true}
                     button={true}
-                    component='a'
+                    component="a"
                     href={externalReference.url}
                   >
                     <ListItemIcon>
                       <Avatar classes={{ root: classes.avatar }}>
-                          {externalReference.source_name.substring(0, 1)}
+                        {externalReference.source_name.substring(0, 1)}
                       </Avatar>
                     </ListItemIcon>
                     <ListItemText
-                      primary={`${externalReference.source_name} ${externalReferenceId}`}
-                      secondary={truncate(externalReference.description !== null
-                      && externalReference.description.length > 0
-                        ? externalReference.description : externalReference.url, 120)}
+                      primary={`${
+                        externalReference.source_name
+                      } ${externalReferenceId}`}
+                      secondary={truncate(
+                        externalReference.description !== null
+                          && externalReference.description.length > 0
+                          ? externalReference.description
+                          : externalReference.url,
+                        120,
+                      )}
                     />
                     <ListItemSecondaryAction>
-                      <IconButton aria-label='Remove' onClick={this.removeExternalReference.bind(this, externalReferenceEdge)}>
-                        <LinkOff/>
+                      <IconButton
+                        aria-label="Remove"
+                        onClick={this.removeExternalReference.bind(
+                          this,
+                          externalReferenceEdge,
+                        )}
+                      >
+                        <LinkOff />
                       </IconButton>
                     </ListItemSecondaryAction>
                   </ListItem>
@@ -126,16 +142,24 @@ class EntityExternalReferencesLinesContainer extends Component {
                 >
                   <ListItemIcon>
                     <Avatar classes={{ root: classes.avatar }}>
-                        {externalReference.source_name.substring(0, 1)}
+                      {externalReference.source_name.substring(0, 1)}
                     </Avatar>
                   </ListItemIcon>
                   <ListItemText
-                    primary={`${externalReference.source_name} ${externalReferenceId}`}
+                    primary={`${
+                      externalReference.source_name
+                    } ${externalReferenceId}`}
                     secondary={truncate(externalReference.description, 120)}
                   />
                   <ListItemSecondaryAction>
-                    <IconButton aria-label='Remove' onClick={this.removeExternalReference.bind(this, externalReferenceEdge)}>
-                      <LinkOff/>
+                    <IconButton
+                      aria-label="Remove"
+                      onClick={this.removeExternalReference.bind(
+                        this,
+                        externalReferenceEdge,
+                      )}
+                    >
+                      <LinkOff />
                     </IconButton>
                   </ListItemSecondaryAction>
                 </ListItem>
@@ -144,7 +168,6 @@ class EntityExternalReferencesLinesContainer extends Component {
           </List>
         </Paper>
       </div>
-
     );
   }
 }
@@ -160,39 +183,59 @@ EntityExternalReferencesLinesContainer.propTypes = {
 };
 
 export const entityExternalReferencesLinesQuery = graphql`
-    query EntityExternalReferencesLinesQuery($objectId: String!, $count: Int!, $cursor: ID, $orderBy: ExternalReferencesOrdering, $orderMode: OrderingMode) {
-        ...EntityExternalReferencesLines_data @arguments(objectId: $objectId, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
-    }
+  query EntityExternalReferencesLinesQuery(
+    $objectId: String!
+    $count: Int!
+    $cursor: ID
+    $orderBy: ExternalReferencesOrdering
+    $orderMode: OrderingMode
+  ) {
+    ...EntityExternalReferencesLines_data
+      @arguments(
+        objectId: $objectId
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
+  }
 `;
 
 const EntityExternalReferencesLines = createPaginationContainer(
   EntityExternalReferencesLinesContainer,
   {
     data: graphql`
-            fragment EntityExternalReferencesLines_data on Query @argumentDefinitions(
-                objectId: {type: "String!"}
-                count: {type: "Int", defaultValue: 25}
-                cursor: {type: "ID"}
-                orderBy: {type: "ExternalReferencesOrdering", defaultValue: ID}
-                orderMode: {type: "OrderingMode", defaultValue: "asc"}
-            ) {
-                externalReferences(objectId: $objectId, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_externalReferences") {
-                    edges {
-                        node {
-                            id
-                            source_name
-                            description
-                            url
-                            hash
-                            external_id
-                        }
-                        relation {
-                            id
-                        }
-                    }
-                }
+      fragment EntityExternalReferencesLines_data on Query
+        @argumentDefinitions(
+          objectId: { type: "String!" }
+          count: { type: "Int", defaultValue: 25 }
+          cursor: { type: "ID" }
+          orderBy: { type: "ExternalReferencesOrdering", defaultValue: ID }
+          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+        ) {
+        externalReferences(
+          objectId: $objectId
+          first: $count
+          after: $cursor
+          orderBy: $orderBy
+          orderMode: $orderMode
+        ) @connection(key: "Pagination_externalReferences") {
+          edges {
+            node {
+              id
+              source_name
+              description
+              url
+              hash
+              external_id
             }
-        `,
+            relation {
+              id
+            }
+          }
+        }
+      }
+    `,
   },
   {
     direction: 'forward',

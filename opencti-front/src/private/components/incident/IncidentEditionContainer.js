@@ -63,30 +63,49 @@ class IncidentEditionContainer extends Component {
     } = this.props;
     const { editContext } = incident;
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
+    const editUsers = missingMe
+      ? insert(0, { name: me.email }, editContext)
+      : editContext;
     return (
       <div>
         <div className={classes.header}>
-          <IconButton aria-label='Close' className={classes.closeButton} onClick={handleClose.bind(this)}>
-            <Close fontSize='small'/>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
           </IconButton>
-          <Typography variant='h6' classes={{ root: classes.title }}>
+          <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update an incident')}
           </Typography>
-          <SubscriptionAvatars users={editUsers}/>
-          <div className='clearfix'/>
+          <SubscriptionAvatars users={editUsers} />
+          <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <AppBar position='static' elevation={0} className={classes.appBar}>
-            <Tabs value={this.state.currentTab} onChange={this.handleChangeTab.bind(this)}>
-              <Tab label={t('Overview')}/>
-              <Tab label={t('Identity')}/>
+          <AppBar position="static" elevation={0} className={classes.appBar}>
+            <Tabs
+              value={this.state.currentTab}
+              onChange={this.handleChangeTab.bind(this)}
+            >
+              <Tab label={t('Overview')} />
+              <Tab label={t('Identity')} />
             </Tabs>
           </AppBar>
-          {this.state.currentTab === 0
-          && <IncidentEditionOverview incident={incident} editUsers={editUsers} me={me}/>}
-          {this.state.currentTab === 1
-          && <IncidentEditionIdentity incident={incident} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 0 && (
+            <IncidentEditionOverview
+              incident={incident}
+              editUsers={editUsers}
+              me={me}
+            />
+          )}
+          {this.state.currentTab === 1 && (
+            <IncidentEditionIdentity
+              incident={incident}
+              editUsers={editUsers}
+              me={me}
+            />
+          )}
         </div>
       </div>
     );
@@ -102,24 +121,27 @@ IncidentEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const IncidentEditionContainerFragment = createFragmentContainer(IncidentEditionContainer, {
-  incident: graphql`
+const IncidentEditionContainerFragment = createFragmentContainer(
+  IncidentEditionContainer,
+  {
+    incident: graphql`
       fragment IncidentEditionContainer_incident on Incident {
-          id
-          ...IncidentEditionOverview_incident
-          ...IncidentEditionIdentity_incident
-          editContext {
-              name
-              focusOn
-          }
+        id
+        ...IncidentEditionOverview_incident
+        ...IncidentEditionIdentity_incident
+        editContext {
+          name
+          focusOn
+        }
       }
-  `,
-  me: graphql`
+    `,
+    me: graphql`
       fragment IncidentEditionContainer_me on User {
-          email
+        email
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,
