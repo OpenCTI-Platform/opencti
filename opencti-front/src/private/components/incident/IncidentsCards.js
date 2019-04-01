@@ -48,6 +48,12 @@ class IncidentsCards extends Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.searchTerm !== prevProps.searchTerm) {
+      this._loadMore();
+    }
+  }
+
   filterList(list) {
     const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''
@@ -168,10 +174,7 @@ class IncidentsCards extends Component {
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div
-            className={classes.windowScrollerWrapper}
-            key={this.props.searchTerm}
-          >
+          <div className={classes.windowScrollerWrapper}>
             <InfiniteLoader
               isRowLoaded={this._isCellLoaded}
               loadMoreRows={this._loadMore}

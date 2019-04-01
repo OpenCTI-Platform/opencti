@@ -15,35 +15,35 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa Organization', args);
+export const findAll = args => paginate('match $o isa Organization', args);
 
 export const findById = organizationId => getById(organizationId);
 
 export const addOrganization = async (user, organization) => {
   const wTx = await takeWriteTx();
-  const organizationIterator = await wTx.query(`insert $organization isa Organization 
-    has type "organization";
-    $organization has stix_id "${
+  const organizationIterator = await wTx.query(`insert $organization isa Organization,
+    has entity_type "organization",
+    has stix_id "${
       organization.stix_id
         ? prepareString(organization.stix_id)
         : `organization--${uuid()}`
-    }";
-    $organization has stix_label "";
-    $organization has alias "";
-    $organization has name "${prepareString(organization.name)}";
-    $organization has description "${prepareString(organization.description)}";
-    $organization has created ${
+    }",
+    has stix_label "",
+    has alias "",
+    has name "${prepareString(organization.name)}",
+    has description "${prepareString(organization.description)}",
+    has created ${
       organization.created ? prepareDate(organization.created) : now()
-    };
-    $organization has modified ${
+    },
+    has modified ${
       organization.modified ? prepareDate(organization.modified) : now()
-    };
-    $organization has revoked false;
-    $organization has created_at ${now()};
-    $organization has created_at_day "${dayFormat(now())}";
-    $organization has created_at_month "${monthFormat(now())}";
-    $organization has created_at_year "${yearFormat(now())}";         
-    $organization has updated_at ${now()};
+    },
+    has revoked false,
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}",         
+    has updated_at ${now()};
   `);
   const createOrganization = await organizationIterator.next();
   const createdOrganizationId = await createOrganization
@@ -51,16 +51,20 @@ export const addOrganization = async (user, organization) => {
     .get('organization').id;
 
   if (organization.createdByRef) {
-    await wTx.query(`match $from id ${createdOrganizationId};
-         $to id ${organization.createdByRef};
-         insert (so: $from, creator: $to)
-         isa created_by_ref;`);
+    await wTx.query(
+      `match $from id ${createdOrganizationId};
+      $to id ${organization.createdByRef};
+      insert (so: $from, creator: $to)
+      isa created_by_ref;`
+    );
   }
 
   if (organization.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
-        `match $from id ${createdOrganizationId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+        `match $from id ${createdOrganizationId}; 
+        $to id ${markingDefinition}; 
+        insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

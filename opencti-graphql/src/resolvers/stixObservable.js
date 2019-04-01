@@ -8,6 +8,7 @@ import {
   findByValue,
   search,
   markingDefinitions,
+  reports,
   stixObservablesTimeSeries,
   stixObservableEditContext,
   stixObservableCleanContext,
@@ -40,6 +41,7 @@ const stixObservableResolvers = {
       createdByRef(stixObservable.id, args),
     markingDefinitions: (stixObservable, args) =>
       markingDefinitions(stixObservable.id, args),
+    reports: (stixObservable, args) => reports(stixObservable.id, args),
     stixRelations: (stixObservable, args) =>
       stixRelations(stixObservable.id, args),
     editContext: stixObservable => fetchEditContext(stixObservable.id)
@@ -63,7 +65,7 @@ const stixObservableResolvers = {
       subscribe: (_, { id }, { user }) => {
         stixObservableEditContext(user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.stixObservable.EDIT_TOPIC),
+          () => pubsub.asyncIterator(BUS_TOPICS.StixObservable.EDIT_TOPIC),
           payload => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;

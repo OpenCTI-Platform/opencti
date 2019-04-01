@@ -150,7 +150,7 @@ class ReportAddObjectRefsLinesContainer extends Component {
       n => n.node,
       data.stixDomainEntities.edges,
     );
-    const byType = groupBy(stixDomainEntity => stixDomainEntity.type);
+    const byType = groupBy(stixDomainEntity => stixDomainEntity.entity_type);
     const stixDomainEntities = byType(stixDomainEntitiesNodes);
     const stixDomainEntitiesTypes = keys(stixDomainEntities);
 
@@ -269,7 +269,7 @@ const ReportAddObjectRefsLines = createPaginationContainer(
           edges {
             node {
               id
-              type
+              entity_type
               name
               description
             }

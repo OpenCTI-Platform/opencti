@@ -80,7 +80,7 @@ const inlineStylesHeaders = {
     padding: 0,
     top: '0px',
   },
-  type: {
+  entity_type: {
     float: 'left',
     width: '15%',
     fontSize: 12,
@@ -118,7 +118,7 @@ const inlineStylesHeaders = {
 };
 
 const inlineStyles = {
-  type: {
+  entity_type: {
     float: 'left',
     width: '15%',
     height: 20,
@@ -216,12 +216,12 @@ class ReportObservablesComponent extends Component {
       map(n => head(n)),
       map(n => (n.to.observable_value
         ? merge(n, {
-          type: n.to.type,
+          type: n.to.entity_type,
           threat: n.from.name,
           observable_value: n.to.observable_value,
         })
         : merge(n, {
-          type: n.from.type,
+          type: n.from.entity_type,
           threat: n.to.name,
           observable_value: n.from.observable_value,
         }))),
@@ -255,7 +255,7 @@ class ReportObservablesComponent extends Component {
             <ListItemText
               primary={
                 <div>
-                  {this.SortHeader('type', 'Type', true)}
+                  {this.SortHeader('entity_type', 'Type', true)}
                   {this.SortHeader('observable_value', 'Value', true)}
                   {this.SortHeader('threat', 'Linked threat', true)}
                   {this.SortHeader('first_seen', 'First seen', true)}
@@ -283,9 +283,9 @@ class ReportObservablesComponent extends Component {
                     <div>
                       <div
                         className={classes.bodyItem}
-                        style={inlineStyles.type}
+                        style={inlineStyles.entity_type}
                       >
-                        {t(`observable_${relationRef.type}`)}
+                        {t(`observable_${relationRef.entity_type}`)}
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -359,7 +359,7 @@ const ReportObservables = createFragmentContainer(ReportObservablesComponent, {
         edges {
           node {
             id
-            type
+            entity_type
             name
             relationship_type
             first_seen
@@ -369,7 +369,7 @@ const ReportObservables = createFragmentContainer(ReportObservablesComponent, {
             updated_at
             from {
               id
-              type
+              entity_type
               name
               ... on StixObservable {
                 observable_value
@@ -377,7 +377,7 @@ const ReportObservables = createFragmentContainer(ReportObservablesComponent, {
             }
             to {
               id
-              type
+              entity_type
               name
               ... on StixObservable {
                 observable_value

@@ -41,13 +41,13 @@ const styles = () => ({
 });
 
 const sectorMutation = graphql`
-    mutation SectorHeaderFieldMutation($id: ID!, $input: EditInput!) {
-        sectorEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...SectorHeader_sector
-            }
-        }
+  mutation SectorHeaderFieldMutation($id: ID!, $input: EditInput!) {
+    sectorEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...SectorHeader_sector
+      }
     }
+  }
 `;
 
 class SectorHeaderComponent extends Component {
@@ -61,13 +61,18 @@ class SectorHeaderComponent extends Component {
   }
 
   onSubmitCreateAlias(data) {
-    if (this.props.sector.alias === null
-      || !this.props.sector.alias.includes(data.new_alias)) {
+    if (
+      this.props.sector.alias === null
+      || !this.props.sector.alias.includes(data.new_alias)
+    ) {
       commitMutation({
         mutation: sectorMutation,
         variables: {
           id: this.props.sector.id,
-          input: { key: 'alias', value: append(data.new_alias, this.props.sector.alias) },
+          input: {
+            key: 'alias',
+            value: append(data.new_alias, this.props.sector.alias),
+          },
         },
       });
     }
@@ -91,32 +96,66 @@ class SectorHeaderComponent extends Component {
     } = this.props;
     return (
       <div>
-        <Typography variant='h1' gutterBottom={true} classes={{ root: classes.title }}>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
+        >
           {sector.name}
         </Typography>
         <div className={classes.popover}>
-          <SectorPopover sectorId={sector.id}/>
+          <SectorPopover sectorId={sector.id} />
         </div>
-        {variant !== 'noalias'
-          ? <div className={classes.aliases}>
-            {propOr([], 'alias', sector).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
-            <IconButton color='secondary' aria-label='Alias' onClick={this.handleToggleCreateAlias.bind(this)}>
-              {this.state.openAlias ? <Close fontSize='small'/> : <Add fontSize='small'/>}
+        {variant !== 'noalias' ? (
+          <div className={classes.aliases}>
+            {propOr([], 'alias', sector).map(label => (label.length > 0 ? (
+                <Chip
+                  key={label}
+                  classes={{ root: classes.alias }}
+                  label={label}
+                  onDelete={this.deleteAlias.bind(this, label)}
+                />
+            ) : (
+              ''
+            )))}
+            <IconButton
+              color="secondary"
+              aria-label="Alias"
+              onClick={this.handleToggleCreateAlias.bind(this)}
+            >
+              {this.state.openAlias ? (
+                <Close fontSize="small" />
+              ) : (
+                <Add fontSize="small" />
+              )}
             </IconButton>
-            <Slide direction='left' in={this.state.openAlias} mountOnEnter={true} unmountOnExit={true}>
+            <Slide
+              direction="left"
+              in={this.state.openAlias}
+              mountOnEnter={true}
+              unmountOnExit={true}
+            >
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={this.onSubmitCreateAlias.bind(this)}
                 render={() => (
                   <Form style={{ float: 'right' }}>
-                    <Field name='new_alias' component={TextField} autoFocus={true} placeholder={t('New alias')} className={classes.aliasInput}/>
+                    <Field
+                      name="new_alias"
+                      component={TextField}
+                      autoFocus={true}
+                      placeholder={t('New alias')}
+                      className={classes.aliasInput}
+                    />
                   </Form>
                 )}
               />
             </Slide>
-          </div> : ''
-        }
-        <div className='clearfix'/>
+          </div>
+        ) : (
+          ''
+        )}
+        <div className="clearfix" />
       </div>
     );
   }
@@ -132,11 +171,11 @@ SectorHeaderComponent.propTypes = {
 
 const SectorHeader = createFragmentContainer(SectorHeaderComponent, {
   sector: graphql`
-      fragment SectorHeader_sector on Sector {
-          id,
-          name,
-          alias,
-      }
+    fragment SectorHeader_sector on Sector {
+      id
+      name
+      alias
+    }
   `,
 });
 

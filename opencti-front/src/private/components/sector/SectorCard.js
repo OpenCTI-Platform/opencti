@@ -85,16 +85,28 @@ class SectorCardComponent extends Component {
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
-        <CardActionArea classes={{ root: classes.area }} component={Link} to={`/dashboard/knowledge/sectors/${sector.id}`}>
+        <CardActionArea
+          classes={{ root: classes.area }}
+          component={Link}
+          to={`/dashboard/knowledge/sectors/${sector.id}`}
+        >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={<Avatar className={classes.avatar}>{sector.name.charAt(0)}</Avatar>}
+            avatar={
+              <Avatar className={classes.avatar}>
+                {sector.name.charAt(0)}
+              </Avatar>
+            }
             title={sector.name}
             subheader={`${t('Updated the')} ${fsd(sector.modified)}`}
-            action={<Domain className={classes.icon}/>}
+            action={<Domain className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.content }}>
-            <Markdown source={sector.description} disallowedTypes={['link']} unwrapDisallowed={true}/>
+            <Markdown
+              source={sector.description}
+              disallowedTypes={['link']}
+              unwrapDisallowed={true}
+            />
           </CardContent>
         </CardActionArea>
       </Card>
@@ -111,13 +123,13 @@ SectorCardComponent.propTypes = {
 
 const SectorCardFragment = createFragmentContainer(SectorCardComponent, {
   sector: graphql`
-      fragment SectorCard_sector on Sector {
-          id
-          name
-          description
-          created
-          modified
-      }
+    fragment SectorCard_sector on Sector {
+      id
+      name
+      description
+      created
+      modified
+    }
   `,
 });
 
@@ -125,7 +137,6 @@ export const SectorCard = compose(
   inject18n,
   withStyles(styles),
 )(SectorCardFragment);
-
 
 class SectorCardDummyComponent extends Component {
   render() {
@@ -136,15 +147,25 @@ class SectorCardDummyComponent extends Component {
           <CardHeader
             classes={{ root: classes.header }}
             avatar={<Avatar className={classes.avatarDisabled}>D</Avatar>}
-            title={<div className={classes.placeholderHeader} style={{ width: '85%' }}/>}
+            title={
+              <div
+                className={classes.placeholderHeader}
+                style={{ width: '85%' }}
+              />
+            }
             titleTypographyProps={{ color: 'inherit' }}
-            subheader={<div className={classes.placeholderHeaderDark} style={{ width: '70%' }}/>}
-            action={<Domain className={classes.icon}/>}
+            subheader={
+              <div
+                className={classes.placeholderHeaderDark}
+                style={{ width: '70%' }}
+              />
+            }
+            action={<Domain className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.contentDummy }}>
-            <div className='fakeItem' style={{ width: '90%' }}/>
-            <div className='fakeItem' style={{ width: '95%' }}/>
-            <div className='fakeItem' style={{ width: '90%' }}/>
+            <div className="fakeItem" style={{ width: '90%' }} />
+            <div className="fakeItem" style={{ width: '95%' }} />
+            <div className="fakeItem" style={{ width: '90%' }} />
           </CardContent>
         </CardActionArea>
       </Card>

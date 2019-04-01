@@ -7,6 +7,7 @@ import { delUserContext } from '../database/redis';
 import { AuthenticationFailure } from '../config/errors';
 import conf, {
   BUS_TOPICS,
+  logger,
   OPENCTI_DEFAULT_DURATION,
   OPENCTI_ISSUER,
   OPENCTI_TOKEN,
@@ -79,26 +80,26 @@ export const token = userId =>
 
 export const addPerson = async (user, newUser) => {
   const wTx = await takeWriteTx();
-  const userIterator = await wTx.query(`insert $user isa User 
-    has type "user";
-    $user has stix_id "${
+  const query = `insert $user isa User,
+    has entity_type "user",
+    has stix_id "${
       user.stix_id ? prepareString(user.stix_id) : `user--${uuid()}`
-    }";
-    $user has stix_label "";
-    $user has alias "";
-    $user has name "${prepareString(newUser.name)}";
-    $user has description "${prepareString(newUser.description)}";
-    $user has created ${newUser.created ? prepareDate(newUser.created) : now()};
-    $user has modified ${
-      newUser.modified ? prepareDate(newUser.modified) : now()
-    };
-    $user has revoked false;
-    $user has created_at ${now()};
-    $user has created_at_day "${dayFormat(now())}";
-    $user has created_at_month "${monthFormat(now())}";
-    $user has created_at_year "${yearFormat(now())}";   
-    $user has updated_at ${now()};
-  `);
+    }",
+    has stix_label "",
+    has alias "",
+    has name "${prepareString(newUser.name)}",
+    has description "${prepareString(newUser.description)}",
+    has created ${newUser.created ? prepareDate(newUser.created) : now()},
+    has modified ${newUser.modified ? prepareDate(newUser.modified) : now()},
+    has revoked false,
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}", 
+    has updated_at ${now()};
+  `;
+  logger.debug(`[GRAKN - infer: false] ${query}`);
+  const userIterator = await wTx.query(query);
   const createUser = await userIterator.next();
   const createdUserId = await createUser.map().get('user').id;
 
@@ -119,45 +120,43 @@ export const addPerson = async (user, newUser) => {
 export const addUser = async (user, newUser) => {
   const newToken = generateOpenCTIWebToken();
   const wTx = await takeWriteTx();
-  const userIterator = await wTx.query(`insert $user isa User 
-    has type "user";
-    $user has stix_id "${
+  const query = `insert $user isa User,
+    has entity_type "user",
+    has stix_id "${
       user.stix_id ? prepareString(user.stix_id) : `user--${uuid()}`
-    }";
-    $user has stix_label "";
-    $user has alias "";
-    $user has name "${prepareString(newUser.name)}";
-    $user has description "${prepareString(newUser.description)}";
-    $user has email "${newUser.email}"; ${
-    newUser.password
-      ? `$user has password "${bcrypt.hashSync(newUser.password)}";`
-      : ''
-  }
-    $user has firstname "${prepareString(newUser.firstname)}";
-    $user has lastname "${prepareString(newUser.lastname)}";
+    }",
+    has stix_label "",
+    has alias "",
+    has name "${prepareString(newUser.name)}",
+    has description "${prepareString(newUser.description)}",
+    has email "${newUser.email}",
     ${
-      newUser.language
-        ? `$user has language "${prepareString(newUser.language)}";`
-        : '$user has language "auto";'
-    }
-        $user has created ${
-          newUser.created ? prepareDate(newUser.created) : now()
-        };
-    $user has modified ${
-      newUser.modified ? prepareDate(newUser.modified) : now()
-    };
-    $user has revoked false;
-    $user has created_at ${now()};
-    $user has created_at_day "${dayFormat(now())}";
-    $user has created_at_month "${monthFormat(now())}";
-    $user has created_at_year "${yearFormat(now())}";      
-    $user has updated_at ${now()};
-    ${
-      newUser.grant
-        ? join(' ', map(role => `$user has grant "${role}";`, newUser.grant))
+      newUser.password
+        ? `has password "${bcrypt.hashSync(newUser.password)}",`
         : ''
     }
-  `);
+    has firstname "${prepareString(newUser.firstname)}",
+    has lastname "${prepareString(newUser.lastname)}",
+    ${
+      newUser.language
+        ? `has language "${prepareString(newUser.language)}",`
+        : 'has language "auto",'
+    }
+    has created ${newUser.created ? prepareDate(newUser.created) : now()},
+    has modified ${newUser.modified ? prepareDate(newUser.modified) : now()},
+    ${
+      newUser.grant
+        ? join(' ', map(role => `has grant "${role}",`, newUser.grant))
+        : ''
+    }
+    has revoked false,
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}" ,    
+    has updated_at ${now()};
+  `;
+  const userIterator = await wTx.query(query);
 
   const createUser = await userIterator.next();
   const createdUserId = await createUser.map().get('user').id;
@@ -169,22 +168,22 @@ export const addUser = async (user, newUser) => {
          isa created_by_ref;`);
   }
 
-  const tokenIterator = await wTx.query(`insert $token isa Token 
-    has type "token"; 
-    $token has uuid "${newToken.uuid}";
-    $token has name "${newToken.name}";
-    $token has created ${newToken.created};
-    $token has issuer "${newToken.issuer}";
-    $token has revoked ${newToken.revoked};
-    $token has duration "${newToken.duration}";
-    $token has created_at ${now()};
-    $token has updated_at ${now()};
+  const tokenIterator = await wTx.query(`insert $token isa Token,
+    has entity_type "token",
+    has uuid "${newToken.uuid}",
+    has name "${newToken.name}",
+    has created ${newToken.created},
+    has issuer "${newToken.issuer}",
+    has revoked ${newToken.revoked},
+    has duration "${newToken.duration}",
+    has created_at ${now()},
+    has updated_at ${now()};
   `);
 
   const createdToken = await tokenIterator.next();
   await createdToken.map().get('token').id;
-  await wTx.query(`match $user isa User has email "${newUser.email}"; 
-                   $token isa Token has uuid "${newToken.uuid}"; 
+  await wTx.query(`match $user isa User, has email "${newUser.email}"; 
+                   $token isa Token, has uuid "${newToken.uuid}"; 
                    insert (client: $user, authorization: $token) isa authorize;`);
 
   await wTx.commit();
@@ -197,7 +196,7 @@ export const addUser = async (user, newUser) => {
 // User related
 export const loginFromProvider = async (email, name) => {
   const result = await queryOne(
-    `match $client isa User has email "${email}"; (authorization:$token, client:$client); get;`,
+    `match $client isa User, has email "${email}"; (authorization:$token, client:$client); get;`,
     ['client', 'token']
   );
   if (isEmpty(result)) {
@@ -214,7 +213,7 @@ export const loginFromProvider = async (email, name) => {
 
 export const login = async (email, password) => {
   const result = await queryOne(
-    `match $client isa User has email "${email}"; (authorization:$token, client:$client); get;`,
+    `match $client isa User, has email "${email}"; (authorization:$token, client:$client); get;`,
     ['client', 'token']
   );
   if (isEmpty(result)) {
@@ -240,21 +239,21 @@ export const userRenewToken = async (user, userId) => {
     `match $user id ${userId}; $rel(authorization:$token, client:$user); delete $rel, $token;`
   );
   const newToken = generateOpenCTIWebToken();
-  const tokenIterator = await wTx.query(`insert $token isa Token 
-    has type "token"; 
-    $token has uuid "${newToken.uuid}";
-    $token has name "${newToken.name}";
-    $token has created ${newToken.created};
-    $token has issuer "${newToken.issuer}";
-    $token has revoked ${newToken.revoked};
-    $token has duration "${newToken.duration}";
-    $token has created_at ${now()};
-    $token has updated_at ${now()};
+  const tokenIterator = await wTx.query(`insert $token isa Token,
+    has entity_type "token",
+    has uuid "${newToken.uuid}",
+    has name "${newToken.name}",
+    has created ${newToken.created},
+    has issuer "${newToken.issuer}",
+    has revoked ${newToken.revoked},
+    has duration "${newToken.duration}",
+    has created_at ${now()},
+    has updated_at ${now()};
   `);
   const createdToken = await tokenIterator.next();
   await createdToken.map().get('token').id;
   await wTx.query(
-    `match $user id ${userId}"; $token isa Token has uuid "${
+    `match $user id ${userId}"; $token isa Token, has uuid "${
       newToken.uuid
     }"; insert (client: $user, authorization: $token) isa authorize;`
   );
@@ -277,7 +276,7 @@ export const userEditField = (user, userId, input) => {
 // Token related
 export const findByTokenId = async tokenId => {
   const result = await queryOne(
-    `match $token isa Token has uuid "${tokenId}" has revoked false; (authorization:$token, client:$client); get;`,
+    `match $token isa Token, has uuid "${tokenId}", has revoked false; (authorization:$token, client:$client); get;`,
     ['client', 'token']
   );
   if (isEmpty(result)) {

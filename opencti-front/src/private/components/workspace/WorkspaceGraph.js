@@ -176,7 +176,7 @@ class WorkspaceGraphComponent extends Component {
           id: n.node.id,
           relationId: n.relation.id,
           name: n.node.name,
-          type: n.node.type,
+          type: n.node.entity_type,
         }),
         added,
       );
@@ -234,7 +234,7 @@ class WorkspaceGraphComponent extends Component {
         id: n.node.id,
         relationId: n.relation.id,
         name: n.node.name,
-        type: n.node.type,
+        type: n.node.entity_type,
       });
       newNode.setExpandable(true);
       newNode.addListener({
@@ -688,7 +688,7 @@ const WorkspaceGraph = createFragmentContainer(WorkspaceGraphComponent, {
               edges {
                   node {
                       id
-                      type
+                      entity_type
                       name
                       description
                   }

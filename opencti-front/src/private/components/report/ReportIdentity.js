@@ -28,27 +28,48 @@ class ReportIdentityComponent extends Component {
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Identity')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant='h3' gutterBottom={true}>
+          <Typography variant="h3" gutterBottom={true}>
             {t('Publication date')}
           </Typography>
           {fld(report.published)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Author')}
           </Typography>
           {pathOr('-', ['createdByRef', 'node', 'name'], report)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Processing status')}
           </Typography>
-          <ItemStatus label={t(`${report.object_status ? `report_status_${report.object_status}` : 'report_status_0'}`)} status={report.object_status}/>
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <ItemStatus
+            label={t(
+              `${
+                report.object_status
+                  ? `report_status_${report.object_status}`
+                  : 'report_status_0'
+              }`,
+            )}
+            status={report.object_status}
+          />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Confidence level')}
           </Typography>
           <ItemConfidenceLevel level={report.source_confidence_level} />
-          </Paper>
+        </Paper>
       </div>
     );
   }
@@ -63,17 +84,17 @@ ReportIdentityComponent.propTypes = {
 
 const ReportIdentity = createFragmentContainer(ReportIdentityComponent, {
   report: graphql`
-      fragment ReportIdentity_report on Report {
-          id
-          published
-          object_status
-          source_confidence_level
-          createdByRef {
-              node {
-                  name
-              }
-          }
+    fragment ReportIdentity_report on Report {
+      id
+      published
+      object_status
+      source_confidence_level
+      createdByRef {
+        node {
+          name
+        }
       }
+    }
   `,
 });
 

@@ -1,8 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, map, pipe, forEach, difference, values,
-  pathOr, filter, last, includes, indexBy, prop,
+  compose,
+  map,
+  pipe,
+  forEach,
+  difference,
+  values,
+  pathOr,
+  filter,
+  last,
+  includes,
+  indexBy,
+  prop,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -27,9 +37,14 @@ import { serializeGraph } from '../../../utils/GraphHelper';
 import { dateFormat } from '../../../utils/Time';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
-import { reportMutationRelationAdd, reportMutationRelationDelete } from './ReportAddObjectRefsLines';
+import {
+  reportMutationRelationAdd,
+  reportMutationRelationDelete,
+} from './ReportAddObjectRefsLines';
 import StixRelationCreation from '../stix_relation/StixRelationCreation';
-import StixRelationEdition, { stixRelationEditionDeleteMutation } from '../stix_relation/StixRelationEdition';
+import StixRelationEdition, {
+  stixRelationEditionDeleteMutation,
+} from '../stix_relation/StixRelationEdition';
 
 const styles = () => ({
   container: {
@@ -53,37 +68,37 @@ const styles = () => ({
 });
 
 export const reportKnowledgeGraphQuery = graphql`
-    query ReportKnowledgeGraphQuery($id: String!) {
-        report(id: $id) {
-            ...ReportKnowledgeGraph_report
-        }
+  query ReportKnowledgeGraphQuery($id: String!) {
+    report(id: $id) {
+      ...ReportKnowledgeGraph_report
     }
+  }
 `;
 
 const reportKnowledgeGraphRelationQuery = graphql`
-    query ReportKnowledgeGraphRelationQuery($id: String!) {
-        stixRelation(id: $id) {
-            id
-            first_seen
-            last_seen
-            relationship_type
-        }
+  query ReportKnowledgeGraphRelationQuery($id: String!) {
+    stixRelation(id: $id) {
+      id
+      first_seen
+      last_seen
+      relationship_type
     }
+  }
 `;
 
 const reportKnowledgeGraphCheckRelationQuery = graphql`
-    query ReportKnowledgeGraphCheckRelationQuery($id: String!) {
-        stixRelation(id: $id) {
+  query ReportKnowledgeGraphCheckRelationQuery($id: String!) {
+    stixRelation(id: $id) {
+      id
+      reports {
+        edges {
+          node {
             id
-            reports {
-                edges {
-                    node {
-                        id
-                    }
-                }
-            }
+          }
         }
+      }
     }
+  }
 `;
 
 const GRAPHER$ = new Subject().pipe(debounce(() => timer(1000)));
@@ -144,12 +159,15 @@ class ReportKnowledgeGraphComponent extends Component {
     // if a node has been added, add in graph
     if (added.length > 0) {
       const model = this.props.engine.getDiagramModel();
-      const newNodes = map(n => new EntityNodeModel({
-        id: n.node.id,
-        relationId: n.relation.id,
-        name: n.node.name,
-        type: n.node.type,
-      }), added);
+      const newNodes = map(
+        n => new EntityNodeModel({
+          id: n.node.id,
+          relationId: n.relation.id,
+          name: n.node.name,
+          type: n.node.entity_type,
+        }),
+        added,
+      );
       forEach((n) => {
         n.addListener({ selectionChanged: this.handleSelection.bind(this) });
         model.addNode(n);
@@ -181,8 +199,13 @@ class ReportKnowledgeGraphComponent extends Component {
 
     // decode graph data if any
     let graphData = {};
-    if (this.props.report.graph_data && this.props.report.graph_data.length > 0) {
-      graphData = JSON.parse(Buffer.from(this.props.report.graph_data, 'base64').toString('ascii'));
+    if (
+      this.props.report.graph_data
+      && this.props.report.graph_data.length > 0
+    ) {
+      graphData = JSON.parse(
+        Buffer.from(this.props.report.graph_data, 'base64').toString('ascii'),
+      );
     }
 
     // set offset & zoom
@@ -202,10 +225,16 @@ class ReportKnowledgeGraphComponent extends Component {
         id: n.node.id,
         relationId: n.relation.id,
         name: n.node.name,
-        type: n.node.type,
+        type: n.node.entity_type,
       });
-      newNode.addListener({ selectionChanged: this.handleSelection.bind(this) });
-      const position = pathOr(null, ['nodes', n.node.id, 'position'], graphData);
+      newNode.addListener({
+        selectionChanged: this.handleSelection.bind(this),
+      });
+      const position = pathOr(
+        null,
+        ['nodes', n.node.id, 'position'],
+        graphData,
+      );
       if (position && position.x !== undefined && position.y !== undefined) {
         newNode.setPosition(position.x, position.y);
       }
@@ -223,9 +252,16 @@ class ReportKnowledgeGraphComponent extends Component {
     // add relations
     const createdRelations = [];
     forEach((l) => {
-      if (!includes(l.relation.id, createdRelations) && l.node.relationship_type !== 'indicates') {
-        const fromPort = finalNodesObject[l.node.from.id] ? finalNodesObject[l.node.from.id].node.getPort('main') : null;
-        const toPort = finalNodesObject[l.node.to.id] ? finalNodesObject[l.node.to.id].node.getPort('main') : null;
+      if (
+        !includes(l.relation.id, createdRelations)
+        && l.node.relationship_type !== 'indicates'
+      ) {
+        const fromPort = finalNodesObject[l.node.from.id]
+          ? finalNodesObject[l.node.from.id].node.getPort('main')
+          : null;
+        const toPort = finalNodesObject[l.node.to.id]
+          ? finalNodesObject[l.node.to.id].node.getPort('main')
+          : null;
         const newLink = new EntityLinkModel();
         newLink.setExtras({
           relation: l.node,
@@ -234,14 +270,18 @@ class ReportKnowledgeGraphComponent extends Component {
         newLink.setSourcePort(fromPort);
         newLink.setTargetPort(toPort);
         const label = new EntityLabelModel();
-        label.setExtras([{
-          id: l.node.id,
-          relationship_type: l.node.relationship_type,
-          first_seen: l.node.first_seen,
-          last_seen: l.node.last_seen,
-        }]);
+        label.setExtras([
+          {
+            id: l.node.id,
+            relationship_type: l.node.relationship_type,
+            first_seen: l.node.first_seen,
+            last_seen: l.node.last_seen,
+          },
+        ]);
         newLink.addLabel(label);
-        newLink.addListener({ selectionChanged: this.handleSelection.bind(this) });
+        newLink.addListener({
+          selectionChanged: this.handleSelection.bind(this),
+        });
         model.addLink(newLink);
         createdRelations.push(l.relation.id);
       }
@@ -261,8 +301,13 @@ class ReportKnowledgeGraphComponent extends Component {
 
     // decode graph data if any
     let graphData = {};
-    if (this.props.report.graph_data && this.props.report.graph_data.length > 0) {
-      graphData = JSON.parse(Buffer.from(this.props.report.graph_data, 'base64').toString('ascii'));
+    if (
+      this.props.report.graph_data
+      && this.props.report.graph_data.length > 0
+    ) {
+      graphData = JSON.parse(
+        Buffer.from(this.props.report.graph_data, 'base64').toString('ascii'),
+      );
     }
 
     // set offset & zoom
@@ -279,7 +324,11 @@ class ReportKnowledgeGraphComponent extends Component {
     // set nodes positions
     const nodes = model.getNodes();
     forEach((n) => {
-      const position = pathOr(null, ['nodes', n.extras.id, 'position'], graphData);
+      const position = pathOr(
+        null,
+        ['nodes', n.extras.id, 'position'],
+        graphData,
+      );
       if (position && position.x && position.y) {
         n.setPosition(position.x, position.y);
       }
@@ -292,7 +341,10 @@ class ReportKnowledgeGraphComponent extends Component {
     const graphData = serializeGraph(model);
     commitMutation({
       mutation: reportMutationFieldPatch,
-      variables: { id: this.props.report.id, input: { key: 'graph_data', value: graphData } },
+      variables: {
+        id: this.props.report.id,
+        input: { key: 'graph_data', value: graphData },
+      },
     });
   }
 
@@ -329,7 +381,13 @@ class ReportKnowledgeGraphComponent extends Component {
   handleLinksChange(event) {
     const model = this.props.engine.getDiagramModel();
     const currentLinks = model.getLinks();
-    const currentLinksPairs = map(n => ({ source: n.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
+    const currentLinksPairs = map(
+      n => ({
+        source: n.sourcePort.id,
+        target: pathOr(null, ['targetPort', 'id'], n),
+      }),
+      values(currentLinks),
+    );
     if (event.isCreated === true) {
       // handle link creation
       event.link.addListener({
@@ -338,15 +396,21 @@ class ReportKnowledgeGraphComponent extends Component {
     } else if (event.link !== undefined) {
       // handle link deletion
       const { link } = event;
-      if (link.targetPort !== null && (link.sourcePort !== link.targetPort)) {
-        const linkPair = { source: link.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], link) };
-        const filteredCurrentLinks = filter(n => (
-          n.source === linkPair.source && n.target === linkPair.target)
-          || (n.source === linkPair.target && n.target === linkPair.source),
-        currentLinksPairs);
+      if (link.targetPort !== null && link.sourcePort !== link.targetPort) {
+        const linkPair = {
+          source: link.sourcePort.id,
+          target: pathOr(null, ['targetPort', 'id'], link),
+        };
+        const filteredCurrentLinks = filter(
+          n => (n.source === linkPair.source && n.target === linkPair.target)
+            || (n.source === linkPair.target && n.target === linkPair.source),
+          currentLinksPairs,
+        );
         if (filteredCurrentLinks.length === 0) {
           if (link.extras && link.extras.relation) {
-            fetchQuery(reportKnowledgeGraphCheckRelationQuery, { id: link.extras.relation.id }).then((data) => {
+            fetchQuery(reportKnowledgeGraphCheckRelationQuery, {
+              id: link.extras.relation.id,
+            }).then((data) => {
               if (data.stixRelation.reports.edges.length === 1) {
                 commitMutation({
                   mutation: stixRelationEditionDeleteMutation,
@@ -374,16 +438,26 @@ class ReportKnowledgeGraphComponent extends Component {
   handleLinkCreation(event) {
     const model = this.props.engine.getDiagramModel();
     const currentLinks = model.getLinks();
-    const currentLinksPairs = map(n => ({ source: n.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], n) }), values(currentLinks));
+    const currentLinksPairs = map(
+      n => ({
+        source: n.sourcePort.id,
+        target: pathOr(null, ['targetPort', 'id'], n),
+      }),
+      values(currentLinks),
+    );
     if (event.port !== undefined) {
       // ensure that the links are not circular on the same element
       const link = last(values(event.port.links));
-      const linkPair = { source: link.sourcePort.id, target: pathOr(null, ['targetPort', 'id'], link) };
-      const filteredCurrentLinks = filter(n => (
-        n.source === linkPair.source && n.target === linkPair.target)
-        || (n.source === linkPair.target && n.target === linkPair.source),
-      currentLinksPairs);
-      if (link.targetPort === null || (link.sourcePort === link.targetPort)) {
+      const linkPair = {
+        source: link.sourcePort.id,
+        target: pathOr(null, ['targetPort', 'id'], link),
+      };
+      const filteredCurrentLinks = filter(
+        n => (n.source === linkPair.source && n.target === linkPair.target)
+          || (n.source === linkPair.target && n.target === linkPair.source),
+        currentLinksPairs,
+      );
+      if (link.targetPort === null || link.sourcePort === link.targetPort) {
         link.remove();
       } else if (filteredCurrentLinks.length === 1) {
         link.addListener({ selectionChanged: this.handleSelection.bind(this) });
@@ -427,12 +501,14 @@ class ReportKnowledgeGraphComponent extends Component {
     const model = this.props.engine.getDiagramModel();
     const linkObject = model.getLink(this.state.currentLink);
     const label = new EntityLabelModel();
-    label.setExtras([{
-      id: result.id,
-      relationship_type: result.relationship_type,
-      first_seen: result.first_seen,
-      last_seen: result.last_seen,
-    }]);
+    label.setExtras([
+      {
+        id: result.id,
+        relationship_type: result.relationship_type,
+        first_seen: result.first_seen,
+        last_seen: result.last_seen,
+      },
+    ]);
     linkObject.addLabel(label);
     const input = {
       fromRole: 'so',
@@ -469,19 +545,23 @@ class ReportKnowledgeGraphComponent extends Component {
       editRelationId: null,
       currentLink: null,
     });
-    fetchQuery(reportKnowledgeGraphRelationQuery, { id: editRelationId }).then((data) => {
-      const { stixRelation } = data;
-      const model = this.props.engine.getDiagramModel();
-      const linkObject = model.getLink(currentLink);
-      const label = new EntityLabelModel();
-      label.setExtras([{
-        id: stixRelation.id,
-        relationship_type: stixRelation.relationship_type,
-        first_seen: stixRelation.first_seen,
-        last_seen: stixRelation.last_seen,
-      }]);
-      linkObject.setLabel(label);
-    });
+    fetchQuery(reportKnowledgeGraphRelationQuery, { id: editRelationId }).then(
+      (data) => {
+        const { stixRelation } = data;
+        const model = this.props.engine.getDiagramModel();
+        const linkObject = model.getLink(currentLink);
+        const label = new EntityLabelModel();
+        label.setExtras([
+          {
+            id: stixRelation.id,
+            relationship_type: stixRelation.relationship_type,
+            first_seen: stixRelation.first_seen,
+            last_seen: stixRelation.last_seen,
+          },
+        ]);
+        linkObject.setLabel(label);
+      },
+    );
   }
 
   handleDeleteRelation() {
@@ -500,7 +580,10 @@ class ReportKnowledgeGraphComponent extends Component {
     const serialized = model.serializeDiagram();
     const distributedSerializedDiagram = distributeElements(serialized);
     const distributedDeSerializedModel = new DiagramModel();
-    distributedDeSerializedModel.deSerializeDiagram(distributedSerializedDiagram, this.props.engine);
+    distributedDeSerializedModel.deSerializeDiagram(
+      distributedSerializedDiagram,
+      this.props.engine,
+    );
     this.props.engine.setDiagramModel(distributedDeSerializedModel);
     this.props.engine.repaintCanvas();
   }
@@ -518,12 +601,21 @@ class ReportKnowledgeGraphComponent extends Component {
   render() {
     const { classes, engine, report } = this.props;
     const {
-      openCreateRelation, createRelationFrom, createRelationTo, openEditRelation, editRelationId,
+      openCreateRelation,
+      createRelationFrom,
+      createRelationTo,
+      openEditRelation,
+      editRelationId,
     } = this.state;
     return (
       <div className={classes.container} ref={this.diagramContainer}>
-        <IconButton color='primary' className={classes.icon} onClick={this.zoomToFit.bind(this)} style={{ left: 90 }}>
-          <AspectRatio/>
+        <IconButton
+          color="primary"
+          className={classes.icon}
+          onClick={this.zoomToFit.bind(this)}
+          style={{ left: 90 }}
+        >
+          <AspectRatio />
         </IconButton>
         <DiagramWidget
           className={classes.canvas}
@@ -566,55 +658,58 @@ ReportKnowledgeGraphComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const ReportKnowledgeGraph = createFragmentContainer(ReportKnowledgeGraphComponent, {
-  report: graphql`
+const ReportKnowledgeGraph = createFragmentContainer(
+  ReportKnowledgeGraphComponent,
+  {
+    report: graphql`
       fragment ReportKnowledgeGraph_report on Report {
-          id
-          name
-          graph_data
-          published
-          source_confidence_level
-          objectRefs {
-              edges {
-                  node {
-                      id
-                      type
-                      name
-                      description
-                      created_at
-                      updated_at
-                  }
-                  relation {
-                      id
-                  }
-              }
+        id
+        name
+        graph_data
+        published
+        source_confidence_level
+        objectRefs {
+          edges {
+            node {
+              id
+              entity_type
+              name
+              description
+              created_at
+              updated_at
+            }
+            relation {
+              id
+            }
           }
-          relationRefs {
-              edges {
-                  node {
-                      id
-                      relationship_type
-                      first_seen
-                      last_seen
-                      from {
-                          id
-                          type
-                          name
-                      }
-                      to {
-                          id
-                          type
-                          name
-                      }
-                  }
-                  relation {
-                      id
-                  }
+        }
+        relationRefs {
+          edges {
+            node {
+              id
+              relationship_type
+              first_seen
+              last_seen
+              from {
+                id
+                entity_type
+                name
               }
+              to {
+                id
+                entity_type
+                name
+              }
+            }
+            relation {
+              id
+            }
           }
+        }
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

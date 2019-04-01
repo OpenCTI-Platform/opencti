@@ -9,32 +9,36 @@ import SectorReports from './SectorReports';
 import SectorKnowledge from './SectorKnowledge';
 
 const subscription = graphql`
-    subscription RootSectorSubscription($id: ID!) {
-        stixDomainEntity(id: $id) {
-            ...on Sector {
-                ...Sector_sector
-                ...SectorEditionContainer_sector
-            }
-            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
-        }
+  subscription RootSectorSubscription($id: ID!) {
+    stixDomainEntity(id: $id) {
+      ... on Sector {
+        ...Sector_sector
+        ...SectorEditionContainer_sector
+      }
+      ...StixDomainEntityKnowledgeGraph_stixDomainEntity
     }
+  }
 `;
 
 const sectorQuery = graphql`
-    query RootSectorQuery($id: String!) {
-        sector(id: $id) {
-            ...Sector_sector
-            ...SectorHeader_sector
-            ...SectorOverview_sector
-            ...SectorReports_sector
-            ...SectorKnowledge_sector
-        }
+  query RootSectorQuery($id: String!) {
+    sector(id: $id) {
+      ...Sector_sector
+      ...SectorHeader_sector
+      ...SectorOverview_sector
+      ...SectorReports_sector
+      ...SectorKnowledge_sector
     }
+  }
 `;
 
 class RootSector extends Component {
   componentDidMount() {
-    const { match: { params: { sectorId } } } = this.props;
+    const {
+      match: {
+        params: { sectorId },
+      },
+    } = this.props;
     const sub = requestSubscription({
       subscription,
       variables: { id: sectorId },
@@ -47,10 +51,15 @@ class RootSector extends Component {
   }
 
   render() {
-    const { me, match: { params: { sectorId } } } = this.props;
+    const {
+      me,
+      match: {
+        params: { sectorId },
+      },
+    } = this.props;
     return (
       <div>
-        <TopBar me={me || null}/>
+        <TopBar me={me || null} />
         <QueryRenderer
           query={sectorQuery}
           variables={{ id: sectorId }}
@@ -58,24 +67,39 @@ class RootSector extends Component {
             if (props && props.sector) {
               return (
                 <div>
-                  <Route exact path='/dashboard/knowledge/sectors/:sectorId' render={
-                    routeProps => <Sector {...routeProps} sector={props.sector}/>
-                  }/>
-                  <Route exact path='/dashboard/knowledge/sectors/:sectorId/reports' render={
-                    routeProps => <SectorReports {...routeProps} sector={props.sector}/>
-                  }/>
-                  <Route exact path='/dashboard/knowledge/sectors/:sectorId/knowledge' render={
-                    () => (<Redirect to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/overview`}/>)
-                  }/>
-                  <Route path='/dashboard/knowledge/sectors/:sectorId/knowledge' render={
-                    routeProps => <SectorKnowledge {...routeProps} sector={props.sector}/>
-                  }/>
+                  <Route
+                    exact
+                    path="/dashboard/knowledge/sectors/:sectorId"
+                    render={routeProps => (
+                      <Sector {...routeProps} sector={props.sector} />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/knowledge/sectors/:sectorId/reports"
+                    render={routeProps => (
+                      <SectorReports {...routeProps} sector={props.sector} />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/knowledge/sectors/:sectorId/knowledge"
+                    render={() => (
+                      <Redirect
+                        to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/overview`}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/knowledge/sectors/:sectorId/knowledge"
+                    render={routeProps => (
+                      <SectorKnowledge {...routeProps} sector={props.sector} />
+                    )}
+                  />
                 </div>
               );
             }
-            return (
-              <div> &nbsp; </div>
-            );
+            return <div> &nbsp; </div>;
           }}
         />
       </div>

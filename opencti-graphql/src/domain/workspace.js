@@ -26,7 +26,7 @@ export const ownedBy = workspaceId =>
   getObject(
     `match $x isa User; 
     $rel(owner:$x, to:$workspace) isa owned_by; 
-    $workspace id ${workspaceId}; offset 0; limit 1; get $x,$rel;`,
+    $workspace id ${workspaceId}; get $x, $rel; offset 0; limit 1;`,
     'x',
     'rel'
   );
@@ -51,15 +51,15 @@ export const objectRefs = (workspaceId, args) =>
 
 export const addWorkspace = async (user, workspace) => {
   const wTx = await takeWriteTx();
-  const workspaceIterator = await wTx.query(`insert $workspace isa Workspace 
-    has type "workspace";
-    $workspace has name "${prepareString(workspace.name)}";
-    $workspace has description "${prepareString(workspace.description)}";
-    $workspace has created_at ${now()};
-    $workspace has created_at_day "${dayFormat(now())}";
-    $workspace has created_at_month "${monthFormat(now())}";
-    $workspace has created_at_year "${yearFormat(now())}";          
-    $workspace has updated_at ${now()};
+  const workspaceIterator = await wTx.query(`insert $workspace isa Workspace,
+    has entity_type "workspace",
+    has name "${prepareString(workspace.name)}",
+    has description "${prepareString(workspace.description)}",
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}",          
+    has updated_at ${now()};
   `);
   const createdWorkspace = await workspaceIterator.next();
   const createdWorkspaceId = await createdWorkspace.map().get('workspace').id;

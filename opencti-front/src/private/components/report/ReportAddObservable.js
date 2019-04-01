@@ -81,7 +81,7 @@ const reportAddObservableThreatsSearchQuery = graphql`
         node {
           id
           name
-          type
+          entity_type
         }
       }
     }
@@ -90,7 +90,7 @@ const reportAddObservableThreatsSearchQuery = graphql`
         node {
           id
           name
-          type
+          entity_type
         }
       }
     }
@@ -99,7 +99,7 @@ const reportAddObservableThreatsSearchQuery = graphql`
         node {
           id
           name
-          type
+          entity_type
         }
       }
     }
@@ -108,7 +108,7 @@ const reportAddObservableThreatsSearchQuery = graphql`
         node {
           id
           name
-          type
+          entity_type
         }
       }
     }
@@ -117,7 +117,7 @@ const reportAddObservableThreatsSearchQuery = graphql`
         node {
           id
           name
-          type
+          entity_type
         }
       }
     }
@@ -237,7 +237,11 @@ class ReportAddObservable extends Component {
         .concat(pathOr([], ['incidents', 'edges'], data))
         .concat(pathOr([], ['malwares', 'edges'], data));
       const threats = map(
-        n => ({ label: n.node.name, value: n.node.id, type: n.node.type }),
+        n => ({
+          label: n.node.name,
+          value: n.node.id,
+          type: n.node.entity_type,
+        }),
         result,
       );
       this.setState({ threats: union(this.state.threats, threats) });

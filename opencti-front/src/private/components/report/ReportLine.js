@@ -93,32 +93,61 @@ class ReportLineComponent extends Component {
     } = this.props;
 
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} component={Link} to={`/dashboard/reports/all/${report.id}`}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        component={Link}
+        to={`/dashboard/reports/all/${report.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Description/>
+          <Description />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {report.name}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {report.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.createdByRef}
+              >
+                {pathOr('', ['createdByRef', 'node', 'name'], report)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.published}>
+                {fd(report.published)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.object_status}
+              >
+                <ItemStatus
+                  status={report.object_status}
+                  label={t(
+                    `report_status_${
+                      report.object_status ? report.object_status : 0
+                    }`,
+                  )}
+                  variant="inList"
+                />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.marking}>
+                {take(
+                  1,
+                  pathOr([], ['markingDefinitions', 'edges'], report),
+                ).map(markingDefinition => (
+                  <ItemMarking
+                    key={markingDefinition.node.id}
+                    variant="inList"
+                    label={markingDefinition.node.definition}
+                  />
+                ))}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.createdByRef}>
-              {pathOr('', ['createdByRef', 'node', 'name'], report)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.published}>
-              {fd(report.published)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.object_status}>
-              <ItemStatus status={report.object_status} label={t(`report_status_${report.object_status ? report.object_status : 0}`)} variant='inList'/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.marking}>
-              {take(1, pathOr([], ['markingDefinitions', 'edges'], report)).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} variant='inList'
-                                                                                                                  label={markingDefinition.node.definition}/>)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );
@@ -134,25 +163,25 @@ ReportLineComponent.propTypes = {
 
 const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
   report: graphql`
-      fragment ReportLine_report on Report {
-          id
+    fragment ReportLine_report on Report {
+      id
+      name
+      object_status
+      createdByRef {
+        node {
           name
-          object_status
-          createdByRef {
-              node {
-                  name
-              }
-          }
-          published
-          markingDefinitions {
-              edges {
-                  node {
-                      id
-                      definition
-                  }
-              }
-          }
+        }
       }
+      published
+      markingDefinitions {
+        edges {
+          node {
+            id
+            definition
+          }
+        }
+      }
+    }
   `,
 });
 
@@ -167,29 +196,37 @@ class ReportLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Description/>
+          <Description />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.createdByRef}
+              >
+                <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.published}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.object_status}
+              >
+                <div className="fakeItem" style={{ width: '60%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.marking}>
+                <div className="fakeItem" style={{ width: 100 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.createdByRef}>
-              <div className='fakeItem' style={{ width: '70%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.published}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.object_status}>
-              <div className='fakeItem' style={{ width: '60%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.marking}>
-              <div className='fakeItem' style={{ width: 100 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );

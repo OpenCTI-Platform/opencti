@@ -50,6 +50,12 @@ class StixObservablesLines extends Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.searchTerm !== prevProps.searchTerm) {
+      this._loadMore();
+    }
+  }
+
   filterList(list) {
     const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''
@@ -159,10 +165,7 @@ class StixObservablesLines extends Component {
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div
-            className={styles.windowScrollerWrapper}
-            key={this.props.searchTerm}
-          >
+          <div className={styles.windowScrollerWrapper}>
             <InfiniteLoader
               isRowLoaded={this._isRowLoaded}
               loadMoreRows={this._loadMore}
@@ -211,7 +214,7 @@ StixObservablesLines.propTypes = {
 
 export const stixObservablesLinesQuery = graphql`
   query StixObservablesLinesPaginationQuery(
-    $type: String
+    $types: [String]
     $count: Int!
     $cursor: ID
     $orderBy: StixObservablesOrdering
@@ -219,7 +222,7 @@ export const stixObservablesLinesQuery = graphql`
   ) {
     ...StixObservablesLines_data
       @arguments(
-        type: $type
+        types: $types
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -234,7 +237,7 @@ export const stixObservablesLinesSearchQuery = graphql`
       edges {
         node {
           id
-          type
+          entity_type
           observable_value
           created_at
           updated_at
@@ -251,14 +254,14 @@ export default withStyles(styles)(
       data: graphql`
         fragment StixObservablesLines_data on Query
           @argumentDefinitions(
-            type: { type: "String" }
+            types: { type: "[String]" }
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
             orderBy: { type: "StixObservablesOrdering", defaultValue: ID }
             orderMode: { type: "OrderingMode", defaultValue: "asc" }
           ) {
           stixObservables(
-            type: $type
+            types: $types
             first: $count
             after: $cursor
             orderBy: $orderBy
@@ -267,7 +270,7 @@ export default withStyles(styles)(
             edges {
               node {
                 id
-                type
+                entity_type
                 observable_value
                 created_at
                 markingDefinitions {
@@ -298,7 +301,7 @@ export default withStyles(styles)(
       },
       getVariables(props, { count, cursor }, fragmentVariables) {
         return {
-          type: fragmentVariables.type,
+          types: fragmentVariables.types,
           count,
           cursor,
           orderBy: fragmentVariables.orderBy,

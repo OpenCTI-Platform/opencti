@@ -7,7 +7,9 @@ import { logger } from '../config/conf';
 const graknStateStorage = {
   async load(fn) {
     const result = await queryMultiple(
-      `match $x isa MigrationStatus; (status:$x, state:$y); get;`,
+      `match $x isa MigrationStatus; 
+      (status:$x, state:$y); 
+      get;`,
       ['x', 'y']
     );
     if (isEmpty(result)) {
@@ -40,25 +42,29 @@ const graknStateStorage = {
     );
     if (!isEmpty(migrationStatus)) {
       await write(
-        `match $x isa MigrationStatus has lastRun $run; delete $run;`
+        `match $x isa MigrationStatus, 
+        has lastRun $run; 
+        delete $run;`
       );
       await write(
-        `match $x isa MigrationStatus; insert $x has lastRun "${set.lastRun}";`
+        `match $x isa MigrationStatus; 
+        insert $x has lastRun "${set.lastRun}";`
       );
     } else {
       await write(
-        `insert $x isa MigrationStatus has lastRun "${set.lastRun}";`
+        `insert $x isa MigrationStatus, 
+        has lastRun "${set.lastRun}";`
       );
     }
     await write(
-      `insert $x isa MigrationReference 
-              has title "${mig.title}"; 
-              $x has timestamp ${mig.timestamp};`
+      `insert $x isa MigrationReference,
+      has title "${mig.title}",
+      has timestamp ${mig.timestamp};`
     );
     await write(
       `match $status isa MigrationStatus; 
-              $ref isa MigrationReference has title "${mig.title}"; 
-              insert (status: $status, state: $ref) isa migrate;`
+      $ref isa MigrationReference, has title "${mig.title}"; 
+      insert (status: $status, state: $ref) isa migrate;`
     );
     fn();
   }

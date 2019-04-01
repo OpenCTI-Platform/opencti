@@ -55,7 +55,7 @@ const inlineStyles = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  type: {
+  entity_type: {
     float: 'left',
     width: '20%',
     height: 20,
@@ -103,7 +103,7 @@ class ReportLineComponent extends Component {
     } = this.props;
     let link = `${entityLink}/relations/${stixRelation.id}`;
     if (stixDomainEntityFrom.id !== entityId) {
-      link = `${resolveLink(stixDomainEntityFrom.type)}/${stixDomainEntityFrom.id}/knowledge/relations/${stixRelation.id}`;
+      link = `${resolveLink(stixDomainEntityFrom.entity_type)}/${stixDomainEntityFrom.id}/knowledge/relations/${stixRelation.id}`;
     }
     return (
       <ListItem
@@ -114,15 +114,15 @@ class ReportLineComponent extends Component {
         to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={stixDomainEntity.type}/>
+          <ItemIcon type={stixDomainEntity.entity_type}/>
         </ListItemIcon>
         <ListItemText primary={
           <div>
             <div className={classes.bodyItem} style={inlineStyles.name}>
               {stixDomainEntity.name}
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.type}>
-              {t(`entity_${stixDomainEntity.type}`)}
+            <div className={classes.bodyItem} style={inlineStyles.entity_type}>
+              {t(`entity_${stixDomainEntity.entity_type}`)}
             </div>
             <div className={classes.bodyItem} style={inlineStyles.first_seen}>
               {stixRelation.inferred ? '-' : nsd(stixRelation.first_seen)}
@@ -173,7 +173,7 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
   stixDomainEntity: graphql`
       fragment EntityStixRelationLine_stixDomainEntity on StixDomainEntity {
           id
-          type
+        entity_type
           name
           description
           created_at
@@ -183,7 +183,7 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
   stixDomainEntityFrom: graphql`
       fragment EntityStixRelationLine_stixDomainEntityFrom on StixDomainEntity {
           id
-          type
+        entity_type
           name
           description
           created_at
@@ -210,7 +210,7 @@ class EntityStixRelationLineDummyComponent extends Component {
             <div className={classes.bodyItem} style={inlineStyles.name}>
               <div className='fakeItem' style={{ width: '80%' }}/>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.type}>
+            <div className={classes.bodyItem} style={inlineStyles.entity_type}>
               <div className='fakeItem' style={{ width: '70%' }}/>
             </div>
             <div className={classes.bodyItem} style={inlineStyles.first_seen}>

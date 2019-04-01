@@ -29,7 +29,6 @@ import EntityPortFactory from '../../../components/graph_node/EntityPortFactory'
 import { stixRelationEditionFocus } from './StixRelationEditionOverview';
 import StixRelationInferences from './StixRelationInferences';
 
-
 const styles = theme => ({
   container: {
     position: 'relative',
@@ -172,8 +171,8 @@ class StixRelationContainer extends Component {
     const linkedEntity = stixRelation.to;
     const from = linkedEntity.id === entityId ? stixRelation.to : stixRelation.from;
     const to = linkedEntity.id === entityId ? stixRelation.from : stixRelation.to;
-    const linkTo = resolveLink(to.type);
-    const linkFrom = resolveLink(from.type);
+    const linkTo = resolveLink(to.entity_type);
+    const linkFrom = resolveLink(from.entity_type);
 
     return (
       <div className={classes.container}>
@@ -181,7 +180,7 @@ class StixRelationContainer extends Component {
           <div
             className={classes.item}
             style={{
-              backgroundColor: itemColor(from.type, true),
+              backgroundColor: itemColor(from.entity_type, true),
               top: 10,
               left: 0,
             }}
@@ -189,12 +188,14 @@ class StixRelationContainer extends Component {
             <div className={classes.itemHeader}>
               <div className={classes.icon}>
                 <ItemIcon
-                  type={from.type}
-                  color={itemColor(from.type, false)}
+                  type={from.entity_type}
+                  color={itemColor(from.entity_type, false)}
                   size="small"
                 />
               </div>
-              <div className={classes.type}>{t(`entity_${from.type}`)}</div>
+              <div className={classes.type}>
+                {t(`entity_${from.entity_type}`)}
+              </div>
             </div>
             <div className={classes.content}>
               <span className={classes.name}>{truncate(from.name, 120)}</span>
@@ -202,15 +203,15 @@ class StixRelationContainer extends Component {
           </div>
         </Link>
         <div className={classes.middle}>
-          {includes(to.type, inversedRelations) ? (
+          {includes(to.entity_type, inversedRelations) ? (
             <ArrowRightAlt
               fontSize="large"
               style={{ transform: 'rotate(180deg)' }}
             />
           ) : (
-            <ArrowRightAlt fontSize="large"/>
+            <ArrowRightAlt fontSize="large" />
           )}
-          <br/>
+          <br />
           <div
             style={{
               padding: '5px 8px 5px 8px',
@@ -227,7 +228,7 @@ class StixRelationContainer extends Component {
           <div
             className={classes.item}
             style={{
-              backgroundColor: itemColor(to.type, true),
+              backgroundColor: itemColor(to.entity_type, true),
               top: 10,
               right: 0,
             }}
@@ -235,31 +236,33 @@ class StixRelationContainer extends Component {
             <div className={classes.itemHeader}>
               <div className={classes.icon}>
                 <ItemIcon
-                  type={to.type}
-                  color={itemColor(to.type, false)}
-                  size='small'
+                  type={to.entity_type}
+                  color={itemColor(to.entity_type, false)}
+                  size="small"
                 />
               </div>
-              <div className={classes.type}>{t(`entity_${to.type}`)}</div>
+              <div className={classes.type}>
+                {t(`entity_${to.entity_type}`)}
+              </div>
             </div>
             <div className={classes.content}>
               <span className={classes.name}>{truncate(to.name, 120)}</span>
             </div>
           </div>
         </Link>
-        <div className='clearfix'/>
+        <div className="clearfix" />
         <div className={classes.data}>
           <div className={classes.information}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Information')}
             </Typography>
             <Paper classes={{ root: classes.paper }} elevation={2}>
-              <Typography variant='h3' gutterBottom={true}>
+              <Typography variant="h3" gutterBottom={true}>
                 {t('Relationship type')}
               </Typography>
               {t(`relation_${stixRelation.relationship_type}`)}
               <Typography
-                variant='h3'
+                variant="h3"
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
@@ -267,7 +270,7 @@ class StixRelationContainer extends Component {
               </Typography>
               {stixRelation.inferred ? '-' : fld(stixRelation.first_seen)}
               <Typography
-                variant='h3'
+                variant="h3"
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
@@ -275,7 +278,7 @@ class StixRelationContainer extends Component {
               </Typography>
               {stixRelation.inferred ? '-' : fld(stixRelation.last_seen)}
               <Typography
-                variant='h3'
+                variant="h3"
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
@@ -292,27 +295,36 @@ class StixRelationContainer extends Component {
                 {t('Description')}
               </Typography>
               <Markdown
-                className='markdown'
+                className="markdown"
                 source={stixRelation.description}
               />
             </Paper>
           </div>
           {stixRelation.inferred ? (
             <div className={classes.reports}>
-              <Typography variant='h4' gutterBottom={true}>
+              <Typography variant="h4" gutterBottom={true}>
                 {t('Inference explanation')}
               </Typography>
-              <Paper classes={{ root: classes.paper }} elevation={2} style={{ height: 400 }}>
-                <StixRelationInferences engine={this.state.engine} stixRelation={stixRelation} from={from} to={to}/>
+              <Paper
+                classes={{ root: classes.paper }}
+                elevation={2}
+                style={{ height: 400 }}
+              >
+                <StixRelationInferences
+                  engine={this.state.engine}
+                  stixRelation={stixRelation}
+                  from={from}
+                  to={to}
+                />
               </Paper>
             </div>
           ) : (
             <div className={classes.reports}>
-              <Typography variant='h4' gutterBottom={true}>
+              <Typography variant="h4" gutterBottom={true}>
                 {t('Reports')}
               </Typography>
               <Paper classes={{ root: classes.paper }} elevation={2}>
-                <EntityReports entityId={stixRelation.id}/>
+                <EntityReports entityId={stixRelation.id} />
               </Paper>
             </div>
           )}
@@ -323,11 +335,11 @@ class StixRelationContainer extends Component {
           <div>
             <Fab
               onClick={this.handleOpenEdition.bind(this)}
-              color='secondary'
-              aria-label='Edit'
+              color="secondary"
+              aria-label="Edit"
               className={classes.editButton}
             >
-              <Edit/>
+              <Edit />
             </Fab>
             <StixRelationEdition
               open={this.state.openEdit}
@@ -357,55 +369,55 @@ StixRelationContainer.propTypes = {
 
 const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
   stixRelation: graphql`
-      fragment StixRelationOverview_stixRelation on StixRelation {
-          id
-          relationship_type
-          weight
-          first_seen
-          last_seen
-          description
-          inferred
-          inferences {
-              edges {
-                  node {
-                      id
-                      relationship_type
-                      inferred
-                      from {
-                          id
-                          name
-                          type
-                      }
-                      to {
-                          id
-                          name
-                          type
-                      }
-                  }
-              }
-          }
-          from {
+    fragment StixRelationOverview_stixRelation on StixRelation {
+      id
+      relationship_type
+      weight
+      first_seen
+      last_seen
+      description
+      inferred
+      inferences {
+        edges {
+          node {
+            id
+            relationship_type
+            inferred
+            from {
               id
-              type
               name
-              description
-          }
-          to {
+              entity_type
+            }
+            to {
               id
-              type
               name
-              description
+              entity_type
+            }
           }
-          reports {
-              edges {
-                  node {
-                      name
-                      description
-                      published
-                  }
-              }
-          }
+        }
       }
+      from {
+        id
+        entity_type
+        name
+        description
+      }
+      to {
+        id
+        entity_type
+        name
+        description
+      }
+      reports {
+        edges {
+          node {
+            name
+            description
+            published
+          }
+        }
+      }
+    }
   `,
 });
 

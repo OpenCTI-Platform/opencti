@@ -16,7 +16,9 @@ import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory'
 import EntityPortFactory from '../../../components/graph_node/EntityPortFactory';
 import { SubscriptionAvatars } from '../../../components/Subscription';
 import ReportHeader from './ReportHeader';
-import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
+import ReportKnowledgeGraph, {
+  reportKnowledgeGraphQuery,
+} from './ReportKnowledgeGraph';
 
 const styles = theme => ({
   container: {
@@ -50,20 +52,31 @@ class ReportKnowledgeComponent extends Component {
     const { classes, report, me } = this.props;
     const { editContext } = report;
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
+    const editUsers = missingMe
+      ? insert(0, { name: me.email }, editContext)
+      : editContext;
     return (
       <div className={classes.container}>
-        <Drawer anchor='bottom' variant='permanent' classes={{ paper: classes.bottomNav }}>
+        <Drawer
+          anchor="bottom"
+          variant="permanent"
+          classes={{ paper: classes.bottomNav }}
+        >
           <div> &nbsp; </div>
         </Drawer>
-        <ReportHeader report={report} variant='noMarking'/>
-        <SubscriptionAvatars users={editUsers} variant='inGraph'/>
+        <ReportHeader report={report} variant="noMarking" />
+        <SubscriptionAvatars users={editUsers} variant="inGraph" />
         <QueryRenderer
           query={reportKnowledgeGraphQuery}
           variables={{ id: report.id }}
           render={({ props }) => {
             if (props && props.report) {
-              return <ReportKnowledgeGraph report={props.report} engine={this.state.engine}/>;
+              return (
+                <ReportKnowledgeGraph
+                  report={props.report}
+                  engine={this.state.engine}
+                />
+              );
             }
             return <div> &nbsp; </div>;
           }}
@@ -82,19 +95,19 @@ ReportKnowledgeComponent.propTypes = {
 
 const ReportKnowledge = createFragmentContainer(ReportKnowledgeComponent, {
   report: graphql`
-      fragment ReportKnowledge_report on Report {
-          id
-          editContext {
-              name
-              focusOn
-          }
-          ...ReportHeader_report
+    fragment ReportKnowledge_report on Report {
+      id
+      editContext {
+        name
+        focusOn
       }
+      ...ReportHeader_report
+    }
   `,
   me: graphql`
-      fragment ReportKnowledge_me on User {
-          email
-      }
+    fragment ReportKnowledge_me on User {
+      email
+    }
   `,
 });
 

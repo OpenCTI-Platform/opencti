@@ -73,7 +73,7 @@ const stixDomainEntityCreationMutation = graphql`
     mutation StixDomainEntityCreationMutation($input: StixDomainEntityAddInput!) {
         stixDomainEntityAdd(input: $input) {
             id
-            type
+            entity_type
             name
             description
         }

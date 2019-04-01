@@ -28,26 +28,41 @@ class ReportOverviewComponent extends Component {
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant='h3' gutterBottom={true}>
+          <Typography variant="h3" gutterBottom={true}>
             {t('Report type')}
           </Typography>
           {t(`report_${report.report_class}`)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Creation date')}
           </Typography>
           {fld(report.created)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Modification date')}
           </Typography>
           {fld(report.modified)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Description')}
           </Typography>
-          <Markdown className='markdown' source={truncate(report.description, 250)}/>
+          <Markdown
+            className="markdown"
+            source={truncate(report.description, 250)}
+          />
         </Paper>
       </div>
     );
@@ -63,14 +78,14 @@ ReportOverviewComponent.propTypes = {
 
 const ReportOverview = createFragmentContainer(ReportOverviewComponent, {
   report: graphql`
-      fragment ReportOverview_report on Report {
-          id
-          name
-          description
-          created
-          modified
-          report_class
-      }
+    fragment ReportOverview_report on Report {
+      id
+      name
+      description
+      created
+      modified
+      report_class
+    }
   `,
 });
 

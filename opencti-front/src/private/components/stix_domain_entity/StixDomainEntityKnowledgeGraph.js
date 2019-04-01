@@ -175,7 +175,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
       const newNode = new EntityNodeModel({
         id: n.id,
         name: n.name,
-        type: n.type,
+        type: n.entity_type,
       });
       newNode.addListener({
         selectionChanged: this.handleSelection.bind(this),
@@ -461,7 +461,7 @@ const StixDomainEntityKnowledgeGraph = createFragmentContainer(
             count: { type: "Int", defaultValue: 200 }
         ) {
             id
-            type
+            entity_type
             name
             graph_data
             stixRelations(
@@ -484,7 +484,7 @@ const StixDomainEntityKnowledgeGraph = createFragmentContainer(
                         last_seen
                         to {
                             id
-                            type
+                            entity_type
                             name
                         }
                     }

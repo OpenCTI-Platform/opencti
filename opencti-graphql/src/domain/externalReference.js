@@ -20,12 +20,13 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args =>
-  paginate('match $x isa External-Reference', args);
+  paginate('match $e isa External-Reference', args)
+
 export const findByEntity = args =>
   paginate(
-    `match $externalReference isa External-Reference; $rel(external_reference:$externalReference, so:$so) isa external_references; $so id ${
-      args.objectId
-    }`,
+    `match $e isa External-Reference; 
+    $rel(external_reference:$e, so:$so) isa external_references;
+    $so id ${args.objectId}`,
     args
   );
 
@@ -33,51 +34,47 @@ export const findById = externalReferenceId => getById(externalReferenceId);
 
 export const search = args =>
   paginate(
-    `match $e isa External-Reference; $e has source_name $sn; $e has description $desc; $e has url $url; { $sn contains "${prepareString(
-      args.search
-    )}"; } or { $desc contains "${prepareString(
-      args.search
-    )}"; } or { $url contains "${prepareString(args.search)}"; }`,
+    `match $e isa External-Reference; 
+    $e has source_name $sn; 
+    $e has description $desc; 
+    $e has url $url; 
+    { $sn contains "${prepareString(args.search)}"; } or 
+    { $desc contains "${prepareString(args.search)}"; } or 
+    { $url contains "${prepareString(args.search)}"; }`,
     args,
     false
   );
 
 export const addExternalReference = async (user, externalReference) => {
   const wTx = await takeWriteTx();
-  const externalReferenceIterator = await wTx.query(`insert $externalReference isa External-Reference 
-    has type "external-reference";
-    $externalReference has stix_id "${
+  const externalReferenceIterator = await wTx.query(`insert $externalReference isa External-Reference,
+    has entity_type "external-reference",
+    has stix_id "${
       externalReference.stix_id
         ? prepareString(externalReference.stix_id)
         : `external-reference--${uuid()}`
-    }";
-    $externalReference has source_name "${prepareString(
-      externalReference.source_name
-    )}";
-    $externalReference has description "${prepareString(
-      externalReference.description
-    )}";
-    $externalReference has url "${
+    }",
+    has source_name "${prepareString(externalReference.source_name)}",
+    has description "${prepareString(externalReference.description)}",
+    has url "${
       externalReference.url ? prepareString(externalReference.url) : ''
-    }";
-    $externalReference has hash "${prepareString(externalReference.hash)}";
-    $externalReference has external_id "${prepareString(
-      externalReference.external_id
-    )}";
-    $externalReference has created ${
+    }",
+    has hash "${prepareString(externalReference.hash)}",
+    has external_id "${prepareString(externalReference.external_id)}",
+    has created ${
       externalReference.created ? prepareDate(externalReference.created) : now()
-    };
-    $externalReference has modified ${
+    },
+    has modified ${
       externalReference.modified
         ? prepareDate(externalReference.modified)
         : now()
-    };
-    $externalReference has revoked false;
-    $externalReference has created_at ${now()};
-    $externalReference has created_at_day "${dayFormat(now())}";
-    $externalReference has created_at_month "${monthFormat(now())}";
-    $externalReference has created_at_year "${yearFormat(now())}";    
-    $externalReference has updated_at ${now()};
+    },
+    has revoked false,
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}",  
+    has updated_at ${now()};
   `);
   const createExternalReference = await externalReferenceIterator.next();
   const createdExternalReferenceId = await createExternalReference
@@ -85,16 +82,20 @@ export const addExternalReference = async (user, externalReference) => {
     .get('externalReference').id;
 
   if (externalReference.createdByRef) {
-    await wTx.query(`match $from id ${createdExternalReferenceId};
-         $to id ${externalReference.createdByRef};
-         insert (so: $from, creator: $to)
-         isa created_by_ref;`);
+    await wTx.query(
+      `match $from id ${createdExternalReferenceId};
+      $to id ${externalReference.createdByRef};
+      insert (so: $from, creator: $to)
+      isa created_by_ref;`
+    );
   }
 
   if (externalReference.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
-        `match $from id ${createdExternalReferenceId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+        `match $from id ${createdExternalReferenceId}; 
+        $to id ${markingDefinition}; 
+        insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

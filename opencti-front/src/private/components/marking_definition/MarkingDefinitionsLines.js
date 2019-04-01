@@ -48,6 +48,12 @@ class MarkingDefinitionsLines extends Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.searchTerm !== prevProps.searchTerm) {
+      this._loadMore();
+    }
+  }
+
   _setRef(windowScroller) {
     // noinspection JSUnusedGlobalSymbols
     this._windowScroller = windowScroller;

@@ -208,55 +208,6 @@ class Root extends Component {
                           component={StixObservables}
                         />
                         <BoundaryRoute
-                          exact
-                          path="/dashboard/observables/domains"
-                          render={routeProps => (
-                            <StixObservables {...routeProps} type="Domain" />
-                          )}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/observables/ipv4"
-                          render={routeProps => (
-                            <StixObservables {...routeProps} type="IPv4-Addr" />
-                          )}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/observables/ipv6"
-                          render={routeProps => (
-                            <StixObservables {...routeProps} type="IPv6-Addr" />
-                          )}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/observables/url"
-                          render={routeProps => (
-                            <StixObservables {...routeProps} type="URL" />
-                          )}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/observables/emails"
-                          render={routeProps => (
-                            <StixObservables {...routeProps} type="Email" />
-                          )}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/observables/mutex"
-                          render={routeProps => (
-                            <StixObservables {...routeProps} type="Mutex" />
-                          )}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/observables/files"
-                          render={routeProps => (
-                            <StixObservables {...routeProps} type="File" />
-                          )}
-                        />
-                        <BoundaryRoute
                           path="/dashboard/observables/all/:stixObservableId"
                           render={routeProps => (
                             <RootStixObservable {...routeProps} me={props.me} />

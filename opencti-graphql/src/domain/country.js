@@ -15,54 +15,48 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $x isa Country', args);
+export const findAll = args => paginate('match $c isa Country', args);
 
 export const findById = countryId => getById(countryId);
 
-export const markingDefinitions = (countryId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; $rel(marking:$marking, so:$country) isa object_marking_refs; $country id ${countryId}`,
-    args
-  );
-
 export const addCountry = async (user, country) => {
   const wTx = await takeWriteTx();
-  const countryIterator = await wTx.query(`insert $country isa Country 
-    has type "country";
-    $country has stix_id "${
+  const countryIterator = await wTx.query(`insert $country isa Country,
+    has entity_type "country",
+    has stix_id "${
       country.stix_id ? prepareString(country.stix_id) : `country--${uuid()}`
-    }";
-    $country has stix_label "";
-    $country has alias "";
-    $country has name "${prepareString(country.name)}";
-    $country has description "${prepareString(country.description)}";
-    $country has created ${
-      country.created ? prepareDate(country.created) : now()
-    };
-    $country has modified ${
-      country.modified ? prepareDate(country.modified) : now()
-    };
-    $country has revoked false;
-    $country has created_at ${now()};
-    $country has created_at_day "${dayFormat(now())}";
-    $country has created_at_month "${monthFormat(now())}";
-    $country has created_at_year "${yearFormat(now())}";
-    $country has updated_at ${now()};
+    }",
+    has stix_label "",
+    has alias "",
+    has name "${prepareString(country.name)}",
+    has description "${prepareString(country.description)}",
+    has created ${country.created ? prepareDate(country.created) : now()},
+    has modified ${country.modified ? prepareDate(country.modified) : now()},
+    has revoked false,
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}",
+    has updated_at ${now()};
   `);
   const createCountry = await countryIterator.next();
   const createdCountryId = await createCountry.map().get('country').id;
 
   if (country.createdByRef) {
-    await wTx.query(`match $from id ${createdCountryId};
-         $to id ${country.createdByRef};
-         insert (so: $from, creator: $to)
-         isa created_by_ref;`);
+    await wTx.query(
+      `match $from id ${createdCountryId};
+      $to id ${country.createdByRef};
+      insert (so: $from, creator: $to)
+      isa created_by_ref;`
+    );
   }
 
   if (country.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
-        `match $from id ${createdCountryId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+        `match $from id ${createdCountryId};
+         $to id ${markingDefinition}; 
+         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

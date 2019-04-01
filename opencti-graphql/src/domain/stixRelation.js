@@ -480,41 +480,39 @@ export const addStixRelation = async (user, stixRelation) => {
     insert $stixRelation(${stixRelation.fromRole}: $from, ${
     stixRelation.toRole
   }: $to) 
-    isa ${stixRelation.relationship_type} 
+    isa ${stixRelation.relationship_type},
     has relationship_type "${prepareString(
       stixRelation.relationship_type.toLowerCase()
-    )}";
-    $stixRelation has type "stix-relation";
-    $stixRelation has stix_id "${
+    )}",
+    has entity_type "stix-relation",
+    has stix_id "${
       stixRelation.stix_id
         ? prepareString(stixRelation.stix_id)
         : `relationship--${uuid()}`
-    }";
-    $stixRelation has name "";
-    $stixRelation has description "${prepareString(stixRelation.description)}";
-    $stixRelation has weight ${stixRelation.weight};
-    $stixRelation has first_seen ${prepareDate(stixRelation.first_seen)};
-    $stixRelation has first_seen_day "${dayFormat(stixRelation.first_seen)}";
-    $stixRelation has first_seen_month "${monthFormat(
-      stixRelation.first_seen
-    )}";
-    $stixRelation has first_seen_year "${yearFormat(stixRelation.first_seen)}";
-    $stixRelation has last_seen ${prepareDate(stixRelation.last_seen)};
-    $stixRelation has last_seen_day "${dayFormat(stixRelation.last_seen)}";
-    $stixRelation has last_seen_month "${monthFormat(stixRelation.last_seen)}";
-    $stixRelation has last_seen_year "${yearFormat(stixRelation.last_seen)}";
-    $stixRelation has created ${
+    }",
+    has name "",
+    has description "${prepareString(stixRelation.description)}",
+    has weight ${stixRelation.weight},
+    has first_seen ${prepareDate(stixRelation.first_seen)},
+    has first_seen_day "${dayFormat(stixRelation.first_seen)}",
+    has first_seen_month "${monthFormat(stixRelation.first_seen)}",
+    has first_seen_year "${yearFormat(stixRelation.first_seen)}",
+    has last_seen ${prepareDate(stixRelation.last_seen)},
+    has last_seen_day "${dayFormat(stixRelation.last_seen)}",
+    has last_seen_month "${monthFormat(stixRelation.last_seen)}",
+    has last_seen_year "${yearFormat(stixRelation.last_seen)}",
+    has created ${
       stixRelation.created ? prepareDate(stixRelation.created) : now()
-    };
-    $stixRelation has modified ${
+    },
+    has modified ${
       stixRelation.modified ? prepareDate(stixRelation.modified) : now()
-    };
-    $stixRelation has revoked false;
-    $stixRelation has created_at ${now()};
-    $stixRelation has created_at_day "${dayFormat(now())}";
-    $stixRelation has created_at_month "${monthFormat(now())}";
-    $stixRelation has created_at_year "${yearFormat(now())}";        
-    $stixRelation has updated_at ${now()};
+    },
+    has revoked false,
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}",        
+    has updated_at ${now()};
   `;
   logger.debug(`[GRAKN - infer: false] ${query}`);
   const stixRelationIterator = await wTx.query(query);

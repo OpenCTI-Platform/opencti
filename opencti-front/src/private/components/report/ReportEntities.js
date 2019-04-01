@@ -13,7 +13,11 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { ArrowDropDown, ArrowDropUp, KeyboardArrowRight } from '@material-ui/icons';
+import {
+  ArrowDropDown,
+  ArrowDropUp,
+  KeyboardArrowRight,
+} from '@material-ui/icons';
 import { resolveLink } from '../../../utils/Entity';
 import inject18n from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
@@ -71,7 +75,7 @@ const inlineStylesHeaders = {
     fontSize: 12,
     fontWeight: '700',
   },
-  type: {
+  entity_type: {
     float: 'left',
     width: '20%',
     fontSize: 12,
@@ -99,7 +103,7 @@ const inlineStyles = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  type: {
+  entity_type: {
     float: 'left',
     width: '20%',
     height: 20,
@@ -138,9 +142,20 @@ class ReportEntitiesComponent extends Component {
     const { t } = this.props;
     if (isSortable) {
       return (
-        <div style={inlineStylesHeaders[field]} onClick={this.reverseBy.bind(this, field)}>
+        <div
+          style={inlineStylesHeaders[field]}
+          onClick={this.reverseBy.bind(this, field)}
+        >
           <span>{t(label)}</span>
-          {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStylesHeaders.iconSort}/> : <ArrowDropUp style={inlineStylesHeaders.iconSort}/> : ''}
+          {this.state.sortBy === field ? (
+            this.state.orderAsc ? (
+              <ArrowDropDown style={inlineStylesHeaders.iconSort} />
+            ) : (
+              <ArrowDropUp style={inlineStylesHeaders.iconSort} />
+            )
+          ) : (
+            ''
+          )}
         </div>
       );
     }
@@ -156,50 +171,88 @@ class ReportEntitiesComponent extends Component {
       t, fd, classes, report,
     } = this.props;
     const objectRefs = map(n => n.node, report.objectRefs.edges);
-    const sort = sortWith(this.state.orderAsc ? [ascend(prop(this.state.sortBy))] : [descend(prop(this.state.sortBy))]);
+    const sort = sortWith(
+      this.state.orderAsc
+        ? [ascend(prop(this.state.sortBy))]
+        : [descend(prop(this.state.sortBy))],
+    );
     const sortedObjectRefs = sort(objectRefs);
     return (
       <div>
-        <ReportHeader report={report}/>
+        <ReportHeader report={report} />
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem classes={{ root: classes.itemHead }} divider={false} style={{ paddingTop: 0 }}>
+          <ListItem
+            classes={{ root: classes.itemHead }}
+            divider={false}
+            style={{ paddingTop: 0 }}
+          >
             <ListItemIcon>
-              <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
+              <span
+                style={{
+                  padding: '0 8px 0 8px',
+                  fontWeight: 700,
+                  fontSize: 12,
+                }}
+              >
+                #
+              </span>
             </ListItemIcon>
-            <ListItemText primary={
-              <div>
-                {this.SortHeader('name', 'Name', true)}
-                {this.SortHeader('type', 'Entity type', true)}
-                {this.SortHeader('created_at', 'Creation date', true)}
-                {this.SortHeader('updated_at', 'Modification date', true)}
-              </div>
-            }/>
+            <ListItemText
+              primary={
+                <div>
+                  {this.SortHeader('name', 'Name', true)}
+                  {this.SortHeader('entity_type', 'Entity type', true)}
+                  {this.SortHeader('created_at', 'Creation date', true)}
+                  {this.SortHeader('updated_at', 'Modification date', true)}
+                </div>
+              }
+            />
           </ListItem>
           {sortedObjectRefs.map((objectRef) => {
-            const link = resolveLink(objectRef.type);
+            const link = resolveLink(objectRef.entity_type);
             return (
-              <ListItem key={objectRef.id} classes={{ root: classes.item }} divider={true} component={Link} to={`${link}/${objectRef.id}`}>
+              <ListItem
+                key={objectRef.id}
+                classes={{ root: classes.item }}
+                divider={true}
+                component={Link}
+                to={`${link}/${objectRef.id}`}
+              >
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <ItemIcon type={objectRef.type}/>
+                  <ItemIcon type={objectRef.entity_type} />
                 </ListItemIcon>
-                <ListItemText primary={
-                  <div>
-                    <div className={classes.bodyItem} style={inlineStyles.name}>
-                      {objectRef.name}
+                <ListItemText
+                  primary={
+                    <div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.name}
+                      >
+                        {objectRef.name}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.entity_type}
+                      >
+                        {t(`entity_${objectRef.entity_type}`)}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.created_at}
+                      >
+                        {fd(objectRef.created_at)}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.updated_at}
+                      >
+                        {fd(objectRef.updated_at)}
+                      </div>
                     </div>
-                    <div className={classes.bodyItem} style={inlineStyles.type}>
-                      {t(`entity_${objectRef.type}`)}
-                    </div>
-                    <div className={classes.bodyItem} style={inlineStyles.created_at}>
-                      {fd(objectRef.created_at)}
-                    </div>
-                    <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-                      {fd(objectRef.updated_at)}
-                    </div>
-                  </div>
-                }/>
+                  }
+                />
                 <ListItemIcon classes={{ root: classes.goIcon }}>
-                  <KeyboardArrowRight/>
+                  <KeyboardArrowRight />
                 </ListItemIcon>
               </ListItem>
             );
@@ -224,21 +277,21 @@ ReportEntitiesComponent.propTypes = {
 
 const ReportEntities = createFragmentContainer(ReportEntitiesComponent, {
   report: graphql`
-      fragment ReportEntities_report on Report {
-          id
-          objectRefs {
-              edges {
-                  node {
-                      id
-                      type
-                      name
-                      created_at
-                      updated_at
-                  }
-              }
+    fragment ReportEntities_report on Report {
+      id
+      objectRefs {
+        edges {
+          node {
+            id
+            entity_type
+            name
+            created_at
+            updated_at
           }
-          ...ReportHeader_report
+        }
       }
+      ...ReportHeader_report
+    }
   `,
 });
 

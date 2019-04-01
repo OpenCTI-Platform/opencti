@@ -71,25 +71,32 @@ class SectorLineComponent extends Component {
   render() {
     const { fd, classes, sector } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/knowledge/sectors/${sector.id}`}>
+      <ListItem
+        classes={{ default: classes.item }}
+        divider={true}
+        component={Link}
+        to={`/dashboard/knowledge/sectors/${sector.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Domain/>
+          <Domain />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {sector.name}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {sector.name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                {fd(sector.created)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                {fd(sector.modified)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              {fd(sector.created)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              {fd(sector.modified)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );
@@ -104,12 +111,12 @@ SectorLineComponent.propTypes = {
 
 const SectorLineFragment = createFragmentContainer(SectorLineComponent, {
   sector: graphql`
-      fragment SectorLine_sector on Sector {
-          id
-          name
-          created
-          modified
-      }
+    fragment SectorLine_sector on Sector {
+      id
+      name
+      created
+      modified
+    }
   `,
 });
 
@@ -124,23 +131,25 @@ class SectorLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Domain/>
+          <Domain />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );

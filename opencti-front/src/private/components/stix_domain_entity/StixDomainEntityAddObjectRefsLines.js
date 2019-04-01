@@ -57,11 +57,16 @@ class StixDomainEntityAddObjectRefsLinesContainer extends Component {
 
   toggleStixDomain(stixDomain) {
     const { stixDomainEntityObjectRefs } = this.props;
-    const stixDomainEntityObjectRefsIds = map(n => n.id, stixDomainEntityObjectRefs);
+    const stixDomainEntityObjectRefsIds = map(
+      n => n.id,
+      stixDomainEntityObjectRefs,
+    );
     const alreadyAdded = stixDomainEntityObjectRefsIds.includes(stixDomain.id);
 
     if (alreadyAdded) {
-      const existingStixDomain = head(filter(n => n.id === stixDomain.id, stixDomainEntityObjectRefs));
+      const existingStixDomain = head(
+        filter(n => n.id === stixDomain.id, stixDomainEntityObjectRefs),
+      );
       this.props.handleDeleteObjectRef(existingStixDomain.id);
     } else {
       this.props.handleCreateObjectRef(stixDomain.id);
@@ -69,7 +74,9 @@ class StixDomainEntityAddObjectRefsLinesContainer extends Component {
   }
 
   handleChangePanel(panelKey, event, expanded) {
-    this.setState({ expandedPanels: assoc(panelKey, expanded, this.state.expandedPanels) });
+    this.setState({
+      expandedPanels: assoc(panelKey, expanded, this.state.expandedPanels),
+    });
   }
 
   isExpanded(type, numberOfEntities, numberOfTypes) {
@@ -89,37 +96,64 @@ class StixDomainEntityAddObjectRefsLinesContainer extends Component {
     const {
       t, classes, data, stixDomainEntityObjectRefs,
     } = this.props;
-    const stixDomainEntityObjectRefsIds = map(n => n.id, stixDomainEntityObjectRefs);
-    const stixDomainEntitiesNodes = map(n => n.node, data.stixDomainEntities.edges);
-    const byType = groupBy(stixDomainEntity => stixDomainEntity.type);
+    const stixDomainEntityObjectRefsIds = map(
+      n => n.id,
+      stixDomainEntityObjectRefs,
+    );
+    const stixDomainEntitiesNodes = map(
+      n => n.node,
+      data.stixDomainEntities.edges,
+    );
+    const byType = groupBy(stixDomainEntity => stixDomainEntity.entity_type);
     const stixDomainEntities = byType(stixDomainEntitiesNodes);
     const stixDomainEntitiesTypes = keys(stixDomainEntities);
 
     return (
       <div className={classes.container}>
         {stixDomainEntitiesTypes.map(type => (
-          <ExpansionPanel key={type}
-                          expanded={this.isExpanded(type, stixDomainEntities[type].length, stixDomainEntitiesTypes.length)}
-                          onChange={this.handleChangePanel.bind(this, type)}
-                          classes={{ root: classes.expansionPanel }}>
-            <ExpansionPanelSummary expandIcon={<ExpandMore/>}>
-              <Typography className={classes.heading}>{t(`entity_${type}`)}</Typography>
-              <Typography className={classes.secondaryHeading}>{stixDomainEntities[type].length} {t('entitie(s)')}</Typography>
+          <ExpansionPanel
+            key={type}
+            expanded={this.isExpanded(
+              type,
+              stixDomainEntities[type].length,
+              stixDomainEntitiesTypes.length,
+            )}
+            onChange={this.handleChangePanel.bind(this, type)}
+            classes={{ root: classes.expansionPanel }}
+          >
+            <ExpansionPanelSummary expandIcon={<ExpandMore />}>
+              <Typography className={classes.heading}>
+                {t(`entity_${type}`)}
+              </Typography>
+              <Typography className={classes.secondaryHeading}>
+                {stixDomainEntities[type].length} {t('entitie(s)')}
+              </Typography>
             </ExpansionPanelSummary>
-            <ExpansionPanelDetails classes={{ root: classes.expansionPanelContent }}>
+            <ExpansionPanelDetails
+              classes={{ root: classes.expansionPanelContent }}
+            >
               <List classes={{ root: classes.list }}>
                 {stixDomainEntities[type].map((stixDomainEntity) => {
-                  const alreadyAdded = stixDomainEntityObjectRefsIds.includes(stixDomainEntity.id);
+                  const alreadyAdded = stixDomainEntityObjectRefsIds.includes(
+                    stixDomainEntity.id,
+                  );
                   return (
                     <ListItem
                       key={stixDomainEntity.id}
                       classes={{ root: classes.menuItem }}
                       divider={true}
                       button={true}
-                      onClick={this.toggleStixDomain.bind(this, stixDomainEntity)}>
+                      onClick={this.toggleStixDomain.bind(
+                        this,
+                        stixDomainEntity,
+                      )}
+                    >
                       <ListItemIcon>
-                        {alreadyAdded ? <CheckCircle classes={{ root: classes.icon }}/>
-                          : <ItemIcon type={type}/>}
+                        {alreadyAdded ? (
+                          <CheckCircle classes={{ root: classes.icon }} />
+                        ) : (
+                          <ItemIcon type={type} />
+                        )}
                       </ListItemIcon>
                       <ListItemText
                         primary={stixDomainEntity.name}
@@ -150,33 +184,53 @@ StixDomainEntityAddObjectRefsLinesContainer.propTypes = {
 };
 
 export const stixDomainEntityAddObjectRefsLinesQuery = graphql`
-    query StixDomainEntityAddObjectRefsLinesQuery($search: String, $count: Int!, $cursor: ID, $orderBy: StixDomainEntitiesOrdering, $orderMode: OrderingMode) {
-        ...StixDomainEntityAddObjectRefsLines_data @arguments(search: $search, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
-    }
+  query StixDomainEntityAddObjectRefsLinesQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixDomainEntitiesOrdering
+    $orderMode: OrderingMode
+  ) {
+    ...StixDomainEntityAddObjectRefsLines_data
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
+  }
 `;
 
 const StixDomainEntityAddObjectRefsLines = createPaginationContainer(
   StixDomainEntityAddObjectRefsLinesContainer,
   {
     data: graphql`
-        fragment StixDomainEntityAddObjectRefsLines_data on Query @argumentDefinitions(
-            search: {type: "String"}
-            count: {type: "Int", defaultValue: 25}
-            cursor: {type: "ID"}
-            orderBy: {type: "StixDomainEntitiesOrdering", defaultValue: ID}
-            orderMode: {type: "OrderingMode", defaultValue: "asc"}
+      fragment StixDomainEntityAddObjectRefsLines_data on Query
+        @argumentDefinitions(
+          search: { type: "String" }
+          count: { type: "Int", defaultValue: 25 }
+          cursor: { type: "ID" }
+          orderBy: { type: "StixDomainEntitiesOrdering", defaultValue: ID }
+          orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
-            stixDomainEntities(search: $search, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_stixDomainEntities") {
-                edges {
-                    node {
-                        id
-                        type
-                        name
-                        description
-                    }
-                }
+        stixDomainEntities(
+          search: $search
+          first: $count
+          after: $cursor
+          orderBy: $orderBy
+          orderMode: $orderMode
+        ) @connection(key: "Pagination_stixDomainEntities") {
+          edges {
+            node {
+              id
+              entity_type
+              name
+              description
             }
+          }
         }
+      }
     `,
   },
   {

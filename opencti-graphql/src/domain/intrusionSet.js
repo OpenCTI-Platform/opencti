@@ -15,13 +15,15 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa Intrusion-Set', args);
+export const findAll = args => paginate('match $i isa Intrusion-Set', args);
 
 export const search = args =>
   paginate(
-    `match $x isa Intrusion-Set has name $name; $x has alias $alias; { $name contains "${prepareString(
-      args.search
-    )}"; } or { $alias contains "${prepareString(args.search)}"; }`,
+    `match $i isa Intrusion-Set; 
+    $i has name $name; 
+    $i has alias $alias; 
+    { $name contains "${prepareString(args.search)}"; } or
+    { $alias contains "${prepareString(args.search)}"; }`,
     args,
     false
   );
@@ -31,77 +33,71 @@ export const findById = intrusionSetId => getById(intrusionSetId);
 export const addIntrusionSet = async (user, intrusionSet) => {
   const wTx = await takeWriteTx();
   const query = `insert $intrusionSet isa Intrusion-Set 
-    has type "intrusion-set";
-    $intrusionSet has stix_id "${
+    has entity_type "intrusion-set",
+    has stix_id "${
       intrusionSet.stix_id
         ? prepareString(intrusionSet.stix_id)
         : `intrusion-set--${uuid()}`
-    }";
-    $intrusionSet has stix_label "";
-    $intrusionSet has alias "";
-    $intrusionSet has name "${prepareString(intrusionSet.name)}";
-    $intrusionSet has description "${prepareString(intrusionSet.description)}";
-    $intrusionSet has first_seen ${
+    }",
+    has stix_label "",
+    has alias "",
+    has name "${prepareString(intrusionSet.name)}",
+    has description "${prepareString(intrusionSet.description)}",
+    has first_seen ${
       intrusionSet.first_seen ? prepareDate(intrusionSet.first_seen) : now()
-    };
-    $intrusionSet has first_seen_day "${
+    },
+    has first_seen_day "${
       intrusionSet.first_seen
         ? dayFormat(intrusionSet.first_seen)
         : dayFormat(now())
-    }";
-    $intrusionSet has first_seen_month "${
+    }",
+    has first_seen_month "${
       intrusionSet.first_seen
         ? monthFormat(intrusionSet.first_seen)
         : monthFormat(now())
-    }";
-    $intrusionSet has first_seen_year "${
+    }",
+    has first_seen_year "${
       intrusionSet.first_seen
         ? yearFormat(intrusionSet.first_seen)
         : yearFormat(now())
-    }";
-    $intrusionSet has last_seen ${
+    }",
+    has last_seen ${
       intrusionSet.last_seen ? prepareDate(intrusionSet.last_seen) : now()
-    };
-    $intrusionSet has last_seen_day "${
+    },
+    has last_seen_day "${
       intrusionSet.last_seen
         ? dayFormat(intrusionSet.last_seen)
         : dayFormat(now())
-    }";
-    $intrusionSet has last_seen_month "${
+    }",
+    has last_seen_month "${
       intrusionSet.last_seen
         ? monthFormat(intrusionSet.last_seen)
         : monthFormat(now())
-    }";
-    $intrusionSet has last_seen_year "${
+    }",
+    has last_seen_year "${
       intrusionSet.last_seen
         ? yearFormat(intrusionSet.last_seen)
         : yearFormat(now())
-    }";
-    $intrusionSet has goal "${prepareString(intrusionSet.goal)}";
-    $intrusionSet has sophistication "${prepareString(
-      intrusionSet.sophistication
-    )}";
-    $intrusionSet has resource_level "${prepareString(
-      intrusionSet.resource_level
-    )}";
-    $intrusionSet has primary_motivation "${prepareString(
-      intrusionSet.primary_motivation
-    )}";
-    $intrusionSet has secondary_motivation "${prepareString(
+    }",
+    has goal "${prepareString(intrusionSet.goal)}",
+    has sophistication "${prepareString(intrusionSet.sophistication)}",
+    has resource_level "${prepareString(intrusionSet.resource_level)}",
+    has primary_motivation "${prepareString(intrusionSet.primary_motivation)}",
+    has secondary_motivation "${prepareString(
       intrusionSet.secondary_motivation
-    )}";
-    $intrusionSet has created ${
+    )}",
+    has created ${
       intrusionSet.created ? prepareDate(intrusionSet.created) : now()
-    };
-    $intrusionSet has modified ${
+    },
+    has modified ${
       intrusionSet.modified ? prepareDate(intrusionSet.modified) : now()
-    };
-    $intrusionSet has revoked false;
-    $intrusionSet has created_at ${now()};
-    $intrusionSet has created_at_day "${dayFormat(now())}";
-    $intrusionSet has created_at_month "${monthFormat(now())}";
-    $intrusionSet has created_at_year "${yearFormat(now())}";       
-    $intrusionSet has updated_at ${now()};
+    },
+    has revoked false,
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}",       
+    has updated_at ${now()};
   `;
   logger.debug(`[GRAKN - infer: false] ${query}`);
   const intrusionSetIterator = await wTx.query(query);
@@ -111,16 +107,20 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     .get('intrusionSet').id;
 
   if (intrusionSet.createdByRef) {
-    await wTx.query(`match $from id ${createdIntrusionSetId};
-         $to id ${intrusionSet.createdByRef};
-         insert (so: $from, creator: $to)
-         isa created_by_ref;`);
+    await wTx.query(
+      `match $from id ${createdIntrusionSetId};
+      $to id ${intrusionSet.createdByRef};
+      insert (so: $from, creator: $to)
+      isa created_by_ref;`
+    );
   }
 
   if (intrusionSet.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
-        `match $from id ${createdIntrusionSetId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+        `match $from id ${createdIntrusionSetId}; 
+        $to id ${markingDefinition}; 
+        insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

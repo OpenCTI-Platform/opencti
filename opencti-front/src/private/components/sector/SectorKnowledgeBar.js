@@ -7,10 +7,7 @@ import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
 import { DeviceHub, AccountBalance } from '@material-ui/icons';
 import {
-  ChessKnight,
-  Biohazard,
-  Fire,
-  Diamond,
+  ChessKnight, Biohazard, Fire, Diamond,
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
@@ -71,60 +68,144 @@ class SectorKnowledgeBar extends Component {
       t, location, classes, sectorId,
     } = this.props;
     return (
-      <Drawer variant='permanent' anchor='right' classes={{ paper: classes.drawerPaper }}>
-        <div className={classes.toolbar}/>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/overview` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/overview`}>
+      <Drawer
+        variant="permanent"
+        anchor="right"
+        classes={{ paper: classes.drawerPaper }}
+      >
+        <div className={classes.toolbar} />
+        <Paper
+          classes={{
+            root:
+              location.pathname
+              === `/dashboard/knowledge/sectors/${sectorId}/knowledge/overview`
+                ? classes.paperActive
+                : classes.paper,
+          }}
+          elevation={2}
+          component={Link}
+          to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/overview`}
+        >
           <div className={classes.icon}>
-            <DeviceHub fontSize='default'/>
+            <DeviceHub fontSize="default" />
           </div>
           <div className={classes.content}>
-            <span className={classes.title}>{t('Overview')}</span><br />
+            <span className={classes.title}>{t('Overview')}</span>
+            <br />
             <span className={classes.subtitle}>{t('Knowledge graph')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/organizations` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/organizations`}>
+        <Paper
+          classes={{
+            root:
+              location.pathname
+              === `/dashboard/knowledge/sectors/${sectorId}/knowledge/organizations`
+                ? classes.paperActive
+                : classes.paper,
+          }}
+          elevation={2}
+          component={Link}
+          to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/organizations`}
+        >
           <div className={classes.icon}>
-            <AccountBalance fontSize='default'/>
+            <AccountBalance fontSize="default" />
           </div>
           <div className={classes.content}>
-            <span className={classes.title}>{t('Organizations')}</span><br />
+            <span className={classes.title}>{t('Organizations')}</span>
+            <br />
             <span className={classes.subtitle}>{t('Part of this sector')}</span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/intrusion_sets` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/intrusion_sets`}>
+        <Paper
+          classes={{
+            root:
+              location.pathname
+              === `/dashboard/knowledge/sectors/${sectorId}/knowledge/intrusion_sets`
+                ? classes.paperActive
+                : classes.paper,
+          }}
+          elevation={2}
+          component={Link}
+          to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/intrusion_sets`}
+        >
           <div className={classes.icon}>
-            <Diamond fontSize='default'/>
+            <Diamond fontSize="default" />
           </div>
           <div className={classes.content}>
-            <span className={classes.title}>{t('Intrusion sets')}</span><br />
-            <span className={classes.subtitle}>{t('Targeting this sector')}</span>
+            <span className={classes.title}>{t('Intrusion sets')}</span>
+            <br />
+            <span className={classes.subtitle}>
+              {t('Targeting this sector')}
+            </span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/campaigns` ? classes.paperActive : classes.paper }} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/campaigns`}>
+        <Paper
+          classes={{
+            root:
+              location.pathname
+              === `/dashboard/knowledge/sectors/${sectorId}/knowledge/campaigns`
+                ? classes.paperActive
+                : classes.paper,
+          }}
+          elevation={2}
+          component={Link}
+          to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/campaigns`}
+        >
           <div className={classes.icon}>
-            <ChessKnight fontSize='default'/>
+            <ChessKnight fontSize="default" />
           </div>
           <div className={classes.content}>
-            <span className={classes.title}>{t('Campaigns')}</span><br />
-            <span className={classes.subtitle}>{t('Targeting this sector')}</span>
+            <span className={classes.title}>{t('Campaigns')}</span>
+            <br />
+            <span className={classes.subtitle}>
+              {t('Targeting this sector')}
+            </span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/incidents` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/incidents`}>
+        <Paper
+          classes={{
+            root:
+              location.pathname
+              === `/dashboard/knowledge/sectors/${sectorId}/knowledge/incidents`
+                ? classes.paperActive
+                : classes.paper,
+          }}
+          elevation={2}
+          component={Link}
+          to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/incidents`}
+        >
           <div className={classes.icon}>
-            <Fire fontSize='default'/>
+            <Fire fontSize="default" />
           </div>
           <div className={classes.content}>
-            <span className={classes.title}>{t('Incidents')}</span><br />
-            <span className={classes.subtitle}>{t('Affecting this sector')}</span>
+            <span className={classes.title}>{t('Incidents')}</span>
+            <br />
+            <span className={classes.subtitle}>
+              {t('Affecting this sector')}
+            </span>
           </div>
         </Paper>
-        <Paper classes={{ root: location.pathname === `/dashboard/knowledge/sectors/${sectorId}/knowledge/malwares` ? classes.paperActive : classes.paper}} elevation={2} component={Link} to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/malwares`}>
+        <Paper
+          classes={{
+            root:
+              location.pathname
+              === `/dashboard/knowledge/sectors/${sectorId}/knowledge/malwares`
+                ? classes.paperActive
+                : classes.paper,
+          }}
+          elevation={2}
+          component={Link}
+          to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/malwares`}
+        >
           <div className={classes.icon}>
-            <Biohazard fontSize='default'/>
+            <Biohazard fontSize="default" />
           </div>
           <div className={classes.content}>
-            <span className={classes.title}>{t('Malwares')}</span><br />
-            <span className={classes.subtitle}>{t('Targeting this sector')}</span>
+            <span className={classes.title}>{t('Malwares')}</span>
+            <br />
+            <span className={classes.subtitle}>
+              {t('Targeting this sector')}
+            </span>
           </div>
         </Paper>
       </Drawer>

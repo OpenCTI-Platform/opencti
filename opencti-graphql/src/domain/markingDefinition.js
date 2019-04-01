@@ -19,29 +19,29 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args =>
-  paginate('match $x isa Marking-Definition', args);
+  paginate('match $m isa Marking-Definition', args);
+
 export const findByEntity = args =>
   paginate(
-    `match $markingDefinition isa Marking-Definition; $rel(marking:$markingDefinition, so:$so) isa object_marking_refs; $so id ${
-      args.objectId
-    }`,
+    `match $m isa Marking-Definition; 
+    $rel(marking:$m, so:$so) isa object_marking_refs; 
+    $so id ${args.objectId}`,
     args
   );
 
 export const findByDefinition = args =>
   paginate(
-    `match $x isa Marking-Definition; $x has definition_type "${prepareString(
-      args.definition_type
-    )}"; $x has definition "${prepareString(args.definition)}"`,
+    `match $m isa Marking-Definition; 
+    $m has definition_type "${prepareString(args.definition_type)}"; 
+    $m has definition "${prepareString(args.definition)}"`,
     args,
     false
   );
 
 export const findByStixId = args =>
   paginate(
-    `match $x isa Marking-Definition; $x has stix_id "${prepareString(
-      args.stix_id
-    )}"`,
+    `match $m isa Marking-Definition; 
+    $m has stix_id "${prepareString(args.stix_id)}"`,
     args,
     false
   );
@@ -50,35 +50,31 @@ export const findById = markingDefinitionId => getById(markingDefinitionId);
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
   const wTx = await takeWriteTx();
-  const markingDefinitionIterator = await wTx.query(`insert $markingDefinition isa Marking-Definition 
-    has type "marking-definition";
-    $markingDefinition has stix_id "${
+  const markingDefinitionIterator = await wTx.query(`insert $markingDefinition isa Marking-Definition,
+    has entity_type "marking-definition",
+    has stix_id "${
       markingDefinition.stix_id
         ? prepareString(markingDefinition.stix_id)
         : `marking-definition--${uuid()}`
-    }";
-    $markingDefinition has definition_type "${prepareString(
-      markingDefinition.definition_type
-    )}";
-    $markingDefinition has definition "${prepareString(
-      markingDefinition.definition
-    )}";
-    $markingDefinition has color "${prepareString(markingDefinition.color)}";
-    $markingDefinition has level ${markingDefinition.level};
-    $markingDefinition has created ${
+    }",
+    has definition_type "${prepareString(markingDefinition.definition_type)}",
+    has definition "${prepareString(markingDefinition.definition)}",
+    has color "${prepareString(markingDefinition.color)}",
+    has level ${markingDefinition.level},
+    has created ${
       markingDefinition.created ? prepareDate(markingDefinition.created) : now()
-    };
-    $markingDefinition has modified ${
+    },
+    has modified ${
       markingDefinition.modified
         ? prepareDate(markingDefinition.modified)
         : now()
-    };
-    $markingDefinition has revoked false;
-    $markingDefinition has created_at ${now()};
-    $markingDefinition has created_at_day "${dayFormat(now())}";
-    $markingDefinition has created_at_month "${monthFormat(now())}";
-    $markingDefinition has created_at_year "${yearFormat(now())}";       
-    $markingDefinition has updated_at ${now()};
+    },
+    has revoked false,
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}",       
+    has updated_at ${now()};
   `);
   const createMarkingDefinition = await markingDefinitionIterator.next();
   const createdMarkingDefinitionId = await createMarkingDefinition
@@ -86,10 +82,12 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
     .get('markingDefinition').id;
 
   if (markingDefinition.createdByRef) {
-    await wTx.query(`match $from id ${createdMarkingDefinitionId};
-         $to id ${markingDefinition.createdByRef};
-         insert (so: $from, creator: $to)
-         isa created_by_ref;`);
+    await wTx.query(
+      `match $from id ${createdMarkingDefinitionId};
+      $to id ${markingDefinition.createdByRef};
+      insert (so: $from, creator: $to)
+      isa created_by_ref;`
+    );
   }
 
   await wTx.commit();

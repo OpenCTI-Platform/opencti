@@ -43,11 +43,11 @@ function Transition(props) {
 }
 
 const ReportPopoverDeletionMutation = graphql`
-    mutation ReportPopoverDeletionMutation($id: ID!) {
-        reportEdit(id: $id) {
-            delete
-        }
+  mutation ReportPopoverDeletionMutation($id: ID!) {
+    reportEdit(id: $id) {
+      delete
     }
+  }
 `;
 
 class ReportPopover extends Component {
@@ -106,47 +106,68 @@ class ReportPopover extends Component {
     const { classes, t, reportId } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
-          <MoreVert/>
+        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+          <MoreVert />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}>
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>{t('Update')}</MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
+          style={{ marginTop: 50 }}
+        >
+          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
+            {t('Update')}
+          </MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+            {t('Delete')}
+          </MenuItem>
         </Menu>
         <Dialog
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}>
+          onClose={this.handleCloseDelete.bind(this)}
+        >
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this report?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseDelete.bind(this)} color="primary" disabled={this.state.deleting}>
+            <Button
+              onClick={this.handleCloseDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
               {t('Cancel')}
             </Button>
-            <Button onClick={this.submitDelete.bind(this)} color="primary" disabled={this.state.deleting}>
+            <Button
+              onClick={this.submitDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
               {t('Delete')}
             </Button>
           </DialogActions>
         </Dialog>
-        <Drawer open={this.state.displayEdit} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleCloseEdit.bind(this)}>
+        <Drawer
+          open={this.state.displayEdit}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleCloseEdit.bind(this)}
+        >
           <QueryRenderer
             query={reportEditionQuery}
             variables={{ id: reportId }}
             render={({ props }) => {
               if (props) {
-                return <ReportEditionContainer
-                  me={props.me}
-                  report={props.report}
-                  handleClose={this.handleCloseEdit.bind(this)}
-                />;
+                return (
+                  <ReportEditionContainer
+                    me={props.me}
+                    report={props.report}
+                    handleClose={this.handleCloseEdit.bind(this)}
+                  />
+                );
               }
               return <div> &nbsp; </div>;
             }}

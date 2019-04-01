@@ -38,45 +38,37 @@ export const findById = threatActorId => getById(threatActorId);
 
 export const addThreatActor = async (user, threatActor) => {
   const wTx = await takeWriteTx();
-  const threatActorIterator = await wTx.query(`insert $threatActor isa Threat-Actor 
-    has type "threat-actor";
-    $threatActor has stix_id "${
+  const threatActorIterator = await wTx.query(`insert $threatActor isa Threat-Actor,
+    has entity_type "threat-actor",
+    has stix_id "${
       threatActor.stix_id
         ? prepareString(threatActor.stix_id)
         : `threat-actor--${uuid()}`
-    }";
-    $threatActor has stix_label "";
-    $threatActor has alias "";
-    $threatActor has name "${prepareString(threatActor.name)}";
-    $threatActor has description "${prepareString(threatActor.description)}";
-    $threatActor has goal "${prepareString(threatActor.goal)}";
-    $threatActor has sophistication "${prepareString(
-      threatActor.sophistication
-    )}";
-    $threatActor has resource_level "${prepareString(
-      threatActor.resource_level
-    )}";
-    $threatActor has primary_motivation "${prepareString(
-      threatActor.primary_motivation
-    )}";
-    $threatActor has secondary_motivation "${prepareString(
+    }",
+    has stix_label "",
+    has alias "",
+    has name "${prepareString(threatActor.name)}",
+    has description "${prepareString(threatActor.description)}",
+    has goal "${prepareString(threatActor.goal)}",
+    has sophistication "${prepareString(threatActor.sophistication)}",
+    has resource_level "${prepareString(threatActor.resource_level)}",
+    has primary_motivation "${prepareString(threatActor.primary_motivation)}",
+    has secondary_motivation "${prepareString(
       threatActor.secondary_motivation
-    )}";
-    $threatActor has personal_motivation "${prepareString(
-      threatActor.personal_motivation
-    )}";
-    $threatActor has created ${
+    )}",
+    has personal_motivation "${prepareString(threatActor.personal_motivation)}",
+    has created ${
       threatActor.created ? prepareDate(threatActor.created) : now()
-    };
-    $threatActor has modified ${
+    },
+    has modified ${
       threatActor.modified ? prepareDate(threatActor.modified) : now()
-    };
-    $threatActor has revoked false;
-    $threatActor has created_at ${now()};
-    $threatActor has created_at_day "${dayFormat(now())}";
-    $threatActor has created_at_month "${monthFormat(now())}";
-    $threatActor has created_at_year "${yearFormat(now())}";        
-    $threatActor has updated_at ${now()};
+    },
+    has revoked false,
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}",        
+    has updated_at ${now()};
   `);
   const createThreatActor = await threatActorIterator.next();
   const createThreatActorId = await createThreatActor.map().get('threatActor')

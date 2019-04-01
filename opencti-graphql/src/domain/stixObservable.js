@@ -1,4 +1,4 @@
-import { assoc, map } from 'ramda';
+import { assoc, map, head, join } from 'ramda';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -25,7 +25,14 @@ import {
 
 export const findAll = args =>
   paginate(
-    `match $x isa ${args.type ? args.type : 'Stix-Observable'}`,
+    `match ${
+      args.types
+        ? `${join(
+            ' ',
+            map(type => `{ $x isa ${type}; } or`, args.types)
+          )} { $x isa ${head(args.types)}; }`
+        : '$x isa Stix-Observable'
+    }`,
     args,
     false
   );
@@ -46,20 +53,18 @@ export const findByValue = args =>
 
 export const search = args =>
   paginate(
-    `match $x isa ${args.type ? args.type : 'Stix-Observable'}
-    has observable_value $value;
+    `match $x isa ${args.type ? args.type : 'Stix-Observable'};
+    $x has observable_value $value;
     $x has name $name;
-    { $name contains "${prepareString(args.search)}"; } or
-    { $alias contains "${prepareString(args.search)}"; }`,
+    { $value contains "${prepareString(args.search)}"; } or
+    { $name contains "${prepareString(args.search)}"; }`,
     args,
     false
   );
 
 export const createdByRef = stixObservableId =>
   getObject(
-    `match $x isa Identity; 
-    $rel(creator:$x, so:$stixObservable) isa created_by_ref; 
-    $stixObservable id ${stixObservableId}; offset 0; limit 1; get $x,$rel;`,
+    `match $x isa Identity; $rel(creator:$x, so:$stixObservable) isa created_by_ref; $stixObservable id ${stixObservableId}; get $x,$rel; offset 0; limit 1;`,
     'x',
     'rel'
   );
@@ -79,9 +84,7 @@ export const reports = (stixObservableId, args) =>
 
 export const reportsTimeSeries = (stixObservableId, args) =>
   timeSeries(
-    `match $m isa Report; 
-    $rel(knowledge_aggregation:$report, so:$stixObservable) isa object_refs; 
-    $stixObservable id ${stixObservableId}`,
+    `match $m isa Report; $rel(knowledge_aggregation:$report, so:$stixObservable) isa object_refs; $stixObservable id ${stixObservableId}`,
     args
   );
 
@@ -95,18 +98,16 @@ export const stixRelations = (stixObservableId, args) => {
 
 export const addStixObservable = async (user, stixObservable) => {
   const wTx = await takeWriteTx();
-  const query = `insert $stixObservable isa ${stixObservable.type} 
-    has type "${prepareString(stixObservable.type.toLowerCase())}";
-    $stixObservable has name "";
-    $stixObservable has description "";
-    $stixObservable has observable_value "${prepareString(
-      stixObservable.observable_value
-    )}";
-    $stixObservable has created_at ${now()};
-    $stixObservable has created_at_day "${dayFormat(now())}";
-    $stixObservable has created_at_month "${monthFormat(now())}";
-    $stixObservable has created_at_year "${yearFormat(now())}";      
-    $stixObservable has updated_at ${now()};
+  const query = `insert $stixObservable isa ${stixObservable.type},
+    has entity_type "${prepareString(stixObservable.type.toLowerCase())}",
+    has name "",
+    has description "",
+    has observable_value "${prepareString(stixObservable.observable_value)}",
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}",      
+    has updated_at ${now()};
   `;
   logger.debug(`[GRAKN - infer: false] ${query}`);
   const stixObservableIterator = await wTx.query(query);
@@ -146,7 +147,7 @@ export const stixObservableDelete = stixObservableId =>
 
 export const stixObservableAddRelation = (user, stixObservableId, input) =>
   createRelation(stixObservableId, input).then(relationData => {
-    notify(BUS_TOPICS.stixObservable.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
 
@@ -156,25 +157,25 @@ export const stixObservableDeleteRelation = (
   relationId
 ) =>
   deleteRelationById(stixObservableId, relationId).then(relationData => {
-    notify(BUS_TOPICS.stixObservable.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
 
 export const stixObservableCleanContext = (user, stixObservableId) => {
   delEditContext(user, stixObservableId);
   return getById(stixObservableId).then(stixObservable =>
-    notify(BUS_TOPICS.stixObservable.EDIT_TOPIC, stixObservable, user)
+    notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user)
   );
 };
 
 export const stixObservableEditContext = (user, stixObservableId, input) => {
   setEditContext(user, stixObservableId, input);
   return getById(stixObservableId).then(stixObservable =>
-    notify(BUS_TOPICS.stixObservable.EDIT_TOPIC, stixObservable, user)
+    notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user)
   );
 };
 
 export const stixObservableEditField = (user, stixObservableId, input) =>
   updateAttribute(stixObservableId, input).then(stixObservable =>
-    notify(BUS_TOPICS.stixObservable.EDIT_TOPIC, stixObservable, user)
+    notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user)
   );

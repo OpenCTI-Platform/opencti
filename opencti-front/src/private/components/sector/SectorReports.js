@@ -23,15 +23,14 @@ const styles = theme => ({
   },
 });
 
-
 class SectorReportsComponent extends Component {
   render() {
     const { classes, sector } = this.props;
     return (
       <div className={classes.container}>
-        <SectorHeader sector={sector}/>
+        <SectorHeader sector={sector} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={sector.id}/>
+          <EntityReports entityId={sector.id} />
         </Paper>
       </div>
     );
@@ -46,10 +45,10 @@ SectorReportsComponent.propTypes = {
 
 const SectorReports = createFragmentContainer(SectorReportsComponent, {
   sector: graphql`
-      fragment SectorReports_sector on Sector {
-          id
-          ...SectorHeader_sector
-      }
+    fragment SectorReports_sector on Sector {
+      id
+      ...SectorHeader_sector
+    }
   `,
 });
 

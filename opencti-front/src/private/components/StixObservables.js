@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { CSVLink } from 'react-csv';
 import {
-  assoc, compose, join, map, pathOr, pipe,
+  assoc, compose, join, map, pathOr, pipe, append, filter,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -35,8 +35,13 @@ import StixObservablesLines, {
 import SearchInput from '../../components/SearchInput';
 import inject18n from '../../components/i18n';
 import { dateFormat } from '../../utils/Time';
+import StixObservablesRightBar from './stix_observable/StixObservablesRightBar';
 
 const styles = theme => ({
+  container: {
+    margin: 0,
+    padding: '0 260px 0 0',
+  },
   header: {
     margin: '0 0 10px 0',
   },
@@ -76,7 +81,7 @@ const inlineStyles = {
     padding: 0,
     top: '0px',
   },
-  type: {
+  entity_type: {
     float: 'left',
     width: '20%',
     fontSize: 12,
@@ -118,7 +123,7 @@ export const exportStixObservablesQuery = graphql`
       edges {
         node {
           id
-          type
+          entity_type
           observable_value
           created_at
           markingDefinitions {
@@ -145,6 +150,7 @@ class StixObservables extends Component {
       view: 'lines',
       exportCsvOpen: false,
       exportCsvData: null,
+      types: [],
     };
   }
 
@@ -188,6 +194,14 @@ class StixObservables extends Component {
     );
   }
 
+  handleToggle(type) {
+    if (this.state.types.includes(type)) {
+      this.setState({ types: filter(t => t !== type, this.state.types) });
+    } else {
+      this.setState({ types: append(type, this.state.types) });
+    }
+  }
+
   handleOpenExport(event) {
     this.setState({ anchorExport: event.currentTarget });
   }
@@ -204,7 +218,7 @@ class StixObservables extends Component {
     this.handleCloseExport();
     this.setState({ exportCsvOpen: true });
     const paginationOptions = {
-      type: this.props.type || null,
+      types: this.state.types.length > 0 ? this.state.types : null,
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
@@ -229,14 +243,14 @@ class StixObservables extends Component {
   }
 
   render() {
-    const { classes, type, t } = this.props;
+    const { classes, t } = this.props;
     const paginationOptions = {
-      type: type || null,
+      types: this.state.types.length > 0 ? this.state.types : null,
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div>
+      <div className={classes.container}>
         <div className={classes.header}>
           <div style={{ float: 'left', marginTop: -10 }}>
             <SearchInput
@@ -292,7 +306,7 @@ class StixObservables extends Component {
             <ListItemText
               primary={
                 <div>
-                  {this.SortHeader('type', 'Type', true)}
+                  {this.SortHeader('entity_type', 'Type', true)}
                   {this.SortHeader('observable_value', 'Value', true)}
                   {this.SortHeader('created_at', 'Creation date', true)}
                   {this.SortHeader('marking', 'Marking', false)}
@@ -323,6 +337,10 @@ class StixObservables extends Component {
             }}
           />
         </List>
+        <StixObservablesRightBar
+          types={this.state.types}
+          handleToggle={this.handleToggle.bind(this)}
+        />
         <Dialog
           open={this.state.exportCsvOpen}
           onClose={this.handleCloseExportCsv.bind(this)}
@@ -376,7 +394,6 @@ class StixObservables extends Component {
 
 StixObservables.propTypes = {
   classes: PropTypes.object,
-  type: PropTypes.string,
   t: PropTypes.func,
   history: PropTypes.object,
 };

@@ -62,18 +62,18 @@ ReportHeaderComponent.propTypes = {
 
 const ReportHeader = createFragmentContainer(ReportHeaderComponent, {
   report: graphql`
-      fragment ReportHeader_report on Report {
-          id,
-          name,
-          markingDefinitions {
-              edges {
-                  node {
-                      id
-                      definition
-                  }
-              }
+    fragment ReportHeader_report on Report {
+      id
+      name
+      markingDefinitions {
+        edges {
+          node {
+            id
+            definition
           }
+        }
       }
+    }
   `,
 });
 

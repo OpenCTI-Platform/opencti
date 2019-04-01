@@ -45,7 +45,7 @@ const styles = theme => ({
 });
 
 const inlineStyles = {
-  type: {
+  entity_type: {
     float: 'left',
     width: '20%',
     height: 20,
@@ -97,8 +97,8 @@ class StixObservableLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.type}>
-                {t(`observable_${stixObservable.type}`)}
+              <div className={classes.bodyItem} style={inlineStyles.entity_type}>
+                {t(`observable_${stixObservable.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -145,7 +145,7 @@ const StixObservableLineFragment = createFragmentContainer(
     stixObservable: graphql`
       fragment StixObservableLine_stixObservable on StixObservable {
         id
-        type
+        entity_type
         observable_value
         created_at
         markingDefinitions {

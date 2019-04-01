@@ -28,27 +28,36 @@ class SectorComponent extends Component {
     const { classes, sector } = this.props;
     return (
       <div className={classes.container}>
-        <SectorHeader sector={sector}/>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
+        <SectorHeader sector={sector} />
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={6}>
-            <SectorOverview sector={sector}/>
+            <SectorOverview sector={sector} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={sector.id}/>
+            <EntityLastReports entityId={sector.id} />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 20 }}
+        >
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart entityId={sector.id}/>
+            <EntityCampaignsChart entityId={sector.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={sector.id}/>
+            <EntityIncidentsChart entityId={sector.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={sector.id}/>
+            <EntityReportsChart entityId={sector.id} />
           </Grid>
         </Grid>
-        <SectorEdition sectorId={sector.id}/>
+        <SectorEdition sectorId={sector.id} />
       </div>
     );
   }
@@ -62,11 +71,11 @@ SectorComponent.propTypes = {
 
 const Sector = createFragmentContainer(SectorComponent, {
   sector: graphql`
-      fragment Sector_sector on Sector {
-          id
-          ...SectorHeader_sector
-          ...SectorOverview_sector
-      }
+    fragment Sector_sector on Sector {
+      id
+      ...SectorHeader_sector
+      ...SectorOverview_sector
+    }
   `,
 });
 

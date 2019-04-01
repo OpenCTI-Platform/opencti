@@ -47,6 +47,12 @@ class AttackPatternsLines extends Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.searchTerm !== prevProps.searchTerm) {
+      this._loadMore();
+    }
+  }
+
   filterList(list) {
     const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''
@@ -153,10 +159,7 @@ class AttackPatternsLines extends Component {
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div
-            className={styles.windowScrollerWrapper}
-            key={this.props.searchTerm}
-          >
+          <div className={styles.windowScrollerWrapper}>
             <InfiniteLoader
               isRowLoaded={this._isRowLoaded}
               loadMoreRows={this._loadMore}
@@ -223,6 +226,7 @@ export const attackPatternsLinesQuery = graphql`
 export default withStyles(styles)(
   createPaginationContainer(
     AttackPatternsLines,
+
     {
       data: graphql`
         fragment AttackPatternsLines_data on Query

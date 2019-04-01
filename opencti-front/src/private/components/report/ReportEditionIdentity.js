@@ -42,29 +42,26 @@ const styles = theme => ({
 });
 
 const reportMutationFieldPatch = graphql`
-    mutation ReportEditionIdentityFieldPatchMutation(
+  mutation ReportEditionIdentityFieldPatchMutation(
     $id: ID!
     $input: EditInput!
-    ) {
-        reportEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...ReportEditionIdentity_report
-            }
-        }
+  ) {
+    reportEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...ReportEditionIdentity_report
+      }
     }
+  }
 `;
 
 const reportEditionIdentityFocus = graphql`
-    mutation ReportEditionIdentityFocusMutation(
-    $id: ID!
-    $input: EditContext!
-    ) {
-        reportEdit(id: $id) {
-            contextPatch(input: $input) {
-                ...ReportEditionIdentity_report
-            }
-        }
+  mutation ReportEditionIdentityFocusMutation($id: ID!, $input: EditContext!) {
+    reportEdit(id: $id) {
+      contextPatch(input: $input) {
+        ...ReportEditionIdentity_report
+      }
     }
+  }
 `;
 
 const reportValidation = t => Yup.object().shape({
@@ -111,11 +108,7 @@ class ReportEditionIdentityComponent extends Component {
     } = this.props;
     const initialValues = pipe(
       assoc('published', dateFormat(report.published)),
-      pick([
-        'published',
-        'object_status',
-        'source_confidence_level',
-      ]),
+      pick(['published', 'object_status', 'source_confidence_level']),
     )(report);
     return (
       <div>
@@ -127,13 +120,23 @@ class ReportEditionIdentityComponent extends Component {
           render={() => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field name='published' component={DatePickerField} label={t('Publication date')}
-                       fullWidth={true}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='published'/>}/>
                 <Field
-                  name='object_status'
+                  name="published"
+                  component={DatePickerField}
+                  label={t('Publication date')}
+                  fullWidth={true}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="published"
+                    />
+                  }
+                />
+                <Field
+                  name="object_status"
                   component={Select}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -148,17 +151,25 @@ class ReportEditionIdentityComponent extends Component {
                     <SubscriptionFocus
                       me={me}
                       users={editUsers}
-                      fieldName='object_status'
+                      fieldName="object_status"
                     />
                   }
                 >
-                  <MenuItem key='0' value='0'>{t('report_status_0')}</MenuItem>
-                  <MenuItem key='1' value='1'>{t('report_status_1')}</MenuItem>
-                  <MenuItem key='2' value='2'>{t('report_status_2')}</MenuItem>
-                  <MenuItem key='3' value='3'>{t('report_status_3')}</MenuItem>
+                  <MenuItem key="0" value="0">
+                    {t('report_status_0')}
+                  </MenuItem>
+                  <MenuItem key="1" value="1">
+                    {t('report_status_1')}
+                  </MenuItem>
+                  <MenuItem key="2" value="2">
+                    {t('report_status_2')}
+                  </MenuItem>
+                  <MenuItem key="3" value="3">
+                    {t('report_status_3')}
+                  </MenuItem>
                 </Field>
                 <Field
-                  name='source_confidence_level'
+                  name="source_confidence_level"
                   component={Select}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -173,15 +184,25 @@ class ReportEditionIdentityComponent extends Component {
                     <SubscriptionFocus
                       me={me}
                       users={editUsers}
-                      fieldName='source_confidence_level'
+                      fieldName="source_confidence_level"
                     />
                   }
                 >
-                  <MenuItem key='1' value='1'>{t('confidence_1')}</MenuItem>
-                  <MenuItem key='2' value='2'>{t('confidence_2')}</MenuItem>
-                  <MenuItem key='3' value='3'>{t('confidence_3')}</MenuItem>
-                  <MenuItem key='4' value='4'>{t('confidence_4')}</MenuItem>
-                  <MenuItem key='5' value='5'>{t('confidence_5')}</MenuItem>
+                  <MenuItem key="1" value="1">
+                    {t('confidence_1')}
+                  </MenuItem>
+                  <MenuItem key="2" value="2">
+                    {t('confidence_2')}
+                  </MenuItem>
+                  <MenuItem key="3" value="3">
+                    {t('confidence_3')}
+                  </MenuItem>
+                  <MenuItem key="4" value="4">
+                    {t('confidence_4')}
+                  </MenuItem>
+                  <MenuItem key="5" value="5">
+                    {t('confidence_5')}
+                  </MenuItem>
                 </Field>
               </Form>
             </div>
@@ -205,12 +226,12 @@ const ReportEditionIdentity = createFragmentContainer(
   ReportEditionIdentityComponent,
   {
     report: graphql`
-        fragment ReportEditionIdentity_report on Report {
-            id
-            published
-            object_status
-            source_confidence_level
-        }
+      fragment ReportEditionIdentity_report on Report {
+        id
+        published
+        object_status
+        source_confidence_level
+      }
     `,
   },
 );

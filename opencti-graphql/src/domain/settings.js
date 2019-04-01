@@ -12,24 +12,25 @@ import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, setEditContext } from '../database/redis';
 
 export const getSettings = () =>
-  getObject('match $x isa Settings; offset 0; limit 1; get;').then(
-    result => result.node
-  );
+  getObject(
+    `match $x isa Settings; 
+    get; 
+    offset 0; 
+    limit 1;`
+  ).then(result => result.node);
 
 export const addSettings = async (user, settings) => {
   const wTx = await takeWriteTx();
-  const settingsIterator = await wTx.query(`insert $settings isa Settings
-    has type "settings";  
-    $settings has platform_title "${prepareString(settings.platform_title)}";
-    $settings has platform_email "${prepareString(settings.platform_email)}";
-    $settings has platform_url "${prepareString(settings.platform_url)}";
-    $settings has platform_language "${prepareString(
-      settings.platform_language
-    )}";
-    $settings has platform_external_auth ${settings.platform_external_auth};
-    $settings has platform_registration ${settings.platform_registration};
-    $settings has created_at ${now()};
-    $settings has updated_at ${now()};
+  const settingsIterator = await wTx.query(`insert $settings isa Settings,
+    has entity_type "settings",
+    has platform_title "${prepareString(settings.platform_title)}",
+    has platform_email "${prepareString(settings.platform_email)}",
+    has platform_url "${prepareString(settings.platform_url)}",
+    has platform_language "${prepareString(settings.platform_language)}",
+    has platform_external_auth ${settings.platform_external_auth},
+    has platform_registration ${settings.platform_registration},
+    has created_at ${now()},
+    has updated_at ${now()};
   `);
   const createSettings = await settingsIterator.next();
   const createdSettingsId = await createSettings.map().get('settings').id;

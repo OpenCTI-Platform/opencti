@@ -21,23 +21,23 @@ export const findById = toolId => getById(toolId);
 
 export const addTool = async (user, tool) => {
   const wTx = await takeWriteTx();
-  const toolIterator = await wTx.query(`insert $tool isa Tool 
-    has type "tool";
-    $tool has stix_id "${
+  const toolIterator = await wTx.query(`insert $tool isa Tool,
+    has entity_type "tool",
+    has stix_id "${
       tool.stix_id ? prepareString(tool.stix_id) : `tool--${uuid()}`
-    }";
-    $tool has stix_label "";
-    $tool has alias "";
-    $tool has name "${prepareString(tool.name)}";
-    $tool has description "${prepareString(tool.description)}";
-    $tool has created ${tool.created ? prepareDate(tool.created) : now()};
-    $tool has modified ${tool.modified ? prepareDate(tool.modified) : now()};
-    $tool has revoked false;
-    $tool has created_at ${now()};
-    $tool has created_at_day "${dayFormat(now())}";
-    $tool has created_at_month "${monthFormat(now())}";
-    $tool has created_at_year "${yearFormat(now())}";      
-    $tool has updated_at ${now()};
+    }",
+    has stix_label "",
+    has alias "",
+    has name "${prepareString(tool.name)}",
+    has description "${prepareString(tool.description)}",
+    has created ${tool.created ? prepareDate(tool.created) : now()},
+    has modified ${tool.modified ? prepareDate(tool.modified) : now()},
+    has revoked false,
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}",      
+    has updated_at ${now()};
   `);
   const createTool = await toolIterator.next();
   const createdToolId = await createTool.map().get('tool').id;

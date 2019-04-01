@@ -45,6 +45,12 @@ class IncidentsLines extends Component {
     };
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.searchTerm !== prevProps.searchTerm) {
+      this._loadMore();
+    }
+  }
+
   filterList(list) {
     const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''

@@ -21,7 +21,13 @@ const styles = () => ({
   },
 });
 
-const inversedRelations = ['organization', 'intrusion-set', 'campaign', 'incident', 'malware'];
+const inversedRelations = [
+  'organization',
+  'intrusion-set',
+  'campaign',
+  'incident',
+  'malware',
+];
 
 class SectorKnowledgeComponent extends Component {
   render() {
@@ -29,75 +35,125 @@ class SectorKnowledgeComponent extends Component {
     const link = `/dashboard/knowledge/sectors/${sector.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <SectorHeader sector={sector} variant='noalias'/>
-        <SectorKnowledgeBar sectorId={sector.id}/>
+        <SectorHeader sector={sector} variant="noalias" />
+        <SectorKnowledgeBar sectorId={sector.id} />
         <div className={classes.content}>
-          <Route exact path='/dashboard/knowledge/sectors/:sectorId/knowledge/relations/:relationId' render={
-            routeProps => <StixRelation
+          <Route
+            exact
+            path="/dashboard/knowledge/sectors/:sectorId/knowledge/relations/:relationId"
+            render={routeProps => (
+              <StixRelation
+                entityId={sector.id}
+                inversedRelations={inversedRelations}
+                {...routeProps}
+              />
+            )}
+          />
+
+          {location.pathname.includes('overview') ? (
+            <StixDomainEntityKnowledge stixDomainEntityId={sector.id} />
+          ) : (
+            ''
+          )}
+
+          {location.pathname.includes('organizations') ? (
+            <EntityStixRelations
               entityId={sector.id}
-              inversedRelations={inversedRelations}
-              {...routeProps}
+              relationType="gathering"
+              targetEntityTypes={['Organization']}
+              entityLink={link}
             />
-          }/>
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('overview') ? <StixDomainEntityKnowledge
-            stixDomainEntityId={sector.id}
-          /> : ''}
+          {location.pathname.includes('intrusion_sets') ? (
+            <EntityStixRelations
+              resolveRelationType="gathering"
+              resolveRelationRole="gather"
+              resolveViaTypes={[
+                {
+                  entityType: 'Campaign',
+                  relationType: 'attributed-to',
+                  relationRole: 'attribution',
+                },
+                {
+                  entityType: 'Incident',
+                  relationType: 'attributed-to',
+                  relationRole: 'attribution',
+                },
+                {
+                  entityType: 'Malware',
+                  relationType: 'attributed-to',
+                  relationRole: 'attribution',
+                },
+              ]}
+              entityId={sector.id}
+              relationType="targets"
+              targetEntityTypes={['Intrusion-Set']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('organizations') ? <EntityStixRelations
-            entityId={sector.id}
-            relationType='gathering'
-            targetEntityTypes={['Organization']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('campaigns') ? (
+            <EntityStixRelations
+              resolveRelationType="gathering"
+              resolveRelationRole="gather"
+              resolveViaTypes={[
+                {
+                  entityType: 'Incident',
+                  relationType: 'attributed-to',
+                  relationRole: 'attribution',
+                },
+                {
+                  entityType: 'Malware',
+                  relationType: 'attributed-to',
+                  relationRole: 'attribution',
+                },
+              ]}
+              entityId={sector.id}
+              relationType="targets"
+              targetEntityTypes={['Campaign']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('intrusion_sets') ? <EntityStixRelations
-            resolveRelationType='gathering'
-            resolveRelationRole='gather'
-            resolveViaTypes={[
-              { entityType: 'Campaign', relationType: 'attributed-to', relationRole: 'attribution' },
-              { entityType: 'Incident', relationType: 'attributed-to', relationRole: 'attribution' },
-              { entityType: 'Malware', relationType: 'attributed-to', relationRole: 'attribution' },
-            ]}
-            entityId={sector.id}
-            relationType='targets'
-            targetEntityTypes={['Intrusion-Set']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('incidents') ? (
+            <EntityStixRelations
+              resolveRelationType="gathering"
+              resolveRelationRole="gather"
+              resolveViaTypes={[
+                {
+                  entityType: 'Malware',
+                  relationType: 'attributed-to',
+                  relationRole: 'attribution',
+                },
+              ]}
+              entityId={sector.id}
+              relationType="targets"
+              targetEntityTypes={['Incident']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('campaigns') ? <EntityStixRelations
-            resolveRelationType='gathering'
-            resolveRelationRole='gather'
-            resolveViaTypes={[
-              { entityType: 'Incident', relationType: 'attributed-to', relationRole: 'attribution' },
-              { entityType: 'Malware', relationType: 'attributed-to', relationRole: 'attribution' },
-            ]}
-            entityId={sector.id}
-            relationType='targets'
-            targetEntityTypes={['Campaign']}
-            entityLink={link}
-          /> : ''}
-
-          {location.pathname.includes('incidents') ? <EntityStixRelations
-            resolveRelationType='gathering'
-            resolveRelationRole='gather'
-            resolveViaTypes={[
-              { entityType: 'Malware', relationType: 'attributed-to', relationRole: 'attribution' },
-            ]}
-            entityId={sector.id}
-            relationType='targets'
-            targetEntityTypes={['Incident']}
-            entityLink={link}
-          /> : ''}
-
-          {location.pathname.includes('malwares') ? <EntityStixRelations
-            resolveRelationType='gathering'
-            resolveRelationRole='gather'
-            entityId={sector.id}
-            relationType='targets'
-            targetEntityTypes={['Malware']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('malwares') ? (
+            <EntityStixRelations
+              resolveRelationType="gathering"
+              resolveRelationRole="gather"
+              entityId={sector.id}
+              relationType="targets"
+              targetEntityTypes={['Malware']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
         </div>
       </div>
     );
@@ -113,10 +169,10 @@ SectorKnowledgeComponent.propTypes = {
 
 const SectorKnowledge = createFragmentContainer(SectorKnowledgeComponent, {
   sector: graphql`
-      fragment SectorKnowledge_sector on Sector {
-          id
-          ...SectorHeader_sector
-      }
+    fragment SectorKnowledge_sector on Sector {
+      id
+      ...SectorHeader_sector
+    }
   `,
 });
 

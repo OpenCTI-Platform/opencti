@@ -18,7 +18,7 @@ import {
 import moment from 'moment';
 import { offsetToCursor } from 'graphql-relay';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import Grakn from 'grakn';
+import Grakn from 'grakn-client';
 import conf, { logger } from '../config/conf';
 import { pubsub } from './redis';
 import { fillTimeSeries, randomKey } from './utils';
@@ -64,11 +64,15 @@ const session = client.session('grakn');
 
 // TODO Change after migration to READ for inferences
 export const takeReadTx = async () => {
-  return session.transaction(Grakn.txType.READ);
+  return session.then(graknSession => {
+    return graknSession.transaction().read();
+  });
 };
 
 export const takeWriteTx = async () => {
-  return session.transaction(Grakn.txType.WRITE);
+  return session.then(graknSession => {
+    return graknSession.transaction().write();
+  });
 };
 
 export const notify = (topic, instance, user, context) => {
@@ -208,7 +212,7 @@ export const queryMultiple = async (query, entities) => {
 export const getRelationById = async id => {
   const rTx = await takeReadTx();
   try {
-    const query = `match $x($from, $to); $x id ${id}; get;`;
+    const query = `match $x($from, $to) isa relation; $x id ${id}; get;`;
     logger.debug(`[GRAKN - infer: false] ${query}`);
     const iterator = await rTx.query(query);
     const answer = await iterator.next();
@@ -571,21 +575,21 @@ export const paginate = (
 ) => {
   const { first = 200, after, orderBy = null, orderMode = 'asc' } = options;
   const offset = after ? cursorToOffset(after) : 0;
-  const instanceKey = /match\s\$(\w+)\s/i.exec(query)[1]; // We need to resolve the key instance used in query.
+  const instanceKey = /match\s(?:\$|{\s\$)(\w+)[\s]/i.exec(query)[1]; // We need to resolve the key instance used in query.
   const findRelationVariable = /\$(\w+)\((\w+):\$(\w+),[\s\w:$]+\)/i.exec(
     query
   );
   const relationKey = findRelationVariable && findRelationVariable[1]; // Could be setup to get relation info
-  const count = getSingleValueNumber(`${query}; aggregate count;`, infer);
-  const ordering = relationOrderingKey
-    ? `$${relationOrderingKey} has ${orderBy} $o; order by $o ${orderMode};`
-    : `$${instanceKey} has ${orderBy} $o; order by $o ${orderMode};`;
+  const count = getSingleValueNumber(`${query}; get; count;`, infer);
+  const orderingKey = relationOrderingKey
+    ? `$${relationOrderingKey} has ${orderBy} $o;`
+    : `$${instanceKey} has ${orderBy} $o;`;
   const elements = getObjects(
-    `${query}; ${
-      ordered && orderBy ? ordering : ''
-    } offset ${offset}; limit ${first}; get $${instanceKey}${
+    `${query}; ${ordered && orderBy ? orderingKey : ''} get $${instanceKey}${
       relationKey ? `, $${relationKey}` : ''
-    };`,
+    }${ordered && orderBy ? ', $o' : ''}; ${
+      ordered && orderBy ? `sort $o ${orderMode};` : ''
+    } offset ${offset}; limit ${first};`,
     instanceKey,
     relationKey,
     infer
@@ -755,11 +759,11 @@ export const paginateRelationships = (
         };`
       : ''
   }`;
-  const count = getSingleValueNumber(`${finalQuery} aggregate count;`);
+  const count = getSingleValueNumber(`${finalQuery} get; count;`);
   const elements = getRelations(
-    `${finalQuery} offset ${offset}; limit ${first}; get $rel, $from, $to ${
+    `${finalQuery} get $rel, $from, $to ${
       extraRel !== null ? `, $${extraRel}` : ''
-    };`,
+    }; offset ${offset}; limit ${first};`,
     'rel',
     'from',
     'to',
@@ -830,7 +834,10 @@ export const updateAttribute = async (id, input) => {
     const labelIterator = await wTx.query(labelTypeQuery);
     const labelAnswer = await labelIterator.next();
     // eslint-disable-next-line prettier/prettier
-    const attrType = await labelAnswer.map().get('x').dataType();
+    const attrType = await labelAnswer
+      .map()
+      .get('x')
+      .dataType();
 
     // 02. For each old values
     const getOldValueQuery = `match $x id ${id}; $x has ${key} $old; get $old;`;
@@ -845,7 +852,7 @@ export const updateAttribute = async (id, input) => {
           ? prepareDate(oldValue)
           : oldValue;
       // If the attribute is alone we can delete it, if not we need to remove the relation to it (via)
-      const countRemainQuery = `match $x isa ${key}; $x == ${typedOldValue}; $rel($x); aggregate count;`;
+      const countRemainQuery = `match $x isa ${key}; $x == ${typedOldValue}; $rel($x); get; count;`;
       const countRemainIterator = await wTx.query(countRemainQuery);
       const countRemain = await countRemainIterator.next();
       const oldNumOfRef = await countRemain.number();
@@ -987,7 +994,7 @@ export const timeSeries = async (query, options) => {
   } = options;
   const rTx = await (inferred ? takeWriteTx() : takeReadTx());
   try {
-    const finalQuery = `${query}; $x has ${field}_${interval} $g; aggregate group $g ${operation};`;
+    const finalQuery = `${query}; $x has ${field}_${interval} $g; get; group $g; ${operation};`;
     logger.debug(`[GRAKN - infer: ${inferred}] ${finalQuery}`);
     const iterator = await rTx.query(finalQuery, { infer: inferred });
     const answer = await iterator.collect();
@@ -1019,7 +1026,7 @@ export const distribution = async (query, options) => {
   const { operation, field, inferred = false } = options;
   const rTx = await (inferred ? takeWriteTx() : takeReadTx());
   try {
-    const finalQuery = `${query}; $x has ${field} $g; aggregate group $g ${operation};`;
+    const finalQuery = `${query}; $x has ${field} $g; get; group $g; ${operation};`;
     logger.debug(`[GRAKN - infer: ${inferred}] ${finalQuery}`);
     const iterator = await rTx.query(finalQuery, { infer: inferred });
     const answer = await iterator.collect();
