@@ -28,41 +28,50 @@ class ToolComponent extends Component {
     const { classes, tool } = this.props;
     return (
       <div className={classes.container}>
-        <ToolHeader tool={tool}/>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
+        <ToolHeader tool={tool} />
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={6}>
-            <ToolOverview tool={tool}/>
+            <ToolOverview tool={tool} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={tool.id}/>
+            <EntityLastReports entityId={tool.id} />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 20 }}
+        >
           <Grid item={true} xs={4}>
             <EntityStixRelationsChart
               entityId={tool.id}
-              relationType='uses'
+              relationType="uses"
               resolveInferences={true}
-              resolveRelationType='attributed-to'
-              resolveRelationRole='origin'
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
             />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsRadar
               entityId={tool.id}
-              entityType='Kill-Chain-Phase'
-              relationType='kill_chain_phases'
-              field='phase_name'
+              entityType="Kill-Chain-Phase"
+              relationType="kill_chain_phases"
+              field="phase_name"
               resolveInferences={true}
-              resolveRelationType='attributed-to'
-              resolveRelationRole='origin'
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={tool.id}/>
+            <EntityReportsChart entityId={tool.id} />
           </Grid>
         </Grid>
-        <ToolEdition toolId={tool.id}/>
+        <ToolEdition toolId={tool.id} />
       </div>
     );
   }
@@ -76,11 +85,11 @@ ToolComponent.propTypes = {
 
 const Tool = createFragmentContainer(ToolComponent, {
   tool: graphql`
-      fragment Tool_tool on Tool {
-          id
-          ...ToolHeader_tool
-          ...ToolOverview_tool
-      }
+    fragment Tool_tool on Tool {
+      id
+      ...ToolHeader_tool
+      ...ToolOverview_tool
+    }
   `,
 });
 

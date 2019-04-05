@@ -15,11 +15,11 @@ const styles = () => ({
 });
 
 const profileQuery = graphql`
-    query ProfileQuery {
-        me {
-            ...ProfileOverview_me
-        }
+  query ProfileQuery {
+    me {
+      ...ProfileOverview_me
     }
+  }
 `;
 
 class Profile extends Component {
@@ -27,7 +27,7 @@ class Profile extends Component {
     const { me, classes } = this.props;
     return (
       <div className={classes.container}>
-        <TopBar me={me || null}/>
+        <TopBar me={me || null} />
         <QueryRenderer
           query={profileQuery}
           render={({ props }) => {

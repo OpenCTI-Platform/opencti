@@ -36,16 +36,27 @@ class WorkspaceHeaderComponent extends Component {
     const { classes, workspace } = this.props;
     return (
       <div>
-        <Typography variant='h1' gutterBottom={true} classes={{ root: classes.title }}>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
+        >
           {workspace.name}
         </Typography>
         <div className={classes.popover}>
-          <WorkspacePopover workspaceId={workspace.id}/>
+          <WorkspacePopover workspaceId={workspace.id} />
         </div>
         <div className={classes.marking}>
-          {pathOr([], ['markingDefinitions', 'edges'], workspace).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} label={markingDefinition.node.definition}/>)}
+          {pathOr([], ['markingDefinitions', 'edges'], workspace).map(
+            markingDefinition => (
+              <ItemMarking
+                key={markingDefinition.node.id}
+                label={markingDefinition.node.definition}
+              />
+            ),
+          )}
         </div>
-        <div className='clearfix'/>
+        <div className="clearfix" />
       </div>
     );
   }
@@ -60,18 +71,18 @@ WorkspaceHeaderComponent.propTypes = {
 
 const WorkspaceHeader = createFragmentContainer(WorkspaceHeaderComponent, {
   workspace: graphql`
-      fragment WorkspaceHeader_workspace on Workspace {
-          id,
-          name,
-          markingDefinitions {
-              edges {
-                  node {
-                      id
-                      definition
-                  }
-              }
+    fragment WorkspaceHeader_workspace on Workspace {
+      id
+      name
+      markingDefinitions {
+        edges {
+          node {
+            id
+            definition
           }
+        }
       }
+    }
   `,
 });
 

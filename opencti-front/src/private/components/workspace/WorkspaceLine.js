@@ -82,28 +82,44 @@ class WorkspaceLineComponent extends Component {
     const { fd, classes, workspace } = this.props;
 
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} component={Link} to={`/dashboard/investigate/${workspace.id}`}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        component={Link}
+        to={`/dashboard/investigate/${workspace.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Work/>
+          <Work />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {workspace.name}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {workspace.name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.owner}>
+                {pathOr('', ['ownedBy', 'node', 'name'], workspace)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+                {fd(workspace.created_at)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.marking}>
+                {take(
+                  1,
+                  pathOr([], ['markingDefinitions', 'edges'], workspace),
+                ).map(markingDefinition => (
+                  <ItemMarking
+                    key={markingDefinition.node.id}
+                    variant="inList"
+                    label={markingDefinition.node.definition}
+                  />
+                ))}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.owner}>
-              {pathOr('', ['ownedBy', 'node', 'name'], workspace)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              {fd(workspace.created_at)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.marking}>
-              {take(1, pathOr([], ['markingDefinitions', 'edges'], workspace)).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} variant='inList' label={markingDefinition.node.definition}/>)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );
@@ -118,24 +134,24 @@ WorkspaceLineComponent.propTypes = {
 
 const WorkspaceLineFragment = createFragmentContainer(WorkspaceLineComponent, {
   workspace: graphql`
-      fragment WorkspaceLine_workspace on Workspace {
-          id
+    fragment WorkspaceLine_workspace on Workspace {
+      id
+      name
+      ownedBy {
+        node {
           name
-          ownedBy {
-              node {
-                  name
-              }
-          }
-          created_at
-          markingDefinitions {
-              edges {
-                  node {
-                      id
-                      definition
-                  }
-              }
-          }
+        }
       }
+      created_at
+      markingDefinitions {
+        edges {
+          node {
+            id
+            definition
+          }
+        }
+      }
+    }
   `,
 });
 
@@ -150,26 +166,28 @@ class WorkspaceLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Work/>
+          <Work />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.owner}>
+                <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.marking}>
+                <div className="fakeItem" style={{ width: '90%' }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.owner}>
-              <div className='fakeItem' style={{ width: '70%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.marking}>
-              <div className='fakeItem' style={{ width: '90%' }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );

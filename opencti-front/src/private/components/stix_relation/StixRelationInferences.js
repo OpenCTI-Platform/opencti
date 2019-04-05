@@ -3,7 +3,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  forEach, compose, includes, values, pipe, prop, map, indexBy,
+  forEach,
+  compose,
+  includes,
+  values,
+  pipe,
+  prop,
+  map,
+  indexBy,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { DiagramModel, DiagramWidget } from 'storm-react-diagrams';
@@ -94,12 +101,18 @@ class StixRelationInferences extends Component {
     forEach((l) => {
       const inference = l.node;
       if (!includes(inference.id, createdRelationsIds)) {
-        const fromPort = finalNodesObject[inference.from.id] ? finalNodesObject[inference.from.id].node.getPort('main') : null;
-        const toPort = finalNodesObject[inference.to.id] ? finalNodesObject[inference.to.id].node.getPort('main') : null;
+        const fromPort = finalNodesObject[inference.from.id]
+          ? finalNodesObject[inference.from.id].node.getPort('main')
+          : null;
+        const toPort = finalNodesObject[inference.to.id]
+          ? finalNodesObject[inference.to.id].node.getPort('main')
+          : null;
         const newLink = new EntityLinkModel();
         newLink.setExtras({
           relation: inference,
-          link: `${resolveLink(inference.from.type)}/${inference.from.id}/knowledge/relations/${inference.id}`,
+          link: `${resolveLink(inference.from.type)}/${
+            inference.from.id
+          }/knowledge/relations/${inference.id}`,
         });
         newLink.setSourcePort(fromPort);
         newLink.setTargetPort(toPort);

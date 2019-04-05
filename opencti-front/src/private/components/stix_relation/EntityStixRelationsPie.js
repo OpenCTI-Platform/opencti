@@ -28,26 +28,62 @@ const styles = theme => ({
 });
 const RADIAN = Math.PI / 180;
 const renderCustomizedLabel = ({
-  cx, cy, midAngle, innerRadius, outerRadius, percent, index,
+  cx,
+  cy,
+  midAngle,
+  innerRadius,
+  outerRadius,
+  percent,
+  index,
 }) => {
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
   return (
-    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+    <text
+      x={x}
+      y={y}
+      fill="white"
+      textAnchor={x > cx ? 'start' : 'end'}
+      dominantBaseline="central"
+    >
       {`${(percent * 100).toFixed(0)}%`}
     </text>
   );
 };
 
 const entityStixRelationsPieStixRelationDistributionQuery = graphql`
-    query EntityStixRelationsPieStixRelationDistributionQuery($fromId: String, $toTypes: [String], $entityTypes: [String], $relationType: String, $resolveInferences: Boolean, $resolveRelationType: String, $resolveRelationRole: String, $resolveRelationToTypes: [String], $resolveViaTypes: [EntityRelation], $field: String!, $operation: StatsOperation!) {
-        stixRelationsDistribution(fromId: $fromId, toTypes: $toTypes, entityTypes: $entityTypes, relationType: $relationType, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, resolveRelationRole: $resolveRelationRole, resolveRelationToTypes: $resolveRelationToTypes, resolveViaTypes: $resolveViaTypes, field: $field, operation: $operation) {
-            label,
-            value
-        }
+  query EntityStixRelationsPieStixRelationDistributionQuery(
+    $fromId: String
+    $toTypes: [String]
+    $entityTypes: [String]
+    $relationType: String
+    $resolveInferences: Boolean
+    $resolveRelationType: String
+    $resolveRelationRole: String
+    $resolveRelationToTypes: [String]
+    $resolveViaTypes: [EntityRelation]
+    $field: String!
+    $operation: StatsOperation!
+  ) {
+    stixRelationsDistribution(
+      fromId: $fromId
+      toTypes: $toTypes
+      entityTypes: $entityTypes
+      relationType: $relationType
+      resolveInferences: $resolveInferences
+      resolveRelationType: $resolveRelationType
+      resolveRelationRole: $resolveRelationRole
+      resolveRelationToTypes: $resolveRelationToTypes
+      resolveViaTypes: $resolveViaTypes
+      field: $field
+      operation: $operation
+    ) {
+      label
+      value
     }
+  }
 `;
 
 class EntityStixRelationsPie extends Component {
@@ -81,7 +117,7 @@ class EntityStixRelationsPie extends Component {
     };
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Distribution:')} {t(`entity_${entityType}`)}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -89,36 +125,74 @@ class EntityStixRelationsPie extends Component {
             query={entityStixRelationsPieStixRelationDistributionQuery}
             variables={stixRelationsDistributionVariables}
             render={({ props }) => {
-              if (props && props.stixRelationsDistribution && props.stixRelationsDistribution.length > 0) {
+              if (
+                props
+                && props.stixRelationsDistribution
+                && props.stixRelationsDistribution.length > 0
+              ) {
                 return (
-                  <ResponsiveContainer height={300} width='100%'>
-                    <PieChart margin={{
-                      top: 50, right: 12, bottom: 25, left: 0,
-                    }}>
-                      <Pie data={props.stixRelationsDistribution} dataKey='value' nameKey='label' cx='50%' cy='50%' outerRadius={100} fill='#82ca9d' label={renderCustomizedLabel} labelLine={false}>
-                        {
-                          props.stixRelationsDistribution.map((entry, index) => <Cell key={index} fill={itemColor(entry.label)}/>)
-                        }
+                  <ResponsiveContainer height={300} width="100%">
+                    <PieChart
+                      margin={{
+                        top: 50,
+                        right: 12,
+                        bottom: 25,
+                        left: 0,
+                      }}
+                    >
+                      <Pie
+                        data={props.stixRelationsDistribution}
+                        dataKey="value"
+                        nameKey="label"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        fill="#82ca9d"
+                        label={renderCustomizedLabel}
+                        labelLine={false}
+                      >
+                        {props.stixRelationsDistribution.map((entry, index) => (
+                          <Cell key={index} fill={itemColor(entry.label)} />
+                        ))}
                       </Pie>
-                      <Legend verticalAlign='bottom' wrapperStyle={{ paddingTop: 20 }}/>
+                      <Legend
+                        verticalAlign="bottom"
+                        wrapperStyle={{ paddingTop: 20 }}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                 );
               }
               if (props) {
                 return (
-                  <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                  <div
+                    style={{ display: 'table', height: '100%', width: '100%' }}
+                  >
+                    <span
+                      style={{
+                        display: 'table-cell',
+                        verticalAlign: 'middle',
+                        textAlign: 'center',
+                      }}
+                    >
                       {t('No entities of this type has been found.')}
                     </span>
                   </div>
                 );
               }
               return (
-                <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-                      <CircularProgress size={40} thickness={2}/>
-                    </span>
+                <div
+                  style={{ display: 'table', height: '100%', width: '100%' }}
+                >
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <CircularProgress size={40} thickness={2} />
+                  </span>
                 </div>
               );
             }}

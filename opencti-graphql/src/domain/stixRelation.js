@@ -71,23 +71,27 @@ export const findAll = args =>
 
 export const findByStixId = args =>
   paginateRelationships(
-    `match $rel($from, $to); $rel has stix_id "${prepareString(args.stix_id)}"`,
+    `match $rel($from, $to) isa relation; 
+    $rel has stix_id "${prepareString(args.stix_id)}"`,
     args
   );
 
 export const search = args =>
   paginateRelationships(
-    `match $rel($from, $to); $rel has name $name; $rel has description $desc; { $name contains "${prepareString(
-      args.search
-    )}"; } or { $desc contains "${prepareString(args.search)}"; }`,
+    `match $rel($from, $to) isa relation;
+    $rel has name $name;
+    $rel has description $desc;
+    { $name contains "${prepareString(args.search)}"; } or
+    { $desc contains "${prepareString(args.search)}"; }`,
     args
   );
 
 export const findAllWithInferences = async args => {
   const entities = await getObjectsWithoutAttributes(
-    `match $x; (${args.resolveRelationRole}: $from, $x) isa ${
+    `match $x isa entity; (${args.resolveRelationRole}: $from, $x) isa ${
       args.resolveRelationType
-    }; ${
+    };
+    ${
       args.resolveRelationToTypes
         ? `${join(
             ' ',
@@ -98,7 +102,8 @@ export const findAllWithInferences = async args => {
             )
           )} { $x isa ${head(args.resolveRelationToTypes)}; };`
         : ''
-    } $from id ${args.fromId}; get $x;`,
+    } $from id ${args.fromId};
+    get $x;`,
     'x',
     null,
     true
@@ -202,7 +207,7 @@ export const stixRelationsTimeSeries = args =>
 
 export const stixRelationsTimeSeriesWithInferences = async args => {
   const entities = await getObjectsWithoutAttributes(
-    `match $x; (${args.resolveRelationRole}: $from, $x) isa ${
+    `match $x isa entity; (${args.resolveRelationRole}: $from, $x) isa ${
       args.resolveRelationType
     }; ${
       args.resolveRelationToTypes
@@ -326,7 +331,7 @@ export const stixRelationsDistribution = args => {
 export const stixRelationsDistributionWithInferences = async args => {
   const { limit = 10 } = args;
   const entities = await getObjectsWithoutAttributes(
-    `match $x; (${args.resolveRelationRole}: $from, $x) isa ${
+    `match $x isa entity; (${args.resolveRelationRole}: $from, $x) isa ${
       args.resolveRelationType
     }; ${
       args.resolveRelationToTypes
@@ -524,7 +529,9 @@ export const addStixRelation = async (user, stixRelation) => {
   if (stixRelation.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
-        `match $from id ${createdStixRelationId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+        `match $from id ${createdStixRelationId}; $x
+        $to id ${markingDefinition};
+        insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,
@@ -536,7 +543,9 @@ export const addStixRelation = async (user, stixRelation) => {
   if (stixRelation.locations) {
     const createLocation = location =>
       wTx.query(
-        `match $from id ${createdStixRelationId}; $to id ${location}; insert (localized: $from, location: $to) isa localization;`
+        `match $from id ${createdStixRelationId};
+        $to id ${location};
+        insert (localized: $from, location: $to) isa localization;`
       );
     const locationsPromises = map(createLocation, stixRelation.locations);
     await Promise.all(locationsPromises);

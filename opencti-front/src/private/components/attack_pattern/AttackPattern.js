@@ -61,7 +61,7 @@ class AttackPatternComponent extends Component {
             <EntityStixRelationsPie
               entityId={attackPattern.id}
               entityType="Stix-Domain-Entity"
-              field="type"
+              field="entity_type"
             />
           </Grid>
           <Grid item={true} xs={4}>

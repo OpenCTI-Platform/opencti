@@ -15,7 +15,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa Tool', args);
+export const findAll = args => paginate('match $t isa Tool', args);
 
 export const findById = toolId => getById(toolId);
 
@@ -43,16 +43,20 @@ export const addTool = async (user, tool) => {
   const createdToolId = await createTool.map().get('tool').id;
 
   if (tool.createdByRef) {
-    await wTx.query(`match $from id ${createdToolId};
-         $to id ${tool.createdByRef};
-         insert (so: $from, creator: $to)
-         isa created_by_ref;`);
+    await wTx.query(
+      `match $from id ${createdToolId};
+      $to id ${tool.createdByRef};
+      insert (so: $from, creator: $to)
+      isa created_by_ref;`
+    );
   }
 
   if (tool.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
-        `match $from id ${createdToolId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+        `match $from id ${createdToolId}; 
+        $to id ${markingDefinition}; 
+        insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

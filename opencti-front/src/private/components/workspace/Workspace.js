@@ -54,16 +54,20 @@ class WorkspaceKnowledgeComponent extends Component {
     const { t, classes, workspace } = this.props;
     return (
       <div className={classes.container}>
-        <Drawer anchor='bottom' variant='permanent' classes={{ paper: classes.bottomNav }}>
+        <Drawer
+          anchor="bottom"
+          variant="permanent"
+          classes={{ paper: classes.bottomNav }}
+        >
           <Grid container={true} spacing={8}>
-            <Grid item={true} xs='auto'>
+            <Grid item={true} xs="auto">
               <FormControlLabel
                 style={{ paddingTop: 5, marginLeft: 20 }}
                 control={
                   <Switch
                     checked={this.state.inferred}
                     onChange={this.handleChangeInferred.bind(this)}
-                    color='primary'
+                    color="primary"
                   />
                 }
                 label={t('Inferences')}
@@ -71,17 +75,19 @@ class WorkspaceKnowledgeComponent extends Component {
             </Grid>
           </Grid>
         </Drawer>
-        <WorkspaceHeader workspace={workspace}/>
+        <WorkspaceHeader workspace={workspace} />
         <QueryRenderer
           query={workspaceGraphQuery}
           variables={{ id: workspace.id }}
           render={({ props }) => {
             if (props && props.workspace) {
-              return <WorkspaceGraph
-                workspace={props.workspace}
-                engine={this.state.engine}
-                inferred={this.state.inferred}
-              />;
+              return (
+                <WorkspaceGraph
+                  workspace={props.workspace}
+                  engine={this.state.engine}
+                  inferred={this.state.inferred}
+                />
+              );
             }
             return <div> &nbsp; </div>;
           }}
@@ -99,10 +105,10 @@ WorkspaceKnowledgeComponent.propTypes = {
 
 const Workspace = createFragmentContainer(WorkspaceKnowledgeComponent, {
   workspace: graphql`
-      fragment Workspace_workspace on Workspace {
-          id
-          ...WorkspaceHeader_workspace
-      }
+    fragment Workspace_workspace on Workspace {
+      id
+      ...WorkspaceHeader_workspace
+    }
   `,
 });
 

@@ -18,7 +18,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa Workspace', args);
+export const findAll = args => paginate('match $w isa Workspace', args);
 
 export const findById = workspaceId => getById(workspaceId);
 

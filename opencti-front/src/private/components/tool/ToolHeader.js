@@ -41,13 +41,13 @@ const styles = () => ({
 });
 
 const toolMutation = graphql`
-    mutation ToolHeaderFieldMutation($id: ID!, $input: EditInput!) {
-        toolEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...ToolHeader_tool
-            }
-        }
+  mutation ToolHeaderFieldMutation($id: ID!, $input: EditInput!) {
+    toolEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...ToolHeader_tool
+      }
     }
+  }
 `;
 
 class ToolHeaderComponent extends Component {
@@ -61,13 +61,18 @@ class ToolHeaderComponent extends Component {
   }
 
   onSubmitCreateAlias(data) {
-    if (this.props.tool.alias === null
-      || !this.props.tool.alias.includes(data.new_alias)) {
+    if (
+      this.props.tool.alias === null
+      || !this.props.tool.alias.includes(data.new_alias)
+    ) {
       commitMutation({
         mutation: toolMutation,
         variables: {
           id: this.props.tool.id,
-          input: { key: 'alias', value: append(data.new_alias, this.props.tool.alias) },
+          input: {
+            key: 'alias',
+            value: append(data.new_alias, this.props.tool.alias),
+          },
         },
       });
     }
@@ -91,32 +96,66 @@ class ToolHeaderComponent extends Component {
     } = this.props;
     return (
       <div>
-        <Typography variant='h1' gutterBottom={true} classes={{ root: classes.title }}>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
+        >
           {tool.name}
         </Typography>
         <div className={classes.popover}>
-          <ToolPopover toolId={tool.id}/>
+          <ToolPopover toolId={tool.id} />
         </div>
-        {variant !== 'noalias'
-          ? <div className={classes.aliases}>
-            {propOr([], 'alias', tool).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
-            <IconButton color='secondary' aria-label='Alias' onClick={this.handleToggleCreateAlias.bind(this)}>
-              {this.state.openAlias ? <Close fontSize='small'/> : <Add fontSize='small'/>}
+        {variant !== 'noalias' ? (
+          <div className={classes.aliases}>
+            {propOr([], 'alias', tool).map(label => (label.length > 0 ? (
+                <Chip
+                  key={label}
+                  classes={{ root: classes.alias }}
+                  label={label}
+                  onDelete={this.deleteAlias.bind(this, label)}
+                />
+            ) : (
+              ''
+            )))}
+            <IconButton
+              color="secondary"
+              aria-label="Alias"
+              onClick={this.handleToggleCreateAlias.bind(this)}
+            >
+              {this.state.openAlias ? (
+                <Close fontSize="small" />
+              ) : (
+                <Add fontSize="small" />
+              )}
             </IconButton>
-            <Slide direction='left' in={this.state.openAlias} mountOnEnter={true} unmountOnExit={true}>
+            <Slide
+              direction="left"
+              in={this.state.openAlias}
+              mountOnEnter={true}
+              unmountOnExit={true}
+            >
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={this.onSubmitCreateAlias.bind(this)}
                 render={() => (
                   <Form style={{ float: 'right' }}>
-                    <Field name='new_alias' component={TextField} autoFocus={true} placeholder={t('New alias')} className={classes.aliasInput}/>
+                    <Field
+                      name="new_alias"
+                      component={TextField}
+                      autoFocus={true}
+                      placeholder={t('New alias')}
+                      className={classes.aliasInput}
+                    />
                   </Form>
                 )}
               />
             </Slide>
-          </div> : ''
-        }
-        <div className='clearfix'/>
+          </div>
+        ) : (
+          ''
+        )}
+        <div className="clearfix" />
       </div>
     );
   }
@@ -132,11 +171,11 @@ ToolHeaderComponent.propTypes = {
 
 const ToolHeader = createFragmentContainer(ToolHeaderComponent, {
   tool: graphql`
-      fragment ToolHeader_tool on Tool {
-          id,
-          name,
-          alias,
-      }
+    fragment ToolHeader_tool on Tool {
+      id
+      name
+      alias
+    }
   `,
 });
 

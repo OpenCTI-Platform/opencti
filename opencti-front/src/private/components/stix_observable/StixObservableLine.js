@@ -97,7 +97,10 @@ class StixObservableLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.entity_type}>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.entity_type}
+              >
                 {t(`observable_${stixObservable.entity_type}`)}
               </div>
               <div
@@ -177,7 +180,10 @@ class StixObservableLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.type}>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.entity_type}
+              >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div

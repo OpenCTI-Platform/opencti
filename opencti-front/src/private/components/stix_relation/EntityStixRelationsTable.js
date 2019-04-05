@@ -35,12 +35,36 @@ const styles = theme => ({
 });
 
 const entityStixRelationsTableStixRelationDistributionQuery = graphql`
-    query EntityStixRelationsTableStixRelationDistributionQuery($fromId: String, $toTypes: [String], $entityTypes: [String], $relationType: String, $resolveInferences: Boolean, $resolveRelationType: String, $resolveRelationRole: String, $resolveRelationToTypes: [String], $resolveViaTypes: [EntityRelation], $field: String!, $operation: StatsOperation!) {
-        stixRelationsDistribution(fromId: $fromId, toTypes: $toTypes, entityTypes: $entityTypes, relationType: $relationType, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, resolveRelationRole: $resolveRelationRole, resolveRelationToTypes: $resolveRelationToTypes, resolveViaTypes: $resolveViaTypes, field: $field, operation: $operation) {
-            label,
-            value
-        }
+  query EntityStixRelationsTableStixRelationDistributionQuery(
+    $fromId: String
+    $toTypes: [String]
+    $entityTypes: [String]
+    $relationType: String
+    $resolveInferences: Boolean
+    $resolveRelationType: String
+    $resolveRelationRole: String
+    $resolveRelationToTypes: [String]
+    $resolveViaTypes: [EntityRelation]
+    $field: String!
+    $operation: StatsOperation!
+  ) {
+    stixRelationsDistribution(
+      fromId: $fromId
+      toTypes: $toTypes
+      entityTypes: $entityTypes
+      relationType: $relationType
+      resolveInferences: $resolveInferences
+      resolveRelationType: $resolveRelationType
+      resolveRelationRole: $resolveRelationRole
+      resolveRelationToTypes: $resolveRelationToTypes
+      resolveViaTypes: $resolveViaTypes
+      field: $field
+      operation: $operation
+    ) {
+      label
+      value
     }
+  }
 `;
 
 class EntityStixRelationsTable extends Component {
@@ -74,7 +98,7 @@ class EntityStixRelationsTable extends Component {
     };
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Top 10:')} {t(`entity_${entityType}`)}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -82,23 +106,42 @@ class EntityStixRelationsTable extends Component {
             query={entityStixRelationsTableStixRelationDistributionQuery}
             variables={stixRelationsDistributionVariables}
             render={({ props }) => {
-              if (props && props.stixRelationsDistribution && props.stixRelationsDistribution.length > 0) {
+              if (
+                props
+                && props.stixRelationsDistribution
+                && props.stixRelationsDistribution.length > 0
+              ) {
                 return (
                   <Table className={classes.table}>
                     <TableHead>
                       <TableRow className={classes.tableHead}>
-                        <TableCell>{t(`entity_${entityType.toLowerCase()}`)}</TableCell>
-                        <TableCell align='right'>{`${t('Number of')} ${t(`relation_${relationType}`)}s`}</TableCell>
+                        <TableCell>
+                          {t(`entity_${entityType.toLowerCase()}`)}
+                        </TableCell>
+                        <TableCell align="right">{`${t('Number of')} ${t(
+                          `relation_${relationType}`,
+                        )}s`}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {props.stixRelationsDistribution.map(row => (
-                          <TableRow key={row.label} hover={true}>
-                            <TableCell component='th' scope='row' padding='dense' className={classes.tableBody}>
-                              {row.label}
-                            </TableCell>
-                            <TableCell align='right' padding='dense' className={classes.tableBody}>{row.value}</TableCell>
-                          </TableRow>
+                        <TableRow key={row.label} hover={true}>
+                          <TableCell
+                            component="th"
+                            scope="row"
+                            padding="dense"
+                            className={classes.tableBody}
+                          >
+                            {row.label}
+                          </TableCell>
+                          <TableCell
+                            align="right"
+                            padding="dense"
+                            className={classes.tableBody}
+                          >
+                            {row.value}
+                          </TableCell>
+                        </TableRow>
                       ))}
                     </TableBody>
                   </Table>
@@ -106,18 +149,34 @@ class EntityStixRelationsTable extends Component {
               }
               if (props) {
                 return (
-                  <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                  <div
+                    style={{ display: 'table', height: '100%', width: '100%' }}
+                  >
+                    <span
+                      style={{
+                        display: 'table-cell',
+                        verticalAlign: 'middle',
+                        textAlign: 'center',
+                      }}
+                    >
                       {t('No entities of this type has been found.')}
                     </span>
                   </div>
                 );
               }
               return (
-                <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-                      <CircularProgress size={40} thickness={2}/>
-                    </span>
+                <div
+                  style={{ display: 'table', height: '100%', width: '100%' }}
+                >
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <CircularProgress size={40} thickness={2} />
+                  </span>
                 </div>
               );
             }}

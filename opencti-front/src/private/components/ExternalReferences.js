@@ -22,11 +22,16 @@ import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import {
-  ArrowDropDown, ArrowDropUp, TableChart, SaveAlt,
+  ArrowDropDown,
+  ArrowDropUp,
+  TableChart,
+  SaveAlt,
 } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import { fetchQuery, QueryRenderer } from '../../relay/environment';
-import ExternalReferencesLines, { externalReferencesLinesQuery } from './external_reference/ExternalReferencesLines';
+import ExternalReferencesLines, {
+  externalReferencesLinesQuery,
+} from './external_reference/ExternalReferencesLines';
 import SearchInput from '../../components/SearchInput';
 import inject18n from '../../components/i18n';
 import ExternalReferenceCreation from './external_reference/ExternalReferenceCreation';
@@ -98,20 +103,32 @@ const inlineStyles = {
 };
 
 export const exportExternalReferencesQuery = graphql`
-    query ExternalReferencesExportExternalReferencesQuery($count: Int!, $cursor: ID, $orderBy: ExternalReferencesOrdering, $orderMode: OrderingMode) {
-        externalReferences(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_externalReferences") {
-            edges {
-                node {
-                    id
-                    source_name
-                    description
-                    url
-                    hash
-                    external_id
-                }
-            }
+  query ExternalReferencesExportExternalReferencesQuery(
+    $count: Int!
+    $cursor: ID
+    $orderBy: ExternalReferencesOrdering
+    $orderMode: OrderingMode
+  ) {
+    externalReferences(
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) @connection(key: "Pagination_externalReferences") {
+      edges {
+        node {
+          id
+          source_name
+          description
+          url
+          hash
+          external_id
+          created
+          modified
         }
+      }
     }
+  }
 `;
 
 class ExternalReferences extends Component {
@@ -142,9 +159,20 @@ class ExternalReferences extends Component {
   SortHeader(field, label) {
     const { t } = this.props;
     return (
-      <div style={inlineStyles[field]} onClick={this.reverseBy.bind(this, field)}>
+      <div
+        style={inlineStyles[field]}
+        onClick={this.reverseBy.bind(this, field)}
+      >
         <span>{t(label)}</span>
-        {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStyles.iconSort}/> : <ArrowDropUp style={inlineStyles.iconSort}/> : ''}
+        {this.state.sortBy === field ? (
+          this.state.orderAsc ? (
+            <ArrowDropDown style={inlineStyles.iconSort} />
+          ) : (
+            <ArrowDropUp style={inlineStyles.iconSort} />
+          )
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -168,7 +196,10 @@ class ExternalReferences extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportExternalReferencesQuery, { count: 2147483647, ...paginationOptions }).then((data) => {
+    fetchQuery(exportExternalReferencesQuery, {
+      count: 2147483647,
+      ...paginationOptions,
+    }).then((data) => {
       const finalData = pipe(
         map(n => n.node),
         map(n => over(lensProp('description'), defaultTo('-'))(n)),
@@ -189,16 +220,25 @@ class ExternalReferences extends Component {
       <div>
         <div className={classes.header}>
           <div style={{ float: 'left', marginTop: -10 }}>
-            <SearchInput variant='small' onChange={this.handleSearch.bind(this)}/>
+            <SearchInput
+              variant="small"
+              onChange={this.handleSearch.bind(this)}
+            />
           </div>
           <div style={{ float: 'right', marginTop: -20 }}>
-            <IconButton color={this.state.view === 'lines' ? 'secondary' : 'primary'}
-                        classes={{ root: classes.button }}
-                        onClick={this.handleChangeView.bind(this, 'lines')}>
-              <TableChart/>
+            <IconButton
+              color={this.state.view === 'lines' ? 'secondary' : 'primary'}
+              classes={{ root: classes.button }}
+              onClick={this.handleChangeView.bind(this, 'lines')}
+            >
+              <TableChart />
             </IconButton>
-            <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true' color='primary'>
-              <SaveAlt/>
+            <IconButton
+              onClick={this.handleOpenExport.bind(this)}
+              aria-haspopup="true"
+              color="primary"
+            >
+              <SaveAlt />
             </IconButton>
             <Menu
               anchorEl={this.state.anchorExport}
@@ -206,61 +246,113 @@ class ExternalReferences extends Component {
               onClose={this.handleCloseExport.bind(this)}
               style={{ marginTop: 50 }}
             >
-              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>{t('CSV file')}</MenuItem>
+              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>
+                {t('CSV file')}
+              </MenuItem>
             </Menu>
           </div>
-          <div className='clearfix'/>
+          <div className="clearfix" />
         </div>
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
+          <ListItem
+            classes={{ default: classes.item }}
+            divider={false}
+            style={{ paddingTop: 0 }}
+          >
             <ListItemIcon>
-              <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
+              <span
+                style={{
+                  padding: '0 8px 0 8px',
+                  fontWeight: 700,
+                  fontSize: 12,
+                }}
+              >
+                #
+              </span>
             </ListItemIcon>
-            <ListItemText primary={
-              <div>
-                {this.SortHeader('source_name', 'Source name')}
-                {this.SortHeader('external_id', 'External ID')}
-                {this.SortHeader('url', 'URL')}
-                {this.SortHeader('created', 'Creation date')}
-              </div>
-            }/>
+            <ListItemText
+              primary={
+                <div>
+                  {this.SortHeader('source_name', 'Source name')}
+                  {this.SortHeader('external_id', 'External ID')}
+                  {this.SortHeader('url', 'URL')}
+                  {this.SortHeader('created', 'Creation date')}
+                </div>
+              }
+            />
           </ListItem>
           <QueryRenderer
             query={externalReferencesLinesQuery}
-            variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
+            variables={{
+              count: 25,
+              orderBy: this.state.sortBy,
+              orderMode: this.state.orderAsc ? 'asc' : 'desc',
+            }}
             render={({ props }) => {
               if (props) {
-                return <ExternalReferencesLines data={props}
-                                                paginationOptions={paginationOptions}/>;
+                return (
+                  <ExternalReferencesLines
+                    data={props}
+                    paginationOptions={paginationOptions}
+                    searchTerm={this.state.searchTerm}
+                  />
+                );
               }
-              return <ExternalReferencesLines data={null} dummy={true}/>;
+              return (
+                <ExternalReferencesLines
+                  data={null}
+                  dummy={true}
+                  searchTerm={this.state.searchTerm}
+                />
+              );
             }}
           />
         </List>
-        <ExternalReferenceCreation paginationOptions={paginationOptions}/>
+        <ExternalReferenceCreation paginationOptions={paginationOptions} />
         <Dialog
           open={this.state.exportCsvOpen}
           onClose={this.handleCloseExportCsv.bind(this)}
           fullWidth={true}
         >
-          <DialogTitle>
-            {t('Export data in CSV')}
-          </DialogTitle>
+          <DialogTitle>{t('Export data in CSV')}</DialogTitle>
           <DialogContent>
-            {this.state.exportCsvData === null
-              ? <div className={this.props.classes.export}><CircularProgress size={40} thickness={2} className={this.props.classes.loaderCircle}/></div>
-              : <DialogContentText>{t('The CSV file has been generated with the parameters of the view and is ready for download.')}</DialogContentText>
-            }
+            {this.state.exportCsvData === null ? (
+              <div className={this.props.classes.export}>
+                <CircularProgress
+                  size={40}
+                  thickness={2}
+                  className={this.props.classes.loaderCircle}
+                />
+              </div>
+            ) : (
+              <DialogContentText>
+                {t(
+                  'The CSV file has been generated with the parameters of the view and is ready for download.',
+                )}
+              </DialogContentText>
+            )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseExportCsv.bind(this)} color='primary'>
+            <Button
+              onClick={this.handleCloseExportCsv.bind(this)}
+              color="primary"
+            >
               {t('Cancel')}
             </Button>
-            {this.state.exportCsvData !== null
-              ? <Button component={CSVLink} data={this.state.exportCsvData} separator={';'} enclosingCharacter={'"'} color='primary' filename={`${t('External references')}.csv`}>
+            {this.state.exportCsvData !== null ? (
+              <Button
+                component={CSVLink}
+                data={this.state.exportCsvData}
+                separator={';'}
+                enclosingCharacter={'"'}
+                color="primary"
+                filename={`${t('External references')}.csv`}
+              >
                 {t('Download')}
               </Button>
-              : ''}
+            ) : (
+              ''
+            )}
           </DialogActions>
         </Dialog>
       </div>

@@ -44,9 +44,8 @@ export const findById = stixObservableId => getById(stixObservableId);
 
 export const findByValue = args =>
   paginate(
-    `match $x isa ${
-      args.type ? args.type : 'Stix-Observable'
-    }; $x has observable_value "${prepareString(args.observable_value)}"`,
+    `match $x isa ${args.type ? args.type : 'Stix-Observable'};
+    $x has observable_value "${prepareString(args.observable_value)}"`,
     args,
     false
   );
@@ -64,27 +63,38 @@ export const search = args =>
 
 export const createdByRef = stixObservableId =>
   getObject(
-    `match $x isa Identity; $rel(creator:$x, so:$stixObservable) isa created_by_ref; $stixObservable id ${stixObservableId}; get $x,$rel; offset 0; limit 1;`,
-    'x',
+    `match $i isa Identity;
+    $rel(creator:$i, so:$x) isa created_by_ref; 
+    $x id ${stixObservableId}; 
+    get $i, $rel; 
+    offset 0; 
+    limit 1;`,
+    'i',
     'rel'
   );
 
 export const markingDefinitions = (stixObservableId, args) =>
   paginate(
-    `match $marking isa Marking-Definition; $rel(marking:$marking, so:$stixObservable) isa object_marking_refs; $stixObservable id ${stixObservableId}`,
+    `match $m isa Marking-Definition;
+    $rel(marking:$m, so:$x) isa object_marking_refs; 
+    $x id ${stixObservableId}`,
     args,
     false
   );
 
 export const reports = (stixObservableId, args) =>
   paginate(
-    `match $report isa Report; $rel(knowledge_aggregation:$report, so:$stixObservable) isa object_refs; $stixObservable id ${stixObservableId}`,
+    `match $r isa Report; 
+    $rel(knowledge_aggregation:$r, so:$x) isa object_refs; 
+    $x id ${stixObservableId}`,
     args
   );
 
 export const reportsTimeSeries = (stixObservableId, args) =>
   timeSeries(
-    `match $m isa Report; $rel(knowledge_aggregation:$report, so:$stixObservable) isa object_refs; $stixObservable id ${stixObservableId}`,
+    `match $r isa Report; 
+    $rel(knowledge_aggregation:$r, so:$x) isa object_refs;
+    $x id ${stixObservableId}`,
     args
   );
 
@@ -117,16 +127,20 @@ export const addStixObservable = async (user, stixObservable) => {
     .get('stixObservable').id;
 
   if (stixObservable.createdByRef) {
-    await wTx.query(`match $from id ${createdStixObservableId};
-         $to id ${stixObservable.createdByRef};
-         insert (so: $from, creator: $to)
-         isa created_by_ref;`);
+    await wTx.query(
+      `match $from id ${createdStixObservableId};
+      $to id ${stixObservable.createdByRef};
+      insert (so: $from, creator: $to)
+      isa created_by_ref;`
+    );
   }
 
   if (stixObservable.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
-        `match $from id ${createdStixObservableId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+        `match $from id ${createdStixObservableId}; 
+        $to id ${markingDefinition}; 
+        insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

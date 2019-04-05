@@ -68,7 +68,7 @@ class OpenCti:
             query StixDomainEntity($id: String) {
                 stixDomainEntity(id: $id) {
                     id
-                    type
+                    entity_type
                     alias
                 }
             }
@@ -83,7 +83,7 @@ class OpenCti:
                     edges {
                         node {
                             id
-                            type
+                            entity_type
                             alias
                         }
                     }
@@ -103,7 +103,7 @@ class OpenCti:
                     edges {
                         node {
                             id
-                            type
+                            entity_type
                             alias
                         }
                     }
@@ -123,7 +123,7 @@ class OpenCti:
                     edges {
                         node {
                             id
-                            type
+                            entity_type
                             alias
                         }
                     }
@@ -143,7 +143,7 @@ class OpenCti:
                        edges {
                            node {
                                id
-                               type
+                               entity_type
                                alias
                            }
                        }
@@ -167,7 +167,7 @@ class OpenCti:
                 stixDomainEntityEdit(id: $id) {
                     fieldPatch(input: $input) {
                         id
-                        type
+                        entity_type
                         alias
                     }
                 }
@@ -231,7 +231,7 @@ class OpenCti:
                         node {
                             id
                             stix_id
-                            type
+                            entity_type
                             relationship_type
                             description
                             weight
@@ -310,6 +310,60 @@ class OpenCti:
         })
         return result['data']['stixRelationAdd']
 
+    def create_relation_if_not_exists(self,
+                                      from_id,
+                                      from_type,
+                                      to_id,
+                                      to_type,
+                                      type,
+                                      description,
+                                      first_seen,
+                                      last_seen,
+                                      weight,
+                                      stix_id=None,
+                                      created=None,
+                                      modified=None
+                                      ):
+        if stix_id is not None:
+            stix_relation_result = self.get_stix_relation_by_stix_id(stix_id)
+        else:
+            stix_relation_result = self.get_stix_relation(
+                from_id,
+                to_id,
+                type,
+                first_seen,
+                last_seen)
+        if stix_relation_result is not None:
+            return stix_relation_result
+        else:
+            roles = self.resolve_role(type, from_type, to_type)
+            if roles is not None:
+                final_from_id = from_id
+                final_to_id = to_id
+            else:
+                roles = self.resolve_role(type, to_type, from_type)
+                if roles is not None:
+                    final_from_id = to_id
+                    final_to_id = from_id
+                else:
+                    self.log('Cannot resolve roles, doing nothing...')
+                    return None
+
+            return self.create_relation(
+                final_from_id,
+                roles['from_role'],
+                final_to_id,
+                roles['to_role'],
+                type,
+                description,
+                first_seen,
+                last_seen,
+                weight,
+                stix_id,
+                created,
+                modified
+            )
+
     def delete_relation(self, id):
         self.log('Deleting ' + id + '...')
         query = """
@@ -387,6 +441,32 @@ class OpenCti:
         })
         return result['data']['markingDefinitionAdd']
 
+    def create_marking_definition_if_not_exists(self,
+                                                definition_type,
+                                                definition,
+                                                level,
+                                                color=None,
+                                                stix_id=None,
+                                                created=None,
+                                                modified=None
+                                                ):
+        if stix_id is not None:
+            object_result = self.get_marking_definition_by_stix_id(stix_id)
+        else:
+            object_result = self.get_marking_definition_by_definition(definition_type, definition)
+        if object_result is not None:
+            return object_result
+        else:
+            return self.create_marking_definition(
+                definition_type,
+                definition,
+                level,
+                color,
+                stix_id,
+                created,
+                modified
+            )
+
     def get_external_reference_by_url(self, url):
         query = """
              query ExternalReferences($search: String) {
@@ -435,6 +515,29 @@ class OpenCti:
         })
         return result['data']['externalReferenceAdd']
 
+    def create_external_reference_if_not_exists(self,
+                                                source_name,
+                                                url,
+                                                external_id='',
+                                                description='',
+                                                stix_id=None,
+                                                created=None,
+                                                modified=None
+                                                ):
+        external_reference_result = self.get_external_reference_by_url(url)
+        if external_reference_result is not None:
+            return external_reference_result
+        else:
+            return self.create_external_reference(
+                source_name,
+                url,
+                external_id,
+                description,
+                stix_id,
+                created,
+                modified
+            )
+
     def get_kill_chain_phase(self, phase_name):
         query = """
             query KillChainPhases($phaseName: String) {
@@ -453,7 +556,12 @@ class OpenCti:
         else:
             return None
 
-    def create_kill_chain_phase(self, kill_chain_name, phase_name, phase_order, stix_id=None, created=None,
+    def create_kill_chain_phase(self,
+                                kill_chain_name,
+                                phase_name,
+                                phase_order,
+                                stix_id=None,
+                                created=None,
                                 modified=None):
         self.log('Creating kill chain phase ' + phase_name + '...')
         query = """
@@ -475,6 +583,26 @@ class OpenCti:
         })
         return result['data']['killChainPhaseAdd']
 
+    def create_kill_chain_phase_if_not_exists(self,
+                                              kill_chain_name,
+                                              phase_name,
+                                              phase_order,
+                                              stix_id=None,
+                                              created=None,
+                                              modified=None):
+        kill_chain_phase_result = self.get_kill_chain_phase(phase_name)
+        if kill_chain_phase_result is not None:
+            return kill_chain_phase_result
+        else:
+            return self.create_kill_chain_phase(
+                kill_chain_name,
+                phase_name,
+                phase_order,
+                stix_id,
+                created,
+                modified
+            )
+
     def get_identities(self, limit=10000):
         self.log('Getting identities...')
         query = """
@@ -483,7 +611,7 @@ class OpenCti:
                     edges {
                         node {
                             id
-                            type
+                            entity_type
                             stix_id
                             stix_label
                             name
@@ -494,7 +622,7 @@ class OpenCti:
                             createdByRef {
                                 node {
                                     id
-                                    type
+                                    entity_type
                                     stix_id
                                     stix_label
                                     name
@@ -508,7 +636,7 @@ class OpenCti:
                                 edges {
                                     node {
                                         id
-                                        type
+                                        entity_type
                                         stix_id
                                         definition_type
                                         definition
@@ -533,7 +661,7 @@ class OpenCti:
             mutation IdentityAdd($input: IdentityAddInput) {
                 identityAdd(input: $input) {
                     id
-                    type
+                    entity_type
                     alias
                 }
             }
@@ -550,6 +678,23 @@ class OpenCti:
         })
         return result['data']['identityAdd']
 
+    def create_identity_if_not_exists(self, type, name, description, stix_id=None, created=None, modified=None):
+        if stix_id is not None:
+            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+        else:
+            object_result = self.search_stix_domain_entity(name, 'Identity')
+        if object_result is not None:
+            return object_result
+        else:
+            return self.create_identity(
+                type,
+                name,
+                description,
+                stix_id,
+                created,
+                modified
+            )
+
     def get_threat_actors(self, limit=10000):
         self.log('Getting threat actors...')
         query = """
@@ -558,7 +703,7 @@ class OpenCti:
                     edges {
                         node {
                             id
-                            type
+                            entity_type
                             stix_id
                             stix_label
                             name
@@ -575,7 +720,7 @@ class OpenCti:
                             createdByRef {
                                 node {
                                     id
-                                    type
+                                    entity_type
                                     stix_id
                                     stix_label
                                     name
@@ -589,7 +734,7 @@ class OpenCti:
                                 edges {
                                     node {
                                         id
-                                        type
+                                        entity_type
                                         stix_id
                                         definition_type
                                         definition
@@ -626,7 +771,7 @@ class OpenCti:
             mutation ThreatActorAdd($input: ThreatActorAddInput) {
                 threatActorAdd(input: $input) {
                    id
-                   type
+                   entity_type
                    alias
                 }
             }
@@ -647,6 +792,40 @@ class OpenCti:
             }
         })
         return result['data']['threatActorAdd']
+
+    def create_threat_actor_if_not_exists(self,
+                                          name,
+                                          description,
+                                          goal=None,
+                                          sophistication=None,
+                                          resource_level=None,
+                                          primary_motivation=None,
+                                          secondary_motivation=None,
+                                          personal_motivation=None,
+                                          stix_id=None,
+                                          created=None,
+                                          modified=None
+                                          ):
+        if stix_id is not None:
+            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+        else:
+            object_result = self.search_stix_domain_entity(name, 'Threat-Actor')
+        if object_result is not None:
+            return object_result
+        else:
+            return self.create_threat_actor(
+                name,
+                description,
+                goal,
+                sophistication,
+                resource_level,
+                primary_motivation,
+                secondary_motivation,
+                personal_motivation,
+                stix_id,
+                created,
+                modified
+            )
 
     def get_intrusion_sets(self, limit=10000):
         self.log('Getting intrusion sets...')
@@ -673,7 +852,7 @@ class OpenCti:
                             createdByRef {
                                 node {
                                     id
-                                    type
+                                    entity_type
                                     stix_id
                                     stix_label
                                     name
@@ -687,7 +866,7 @@ class OpenCti:
                                 edges {
                                     node {
                                         id
-                                        type
+                                        entity_type
                                         stix_id
                                         definition_type
                                         definition
@@ -725,7 +904,7 @@ class OpenCti:
             mutation IntrusionSetAdd($input: IntrusionSetAddInput) {
                 intrusionSetAdd(input: $input) {
                    id
-                   type
+                   entity_type
                    alias
                 }
             }
@@ -748,6 +927,42 @@ class OpenCti:
         })
         return result['data']['intrusionSetAdd']
 
+    def create_intrusion_set_if_not_exists(self,
+                                           name,
+                                           description,
+                                           first_seen=None,
+                                           last_seen=None,
+                                           goal=None,
+                                           sophistication=None,
+                                           resource_level=None,
+                                           primary_motivation=None,
+                                           secondary_motivation=None,
+                                           stix_id=None,
+                                           created=None,
+                                           modified=None
+                                           ):
+        if stix_id is not None:
+            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+        else:
+            object_result = self.search_stix_domain_entity(name, 'Intrusion-Set')
+        if object_result is not None:
+            return object_result
+        else:
+            return self.create_intrusion_set(
+                name,
+                description,
+                first_seen,
+                last_seen,
+                goal,
+                sophistication,
+                resource_level,
+                primary_motivation,
+                secondary_motivation,
+                stix_id,
+                created,
+                modified
+            )
+
     def get_campaigns(self, limit=10000):
         self.log('Getting campaigns...')
         query = """
@@ -769,7 +984,7 @@ class OpenCti:
                             createdByRef {
                                 node {
                                     id
-                                    type
+                                    entity_type
                                     stix_id
                                     stix_label
                                     name
@@ -783,7 +998,7 @@ class OpenCti:
                                 edges {
                                     node {
                                         id
-                                        type
+                                        entity_type
                                         stix_id
                                         definition_type
                                         definition
@@ -817,7 +1032,7 @@ class OpenCti:
             mutation CampaignAdd($input: CampaignAddInput) {
                 campaignAdd(input: $input) {
                     id
-                    type
+                    entity_type
                     alias
                 }
             }
@@ -835,6 +1050,34 @@ class OpenCti:
             }
         })
         return result['data']['campaignAdd']
+
+    def create_campaign_if_not_exists(self,
+                                      name,
+                                      description,
+                                      objective=None,
+                                      first_seen=None,
+                                      last_seen=None,
+                                      stix_id=None,
+                                      created=None,
+                                      modified=None
+                                      ):
+        if stix_id is not None:
+            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+        else:
+            object_result = self.search_stix_domain_entity(name, 'Campaign')
+        if object_result is not None:
+            return object_result
+        else:
+            return self.create_campaign(
+                name,
+                description,
+                objective,
+                first_seen,
+                last_seen,
+                stix_id,
+                created,
+                modified
+            )
 
     def get_incidents(self, limit=10000):
         self.log('Getting incidents...')
@@ -857,7 +1100,7 @@ class OpenCti:
                             createdByRef {
                                 node {
                                     id
-                                    type
+                                    entity_type
                                     stix_id
                                     stix_label
                                     name
@@ -871,7 +1114,7 @@ class OpenCti:
                                 edges {
                                     node {
                                         id
-                                        type
+                                        entity_type
                                         stix_id
                                         definition_type
                                         definition
@@ -905,7 +1148,7 @@ class OpenCti:
            mutation IncidentAdd($input: IncidentAddInput) {
                incidentAdd(input: $input) {
                    id
-                   type
+                   entity_type
                    alias
                }
            }
@@ -923,6 +1166,34 @@ class OpenCti:
             }
         })
         return result['data']['incidentAdd']
+
+    def create_incident_if_not_exists(self,
+                                      name,
+                                      description,
+                                      objective=None,
+                                      first_seen=None,
+                                      last_seen=None,
+                                      stix_id=None,
+                                      created=None,
+                                      modified=None
+                                      ):
+        if stix_id is not None:
+            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+        else:
+            object_result = self.search_stix_domain_entity(name, 'Incident')
+        if object_result is not None:
+            return object_result
+        else:
+            return self.create_incident(
+                name,
+                description,
+                objective,
+                first_seen,
+                last_seen,
+                stix_id,
+                created,
+                modified
+            )
 
     def get_malwares(self, limit=10000):
         self.log('Getting malwares...')
@@ -942,7 +1213,7 @@ class OpenCti:
                             createdByRef {
                                 node {
                                     id
-                                    type
+                                    entity_type
                                     stix_id
                                     stix_label
                                     name
@@ -956,7 +1227,7 @@ class OpenCti:
                                 edges {
                                     node {
                                         id
-                                        type
+                                        entity_type
                                         stix_id
                                         definition_type
                                         definition
@@ -971,7 +1242,7 @@ class OpenCti:
                                 edges {
                                     node {
                                         id
-                                        type
+                                        entity_type
                                         stix_id
                                         kill_chain_name
                                         phase_name
@@ -994,7 +1265,7 @@ class OpenCti:
             mutation MalwareAdd($input: MalwareAddInput) {
                 malwareAdd(input: $input) {
                    id
-                   type
+                   entity_type
                    alias
                 }
             }
@@ -1009,6 +1280,22 @@ class OpenCti:
             }
         })
         return result['data']['malwareAdd']
+
+    def create_malware_if_not_exists(self, name, description, stix_id=None, created=None, modified=None):
+        if stix_id is not None:
+            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+        else:
+            object_result = self.search_stix_domain_entity(name, 'Malware')
+        if object_result is not None:
+            return object_result
+        else:
+            return self.create_malware(
+                name,
+                description,
+                stix_id,
+                created,
+                modified
+            )
 
     def get_tools(self, limit=10000):
         self.log('Getting tools...')
@@ -1029,7 +1316,7 @@ class OpenCti:
                             createdByRef {
                                 node {
                                     id
-                                    type
+                                    entity_type
                                     stix_id
                                     stix_label
                                     name
@@ -1043,7 +1330,7 @@ class OpenCti:
                                 edges {
                                     node {
                                         id
-                                        type
+                                        entity_type
                                         stix_id
                                         definition_type
                                         definition
@@ -1068,7 +1355,7 @@ class OpenCti:
             mutation ToolAdd($input: ToolAddInput) {
                 toolAdd(input: $input) {
                    id
-                   type
+                   entity_type
                    alias
                 }
             }
@@ -1083,6 +1370,22 @@ class OpenCti:
             }
         })
         return result['data']['toolAdd']
+
+    def create_tool_if_not_exists(self, name, description, stix_id=None, created=None, modified=None):
+        if stix_id is not None:
+            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+        else:
+            object_result = self.search_stix_domain_entity(name, 'Tool')
+        if object_result is not None:
+            return object_result
+        else:
+            return self.create_tool(
+                name,
+                description,
+                stix_id,
+                created,
+                modified
+            )
 
     def get_vulnerabilities(self, limit=10000):
         self.log('Getting vulnerabilities...')
@@ -1102,7 +1405,7 @@ class OpenCti:
                             createdByRef {
                                 node {
                                     id
-                                    type
+                                    entity_type
                                     stix_id
                                     stix_label
                                     name
@@ -1116,7 +1419,7 @@ class OpenCti:
                                 edges {
                                     node {
                                         id
-                                        type
+                                        entity_type
                                         stix_id
                                         definition_type
                                         definition
@@ -1141,7 +1444,7 @@ class OpenCti:
             mutation VulnerabilityAdd($input: VulnerabilityAddInput) {
                 vulnerabilityAdd(input: $input) {
                    id
-                   type
+                   entity_type
                    alias
                 }
             }
@@ -1156,6 +1459,22 @@ class OpenCti:
             }
         })
         return result['data']['vulnerabilityAdd']
+
+    def create_vulnerability_if_not_exists(self, name, description, stix_id=None, created=None, modified=None):
+        if stix_id is not None:
+            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+        else:
+            object_result = self.search_stix_domain_entity(name, 'Vulnerability')
+        if object_result is not None:
+            return object_result
+        else:
+            return self.create_vulnerability(
+                name,
+                description,
+                stix_id,
+                created,
+                modified
+            )
 
     def get_attack_patterns(self, limit=10000):
         self.log('Getting attack patterns...')
@@ -1177,7 +1496,7 @@ class OpenCti:
                             createdByRef {
                                 node {
                                     id
-                                    type
+                                    entity_type
                                     stix_id
                                     stix_label
                                     name
@@ -1191,7 +1510,7 @@ class OpenCti:
                                 edges {
                                     node {
                                         id
-                                        type
+                                        entity_type
                                         stix_id
                                         definition_type
                                         definition
@@ -1206,7 +1525,7 @@ class OpenCti:
                                 edges {
                                     node {
                                         id
-                                        type
+                                        entity_type
                                         stix_id
                                         kill_chain_name
                                         phase_name
@@ -1220,7 +1539,7 @@ class OpenCti:
                                 edges {
                                     node {
                                         id
-                                        type
+                                        entity_type
                                         stix_id
                                         source_name
                                         description
@@ -1240,14 +1559,20 @@ class OpenCti:
         result = self.query(query, {'first': limit})
         return self.parse_multiple(result['data']['attackPatterns'])
 
-    def create_attack_pattern(self, name, description, platform, required_permission, stix_id=None, created=None,
+    def create_attack_pattern(self,
+                              name,
+                              description,
+                              platform,
+                              required_permission,
+                              stix_id=None,
+                              created=None,
                               modified=None):
         self.log('Creating attack pattern ' + name + '...')
         query = """
            mutation AttackPatternAdd($input: AttackPatternAddInput) {
                attackPatternAdd(input: $input) {
                    id
-                   type
+                   entity_type
                    alias
                }
            }
@@ -1264,6 +1589,31 @@ class OpenCti:
             }
         })
         return result['data']['attackPatternAdd']
+
+    def create_attack_pattern_if_not_exists(self,
+                                            name,
+                                            description,
+                                            platform,
+                                            required_permission,
+                                            stix_id=None,
+                                            created=None,
+                                            modified=None):
+        if stix_id is not None:
+            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+        else:
+            object_result = self.search_stix_domain_entity(name, 'Attack-Pattern')
+        if object_result is not None:
+            return object_result
+        else:
+            return self.create_attack_pattern(
+                name,
+                description,
+                platform,
+                required_permission,
+                stix_id,
+                created,
+                modified
+            )
 
     def get_course_of_actions(self, limit=10000):
         self.log('Getting course of actions...')
@@ -1283,7 +1633,7 @@ class OpenCti:
                             createdByRef {
                                 node {
                                     id
-                                    type
+                                    entity_type
                                     stix_id
                                     stix_label
                                     name
@@ -1297,7 +1647,7 @@ class OpenCti:
                                 edges {
                                     node {
                                         id
-                                        type
+                                        entity_type
                                         stix_id
                                         definition_type
                                         definition
@@ -1322,7 +1672,7 @@ class OpenCti:
            mutation CourseOfActionAdd($input: CourseOfActionAddInput) {
                courseOfActionAdd(input: $input) {
                    id
-                   type
+                   entity_type
                    alias
                }
            }
@@ -1337,6 +1687,22 @@ class OpenCti:
             }
         })
         return result['data']['courseOfActionAdd']
+
+    def create_course_of_action_if_not_exists(self, name, description, stix_id=None, created=None, modified=None):
+        if stix_id is not None:
+            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+        else:
+            object_result = self.search_stix_domain_entity(name, 'Course-Of-Action')
+        if object_result is not None:
+            return object_result
+        else:
+            return self.create_course_of_action(
+                name,
+                description,
+                stix_id,
+                created,
+                modified
+            )
 
     def get_reports(self, limit=10000):
         self.log('Getting reports...')
@@ -1361,7 +1727,7 @@ class OpenCti:
                             createdByRef {
                                 node {
                                     id
-                                    type
+                                    entity_type
                                     stix_id
                                     stix_label
                                     name
@@ -1375,7 +1741,7 @@ class OpenCti:
                                 edges {
                                     node {
                                         id
-                                        type
+                                        entity_type
                                         stix_id
                                         definition_type
                                         definition
@@ -1427,7 +1793,7 @@ class OpenCti:
            mutation ReportAdd($input: ReportAddInput) {
                reportAdd(input: $input) {
                    id
-                   type
+                   entity_type
                    alias
                }
            }
@@ -1447,6 +1813,38 @@ class OpenCti:
             }
         })
         return result['data']['reportAdd']
+
+    def create_report_if_not_exists(self,
+                                    name,
+                                    description,
+                                    published,
+                                    report_class,
+                                    object_status=None,
+                                    source_confidence_level=None,
+                                    graph_data=None,
+                                    stix_id=None,
+                                    created=None,
+                                    modified=None
+                                    ):
+        if stix_id is not None:
+            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+        else:
+            object_result = self.search_stix_domain_entity(name, 'Report')
+        if object_result is not None:
+            return object_result
+        else:
+            return self.create_report(
+                name,
+                description,
+                published,
+                report_class,
+                object_status,
+                source_confidence_level,
+                graph_data,
+                stix_id,
+                created,
+                modified
+            )
 
     def update_stix_domain_entity_created_by_ref(self, object_id, identity_id):
         query = """
@@ -1509,7 +1907,7 @@ class OpenCti:
             }
             self.query(query, variables)
 
-    def add_marking_definition(self, object_id, marking_definition_id):
+    def add_marking_definition_if_not_exists(self, object_id, marking_definition_id):
         query = """
             query MarkingDefinitions($objectId: String!) {
                 markingDefinitions(objectId: $objectId) {
@@ -1551,7 +1949,7 @@ class OpenCti:
             })
             return True
 
-    def add_kill_chain_phase(self, object_id, kill_chain_phase_id):
+    def add_kill_chain_phase_if_not_exists(self, object_id, kill_chain_phase_id):
         query = """
             query KillChainPhases($objectId: String!) {
                 killChainPhases(objectId: $objectId) {
@@ -1593,7 +1991,7 @@ class OpenCti:
             })
             return True
 
-    def add_external_reference(self, object_id, external_reference_id):
+    def add_external_reference_if_not_exists(self, object_id, external_reference_id):
         query = """
             query ExternalReference($objectId: String!) {
                 externalReferences(objectId: $objectId) {
@@ -1635,7 +2033,7 @@ class OpenCti:
             })
             return True
 
-    def add_object_ref_to_report(self, report_id, object_id):
+    def add_object_ref_to_report_if_not_exists(self, report_id, object_id):
         query = """
             query Report($id: String!) {
                 report(id: $id) {

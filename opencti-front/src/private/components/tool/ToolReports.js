@@ -28,9 +28,9 @@ class ToolReportsComponent extends Component {
     const { classes, tool } = this.props;
     return (
       <div className={classes.container}>
-        <ToolHeader tool={tool}/>
+        <ToolHeader tool={tool} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={tool.id}/>
+          <EntityReports entityId={tool.id} />
         </Paper>
       </div>
     );
@@ -45,10 +45,10 @@ ToolReportsComponent.propTypes = {
 
 const ToolReports = createFragmentContainer(ToolReportsComponent, {
   tool: graphql`
-      fragment ToolReports_tool on Tool {
-          id
-          ...ToolHeader_tool
-      }
+    fragment ToolReports_tool on Tool {
+      id
+      ...ToolHeader_tool
+    }
   `,
 });
 

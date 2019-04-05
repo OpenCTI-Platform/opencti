@@ -12,9 +12,15 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../components/i18n';
-import { commitMutation, requestSubscription } from '../../../relay/environment';
+import {
+  commitMutation,
+  requestSubscription,
+} from '../../../relay/environment';
 import TextField from '../../../components/TextField';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../components/Subscription';
+import {
+  SubscriptionAvatars,
+  SubscriptionFocus,
+} from '../../../components/Subscription';
 
 const styles = theme => ({
   header: {
@@ -57,36 +63,41 @@ const styles = theme => ({
 });
 
 const subscription = graphql`
-    subscription StixDomainEntityEditionOverviewSubscription($id: ID!) {
-        stixDomainEntity(id: $id) {
-            ...StixDomainEntityEditionOverview_stixDomainEntity
-        }
+  subscription StixDomainEntityEditionOverviewSubscription($id: ID!) {
+    stixDomainEntity(id: $id) {
+      ...StixDomainEntityEditionOverview_stixDomainEntity
     }
+  }
 `;
 
 export const stixDomainEntityMutationFieldPatch = graphql`
-    mutation StixDomainEntityEditionOverviewFieldPatchMutation($id: ID!, $input: EditInput!) {
-        stixDomainEntityEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...StixDomainEntityEditionOverview_stixDomainEntity
-            }
-        }
+  mutation StixDomainEntityEditionOverviewFieldPatchMutation(
+    $id: ID!
+    $input: EditInput!
+  ) {
+    stixDomainEntityEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...StixDomainEntityEditionOverview_stixDomainEntity
+      }
     }
+  }
 `;
 
 export const stixDomainEntityEditionFocus = graphql`
-    mutation StixDomainEntityEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
-        stixDomainEntityEdit(id: $id) {
-            contextPatch(input : $input) {
-                ...StixDomainEntityEditionOverview_stixDomainEntity
-            }
-        }
+  mutation StixDomainEntityEditionOverviewFocusMutation(
+    $id: ID!
+    $input: EditContext!
+  ) {
+    stixDomainEntityEdit(id: $id) {
+      contextPatch(input: $input) {
+        ...StixDomainEntityEditionOverview_stixDomainEntity
+      }
     }
+  }
 `;
 
 const stixDomainEntityValidation = t => Yup.object().shape({
-  name: Yup.string()
-    .required(t('This field is required')),
+  name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });
 
@@ -118,12 +129,18 @@ class StixDomainEntityEditionContainer extends Component {
   }
 
   handleSubmitField(name, value) {
-    stixDomainEntityValidation(this.props.t).validateAt(name, { [name]: value }).then(() => {
-      commitMutation({
-        mutation: stixDomainEntityMutationFieldPatch,
-        variables: { id: this.props.stixDomainEntity.id, input: { key: name, value } },
-      });
-    }).catch(() => false);
+    stixDomainEntityValidation(this.props.t)
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        commitMutation({
+          mutation: stixDomainEntityMutationFieldPatch,
+          variables: {
+            id: this.props.stixDomainEntity.id,
+            input: { key: name, value },
+          },
+        });
+      })
+      .catch(() => false);
   }
 
   render() {
@@ -133,19 +150,25 @@ class StixDomainEntityEditionContainer extends Component {
     const { editContext } = stixDomainEntity;
     // Add current user to the context if is not available yet.
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
+    const editUsers = missingMe
+      ? insert(0, { name: me.email }, editContext)
+      : editContext;
     const initialValues = pick(['name', 'description'], stixDomainEntity);
     return (
       <div>
         <div className={classes.header}>
-          <IconButton aria-label='Close' className={classes.closeButton} onClick={handleClose.bind(this)}>
-            <Close fontSize='small'/>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
           </IconButton>
-          <Typography variant='h6' classes={{ root: classes.title }}>
+          <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update an entity')}
           </Typography>
-          <SubscriptionAvatars users={editUsers}/>
-          <div className='clearfix'/>
+          <SubscriptionAvatars users={editUsers} />
+          <div className="clearfix" />
         </div>
         <div className={classes.container}>
           <Formik
@@ -154,16 +177,40 @@ class StixDomainEntityEditionContainer extends Component {
             validationSchema={stixDomainEntityValidation(t)}
             render={() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field name='name' component={TextField} label={t('Last seen')}
-                       fullWidth={true} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='last_seen'/>}/>
-                <Field name='description' component={TextField} label={t('Description')}
-                       fullWidth={true} multiline={true} rows={4} style={{ marginTop: 10 }}
-                       onFocus={this.handleChangeFocus.bind(this)}
-                       onSubmit={this.handleSubmitField.bind(this)}
-                       helperText={<SubscriptionFocus me={me} users={editUsers} fieldName='description'/>}/>
+                <Field
+                  name="name"
+                  component={TextField}
+                  label={t('Last seen')}
+                  fullWidth={true}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="last_seen"
+                    />
+                  }
+                />
+                <Field
+                  name="description"
+                  component={TextField}
+                  label={t('Description')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows={4}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="description"
+                    />
+                  }
+                />
               </Form>
             )}
           />
@@ -182,24 +229,27 @@ StixDomainEntityEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const StixDomainEntityEditionFragment = createFragmentContainer(StixDomainEntityEditionContainer, {
-  stixDomainEntity: graphql`
+const StixDomainEntityEditionFragment = createFragmentContainer(
+  StixDomainEntityEditionContainer,
+  {
+    stixDomainEntity: graphql`
       fragment StixDomainEntityEditionOverview_stixDomainEntity on StixDomainEntity {
-          id
+        id
+        name
+        description
+        editContext {
           name
-          description
-          editContext {
-              name
-              focusOn
-          }
+          focusOn
+        }
       }
-  `,
-  me: graphql`
+    `,
+    me: graphql`
       fragment StixDomainEntityEditionOverview_me on User {
-          email
+        email
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

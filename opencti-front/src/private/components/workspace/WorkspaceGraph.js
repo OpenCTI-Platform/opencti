@@ -12,7 +12,9 @@ import {
   last,
   head,
   includes,
-  pluck, indexBy, prop,
+  pluck,
+  indexBy,
+  prop,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -66,50 +68,50 @@ const styles = () => ({
 });
 
 export const workspaceGraphQuery = graphql`
-    query WorkspaceGraphQuery($id: String!) {
-        workspace(id: $id) {
-            ...WorkspaceGraph_workspace
-        }
+  query WorkspaceGraphQuery($id: String!) {
+    workspace(id: $id) {
+      ...WorkspaceGraph_workspace
     }
+  }
 `;
 
 const workspaceGraphResolveRelationsQuery = graphql`
-    query WorkspaceGraphResolveRelationsQuery(
+  query WorkspaceGraphResolveRelationsQuery(
     $fromId: String
     $first: Int
     $inferred: Boolean
-    ) {
-        stixRelations(fromId: $fromId, first: $first, inferred: $inferred) {
-            edges {
-                node {
-                    id
-                    relationship_type
-                    first_seen
-                    last_seen
-                    inferred
-                    from {
-                        id
-                    }
-                    to {
-                        id
-                    }
-                }
-            }
+  ) {
+    stixRelations(fromId: $fromId, first: $first, inferred: $inferred) {
+      edges {
+        node {
+          id
+          relationship_type
+          first_seen
+          last_seen
+          inferred
+          from {
+            id
+          }
+          to {
+            id
+          }
         }
+      }
     }
+  }
 `;
 
 export const workspaceGraphMutationRelationsAdd = graphql`
-    mutation WorkspaceGraphRelationsAddMutation(
+  mutation WorkspaceGraphRelationsAddMutation(
     $id: ID!
     $input: RelationsAddInput!
-    ) {
-        workspaceEdit(id: $id) {
-            relationsAdd(input: $input) {
-                ...WorkspaceGraph_workspace
-            }
-        }
+  ) {
+    workspaceEdit(id: $id) {
+      relationsAdd(input: $input) {
+        ...WorkspaceGraph_workspace
+      }
     }
+  }
 `;
 
 const GRAPHER$ = new Subject().pipe(debounce(() => timer(1000)));
@@ -213,8 +215,13 @@ class WorkspaceGraphComponent extends Component {
 
     // decode graph data if any
     let graphData = {};
-    if (this.props.workspace.graph_data && this.props.workspace.graph_data.length > 0) {
-      graphData = JSON.parse(Buffer.from(this.props.workspace.graph_data, 'base64').toString('ascii',));
+    if (
+      this.props.workspace.graph_data
+      && this.props.workspace.graph_data.length > 0
+    ) {
+      graphData = JSON.parse(
+        Buffer.from(this.props.workspace.graph_data, 'base64').toString('ascii'),
+      );
     }
 
     // set offset & zoom
@@ -264,7 +271,9 @@ class WorkspaceGraphComponent extends Component {
 
   async resolveCurrentNodesLinks() {
     const model = this.props.engine.getDiagramModel();
-    forEach((l) => { l.remove(); }, values(model.getLinks()));
+    forEach((l) => {
+      l.remove();
+    }, values(model.getLinks()));
 
     const nodes = model.getNodes();
     const nodesObject = pipe(
@@ -284,10 +293,20 @@ class WorkspaceGraphComponent extends Component {
           forEach((l) => {
             if (nodesObject[l.node.from.id] && nodesObject[l.node.to.id]) {
               if (!includes(l.node.id, createdRelations)) {
-                const fromPort = nodesObject[l.node.from.id] ? model.getNode(nodesObject[l.node.from.id].nodeId).getPort('main') : null;
-                const toPort = nodesObject[l.node.to.id] ? model.getNode(nodesObject[l.node.to.id].nodeId).getPort('main') : null;
+                const fromPort = nodesObject[l.node.from.id]
+                  ? model
+                    .getNode(nodesObject[l.node.from.id].nodeId)
+                    .getPort('main')
+                  : null;
+                const toPort = nodesObject[l.node.to.id]
+                  ? model
+                    .getNode(nodesObject[l.node.to.id].nodeId)
+                    .getPort('main')
+                  : null;
                 if (relationsPairs[`${fromPort.id}-${toPort.id}`]) {
-                  const existingLink = model.getLink(relationsPairs[`${fromPort.id}-${toPort.id}`]);
+                  const existingLink = model.getLink(
+                    relationsPairs[`${fromPort.id}-${toPort.id}`],
+                  );
                   const label = head(existingLink.labels);
                   const extrasIds = pluck('id', label.extras);
                   if (!includes(l.node.id, extrasIds)) {
@@ -340,8 +359,13 @@ class WorkspaceGraphComponent extends Component {
 
     // decode graph data if any
     let graphData = {};
-    if (this.props.workspace.graph_data && this.props.workspace.graph_data.length > 0) {
-      graphData = JSON.parse(Buffer.from(this.props.workspace.graph_data, 'base64').toString('ascii'));
+    if (
+      this.props.workspace.graph_data
+      && this.props.workspace.graph_data.length > 0
+    ) {
+      graphData = JSON.parse(
+        Buffer.from(this.props.workspace.graph_data, 'base64').toString('ascii'),
+      );
     }
 
     // set offset & zoom
@@ -632,7 +656,7 @@ class WorkspaceGraphComponent extends Component {
           onClick={this.zoomToFit.bind(this)}
           style={{ left: 90 }}
         >
-          <AspectRatio/>
+          <AspectRatio />
         </IconButton>
         <DiagramWidget
           className={classes.canvas}
@@ -656,7 +680,7 @@ class WorkspaceGraphComponent extends Component {
         <StixRelationEdition
           open={openEditRelation}
           stixRelationId={editRelationId}
-          variant='noGraph'
+          variant="noGraph"
           handleClose={this.handleCloseRelationEdition.bind(this)}
           handleDelete={this.handleDeleteRelation.bind(this)}
         />
@@ -680,24 +704,24 @@ WorkspaceGraphComponent.propTypes = {
 
 const WorkspaceGraph = createFragmentContainer(WorkspaceGraphComponent, {
   workspace: graphql`
-      fragment WorkspaceGraph_workspace on Workspace {
-          id
-          name
-          graph_data
-          objectRefs {
-              edges {
-                  node {
-                      id
-                      entity_type
-                      name
-                      description
-                  }
-                  relation {
-                      id
-                  }
-              }
+    fragment WorkspaceGraph_workspace on Workspace {
+      id
+      name
+      graph_data
+      objectRefs {
+        edges {
+          node {
+            id
+            entity_type
+            name
+            description
           }
+          relation {
+            id
+          }
+        }
       }
+    }
   `,
 });
 

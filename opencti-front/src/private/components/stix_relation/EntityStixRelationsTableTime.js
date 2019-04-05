@@ -42,12 +42,42 @@ const styles = theme => ({
 });
 
 const entityStixRelationsTableTimeStixRelationTimeSeriesQuery = graphql`
-    query EntityStixRelationsTableTimeStixRelationTimeSeriesQuery($fromId: String, $entityTypes: [String] $relationType: String, $resolveInferences: Boolean, $resolveRelationType: String, $resolveRelationRole: String, $resolveRelationToTypes: [String], $resolveViaTypes: [EntityRelation], $toTypes: [String], $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
-        stixRelationsTimeSeries(fromId: $fromId, entityTypes: $entityTypes, relationType: $relationType, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, resolveRelationRole: $resolveRelationRole, resolveRelationToTypes: $resolveRelationToTypes, resolveViaTypes: $resolveViaTypes, toTypes: $toTypes, field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
-            date,
-            value
-        }
+  query EntityStixRelationsTableTimeStixRelationTimeSeriesQuery(
+    $fromId: String
+    $entityTypes: [String]
+    $relationType: String
+    $resolveInferences: Boolean
+    $resolveRelationType: String
+    $resolveRelationRole: String
+    $resolveRelationToTypes: [String]
+    $resolveViaTypes: [EntityRelation]
+    $toTypes: [String]
+    $field: String!
+    $operation: StatsOperation!
+    $startDate: DateTime!
+    $endDate: DateTime!
+    $interval: String!
+  ) {
+    stixRelationsTimeSeries(
+      fromId: $fromId
+      entityTypes: $entityTypes
+      relationType: $relationType
+      resolveInferences: $resolveInferences
+      resolveRelationType: $resolveRelationType
+      resolveRelationRole: $resolveRelationRole
+      resolveRelationToTypes: $resolveRelationToTypes
+      resolveViaTypes: $resolveViaTypes
+      toTypes: $toTypes
+      field: $field
+      operation: $operation
+      startDate: $startDate
+      endDate: $endDate
+      interval: $interval
+    ) {
+      date
+      value
     }
+  }
 `;
 
 class EntityStixRelationsTableTime extends Component {
@@ -94,37 +124,79 @@ class EntityStixRelationsTableTime extends Component {
     };
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true} style={{ float: 'left' }}>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {title ? t(title) : t(`relation_${relationType}`)}
         </Typography>
         <div style={{ float: 'right', marginTop: -6 }}>
-          <Chip classes={{ root: classes.chip }} style={{ backgroundColor: this.state.interval === 'month' ? '#795548' : '#757575' }} label={t('Month')} component='button' onClick={this.changeInterval.bind(this, 'month')}/>
-          <Chip classes={{ root: classes.chip }} style={{ backgroundColor: this.state.interval === 'year' ? '#795548' : '#757575' }} label={t('Year')} component='button' onClick={this.changeInterval.bind(this, 'year')}/>
+          <Chip
+            classes={{ root: classes.chip }}
+            style={{
+              backgroundColor:
+                this.state.interval === 'month' ? '#795548' : '#757575',
+            }}
+            label={t('Month')}
+            component="button"
+            onClick={this.changeInterval.bind(this, 'month')}
+          />
+          <Chip
+            classes={{ root: classes.chip }}
+            style={{
+              backgroundColor:
+                this.state.interval === 'year' ? '#795548' : '#757575',
+            }}
+            label={t('Year')}
+            component="button"
+            onClick={this.changeInterval.bind(this, 'year')}
+          />
         </div>
-        <div className='clearfix'/>
+        <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
             query={entityStixRelationsTableTimeStixRelationTimeSeriesQuery}
             variables={stixRelationsTimeSeriesVariables}
             render={({ props }) => {
-              if (props && props.stixRelationsTimeSeries && props.stixRelationsTimeSeries.length > 0) {
-                const stixRelationsTimeSeries = reverse(props.stixRelationsTimeSeries);
+              if (
+                props
+                && props.stixRelationsTimeSeries
+                && props.stixRelationsTimeSeries.length > 0
+              ) {
+                const stixRelationsTimeSeries = reverse(
+                  props.stixRelationsTimeSeries,
+                );
                 return (
                   <Table className={classes.table}>
                     <TableHead>
                       <TableRow className={classes.tableHead}>
-                        <TableCell>{t(this.state.interval.charAt(0).toUpperCase() + this.state.interval.slice(1))}</TableCell>
-                        <TableCell align='right'>{`${t('Number of')} ${t(`relation_${relationType}`)}s`}</TableCell>
+                        <TableCell>
+                          {t(
+                            this.state.interval.charAt(0).toUpperCase()
+                              + this.state.interval.slice(1),
+                          )}
+                        </TableCell>
+                        <TableCell align="right">{`${t('Number of')} ${t(
+                          `relation_${relationType}`,
+                        )}s`}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {stixRelationsTimeSeries.map(row => (
-                          <TableRow key={row.date} hover={true}>
-                            <TableCell component='th' scope='row' padding='dense' className={classes.tableBody}>
-                              {row.date}
-                            </TableCell>
-                            <TableCell align='right' padding='dense' className={classes.tableBody}>{row.value}</TableCell>
-                          </TableRow>
+                        <TableRow key={row.date} hover={true}>
+                          <TableCell
+                            component="th"
+                            scope="row"
+                            padding="dense"
+                            className={classes.tableBody}
+                          >
+                            {row.date}
+                          </TableCell>
+                          <TableCell
+                            align="right"
+                            padding="dense"
+                            className={classes.tableBody}
+                          >
+                            {row.value}
+                          </TableCell>
+                        </TableRow>
                       ))}
                     </TableBody>
                   </Table>
@@ -132,18 +204,34 @@ class EntityStixRelationsTableTime extends Component {
               }
               if (props) {
                 return (
-                  <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                  <div
+                    style={{ display: 'table', height: '100%', width: '100%' }}
+                  >
+                    <span
+                      style={{
+                        display: 'table-cell',
+                        verticalAlign: 'middle',
+                        textAlign: 'center',
+                      }}
+                    >
                       {t('No entities of this type has been found.')}
                     </span>
                   </div>
                 );
               }
               return (
-                <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-                      <CircularProgress size={40} thickness={2}/>
-                    </span>
+                <div
+                  style={{ display: 'table', height: '100%', width: '100%' }}
+                >
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <CircularProgress size={40} thickness={2} />
+                  </span>
                 </div>
               );
             }}

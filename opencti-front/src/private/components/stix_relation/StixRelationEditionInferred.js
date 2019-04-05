@@ -73,58 +73,107 @@ const styles = theme => ({
 class StixRelationEditionInferred extends Component {
   render() {
     const {
-      classes, t, stixDomainEntity, open, handleClose, stixRelationId,
+      classes,
+      t,
+      stixDomainEntity,
+      open,
+      handleClose,
+      stixRelationId,
     } = this.props;
     const link = stixDomainEntity ? resolveLink(stixDomainEntity.type) : '';
     return (
-      <Drawer open={open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={handleClose.bind(this)}>
+      <Drawer
+        open={open}
+        anchor="right"
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose.bind(this)}
+      >
         <div>
           <div className={classes.header}>
-            <IconButton aria-label='Close' className={classes.closeButton} onClick={handleClose.bind(this)}>
-              <Close fontSize='small'/>
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={handleClose.bind(this)}
+            >
+              <Close fontSize="small" />
             </IconButton>
-            <Typography variant='h6' classes={{ root: classes.title }}>
+            <Typography variant="h6" classes={{ root: classes.title }}>
               {t('Update a relationship')}
             </Typography>
-            <div className='clearfix'/>
+            <div className="clearfix" />
           </div>
           <div className={classes.container}>
             <Formik
               enableReinitialize={true}
               initialValues={{
-                weight: '', first_seen: '', last_seen: '', description: '',
+                weight: '',
+                first_seen: '',
+                last_seen: '',
+                description: '',
               }}
               render={() => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field name='weight'
-                         disabled={true}
-                         component={Select}
-                         label={t('Confidence level')}
-                         inputProps={{
-                           name: 'weight',
-                           id: 'weight',
-                         }}
-                         containerstyle={{ marginTop: 10, width: '100%' }}
+                  <Field
+                    name="weight"
+                    disabled={true}
+                    component={Select}
+                    label={t('Confidence level')}
+                    inputProps={{
+                      name: 'weight',
+                      id: 'weight',
+                    }}
+                    containerstyle={{ marginTop: 10, width: '100%' }}
                   >
-                    <MenuItem value='1'>{t('Very low')}</MenuItem>
-                    <MenuItem value='2'>{t('Low')}</MenuItem>
-                    <MenuItem value='3'>{t('Medium')}</MenuItem>
-                    <MenuItem value='4'>{t('High')}</MenuItem>
-                    <MenuItem value='5'>{t('Very high')}</MenuItem>
+                    <MenuItem value="1">{t('Very low')}</MenuItem>
+                    <MenuItem value="2">{t('Low')}</MenuItem>
+                    <MenuItem value="3">{t('Medium')}</MenuItem>
+                    <MenuItem value="4">{t('High')}</MenuItem>
+                    <MenuItem value="5">{t('Very high')}</MenuItem>
                   </Field>
-                  <Field name='first_seen' component={TextField} label={t('First seen')}
-                         fullWidth={true} style={{ marginTop: 10 }} disabled={true}/>
-                  <Field name='last_seen' component={TextField} label={t('Last seen')}
-                         fullWidth={true} style={{ marginTop: 10 }} disabled={true}/>
-                  <Field name='description' component={TextField} label={t('Description')}
-                         fullWidth={true} multiline={true} rows={4} style={{ marginTop: 10 }} disabled={true}/>
+                  <Field
+                    name="first_seen"
+                    component={TextField}
+                    label={t('First seen')}
+                    fullWidth={true}
+                    style={{ marginTop: 10 }}
+                    disabled={true}
+                  />
+                  <Field
+                    name="last_seen"
+                    component={TextField}
+                    label={t('Last seen')}
+                    fullWidth={true}
+                    style={{ marginTop: 10 }}
+                    disabled={true}
+                  />
+                  <Field
+                    name="description"
+                    component={TextField}
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows={4}
+                    style={{ marginTop: 10 }}
+                    disabled={true}
+                  />
                 </Form>
               )}
             />
-            {stixDomainEntity
-              ? <Button variant='contained' color='primary' component={Link} to={`${link}/${stixDomainEntity.id}/knowledge/relations/${stixRelationId}`} classes={{ root: classes.buttonLeft }}>
+            {stixDomainEntity ? (
+              <Button
+                variant="contained"
+                color="primary"
+                component={Link}
+                to={`${link}/${
+                  stixDomainEntity.id
+                }/knowledge/relations/${stixRelationId}`}
+                classes={{ root: classes.buttonLeft }}
+              >
                 {t('Details')}
-              </Button> : ''}
+              </Button>
+            ) : (
+              ''
+            )}
           </div>
         </div>
       </Drawer>

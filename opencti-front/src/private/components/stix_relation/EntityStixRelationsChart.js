@@ -35,12 +35,42 @@ const styles = theme => ({
 });
 
 const entityStixRelationsChartStixRelationTimeSeriesQuery = graphql`
-    query EntityStixRelationsChartStixRelationTimeSeriesQuery($fromId: String, $entityTypes: [String] $relationType: String, $resolveInferences: Boolean, $resolveRelationType: String, $resolveRelationRole: String, $resolveRelationToTypes: [String], $resolveViaTypes: [EntityRelation], $toTypes: [String], $field: String!, $operation: StatsOperation!, $startDate: DateTime!, $endDate: DateTime!, $interval: String!) {
-        stixRelationsTimeSeries(fromId: $fromId, entityTypes: $entityTypes, relationType: $relationType, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, resolveRelationRole: $resolveRelationRole, resolveRelationToTypes: $resolveRelationToTypes, resolveViaTypes: $resolveViaTypes, toTypes: $toTypes, field: $field, operation: $operation, startDate: $startDate, endDate: $endDate, interval: $interval) {
-            date,
-            value
-        }
+  query EntityStixRelationsChartStixRelationTimeSeriesQuery(
+    $fromId: String
+    $entityTypes: [String]
+    $relationType: String
+    $resolveInferences: Boolean
+    $resolveRelationType: String
+    $resolveRelationRole: String
+    $resolveRelationToTypes: [String]
+    $resolveViaTypes: [EntityRelation]
+    $toTypes: [String]
+    $field: String!
+    $operation: StatsOperation!
+    $startDate: DateTime!
+    $endDate: DateTime!
+    $interval: String!
+  ) {
+    stixRelationsTimeSeries(
+      fromId: $fromId
+      entityTypes: $entityTypes
+      relationType: $relationType
+      resolveInferences: $resolveInferences
+      resolveRelationType: $resolveRelationType
+      resolveRelationRole: $resolveRelationRole
+      resolveRelationToTypes: $resolveRelationToTypes
+      resolveViaTypes: $resolveViaTypes
+      toTypes: $toTypes
+      field: $field
+      operation: $operation
+      startDate: $startDate
+      endDate: $endDate
+      interval: $interval
+    ) {
+      date
+      value
     }
+  }
 `;
 
 class EntityStixRelationsChart extends Component {
@@ -101,15 +131,39 @@ class EntityStixRelationsChart extends Component {
     };
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true} style={{ float: 'left' }}>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {title ? t(title) : t('Entity usage')}
         </Typography>
         <div style={{ float: 'right', marginTop: -6 }}>
-          <Chip classes={{ root: classes.chip }} style={{ backgroundColor: this.state.period === 12 ? '#795548' : '#757575' }} label='12M' component='button' onClick={this.changePeriod.bind(this, 12)}/>
-          <Chip classes={{ root: classes.chip }} style={{ backgroundColor: this.state.period === 24 ? '#795548' : '#757575' }} label='24M' component='button' onClick={this.changePeriod.bind(this, 24)}/>
-          <Chip classes={{ root: classes.chip }} style={{ backgroundColor: this.state.period === 36 ? '#795548' : '#757575' }} label='36M' component='button' onClick={this.changePeriod.bind(this, 36)}/>
+          <Chip
+            classes={{ root: classes.chip }}
+            style={{
+              backgroundColor: this.state.period === 12 ? '#795548' : '#757575',
+            }}
+            label="12M"
+            component="button"
+            onClick={this.changePeriod.bind(this, 12)}
+          />
+          <Chip
+            classes={{ root: classes.chip }}
+            style={{
+              backgroundColor: this.state.period === 24 ? '#795548' : '#757575',
+            }}
+            label="24M"
+            component="button"
+            onClick={this.changePeriod.bind(this, 24)}
+          />
+          <Chip
+            classes={{ root: classes.chip }}
+            style={{
+              backgroundColor: this.state.period === 36 ? '#795548' : '#757575',
+            }}
+            label="36M"
+            component="button"
+            onClick={this.changePeriod.bind(this, 36)}
+          />
         </div>
-        <div className='clearfix'/>
+        <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
             query={entityStixRelationsChartStixRelationTimeSeriesQuery}
@@ -117,32 +171,65 @@ class EntityStixRelationsChart extends Component {
             render={({ props }) => {
               if (props && props.stixRelationsTimeSeries) {
                 return (
-                  <ResponsiveContainer height={330} width='100%'>
-                    <AreaChart data={props.stixRelationsTimeSeries} margin={{
-                      top: 20, right: 50, bottom: 20, left: -10,
-                    }}>
-                      <CartesianGrid strokeDasharray='2 2' stroke='#0f181f'/>
-                      <XAxis dataKey='date' stroke='#ffffff' interval={this.state.interval} angle={-45} textAnchor='end' tickFormatter={md}/>
-                      <YAxis stroke='#ffffff'/>
-                      <Area type='monotone' stroke={Theme.palette.primary.main} dataKey='value'/>
+                  <ResponsiveContainer height={330} width="100%">
+                    <AreaChart
+                      data={props.stixRelationsTimeSeries}
+                      margin={{
+                        top: 20,
+                        right: 50,
+                        bottom: 20,
+                        left: -10,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
+                      <XAxis
+                        dataKey="date"
+                        stroke="#ffffff"
+                        interval={this.state.interval}
+                        angle={-45}
+                        textAnchor="end"
+                        tickFormatter={md}
+                      />
+                      <YAxis stroke="#ffffff" />
+                      <Area
+                        type="monotone"
+                        stroke={Theme.palette.primary.main}
+                        dataKey="value"
+                      />
                     </AreaChart>
                   </ResponsiveContainer>
                 );
               }
               if (props) {
                 return (
-                  <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                  <div
+                    style={{ display: 'table', height: '100%', width: '100%' }}
+                  >
+                    <span
+                      style={{
+                        display: 'table-cell',
+                        verticalAlign: 'middle',
+                        textAlign: 'center',
+                      }}
+                    >
                       {t('No entities of this type has been found.')}
                     </span>
                   </div>
                 );
               }
               return (
-                <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-                      <CircularProgress size={40} thickness={2}/>
-                    </span>
+                <div
+                  style={{ display: 'table', height: '100%', width: '100%' }}
+                >
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <CircularProgress size={40} thickness={2} />
+                  </span>
                 </div>
               );
             }}

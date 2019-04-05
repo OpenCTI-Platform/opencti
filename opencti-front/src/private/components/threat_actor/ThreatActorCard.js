@@ -85,16 +85,28 @@ class ThreatActorCardComponent extends Component {
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
-        <CardActionArea classes={{ root: classes.area }} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActor.id}`}>
+        <CardActionArea
+          classes={{ root: classes.area }}
+          component={Link}
+          to={`/dashboard/knowledge/threat_actors/${threatActor.id}`}
+        >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={<Avatar className={classes.avatar}>{threatActor.name.charAt(0)}</Avatar>}
+            avatar={
+              <Avatar className={classes.avatar}>
+                {threatActor.name.charAt(0)}
+              </Avatar>
+            }
             title={threatActor.name}
             subheader={`${t('Updated the')} ${fsd(threatActor.modified)}`}
-            action={<Public className={classes.icon}/>}
+            action={<Public className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.content }}>
-            <Markdown source={threatActor.description} disallowedTypes={['link']} unwrapDisallowed={true}/>
+            <Markdown
+              source={threatActor.description}
+              disallowedTypes={['link']}
+              unwrapDisallowed={true}
+            />
           </CardContent>
         </CardActionArea>
       </Card>
@@ -109,23 +121,25 @@ ThreatActorCardComponent.propTypes = {
   fsd: PropTypes.func,
 };
 
-const ThreatActorCardFragment = createFragmentContainer(ThreatActorCardComponent, {
-  threatActor: graphql`
+const ThreatActorCardFragment = createFragmentContainer(
+  ThreatActorCardComponent,
+  {
+    threatActor: graphql`
       fragment ThreatActorCard_threatActor on ThreatActor {
-          id
-          name
-          description
-          created
-          modified
+        id
+        name
+        description
+        created
+        modified
       }
-  `,
-});
+    `,
+  },
+);
 
 export const ThreatActorCard = compose(
   inject18n,
   withStyles(styles),
 )(ThreatActorCardFragment);
-
 
 class ThreatActorCardDummyComponent extends Component {
   render() {
@@ -136,15 +150,25 @@ class ThreatActorCardDummyComponent extends Component {
           <CardHeader
             classes={{ root: classes.header }}
             avatar={<Avatar className={classes.avatarDisabled}>D</Avatar>}
-            title={<div className={classes.placeholderHeader} style={{ width: '85%' }}/>}
+            title={
+              <div
+                className={classes.placeholderHeader}
+                style={{ width: '85%' }}
+              />
+            }
             titleTypographyProps={{ color: 'inherit' }}
-            subheader={<div className={classes.placeholderHeaderDark} style={{ width: '70%' }}/>}
-            action={<Public className={classes.icon}/>}
+            subheader={
+              <div
+                className={classes.placeholderHeaderDark}
+                style={{ width: '70%' }}
+              />
+            }
+            action={<Public className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.contentDummy }}>
-            <div className='fakeItem' style={{ width: '90%' }}/>
-            <div className='fakeItem' style={{ width: '95%' }}/>
-            <div className='fakeItem' style={{ width: '90%' }}/>
+            <div className="fakeItem" style={{ width: '90%' }} />
+            <div className="fakeItem" style={{ width: '95%' }} />
+            <div className="fakeItem" style={{ width: '90%' }} />
           </CardContent>
         </CardActionArea>
       </Card>

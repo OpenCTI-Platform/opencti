@@ -24,42 +24,55 @@ const styles = theme => ({
 });
 
 const stixDomainEntityEditionQuery = graphql`
-    query StixDomainEntityEditionQuery($id: String!) {
-        stixDomainEntity(id: $id) {
-            ...StixDomainEntityEditionOverview_stixDomainEntity
-        }
-        me {
-            ...StixDomainEntityEditionOverview_me
-        }
+  query StixDomainEntityEditionQuery($id: String!) {
+    stixDomainEntity(id: $id) {
+      ...StixDomainEntityEditionOverview_stixDomainEntity
     }
+    me {
+      ...StixDomainEntityEditionOverview_me
+    }
+  }
 `;
 
 class StixDomainEntityEdition extends Component {
   render() {
     const {
-      classes, stixDomainEntityId, open, handleClose, handleDelete, variant,
+      classes,
+      stixDomainEntityId,
+      open,
+      handleClose,
+      handleDelete,
+      variant,
     } = this.props;
     return (
-      <Drawer open={open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={handleClose.bind(this)}>
-        {stixDomainEntityId
-          ? <QueryRenderer
-          query={stixDomainEntityEditionQuery}
-          variables={{ id: stixDomainEntityId }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <StixDomainEntityEditionOverview
-                  variant={variant}
-                  me={props.me}
-                  stixDomainEntity={props.stixDomainEntity}
-                  handleClose={handleClose.bind(this)}
-                  handleDelete={handleDelete.bind(this)}
-                />
-              );
-            }
-            return <div> &nbsp; </div>;
-          }}
-        /> : '&nbsp;'}
+      <Drawer
+        open={open}
+        anchor="right"
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose.bind(this)}
+      >
+        {stixDomainEntityId ? (
+          <QueryRenderer
+            query={stixDomainEntityEditionQuery}
+            variables={{ id: stixDomainEntityId }}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <StixDomainEntityEditionOverview
+                    variant={variant}
+                    me={props.me}
+                    stixDomainEntity={props.stixDomainEntity}
+                    handleClose={handleClose.bind(this)}
+                    handleDelete={handleDelete.bind(this)}
+                  />
+                );
+              }
+              return <div> &nbsp; </div>;
+            }}
+          />
+        ) : (
+          '&nbsp;'
+        )}
       </Drawer>
     );
   }

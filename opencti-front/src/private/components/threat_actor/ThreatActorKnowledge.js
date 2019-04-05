@@ -26,99 +26,157 @@ const inversedRelations = ['intrusion-set', 'campaign', 'incident'];
 class ThreatActorKnowledgeComponent extends Component {
   render() {
     const { classes, threatActor, location } = this.props;
-    const link = `/dashboard/knowledge/threat_actors/${threatActor.id}/knowledge`;
+    const link = `/dashboard/knowledge/threat_actors/${
+      threatActor.id
+    }/knowledge`;
     return (
       <div className={classes.container}>
-        <ThreatActorHeader threatActor={threatActor} variant='noalias'/>
-        <ThreatActorKnowledgeBar threatActorId={threatActor.id}/>
+        <ThreatActorHeader threatActor={threatActor} variant="noalias" />
+        <ThreatActorKnowledgeBar threatActorId={threatActor.id} />
         <div className={classes.content}>
-          <Route exact path='/dashboard/knowledge/threat_actors/:threatActorId/knowledge/relations/:relationId' render={
-            routeProps => <StixRelation
+          <Route
+            exact
+            path="/dashboard/knowledge/threat_actors/:threatActorId/knowledge/relations/:relationId"
+            render={routeProps => (
+              <StixRelation
+                entityId={threatActor.id}
+                inversedRelations={inversedRelations}
+                {...routeProps}
+              />
+            )}
+          />
+
+          {location.pathname.includes('overview') ? (
+            <StixDomainEntityKnowledge stixDomainEntityId={threatActor.id} />
+          ) : (
+            ''
+          )}
+
+          {location.pathname.includes('intrusion_sets') ? (
+            <EntityStixRelations
               entityId={threatActor.id}
-              inversedRelations={inversedRelations}
-              {...routeProps}/>
-          }/>
+              relationType="attributed-to"
+              targetEntityTypes={['Intrusion-Set']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('overview') ? <StixDomainEntityKnowledge
-            stixDomainEntityId={threatActor.id}
-          /> : ''}
+          {location.pathname.includes('campaigns') ? (
+            <EntityStixRelations
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
+              resolveRelationToTypes={['Intrusion-Set']}
+              entityId={threatActor.id}
+              relationType="attributed-to"
+              targetEntityTypes={['Campaign']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('intrusion_sets') ? <EntityStixRelations
-            entityId={threatActor.id}
-            relationType='attributed-to'
-            targetEntityTypes={['Intrusion-Set']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('incidents') ? (
+            <EntityStixRelations
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
+              entityId={threatActor.id}
+              relationType="attributed-to"
+              targetEntityTypes={['Incident']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('campaigns') ? <EntityStixRelations
-            resolveRelationType='attributed-to'
-            resolveRelationRole='origin'
-            resolveRelationToTypes={['Intrusion-Set']}
-            entityId={threatActor.id}
-            relationType='attributed-to'
-            targetEntityTypes={['Campaign']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('victimology') ? (
+            <EntityStixRelations
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
+              resolveViaTypes={[
+                {
+                  entityType: 'Organization',
+                  relationType: 'gathering',
+                  relationRole: 'part_of',
+                },
+                {
+                  entityType: 'Organization',
+                  relationType: 'localization',
+                  relationRole: 'localized',
+                },
+                {
+                  entityType: 'Country',
+                  relationType: 'localization',
+                  relationRole: 'localized',
+                },
+              ]}
+              entityId={threatActor.id}
+              relationType="targets"
+              targetEntityTypes={[
+                'Organization',
+                'Sector',
+                'Country',
+                'Region',
+              ]}
+              entityLink={link}
+              exploreLink={`/dashboard/explore/victimology/${threatActor.id}`}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('incidents') ? <EntityStixRelations
-            resolveRelationType='attributed-to'
-            resolveRelationRole='origin'
-            entityId={threatActor.id}
-            relationType='attributed-to'
-            targetEntityTypes={['Incident']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('malwares') ? (
+            <EntityStixRelations
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
+              entityId={threatActor.id}
+              relationType="uses"
+              targetEntityTypes={['Malware']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('victimology') ? <EntityStixRelations
-            resolveRelationType='attributed-to'
-            resolveRelationRole='origin'
-            resolveViaTypes={[
-              { entityType: 'Organization', relationType: 'gathering', relationRole: 'part_of' },
-              { entityType: 'Organization', relationType: 'localization', relationRole: 'localized' },
-              { entityType: 'Country', relationType: 'localization', relationRole: 'localized' },
-            ]}
-            entityId={threatActor.id}
-            relationType='targets'
-            targetEntityTypes={['Organization', 'Sector', 'Country', 'Region']}
-            entityLink={link}
-            exploreLink={`/dashboard/explore/victimology/${threatActor.id}`}
-          /> : ''}
+          {location.pathname.includes('ttp') ? (
+            <EntityStixRelations
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
+              entityId={threatActor.id}
+              relationType="uses"
+              targetEntityTypes={['Attack-Pattern']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('malwares') ? <EntityStixRelations
-            resolveRelationType='attributed-to'
-            resolveRelationRole='origin'
-            entityId={threatActor.id}
-            relationType='uses'
-            targetEntityTypes={['Malware']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('tools') ? (
+            <EntityStixRelations
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
+              entityId={threatActor.id}
+              relationType="uses"
+              targetEntityTypes={['Tool']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
 
-          {location.pathname.includes('ttp') ? <EntityStixRelations
-            resolveRelationType='attributed-to'
-            resolveRelationRole='origin'
-            entityId={threatActor.id}
-            relationType='uses'
-            targetEntityTypes={['Attack-Pattern']}
-            entityLink={link}
-          /> : ''}
-
-          {location.pathname.includes('tools') ? <EntityStixRelations
-            resolveRelationType='attributed-to'
-            resolveRelationRole='origin'
-            entityId={threatActor.id}
-            relationType='uses'
-            targetEntityTypes={['Tool']}
-            entityLink={link}
-          /> : ''}
-
-          {location.pathname.includes('vulnerabilities') ? <EntityStixRelations
-            resolveRelationType='attributed-to'
-            resolveRelationRole='origin'
-            entityId={threatActor.id}
-            relationType='targets'
-            targetEntityTypes={['Vulnerability']}
-            entityLink={link}
-          /> : ''}
+          {location.pathname.includes('vulnerabilities') ? (
+            <EntityStixRelations
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
+              entityId={threatActor.id}
+              relationType="targets"
+              targetEntityTypes={['Vulnerability']}
+              entityLink={link}
+            />
+          ) : (
+            ''
+          )}
         </div>
       </div>
     );
@@ -132,14 +190,17 @@ ThreatActorKnowledgeComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const ThreatActorKnowledge = createFragmentContainer(ThreatActorKnowledgeComponent, {
-  threatActor: graphql`
+const ThreatActorKnowledge = createFragmentContainer(
+  ThreatActorKnowledgeComponent,
+  {
+    threatActor: graphql`
       fragment ThreatActorKnowledge_threatActor on ThreatActor {
-          id
-          ...ThreatActorHeader_threatActor
+        id
+        ...ThreatActorHeader_threatActor
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

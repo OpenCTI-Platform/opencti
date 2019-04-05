@@ -34,18 +34,17 @@ const styles = theme => ({
 });
 
 const userMutationFieldPatch = graphql`
-    mutation UserEditionPasswordFieldPatchMutation($id: ID!, $input: EditInput!) {
-        userEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...UserEditionPassword_user
-            }
-        }
+  mutation UserEditionPasswordFieldPatchMutation($id: ID!, $input: EditInput!) {
+    userEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...UserEditionPassword_user
+      }
     }
+  }
 `;
 
 const userValidation = t => Yup.object().shape({
-  password: Yup.string()
-    .required(t('This field is required')),
+  password: Yup.string().required(t('This field is required')),
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
     .required(t('This field is required')),
@@ -87,10 +86,29 @@ class UserEditionPasswordComponent extends Component {
           onSubmit={this.onSubmit.bind(this)}
           render={({ submitForm, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field name='password' component={TextField} label={t('Password')} type='password' fullWidth={true}/>
-              <Field name='confirmation' component={TextField} label={t('Confirmation')} type='password' fullWidth={true} style={{ marginTop: 20 }}/>
+              <Field
+                name="password"
+                component={TextField}
+                label={t('Password')}
+                type="password"
+                fullWidth={true}
+              />
+              <Field
+                name="confirmation"
+                component={TextField}
+                label={t('Confirmation')}
+                type="password"
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+              />
               <div className={classes.buttons}>
-                <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                  classes={{ root: classes.button }}
+                >
                   {t('Update')}
                 </Button>
               </div>
@@ -111,13 +129,16 @@ UserEditionPasswordComponent.propTypes = {
   me: PropTypes.object,
 };
 
-const UserEditionPassword = createFragmentContainer(UserEditionPasswordComponent, {
-  user: graphql`
+const UserEditionPassword = createFragmentContainer(
+  UserEditionPasswordComponent,
+  {
+    user: graphql`
       fragment UserEditionPassword_user on User {
-          id
+        id
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

@@ -206,7 +206,7 @@ class Autocomplete extends Component {
       label,
       field,
       form: {
-        dirty, errors, values, setFieldValue, isSubmitting,
+        dirty, errors, touched, values, setFieldValue, isSubmitting,
       },
       options,
       onInputChange,
@@ -219,7 +219,7 @@ class Autocomplete extends Component {
       variant,
     } = this.props;
     const errorText = errors[field.name];
-    const hasError = dirty && errorText !== undefined;
+    const hasError = dirty && errorText !== undefined && touched[field.name] !== undefined;
 
     const selectStyles = {
       input: base => ({

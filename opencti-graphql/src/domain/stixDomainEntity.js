@@ -100,7 +100,7 @@ export const createdByRef = stixDomainEntityId =>
   getObject(
     `match $i isa Identity; 
     $rel(creator:$i, so:$x) isa created_by_ref; 
-    $x id ${stixDomainEntityId}; get $x, $rel; offset 0; limit 1;`,
+    $x id ${stixDomainEntityId}; get $i, $rel; offset 0; limit 1;`,
     'i',
     'rel'
   );

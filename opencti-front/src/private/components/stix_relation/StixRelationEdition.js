@@ -24,51 +24,65 @@ const styles = theme => ({
 });
 
 const stixRelationEditionQuery = graphql`
-    query StixRelationEditionQuery($id: String!) {
-        stixRelation(id: $id) {
-            ...StixRelationEditionOverview_stixRelation
-        }
-        me {
-            ...StixRelationEditionOverview_me
-        }
+  query StixRelationEditionQuery($id: String!) {
+    stixRelation(id: $id) {
+      ...StixRelationEditionOverview_stixRelation
     }
+    me {
+      ...StixRelationEditionOverview_me
+    }
+  }
 `;
 
 export const stixRelationEditionDeleteMutation = graphql`
-    mutation StixRelationEditionDeleteMutation($id: ID!) {
-        stixRelationEdit(id: $id) {
-            delete
-        }
+  mutation StixRelationEditionDeleteMutation($id: ID!) {
+    stixRelationEdit(id: $id) {
+      delete
     }
+  }
 `;
 
 class StixRelationEdition extends Component {
   render() {
     const {
-      classes, stixRelationId, stixDomainEntity, open, handleClose, handleDelete, variant,
+      classes,
+      stixRelationId,
+      stixDomainEntity,
+      open,
+      handleClose,
+      handleDelete,
+      variant,
     } = this.props;
     return (
-      <Drawer open={open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={handleClose.bind(this)}>
-        {stixRelationId
-          ? <QueryRenderer
-          query={stixRelationEditionQuery}
-          variables={{ id: stixRelationId }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <StixRelationEditionOverview
-                  variant={variant}
-                  me={props.me}
-                  stixDomainEntity={stixDomainEntity}
-                  stixRelation={props.stixRelation}
-                  handleClose={handleClose.bind(this)}
-                  handleDelete={handleDelete.bind(this)}
-                />
-              );
-            }
-            return <div> &nbsp; </div>;
-          }}
-        /> : ''}
+      <Drawer
+        open={open}
+        anchor="right"
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose.bind(this)}
+      >
+        {stixRelationId ? (
+          <QueryRenderer
+            query={stixRelationEditionQuery}
+            variables={{ id: stixRelationId }}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <StixRelationEditionOverview
+                    variant={variant}
+                    me={props.me}
+                    stixDomainEntity={stixDomainEntity}
+                    stixRelation={props.stixRelation}
+                    handleClose={handleClose.bind(this)}
+                    handleDelete={handleDelete.bind(this)}
+                  />
+                );
+              }
+              return <div> &nbsp; </div>;
+            }}
+          />
+        ) : (
+          ''
+        )}
       </Drawer>
     );
   }

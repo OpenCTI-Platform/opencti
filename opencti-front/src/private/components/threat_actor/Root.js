@@ -9,33 +9,37 @@ import ThreatActorReports from './ThreatActorReports';
 import ThreatActorKnowledge from './ThreatActorKnowledge';
 
 const subscription = graphql`
-    subscription RootThreatActorSubscription($id: ID!) {
-        stixDomainEntity(id: $id) {
-            ...on ThreatActor {
-                ...ThreatActor_threatActor
-                ...ThreatActorEditionContainer_threatActor
-            }
-            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
-        }
+  subscription RootThreatActorSubscription($id: ID!) {
+    stixDomainEntity(id: $id) {
+      ... on ThreatActor {
+        ...ThreatActor_threatActor
+        ...ThreatActorEditionContainer_threatActor
+      }
+      ...StixDomainEntityKnowledgeGraph_stixDomainEntity
     }
+  }
 `;
 
 const threatActorQuery = graphql`
-    query RootThreatActorQuery($id: String!) {
-        threatActor(id: $id) {
-            ...ThreatActor_threatActor
-            ...ThreatActorHeader_threatActor
-            ...ThreatActorOverview_threatActor
-            ...ThreatActorIdentity_threatActor
-            ...ThreatActorReports_threatActor
-            ...ThreatActorKnowledge_threatActor
-        }
+  query RootThreatActorQuery($id: String!) {
+    threatActor(id: $id) {
+      ...ThreatActor_threatActor
+      ...ThreatActorHeader_threatActor
+      ...ThreatActorOverview_threatActor
+      ...ThreatActorIdentity_threatActor
+      ...ThreatActorReports_threatActor
+      ...ThreatActorKnowledge_threatActor
     }
+  }
 `;
 
 class RootThreatActor extends Component {
   componentDidMount() {
-    const { match: { params: { threatActorId } } } = this.props;
+    const {
+      match: {
+        params: { threatActorId },
+      },
+    } = this.props;
     const sub = requestSubscription({
       subscription,
       variables: { id: threatActorId },
@@ -48,10 +52,15 @@ class RootThreatActor extends Component {
   }
 
   render() {
-    const { me, match: { params: { threatActorId } } } = this.props;
+    const {
+      me,
+      match: {
+        params: { threatActorId },
+      },
+    } = this.props;
     return (
       <div>
-        <TopBar me={me || null}/>
+        <TopBar me={me || null} />
         <QueryRenderer
           query={threatActorQuery}
           variables={{ id: threatActorId }}
@@ -59,24 +68,48 @@ class RootThreatActor extends Component {
             if (props && props.threatActor) {
               return (
                 <div>
-                  <Route exact path='/dashboard/knowledge/threat_actors/:threatActorId' render={
-                    routeProps => <ThreatActor {...routeProps} threatActor={props.threatActor}/>
-                  }/>
-                  <Route exact path='/dashboard/knowledge/threat_actors/:threatActorId/reports' render={
-                    routeProps => <ThreatActorReports {...routeProps} threatActor={props.threatActor}/>
-                  }/>
-                  <Route exact path='/dashboard/knowledge/threat_actors/:threatActorId/knowledge' render={
-                    () => (<Redirect to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/overview`}/>)
-                  }/>
-                  <Route path='/dashboard/knowledge/threat_actors/:threatActorId/knowledge' render={
-                    routeProps => <ThreatActorKnowledge {...routeProps} threatActor={props.threatActor}/>
-                  }/>
+                  <Route
+                    exact
+                    path="/dashboard/knowledge/threat_actors/:threatActorId"
+                    render={routeProps => (
+                      <ThreatActor
+                        {...routeProps}
+                        threatActor={props.threatActor}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/knowledge/threat_actors/:threatActorId/reports"
+                    render={routeProps => (
+                      <ThreatActorReports
+                        {...routeProps}
+                        threatActor={props.threatActor}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/knowledge/threat_actors/:threatActorId/knowledge"
+                    render={() => (
+                      <Redirect
+                        to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/overview`}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/knowledge/threat_actors/:threatActorId/knowledge"
+                    render={routeProps => (
+                      <ThreatActorKnowledge
+                        {...routeProps}
+                        threatActor={props.threatActor}
+                      />
+                    )}
+                  />
                 </div>
               );
             }
-            return (
-              <div> &nbsp; </div>
-            );
+            return <div> &nbsp; </div>;
           }}
         />
       </div>

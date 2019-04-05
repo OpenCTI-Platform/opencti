@@ -73,7 +73,9 @@ export const groups = (userId, args) =>
 
 export const token = userId =>
   getObject(
-    `match $x isa Token; $rel(authorization:$x, client:$client) isa authorize; $client id ${userId}; offset 0; limit 1; get $x,$rel;`,
+    `match $x isa Token;
+    $rel(authorization:$x, client:$client) isa authorize;
+    $client id ${userId}; get $x, $rel; offset 0; limit 1;`,
     'x',
     'rel'
   ).then(result => sign(result.node, conf.get('app:secret')));
@@ -236,7 +238,9 @@ export const logout = async (user, res) => {
 export const userRenewToken = async (user, userId) => {
   const wTx = await takeWriteTx();
   await wTx.query(
-    `match $user id ${userId}; $rel(authorization:$token, client:$user); delete $rel, $token;`
+    `match $user id ${userId};
+    $rel(authorization:$token, client:$user);
+    delete $rel, $token;`
   );
   const newToken = generateOpenCTIWebToken();
   const tokenIterator = await wTx.query(`insert $token isa Token,
@@ -253,9 +257,10 @@ export const userRenewToken = async (user, userId) => {
   const createdToken = await tokenIterator.next();
   await createdToken.map().get('token').id;
   await wTx.query(
-    `match $user id ${userId}"; $token isa Token, has uuid "${
-      newToken.uuid
-    }"; insert (client: $user, authorization: $token) isa authorize;`
+    `match $user id ${userId}";
+    $token isa Token,
+    has uuid "${newToken.uuid}";
+    insert (client: $user, authorization: $token) isa authorize;`
   );
   await wTx.commit();
   return getById(userId);
@@ -276,7 +281,10 @@ export const userEditField = (user, userId, input) => {
 // Token related
 export const findByTokenId = async tokenId => {
   const result = await queryOne(
-    `match $token isa Token, has uuid "${tokenId}", has revoked false; (authorization:$token, client:$client); get;`,
+    `match $token isa Token,
+    has uuid "${tokenId}",
+    has revoked false;
+    (authorization:$token, client:$client); get;`,
     ['client', 'token']
   );
   if (isEmpty(result)) {

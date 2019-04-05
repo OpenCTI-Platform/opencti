@@ -90,29 +90,31 @@ class UserLineComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Person/>
+          <Person />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {user.name}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {user.name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.email}>
+                {user.email}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.firstname}>
+                {user.firstname}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.lastname}>
+                {user.lastname}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+                {fd(user.created_at)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.email}>
-              {user.email}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.firstname}>
-              {user.firstname}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.lastname}>
-              {user.lastname}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              {fd(user.created_at)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <UserPopover userId={user.id} paginationOptions={paginationOptions}/>
+          <UserPopover userId={user.id} paginationOptions={paginationOptions} />
         </ListItemIcon>
       </ListItem>
     );
@@ -129,14 +131,14 @@ UserLineComponent.propTypes = {
 
 const UserLineFragment = createFragmentContainer(UserLineComponent, {
   user: graphql`
-      fragment UserLine_user on User {
-          id,
-          name,
-          email,
-          firstname,
-          lastname,
-          created_at
-      }
+    fragment UserLine_user on User {
+      id
+      name
+      email
+      firstname
+      lastname
+      created_at
+    }
   `,
 });
 
@@ -151,29 +153,31 @@ class UserLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Person/>
+          <Person />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.email}>
+                <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.firstname}>
+                <div className="fakeItem" style={{ width: '60%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.lastname}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.email}>
-              <div className='fakeItem' style={{ width: '70%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.firstname}>
-              <div className='fakeItem' style={{ width: '60%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.lastname}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created_at}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <MoreVert/>
+          <MoreVert />
         </ListItemIcon>
       </ListItem>
     );

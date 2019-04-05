@@ -9,7 +9,15 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, pathOr, pipe, map, pluck, sortWith, path, ascend, union,
+  compose,
+  pathOr,
+  pipe,
+  map,
+  pluck,
+  sortWith,
+  path,
+  ascend,
+  union,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -21,7 +29,9 @@ import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import TextField from '../../../components/TextField';
 import { killChainPhasesLinesSearchQuery } from '../kill_chain_phase/KillChainPhasesLines';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
-import IdentityCreation, { identityCreationIdentitiesSearchQuery } from '../identity/IdentityCreation';
+import IdentityCreation, {
+  identityCreationIdentitiesSearchQuery,
+} from '../identity/IdentityCreation';
 
 const styles = theme => ({
   drawerPaper: {
@@ -67,16 +77,15 @@ const styles = theme => ({
 });
 
 const toolMutation = graphql`
-    mutation ToolCreationMutation($input: ToolAddInput!) {
-        toolAdd(input: $input) {
-            ...ToolLine_tool
-        }
+  mutation ToolCreationMutation($input: ToolAddInput!) {
+    toolAdd(input: $input) {
+      ...ToolLine_tool
     }
+  }
 `;
 
 const toolValidation = t => Yup.object().shape({
-  name: Yup.string()
-    .required(t('This field is required')),
+  name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -97,7 +106,12 @@ class ToolCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      open: false, identities: [], identityCreation: false, identityInput: '', killChainPhases: [], markingDefinitions: [],
+      open: false,
+      identities: [],
+      identityCreation: false,
+      identityInput: '',
+      killChainPhases: [],
+      markingDefinitions: [],
     };
   }
 
@@ -131,27 +145,36 @@ class ToolCreation extends Component {
   }
 
   searchKillchainPhases(event) {
-    fetchQuery(killChainPhasesLinesSearchQuery, { search: event.target.value })
-      .then((data) => {
-        const killChainPhases = pipe(
-          pathOr([], ['killChainPhases', 'edges']),
-          sortWith([ascend(path(['node', 'order']))]),
-          map(n => ({ label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`, value: n.node.id })),
-        )(data);
-        this.setState({ killChainPhases: union(this.state.killChainPhases, killChainPhases) });
+    fetchQuery(killChainPhasesLinesSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
+      const killChainPhases = pipe(
+        pathOr([], ['killChainPhases', 'edges']),
+        sortWith([ascend(path(['node', 'order']))]),
+        map(n => ({
+          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+          value: n.node.id,
+        })),
+      )(data);
+      this.setState({
+        killChainPhases: union(this.state.killChainPhases, killChainPhases),
       });
+    });
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery,
-      { search: event.target.value }).then((data) => {
+    fetchQuery(markingDefinitionsLinesSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
         map(n => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({
-        markingDefinitions:
-          union(this.state.markingDefinitions, markingDefinitions),
+        markingDefinitions: union(
+          this.state.markingDefinitions,
+          markingDefinitions,
+        ),
       });
     });
   }
@@ -170,7 +193,12 @@ class ToolCreation extends Component {
         const payload = store.getRootField('toolAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
-        sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
+        sharedUpdater(
+          store,
+          container.getDataID(),
+          this.props.paginationOptions,
+          newEdge,
+        );
       },
       setSubmitting,
       onCompleted: () => {
@@ -189,36 +217,67 @@ class ToolCreation extends Component {
     const { t, classes } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
-             color='secondary' aria-label='Add'
-             className={classes.createButton}><Add/></Fab>
-        <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}
+        >
+          <Add />
+        </Fab>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
           <div className={classes.header}>
-            <IconButton aria-label='Close' className={classes.closeButton} onClick={this.handleClose.bind(this)}>
-              <Close fontSize='small'/>
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={this.handleClose.bind(this)}
+            >
+              <Close fontSize="small" />
             </IconButton>
-            <Typography variant='h6'>
-              {t('Create a tool')}
-            </Typography>
+            <Typography variant="h6">{t('Create a tool')}</Typography>
           </div>
           <div className={classes.container}>
             <Formik
               initialValues={{
-                name: '', description: '', createdByRef: '', markingDefinitions: [], killChainPhases: [],
+                name: '',
+                description: '',
+                createdByRef: '',
+                markingDefinitions: [],
+                killChainPhases: [],
               }}
               validationSchema={toolValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
               render={({
-                submitForm, handleReset, isSubmitting, setFieldValue,
+                submitForm,
+                handleReset,
+                isSubmitting,
+                setFieldValue,
               }) => (
                 <div>
                   <Form style={{ margin: '20px 0 20px 0' }}>
-                    <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
-                    <Field name='description' component={TextField} label={t('Description')}
-                           fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
                     <Field
-                      name='createdByRef'
+                      name="name"
+                      component={TextField}
+                      label={t('Name')}
+                      fullWidth={true}
+                    />
+                    <Field
+                      name="description"
+                      component={TextField}
+                      label={t('Description')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      style={{ marginTop: 20 }}
+                    />
+                    <Field
+                      name="createdByRef"
                       component={AutocompleteCreate}
                       multiple={false}
                       handleCreate={this.handleOpenIdentityCreation.bind(this)}
@@ -227,7 +286,7 @@ class ToolCreation extends Component {
                       onInputChange={this.searchIdentities.bind(this)}
                     />
                     <Field
-                      name='killChainPhases'
+                      name="killChainPhases"
                       component={Autocomplete}
                       multiple={true}
                       label={t('Kill chain phases')}
@@ -235,7 +294,7 @@ class ToolCreation extends Component {
                       onInputChange={this.searchKillchainPhases.bind(this)}
                     />
                     <Field
-                      name='markingDefinitions'
+                      name="markingDefinitions"
                       component={Autocomplete}
                       multiple={true}
                       label={t('Marking')}
@@ -243,10 +302,21 @@ class ToolCreation extends Component {
                       onInputChange={this.searchMarkingDefinitions.bind(this)}
                     />
                     <div className={classes.buttons}>
-                      <Button variant="contained" onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                      <Button
+                        variant="contained"
+                        onClick={handleReset}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
                         {t('Cancel')}
                       </Button>
-                      <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
                         {t('Create')}
                       </Button>
                     </div>
@@ -257,7 +327,10 @@ class ToolCreation extends Component {
                     open={this.state.identityCreation}
                     handleClose={this.handleCloseIdentityCreation.bind(this)}
                     creationCallback={(data) => {
-                      setFieldValue('createdByRef', { label: data.identityAdd.name, value: data.identityAdd.id });
+                      setFieldValue('createdByRef', {
+                        label: data.identityAdd.name,
+                        value: data.identityAdd.id,
+                      });
                     }}
                   />
                 </div>

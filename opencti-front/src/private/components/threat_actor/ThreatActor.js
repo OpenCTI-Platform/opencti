@@ -29,30 +29,39 @@ class ThreatActorComponent extends Component {
     const { classes, threatActor } = this.props;
     return (
       <div className={classes.container}>
-        <ThreatActorHeader threatActor={threatActor}/>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }}>
+        <ThreatActorHeader threatActor={threatActor} />
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={3}>
-            <ThreatActorOverview threatActor={threatActor}/>
+            <ThreatActorOverview threatActor={threatActor} />
           </Grid>
           <Grid item={true} xs={3}>
-            <ThreatActorIdentity threatActor={threatActor}/>
+            <ThreatActorIdentity threatActor={threatActor} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={threatActor.id}/>
+            <EntityLastReports entityId={threatActor.id} />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={32} classes={{ container: classes.gridContainer }} style={{ marginTop: 20 }}>
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 20 }}
+        >
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart entityId={threatActor.id}/>
+            <EntityCampaignsChart entityId={threatActor.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={threatActor.id}/>
+            <EntityIncidentsChart entityId={threatActor.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={threatActor.id}/>
+            <EntityReportsChart entityId={threatActor.id} />
           </Grid>
         </Grid>
-        <ThreatActorEdition threatActorId={threatActor.id}/>
+        <ThreatActorEdition threatActorId={threatActor.id} />
       </div>
     );
   }
@@ -66,12 +75,12 @@ ThreatActorComponent.propTypes = {
 
 const ThreatActor = createFragmentContainer(ThreatActorComponent, {
   threatActor: graphql`
-      fragment ThreatActor_threatActor on ThreatActor {
-          id
-          ...ThreatActorHeader_threatActor
-          ...ThreatActorOverview_threatActor
-          ...ThreatActorIdentity_threatActor
-      }
+    fragment ThreatActor_threatActor on ThreatActor {
+      id
+      ...ThreatActorHeader_threatActor
+      ...ThreatActorOverview_threatActor
+      ...ThreatActorIdentity_threatActor
+    }
   `,
 });
 

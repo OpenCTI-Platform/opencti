@@ -41,13 +41,13 @@ const styles = () => ({
 });
 
 const threatActorMutation = graphql`
-    mutation ThreatActorHeaderFieldMutation($id: ID!, $input: EditInput!) {
-        threatActorEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...ThreatActorHeader_threatActor
-            }
-        }
+  mutation ThreatActorHeaderFieldMutation($id: ID!, $input: EditInput!) {
+    threatActorEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...ThreatActorHeader_threatActor
+      }
     }
+  }
 `;
 
 class ThreatActorHeaderComponent extends Component {
@@ -61,13 +61,18 @@ class ThreatActorHeaderComponent extends Component {
   }
 
   onSubmitCreateAlias(data) {
-    if (this.props.threatActor.alias === null
-      || !this.props.threatActor.alias.includes(data.new_alias)) {
+    if (
+      this.props.threatActor.alias === null
+      || !this.props.threatActor.alias.includes(data.new_alias)
+    ) {
       commitMutation({
         mutation: threatActorMutation,
         variables: {
           id: this.props.threatActor.id,
-          input: { key: 'alias', value: append(data.new_alias, this.props.threatActor.alias) },
+          input: {
+            key: 'alias',
+            value: append(data.new_alias, this.props.threatActor.alias),
+          },
         },
       });
     }
@@ -91,32 +96,66 @@ class ThreatActorHeaderComponent extends Component {
     } = this.props;
     return (
       <div>
-        <Typography variant='h1' gutterBottom={true} classes={{ root: classes.title }}>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
+        >
           {threatActor.name}
         </Typography>
         <div className={classes.popover}>
-          <ThreatActorPopover threatActorId={threatActor.id}/>
+          <ThreatActorPopover threatActorId={threatActor.id} />
         </div>
-        {variant !== 'noalias'
-          ? <div className={classes.aliases}>
-            {propOr([], 'alias', threatActor).map(label => (label.length > 0 ? <Chip key={label} classes={{ root: classes.alias }} label={label} onDelete={this.deleteAlias.bind(this, label)}/> : ''))}
-            <IconButton color='secondary' aria-label='Alias' onClick={this.handleToggleCreateAlias.bind(this)}>
-              {this.state.openAlias ? <Close fontSize='small'/> : <Add fontSize='small'/>}
+        {variant !== 'noalias' ? (
+          <div className={classes.aliases}>
+            {propOr([], 'alias', threatActor).map(label => (label.length > 0 ? (
+                <Chip
+                  key={label}
+                  classes={{ root: classes.alias }}
+                  label={label}
+                  onDelete={this.deleteAlias.bind(this, label)}
+                />
+            ) : (
+              ''
+            )))}
+            <IconButton
+              color="secondary"
+              aria-label="Alias"
+              onClick={this.handleToggleCreateAlias.bind(this)}
+            >
+              {this.state.openAlias ? (
+                <Close fontSize="small" />
+              ) : (
+                <Add fontSize="small" />
+              )}
             </IconButton>
-            <Slide direction='left' in={this.state.openAlias} mountOnEnter={true} unmountOnExit={true}>
+            <Slide
+              direction="left"
+              in={this.state.openAlias}
+              mountOnEnter={true}
+              unmountOnExit={true}
+            >
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={this.onSubmitCreateAlias.bind(this)}
                 render={() => (
                   <Form style={{ float: 'right' }}>
-                    <Field name='new_alias' component={TextField} autoFocus={true} placeholder={t('New alias')} className={classes.aliasInput}/>
+                    <Field
+                      name="new_alias"
+                      component={TextField}
+                      autoFocus={true}
+                      placeholder={t('New alias')}
+                      className={classes.aliasInput}
+                    />
                   </Form>
                 )}
               />
             </Slide>
-          </div> : ''
-        }
-        <div className='clearfix'/>
+          </div>
+        ) : (
+          ''
+        )}
+        <div className="clearfix" />
       </div>
     );
   }
@@ -132,11 +171,11 @@ ThreatActorHeaderComponent.propTypes = {
 
 const ThreatActorHeader = createFragmentContainer(ThreatActorHeaderComponent, {
   threatActor: graphql`
-      fragment ThreatActorHeader_threatActor on ThreatActor {
-          id,
-          name,
-          alias,
-      }
+    fragment ThreatActorHeader_threatActor on ThreatActor {
+      id
+      name
+      alias
+    }
   `,
 });
 

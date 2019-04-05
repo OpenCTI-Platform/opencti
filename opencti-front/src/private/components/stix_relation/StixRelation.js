@@ -15,17 +15,22 @@ const styles = () => ({
 });
 
 const stixRelationQuery = graphql`
-    query StixRelationQuery($id: String!) {
-        stixRelation(id: $id) {
-            ...StixRelationOverview_stixRelation
-        }
+  query StixRelationQuery($id: String!) {
+    stixRelation(id: $id) {
+      ...StixRelationOverview_stixRelation
     }
+  }
 `;
 
 class StixRelation extends Component {
   render() {
     const {
-      classes, entityId, inversedRelations, match: { params: { relationId } },
+      classes,
+      entityId,
+      inversedRelations,
+      match: {
+        params: { relationId },
+      },
     } = this.props;
     return (
       <div className={classes.container}>
@@ -34,11 +39,13 @@ class StixRelation extends Component {
           variables={{ id: relationId }}
           render={({ props }) => {
             if (props && props.stixRelation) {
-              return <StixRelationOverview
-                entityId={entityId}
-                stixRelation={props.stixRelation}
-                inversedRelations={inversedRelations}
-              />;
+              return (
+                <StixRelationOverview
+                  entityId={entityId}
+                  stixRelation={props.stixRelation}
+                  inversedRelations={inversedRelations}
+                />
+              );
             }
             return <div> &nbsp; </div>;
           }}

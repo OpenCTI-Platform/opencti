@@ -7,27 +7,31 @@ import TopBar from '../nav/TopBar';
 import Workspace from './Workspace';
 
 const subscription = graphql`
-    subscription RootWorkspaceSubscription($id: ID!) {
-        workspace(id: $id) {
-            ...Workspace_workspace
-            ...WorkspaceGraph_workspace
-            ...WorkspaceEditionContainer_workspace
-        }
+  subscription RootWorkspaceSubscription($id: ID!) {
+    workspace(id: $id) {
+      ...Workspace_workspace
+      ...WorkspaceGraph_workspace
+      ...WorkspaceEditionContainer_workspace
     }
+  }
 `;
 
 const workspaceQuery = graphql`
-    query RootWorkspaceQuery($id: String!) {
-        workspace(id: $id) {
-            ...Workspace_workspace
-            ...WorkspaceHeader_workspace
-        }
+  query RootWorkspaceQuery($id: String!) {
+    workspace(id: $id) {
+      ...Workspace_workspace
+      ...WorkspaceHeader_workspace
     }
+  }
 `;
 
 class RootWorkspace extends Component {
   componentDidMount() {
-    const { match: { params: { workspaceId } } } = this.props;
+    const {
+      match: {
+        params: { workspaceId },
+      },
+    } = this.props;
     const sub = requestSubscription({
       subscription,
       variables: { id: workspaceId },
@@ -40,10 +44,15 @@ class RootWorkspace extends Component {
   }
 
   render() {
-    const { me, match: { params: { workspaceId } } } = this.props;
+    const {
+      me,
+      match: {
+        params: { workspaceId },
+      },
+    } = this.props;
     return (
       <div>
-        <TopBar me={me || null}/>
+        <TopBar me={me || null} />
         <QueryRenderer
           query={workspaceQuery}
           variables={{ id: workspaceId }}
@@ -51,15 +60,17 @@ class RootWorkspace extends Component {
             if (props && props.workspace) {
               return (
                 <div>
-                  <Route exact path='/dashboard/investigate/:workspaceId' render={
-                    routeProps => <Workspace {...routeProps} workspace={props.workspace}/>
-                  }/>
+                  <Route
+                    exact
+                    path="/dashboard/investigate/:workspaceId"
+                    render={routeProps => (
+                      <Workspace {...routeProps} workspace={props.workspace} />
+                    )}
+                  />
                 </div>
               );
             }
-            return (
-              <div> &nbsp; </div>
-            );
+            return <div> &nbsp; </div>;
           }}
         />
       </div>

@@ -70,7 +70,7 @@ class ReportComponent extends Component {
               entityId={report.id}
               entityType="Stix-Domain-Entity"
               relationType="object_refs"
-              field="type"
+              field="entity_type"
             />
           </Grid>
         </Grid>

@@ -50,21 +50,31 @@ class WorkspaceEditionContainer extends Component {
     } = this.props;
     const { editContext } = workspace;
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
+    const editUsers = missingMe
+      ? insert(0, { name: me.email }, editContext)
+      : editContext;
     return (
       <div>
         <div className={classes.header}>
-          <IconButton aria-label='Close' className={classes.closeButton} onClick={handleClose.bind(this)}>
-            <Close fontSize='small'/>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
           </IconButton>
-          <Typography variant='h6' classes={{ root: classes.title }}>
+          <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a workspace')}
           </Typography>
-          <SubscriptionAvatars users={editUsers}/>
-          <div className='clearfix'/>
+          <SubscriptionAvatars users={editUsers} />
+          <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <WorkspaceEditionOverview workspace={this.props.workspace} editUsers={editUsers} me={me}/>
+          <WorkspaceEditionOverview
+            workspace={this.props.workspace}
+            editUsers={editUsers}
+            me={me}
+          />
         </div>
       </div>
     );
@@ -80,23 +90,26 @@ WorkspaceEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const WorkspaceEditionFragment = createFragmentContainer(WorkspaceEditionContainer, {
-  workspace: graphql`
+const WorkspaceEditionFragment = createFragmentContainer(
+  WorkspaceEditionContainer,
+  {
+    workspace: graphql`
       fragment WorkspaceEditionContainer_workspace on Workspace {
-          id
-          ...WorkspaceEditionOverview_workspace
-          editContext {
-              name
-              focusOn
-          }
+        id
+        ...WorkspaceEditionOverview_workspace
+        editContext {
+          name
+          focusOn
+        }
       }
-  `,
-  me: graphql`
+    `,
+    me: graphql`
       fragment WorkspaceEditionContainer_me on User {
-          email
+        email
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

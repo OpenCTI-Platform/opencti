@@ -28,9 +28,9 @@ class ThreatActorReportsComponent extends Component {
     const { classes, threatActor } = this.props;
     return (
       <div className={classes.container}>
-        <ThreatActorHeader threatActor={threatActor}/>
+        <ThreatActorHeader threatActor={threatActor} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={threatActor.id}/>
+          <EntityReports entityId={threatActor.id} />
         </Paper>
       </div>
     );
@@ -43,14 +43,17 @@ ThreatActorReportsComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const ThreatActorReports = createFragmentContainer(ThreatActorReportsComponent, {
-  threatActor: graphql`
+const ThreatActorReports = createFragmentContainer(
+  ThreatActorReportsComponent,
+  {
+    threatActor: graphql`
       fragment ThreatActorReports_threatActor on ThreatActor {
-          id
-          ...ThreatActorHeader_threatActor
+        id
+        ...ThreatActorHeader_threatActor
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

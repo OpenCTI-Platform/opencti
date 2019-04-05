@@ -44,24 +44,54 @@ const styles = theme => ({
 });
 
 const firstStixRelationQuery = graphql`
-    query StixDomainEntityKnowledgeFirstStixRelationQuery($fromId: String, $first: Int, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
-        stixRelations(fromId: $fromId, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
-            edges {
-                node {
-                    id
-                    first_seen
-                }
-            }
+  query StixDomainEntityKnowledgeFirstStixRelationQuery(
+    $fromId: String
+    $first: Int
+    $orderBy: StixRelationsOrdering
+    $orderMode: OrderingMode
+  ) {
+    stixRelations(
+      fromId: $fromId
+      first: $first
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) {
+      edges {
+        node {
+          id
+          first_seen
         }
+      }
     }
+  }
 `;
 
 const stixDomainEntityKnowledgeQuery = graphql`
-    query StixDomainEntityKnowledgeQuery($id: String!, $count: Int, $inferred: Boolean, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $weights: [Int]) {
-        stixDomainEntity(id: $id) {
-            ...StixDomainEntityKnowledgeGraph_stixDomainEntity @arguments(toTypes: $toTypes, inferred: $inferred, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, weights: $weights, first: $count)
-        }
+  query StixDomainEntityKnowledgeQuery(
+    $id: String!
+    $count: Int
+    $inferred: Boolean
+    $toTypes: [String]
+    $firstSeenStart: DateTime
+    $firstSeenStop: DateTime
+    $lastSeenStart: DateTime
+    $lastSeenStop: DateTime
+    $weights: [Int]
+  ) {
+    stixDomainEntity(id: $id) {
+      ...StixDomainEntityKnowledgeGraph_stixDomainEntity
+        @arguments(
+          toTypes: $toTypes
+          inferred: $inferred
+          firstSeenStart: $firstSeenStart
+          firstSeenStop: $firstSeenStop
+          lastSeenStart: $lastSeenStart
+          lastSeenStop: $lastSeenStop
+          weights: $weights
+          first: $count
+        )
     }
+  }
 `;
 
 class StixDomainEntityKnowledge extends Component {
@@ -93,7 +123,11 @@ class StixDomainEntityKnowledge extends Component {
       orderMode: 'asc',
     }).then((data) => {
       if (data.stixRelations.edges && data.stixRelations.edges.length > 0) {
-        this.setState({ firstSeenFirstYear: yearFormat(head(data.stixRelations.edges).node.first_seen) });
+        this.setState({
+          firstSeenFirstYear: yearFormat(
+            head(data.stixRelations.edges).node.first_seen,
+          ),
+        });
       }
     });
   }
@@ -123,7 +157,9 @@ class StixDomainEntityKnowledge extends Component {
 
   render() {
     const { t, classes, stixDomainEntityId } = this.props;
-    const startYear = this.state.firstSeenFirstYear === currentYear() ? this.state.firstSeenFirstYear - 1 : this.state.firstSeenFirstYear;
+    const startYear = this.state.firstSeenFirstYear === currentYear()
+      ? this.state.firstSeenFirstYear - 1
+      : this.state.firstSeenFirstYear;
     const yearsList = [];
     for (let i = startYear; i <= currentYear(); i++) {
       yearsList.push(i);
@@ -139,31 +175,46 @@ class StixDomainEntityKnowledge extends Component {
 
     return (
       <div className={classes.container}>
-        <Drawer anchor='bottom' variant='permanent' classes={{ paper: classes.bottomNav }}>
+        <Drawer
+          anchor="bottom"
+          variant="permanent"
+          classes={{ paper: classes.bottomNav }}
+        >
           <Grid container={true} spacing={8}>
-            <Grid item={true} xs='auto'>
+            <Grid item={true} xs="auto">
               <Select
                 style={{ width: 170, height: 50 }}
                 value={this.state.firstSeen}
                 onChange={this.handleChangeYear.bind(this)}
                 renderValue={selected => (
                   <div className={classes.chips}>
-                    <Chip key={selected} label={t(selected)} className={classes.chip}/>
+                    <Chip
+                      key={selected}
+                      label={t(selected)}
+                      className={classes.chip}
+                    />
                   </div>
                 )}
               >
-                <MenuItem value='All years'>{t('All years')}</MenuItem>
-                {map(year => (<MenuItem key={year} value={year}>{year}</MenuItem>), yearsList)}
+                <MenuItem value="All years">{t('All years')}</MenuItem>
+                {map(
+                  year => (
+                    <MenuItem key={year} value={year}>
+                      {year}
+                    </MenuItem>
+                  ),
+                  yearsList,
+                )}
               </Select>
             </Grid>
-            <Grid item={true} xs='auto'>
+            <Grid item={true} xs="auto">
               <FormControlLabel
                 style={{ paddingTop: 5, marginLeft: 20 }}
                 control={
                   <Switch
                     checked={this.state.inferred}
                     onChange={this.handleChangeInferred.bind(this)}
-                    color='primary'
+                    color="primary"
                   />
                 }
                 label={t('Inferences')}
@@ -181,13 +232,15 @@ class StixDomainEntityKnowledge extends Component {
                   engine={this.state.engine}
                   variables={variables}
                   stixDomainEntity={props.stixDomainEntity}
-                  firstSeenYear={this.state.firstSeenStart ? yearFormat(this.state.firstSeenStart) : 'all'}
+                  firstSeenYear={
+                    this.state.firstSeenStart
+                      ? yearFormat(this.state.firstSeenStart)
+                      : 'all'
+                  }
                 />
               );
             }
-            return (
-              <div> &nbsp; </div>
-            );
+            return <div> &nbsp; </div>;
           }}
         />
       </div>

@@ -22,36 +22,74 @@ const styles = theme => ({
 
 class ThreatActorIdentityComponent extends Component {
   render() {
-    const {
-      t, classes, threatActor,
-    } = this.props;
+    const { t, classes, threatActor } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Identity')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant='h3' gutterBottom={true}>
+          <Typography variant="h3" gutterBottom={true}>
             {t('Sophistication')}
           </Typography>
-          {t(`${threatActor.sophistication ? `sophistication_${threatActor.sophistication}` : 'sophistication_unkown'}`)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          {t(
+            `${
+              threatActor.sophistication
+                ? `sophistication_${threatActor.sophistication}`
+                : 'sophistication_unkown'
+            }`,
+          )}
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Resource level')}
           </Typography>
-          {t(`${threatActor.resource_level ? `resource_${threatActor.resource_level}` : 'resource_unkown'}`)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          {t(
+            `${
+              threatActor.resource_level
+                ? `resource_${threatActor.resource_level}`
+                : 'resource_unkown'
+            }`,
+          )}
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Primary motivation')}
           </Typography>
-          {t(`${threatActor.primary_motivation ? `motivation_${threatActor.primary_motivation}` : 'motivation_unpredictable'}`)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          {t(
+            `${
+              threatActor.primary_motivation
+                ? `motivation_${threatActor.primary_motivation}`
+                : 'motivation_unpredictable'
+            }`,
+          )}
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Secondary motivation')}
           </Typography>
-          {t(`${threatActor.secondary_motivation ? `motivation_${threatActor.secondary_motivation}` : 'motivation_unknown'}`)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          {t(
+            `${
+              threatActor.secondary_motivation
+                ? `motivation_${threatActor.secondary_motivation}`
+                : 'motivation_unknown'
+            }`,
+          )}
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Goal')}
           </Typography>
-          <Markdown className='markdown' source={threatActor.goal}/>
-          </Paper>
+          <Markdown className="markdown" source={threatActor.goal} />
+        </Paper>
       </div>
     );
   }
@@ -64,18 +102,21 @@ ThreatActorIdentityComponent.propTypes = {
   fld: PropTypes.func,
 };
 
-const ThreatActorIdentity = createFragmentContainer(ThreatActorIdentityComponent, {
-  threatActor: graphql`
+const ThreatActorIdentity = createFragmentContainer(
+  ThreatActorIdentityComponent,
+  {
+    threatActor: graphql`
       fragment ThreatActorIdentity_threatActor on ThreatActor {
-          id
-          sophistication
-          resource_level
-          primary_motivation
-          secondary_motivation
-          goal
+        id
+        sophistication
+        resource_level
+        primary_motivation
+        secondary_motivation
+        goal
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

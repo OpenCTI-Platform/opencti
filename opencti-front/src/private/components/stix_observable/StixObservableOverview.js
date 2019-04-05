@@ -72,22 +72,25 @@ StixObservableOverviewComponent.propTypes = {
   fld: PropTypes.func,
 };
 
-const StixObservableOverview = createFragmentContainer(StixObservableOverviewComponent, {
-  stixObservable: graphql`
-    fragment StixObservableOverview_stixObservable on StixObservable {
-      id
-      name
-      description
-      created_at
-      updated_at
-      createdByRef {
-        node {
-          name
+const StixObservableOverview = createFragmentContainer(
+  StixObservableOverviewComponent,
+  {
+    stixObservable: graphql`
+      fragment StixObservableOverview_stixObservable on StixObservable {
+        id
+        name
+        description
+        created_at
+        updated_at
+        createdByRef {
+          node {
+            name
+          }
         }
       }
-    }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

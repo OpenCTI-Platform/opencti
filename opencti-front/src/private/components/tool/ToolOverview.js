@@ -27,26 +27,38 @@ class ToolOverviewComponent extends Component {
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant='h3' gutterBottom={true}>
+          <Typography variant="h3" gutterBottom={true}>
             {t('Creation date')}
           </Typography>
           {fld(tool.created)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Modification date')}
           </Typography>
           {fld(tool.modified)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Creator')}
           </Typography>
           {pathOr('-', ['createdByRef', 'node', 'name'], tool)}
-          <Typography variant='h3' gutterBottom={true} style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Description')}
           </Typography>
-          <Markdown className='markdown' source={tool.description}/>
+          <Markdown className="markdown" source={tool.description} />
         </Paper>
       </div>
     );
@@ -62,18 +74,18 @@ ToolOverviewComponent.propTypes = {
 
 const ToolOverview = createFragmentContainer(ToolOverviewComponent, {
   tool: graphql`
-      fragment ToolOverview_tool on Tool {
-          id
+    fragment ToolOverview_tool on Tool {
+      id
+      name
+      description
+      created
+      modified
+      createdByRef {
+        node {
           name
-          description
-          created
-          modified
-          createdByRef {
-              node {
-                  name
-              }
-          }
+        }
       }
+    }
   `,
 });
 

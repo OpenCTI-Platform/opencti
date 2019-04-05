@@ -137,6 +137,8 @@ const exportThreatActorsQuery = graphql`
           id
           name
           description
+          created
+          modified
         }
       }
     }

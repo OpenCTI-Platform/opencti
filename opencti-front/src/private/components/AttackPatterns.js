@@ -3,8 +3,17 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc, compose, sort, map, pipe, propOr,
-  pathOr, join, over, lensProp, defaultTo,
+  assoc,
+  compose,
+  sort,
+  map,
+  pipe,
+  propOr,
+  pathOr,
+  join,
+  over,
+  lensProp,
+  defaultTo,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -23,13 +32,18 @@ import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import {
-  ArrowDropDown, ArrowDropUp, TableChart, SaveAlt,
+  ArrowDropDown,
+  ArrowDropUp,
+  TableChart,
+  SaveAlt,
 } from '@material-ui/icons';
 import { CSVLink } from 'react-csv';
 import { fetchQuery, QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 import SearchInput from '../../components/SearchInput';
-import AttackPatternsLines, { attackPatternsLinesQuery } from './attack_pattern/AttackPatternsLines';
+import AttackPatternsLines, {
+  attackPatternsLinesQuery,
+} from './attack_pattern/AttackPatternsLines';
 import AttackPatternCreation from './attack_pattern/AttackPatternCreation';
 import { dateFormat } from '../../utils/Time';
 
@@ -107,30 +121,40 @@ const inlineStyles = {
 };
 
 const exportAttackPatternsQuery = graphql`
-    query AttackPatternsExportAttackPatternsQuery($count: Int!, $cursor: ID, $orderBy: AttackPatternsOrdering, $orderMode: OrderingMode) {
-        attackPatterns(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_attackPatterns") {
+  query AttackPatternsExportAttackPatternsQuery(
+    $count: Int!
+    $cursor: ID
+    $orderBy: AttackPatternsOrdering
+    $orderMode: OrderingMode
+  ) {
+    attackPatterns(
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) @connection(key: "Pagination_attackPatterns") {
+      edges {
+        node {
+          id
+          name
+          description
+          platform
+          required_permission
+          created
+          modified
+          killChainPhases {
             edges {
-                node {
-                    id
-                    name
-                    description
-                    platform,
-                    required_permission,
-                    created
-                    modified
-                    killChainPhases {
-                        edges {
-                            node {
-                                id
-                                kill_chain_name
-                                phase_name
-                            }
-                        }
-                    }
-                }
+              node {
+                id
+                kill_chain_name
+                phase_name
+              }
             }
+          }
         }
+      }
     }
+  }
 `;
 
 class AttackPatterns extends Component {
@@ -161,9 +185,20 @@ class AttackPatterns extends Component {
   SortHeader(field, label) {
     const { t } = this.props;
     return (
-      <div style={inlineStyles[field]} onClick={this.reverseBy.bind(this, field)}>
+      <div
+        style={inlineStyles[field]}
+        onClick={this.reverseBy.bind(this, field)}
+      >
         <span>{t(label)}</span>
-        {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStyles.iconSort}/> : <ArrowDropUp style={inlineStyles.iconSort}/> : ''}
+        {this.state.sortBy === field ? (
+          this.state.orderAsc ? (
+            <ArrowDropDown style={inlineStyles.iconSort} />
+          ) : (
+            <ArrowDropUp style={inlineStyles.iconSort} />
+          )
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -187,25 +222,37 @@ class AttackPatterns extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportAttackPatternsQuery, { count: 2147483647, ...paginationOptions }).then((data) => {
+    fetchQuery(exportAttackPatternsQuery, {
+      count: 2147483647,
+      ...paginationOptions,
+    }).then((data) => {
       const finalData = pipe(
         map(n => n.node),
-        map(n => assoc('killChainPhases', pipe(
-          pathOr([], ['killChainPhases', 'edges']),
-          map(o => o.node.phase_name),
-          sort((a, b) => (this.state.orderAsc ? a.localeCompare(b) : b.localeCompare(a))),
-          join(', '),
-        )(n))(n)),
-        map(n => assoc('platform', pipe(
-          propOr([], 'platform'),
-          sort((a, b) => (this.state.orderAsc ? a.localeCompare(b) : b.localeCompare(a))),
-          join(', '),
-        )(n))(n)),
-        map(n => assoc('required_permission', pipe(
-          propOr([], 'required_permission'),
-          sort((a, b) => (this.state.orderAsc ? a.localeCompare(b) : b.localeCompare(a))),
-          join(', '),
-        )(n))(n)),
+        map(n => assoc(
+          'killChainPhases',
+          pipe(
+            pathOr([], ['killChainPhases', 'edges']),
+            map(o => o.node.phase_name),
+            sort((a, b) => (this.state.orderAsc ? a.localeCompare(b) : b.localeCompare(a))),
+            join(', '),
+          )(n),
+        )(n)),
+        map(n => assoc(
+          'platform',
+          pipe(
+            propOr([], 'platform'),
+            sort((a, b) => (this.state.orderAsc ? a.localeCompare(b) : b.localeCompare(a))),
+            join(', '),
+          )(n),
+        )(n)),
+        map(n => assoc(
+          'required_permission',
+          pipe(
+            propOr([], 'required_permission'),
+            sort((a, b) => (this.state.orderAsc ? a.localeCompare(b) : b.localeCompare(a))),
+            join(', '),
+          )(n),
+        )(n)),
         map(n => over(lensProp('description'), defaultTo('-'))(n)),
         map(n => assoc('created', dateFormat(n.created))(n)),
         map(n => assoc('modified', dateFormat(n.modified))(n)),
@@ -220,16 +267,25 @@ class AttackPatterns extends Component {
       <div>
         <div className={classes.header}>
           <div style={{ float: 'left', marginTop: -10 }}>
-            <SearchInput variant='small' onChange={this.handleSearch.bind(this)}/>
+            <SearchInput
+              variant="small"
+              onChange={this.handleSearch.bind(this)}
+            />
           </div>
           <div style={{ float: 'right', marginTop: -20 }}>
-            <IconButton color={this.state.view === 'lines' ? 'secondary' : 'primary'}
-                        classes={{ root: classes.button }}
-                        onClick={this.handleChangeView.bind(this, 'lines')}>
-              <TableChart/>
+            <IconButton
+              color={this.state.view === 'lines' ? 'secondary' : 'primary'}
+              classes={{ root: classes.button }}
+              onClick={this.handleChangeView.bind(this, 'lines')}
+            >
+              <TableChart />
             </IconButton>
-            <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true' color='primary'>
-              <SaveAlt/>
+            <IconButton
+              onClick={this.handleOpenExport.bind(this)}
+              aria-haspopup="true"
+              color="primary"
+            >
+              <SaveAlt />
             </IconButton>
             <Menu
               anchorEl={this.state.anchorExport}
@@ -237,33 +293,65 @@ class AttackPatterns extends Component {
               onClose={this.handleCloseExport.bind(this)}
               style={{ marginTop: 50 }}
             >
-              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>{t('CSV file')}</MenuItem>
+              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>
+                {t('CSV file')}
+              </MenuItem>
             </Menu>
           </div>
-          <div className='clearfix'/>
+          <div className="clearfix" />
         </div>
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
+          <ListItem
+            classes={{ default: classes.item }}
+            divider={false}
+            style={{ paddingTop: 0 }}
+          >
             <ListItemIcon>
-              <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
+              <span
+                style={{
+                  padding: '0 8px 0 8px',
+                  fontWeight: 700,
+                  fontSize: 12,
+                }}
+              >
+                #
+              </span>
             </ListItemIcon>
-            <ListItemText primary={
-              <div>
-                {this.SortHeader('killChainPhases', 'Kill chain phases')}
-                {this.SortHeader('name', 'Name')}
-                {this.SortHeader('created', 'Creation date')}
-                {this.SortHeader('modified', 'Modification date')}
-              </div>
-            }/>
+            <ListItemText
+              primary={
+                <div>
+                  {this.SortHeader('killChainPhases', 'Kill chain phases')}
+                  {this.SortHeader('name', 'Name')}
+                  {this.SortHeader('created', 'Creation date')}
+                  {this.SortHeader('modified', 'Modification date')}
+                </div>
+              }
+            />
           </ListItem>
           <QueryRenderer
             query={attackPatternsLinesQuery}
-            variables={{ count: 25, orderBy: this.state.sortBy, orderMode: this.state.orderAsc ? 'asc' : 'desc' }}
+            variables={{
+              count: 25,
+              orderBy: this.state.sortBy,
+              orderMode: this.state.orderAsc ? 'asc' : 'desc',
+            }}
             render={({ props }) => {
               if (props) {
-                return <AttackPatternsLines data={props} orderAsc={this.state.orderAsc} searchTerm={this.state.searchTerm}/>;
+                return (
+                  <AttackPatternsLines
+                    data={props}
+                    orderAsc={this.state.orderAsc}
+                    searchTerm={this.state.searchTerm}
+                  />
+                );
               }
-              return <AttackPatternsLines data={null} dummy={true} searchTerm={this.state.searchTerm}/>;
+              return (
+                <AttackPatternsLines
+                  data={null}
+                  dummy={true}
+                  searchTerm={this.state.searchTerm}
+                />
+              );
             }}
           />
         </List>
@@ -271,30 +359,50 @@ class AttackPatterns extends Component {
           paginationOptions={{
             orderBy: this.state.sortBy,
             orderMode: this.state.orderAsc ? 'asc' : 'desc',
-          }}/>
+          }}
+        />
         <Dialog
           open={this.state.exportCsvOpen}
           onClose={this.handleCloseExportCsv.bind(this)}
           fullWidth={true}
         >
-          <DialogTitle>
-            {t('Export data in CSV')}
-          </DialogTitle>
+          <DialogTitle>{t('Export data in CSV')}</DialogTitle>
           <DialogContent>
-            {this.state.exportCsvData === null
-              ? <div className={this.props.classes.export}><CircularProgress size={40} thickness={2} className={this.props.classes.loaderCircle}/></div>
-              : <DialogContentText>{t('The CSV file has been generated with the parameters of the view and is ready for download.')}</DialogContentText>
-            }
+            {this.state.exportCsvData === null ? (
+              <div className={this.props.classes.export}>
+                <CircularProgress
+                  size={40}
+                  thickness={2}
+                  className={this.props.classes.loaderCircle}
+                />
+              </div>
+            ) : (
+              <DialogContentText>
+                {t(
+                  'The CSV file has been generated with the parameters of the view and is ready for download.',
+                )}
+              </DialogContentText>
+            )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseExportCsv.bind(this)} color='primary'>
+            <Button
+              onClick={this.handleCloseExportCsv.bind(this)}
+              color="primary"
+            >
               {t('Cancel')}
             </Button>
-            {this.state.exportCsvData !== null
-              ? <Button component={CSVLink} data={this.state.exportCsvData} color='primary' filename={`${t('Attack patterns')}.csv`}>
+            {this.state.exportCsvData !== null ? (
+              <Button
+                component={CSVLink}
+                data={this.state.exportCsvData}
+                color="primary"
+                filename={`${t('Attack patterns')}.csv`}
+              >
                 {t('Download')}
               </Button>
-              : ''}
+            ) : (
+              ''
+            )}
           </DialogActions>
         </Dialog>
       </div>

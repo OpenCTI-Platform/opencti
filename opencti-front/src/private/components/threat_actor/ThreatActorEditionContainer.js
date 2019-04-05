@@ -64,30 +64,49 @@ class ThreatActorEditionContainer extends Component {
     const { editContext } = threatActor;
     // Add current user to the context if is not available yet.
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe ? insert(0, { name: me.email }, editContext) : editContext;
+    const editUsers = missingMe
+      ? insert(0, { name: me.email }, editContext)
+      : editContext;
     return (
       <div>
         <div className={classes.header}>
-          <IconButton aria-label='Close' className={classes.closeButton} onClick={handleClose.bind(this)}>
-            <Close fontSize='small'/>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
           </IconButton>
-          <Typography variant='h6' classes={{ root: classes.title }}>
+          <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a threat actor')}
           </Typography>
-          <SubscriptionAvatars users={editUsers}/>
-          <div className='clearfix'/>
+          <SubscriptionAvatars users={editUsers} />
+          <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <AppBar position='static' elevation={0} className={classes.appBar}>
-            <Tabs value={this.state.currentTab} onChange={this.handleChangeTab.bind(this)}>
-              <Tab label={t('Overview')}/>
-              <Tab label={t('Identity')}/>
+          <AppBar position="static" elevation={0} className={classes.appBar}>
+            <Tabs
+              value={this.state.currentTab}
+              onChange={this.handleChangeTab.bind(this)}
+            >
+              <Tab label={t('Overview')} />
+              <Tab label={t('Identity')} />
             </Tabs>
           </AppBar>
-          {this.state.currentTab === 0
-          && <ThreatActorEditionOverview threatActor={this.props.threatActor} editUsers={editUsers} me={me}/>}
-          {this.state.currentTab === 1
-          && <ThreatActorEditionIdentity threatActor={this.props.threatActor} editUsers={editUsers} me={me}/>}
+          {this.state.currentTab === 0 && (
+            <ThreatActorEditionOverview
+              threatActor={this.props.threatActor}
+              editUsers={editUsers}
+              me={me}
+            />
+          )}
+          {this.state.currentTab === 1 && (
+            <ThreatActorEditionIdentity
+              threatActor={this.props.threatActor}
+              editUsers={editUsers}
+              me={me}
+            />
+          )}
         </div>
       </div>
     );
@@ -103,24 +122,27 @@ ThreatActorEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const ThreatActorEditionFragment = createFragmentContainer(ThreatActorEditionContainer, {
-  threatActor: graphql`
+const ThreatActorEditionFragment = createFragmentContainer(
+  ThreatActorEditionContainer,
+  {
+    threatActor: graphql`
       fragment ThreatActorEditionContainer_threatActor on ThreatActor {
-          id
-          ...ThreatActorEditionOverview_threatActor
-          ...ThreatActorEditionIdentity_threatActor
-          editContext {
-              name
-              focusOn
-          }
+        id
+        ...ThreatActorEditionOverview_threatActor
+        ...ThreatActorEditionIdentity_threatActor
+        editContext {
+          name
+          focusOn
+        }
       }
-  `,
-  me: graphql`
+    `,
+    me: graphql`
       fragment ThreatActorEditionContainer_me on User {
-          email
+        email
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

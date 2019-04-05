@@ -22,8 +22,11 @@ class ErrorBoundaryComponent extends React.Component {
       if (this.state.error instanceof ApplicationError) {
         const types = map(e => e.name, this.state.error.data);
         // Auth problem is always handled by a login redirect
-        if (includes('AuthRequired', types) || includes('ForbiddenAccess', types)) {
-          return <Redirect to='/login' />;
+        if (
+          includes('AuthRequired', types)
+          || includes('ForbiddenAccess', types)
+        ) {
+          return <Redirect to="/login" />;
         }
         // If error is not part of managing declaration, propagate the error
         if (this.props.managing) {
@@ -33,10 +36,14 @@ class ErrorBoundaryComponent extends React.Component {
         // Return the error display element.
         return this.props.display;
       }
-      return IN_DEV_MODE ? <div>
-        <h1>{this.state.error.message}</h1>
-        <div>{this.state.stack.componentStack}</div>
-      </div> : this.props.children;
+      return IN_DEV_MODE ? (
+        <div>
+          <h1>{this.state.error.message}</h1>
+          <div>{this.state.stack.componentStack}</div>
+        </div>
+      ) : (
+        this.props.children
+      );
     }
     return this.props.children;
   }
@@ -49,16 +56,18 @@ ErrorBoundaryComponent.propTypes = {
 };
 export const ErrorBoundary = compose(withRouter)(ErrorBoundaryComponent);
 
-export const BoundaryRoute = props => (<ErrorBoundary display={props.display || <SimpleError/>}>
-  <Route {...props} />
-</ErrorBoundary>);
+export const BoundaryRoute = props => (
+  <ErrorBoundary display={props.display || <SimpleError />}>
+    <Route {...props} />
+  </ErrorBoundary>
+);
 
 BoundaryRoute.propTypes = {
   display: PropTypes.object,
 };
 
 // 404
-export const NoMatch = () => <ErrorNotFound/>;
+export const NoMatch = () => <ErrorNotFound />;
 
 // Really simple error display
 export const SimpleError = () => <div>ERROR</div>;

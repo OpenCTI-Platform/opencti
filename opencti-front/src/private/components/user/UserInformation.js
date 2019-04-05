@@ -13,25 +13,48 @@ class UserInformationComponent extends Component {
     const { me } = this.props;
     return (
       <div>
-        <Typography variant='h1' gutterBottom={true}>
+        <Typography variant="h1" gutterBottom={true}>
           <T>Profile</T>
         </Typography>
         <Formik
           initialValues={{
-            name: '', description: '', marking_definitions: [], killchain_phases: [],
+            name: '',
+            description: '',
+            marking_definitions: [],
+            killchain_phases: [],
           }}
           validationSchema={malwareValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
           render={({ submitForm, handleReset, isSubmitting }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field name='name' component={TextField} label={t('Name')} fullWidth={true} onChange={this.handleChangeName.bind(this)}/>
-                <Field name='description' component={TextField} label={t('Description')}
-                       fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }} onChange={this.handleChangeDescription.bind(this)}/>
-                <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
-                  {t('Update')}
-                </Button>
-              </Form>
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                name="name"
+                component={TextField}
+                label={t('Name')}
+                fullWidth={true}
+                onChange={this.handleChangeName.bind(this)}
+              />
+              <Field
+                name="description"
+                component={TextField}
+                label={t('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={{ marginTop: 20 }}
+                onChange={this.handleChangeDescription.bind(this)}
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t('Update')}
+              </Button>
+            </Form>
           )}
         />
       </div>
@@ -45,16 +68,19 @@ UserInformationComponent.propTypes = {
   me: PropTypes.object,
 };
 
-const UserInformationFragment = createFragmentContainer(UserInformationComponent, {
-  me: graphql`
+const UserInformationFragment = createFragmentContainer(
+  UserInformationComponent,
+  {
+    me: graphql`
       fragment UserInformation_me on User {
-          name,
-          firstname,
-          lastname,
-          email,
+        name
+        firstname
+        lastname
+        email
       }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

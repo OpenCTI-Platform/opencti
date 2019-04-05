@@ -28,12 +28,34 @@ const styles = theme => ({
 });
 
 const entityStixRelationsRadarStixRelationDistributionQuery = graphql`
-    query EntityStixRelationsRadarStixRelationDistributionQuery($fromId: String, $toTypes: [String], $relationType: String, $resolveInferences: Boolean, $resolveRelationType: String, $resolveRelationRole: String, $resolveRelationToTypes: [String], $resolveViaTypes: [EntityRelation], $field: String!, $operation: StatsOperation!) {
-        stixRelationsDistribution(fromId: $fromId, toTypes: $toTypes, relationType: $relationType, resolveInferences: $resolveInferences, resolveRelationType: $resolveRelationType, resolveRelationRole: $resolveRelationRole, resolveRelationToTypes: $resolveRelationToTypes, resolveViaTypes: $resolveViaTypes, field: $field, operation: $operation) {
-            label,
-            value
-        }
+  query EntityStixRelationsRadarStixRelationDistributionQuery(
+    $fromId: String
+    $toTypes: [String]
+    $relationType: String
+    $resolveInferences: Boolean
+    $resolveRelationType: String
+    $resolveRelationRole: String
+    $resolveRelationToTypes: [String]
+    $resolveViaTypes: [EntityRelation]
+    $field: String!
+    $operation: StatsOperation!
+  ) {
+    stixRelationsDistribution(
+      fromId: $fromId
+      toTypes: $toTypes
+      relationType: $relationType
+      resolveInferences: $resolveInferences
+      resolveRelationType: $resolveRelationType
+      resolveRelationRole: $resolveRelationRole
+      resolveRelationToTypes: $resolveRelationToTypes
+      resolveViaTypes: $resolveViaTypes
+      field: $field
+      operation: $operation
+    ) {
+      label
+      value
     }
+  }
 `;
 
 class EntityStixRelationsRadar extends Component {
@@ -65,7 +87,7 @@ class EntityStixRelationsRadar extends Component {
     };
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Distribution:')} {t(`entity_${entityType}`)}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -73,32 +95,60 @@ class EntityStixRelationsRadar extends Component {
             query={entityStixRelationsRadarStixRelationDistributionQuery}
             variables={stixRelationsDistributionVariables}
             render={({ props }) => {
-              if (props && props.stixRelationsDistribution && props.stixRelationsDistribution.length > 0) {
+              if (
+                props
+                && props.stixRelationsDistribution
+                && props.stixRelationsDistribution.length > 0
+              ) {
                 return (
-                  <ResponsiveContainer height={300} width='100%'>
-                    <RadarChart outerRadius={110} data={props.stixRelationsDistribution}>
-                      <PolarGrid/>
-                      <PolarAngleAxis dataKey='label' stroke='#ffffff'/>
-                      <PolarRadiusAxis/>
-                      <Radar dataKey='value' stroke='#8884d8' fill={Theme.palette.primary.main} fillOpacity={0.6}/>
+                  <ResponsiveContainer height={300} width="100%">
+                    <RadarChart
+                      outerRadius={110}
+                      data={props.stixRelationsDistribution}
+                    >
+                      <PolarGrid />
+                      <PolarAngleAxis dataKey="label" stroke="#ffffff" />
+                      <PolarRadiusAxis />
+                      <Radar
+                        dataKey="value"
+                        stroke="#8884d8"
+                        fill={Theme.palette.primary.main}
+                        fillOpacity={0.6}
+                      />
                     </RadarChart>
                   </ResponsiveContainer>
                 );
               }
               if (props) {
                 return (
-                  <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                  <div
+                    style={{ display: 'table', height: '100%', width: '100%' }}
+                  >
+                    <span
+                      style={{
+                        display: 'table-cell',
+                        verticalAlign: 'middle',
+                        textAlign: 'center',
+                      }}
+                    >
                       {t('No entities of this type has been found.')}
                     </span>
                   </div>
                 );
               }
               return (
-                <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                    <span style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-                      <CircularProgress size={40} thickness={2}/>
-                    </span>
+                <div
+                  style={{ display: 'table', height: '100%', width: '100%' }}
+                >
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <CircularProgress size={40} thickness={2} />
+                  </span>
                 </div>
               );
             }}

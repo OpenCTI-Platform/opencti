@@ -63,7 +63,7 @@ export const addAttackPattern = async (user, attackPattern) => {
               requiredPermission =>
                 `has required_permission "${prepareString(
                   requiredPermission
-                )}";`,
+                )}",`,
               attackPattern.required_permission
             )
           )

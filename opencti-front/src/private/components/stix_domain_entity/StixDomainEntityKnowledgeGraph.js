@@ -62,14 +62,14 @@ const styles = () => ({
 });
 
 const stixDomainEntityKnowledgeGraphRelationQuery = graphql`
-    query StixDomainEntityKnowledgeGraphRelationQuery($id: String!) {
-        stixRelation(id: $id) {
-            id
-            first_seen
-            last_seen
-            relationship_type
-        }
+  query StixDomainEntityKnowledgeGraphRelationQuery($id: String!) {
+    stixRelation(id: $id) {
+      id
+      first_seen
+      last_seen
+      relationship_type
     }
+  }
 `;
 
 const GRAPHER$ = new Subject().pipe(debounce(() => timer(1000)));
@@ -134,7 +134,10 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
       this.props.engine.repaintCanvas();
     }
 
-    if (this.props.stixDomainEntity.graph_data !== prevProps.stixDomainEntity.graph_data) {
+    if (
+      this.props.stixDomainEntity.graph_data
+      !== prevProps.stixDomainEntity.graph_data
+    ) {
       this.updateView();
     }
   }
@@ -155,8 +158,15 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
 
     // decode graph data if any
     let graphData = {};
-    if (this.props.stixDomainEntity.graph_data && this.props.stixDomainEntity.graph_data.length > 0) {
-      graphData = JSON.parse(Buffer.from(this.props.stixDomainEntity.graph_data, 'base64').toString('ascii'));
+    if (
+      this.props.stixDomainEntity.graph_data
+      && this.props.stixDomainEntity.graph_data.length > 0
+    ) {
+      graphData = JSON.parse(
+        Buffer.from(this.props.stixDomainEntity.graph_data, 'base64').toString(
+          'ascii',
+        ),
+      );
     }
 
     // set offset & zoom
@@ -260,8 +270,15 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
 
     // decode graph data if any
     let graphData = {};
-    if (this.props.stixDomainEntity.graph_data && this.props.stixDomainEntity.graph_data.length > 0) {
-      graphData = JSON.parse(Buffer.from(this.props.stixDomainEntity.graph_data, 'base64').toString('ascii'));
+    if (
+      this.props.stixDomainEntity.graph_data
+      && this.props.stixDomainEntity.graph_data.length > 0
+    ) {
+      graphData = JSON.parse(
+        Buffer.from(this.props.stixDomainEntity.graph_data, 'base64').toString(
+          'ascii',
+        ),
+      );
     }
 
     // set offset & zoom
@@ -349,17 +366,21 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
       editRelationId: null,
       currentLink: null,
     });
-    fetchQuery(stixDomainEntityKnowledgeGraphRelationQuery, { id: editRelationId }).then((data) => {
+    fetchQuery(stixDomainEntityKnowledgeGraphRelationQuery, {
+      id: editRelationId,
+    }).then((data) => {
       const { stixRelation } = data;
       const model = this.props.engine.getDiagramModel();
       const linkObject = model.getLink(currentLink);
       const label = new EntityLabelModel();
-      label.setExtras([{
-        id: stixRelation.id,
-        relationship_type: stixRelation.relationship_type,
-        first_seen: stixRelation.first_seen,
-        last_seen: stixRelation.last_seen,
-      }]);
+      label.setExtras([
+        {
+          id: stixRelation.id,
+          relationship_type: stixRelation.relationship_type,
+          first_seen: stixRelation.first_seen,
+          last_seen: stixRelation.last_seen,
+        },
+      ]);
       linkObject.setLabel(label);
     });
   }
@@ -381,7 +402,10 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
     const serialized = model.serializeDiagram();
     const distributedSerializedDiagram = distributeElements(serialized);
     const distributedDeSerializedModel = new DiagramModel();
-    distributedDeSerializedModel.deSerializeDiagram(distributedSerializedDiagram, this.props.engine);
+    distributedDeSerializedModel.deSerializeDiagram(
+      distributedSerializedDiagram,
+      this.props.engine,
+    );
     this.props.engine.setDiagramModel(distributedDeSerializedModel);
     this.props.engine.repaintCanvas();
     this.handleSaveGraph();
@@ -398,7 +422,11 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
 
   render() {
     const { classes, stixDomainEntity } = this.props;
-    const { openEditRelation, openEditRelationInferred, editRelationId } = this.state;
+    const {
+      openEditRelation,
+      openEditRelationInferred,
+      editRelationId,
+    } = this.state;
     return (
       <div className={classes.container} ref={this.diagramContainer}>
         <IconButton
@@ -407,7 +435,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
           onClick={this.zoomToFit.bind(this)}
           style={{ right: 270 }}
         >
-          <AspectRatio/>
+          <AspectRatio />
         </IconButton>
         <DiagramWidget
           deleteKeys={[]}
@@ -422,7 +450,7 @@ class StixDomainEntityKnowledgeGraphComponent extends Component {
           open={openEditRelation}
           stixRelationId={editRelationId}
           stixDomainEntity={stixDomainEntity}
-          variant='noGraph'
+          variant="noGraph"
           handleClose={this.handleCloseRelationEdition.bind(this)}
           handleDelete={this.handleDeleteRelation.bind(this)}
         />
@@ -449,48 +477,48 @@ const StixDomainEntityKnowledgeGraph = createFragmentContainer(
   StixDomainEntityKnowledgeGraphComponent,
   {
     stixDomainEntity: graphql`
-        fragment StixDomainEntityKnowledgeGraph_stixDomainEntity on StixDomainEntity
+      fragment StixDomainEntityKnowledgeGraph_stixDomainEntity on StixDomainEntity
         @argumentDefinitions(
-            inferred: { type: "Boolean" }
-            toTypes: { type: "[String]" }
-            firstSeenStart: { type: "DateTime" }
-            firstSeenStop: { type: "DateTime" }
-            lastSeenStart: { type: "DateTime" }
-            lastSeenStop: { type: "DateTime" }
-            weights: { type: "[Int]" }
-            count: { type: "Int", defaultValue: 200 }
+          inferred: { type: "Boolean" }
+          toTypes: { type: "[String]" }
+          firstSeenStart: { type: "DateTime" }
+          firstSeenStop: { type: "DateTime" }
+          lastSeenStart: { type: "DateTime" }
+          lastSeenStop: { type: "DateTime" }
+          weights: { type: "[Int]" }
+          count: { type: "Int", defaultValue: 200 }
         ) {
-            id
-            entity_type
-            name
-            graph_data
-            stixRelations(
-                inferred: $inferred
-                toTypes: $toTypes
-                firstSeenStart: $firstSeenStart
-                firstSeenStop: $firstSeenStop
-                lastSeenStart: $lastSeenStart
-                lastSeenStop: $lastSeenStop
-                weights: $weights
-                first: $count
-            ) {
-                edges {
-                    node {
-                        id
-                        relationship_type
-                        inferred
-                        description
-                        first_seen
-                        last_seen
-                        to {
-                            id
-                            entity_type
-                            name
-                        }
-                    }
-                }
+        id
+        entity_type
+        name
+        graph_data
+        stixRelations(
+          inferred: $inferred
+          toTypes: $toTypes
+          firstSeenStart: $firstSeenStart
+          firstSeenStop: $firstSeenStop
+          lastSeenStart: $lastSeenStart
+          lastSeenStop: $lastSeenStop
+          weights: $weights
+          first: $count
+        ) {
+          edges {
+            node {
+              id
+              relationship_type
+              inferred
+              description
+              first_seen
+              last_seen
+              to {
+                id
+                entity_type
+                name
+              }
             }
+          }
         }
+      }
     `,
   },
 );

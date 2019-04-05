@@ -80,28 +80,38 @@ class ToolLineComponent extends Component {
   render() {
     const { fd, classes, tool } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/catalogs/tools/${tool.id}`}>
+      <ListItem
+        classes={{ default: classes.item }}
+        divider={true}
+        component={Link}
+        to={`/dashboard/catalogs/tools/${tool.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Application/>
+          <Application />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {tool.name}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {tool.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.tool_version}
+              >
+                {tool.tool_version}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                {fd(tool.created)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                {fd(tool.modified)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.tool_version}>
-              {tool.tool_version}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              {fd(tool.created)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              {fd(tool.modified)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );
@@ -116,13 +126,13 @@ ToolLineComponent.propTypes = {
 
 const ToolLineFragment = createFragmentContainer(ToolLineComponent, {
   tool: graphql`
-      fragment ToolLine_tool on Tool {
-          id
-          name
-          tool_version
-          created
-          modified
-      }
+    fragment ToolLine_tool on Tool {
+      id
+      name
+      tool_version
+      created
+      modified
+    }
   `,
 });
 
@@ -137,26 +147,31 @@ class ToolLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Application/>
+          <Application />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.tool_version}
+              >
+                <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.tool_version}>
-              <div className='fakeItem' style={{ width: '70%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );

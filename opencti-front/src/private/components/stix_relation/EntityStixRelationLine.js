@@ -103,7 +103,9 @@ class ReportLineComponent extends Component {
     } = this.props;
     let link = `${entityLink}/relations/${stixRelation.id}`;
     if (stixDomainEntityFrom.id !== entityId) {
-      link = `${resolveLink(stixDomainEntityFrom.entity_type)}/${stixDomainEntityFrom.id}/knowledge/relations/${stixRelation.id}`;
+      link = `${resolveLink(stixDomainEntityFrom.entity_type)}/${
+        stixDomainEntityFrom.id
+      }/knowledge/relations/${stixRelation.id}`;
     }
     return (
       <ListItem
@@ -114,27 +116,35 @@ class ReportLineComponent extends Component {
         to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={stixDomainEntity.entity_type}/>
+          <ItemIcon type={stixDomainEntity.entity_type} />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {stixDomainEntity.name}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {stixDomainEntity.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.entity_type}
+              >
+                {t(`entity_${stixDomainEntity.entity_type}`)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.first_seen}>
+                {stixRelation.inferred ? '-' : nsd(stixRelation.first_seen)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.last_seen}>
+                {stixRelation.inferred ? '-' : nsd(stixRelation.last_seen)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.weight}>
+                <ItemConfidenceLevel
+                  level={stixRelation.inferred ? 99 : stixRelation.weight}
+                  variant="inList"
+                />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.entity_type}>
-              {t(`entity_${stixDomainEntity.entity_type}`)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.first_seen}>
-              {stixRelation.inferred ? '-' : nsd(stixRelation.first_seen)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.last_seen}>
-              {stixRelation.inferred ? '-' : nsd(stixRelation.last_seen)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.weight}>
-              <ItemConfidenceLevel level={stixRelation.inferred ? 99 : stixRelation.weight} variant='inList'/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemSecondaryAction>
           <StixRelationPopover
             stixRelationId={stixRelation.id}
@@ -161,34 +171,34 @@ ReportLineComponent.propTypes = {
 
 const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
   stixRelation: graphql`
-      fragment EntityStixRelationLine_stixRelation on StixRelation {
-          id
-          weight
-          first_seen
-          last_seen
-          description
-          inferred
-      }
+    fragment EntityStixRelationLine_stixRelation on StixRelation {
+      id
+      weight
+      first_seen
+      last_seen
+      description
+      inferred
+    }
   `,
   stixDomainEntity: graphql`
-      fragment EntityStixRelationLine_stixDomainEntity on StixDomainEntity {
-          id
-        entity_type
-          name
-          description
-          created_at
-          updated_at
-      }
+    fragment EntityStixRelationLine_stixDomainEntity on StixDomainEntity {
+      id
+      entity_type
+      name
+      description
+      created_at
+      updated_at
+    }
   `,
   stixDomainEntityFrom: graphql`
-      fragment EntityStixRelationLine_stixDomainEntityFrom on StixDomainEntity {
-          id
-        entity_type
-          name
-          description
-          created_at
-          updated_at
-      }
+    fragment EntityStixRelationLine_stixDomainEntityFrom on StixDomainEntity {
+      id
+      entity_type
+      name
+      description
+      created_at
+      updated_at
+    }
   `,
 });
 
@@ -203,29 +213,34 @@ class EntityStixRelationLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Help/>
+          <Help />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={inlineStyles.entity_type}
+              >
+                <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.first_seen}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.last_seen}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.weight}>
+                <div className="fakeItem" style={{ width: 100 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.entity_type}>
-              <div className='fakeItem' style={{ width: '70%' }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.first_seen}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.last_seen}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.weight}>
-              <div className='fakeItem' style={{ width: 100 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert/>
+          <MoreVert />
         </ListItemSecondaryAction>
       </ListItem>
     );

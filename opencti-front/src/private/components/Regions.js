@@ -23,7 +23,10 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import {
-  ArrowDropDown, ArrowDropUp, TableChart, SaveAlt,
+  ArrowDropDown,
+  ArrowDropUp,
+  TableChart,
+  SaveAlt,
 } from '@material-ui/icons';
 import { fetchQuery, QueryRenderer } from '../../relay/environment';
 import RegionsLines, { regionsLinesQuery } from './region/RegionsLines';
@@ -92,17 +95,27 @@ const inlineStyles = {
 };
 
 const exportRegionsQuery = graphql`
-    query RegionsExportRegionsQuery($count: Int!, $cursor: ID, $orderBy: RegionsOrdering, $orderMode: OrderingMode) {
-        regions(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode) @connection(key: "Pagination_regions") {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                }
-            }
+  query RegionsExportRegionsQuery(
+    $count: Int!
+    $cursor: ID
+    $orderBy: RegionsOrdering
+    $orderMode: OrderingMode
+  ) {
+    regions(
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) @connection(key: "Pagination_regions") {
+      edges {
+        node {
+          id
+          name
+          description
         }
+      }
     }
+  }
 `;
 
 class Regions extends Component {
@@ -133,9 +146,20 @@ class Regions extends Component {
   SortHeader(field, label) {
     const { t } = this.props;
     return (
-      <div style={inlineStyles[field]} onClick={this.reverseBy.bind(this, field)}>
+      <div
+        style={inlineStyles[field]}
+        onClick={this.reverseBy.bind(this, field)}
+      >
         <span>{t(label)}</span>
-        {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStyles.iconSort}/> : <ArrowDropUp style={inlineStyles.iconSort}/> : ''}
+        {this.state.sortBy === field ? (
+          this.state.orderAsc ? (
+            <ArrowDropDown style={inlineStyles.iconSort} />
+          ) : (
+            <ArrowDropUp style={inlineStyles.iconSort} />
+          )
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -159,7 +183,10 @@ class Regions extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportRegionsQuery, { count: 2147483647, ...paginationOptions }).then((data) => {
+    fetchQuery(exportRegionsQuery, {
+      count: 2147483647,
+      ...paginationOptions,
+    }).then((data) => {
       const finalData = pipe(
         map(n => n.node),
         map(n => over(lensProp('description'), defaultTo('-'))(n)),
@@ -180,16 +207,25 @@ class Regions extends Component {
       <div>
         <div className={classes.header}>
           <div style={{ float: 'left', marginTop: -10 }}>
-            <SearchInput variant='small' onChange={this.handleSearch.bind(this)}/>
+            <SearchInput
+              variant="small"
+              onChange={this.handleSearch.bind(this)}
+            />
           </div>
           <div style={{ float: 'right', marginTop: -20 }}>
-            <IconButton color={this.state.view === 'lines' ? 'secondary' : 'primary'}
-                        classes={{ root: classes.button }}
-                        onClick={this.handleChangeView.bind(this, 'lines')}>
-              <TableChart/>
+            <IconButton
+              color={this.state.view === 'lines' ? 'secondary' : 'primary'}
+              classes={{ root: classes.button }}
+              onClick={this.handleChangeView.bind(this, 'lines')}
+            >
+              <TableChart />
             </IconButton>
-            <IconButton onClick={this.handleOpenExport.bind(this)} aria-haspopup='true' color='primary'>
-              <SaveAlt/>
+            <IconButton
+              onClick={this.handleOpenExport.bind(this)}
+              aria-haspopup="true"
+              color="primary"
+            >
+              <SaveAlt />
             </IconButton>
             <Menu
               anchorEl={this.state.anchorExport}
@@ -197,59 +233,108 @@ class Regions extends Component {
               onClose={this.handleCloseExport.bind(this)}
               style={{ marginTop: 50 }}
             >
-              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>{t('CSV file')}</MenuItem>
+              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>
+                {t('CSV file')}
+              </MenuItem>
             </Menu>
           </div>
-          <div className='clearfix'/>
+          <div className="clearfix" />
         </div>
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
+          <ListItem
+            classes={{ default: classes.item }}
+            divider={false}
+            style={{ paddingTop: 0 }}
+          >
             <ListItemIcon>
-              <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
+              <span
+                style={{
+                  padding: '0 8px 0 8px',
+                  fontWeight: 700,
+                  fontSize: 12,
+                }}
+              >
+                #
+              </span>
             </ListItemIcon>
-            <ListItemText primary={
-              <div>
-                {this.SortHeader('name', 'Name')}
-                {this.SortHeader('created_at', 'Creation date')}
-                {this.SortHeader('updated_at', 'Modification date')}
-              </div>
-            }/>
+            <ListItemText
+              primary={
+                <div>
+                  {this.SortHeader('name', 'Name')}
+                  {this.SortHeader('created_at', 'Creation date')}
+                  {this.SortHeader('updated_at', 'Modification date')}
+                </div>
+              }
+            />
           </ListItem>
           <QueryRenderer
             query={regionsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
               if (props) {
-                return <RegionsLines data={props} paginationOptions={paginationOptions} searchTerm={this.state.searchTerm}/>;
+                return (
+                  <RegionsLines
+                    data={props}
+                    paginationOptions={paginationOptions}
+                    searchTerm={this.state.searchTerm}
+                  />
+                );
               }
-              return <RegionsLines data={null} dummy={true} searchTerm={this.state.searchTerm}/>;
+              return (
+                <RegionsLines
+                  data={null}
+                  dummy={true}
+                  searchTerm={this.state.searchTerm}
+                />
+              );
             }}
           />
         </List>
-        <RegionCreation paginationOptions={paginationOptions}/>
+        <RegionCreation paginationOptions={paginationOptions} />
         <Dialog
           open={this.state.exportCsvOpen}
           onClose={this.handleCloseExportCsv.bind(this)}
           fullWidth={true}
         >
-          <DialogTitle>
-            {t('Export data in CSV')}
-          </DialogTitle>
+          <DialogTitle>{t('Export data in CSV')}</DialogTitle>
           <DialogContent>
-            {this.state.exportCsvData === null
-              ? <div className={this.props.classes.export}><CircularProgress size={40} thickness={2} className={this.props.classes.loaderCircle}/></div>
-              : <DialogContentText>{t('The CSV file has been generated with the parameters of the view and is ready for download.')}</DialogContentText>
-            }
+            {this.state.exportCsvData === null ? (
+              <div className={this.props.classes.export}>
+                <CircularProgress
+                  size={40}
+                  thickness={2}
+                  className={this.props.classes.loaderCircle}
+                />
+              </div>
+            ) : (
+              <DialogContentText>
+                {t(
+                  'The CSV file has been generated with the parameters of the view and is ready for download.',
+                )}
+              </DialogContentText>
+            )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseExportCsv.bind(this)} color='primary'>
+            <Button
+              onClick={this.handleCloseExportCsv.bind(this)}
+              color="primary"
+            >
               {t('Cancel')}
             </Button>
-            {this.state.exportCsvData !== null
-              ? <Button component={CSVLink} data={this.state.exportCsvData} separator={';'} enclosingCharacter={'"'} color='primary' filename={`${t('Regions')}.csv`}>
+            {this.state.exportCsvData !== null ? (
+              <Button
+                component={CSVLink}
+                data={this.state.exportCsvData}
+                separator={';'}
+                enclosingCharacter={'"'}
+                color="primary"
+                filename={`${t('Regions')}.csv`}
+              >
                 {t('Download')}
               </Button>
-              : ''}
+            ) : (
+              ''
+            )}
           </DialogActions>
         </Dialog>
       </div>

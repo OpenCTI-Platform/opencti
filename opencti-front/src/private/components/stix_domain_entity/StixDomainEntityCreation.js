@@ -70,22 +70,20 @@ const styles = theme => ({
 });
 
 const stixDomainEntityCreationMutation = graphql`
-    mutation StixDomainEntityCreationMutation($input: StixDomainEntityAddInput!) {
-        stixDomainEntityAdd(input: $input) {
-            id
-            entity_type
-            name
-            description
-        }
+  mutation StixDomainEntityCreationMutation($input: StixDomainEntityAddInput!) {
+    stixDomainEntityAdd(input: $input) {
+      id
+      entity_type
+      name
+      description
     }
+  }
 `;
 
 const stixDomainEntityValidation = t => Yup.object().shape({
-  name: Yup.string()
-    .required(t('This field is required')),
+  name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
-  type: Yup.string()
-    .required(t('This field is required')),
+  type: Yup.string().required(t('This field is required')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -122,7 +120,12 @@ class StixDomainEntityCreation extends Component {
         const payload = store.getRootField('stixDomainEntityAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
-        sharedUpdater(store, container.getDataID(), this.props.paginationOptions, newEdge);
+        sharedUpdater(
+          store,
+          container.getDataID(),
+          this.props.paginationOptions,
+          newEdge,
+        );
       },
       setSubmitting,
       onCompleted: () => {
@@ -145,60 +148,106 @@ class StixDomainEntityCreation extends Component {
     const { t, classes } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
-             color='secondary' aria-label='Add'
-             className={classes.createButton}><Add/></Fab>
-        <Drawer open={this.state.open} anchor='right' classes={{ paper: classes.drawerPaper }} onClose={this.handleClose.bind(this)}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}
+        >
+          <Add />
+        </Fab>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
           <div className={classes.header}>
-            <IconButton aria-label='Close' className={classes.closeButton} onClick={this.handleClose.bind(this)}>
-              <Close fontSize='small'/>
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={this.handleClose.bind(this)}
+            >
+              <Close fontSize="small" />
             </IconButton>
-            <Typography variant='h6'>
-              {t('Create an entity')}
-            </Typography>
+            <Typography variant="h6">{t('Create an entity')}</Typography>
           </div>
           <div className={classes.container}>
             <Formik
               initialValues={{
-                name: '', description: '', type: '',
+                name: '',
+                description: '',
+                type: '',
               }}
               validationSchema={stixDomainEntityValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
               render={({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
-                  <Field name='description' component={TextField} label={t('Description')}
-                         fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
-                  <Field name='type'
-                         component={Select}
-                         label={t('Entity type')}
-                         fullWidth={true}
-                         displayEmpty={true}
-                         inputProps={{
-                           name: 'type',
-                           id: 'type',
-                         }}
-                         containerstyle={{ marginTop: 20, width: '100%' }}
+                  <Field
+                    name="name"
+                    component={TextField}
+                    label={t('Name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    name="description"
+                    component={TextField}
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="type"
+                    component={Select}
+                    label={t('Entity type')}
+                    fullWidth={true}
+                    displayEmpty={true}
+                    inputProps={{
+                      name: 'type',
+                      id: 'type',
+                    }}
+                    containerstyle={{ marginTop: 20, width: '100%' }}
                   >
-                    <MenuItem value='Organization'>{t('Organization')}</MenuItem>
-                    <MenuItem value='User'>{t('Person')}</MenuItem>
-                    <MenuItem value='Threat-Actor'>{t('Threat actor')}</MenuItem>
-                    <MenuItem value='Intrusion-Set'>{t('Intrusion set')}</MenuItem>
-                    <MenuItem value='Campaign'>{t('Campaign')}</MenuItem>
-                    <MenuItem value='Incident'>{t('Incident')}</MenuItem>
-                    <MenuItem value='Malware'>{t('Malware')}</MenuItem>
-                    <MenuItem value='Tool'>{t('Tool')}</MenuItem>
-                    <MenuItem value='Vulnerability'>{t('Vulnerability')}</MenuItem>
-                    <MenuItem value='City'>{t('City')}</MenuItem>
-                    <MenuItem value='Country'>{t('Country')}</MenuItem>
-                    <MenuItem value='Region'>{t('Region')}</MenuItem>
+                    <MenuItem value="Organization">
+                      {t('Organization')}
+                    </MenuItem>
+                    <MenuItem value="User">{t('Person')}</MenuItem>
+                    <MenuItem value="Threat-Actor">
+                      {t('Threat actor')}
+                    </MenuItem>
+                    <MenuItem value="Intrusion-Set">
+                      {t('Intrusion set')}
+                    </MenuItem>
+                    <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
+                    <MenuItem value="Incident">{t('Incident')}</MenuItem>
+                    <MenuItem value="Malware">{t('Malware')}</MenuItem>
+                    <MenuItem value="Tool">{t('Tool')}</MenuItem>
+                    <MenuItem value="Vulnerability">
+                      {t('Vulnerability')}
+                    </MenuItem>
+                    <MenuItem value="City">{t('City')}</MenuItem>
+                    <MenuItem value="Country">{t('Country')}</MenuItem>
+                    <MenuItem value="Region">{t('Region')}</MenuItem>
                   </Field>
                   <div className={classes.buttons}>
-                    <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                    <Button
+                      variant="contained"
+                      onClick={handleReset}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
                       {t('Cancel')}
                     </Button>
-                    <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
                       {t('Create')}
                     </Button>
                   </div>
@@ -217,57 +266,98 @@ class StixDomainEntityCreation extends Component {
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab onClick={this.handleOpen.bind(this)}
-             color='secondary' aria-label='Add'
-             className={classes.createButton}><Add/></Fab>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}
+        >
+          <Add />
+        </Fab>
         <Formik
           enableReinitialize={true}
           initialValues={{
-            name: inputValue, description: '', type: '',
+            name: inputValue,
+            description: '',
+            type: '',
           }}
           validationSchema={stixDomainEntityValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onResetContextual.bind(this)}
           render={({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <Dialog open={this.state.open} onClose={this.handleClose.bind(this)} fullWidth={true}>
-                <DialogTitle>
-                  {t('Create an entity')}
-                </DialogTitle>
+              <Dialog
+                open={this.state.open}
+                onClose={this.handleClose.bind(this)}
+                fullWidth={true}
+              >
+                <DialogTitle>{t('Create an entity')}</DialogTitle>
                 <DialogContent>
-                  <Field name='name' component={TextField} label={t('Name')} fullWidth={true}/>
-                  <Field name='description' component={TextField} label={t('Description')}
-                         fullWidth={true} multiline={true} rows='4' style={{ marginTop: 20 }}/>
-                  <Field name='type'
-                         component={Select}
-                         label={t('Entity type')}
-                         fullWidth={true}
-                         displayEmpty={true}
-                         inputProps={{
-                           name: 'type',
-                           id: 'type',
-                         }}
-                         containerstyle={{ marginTop: 20, width: '100%' }}
+                  <Field
+                    name="name"
+                    component={TextField}
+                    label={t('Name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    name="description"
+                    component={TextField}
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="type"
+                    component={Select}
+                    label={t('Entity type')}
+                    fullWidth={true}
+                    displayEmpty={true}
+                    inputProps={{
+                      name: 'type',
+                      id: 'type',
+                    }}
+                    containerstyle={{ marginTop: 20, width: '100%' }}
                   >
-                    <MenuItem value='Organization'>{t('Organization')}</MenuItem>
-                    <MenuItem value='User'>{t('Person')}</MenuItem>
-                    <MenuItem value='Threat-Actor'>{t('Threat actor')}</MenuItem>
-                    <MenuItem value='Intrusion-Set'>{t('Intrusion set')}</MenuItem>
-                    <MenuItem value='Campaign'>{t('Campaign')}</MenuItem>
-                    <MenuItem value='Incident'>{t('Incident')}</MenuItem>
-                    <MenuItem value='Malware'>{t('Malware')}</MenuItem>
-                    <MenuItem value='Tool'>{t('Tool')}</MenuItem>
-                    <MenuItem value='Vulnerability'>{t('Vulnerability')}</MenuItem>
-                    <MenuItem value='City'>{t('City')}</MenuItem>
-                    <MenuItem value='Country'>{t('Country')}</MenuItem>
-                    <MenuItem value='Region'>{t('Region')}</MenuItem>
+                    <MenuItem value="Organization">
+                      {t('Organization')}
+                    </MenuItem>
+                    <MenuItem value="User">{t('Person')}</MenuItem>
+                    <MenuItem value="Threat-Actor">
+                      {t('Threat actor')}
+                    </MenuItem>
+                    <MenuItem value="Intrusion-Set">
+                      {t('Intrusion set')}
+                    </MenuItem>
+                    <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
+                    <MenuItem value="Incident">{t('Incident')}</MenuItem>
+                    <MenuItem value="Malware">{t('Malware')}</MenuItem>
+                    <MenuItem value="Tool">{t('Tool')}</MenuItem>
+                    <MenuItem value="Vulnerability">
+                      {t('Vulnerability')}
+                    </MenuItem>
+                    <MenuItem value="City">{t('City')}</MenuItem>
+                    <MenuItem value="Country">{t('Country')}</MenuItem>
+                    <MenuItem value="Region">{t('Region')}</MenuItem>
                   </Field>
                 </DialogContent>
                 <DialogActions classes={{ root: classes.dialogActions }}>
-                  <Button variant='contained' onClick={handleReset} disabled={isSubmitting} classes={{ root: classes.button }}>
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
                     {t('Cancel')}
                   </Button>
-                  <Button variant='contained' color='primary' onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
                     {t('Create')}
                   </Button>
                 </DialogActions>

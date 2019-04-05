@@ -72,9 +72,20 @@ class Groups extends Component {
   SortHeader(field, label) {
     const { t } = this.props;
     return (
-      <div style={inlineStyles[field]} onClick={this.reverseBy.bind(this, field)}>
+      <div
+        style={inlineStyles[field]}
+        onClick={this.reverseBy.bind(this, field)}
+      >
         <span>{t(label)}</span>
-        {this.state.sortBy === field ? this.state.orderAsc ? <ArrowDropDown style={inlineStyles.iconSort}/> : <ArrowDropUp style={inlineStyles.iconSort}/> : ''}
+        {this.state.sortBy === field ? (
+          this.state.orderAsc ? (
+            <ArrowDropDown style={inlineStyles.iconSort} />
+          ) : (
+            <ArrowDropUp style={inlineStyles.iconSort} />
+          )
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -88,30 +99,49 @@ class Groups extends Component {
     return (
       <div>
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem classes={{ default: classes.item }} divider={false} style={{ paddingTop: 0 }}>
+          <ListItem
+            classes={{ default: classes.item }}
+            divider={false}
+            style={{ paddingTop: 0 }}
+          >
             <ListItemIcon>
-              <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
+              <span
+                style={{
+                  padding: '0 8px 0 8px',
+                  fontWeight: 700,
+                  fontSize: 12,
+                }}
+              >
+                #
+              </span>
             </ListItemIcon>
-            <ListItemText primary={
-              <div>
-                {this.SortHeader('name', 'Name')}
-                {this.SortHeader('created_at', 'Creation date')}
-                {this.SortHeader('updated_at', 'Modification date')}
-              </div>
-            }/>
+            <ListItemText
+              primary={
+                <div>
+                  {this.SortHeader('name', 'Name')}
+                  {this.SortHeader('created_at', 'Creation date')}
+                  {this.SortHeader('updated_at', 'Modification date')}
+                </div>
+              }
+            />
           </ListItem>
           <QueryRenderer
             query={groupsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
               if (props) {
-                return <GroupsLines data={props} paginationOptions={paginationOptions}/>;
+                return (
+                  <GroupsLines
+                    data={props}
+                    paginationOptions={paginationOptions}
+                  />
+                );
               }
-              return <GroupsLines data={null} dummy={true}/>;
+              return <GroupsLines data={null} dummy={true} />;
             }}
           />
         </List>
-        <GroupCreation paginationOptions={paginationOptions}/>
+        <GroupCreation paginationOptions={paginationOptions} />
       </div>
     );
   }

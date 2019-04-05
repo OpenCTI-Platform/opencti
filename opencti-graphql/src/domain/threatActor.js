@@ -15,23 +15,17 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $m isa Threat-Actor', args);
+export const findAll = args => paginate('match $t isa Threat-Actor', args);
 
 export const search = args =>
   paginate(
-    `match $x isa Threat-Actor has name $name; $x has alias $alias; { $name contains "${prepareString(
-      args.search
-    )}"; } or { $alias contains "${prepareString(args.search)}"; }`,
+    `match $t isa Threat-Actor;
+    $t has name $name;
+    $t has alias $alias;
+    { $name contains "${prepareString(args.search)}"; } or
+    { $alias contains "${prepareString(args.search)}"; }`,
     args,
     false
-  );
-
-export const markingDefinitions = (threatActorId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    (marking:$marking, so:$threatActor) isa object_marking_refs; 
-    $threatActor id ${threatActorId}`,
-    args
   );
 
 export const findById = threatActorId => getById(threatActorId);
@@ -75,16 +69,20 @@ export const addThreatActor = async (user, threatActor) => {
     .id;
 
   if (threatActor.createdByRef) {
-    await wTx.query(`match $from id ${createThreatActorId};
-         $to id ${threatActor.createdByRef};
-         insert (so: $from, creator: $to)
-         isa created_by_ref;`);
+    await wTx.query(
+      `match $from id ${createThreatActorId};
+      $to id ${threatActor.createdByRef};
+      insert (so: $from, creator: $to)
+      isa created_by_ref;`
+    );
   }
 
   if (threatActor.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
-        `match $from id ${createThreatActorId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+        `match $from id ${createThreatActorId};
+        $to id ${markingDefinition};
+        insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

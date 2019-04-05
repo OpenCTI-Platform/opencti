@@ -29,27 +29,30 @@ const styles = theme => ({
 });
 
 const userMutationRelationAdd = graphql`
-    mutation UserEditionGroupsRelationAddMutation($id: ID!, $input: RelationAddInput!) {
-        userEdit(id: $id) {
-            relationAdd(input: $input) {
-                node {
-                    ...UserEditionGroups_user
-                }
-            }
+  mutation UserEditionGroupsRelationAddMutation(
+    $id: ID!
+    $input: RelationAddInput!
+  ) {
+    userEdit(id: $id) {
+      relationAdd(input: $input) {
+        node {
+          ...UserEditionGroups_user
         }
+      }
     }
+  }
 `;
 
 const userMutationRelationDelete = graphql`
-    mutation UserEditionGroupsRelationDeleteMutation($id: ID!, $relationId: ID!) {
-        userEdit(id: $id) {
-            relationDelete(relationId: $relationId) {
-                node {
-                    ...UserEditionGroups_user
-                }
-            }
+  mutation UserEditionGroupsRelationDeleteMutation($id: ID!, $relationId: ID!) {
+    userEdit(id: $id) {
+      relationDelete(relationId: $relationId) {
+        node {
+          ...UserEditionGroups_user
         }
+      }
     }
+  }
 `;
 
 class UserEditionGroupsComponent extends Component {
@@ -91,7 +94,8 @@ class UserEditionGroupsComponent extends Component {
           query={groupsLinesSearchQuery}
           variables={{ search: '' }}
           render={({ props }) => {
-            if (props) { // Done
+            if (props) {
+              // Done
               const groups = pipe(
                 pathOr([], ['groups', 'edges']),
                 map(n => n.node),
@@ -103,12 +107,21 @@ class UserEditionGroupsComponent extends Component {
                     return (
                       <ListItem key={group.id} divider={true}>
                         <ListItemAvatar>
-                          <Avatar className={classes.avatar}>{group.name.charAt(0)}</Avatar>
+                          <Avatar className={classes.avatar}>
+                            {group.name.charAt(0)}
+                          </Avatar>
                         </ListItemAvatar>
-                        <ListItemText primary={group.name} secondary={propOr('-', 'description', group)}/>
+                        <ListItemText
+                          primary={group.name}
+                          secondary={propOr('-', 'description', group)}
+                        />
                         <ListItemSecondaryAction>
                           <Checkbox
-                            onChange={this.handleToggle.bind(this, group.id, userGroup)}
+                            onChange={this.handleToggle.bind(
+                              this,
+                              group.id,
+                              userGroup,
+                            )}
                             checked={userGroup !== undefined}
                           />
                         </ListItemSecondaryAction>
@@ -138,20 +151,20 @@ UserEditionGroupsComponent.propTypes = {
 
 const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
   user: graphql`
-      fragment UserEditionGroups_user on User {
-          id
-          groups {
-              edges {
-                  node {
-                      id
-                      name
-                  }
-                  relation {
-                      id
-                  }
-              }
+    fragment UserEditionGroups_user on User {
+      id
+      groups {
+        edges {
+          node {
+            id
+            name
           }
+          relation {
+            id
+          }
+        }
       }
+    }
   `,
 });
 

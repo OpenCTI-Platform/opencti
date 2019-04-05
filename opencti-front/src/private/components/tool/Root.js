@@ -9,32 +9,36 @@ import ToolReports from './ToolReports';
 import ToolKnowledge from './ToolKnowledge';
 
 const subscription = graphql`
-    subscription RootToolSubscription($id: ID!) {
-        stixDomainEntity(id: $id) {
-            ...on Tool {
-                ...Tool_tool
-                ...ToolEditionContainer_tool
-            }
-            ...StixDomainEntityKnowledgeGraph_stixDomainEntity
-        }
+  subscription RootToolSubscription($id: ID!) {
+    stixDomainEntity(id: $id) {
+      ... on Tool {
+        ...Tool_tool
+        ...ToolEditionContainer_tool
+      }
+      ...StixDomainEntityKnowledgeGraph_stixDomainEntity
     }
+  }
 `;
 
 const toolQuery = graphql`
-    query RootToolQuery($id: String!) {
-        tool(id: $id) {
-            ...Tool_tool
-            ...ToolHeader_tool
-            ...ToolOverview_tool
-            ...ToolReports_tool
-            ...ToolKnowledge_tool
-        }
+  query RootToolQuery($id: String!) {
+    tool(id: $id) {
+      ...Tool_tool
+      ...ToolHeader_tool
+      ...ToolOverview_tool
+      ...ToolReports_tool
+      ...ToolKnowledge_tool
     }
+  }
 `;
 
 class RootTool extends Component {
   componentDidMount() {
-    const { match: { params: { toolId } } } = this.props;
+    const {
+      match: {
+        params: { toolId },
+      },
+    } = this.props;
     const sub = requestSubscription({
       subscription,
       variables: { id: toolId },
@@ -47,10 +51,15 @@ class RootTool extends Component {
   }
 
   render() {
-    const { me, match: { params: { toolId } } } = this.props;
+    const {
+      me,
+      match: {
+        params: { toolId },
+      },
+    } = this.props;
     return (
       <div>
-        <TopBar me={me || null}/>
+        <TopBar me={me || null} />
         <QueryRenderer
           query={toolQuery}
           variables={{ id: toolId }}
@@ -58,24 +67,39 @@ class RootTool extends Component {
             if (props && props.tool) {
               return (
                 <div>
-                  <Route exact path='/dashboard/catalogs/tools/:toolId' render={
-                    routeProps => <Tool {...routeProps} tool={props.tool}/>
-                  }/>
-                  <Route exact path='/dashboard/catalogs/tools/:toolId/reports' render={
-                    routeProps => <ToolReports {...routeProps} tool={props.tool}/>
-                  }/>
-                  <Route exact path='/dashboard/catalogs/tools/:toolId/knowledge' render={
-                    () => (<Redirect to={`/dashboard/catalogs/tools/${toolId}/knowledge/overview`}/>)
-                  }/>
-                  <Route path='/dashboard/catalogs/tools/:toolId/knowledge' render={
-                    routeProps => <ToolKnowledge {...routeProps} tool={props.tool}/>
-                  }/>
+                  <Route
+                    exact
+                    path="/dashboard/catalogs/tools/:toolId"
+                    render={routeProps => (
+                      <Tool {...routeProps} tool={props.tool} />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/catalogs/tools/:toolId/reports"
+                    render={routeProps => (
+                      <ToolReports {...routeProps} tool={props.tool} />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/catalogs/tools/:toolId/knowledge"
+                    render={() => (
+                      <Redirect
+                        to={`/dashboard/catalogs/tools/${toolId}/knowledge/overview`}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/catalogs/tools/:toolId/knowledge"
+                    render={routeProps => (
+                      <ToolKnowledge {...routeProps} tool={props.tool} />
+                    )}
+                  />
                 </div>
               );
             }
-            return (
-              <div> &nbsp; </div>
-            );
+            return <div> &nbsp; </div>;
           }}
         />
       </div>

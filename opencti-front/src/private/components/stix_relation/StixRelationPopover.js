@@ -41,11 +41,11 @@ function Transition(props) {
 }
 
 const stixRelationPopoverDeletionMutation = graphql`
-    mutation StixRelationPopoverDeletionMutation($id: ID!) {
-        stixRelationEdit(id: $id) {
-            delete
-        }
+  mutation StixRelationPopoverDeletionMutation($id: ID!) {
+    stixRelationEdit(id: $id) {
+      delete
     }
+  }
 `;
 
 class StixRelationPopover extends Component {
@@ -117,8 +117,12 @@ class StixRelationPopover extends Component {
     } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true' disabled={disabled}>
-          <MoreVert/>
+        <IconButton
+          onClick={this.handleOpen.bind(this)}
+          aria-haspopup="true"
+          disabled={disabled}
+        >
+          <MoreVert />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
@@ -126,11 +130,15 @@ class StixRelationPopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
+          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
+            {t('Update')}
+          </MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+            {t('Delete')}
+          </MenuItem>
         </Menu>
         <StixRelationEdition
-          variant='noGraph'
+          variant="noGraph"
           stixRelationId={stixRelationId}
           open={this.state.displayUpdate}
           handleClose={this.handleCloseUpdate.bind(this)}
@@ -148,10 +156,18 @@ class StixRelationPopover extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseDelete.bind(this)} color='primary' disabled={this.state.deleting}>
+            <Button
+              onClick={this.handleCloseDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
               {t('Cancel')}
             </Button>
-            <Button onClick={this.submitDelete.bind(this)} color='primary' disabled={this.state.deleting}>
+            <Button
+              onClick={this.submitDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
               {t('Delete')}
             </Button>
           </DialogActions>

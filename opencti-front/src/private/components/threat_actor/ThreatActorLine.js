@@ -71,25 +71,32 @@ class ThreatActorLineComponent extends Component {
   render() {
     const { fd, classes, threatActor } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true} component={Link} to={`/dashboard/knowledge/threat_actors/${threatActor.id}`}>
+      <ListItem
+        classes={{ default: classes.item }}
+        divider={true}
+        component={Link}
+        to={`/dashboard/knowledge/threat_actors/${threatActor.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Public/>
+          <Public />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              {threatActor.name}
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                {threatActor.name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                {fd(threatActor.created)}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                {fd(threatActor.modified)}
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              {fd(threatActor.created)}
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              {fd(threatActor.modified)}
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );
@@ -102,16 +109,19 @@ ThreatActorLineComponent.propTypes = {
   fd: PropTypes.func,
 };
 
-const ThreatActorLineFragment = createFragmentContainer(ThreatActorLineComponent, {
-  threatActor: graphql`
+const ThreatActorLineFragment = createFragmentContainer(
+  ThreatActorLineComponent,
+  {
+    threatActor: graphql`
       fragment ThreatActorLine_threatActor on ThreatActor {
-          id
-          name
-          created
-          modified
+        id
+        name
+        created
+        modified
       }
-  `,
-});
+    `,
+  },
+);
 
 export const ThreatActorLine = compose(
   inject18n,
@@ -124,23 +134,25 @@ class ThreatActorLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Public/>
+          <Public />
         </ListItemIcon>
-        <ListItemText primary={
-          <div>
-            <div className={classes.bodyItem} style={inlineStyles.name}>
-              <div className='fakeItem' style={{ width: '80%' }}/>
+        <ListItemText
+          primary={
+            <div>
+              <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.created}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.modified}>
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
             </div>
-            <div className={classes.bodyItem} style={inlineStyles.created}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-            <div className={classes.bodyItem} style={inlineStyles.modified}>
-              <div className='fakeItem' style={{ width: 140 }}/>
-            </div>
-          </div>
-        }/>
+          }
+        />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight/>
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );
