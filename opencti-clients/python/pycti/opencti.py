@@ -280,6 +280,7 @@ class OpenCti:
                         first_seen,
                         last_seen,
                         weight,
+                        role_played=None,
                         stix_id=None,
                         created=None,
                         modified=None
@@ -300,6 +301,7 @@ class OpenCti:
                 'toRole': to_role,
                 'relationship_type': type,
                 'description': description,
+                'role_played': role_played,
                 'first_seen': first_seen,
                 'last_seen': last_seen,
                 'weight': weight,
@@ -320,6 +322,7 @@ class OpenCti:
                                       first_seen,
                                       last_seen,
                                       weight,
+                                      role_played=None,
                                       stix_id=None,
                                       created=None,
                                       modified=None
@@ -346,7 +349,7 @@ class OpenCti:
                     final_from_id = to_id
                     final_to_id = from_id
                 else:
-                    self.log('Cannot resolve roles, doing nothing...')
+                    self.log('Cannot resolve roles, doing nothing (' + type + ': ' + from_type + ',' + to_type + ')')
                     return None
 
             return self.create_relation(
@@ -359,6 +362,7 @@ class OpenCti:
                 first_seen,
                 last_seen,
                 weight,
+                role_played,
                 stix_id,
                 created,
                 modified

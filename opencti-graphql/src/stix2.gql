@@ -290,6 +290,8 @@ define
     has "last_seen_year",
     has "name",
     has "description",
+    has "role_played",
+    has "infrastructure",
     has "created_at",
     has "created_at_day",
     has "created_at_month",
@@ -325,8 +327,6 @@ define
 
   # indicates
   "indicates" sub "stix_relation",
-    has "role_played",
-    has "infrastructure",
     relates "characterize",
     relates "indicator";
 

@@ -60,7 +60,7 @@ class StixRelationInferences extends Component {
         const newNodeFrom = new EntityNodeModel({
           id: inference.from.id,
           name: inference.from.name,
-          type: inference.from.type,
+          type: inference.from.entity_type,
         });
         if (inference.from.id === from.id) {
           newNodeFrom.setPosition(30, 0);
@@ -76,7 +76,7 @@ class StixRelationInferences extends Component {
         const newNodeTo = new EntityNodeModel({
           id: inference.to.id,
           name: inference.to.name,
-          type: inference.to.type,
+          type: inference.to.entity_type,
         });
         if (inference.to.id === from.id) {
           newNodeTo.setPosition(30, 0);
@@ -110,7 +110,7 @@ class StixRelationInferences extends Component {
         const newLink = new EntityLinkModel();
         newLink.setExtras({
           relation: inference,
-          link: `${resolveLink(inference.from.type)}/${
+          link: `${resolveLink(inference.from.entity_type)}/${
             inference.from.id
           }/knowledge/relations/${inference.id}`,
         });

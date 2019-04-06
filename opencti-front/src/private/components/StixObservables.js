@@ -89,7 +89,7 @@ const inlineStyles = {
   },
   observable_value: {
     float: 'left',
-    width: '40%',
+    width: '50%',
     fontSize: 12,
     fontWeight: '700',
   },

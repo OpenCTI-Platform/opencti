@@ -13,7 +13,8 @@ import {
   pluck,
   fromPairs,
   toPairs,
-  values
+  values,
+  tail
 } from 'ramda';
 import moment from 'moment';
 import { offsetToCursor } from 'graphql-relay';
@@ -65,9 +66,19 @@ client.session('grakn').then(graknSession => {
   session = graknSession;
 });
 
-export const takeReadTx = async () => session.transaction().read();
+export const takeReadTx = async () => {
+  if (session === null) {
+    session = await client.session('grakn');
+  }
+  return session.transaction().read();
+};
 
-export const takeWriteTx = async () => session.transaction().write();
+export const takeWriteTx = async () => {
+  if (session === null) {
+    session = await client.session('grakn');
+  }
+  return session.transaction().write();
+};
 
 export const notify = (topic, instance, user, context) => {
   if (pubsub) pubsub.publish(topic, { instance, user, context });
@@ -263,40 +274,34 @@ export const getRelationInferredById = async id => {
   const rTx = await takeReadTx();
   try {
     const decodedQuery = Buffer.from(id, 'base64').toString('ascii');
-    let query;
-    if (decodedQuery.endsWith('}')) {
-      query = `match ${decodedQuery}; get;`;
-    } else {
-      query = `${decodedQuery.replace('(', '$rel (').slice(0, -1)}, $rel;`;
-    }
-    const queryRegex = /\([a-z_]+:\s\$(\w+),\s[a-z_]+:\s\$(\w+)\)\s[a-z_]+\s([\w-]+);/i.exec(
+    const query = `match ${decodedQuery} get;`;
+    const queryRegex = /\$([a-z_\d]+)\s?[([a-z_]+:\s\$(\w+),\s[a-z_]+:\s\$(\w+)\)\s[a-z_]+\s([\w-]+);/i.exec(
       query
     );
-    const fromKey = queryRegex[1];
-    const toKey = queryRegex[2];
+    const relKey = queryRegex[1];
+    const fromKey = queryRegex[2];
+    const toKey = queryRegex[3];
     logger.debug(`[GRAKN - infer: true] ${query}`);
     const answerIterator = await rTx.query(query);
-    console.log(query);
     const answer = await answerIterator.next();
-    const rel = answer.map().get('rel');
+    const rel = answer.map().get(relKey);
     const relationType = await rel.type();
     const relationTypeValue = await relationType.label();
     const from = answer.map().get(fromKey);
     const to = answer.map().get(toKey);
-    const relationPromise = Promise.resolve({
+    const relationPromise = await Promise.resolve({
       id,
       type: 'stix_relation',
       relationship_type: relationTypeValue,
       inferred: true
     });
-    const fromPromise = getAttributes(from);
-    const toPromise = getAttributes(to);
-    const explanation = await answer.explanation();
-    const explanationAnswers = await explanation.answers();
+    const fromPromise = await getAttributes(from);
+    const toPromise = await getAttributes(to);
+    const explanation = answer.explanation();
+    const explanationAnswers = explanation.answers();
     const inferences = explanationAnswers.map(explanationAnswer => {
       const explanationAnswerExplanation = explanationAnswer.explanation();
       let inferenceQuery = explanationAnswerExplanation.queryPattern();
-      console.log(inferenceQuery);
       const inferenceQueryRegex = /(\$(\d+|rel)\s)?\([a-z_]+:\s\$(\w+),\s[a-z_]+:\s\$(\w+)\)\sisa\s([\w-]+);/i.exec(
         inferenceQuery
       );
@@ -316,40 +321,93 @@ export const getRelationInferredById = async id => {
       };
     });
     const inferencesQueries = pluck('inferenceQuery', inferences);
-    console.log(inferencesQueries);
-    const inferencesQuery = `match {${join('; ', inferencesQueries)}; }; get;`;
+    const inferencesQuery = `match {${join(' ', inferencesQueries)} }; get;`;
     const inferencesAnswerIterator = await rTx.query(inferencesQuery);
     const inferencesAnswer = await inferencesAnswerIterator.next();
-    const inferencesPromises = inferences.map(async inference => {
-      const inferred = await inferencesAnswer
-        .map()
-        .get(inference.relationKey)
-        .isInferred();
-      const inferenceFrom = inferencesAnswer.map().get(inference.fromKey);
-      const inferenceTo = inferencesAnswer.map().get(inference.toKey);
-      const inferenceId = inferred
-        ? Buffer.from(inference.inferenceQuery).toString('base64')
-        : inferencesAnswer.map().get(inference.relationKey).id;
-      return Promise.resolve({
-        node: {
-          id: inferenceId,
-          inferred,
-          relationship_type: inference.relationType,
-          from: await getAttributes(inferenceFrom),
-          to: await getAttributes(inferenceTo)
-        }
-      });
-    });
+    const inferencesPromises = Promise.all(
+      inferences.map(async inference => {
+        const inferred = await inferencesAnswer
+          .map()
+          .get(inference.relationKey)
+          .isInferred();
+        const inferenceFrom = inferencesAnswer.map().get(inference.fromKey);
+        const inferenceTo = inferencesAnswer.map().get(inference.toKey);
+        let inferenceId;
+        if (inferred) {
+          const inferenceQueryRegex = /\$([a-z_\d]+)\s\([a-z_:]+\s\$([a-z_]+),\s[a-z_:]+\s\$([a-z_]+)\)/i.exec(
+            inference.inferenceQuery
+          );
+          const entityFromKey = inferenceQueryRegex[2];
+          const entityToKey = inferenceQueryRegex[3];
+          const regexFromString = `\\$${entityFromKey}\\sid\\s(V\\d+);`;
+          const regexFrom = new RegExp(regexFromString, 'i');
+          const inferenceQueryRegexFrom = inference.inferenceQuery.match(
+            regexFrom
+          );
+          const regexToString = `\\$${entityToKey}\\sid\\s(V\\d+);`;
+          const regexTo = new RegExp(regexToString, 'i');
+          const inferenceQueryRegexTo = inference.inferenceQuery.match(regexTo);
 
+          const regexFromTypeString = `\\$${entityFromKey}\\sisa\\s[\\w]+;`;
+          const regexFromType = new RegExp(regexFromTypeString, 'ig');
+          const regexToTypeString = `\\$${entityToKey}\\sisa\\s[\\w]+;`;
+          const regexToType = new RegExp(regexToTypeString, 'ig');
+
+          let inferenceQuery;
+          if (inferenceQueryRegexFrom && inferenceQueryRegexTo) {
+            inferenceQuery = inference.inferenceQuery;
+          } else if (inferenceQueryRegexFrom) {
+            const existingId = inferenceQueryRegexFrom[1];
+            inferenceQuery = inference.inferenceQuery.replace(
+              `$${entityFromKey} id ${existingId};`,
+              `$${entityFromKey} id ${existingId}; $${entityToKey} id ${
+                existingId === inferenceFrom.id
+                  ? inferenceTo.id
+                  : inferenceFrom.id
+              };`
+            );
+          } else if (inferenceQueryRegexTo) {
+            const existingId = inferenceQueryRegexTo[1];
+            inferenceQuery = inference.inferenceQuery.replace(
+              `$${entityToKey} id ${existingId};`,
+              `$${entityToKey} id ${existingId}; $${entityFromKey} id ${
+                existingId === inferenceFrom.id
+                  ? inferenceTo.id
+                  : inferenceFrom.id
+              };`
+            );
+          } else {
+            inferenceQuery = inference.inferenceQuery;
+          }
+          inferenceQuery = inferenceQuery
+            .replace(regexFromType, '')
+            .replace(regexToType, '');
+          inferenceId = Buffer.from(inferenceQuery).toString('base64');
+        } else {
+          inferenceId = inferencesAnswer.map().get(inference.relationKey).id;
+        }
+        const fromAttributes = await getAttributes(inferenceFrom);
+        const toAttributes = await getAttributes(inferenceTo);
+        return {
+          node: {
+            id: inferenceId,
+            inferred,
+            relationship_type: inference.relationType,
+            from: fromAttributes,
+            to: toAttributes
+          }
+        };
+      })
+    );
     const resultPromise = Promise.all([
       relationPromise,
       fromPromise,
       toPromise,
       inferencesPromises
-    ]).then(([node, from, to, relationInferences]) => {
+    ]).then(([node, fromResult, toResult, relationInferences]) => {
       return pipe(
-        assoc('from', to),
-        assoc('to', from),
+        assoc('from', fromResult),
+        assoc('to', toResult),
         assoc('inferences', { edges: relationInferences })
       )(node);
     });
@@ -357,6 +415,7 @@ export const getRelationInferredById = async id => {
     await rTx.close();
     return result;
   } catch (error) {
+    console.log(error);
     if (rTx) {
       rTx.close();
     }
@@ -592,10 +651,15 @@ export const paginate = (
     query
   );
   const relationKey = findRelationVariable && findRelationVariable[1]; // Could be setup to get relation info
-  const count = getSingleValueNumber(`${query}; get; count;`, infer);
   const orderingKey = relationOrderingKey
     ? `$${relationOrderingKey} has ${orderBy} $o;`
     : `$${instanceKey} has ${orderBy} $o;`;
+  const count = getSingleValueNumber(
+    `${query}; ${ordered && orderBy ? orderingKey : ''} get $${instanceKey}${
+      relationKey ? `, $${relationKey}` : ''
+    }${ordered && orderBy ? ', $o' : ''}; count;`,
+    infer
+  );
   const elements = getObjects(
     `${query}; ${ordered && orderBy ? orderingKey : ''} get $${instanceKey}${
       relationKey ? `, $${relationKey}` : ''
@@ -643,8 +707,8 @@ export const getRelations = async (
         const relationIsInferred = await relationObject.isInferred();
         let relationPromise = await Promise.resolve(null);
         if (relationIsInferred) {
-          const explanation = await answer.explanation();
-          let queryPattern = await explanation.queryPattern();
+          const explanation = answer.explanation();
+          let queryPattern = explanation.queryPattern();
           queryPattern = queryPattern.replace(
             `$from id ${answer.map().get(fromKey).id};`,
             `$from id ${answer.map().get(fromKey).id}; $to id ${
@@ -763,11 +827,16 @@ export const paginateRelationships = (
       : ''
   }`;
   const orderingKey = orderBy ? `$rel has ${orderBy} $o;` : '';
-  const count = getSingleValueNumber(`${finalQuery} get; count;`);
-  const elements = getRelations(
+  const count = getSingleValueNumber(
     `${finalQuery} ${orderingKey} get $rel, $from, $to ${
       extraRel ? `, $${extraRel}` : ''
-    } ${orderBy ? `, $o` : ''}; ${
+    }${orderBy ? ', $o' : ''}; count;`,
+    inferred
+  );
+  const elements = getRelations(
+    `${finalQuery} ${orderingKey} get $rel, $from, $to${
+      extraRel ? `, $${extraRel}` : ''
+    }${orderBy ? ', $o' : ''}; ${
       orderBy ? `sort $o ${orderMode};` : ''
     } offset ${offset}; limit ${first};`,
     'rel',
@@ -898,7 +967,15 @@ export const updateAttribute = async (id, input, tx = null) => {
     if (typedValues.length === 0) {
       typedValues = [attrType === String ? '""' : ''];
     }
-    const graknValues = join(' ', map(val => `has ${key} ${val}`, typedValues));
+    let graknValues;
+    if (typedValues.length === 1) {
+      graknValues = `has ${key} ${head(typedValues)}`;
+    } else {
+      graknValues = `${join(
+        ' ',
+        map(val => `has ${key} ${val},`, tail(typedValues))
+      )} has ${key} ${head(typedValues)}`;
+    }
     const createQuery = `match $m id ${id}; insert $m ${graknValues};`;
     logger.debug(`[GRAKN - infer: false] ${createQuery}`);
     await wTx.query(createQuery);

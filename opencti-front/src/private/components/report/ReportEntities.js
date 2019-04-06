@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, map, sortWith, ascend, descend, prop,
+  compose, map, sortWith, ascend, descend, prop, assoc,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
@@ -13,16 +13,14 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import {
-  ArrowDropDown,
-  ArrowDropUp,
-  KeyboardArrowRight,
-} from '@material-ui/icons';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import { resolveLink } from '../../../utils/Entity';
 import inject18n from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import ReportHeader from './ReportHeader';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
+import ReportRefPopover from './ReportRefPopover';
 
 const styles = theme => ({
   linesContainer: {
@@ -170,7 +168,10 @@ class ReportEntitiesComponent extends Component {
     const {
       t, fd, classes, report,
     } = this.props;
-    const objectRefs = map(n => n.node, report.objectRefs.edges);
+    const objectRefs = map(
+      n => assoc('relation', n.relation, n.node),
+      report.objectRefs.edges,
+    );
     const sort = sortWith(
       this.state.orderAsc
         ? [ascend(prop(this.state.sortBy))]
@@ -207,6 +208,7 @@ class ReportEntitiesComponent extends Component {
                 </div>
               }
             />
+            <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
           </ListItem>
           {sortedObjectRefs.map((objectRef) => {
             const link = resolveLink(objectRef.entity_type);
@@ -215,6 +217,7 @@ class ReportEntitiesComponent extends Component {
                 key={objectRef.id}
                 classes={{ root: classes.item }}
                 divider={true}
+                button={true}
                 component={Link}
                 to={`${link}/${objectRef.id}`}
               >
@@ -251,9 +254,12 @@ class ReportEntitiesComponent extends Component {
                     </div>
                   }
                 />
-                <ListItemIcon classes={{ root: classes.goIcon }}>
-                  <KeyboardArrowRight />
-                </ListItemIcon>
+                <ListItemSecondaryAction>
+                  <ReportRefPopover
+                    reportId={report.id}
+                    relationId={objectRef.relation.id}
+                  />
+                </ListItemSecondaryAction>
               </ListItem>
             );
           })}
@@ -287,6 +293,9 @@ const ReportEntities = createFragmentContainer(ReportEntitiesComponent, {
             name
             created_at
             updated_at
+          }
+          relation {
+            id
           }
         }
       }

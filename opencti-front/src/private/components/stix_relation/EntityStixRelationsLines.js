@@ -293,6 +293,7 @@ export default withStyles(styles)(
         return {
           fromId: fragmentVariables.fromId,
           toTypes: fragmentVariables.toTypes,
+          inferred: fragmentVariables.inferred,
           relationType: fragmentVariables.relationType,
           resolveInferences: fragmentVariables.resolveInferences,
           resolveRelationType: fragmentVariables.resolveRelationType,

@@ -55,7 +55,7 @@ const inlineStyles = {
   },
   observable_value: {
     float: 'left',
-    width: '40%',
+    width: '50%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',

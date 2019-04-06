@@ -23,6 +23,7 @@ const styles = () => ({
 
 const inversedRelations = [
   'user',
+  'threat-actor',
   'intrusion-set',
   'campaign',
   'incident',

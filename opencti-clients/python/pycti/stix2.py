@@ -627,7 +627,8 @@ class Stix2:
                 'x_opencti_last_seen'] if 'x_opencti_last_seen' in stix_relation else datetime.datetime.utcnow().replace(
                 microsecond=0, tzinfo=datetime.timezone.utc).isoformat(),
             stix_relation['x_opencti_weight'] if 'x_opencti_weight' in stix_relation else 4,
-            stix_relation['id'],
+            stix_relation['x_opencti_role_played'] if 'x_opencti_role_played' in stix_relation else None,
+            stix_relation['id'] if 'id' in stix_relation else None,
             stix_relation['created'] if 'created' in stix_relation else None,
             stix_relation['modified'] if 'modified' in stix_relation else None,
         )

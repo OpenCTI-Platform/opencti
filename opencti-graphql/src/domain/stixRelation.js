@@ -124,7 +124,7 @@ export const findAllWithInferences = async args => {
   if (args.resolveViaTypes) {
     const viaPromise = Promise.all(
       map(async resolveViaType => {
-        const viaQuery = `match $from; $rel($from, $entity) isa ${
+        const viaQuery = `match $from isa entity; $rel($from, $entity) isa ${
           args.relationType ? args.relationType : 'stix_relation'
         }; ${join(
           ' ',
@@ -144,7 +144,7 @@ export const findAllWithInferences = async args => {
     );
     const viaRelationQueries = map(
       resolveViaType =>
-        `match $from; $rel($from, $entity) isa ${
+        `match $from isa entity; $rel($from, $entity) isa ${
           args.relationType ? args.relationType : 'stix_relation'
         }; ${join(
           ' ',
@@ -243,7 +243,7 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
   if (args.resolveViaTypes) {
     const viaPromise = Promise.all(
       map(resolveViaType => {
-        const viaQuery = `match $from; $x($from, $entity) isa ${
+        const viaQuery = `match $from isa entity; $x($from, $entity) isa ${
           args.relationType ? args.relationType : 'stix_relation'
         }; ${join(
           ' ',
@@ -265,7 +265,7 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
     );
     const viaRelationQueries = map(
       resolveViaType =>
-        `match $from; $x($from, $entity) isa ${
+        `match $from isa entity; $x($from, $entity) isa ${
           args.relationType ? args.relationType : 'stix_relation'
         }; ${join(
           ' ',
@@ -367,7 +367,7 @@ export const stixRelationsDistributionWithInferences = async args => {
   if (args.resolveViaTypes) {
     const viaPromise = Promise.all(
       map(resolveViaType => {
-        const viaQuery = `match $from; $rel($from, $entity) isa ${
+        const viaQuery = `match $from isa entity; $rel($from, $entity) isa ${
           args.relationType ? args.relationType : 'stix_relation'
         }; ${join(
           ' ',
@@ -389,7 +389,7 @@ export const stixRelationsDistributionWithInferences = async args => {
     );
     const viaRelationQueries = map(
       resolveViaType =>
-        `match $from; $rel($from, $entity) isa ${
+        `match $from isa entity; $rel($from, $entity) isa ${
           args.relationType ? args.relationType : 'stix_relation'
         }; ${join(
           ' ',
@@ -497,6 +497,7 @@ export const addStixRelation = async (user, stixRelation) => {
     }",
     has name "",
     has description "${prepareString(stixRelation.description)}",
+    has role_played "${prepareString(stixRelation.role_played)}",
     has weight ${stixRelation.weight},
     has first_seen ${prepareDate(stixRelation.first_seen)},
     has first_seen_day "${dayFormat(stixRelation.first_seen)}",

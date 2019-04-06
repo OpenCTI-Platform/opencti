@@ -59,7 +59,7 @@ class StixObservablesLines extends Component {
   filterList(list) {
     const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''
-      || n.node.type.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.entity_type.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || n.node.observable_value
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;

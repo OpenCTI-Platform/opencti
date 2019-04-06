@@ -145,7 +145,7 @@ class ReportLineComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction>
+          <ListItemSecondaryAction>
           <StixRelationPopover
             stixRelationId={stixRelation.id}
             paginationOptions={paginationOptions}

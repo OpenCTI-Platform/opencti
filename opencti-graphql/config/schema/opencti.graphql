@@ -298,6 +298,7 @@ type StixRelation implements GlobalObject & StixEntity {
   created: DateTime!
   modified: DateTime!
   graph_data: String
+  role_played: String
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
@@ -316,6 +317,7 @@ input StixRelationAddInput {
   toId: String!
   toRole: String!
   relationship_type: String!
+  role_played: String
   weight: Int
   description: String
   first_seen: DateTime

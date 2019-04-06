@@ -11,7 +11,7 @@ import ReportOverview from './ReportOverview';
 import ReportIdentity from './ReportIdentity';
 import ReportEdition from './ReportEdition';
 import EntityExternalReferences from '../external_reference/EntityExternalReferences';
-import EntityObservablesChart from '../stix_observable/EntityStixObservablesChart';
+import EntityStixRelationsDonut from '../stix_relation/EntityStixRelationsDonut';
 import EntityStixRelationsPie from '../stix_relation/EntityStixRelationsPie';
 import EntityStixRelationsRadar from '../stix_relation/EntityStixRelationsRadar';
 
@@ -52,7 +52,12 @@ class ReportComponent extends Component {
           style={{ marginTop: 20 }}
         >
           <Grid item={true} xs={4}>
-            <EntityObservablesChart entityId={report.id} />
+            <EntityStixRelationsDonut
+              entityId={report.id}
+              entityType="Stix-Observable"
+              relationType="object_refs"
+              field="entity_type"
+            />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsRadar

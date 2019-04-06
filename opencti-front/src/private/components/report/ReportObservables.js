@@ -14,6 +14,8 @@ import {
   values,
   head,
   merge,
+  concat,
+  assoc,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
@@ -23,17 +25,15 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import {
-  ArrowDropDown,
-  ArrowDropUp,
-  KeyboardArrowRight,
-} from '@material-ui/icons';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import { Tag } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
-import ReportHeader from './ReportHeader';
-import ReportAddObservable from './ReportAddObservable';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
 import { dateFormat } from '../../../utils/Time';
+import ReportHeader from './ReportHeader';
+import ReportAddObservable from './ReportAddObservable';
+import ReportRefPopover from './ReportRefPopover';
 
 const styles = theme => ({
   linesContainer: {
@@ -82,7 +82,7 @@ const inlineStylesHeaders = {
   },
   entity_type: {
     float: 'left',
-    width: '15%',
+    width: '10%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -94,7 +94,13 @@ const inlineStylesHeaders = {
   },
   threat: {
     float: 'left',
-    width: '20%',
+    width: '15%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  role_played: {
+    float: 'left',
+    width: '10%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -120,7 +126,7 @@ const inlineStylesHeaders = {
 const inlineStyles = {
   entity_type: {
     float: 'left',
-    width: '15%',
+    width: '10%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -136,7 +142,15 @@ const inlineStyles = {
   },
   threat: {
     float: 'left',
-    width: '20%',
+    width: '15%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  role_played: {
+    float: 'left',
+    width: '10%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -210,22 +224,24 @@ class ReportObservablesComponent extends Component {
       t, fd, classes, report,
     } = this.props;
     const relationRefs = pipe(
-      map(n => n.node),
+      map(n => assoc('relation', n.relation, n.node)),
       groupBy(prop('id')),
       values,
       map(n => head(n)),
       map(n => (n.to.observable_value
         ? merge(n, {
-          type: n.to.entity_type,
+          entity_type: n.to.entity_type,
           threat: n.from.name,
           observable_value: n.to.observable_value,
         })
         : merge(n, {
-          type: n.from.entity_type,
+          entity_type: n.from.entity_type,
           threat: n.to.name,
           observable_value: n.from.observable_value,
         }))),
     )(report.relationRefs.edges);
+    const observableRefsIds = map(n => n.node.id, report.observableRefs.edges);
+    const objectRefsIds = concat(observableRefsIds, map(n => n.node.id, report.objectRefs.edges));
     const sort = sortWith(
       this.state.orderAsc
         ? [ascend(prop(this.state.sortBy))]
@@ -258,12 +274,14 @@ class ReportObservablesComponent extends Component {
                   {this.SortHeader('entity_type', 'Type', true)}
                   {this.SortHeader('observable_value', 'Value', true)}
                   {this.SortHeader('threat', 'Linked threat', true)}
+                  {this.SortHeader('role_played', 'Role', true)}
                   {this.SortHeader('first_seen', 'First seen', true)}
                   {this.SortHeader('last_seen', 'Last seen', true)}
                   {this.SortHeader('weight', 'Confidence level', true)}
                 </div>
               }
             />
+            <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
           </ListItem>
           {sortedRelationRefs.map((relationRef) => {
             const link = '/dashboard/observables';
@@ -301,6 +319,12 @@ class ReportObservablesComponent extends Component {
                       </div>
                       <div
                         className={classes.bodyItem}
+                        style={inlineStyles.role_played}
+                      >
+                        {relationRef.role_played}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
                         style={inlineStyles.first_seen}
                       >
                         {fd(relationRef.first_seen)}
@@ -323,15 +347,21 @@ class ReportObservablesComponent extends Component {
                     </div>
                   }
                 />
-                <ListItemIcon classes={{ root: classes.goIcon }}>
-                  <KeyboardArrowRight />
-                </ListItemIcon>
+                <ListItemSecondaryAction>
+                  <ReportRefPopover
+                    reportId={report.id}
+                    entityId={relationRef.id}
+                    relationId={relationRef.relation.id}
+                    isRelation={true}
+                  />
+                </ListItemSecondaryAction>
               </ListItem>
             );
           })}
         </List>
         <ReportAddObservable
           reportId={report.id}
+          objectRefsIds={objectRefsIds}
           firstSeen={dateFormat(report.published)}
           lastSeen={dateFormat(report.published)}
           weight={report.source_confidence_level}
@@ -355,6 +385,20 @@ const ReportObservables = createFragmentContainer(ReportObservablesComponent, {
       id
       published
       source_confidence_level
+      objectRefs {
+        edges {
+          node {
+            id
+          }
+        }
+      }
+      observableRefs {
+        edges {
+          node {
+            id
+          }
+        }
+      }
       relationRefs(relationType: $relationType) {
         edges {
           node {
@@ -362,6 +406,7 @@ const ReportObservables = createFragmentContainer(ReportObservablesComponent, {
             entity_type
             name
             relationship_type
+            role_played
             first_seen
             last_seen
             weight
@@ -383,6 +428,9 @@ const ReportObservables = createFragmentContainer(ReportObservablesComponent, {
                 observable_value
               }
             }
+          }
+          relation {
+            id
           }
         }
       }

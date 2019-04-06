@@ -163,6 +163,12 @@ const reportAddObservableStixRelationSearchQuery = graphql`
       edges {
         node {
           id
+          from {
+            id
+          }
+          to {
+            id
+          }
         }
       }
     }
@@ -179,6 +185,24 @@ const reportMutationRelationCreate = graphql`
       weight
       first_seen
       last_seen
+    }
+  }
+`;
+
+const reportMutationRelationAddSimple = graphql`
+  mutation ReportAddObservableRelationAddSimpleMutation(
+    $id: ID!
+    $input: RelationAddInput!
+  ) {
+    reportEdit(id: $id) {
+      relationAdd(input: $input) {
+        node {
+          id
+        }
+        relation {
+          id
+        }
+      }
     }
   }
 `;
@@ -204,6 +228,7 @@ const reportMutationRelationAdd = graphql`
 
 const reportValidation = t => Yup.object().shape({
   type: Yup.string().required(t('This field is required')),
+  role_played: Yup.string().required(t('This field is required')),
   observable_value: Yup.string().required(t('This field is required')),
   weight: Yup.number()
     .typeError(t('The value must be a number'))
@@ -317,6 +342,7 @@ class ReportAddObservable extends Component {
   }
 
   createRelations(values, observableId, setSubmitting, resetForm) {
+    const { objectRefsIds } = this.props;
     forEach((threat) => {
       fetchQuery(reportAddObservableStixRelationSearchQuery, {
         fromId: threat,
@@ -335,6 +361,7 @@ class ReportAddObservable extends Component {
                 toId: threat,
                 toRole: 'characterize',
                 relationship_type: 'indicates',
+                role_played: values.role_played,
                 first_seen: values.first_seen,
                 last_seen: values.last_seen,
                 weight: values.weight,
@@ -342,18 +369,48 @@ class ReportAddObservable extends Component {
             },
             onCompleted: (data) => {
               const relationId = data.stixRelationAdd.id;
-              const input = {
-                fromRole: 'knowledge_aggregation',
-                toId: relationId,
-                toRole: 'so',
+              const inputRelation = {
+                fromRole: 'so',
+                toId: this.props.reportId,
+                toRole: 'knowledge_aggregation',
                 through: 'object_refs',
               };
+              const inputFrom = {
+                fromRole: 'so',
+                toId: this.props.reportId,
+                toRole: 'knowledge_aggregation',
+                through: 'object_refs',
+              };
+              const inputTo = {
+                fromRole: 'so',
+                toId: this.props.reportId,
+                toRole: 'knowledge_aggregation',
+                through: 'object_refs',
+              };
+              if (!objectRefsIds.includes(threat)) {
+                commitMutation({
+                  mutation: reportMutationRelationAddSimple,
+                  variables: {
+                    id: threat,
+                    input: inputFrom,
+                  },
+                });
+              }
+              if (!objectRefsIds.includes(observableId)) {
+                commitMutation({
+                  mutation: reportMutationRelationAddSimple,
+                  variables: {
+                    id: observableId,
+                    input: inputTo,
+                  },
+                });
+              }
               commitMutation({
                 mutation: reportMutationRelationAdd,
                 variables: {
-                  id: this.props.reportId,
+                  id: relationId,
                   relationType: 'indicates',
-                  input,
+                  input: inputRelation,
                 },
                 onCompleted: () => {
                   setSubmitting(false);
@@ -365,18 +422,50 @@ class ReportAddObservable extends Component {
           });
         } else {
           const relationId = head(result.stixRelations.edges).node.id;
-          const input = {
-            fromRole: 'knowledge_aggregation',
-            toId: relationId,
-            toRole: 'so',
+          const relationFromId = head(result.stixRelations.edges).node.from.id;
+          const relationToId = head(result.stixRelations.edges).node.to.id;
+          const inputRelation = {
+            fromRole: 'so',
+            toId: this.props.reportId,
+            toRole: 'knowledge_aggregation',
             through: 'object_refs',
           };
+          const inputFrom = {
+            fromRole: 'so',
+            toId: this.props.reportId,
+            toRole: 'knowledge_aggregation',
+            through: 'object_refs',
+          };
+          const inputTo = {
+            fromRole: 'so',
+            toId: this.props.reportId,
+            toRole: 'knowledge_aggregation',
+            through: 'object_refs',
+          };
+          if (!objectRefsIds.includes(relationFromId)) {
+            commitMutation({
+              mutation: reportMutationRelationAddSimple,
+              variables: {
+                id: relationFromId,
+                input: inputFrom,
+              },
+            });
+          }
+          if (!objectRefsIds.includes(relationToId)) {
+            commitMutation({
+              mutation: reportMutationRelationAddSimple,
+              variables: {
+                id: relationToId,
+                input: inputTo,
+              },
+            });
+          }
           commitMutation({
             mutation: reportMutationRelationAdd,
             variables: {
-              id: this.props.reportId,
+              id: relationId,
               relationType: 'indicates',
-              input,
+              input: inputRelation,
             },
             onCompleted: () => {
               setSubmitting(false);
@@ -430,6 +519,7 @@ class ReportAddObservable extends Component {
             <Formik
               initialValues={{
                 type: '',
+                role_played: '',
                 observable_value: '',
                 weight: defaultWeight,
                 first_seen: defaultFirstSeen,
@@ -463,6 +553,23 @@ class ReportAddObservable extends Component {
                       <MenuItem value="Email">{t('Email address')}</MenuItem>
                       <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
                       <MenuItem value="File">{t('File hash')}</MenuItem>
+                    </Field>
+                    <Field
+                      name="role_played"
+                      component={Select}
+                      label={t('Played role')}
+                      fullWidth={true}
+                      displayEmpty={true}
+                      inputProps={{
+                        name: 'role_played',
+                        id: 'role_played',
+                      }}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
+                    >
+                      <MenuItem value='C2 server'>{t('C2 server')}</MenuItem>
+                      <MenuItem value='Relay node'>{t('Relay node')}</MenuItem>
+                      <MenuItem value='Proxy'>{t('Proxy')}</MenuItem>
+                      <MenuItem value='Sender'>{t('Sender')}</MenuItem>
                     </Field>
                     <Field
                       name="observable_value"
@@ -560,6 +667,7 @@ class ReportAddObservable extends Component {
 
 ReportAddObservable.propTypes = {
   reportId: PropTypes.string,
+  objectRefsIds: PropTypes.array,
   firstSeen: PropTypes.string,
   lastSeen: PropTypes.string,
   weight: PropTypes.number,

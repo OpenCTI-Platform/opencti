@@ -32,7 +32,7 @@ export const findById = intrusionSetId => getById(intrusionSetId);
 
 export const addIntrusionSet = async (user, intrusionSet) => {
   const wTx = await takeWriteTx();
-  const query = `insert $intrusionSet isa Intrusion-Set 
+  const query = `insert $intrusionSet isa Intrusion-Set,
     has entity_type "intrusion-set",
     has stix_id "${
       intrusionSet.stix_id
