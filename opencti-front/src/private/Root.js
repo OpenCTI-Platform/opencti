@@ -208,7 +208,7 @@ class Root extends Component {
                           component={StixObservables}
                         />
                         <BoundaryRoute
-                          path="/dashboard/observables/all/:stixObservableId"
+                          path="/dashboard/observables/all/:observableId"
                           render={routeProps => (
                             <RootStixObservable {...routeProps} me={props.me} />
                           )}

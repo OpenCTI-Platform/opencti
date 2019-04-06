@@ -109,20 +109,20 @@ class ReportRefPopover extends Component {
             },
           });
         }
+        commitMutation({
+          mutation: reportRefPopoverDeletionMutation,
+          variables: {
+            id: this.props.reportId,
+            relationId: this.props.relationId,
+            relationType: 'indicates',
+          },
+          onCompleted: () => {
+            this.setState({ deleting: false });
+            this.handleCloseDelete();
+          },
+        });
       });
     }
-    commitMutation({
-      mutation: reportRefPopoverDeletionMutation,
-      variables: {
-        id: this.props.reportId,
-        relationId: this.props.relationId,
-        relationType: 'indicates',
-      },
-      onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleCloseDelete();
-      },
-    });
   }
 
   render() {

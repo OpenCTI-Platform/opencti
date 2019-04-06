@@ -11,7 +11,7 @@ import IntrusionSetOverview from './IntrusionSetOverview';
 import IntrusionSetIdentity from './IntrusionSetIdentity';
 import IntrusionSetEdition from './IntrusionSetEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import EntityObservablesChart from '../stix_observable/EntityStixObservablesChart';
+import EntityStixRelationsDonut from '../stix_relation/EntityStixRelationsDonut';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityStixRelationsRadar from '../stix_relation/EntityStixRelationsRadar';
 
@@ -63,7 +63,12 @@ class IntrusionSetComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart entityId={intrusionSet.id} />
+            <EntityStixRelationsDonut
+              entityId={intrusionSet.id}
+              entityType="Stix-Observable"
+              relationType="indicates"
+              field="entity_type"
+            />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={intrusionSet.id} />

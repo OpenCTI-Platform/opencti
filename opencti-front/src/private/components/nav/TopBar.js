@@ -27,6 +27,7 @@ import TopMenuCampaign from './TopMenuCampaign';
 import TopMenuIncident from './TopMenuIncident';
 import TopMenuMalware from './TopMenuMalware';
 import TopMenuObservables from './TopMenuObservables';
+import TopMenuObservable from './TopMenuObservable';
 import TopMenuReports from './TopMenuReports';
 import TopMenuReport from './TopMenuReport';
 import TopMenuCatalogs from './TopMenuCatalogs';
@@ -206,6 +207,11 @@ class TopBar extends Component {
               ) : (
                 ''
               )}
+            {location.pathname.includes('/dashboard/observables/all/') ? (
+              <TopMenuObservable />
+            ) : (
+              ''
+            )}
             {location.pathname === '/dashboard/reports'
             || location.pathname.match('/dashboard/reports/[a-z_]+$') ? (
               <TopMenuReports />

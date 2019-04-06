@@ -168,7 +168,7 @@ class StixDomainEntityKnowledge extends Component {
       id: stixDomainEntityId,
       count: 100,
       inferred: this.state.inferred,
-      toTypes: null,
+      toTypes: ['Stix-Domain-Entity'],
       firstSeenStart: null,
       firstSeenStop: null,
     };

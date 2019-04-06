@@ -576,6 +576,8 @@ class ReportAddObservable extends Component {
                       component={TextField}
                       label={t('Observable value')}
                       fullWidth={true}
+                      multiline={true}
+                      rows="4"
                       style={{ marginTop: 20 }}
                     />
                     <Field

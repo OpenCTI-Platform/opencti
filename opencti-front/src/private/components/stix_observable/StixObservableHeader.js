@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, filter, append, pathOr,
-} from 'ramda';
+import { compose, pathOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -10,7 +8,6 @@ import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 import StixObservablePopover from './StixObservablePopover';
-import { commitMutation } from '../../../relay/environment';
 import { truncate } from '../../../utils/String';
 
 const styles = () => ({
@@ -22,29 +19,11 @@ const styles = () => ({
     float: 'left',
     marginTop: '-13px',
   },
-  aliases: {
+  marking: {
     float: 'right',
     overflowX: 'hidden',
-    marginTop: '-5px',
-  },
-  alias: {
-    marginRight: 7,
-  },
-  aliasInput: {
-    margin: '4px 0 0 10px',
-    float: 'right',
   },
 });
-
-const stixObservableMutation = graphql`
-  mutation StixObservableHeaderFieldMutation($id: ID!, $input: EditInput!) {
-    stixObservableEdit(id: $id) {
-      fieldPatch(input: $input) {
-        ...StixObservableHeader_stixObservable
-      }
-    }
-  }
-`;
 
 class StixObservableHeaderComponent extends Component {
   render() {

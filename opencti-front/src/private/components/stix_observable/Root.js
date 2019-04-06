@@ -47,7 +47,7 @@ class RootStixObservable extends Component {
     const {
       me,
       match: {
-        params: { stixObservableId },
+        params: { observableId },
       },
     } = this.props;
     return (
@@ -55,14 +55,14 @@ class RootStixObservable extends Component {
         <TopBar me={me || null} />
         <QueryRenderer
           query={stixObservableQuery}
-          variables={{ id: stixObservableId }}
+          variables={{ id: observableId }}
           render={({ props }) => {
             if (props && props.stixObservable) {
               return (
                 <div>
                   <Route
                     exact
-                    path="/dashboard/observables/all/:stixObservableId"
+                    path="/dashboard/observables/all/:observableId"
                     render={routeProps => (
                       <StixObservable
                         {...routeProps}

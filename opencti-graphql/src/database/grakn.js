@@ -348,9 +348,9 @@ export const getRelationInferredById = async id => {
           const regexTo = new RegExp(regexToString, 'i');
           const inferenceQueryRegexTo = inference.inferenceQuery.match(regexTo);
 
-          const regexFromTypeString = `\\$${entityFromKey}\\sisa\\s[\\w]+;`;
+          const regexFromTypeString = `\\$${entityFromKey}\\sisa\\s[\\w-_]+;`;
           const regexFromType = new RegExp(regexFromTypeString, 'ig');
-          const regexToTypeString = `\\$${entityToKey}\\sisa\\s[\\w]+;`;
+          const regexToTypeString = `\\$${entityToKey}\\sisa\\s[\\w-_]+;`;
           const regexToType = new RegExp(regexToTypeString, 'ig');
 
           let inferenceQuery;
@@ -415,7 +415,6 @@ export const getRelationInferredById = async id => {
     await rTx.close();
     return result;
   } catch (error) {
-    console.log(error);
     if (rTx) {
       rTx.close();
     }
@@ -709,12 +708,15 @@ export const getRelations = async (
         if (relationIsInferred) {
           const explanation = answer.explanation();
           let queryPattern = explanation.queryPattern();
-          queryPattern = queryPattern.replace(
-            `$from id ${answer.map().get(fromKey).id};`,
-            `$from id ${answer.map().get(fromKey).id}; $to id ${
-              answer.map().get(toKey).id
-            };`
-          );
+          queryPattern = queryPattern
+            .replace(
+              `$from id ${answer.map().get(fromKey).id};`,
+              `$from id ${answer.map().get(fromKey).id}; $to id ${
+                answer.map().get(toKey).id
+              };`
+            )
+            .replace(/\$from\sisa\s[\w-_]+;/gi, '')
+            .replace(/\$to\sisa\s[\w-_]+;/gi, '');
           relationPromise = await Promise.resolve({
             id: Buffer.from(queryPattern).toString('base64'),
             type: 'stix_relation',
