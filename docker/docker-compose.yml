@@ -1,28 +1,37 @@
 version: '3'
 services:
-  pgsql:
-    image: postgres
-    environment:
-      - POSTGRES_USER=openex
-      - POSTGRES_PASSWORD=openex
-      - POSTGRES_DB=openex
-    volumes:
-      - "./sql:/docker-entrypoint-initdb.d:ro"
+  grakn:
+    image: graknlabs/grakn:1.5.0
     restart: always
-  openex:
-    image: luatix/openex
+  redis:
+    image: redis
+    restart: always
+  rabbitmq:
+    image: rabbitmq
+    restart: always  
+  opencti:
+    image: luatix/opencti
     build:
       context: .
     environment:
-      - RUN_USER=www-data
-      - RUN_GROUP=www-data
-      - PROTOCOL=http
+      - APP_PORT=4000
+      - APP_LOGS=./logs
+      - APP_SECRET=ChangeMe
+      - APP_REACTIVE=true
+      - APP_COOKIE_SECURE=false
+      - GRAKN_HOSTNAME=grakn
+      - GRAKN_PORT=48555
+      - GRAKN_TIMEOUT=30000
+      - REDIS_HOSTNAME=redis
+      - REDIS_PORT=6379
     ports:
-      - "8080:80"
-    volumes:
-      - "./properties:/var/openex/openex-worker/openex:rw"  
+      - "4000:4000"
     depends_on:
-      - pgsql
+      - grakn
+      - redis
+      - rabbitmq
     links:
-     - pgsql:pgsql
+     - grakn:grakn
+     - redis:redis
+     - rabbitmq:rabbitmq
     restart: always

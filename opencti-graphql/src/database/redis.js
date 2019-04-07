@@ -4,8 +4,8 @@ import { assoc, isEmpty, map } from 'ramda';
 import conf, { isAppRealTime, logger } from '../config/conf';
 
 const redisOptions = {
-  port: conf.get('redis:port'), // Redis port
-  host: conf.get('redis:host'), // Redis host
+  port: conf.get('redis:port'),
+  host: conf.get('redis:hostname'),
   password: conf.get('redis:password'),
   retryStrategy: times => Math.min(times * 50, 2000),
   maxRetriesPerRequest: 2

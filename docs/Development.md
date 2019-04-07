@@ -6,10 +6,11 @@
 - JAVA (== 8)
 - Grakn (>= 1.5)
 - Redis (>= 3.0)
+- RabbitMQ (>= 3.7)
 
 *Installation of dependencies (Ubuntu 18.04)*:
 ```bash
-$ sudo apt-get install nodejs redis-server
+$ sudo apt-get install nodejs redis-server rabbitmq-server
 $ sudo curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 $ sudo echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 $ sudo apt-get update && sudo apt-get install yarn
@@ -20,9 +21,9 @@ $ sudo apt-get update && sudo apt-get install yarn
 $ sudo apt-get install openjdk-8-jre
 $ mkdir /your/path/to/grakn
 $ cd /your/path/to/grakn
-$ wget https://github.com/graknlabs/grakn/releases/download/v1.5.0/grakn-core-1.5.0.zip
-$ unzip grakn-core-1.5.0.zip
-$ cd grakn-core-1.5.0
+$ wget https://github.com/graknlabs/grakn/releases/download/1.5.0/grakn-core-all-linux-1.5.0.tar.gz
+$ tar xvfz grakn-core-all-linux-1.5.0.tar.gz
+$ cd grakn-core-all-linux-1.5.0
 $ ./grakn server start
 ```
 
@@ -46,7 +47,7 @@ $ yarn install
 $ cp config/default.json config/development.json
 ```
 
-Change the *config/development.json* file according to your configuration of Grakn and Redis.
+Change the *config/development.json* file according to your configuration of Grakn, Redis, RabbitMQ and keys.
 
 *Create the database schema and initial data*:
 ```bash

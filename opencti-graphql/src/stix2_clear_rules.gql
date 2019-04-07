@@ -2,6 +2,8 @@ undefine
 
   #PermissionRule sub rule;
   AttributionUsesRule sub rule;
+  AttributionIndicatesRule sub rule;
+  UsageIndicatesRule sub rule;
   AttributionTargetsRule sub rule;
   GatheringTargetsRule sub rule;
   LocalizationTargetsRule sub rule;

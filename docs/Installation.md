@@ -2,13 +2,15 @@
 
 *Prerequisites*:
 
-- NodeJS (>= 8.X)
-- Grakn (>= 1.5)
+- NodeJS (>= 8)
 - JAVA (== 8)
+- Grakn (>= 1.5)
+- Redis (>= 3.0)
+- RabbitMQ (>= 3.7)
 
 *Installation of dependencies (Ubuntu 18.04)*:
 ```bash
-$ sudo apt-get install nodejs npm
+$ sudo apt-get install nodejs npm redis-server rabbitmq-server
 ```
 
 *Download the application files*:
@@ -18,32 +20,21 @@ $ wget https://github.com/LuatixHQ/opencti/releases/download/v0.1/opencti-releas
 $ tar xvfz opencti-release-0.1.tar.gz
 ```
 
-*Install the main application and create the database schema*:
+*Configure the application*:
 ```bash
-$ cd openex-app
-$ composer install
-$ php bin/console doctrine:schema:create
-$ php bin/console app:db-init
+$ cd opencti-release-0.1
+$ cp config/default.json config/production.json
 ```
 
-During the database initialization, the administrator token will be displayed.
+Change the *config/production.json* file according to your configuration of Grakn, Redis, RabbitMQ and keys.
 
-*Configure the worker*:
+*Create the database schema and initial data*:
 ```bash
-$ cd openex-worker/openex
+$ npm run schema
+$ npm run migrate
 ```
 
-*File openex.properties*:
+*Start the application*:
 ```bash
-# Openex
-openex.api=http://url_of_the_application/api
-openex.token=administrator_token
-```
-
-You have to configure the file *openex_email.properties* with your own parameters. The file *openex_ovh_sms.properties* is for using the [OVH API](https://www.ovh.com) to send SMS.
-
-*Launch the worker*:
-```bash
-$ cd openex-worker/bin
-$ ./start
+$ node dist/server.js
 ```
