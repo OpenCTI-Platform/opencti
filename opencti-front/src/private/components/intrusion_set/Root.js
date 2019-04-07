@@ -7,6 +7,7 @@ import TopBar from '../nav/TopBar';
 import IntrusionSet from './IntrusionSet';
 import IntrusionSetReports from './IntrusionSetReports';
 import IntrusionSetKnowledge from './IntrusionSetKnowledge';
+import IntrusionSetObservables from './IntrusionSetObservables';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -29,6 +30,7 @@ const intrusionSetQuery = graphql`
       ...IntrusionSetIdentity_intrusionSet
       ...IntrusionSetReports_intrusionSet
       ...IntrusionSetKnowledge_intrusionSet
+      ...IntrusionSetObservables_intrusionSet
     }
   }
 `;
@@ -101,6 +103,15 @@ class RootIntrusionSet extends Component {
                     path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge"
                     render={routeProps => (
                       <IntrusionSetKnowledge
+                        {...routeProps}
+                        intrusionSet={props.intrusionSet}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/observables"
+                    render={routeProps => (
+                      <IntrusionSetObservables
                         {...routeProps}
                         intrusionSet={props.intrusionSet}
                       />

@@ -30,7 +30,7 @@ export const markingDefinitions = (regionId, args) =>
 export const addRegion = async (user, region) => {
   const wTx = await takeWriteTx();
   const regionIterator = await wTx.query(`insert $region isa Region,
-    has entity_type "region";
+    has entity_type "region",
     has stix_id "${
       region.stix_id ? prepareString(region.stix_id) : `region--${uuid()}`
     }",

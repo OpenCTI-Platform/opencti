@@ -31,7 +31,7 @@ const inversedRelations = [
 
 class SectorKnowledgeComponent extends Component {
   render() {
-    const { classes, sector, location } = this.props;
+    const { classes, sector } = this.props;
     const link = `/dashboard/knowledge/sectors/${sector.id}/knowledge`;
     return (
       <div className={classes.container}>
@@ -49,111 +49,125 @@ class SectorKnowledgeComponent extends Component {
               />
             )}
           />
-
-          {location.pathname.includes('overview') ? (
-            <StixDomainEntityKnowledge stixDomainEntityId={sector.id} />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('organizations') ? (
-            <EntityStixRelations
-              entityId={sector.id}
-              relationType="gathering"
-              targetEntityTypes={['Organization']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('intrusion_sets') ? (
-            <EntityStixRelations
-              resolveRelationType="gathering"
-              resolveRelationRole="gather"
-              resolveViaTypes={[
-                {
-                  entityType: 'Campaign',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Incident',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Malware',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-              ]}
-              entityId={sector.id}
-              relationType="targets"
-              targetEntityTypes={['Intrusion-Set']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('campaigns') ? (
-            <EntityStixRelations
-              resolveRelationType="gathering"
-              resolveRelationRole="gather"
-              resolveViaTypes={[
-                {
-                  entityType: 'Incident',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Malware',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-              ]}
-              entityId={sector.id}
-              relationType="targets"
-              targetEntityTypes={['Campaign']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('incidents') ? (
-            <EntityStixRelations
-              resolveRelationType="gathering"
-              resolveRelationRole="gather"
-              resolveViaTypes={[
-                {
-                  entityType: 'Malware',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-              ]}
-              entityId={sector.id}
-              relationType="targets"
-              targetEntityTypes={['Incident']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('malwares') ? (
-            <EntityStixRelations
-              resolveRelationType="gathering"
-              resolveRelationRole="gather"
-              entityId={sector.id}
-              relationType="targets"
-              targetEntityTypes={['Malware']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
+          <Route
+            exact
+            path="/dashboard/knowledge/sectors/:sectorId/knowledge/overview"
+            render={routeProps => (
+              <StixDomainEntityKnowledge
+                stixDomainEntityId={sector.id}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/knowledge/sectors/:sectorId/knowledge/organizations"
+            render={routeProps => (
+              <EntityStixRelations
+                entityId={sector.id}
+                relationType="gathering"
+                targetEntityTypes={['Organization']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/knowledge/sectors/:sectorId/knowledge/intrusion_sets"
+            render={routeProps => (
+              <EntityStixRelations
+                resolveRelationType="gathering"
+                resolveRelationRole="gather"
+                resolveViaTypes={[
+                  {
+                    entityType: 'Campaign',
+                    relationType: 'attributed-to',
+                    relationRole: 'attribution',
+                  },
+                  {
+                    entityType: 'Incident',
+                    relationType: 'attributed-to',
+                    relationRole: 'attribution',
+                  },
+                  {
+                    entityType: 'Malware',
+                    relationType: 'attributed-to',
+                    relationRole: 'attribution',
+                  },
+                ]}
+                entityId={sector.id}
+                relationType="targets"
+                targetEntityTypes={['Intrusion-Set']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/knowledge/sectors/:sectorId/knowledge/campaigns"
+            render={routeProps => (
+              <EntityStixRelations
+                resolveRelationType="gathering"
+                resolveRelationRole="gather"
+                resolveViaTypes={[
+                  {
+                    entityType: 'Incident',
+                    relationType: 'attributed-to',
+                    relationRole: 'attribution',
+                  },
+                  {
+                    entityType: 'Malware',
+                    relationType: 'attributed-to',
+                    relationRole: 'attribution',
+                  },
+                ]}
+                entityId={sector.id}
+                relationType="targets"
+                targetEntityTypes={['Campaign']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/knowledge/sectors/:sectorId/knowledge/incidents"
+            render={routeProps => (
+              <EntityStixRelations
+                resolveRelationType="gathering"
+                resolveRelationRole="gather"
+                resolveViaTypes={[
+                  {
+                    entityType: 'Malware',
+                    relationType: 'attributed-to',
+                    relationRole: 'attribution',
+                  },
+                ]}
+                entityId={sector.id}
+                relationType="targets"
+                targetEntityTypes={['Incident']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/knowledge/sectors/:sectorId/knowledge/malwares"
+            render={routeProps => (
+              <EntityStixRelations
+                resolveRelationType="gathering"
+                resolveRelationRole="gather"
+                entityId={sector.id}
+                relationType="targets"
+                targetEntityTypes={['Malware']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
         </div>
       </div>
     );
@@ -163,7 +177,6 @@ class SectorKnowledgeComponent extends Component {
 SectorKnowledgeComponent.propTypes = {
   sector: PropTypes.object,
   classes: PropTypes.object,
-  location: PropTypes.object,
   t: PropTypes.func,
 };
 

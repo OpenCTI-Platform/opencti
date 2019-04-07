@@ -25,7 +25,7 @@ const inversedRelations = ['intrusion-set', 'campaign', 'incident'];
 
 class ToolKnowledgeComponent extends Component {
   render() {
-    const { classes, tool, location } = this.props;
+    const { classes, tool } = this.props;
     const link = `/dashboard/catalogs/tools/${tool.id}/knowledge`;
     return (
       <div className={classes.container}>
@@ -43,56 +43,68 @@ class ToolKnowledgeComponent extends Component {
               />
             )}
           />
-
-          {location.pathname.includes('overview') ? (
-            <StixDomainEntityKnowledge stixDomainEntityId={tool.id} />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('intrusion_sets') ? (
-            <EntityStixRelations
-              entityId={tool.id}
-              relationType="uses"
-              targetEntityTypes={['Intrusion-Set']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('campaigns') ? (
-            <EntityStixRelations
-              entityId={tool.id}
-              relationType="uses"
-              targetEntityTypes={['Campaign']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('incidents') ? (
-            <EntityStixRelations
-              entityId={tool.id}
-              relationType="uses"
-              targetEntityTypes={['Incident']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('malwares') ? (
-            <EntityStixRelations
-              entityId={tool.id}
-              relationType="uses"
-              targetEntityTypes={['Malware']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
+          <Route
+            exact
+            path="/dashboard/catalogs/tools/:toolId/knowledge/overview"
+            render={routeProps => (
+              <StixDomainEntityKnowledge
+                stixDomainEntityId={tool.id}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/catalogs/tools/:toolId/knowledge/intrusion_sets"
+            render={routeProps => (
+              <EntityStixRelations
+                entityId={tool.id}
+                relationType="uses"
+                targetEntityTypes={['Intrusion-Set']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/catalogs/tools/:toolId/knowledge/campaigns"
+            render={routeProps => (
+              <EntityStixRelations
+                entityId={tool.id}
+                relationType="uses"
+                targetEntityTypes={['Campaign']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/catalogs/tools/:toolId/knowledge/incidents"
+            render={routeProps => (
+              <EntityStixRelations
+                entityId={tool.id}
+                relationType="uses"
+                targetEntityTypes={['Incident']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/catalogs/tools/:toolId/knowledge/malwares"
+            render={routeProps => (
+              <EntityStixRelations
+                entityId={tool.id}
+                relationType="uses"
+                targetEntityTypes={['Malware']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
         </div>
       </div>
     );
@@ -102,7 +114,6 @@ class ToolKnowledgeComponent extends Component {
 ToolKnowledgeComponent.propTypes = {
   tool: PropTypes.object,
   classes: PropTypes.object,
-  location: PropTypes.object,
   t: PropTypes.func,
 };
 

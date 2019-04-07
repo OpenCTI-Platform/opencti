@@ -797,14 +797,14 @@ export const paginateRelationships = (
   ${query}; 
   ${fromId ? `$from id ${fromId};` : ''}
   ${toId ? `$to id ${toId};` : ''} ${
-    fromTypes
+    fromTypes && fromTypes.length > 0
       ? `${join(
           ' ',
           map(fromType => `{ $from isa ${fromType}; } or`, fromTypes)
         )} { $from isa ${head(fromTypes)}; };`
       : ''
   } ${
-    toTypes
+    toTypes && toTypes.length > 0
       ? `${join(' ', map(toType => `{ $to isa ${toType}; } or`, toTypes))}
   { $to isa ${head(toTypes)}; };`
       : ''

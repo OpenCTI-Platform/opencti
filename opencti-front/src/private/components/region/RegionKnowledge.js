@@ -32,7 +32,7 @@ const inversedRelations = [
 
 class RegionKnowledgeComponent extends Component {
   render() {
-    const { classes, region, location } = this.props;
+    const { classes, region } = this.props;
     const link = `/dashboard/catalogs/regions/${region.id}/knowledge`;
     return (
       <div className={classes.container}>
@@ -45,93 +45,91 @@ class RegionKnowledgeComponent extends Component {
             render={routeProps => (
               <StixRelation
                 entityId={region.id}
-                {...routeProps}
                 inversedRelations={inversedRelations}
+                {...routeProps}
               />
             )}
           />
-
-          {location.pathname.includes('overview') ? (
-            <StixDomainEntityKnowledge stixDomainEntityId={region.id} />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('countries') ? (
-            <EntityStixRelations
-              entityId={region.id}
-              relationType="localization"
-              targetEntityTypes={['Country']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('threats') ? (
-            <EntityStixRelations
-              resolveRelationType="localization"
-              resolveRelationRole="location"
-              entityId={region.id}
-              relationType="targets"
-              targetEntityTypes={[
-                'Country',
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Incident',
-                'Malware',
-              ]}
-              entityLink={link}
-              resolveViaTypes={[
-                {
-                  entityType: 'Intrusion-Set',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Campaign',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Incident',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Malware',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-              ]}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('attribution') ? (
-            <EntityStixRelations
-              resolveRelationType="attributed-to"
-              entityId={region.id}
-              relationType="attributed-to"
-              targetEntityTypes={['Identity']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('entities') ? (
-            <EntityStixRelations
-              entityId={region.id}
-              relationType="related-to"
-              targetEntityTypes={['Identity']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
+          <Route
+            exact
+            path="/dashboard/catalogs/regions/:regionId/knowledge/overview"
+            render={routeProps => (
+              <StixDomainEntityKnowledge
+                stixDomainEntityId={region.id}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/catalogs/regions/:regionId/knowledge/countries"
+            render={routeProps => (
+              <EntityStixRelations
+                entityId={region.id}
+                relationType="localization"
+                targetEntityTypes={['Country']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/catalogs/regions/:regionId/knowledge/threats"
+            render={routeProps => (
+              <EntityStixRelations
+                resolveRelationType="localization"
+                resolveRelationRole="location"
+                entityId={region.id}
+                relationType="targets"
+                targetEntityTypes={[
+                  'Country',
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Incident',
+                  'Malware',
+                ]}
+                entityLink={link}
+                resolveViaTypes={[
+                  {
+                    entityType: 'Intrusion-Set',
+                    relationType: 'attributed-to',
+                    relationRole: 'attribution',
+                  },
+                  {
+                    entityType: 'Campaign',
+                    relationType: 'attributed-to',
+                    relationRole: 'attribution',
+                  },
+                  {
+                    entityType: 'Incident',
+                    relationType: 'attributed-to',
+                    relationRole: 'attribution',
+                  },
+                  {
+                    entityType: 'Malware',
+                    relationType: 'attributed-to',
+                    relationRole: 'attribution',
+                  },
+                ]}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/catalogs/regions/:regionId/knowledge/entities"
+            render={routeProps => (
+              <EntityStixRelations
+                entityId={region.id}
+                relationType="related-to"
+                targetEntityTypes={['Identity']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
         </div>
       </div>
     );
@@ -141,7 +139,6 @@ class RegionKnowledgeComponent extends Component {
 RegionKnowledgeComponent.propTypes = {
   region: PropTypes.object,
   classes: PropTypes.object,
-  location: PropTypes.object,
   t: PropTypes.func,
 };
 

@@ -193,7 +193,7 @@ export const stixRelationsTimeSeries = args =>
     `match $x($from, $to) isa ${
       args.relationType ? args.relationType : 'stix_relation'
     }; ${
-      args.toTypes
+      args.toTypes && args.toTypes.length > 0
         ? `${join(
             ' ',
             map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
@@ -232,7 +232,7 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
     ' ',
     map(fromId => `{ $from id ${fromId}; } or`, fromIds)
   )} { $from id ${head(fromIds)}; }${
-    args.toTypes
+    args.toTypes && args.toTypes.length > 0
       ? `; ${join(
           ' ',
           map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
@@ -253,7 +253,7 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
         }; $link(${resolveViaType.relationRole}: $entity, $to) isa ${
           resolveViaType.relationType
         } ${
-          args.toTypes
+          args.toTypes && args.toTypes.length > 0
             ? `; ${join(
                 ' ',
                 map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
@@ -273,7 +273,7 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
         )} { $from id ${head(fromIds)}; }; $link(${
           resolveViaType.relationRole
         }: $x, $to) isa ${resolveViaType.relationType} ${
-          args.toTypes
+          args.toTypes && args.toTypes.length > 0
             ? `; ${join(
                 ' ',
                 map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
@@ -311,7 +311,7 @@ export const stixRelationsDistribution = args => {
     `match $rel($from, $x) isa ${
       args.relationType ? args.relationType : 'stix_relation'
     }; ${
-      args.toTypes
+      args.toTypes && args.toTypes.length > 0
         ? `${join(
             ' ',
             map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
@@ -356,7 +356,7 @@ export const stixRelationsDistributionWithInferences = async args => {
     ' ',
     map(fromId => `{ $from id ${fromId}; } or`, fromIds)
   )} { $from id ${head(fromIds)}; }${
-    args.toTypes
+    args.toTypes && args.toTypes.length > 0
       ? `; ${join(
           ' ',
           map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
@@ -377,7 +377,7 @@ export const stixRelationsDistributionWithInferences = async args => {
         }; $link(${resolveViaType.relationRole}: $entity, $x) isa ${
           resolveViaType.relationType
         }; ${
-          args.toTypes
+          args.toTypes && args.toTypes.length > 0
             ? `${join(
                 ' ',
                 map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
@@ -397,7 +397,7 @@ export const stixRelationsDistributionWithInferences = async args => {
         )} { $from id ${head(fromIds)}; }; $link(${
           resolveViaType.relationRole
         }: $rel, $x) isa ${resolveViaType.relationType}; ${
-          args.toTypes
+          args.toTypes && args.toTypes.length > 0
             ? `${join(
                 ' ',
                 map(toType => `{ $x isa ${toType}; } or`, args.toTypes)

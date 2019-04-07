@@ -166,29 +166,6 @@ class OrganizationKnowledgeBar extends Component {
           classes={{
             root:
               location.pathname
-              === `/dashboard/catalogs/organizations/${organizationId}/knowledge/attribution`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/attribution`}
-        >
-          <div className={classes.icon}>
-            <SourcePull fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Threats')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Attributed to this organization')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
-              location.pathname
               === `/dashboard/catalogs/organizations/${organizationId}/knowledge/entities`
                 ? classes.paperActive
                 : classes.paper,

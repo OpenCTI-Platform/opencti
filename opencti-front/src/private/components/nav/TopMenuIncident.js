@@ -120,15 +120,17 @@ class TopMenuIncident extends Component {
           component={Link}
           to={`/dashboard/knowledge/incidents/${incidentId}/observables`}
           variant={
-            location.pathname
-            === `/dashboard/knowledge/incidents/${incidentId}/observables`
+            location.pathname.includes(
+              `/dashboard/knowledge/incidents/${incidentId}/observables`,
+            )
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/knowledge/incidents/${incidentId}/observables`
+            location.pathname.includes(
+              `/dashboard/knowledge/incidents/${incidentId}/observables`,
+            )
               ? 'primary'
               : 'inherit'
           }

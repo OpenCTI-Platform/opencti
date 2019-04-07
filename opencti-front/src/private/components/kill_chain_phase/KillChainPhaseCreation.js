@@ -8,7 +8,7 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { compose } from 'ramda';
+import { assoc, compose, pipe, pluck } from "ramda";
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
@@ -97,12 +97,13 @@ class KillChainPhaseCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // TODO Fix this @sam
-    values.phase_order = parseInt(values.phase_order, 10);
+    const finalValues = pipe(
+      assoc('phase_order', parseInt(values.phase_order, 10)),
+    )(values);
     commitMutation({
       mutation: killChainPhaseMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       updater: (store) => {
         const payload = store.getRootField('killChainPhaseAdd');

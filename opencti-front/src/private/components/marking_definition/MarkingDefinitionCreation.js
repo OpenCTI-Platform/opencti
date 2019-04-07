@@ -8,7 +8,7 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { compose } from 'ramda';
+import { assoc, compose, pipe, pluck } from "ramda";
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
@@ -104,16 +104,17 @@ class MarkingDefinitionCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // TODO Fix this @sam
-    values.level = parseInt(values.level, 10);
+    const finalValues = pipe(
+      assoc('level', parseInt(values.level, 10)),
+    )(values);
     commitMutation({
       mutation: markingDefinitionMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       updater: (store) => {
         const payload = store.getRootField('markingDefinitionAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
+        const newEdge = payload.setLinkedRecord(payload, 'node');
         const container = store.getRoot();
         sharedUpdater(
           store,

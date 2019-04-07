@@ -31,6 +31,7 @@ import { Tag } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
 import { dateFormat } from '../../../utils/Time';
+import { resolveLink } from '../../../utils/Entity';
 import ReportHeader from './ReportHeader';
 import ReportAddObservable from './ReportAddObservable';
 import ReportRefPopover from './ReportRefPopover';
@@ -232,11 +233,15 @@ class ReportObservablesComponent extends Component {
         ? merge(n, {
           entity_type: n.to.entity_type,
           threat: n.from.name,
+          threat_id: n.from.id,
+          threat_type: n.from.entity_type,
           observable_value: n.to.observable_value,
         })
         : merge(n, {
           entity_type: n.from.entity_type,
           threat: n.to.name,
+          threat_id: n.to.id,
+          threat_type: n.to.entity_type,
           observable_value: n.from.observable_value,
         }))),
     )(report.relationRefs.edges);
@@ -284,7 +289,7 @@ class ReportObservablesComponent extends Component {
             <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
           </ListItem>
           {sortedRelationRefs.map((relationRef) => {
-            const link = '/dashboard/observables';
+            const link = `${resolveLink(relationRef.threat_type)}/${relationRef.threat_id}/observables/relations`;
             return (
               <ListItem
                 key={relationRef.id}

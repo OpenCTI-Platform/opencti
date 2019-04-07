@@ -11,9 +11,9 @@ import IncidentOverview from './IncidentOverview';
 import IncidentIdentity from './IncidentIdentity';
 import IncidentEdition from './IncidentEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import EntityObservablesChart from '../stix_observable/EntityStixObservablesChart';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityStixRelationsRadar from '../stix_relation/EntityStixRelationsRadar';
+import EntityStixRelationsDonut from '../stix_relation/EntityStixRelationsDonut';
 
 const styles = () => ({
   container: {
@@ -63,7 +63,12 @@ class IncidentComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart entityId={incident.id} />
+            <EntityStixRelationsDonut
+              entityId={incident.id}
+              entityType="Stix-Observable"
+              relationType="indicates"
+              field="entity_type"
+            />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={incident.id} />

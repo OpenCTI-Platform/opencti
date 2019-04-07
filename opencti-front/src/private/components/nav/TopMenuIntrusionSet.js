@@ -122,15 +122,17 @@ class TopMenuIntrusionSet extends Component {
           component={Link}
           to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/observables`}
           variant={
-            location.pathname
-            === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/observables`
+            location.pathname.includes(
+              `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/observables`,
+            )
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/observables`
+            location.pathname.includes(
+              `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/observables`,
+            )
               ? 'primary'
               : 'inherit'
           }

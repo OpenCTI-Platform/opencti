@@ -28,7 +28,7 @@ const styles = () => ({
 class StixObservableHeaderComponent extends Component {
   render() {
     const {
-      t, classes, variant, stixObservable,
+      classes, variant, stixObservable,
     } = this.props;
     return (
       <div>

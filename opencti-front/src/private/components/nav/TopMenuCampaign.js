@@ -120,15 +120,17 @@ class TopMenuCampaign extends Component {
           component={Link}
           to={`/dashboard/knowledge/campaigns/${campaignId}/observables`}
           variant={
-            location.pathname
-            === `/dashboard/knowledge/campaigns/${campaignId}/observables`
+            location.pathname.includes(
+              `/dashboard/knowledge/campaigns/${campaignId}/observables`,
+            )
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/knowledge/campaigns/${campaignId}/observables`
+            location.pathname.includes(
+              `/dashboard/knowledge/campaigns/${campaignId}/observables`,
+            )
               ? 'primary'
               : 'inherit'
           }

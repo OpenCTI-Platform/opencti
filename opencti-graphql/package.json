@@ -28,6 +28,7 @@
     "@babel/core": "^7.3.4",
     "@babel/runtime": "^7.3.4",
     "@godaddy/terminus": "^4.1.0",
+    "amqplib": "^0.5.3",
     "apollo-errors": "^1.9.0",
     "apollo-server-express": "^2.4.8",
     "await": "^0.2.6",

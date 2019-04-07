@@ -32,7 +32,7 @@ const inversedRelations = [
 
 class CountryKnowledgeComponent extends Component {
   render() {
-    const { classes, country, location } = this.props;
+    const { classes, country } = this.props;
     const link = `/dashboard/catalogs/countries/${country.id}/knowledge`;
     return (
       <div className={classes.container}>
@@ -50,78 +50,88 @@ class CountryKnowledgeComponent extends Component {
               />
             )}
           />
-
-          {location.pathname.includes('overview') ? (
-            <StixDomainEntityKnowledge stixDomainEntityId={country.id} />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('organizations') ? (
-            <EntityStixRelations
-              resolveRelationType="localization"
-              resolveRelationRole="location"
-              entityId={country.id}
-              relationType="localization"
-              targetEntityTypes={['Organization']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('threats') ? (
-            <EntityStixRelations
-              resolveRelationType="localization"
-              resolveRelationRole="location"
-              resolveViaTypes={[
-                {
-                  entityType: 'Intrusion-Set',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Campaign',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Incident',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Malware',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-              ]}
-              entityId={country.id}
-              relationType="targets"
-              targetEntityTypes={[
-                'Country',
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Incident',
-                'Malware',
-              ]}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('entities') ? (
-            <EntityStixRelations
-              entityId={country.id}
-              relationType="related-to"
-              targetEntityTypes={['Identity']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
+          <Route
+            exact
+            path="/dashboard/catalogs/countries/:countryId/knowledge/overview"
+            render={routeProps => (
+              <StixDomainEntityKnowledge
+                stixDomainEntityId={country.id}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/catalogs/countries/:countryId/knowledge/organizations"
+            render={routeProps => (
+              <EntityStixRelations
+                resolveRelationType="localization"
+                resolveRelationRole="location"
+                entityId={country.id}
+                relationType="localization"
+                targetEntityTypes={['Organization']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/catalogs/countries/:countryId/knowledge/threats"
+            render={routeProps => (
+              <EntityStixRelations
+                resolveRelationType="localization"
+                resolveRelationRole="location"
+                resolveViaTypes={[
+                  {
+                    entityType: 'Intrusion-Set',
+                    relationType: 'attributed-to',
+                    relationRole: 'attribution',
+                  },
+                  {
+                    entityType: 'Campaign',
+                    relationType: 'attributed-to',
+                    relationRole: 'attribution',
+                  },
+                  {
+                    entityType: 'Incident',
+                    relationType: 'attributed-to',
+                    relationRole: 'attribution',
+                  },
+                  {
+                    entityType: 'Malware',
+                    relationType: 'attributed-to',
+                    relationRole: 'attribution',
+                  },
+                ]}
+                entityId={country.id}
+                relationType="targets"
+                targetEntityTypes={[
+                  'Country',
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Incident',
+                  'Malware',
+                ]}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/catalogs/countries/:countryId/knowledge/entities"
+            render={routeProps => (
+              <EntityStixRelations
+                entityId={country.id}
+                relationType="related-to"
+                targetEntityTypes={['Identity']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
         </div>
       </div>
     );
@@ -131,7 +141,6 @@ class CountryKnowledgeComponent extends Component {
 CountryKnowledgeComponent.propTypes = {
   country: PropTypes.object,
   classes: PropTypes.object,
-  location: PropTypes.object,
   t: PropTypes.func,
 };
 

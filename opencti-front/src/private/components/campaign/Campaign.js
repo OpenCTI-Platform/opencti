@@ -11,7 +11,7 @@ import CampaignOverview from './CampaignOverview';
 import CampaignIdentity from './CampaignIdentity';
 import CampaignEdition from './CampaignEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import EntityObservablesChart from '../stix_observable/EntityStixObservablesChart';
+import EntityStixRelationsDonut from '../stix_relation/EntityStixRelationsDonut';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityIncidentsChart from '../incident/EntityIncidentsChart';
 
@@ -55,7 +55,12 @@ class CampaignComponent extends Component {
             <EntityIncidentsChart entityId={campaign.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart entityId={campaign.id} />
+            <EntityStixRelationsDonut
+              entityId={campaign.id}
+              entityType="Stix-Observable"
+              relationType="indicates"
+              field="entity_type"
+            />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={campaign.id} />

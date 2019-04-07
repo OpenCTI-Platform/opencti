@@ -114,26 +114,6 @@ class TopMenuTool extends Component {
         >
           {t('Knowledge')}
         </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/catalogs/tools/${toolId}/observables`}
-          variant={
-            location.pathname
-            === `/dashboard/catalogs/tools/${toolId}/observables`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/catalogs/tools/${toolId}/observables`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Observables')}
-        </Button>
       </div>
     );
   }

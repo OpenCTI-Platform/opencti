@@ -358,6 +358,7 @@ StixRelationContainer.propTypes = {
   entityId: PropTypes.string,
   stixRelation: PropTypes.object,
   inversedRelations: PropTypes.array,
+  observable: PropTypes.bool,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,

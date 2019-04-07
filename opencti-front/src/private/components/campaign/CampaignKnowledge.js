@@ -31,7 +31,7 @@ const inversedRelations = [
 
 class CampaignKnowledgeComponent extends Component {
   render() {
-    const { classes, campaign, location } = this.props;
+    const { classes, campaign } = this.props;
     const link = `/dashboard/knowledge/campaigns/${campaign.id}/knowledge`;
     return (
       <div className={classes.container}>
@@ -49,120 +49,140 @@ class CampaignKnowledgeComponent extends Component {
               />
             )}
           />
-          {location.pathname.includes('overview') ? (
-            <StixDomainEntityKnowledge stixDomainEntityId={campaign.id} />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('attribution') ? (
-            <EntityStixRelations
-              entityId={campaign.id}
-              relationType="attributed-to"
-              targetEntityTypes={['Identity', 'Intrusion-Set']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('incidents') ? (
-            <EntityStixRelations
-              entityId={campaign.id}
-              relationType="attributed-to"
-              targetEntityTypes={['Incident']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('malwares') ? (
-            <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              entityId={campaign.id}
-              relationType="uses"
-              targetEntityTypes={['Malware']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('victimology') ? (
-            <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              resolveViaTypes={[
-                {
-                  entityType: 'Organization',
-                  relationType: 'gathering',
-                  relationRole: 'part_of',
-                },
-                {
-                  entityType: 'Organization',
-                  relationType: 'localization',
-                  relationRole: 'localized',
-                },
-                {
-                  entityType: 'Country',
-                  relationType: 'localization',
-                  relationRole: 'localized',
-                },
-              ]}
-              entityId={campaign.id}
-              relationType="targets"
-              targetEntityTypes={[
-                'Organization',
-                'Sector',
-                'Country',
-                'Region',
-              ]}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('ttp') ? (
-            <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              entityId={campaign.id}
-              relationType="uses"
-              targetEntityTypes={['Attack-Pattern']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('tools') ? (
-            <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              entityId={campaign.id}
-              relationType="uses"
-              targetEntityTypes={['Tool']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
-
-          {location.pathname.includes('vulnerabilities') ? (
-            <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              entityId={campaign.id}
-              relationType="targets"
-              targetEntityTypes={['Vulnerability']}
-              entityLink={link}
-            />
-          ) : (
-            ''
-          )}
+          <Route
+            exact
+            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/overview"
+            render={routeProps => (
+              <StixDomainEntityKnowledge
+                stixDomainEntityId={campaign.id}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/attribution"
+            render={routeProps => (
+              <EntityStixRelations
+                entityId={campaign.id}
+                relationType="attributed-to"
+                targetEntityTypes={['Identity', 'Intrusion-Set']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/incidents"
+            render={routeProps => (
+              <EntityStixRelations
+                entityId={campaign.id}
+                relationType="attributed-to"
+                targetEntityTypes={['Incident']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/malwares"
+            render={routeProps => (
+              <EntityStixRelations
+                resolveRelationType="attributed-to"
+                resolveRelationRole="origin"
+                entityId={campaign.id}
+                relationType="uses"
+                targetEntityTypes={['Malware']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/victimology"
+            render={routeProps => (
+              <EntityStixRelations
+                resolveRelationType="attributed-to"
+                resolveRelationRole="origin"
+                resolveViaTypes={[
+                  {
+                    entityType: 'Organization',
+                    relationType: 'gathering',
+                    relationRole: 'part_of',
+                  },
+                  {
+                    entityType: 'Organization',
+                    relationType: 'localization',
+                    relationRole: 'localized',
+                  },
+                  {
+                    entityType: 'Country',
+                    relationType: 'localization',
+                    relationRole: 'localized',
+                  },
+                ]}
+                entityId={campaign.id}
+                relationType="targets"
+                targetEntityTypes={[
+                  'Organization',
+                  'Sector',
+                  'Country',
+                  'Region',
+                ]}
+                entityLink={link}
+                exploreLink={`/dashboard/explore/victimology/${campaign.id}`}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/ttp"
+            render={routeProps => (
+              <EntityStixRelations
+                resolveRelationType="attributed-to"
+                resolveRelationRole="origin"
+                entityId={campaign.id}
+                relationType="uses"
+                targetEntityTypes={['Attack-Pattern']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/tools"
+            render={routeProps => (
+              <EntityStixRelations
+                resolveRelationType="attributed-to"
+                resolveRelationRole="origin"
+                entityId={campaign.id}
+                relationType="uses"
+                targetEntityTypes={['Tool']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/vulnerabilities"
+            render={routeProps => (
+              <EntityStixRelations
+                resolveRelationType="attributed-to"
+                resolveRelationRole="origin"
+                entityId={campaign.id}
+                relationType="targets"
+                targetEntityTypes={['Vulnerability']}
+                entityLink={link}
+                {...routeProps}
+              />
+            )}
+          />
         </div>
       </div>
     );
@@ -172,7 +192,6 @@ class CampaignKnowledgeComponent extends Component {
 CampaignKnowledgeComponent.propTypes = {
   campaign: PropTypes.object,
   classes: PropTypes.object,
-  location: PropTypes.object,
   t: PropTypes.func,
 };
 

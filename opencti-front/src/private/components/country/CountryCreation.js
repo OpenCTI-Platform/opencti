@@ -9,8 +9,8 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, pathOr, pipe, map, pluck, union,
-} from 'ramda';
+  compose, pathOr, pipe, map, pluck, union, assoc
+} from "ramda";
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
@@ -152,13 +152,14 @@ class CountryCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // TODO @sam, fix that
-    values.createdByRef = values.createdByRef.value;
-    values.markingDefinitions = pluck('value', values.markingDefinitions);
+    const finalValues = pipe(
+      assoc('createdByRef', values.createdByRef.value),
+      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+    )(values);
     commitMutation({
       mutation: countryMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       updater: (store) => {
         const payload = store.getRootField('countryAdd');

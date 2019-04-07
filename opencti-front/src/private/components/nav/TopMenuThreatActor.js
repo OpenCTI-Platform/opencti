@@ -121,15 +121,17 @@ class TopMenuThreatActor extends Component {
           component={Link}
           to={`/dashboard/knowledge/threat_actors/${threatActorId}/observables`}
           variant={
-            location.pathname
-            === `/dashboard/knowledge/threat_actors/${threatActorId}/observables`
+            location.pathname.includes(
+              `/dashboard/knowledge/threat_actors/${threatActorId}/observables`,
+            )
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/knowledge/threat_actors/${threatActorId}/observables`
+            location.pathname.includes(
+              `/dashboard/knowledge/threat_actors/${threatActorId}/observables`,
+            )
               ? 'primary'
               : 'inherit'
           }

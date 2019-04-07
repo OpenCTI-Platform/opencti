@@ -10,7 +10,6 @@ import StixObservableHeader from './StixObservableHeader';
 import StixObservableOverview from './StixObservableOverview';
 import StixObservableEdition from './StixObservableEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import EntityObservablesChart from '../stix_observable/EntityStixObservablesChart';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityStixRelationsChart from '../stix_relation/EntityStixRelationsChart';
 
@@ -57,7 +56,7 @@ class StixObservableComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityObservablesChart entityId={stixObservable.id} />
+            &nbsp;
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={stixObservable.id} />
