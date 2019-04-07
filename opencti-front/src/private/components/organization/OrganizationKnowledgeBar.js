@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
 import { DeviceHub, Domain, Person } from '@material-ui/icons';
-import { SourceFork, TargetVariant, SourcePull } from 'mdi-material-ui';
+import { SourceFork, TargetVariant } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({

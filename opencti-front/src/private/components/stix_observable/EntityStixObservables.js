@@ -2,7 +2,6 @@
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import {
   compose,
   head,
@@ -17,11 +16,7 @@ import {
 import graphql from 'babel-plugin-relay/macro';
 import { CSVLink } from 'react-csv';
 import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Grid from '@material-ui/core/Grid';
 import Menu from '@material-ui/core/Menu';
-import Select from '@material-ui/core/Select';
-import Chip from '@material-ui/core/Chip';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
@@ -34,8 +29,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import {
@@ -43,7 +36,6 @@ import {
   ArrowDropUp,
   TableChart,
   SaveAlt,
-  Explore,
 } from '@material-ui/icons';
 import { QueryRenderer, fetchQuery } from '../../../relay/environment';
 import {
@@ -245,7 +237,9 @@ const exportStixObservablesQuery = graphql`
           to {
             id
             entity_type
-            observable_value
+            ... on StixObservable {
+              observable_value
+            }
             description
             created_at
             updated_at
@@ -535,7 +529,6 @@ class EntityStixObservables extends Component {
       classes,
       entityId,
       relationType,
-      resolveRelationType,
     } = this.props;
     const startYear = this.state.firstSeenFirstYear === currentYear()
       ? this.state.firstSeenFirstYear - 1
@@ -544,7 +537,6 @@ class EntityStixObservables extends Component {
     for (let i = startYear; i <= currentYear(); i++) {
       yearsList.push(i);
     }
-
     return (
       <div className={classes.container}>
         <EntityStixObservablesRightBar

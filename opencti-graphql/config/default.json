@@ -15,6 +15,10 @@
     "hostname": "127.0.0.1",
     "port": 6379
   },
+  "rabbitmq": {
+    "hostname": "127.0.0.1",
+    "port": 5672
+  },
   "jwt": {
     "dev_token": "a token of a user for the GraphQL playground in dev mode"
   },

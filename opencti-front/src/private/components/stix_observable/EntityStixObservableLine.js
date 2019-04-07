@@ -13,7 +13,6 @@ import { MoreVert, Help } from '@material-ui/icons';
 import { Tag } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
-import { resolveLink } from '../../../utils/Entity';
 import StixRelationPopover from '../stix_relation/StixRelationPopover';
 
 const styles = theme => ({
@@ -103,10 +102,8 @@ class EntityStixObservableLineComponent extends Component {
       t,
       classes,
       stixRelation,
-      stixDomainEntity,
       stixObservable,
       paginationOptions,
-      entityId,
       entityLink,
     } = this.props;
     const link = `${entityLink}/relations/${stixRelation.id}`;
