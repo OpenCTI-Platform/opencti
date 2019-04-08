@@ -85,7 +85,7 @@ export const addPerson = async (user, newUser) => {
   const query = `insert $user isa User,
     has entity_type "user",
     has stix_id "${
-      user.stix_id ? prepareString(user.stix_id) : `user--${uuid()}`
+      newUser.stix_id ? prepareString(newUser.stix_id) : `user--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -125,7 +125,7 @@ export const addUser = async (user, newUser) => {
   const query = `insert $user isa User,
     has entity_type "user",
     has stix_id "${
-      user.stix_id ? prepareString(user.stix_id) : `user--${uuid()}`
+      newUser.stix_id ? prepareString(newUser.stix_id) : `user--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -158,6 +158,7 @@ export const addUser = async (user, newUser) => {
     has created_at_year "${yearFormat(now())}" ,    
     has updated_at ${now()};
   `;
+  logger.debug(`[GRAKN - infer: false] ${query}`);
   const userIterator = await wTx.query(query);
 
   const createUser = await userIterator.next();

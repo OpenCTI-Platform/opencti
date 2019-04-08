@@ -8,7 +8,9 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { compose, pluck } from 'ramda';
+import {
+  assoc, compose, pipe, pluck, omit,
+} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
@@ -113,12 +115,14 @@ class UserCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    values.grant = pluck('value', values.grant);
-    delete values.confirmation;
+    const finalValues = pipe(
+      assoc('grant', pluck('value', values.grant)),
+      omit(['confirmation']),
+    )(values);
     commitMutation({
       mutation: userMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       updater: (store) => {
         const payload = store.getRootField('userAdd');

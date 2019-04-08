@@ -14,6 +14,7 @@ services:
     build:
       context: .
     environment:
+      - RUN_USER=root
       - APP_PORT=4000
       - APP_LOGS=./logs
       - APP_SECRET=ChangeMe

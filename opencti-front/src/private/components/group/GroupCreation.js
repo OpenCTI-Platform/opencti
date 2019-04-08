@@ -104,7 +104,7 @@ class GroupCreation extends Component {
       },
       updater: (store) => {
         const payload = store.getRootField('groupAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
+        const newEdge = payload.setLinkedRecord(payload, 'node');
         const container = store.getRoot();
         sharedUpdater(
           store,
