@@ -297,7 +297,9 @@ class StixRelationEditionContainer extends Component {
       assoc('locations', locations),
       pick(['weight', 'first_seen', 'last_seen', 'description', 'locations']),
     )(stixRelation);
-    const link = stixDomainEntity ? resolveLink(stixDomainEntity.entity_type) : '';
+    const link = stixDomainEntity
+      ? resolveLink(stixDomainEntity.entity_type)
+      : '';
     return (
       <div>
         <div className={classes.header}>

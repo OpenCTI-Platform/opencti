@@ -161,7 +161,7 @@ class OpenCti:
             return None
 
     def update_stix_domain_entity_field(self, id, key, value):
-        self.log('Updating field ' + key + '...')
+        self.log('Updating field ' + key + ' of ' + id + '...')
         query = """
             mutation StixDomainEntityEdit($id: ID!, $input: EditInput!) {
                 stixDomainEntityEdit(id: $id) {
@@ -1607,6 +1607,9 @@ class OpenCti:
         else:
             object_result = self.search_stix_domain_entity(name, 'Attack-Pattern')
         if object_result is not None:
+            self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+            self.update_stix_domain_entity_field(object_result['id'], 'platform', platform)
+            self.update_stix_domain_entity_field(object_result['id'], 'required_permission', required_permission)
             return object_result
         else:
             return self.create_attack_pattern(

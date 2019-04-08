@@ -9,6 +9,7 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
+import Button from '@material-ui/core/Button';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../components/i18n';
@@ -16,6 +17,7 @@ import {
   commitMutation,
   requestSubscription,
   WS_ACTIVATED,
+  MESSAGING$,
 } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import {
@@ -50,6 +52,9 @@ const styles = theme => ({
   },
   title: {
     float: 'left',
+  },
+  button: {
+    float: 'right',
   },
 });
 
@@ -127,6 +132,19 @@ class PersonEditionContainer extends Component {
       .catch(() => false);
   }
 
+  handleTurnToUser() {
+    commitMutation({
+      mutation: personMutationFieldPatch,
+      variables: {
+        id: this.props.person.id,
+        input: { key: 'email', value: `${this.props.person.name}@opencti.io` },
+      },
+      onCompleted: () => {
+        MESSAGING$.notifySuccess('This person is now a user');
+      },
+    });
+  }
+
   render() {
     const {
       t, classes, handleClose, person, me,
@@ -197,6 +215,18 @@ class PersonEditionContainer extends Component {
               </Form>
             )}
           />
+          {person.email === null ? (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={this.handleTurnToUser.bind(this)}
+              classes={{ root: classes.button }}
+            >
+              {t('Turn to user')}
+            </Button>
+          ) : (
+            ''
+          )}
         </div>
       </div>
     );
@@ -218,6 +248,7 @@ const PersonEditionFragment = createFragmentContainer(PersonEditionContainer, {
       id
       name
       description
+      email
       editContext {
         name
         focusOn

@@ -216,6 +216,7 @@ class Stix2:
                 new_aliases = stix_object_result['alias'] + list(
                     set(stix_object['x_opencti_aliases']) - set(stix_object_result['alias']))
                 self.opencti.update_stix_domain_entity_field(stix_object_result['id'], 'alias', new_aliases)
+
             # Update created by ref
             if created_by_ref_id is not None and stix_object['type'] != 'marking-definition':
                 self.opencti.update_stix_domain_entity_created_by_ref(stix_object_result['id'], created_by_ref_id)
@@ -286,7 +287,7 @@ class Stix2:
         return self.opencti.create_identity_if_not_exists(
             type,
             stix_object['name'],
-            stix_object['description'] if 'description' in stix_object else '',
+            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['id'].replace('identity', type.lower()) if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
@@ -314,7 +315,7 @@ class Stix2:
     def create_threat_actor(self, stix_object):
         return self.opencti.create_threat_actor_if_not_exists(
             stix_object['name'],
-            stix_object['description'] if 'description' in stix_object else '',
+            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['goals'] if 'goals' in stix_object else None,
             stix_object['sophistication'] if 'sophistication' in stix_object else None,
             stix_object['resource_level'] if 'resource_level' in stix_object else None,
@@ -349,7 +350,7 @@ class Stix2:
     def create_intrusion_set(self, stix_object):
         return self.opencti.create_intrusion_set_if_not_exists(
             stix_object['name'],
-            stix_object['description'] if 'description' in stix_object else '',
+            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['first_seen'] if 'first_seen' in stix_object else None,
             stix_object['last_seen'] if 'last_seen' in stix_object else None,
             stix_object['goals'] if 'goals' in stix_object else None,
@@ -381,7 +382,7 @@ class Stix2:
     def create_campaign(self, stix_object):
         return self.opencti.create_campaign_if_not_exists(
             stix_object['name'],
-            stix_object['description'] if 'description' in stix_object else '',
+            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['objective'] if 'objective' in stix_object else None,
             stix_object['first_seen'] if 'first_seen' in stix_object else None,
             stix_object['last_seen'] if 'last_seen' in stix_object else None,
@@ -409,7 +410,7 @@ class Stix2:
     def create_incident(self, stix_object):
         return self.opencti.create_incident_if_not_exists(
             stix_object['name'],
-            stix_object['description'] if 'description' in stix_object else '',
+            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['objective'] if 'objective' in stix_object else None,
             stix_object['first_seen'] if 'first_seen' in stix_object else None,
             stix_object['last_seen'] if 'last_seen' in stix_object else None,
@@ -434,7 +435,7 @@ class Stix2:
     def create_malware(self, stix_object):
         return self.opencti.create_malware_if_not_exists(
             stix_object['name'],
-            stix_object['description'] if 'description' in stix_object else '',
+            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
@@ -457,7 +458,7 @@ class Stix2:
     def create_tool(self, stix_object):
         return self.opencti.create_tool_if_not_exists(
             stix_object['name'],
-            stix_object['description'] if 'description' in stix_object else '',
+            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
@@ -479,7 +480,7 @@ class Stix2:
     def create_vulnerability(self, stix_object):
         return self.opencti.create_vulnerability_if_not_exists(
             stix_object['name'],
-            stix_object['description'] if 'description' in stix_object else '',
+            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
@@ -503,7 +504,7 @@ class Stix2:
     def create_attack_pattern(self, stix_object):
         return self.opencti.create_attack_pattern_if_not_exists(
             stix_object['name'],
-            stix_object['description'] if 'description' in stix_object else '',
+            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['x_mitre_platforms'] if 'x_mitre_platforms' in stix_object else None,
             stix_object['x_mitre_permissions_required'] if 'x_mitre_permissions_required' in stix_object else None,
             stix_object['id'] if 'id' in stix_object else None,
@@ -527,7 +528,7 @@ class Stix2:
     def create_course_of_action(self, stix_object):
         return self.opencti.create_course_of_action_if_not_exists(
             stix_object['name'],
-            stix_object['description'] if 'description' in stix_object else '',
+            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
@@ -554,7 +555,7 @@ class Stix2:
     def create_report(self, stix_object):
         return self.opencti.create_report_if_not_exists(
             stix_object['name'],
-            stix_object['description'] if 'description' in stix_object else '',
+            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['published'] if 'published' in stix_object else '',
             stix_object['x_opencti_report_class'] if 'x_opencti_report_class' in stix_object else '',
             stix_object['x_opencti_object_status'] if 'x_opencti_object_status' in stix_object else '',

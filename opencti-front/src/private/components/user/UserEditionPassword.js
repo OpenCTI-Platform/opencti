@@ -51,11 +51,6 @@ const userValidation = t => Yup.object().shape({
 });
 
 class UserEditionPasswordComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { displayMessage: false };
-  }
-
   onSubmit(values, { setSubmitting, resetForm }) {
     const field = { key: 'password', value: values.password };
     commitMutation({
@@ -68,7 +63,6 @@ class UserEditionPasswordComponent extends Component {
       onCompleted: () => {
         setSubmitting(false);
         MESSAGING$.notifySuccess('The password has been updated');
-        this.setState({ displayMessage: true });
         resetForm();
       },
     });

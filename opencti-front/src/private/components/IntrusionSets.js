@@ -137,6 +137,15 @@ const exportIntrusionSetsQuery = graphql`
           id
           name
           description
+          first_seen
+          last_seen
+          goal
+          sophistication
+          resource_level
+          primary_motivation
+          secondary_motivation
+          created
+          modified
         }
       }
     }

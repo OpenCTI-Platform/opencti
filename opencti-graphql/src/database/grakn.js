@@ -115,6 +115,9 @@ export const getAttributes = async concept => {
         if (type === Date) {
           transformedVal = `${moment(attribute.value).format(dateFormat)}Z`;
         }
+        if (type === String) {
+          transformedVal = attribute.value.replace(/\\"/g, '"');
+        }
         return { [attribute.type]: transformedVal };
       }), // Extract values
       chain(toPairs), // Convert to pairs for grouping
@@ -931,7 +934,7 @@ export const updateAttribute = async (id, input, tx = null) => {
       const oldValue = await oldValuesConcept[i].value();
       const typedOldValue =
         attrType === String
-          ? `"${prepareString(oldValue)}"`
+          ? `"${prepareString(oldValue.replace(/\\"/g, '"'))}"`
           : attrType === Date
           ? prepareDate(oldValue)
           : oldValue;
