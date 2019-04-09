@@ -265,8 +265,8 @@ class Reports extends Component {
     const { classes, reportClass, t } = this.props;
     const paginationOptions = {
       reportClass: reportClass || '',
-      orderBy: this.state.sortBy,
-      orderMode: this.state.orderAsc ? 'asc' : 'desc',
+      //orderBy: this.state.sortBy,
+      //orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
     return (
       <div>

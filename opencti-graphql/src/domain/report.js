@@ -46,10 +46,10 @@ export const findAll = args => {
 
 export const reportsTimeSeries = args =>
   timeSeries(
-    `match $r isa Report${
+    `match $x isa Report${
       args.reportClass
         ? `; 
-    $r has report_class "${prepareString(args.reportClass)}"`
+    $x has report_class "${prepareString(args.reportClass)}"`
         : ''
     }`,
     args
@@ -92,12 +92,12 @@ export const findByEntity = args => {
 
 export const reportsTimeSeriesByEntity = args =>
   timeSeries(
-    `match $r isa Report;
-    $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
+    `match $x isa Report;
+    $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
     $so id ${args.objectId} ${
       args.reportClass
         ? `; 
-    $r has report_class "${prepareString(args.reportClass)}"`
+    $x has report_class "${prepareString(args.reportClass)}"`
         : ''
     }`,
     args
@@ -149,6 +149,9 @@ export const addReport = async (user, report) => {
     has published_year "${yearFormat(report.published)}",
     has report_class "${prepareString(report.report_class)}",
     has object_status ${report.object_status ? report.object_status : 0},
+    has source_confidence_level ${
+      report.source_confidence_level ? report.source_confidence_level : 3
+    },
     has graph_data "${prepareString(report.graph_data)}",
     has created ${report.created ? prepareDate(report.created) : now()},
     has modified ${report.modified ? prepareDate(report.modified) : now()},

@@ -16,6 +16,10 @@ const styles = theme => ({
     margin: 0,
     padding: '0 260px 0 0',
   },
+  containerWithoutPadding: {
+    margin: 0,
+    padding: 0,
+  },
   paper: {
     minHeight: '100%',
     margin: '5px 0 0 0',
@@ -30,12 +34,22 @@ const inversedRelations = [];
 
 class IntrusionSetObservablesComponent extends Component {
   render() {
-    const { classes, intrusionSet } = this.props;
+    const { classes, intrusionSet, location } = this.props;
     const link = `/dashboard/knowledge/intrusion_sets/${
       intrusionSet.id
     }/observables`;
     return (
-      <div className={classes.container}>
+      <div
+        className={
+          location.pathname.includes(
+            `/dashboard/knowledge/intrusion_sets/${
+              intrusionSet.id
+            }/observables/relations/`,
+          )
+            ? classes.containerWithoutPadding
+            : classes.container
+        }
+      >
         <IntrusionSetHeader intrusionSet={intrusionSet} variant="noalias" />
         <Route
           exact
@@ -70,6 +84,7 @@ class IntrusionSetObservablesComponent extends Component {
 
 IntrusionSetObservablesComponent.propTypes = {
   intrusionSet: PropTypes.object,
+  location: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

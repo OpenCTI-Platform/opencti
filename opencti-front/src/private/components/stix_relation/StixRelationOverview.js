@@ -38,6 +38,11 @@ const styles = theme => ({
     bottom: 30,
     right: 300,
   },
+  editButtonObservable: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+  },
   item: {
     position: 'absolute',
     width: 180,
@@ -88,7 +93,7 @@ const styles = theme => ({
   information: {
     float: 'left',
     marginRight: 20,
-    width: 300,
+    width: 400,
   },
   reports: {
     width: 'auto',
@@ -167,11 +172,12 @@ class StixRelationContainer extends Component {
       entityId,
       stixRelation,
       inversedRelations,
+      observable,
     } = this.props;
     const linkedEntity = stixRelation.to;
     const from = linkedEntity.id === entityId ? stixRelation.to : stixRelation.from;
     const to = linkedEntity.id === entityId ? stixRelation.from : stixRelation.to;
-    const linkTo = resolveLink(to.entity_type);
+    const linkTo = resolveLink(observable ? 'observable' : to.entity_type);
     const linkFrom = resolveLink(from.entity_type);
 
     return (
@@ -203,7 +209,7 @@ class StixRelationContainer extends Component {
           </div>
         </Link>
         <div className={classes.middle}>
-          {includes(to.entity_type, inversedRelations) ? (
+          {includes(to.entity_type, inversedRelations) || observable ? (
             <ArrowRightAlt
               fontSize="large"
               style={{ transform: 'rotate(180deg)' }}
@@ -221,7 +227,14 @@ class StixRelationContainer extends Component {
               display: 'inline-block',
             }}
           >
-            {t(`relation_${stixRelation.relationship_type}`)}
+            <strong>{t(`relation_${stixRelation.relationship_type}`)}</strong>
+            {observable ? (
+              <span>
+                <br /> {t(stixRelation.role_played)}
+              </span>
+            ) : (
+              ''
+            )}
           </div>
         </div>
         <Link to={`${linkTo}/${to.id}`}>
@@ -236,17 +249,21 @@ class StixRelationContainer extends Component {
             <div className={classes.itemHeader}>
               <div className={classes.icon}>
                 <ItemIcon
-                  type={to.entity_type}
+                  type={observable ? 'observable' : to.entity_type}
                   color={itemColor(to.entity_type, false)}
                   size="small"
                 />
               </div>
               <div className={classes.type}>
-                {t(`entity_${to.entity_type}`)}
+                {observable
+                  ? t(`observable_${to.entity_type}`)
+                  : t(`entity_${to.entity_type}`)}
               </div>
             </div>
             <div className={classes.content}>
-              <span className={classes.name}>{truncate(to.name, 120)}</span>
+              <span className={classes.name}>
+                {truncate(observable ? to.observable_value : to.name, 120)}
+              </span>
             </div>
           </div>
         </Link>
@@ -337,7 +354,9 @@ class StixRelationContainer extends Component {
               onClick={this.handleOpenEdition.bind(this)}
               color="secondary"
               aria-label="Edit"
-              className={classes.editButton}
+              className={
+                observable ? classes.editButtonObservable : classes.editButton
+              }
             >
               <Edit />
             </Fab>
@@ -378,6 +397,7 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
       last_seen
       description
       inferred
+      role_played
       inferences {
         edges {
           node {
@@ -402,12 +422,18 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
         entity_type
         name
         description
+        ... on StixObservable {
+          observable_value
+        }
       }
       to {
         id
         entity_type
         name
         description
+        ... on StixObservable {
+          observable_value
+        }
       }
       reports {
         edges {

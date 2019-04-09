@@ -1186,6 +1186,12 @@ class OpenCti:
         else:
             object_result = self.search_stix_domain_entity(name, 'Incident')
         if object_result is not None:
+            self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+            description is not None and self.update_stix_domain_entity_field(object_result['id'], 'description',
+                                                                             description)
+            first_seen is not None and self.update_stix_domain_entity_field(object_result['id'], 'first_seen',
+                                                                            first_seen)
+            last_seen is not None and self.update_stix_domain_entity_field(object_result['id'], 'last_seen', last_seen)
             return object_result
         else:
             return self.create_incident(
@@ -1607,9 +1613,13 @@ class OpenCti:
         else:
             object_result = self.search_stix_domain_entity(name, 'Attack-Pattern')
         if object_result is not None:
-            self.update_stix_domain_entity_field(object_result['id'], 'description', description)
-            self.update_stix_domain_entity_field(object_result['id'], 'platform', platform)
-            self.update_stix_domain_entity_field(object_result['id'], 'required_permission', required_permission)
+            self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+            description is not None and self.update_stix_domain_entity_field(object_result['id'], 'description',
+                                                                             description)
+            platform is not None and self.update_stix_domain_entity_field(object_result['id'], 'platform', platform)
+            required_permission is not None and self.update_stix_domain_entity_field(object_result['id'],
+                                                                                     'required_permission',
+                                                                                     required_permission)
             return object_result
         else:
             return self.create_attack_pattern(
@@ -1710,6 +1720,74 @@ class OpenCti:
                 created,
                 modified
             )
+
+    def get_report(self, id):
+        self.log('Getting report ' + id + '...')
+        query = """
+            query Report($id: String!) {
+                report(id: $id) {
+                    id
+                    stix_id
+                    stix_label
+                    name
+                    alias
+                    description
+                    report_class
+                    published
+                    object_status
+                    source_confidence_level
+                    graph_data
+                    created
+                    modified
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                    }
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                        }
+                    }
+                    objectRefs {
+                        edges {
+                            node {
+                                id
+                                stix_id
+                            }
+                        }
+                    }
+                    relationRefs {
+                        edges {
+                            node {
+                                id
+                                stix_id
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'id': id})
+        return result['data']['report']
 
     def get_reports(self, limit=10000):
         self.log('Getting reports...')
@@ -2123,6 +2201,9 @@ class OpenCti:
                     'tool': {'from_role': 'user', 'to_role': 'usage'},
                     'attack-pattern': {'from_role': 'user', 'to_role': 'usage'}
                 },
+                'tool': {
+                    'attack-pattern': {'from_role': 'user', 'to_role': 'usage'}
+                },
             },
             'targets': {
                 'threat-actor': {
@@ -2220,7 +2301,7 @@ class OpenCti:
         stix2 = Stix2(self)
         stix2.import_bundle(data)
 
-    def stix2_export_entity(self, entity_id, entity_type):
+    def stix2_export_entity(self, entity_type, entity_id):
         stix2 = Stix2(self)
         bundle = {
             'type': 'bundle',
@@ -2228,6 +2309,9 @@ class OpenCti:
             'spec_version': '2.0',
             'objects': []
         }
+        if entity_type == 'Report':
+            bundle['objects'] = stix2.export_report(self.parse_stix_domain_entity(self.get_report(entity_id)))
+            print(bundle)
         return bundle
 
     def stix2_filter_objects(self, uuids, objects):
@@ -2250,7 +2334,7 @@ class OpenCti:
         if 'Identity' in types:
             identities = self.get_identities()
             for identity in identities:
-                if identity['type'] != 'Threat-Actor':
+                if identity['entity_type'] != 'Threat-Actor':
                     identity_bundle = self.stix2_filter_objects(uuids, stix2.export_identity(identity))
                     uuids = uuids + [x['id'] for x in identity_bundle]
                     bundle['objects'] = bundle['objects'] + identity_bundle

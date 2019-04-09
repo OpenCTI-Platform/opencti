@@ -133,9 +133,9 @@ export const reports = (stixDomainEntityId, args) =>
 
 export const reportsTimeSeries = (stixDomainEntityId, args) =>
   timeSeries(
-    `match $r isa Report; 
-    $rel(knowledge_aggregation:$r, so:$x) isa object_refs; 
-    $x id ${stixDomainEntityId}`,
+    `match $x isa Report; 
+    $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
+    $so id ${stixDomainEntityId}`,
     args
   );
 

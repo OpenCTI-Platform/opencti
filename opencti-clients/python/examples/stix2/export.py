@@ -16,20 +16,7 @@ export_file = './exports/bundle.json'
 opencti = OpenCti(config['opencti']['api_url'], config['opencti']['api_key'], config['opencti']['verbose'])
 
 # Import the bundle
-bundle = opencti.stix2_export_bundle([
-    'Identity',
-    'Threat-Actor',
-    'Intrusion-Set',
-    'Campaign',
-    'Incident',
-    'Malware',
-    'Tool',
-    'Vulnerability',
-    'Attack-Pattern',
-    'Course-Of-Action',
-    'Report',
-    'Relationship'
-])
+bundle = opencti.stix2_export_entity('Report', 'V14692496')
 
 with open(export_file, 'w') as file:
     json.dump(bundle, file, indent=4)

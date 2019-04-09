@@ -23,16 +23,16 @@ export const incidentsTimeSeries = args =>
 
 export const findByEntity = args =>
   paginate(
-    `match $i isa Incident;
-    $rel($i, $to) isa stix_relation;
+    `match $x isa Incident;
+    $rel($x, $to) isa stix_relation;
     $to id ${args.objectId}`,
     args
   );
 
 export const incidentsTimeSeriesByEntity = args =>
   timeSeries(
-    `match $i isa Incident; 
-    $rel($i, $to) isa stix_relation; 
+    `match $x isa Incident; 
+    $rel($x, $to) isa stix_relation; 
     $to id ${args.objectId}`,
     args
   );

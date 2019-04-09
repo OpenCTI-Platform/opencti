@@ -92,9 +92,9 @@ export const reports = (stixObservableId, args) =>
 
 export const reportsTimeSeries = (stixObservableId, args) =>
   timeSeries(
-    `match $r isa Report; 
-    $rel(knowledge_aggregation:$r, so:$x) isa object_refs;
-    $x id ${stixObservableId}`,
+    `match $x isa Report; 
+    $rel(knowledge_aggregation:$x, so:$so) isa object_refs;
+    $so id ${stixObservableId}`,
     args
   );
 

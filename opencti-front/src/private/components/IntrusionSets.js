@@ -283,9 +283,10 @@ class IntrusionSets extends Component {
       <QueryRenderer
         query={intrusionSetsCardsQuery}
         variables={{
-          count: nbCardsToLoad,
-          orderBy: this.state.sortBy,
-          orderMode: this.state.orderAsc ? 'asc' : 'desc',
+          count: 2147483647, // nbCardsToLoad,
+          // orderBy: this.state.sortBy,
+          // orderMode: this.state.orderAsc ? 'asc' : 'desc',
+          // TODO Fix it when Grakn will be able to handle full-text indexing
         }}
         render={({ props }) => {
           if (props) {

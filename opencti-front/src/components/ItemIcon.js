@@ -19,6 +19,7 @@ import {
   Application,
   Fire,
   CityVariant,
+  Tag,
 } from 'mdi-material-ui';
 
 const iconSelector = (type, variant, fontSize, color) => {
@@ -70,6 +71,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <BugReport style={style} fontSize={fontSize} />;
     case 'report':
       return <Description style={style} fontSize={fontSize} />;
+    case 'observable':
+      return <Tag style={style} fontSize={fontSize} />;
     default:
       return <Help style={style} fontSize={fontSize} />;
   }

@@ -30,7 +30,7 @@ export const search = args =>
   );
 
 export const campaignsTimeSeries = args =>
-  timeSeries('match $c isa Campaign', args);
+  timeSeries('match $x isa Campaign', args);
 
 export const findByEntity = args =>
   paginate(
@@ -42,8 +42,8 @@ export const findByEntity = args =>
 
 export const campaignsTimeSeriesByEntity = args =>
   timeSeries(
-    `match $c isa Campaign;
-     $rel($c, $to) isa stix_relation;
+    `match $x isa Campaign;
+     $rel($x, $to) isa stix_relation;
      $to id ${args.objectId}`,
     args
   );

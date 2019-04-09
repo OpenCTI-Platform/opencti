@@ -196,6 +196,7 @@ class Stix2:
             'vulnerability': self.create_vulnerability,
             'attack-pattern': self.create_attack_pattern,
             'course-of-action': self.create_course_of_action,
+            'report': self.create_report,
         }
         do_import = importer.get(stix_object['type'], lambda stix_object: self.unknown_type(stix_object))
         stix_object_result = do_import(stix_object)
@@ -414,7 +415,7 @@ class Stix2:
             stix_object['objective'] if 'objective' in stix_object else None,
             stix_object['first_seen'] if 'first_seen' in stix_object else None,
             stix_object['last_seen'] if 'last_seen' in stix_object else None,
-            stix_object[' opid'] if 'id' in stix_object else None,
+            stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
         )
@@ -467,7 +468,7 @@ class Stix2:
     def export_vulnerability(self, entity):
         vulnerability = {
             'id': entity['stix_id'],
-            'type': 'tool',
+            'type': 'vulnerability',
             'labels': entity['stix_label'],
             'name': entity['name'],
             'x_opencti_aliases': entity['alias'],
@@ -558,9 +559,9 @@ class Stix2:
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['published'] if 'published' in stix_object else '',
             stix_object['x_opencti_report_class'] if 'x_opencti_report_class' in stix_object else '',
-            stix_object['x_opencti_object_status'] if 'x_opencti_object_status' in stix_object else '',
+            stix_object['x_opencti_object_status'] if 'x_opencti_object_status' in stix_object else 0,
             stix_object[
-                'x_opencti_source_confidence_level'] if 'x_opencti_source_confidence_level' in stix_object else '',
+                'x_opencti_source_confidence_level'] if 'x_opencti_source_confidence_level' in stix_object else 3,
             stix_object['x_opencti_graph_data'] if 'x_opencti_graph_data' in stix_object else '',
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
@@ -674,6 +675,6 @@ class Stix2:
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'report':
-                self.import_relationship(item)
+                self.import_object(item)
         end_time = time.time()
         self.opencti.log("Reports imported in: %ssecs" % round(end_time - start_time))

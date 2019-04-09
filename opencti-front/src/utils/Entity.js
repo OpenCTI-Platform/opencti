@@ -30,6 +30,8 @@ export const resolveLink = (type) => {
       return '/dashboard/catalogs/vulnerabilities';
     case 'report':
       return '/dashboard/reports/all';
+    case 'observable':
+      return '/dashboard/observables/all';
     default:
       return null;
   }
