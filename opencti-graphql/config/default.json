@@ -7,16 +7,20 @@
     "cookie_secure": false
   },
   "grakn": {
-    "hostname": "127.0.0.1",
+    "hostname": "grakn",
     "port": 48555,
     "timeout": 30000
   },
   "redis": {
-    "hostname": "127.0.0.1",
+    "hostname": "redis",
     "port": 6379
   },
+  "elasticsearch": {
+    "hostname": "elasticsearch",
+    "port": 9200
+  },
   "rabbitmq": {
-    "hostname": "127.0.0.1",
+    "hostname": "rabbitmq",
     "port": 5672
   },
   "jwt": {

@@ -14,6 +14,7 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
+import { index } from '../database/elasticSearch';
 
 export const findAll = args => paginate('match $i isa Identity', args, false);
 
@@ -82,9 +83,10 @@ export const addIdentity = async (user, identity) => {
 
   await wTx.commit();
 
-  return getById(createdIdentityId).then(created =>
-    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-  );
+  return getById(createdIdentityId).then(created => {
+    index('stix-domain-entities', 'stix_domain_entity', created);
+    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  });
 };
 
 export const identityDelete = identityId => deleteEntityById(identityId);

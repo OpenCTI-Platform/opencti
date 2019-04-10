@@ -15,6 +15,7 @@ import {
   timeSeries
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import { index } from '../database/elasticSearch';
 
 export const findAll = args => paginate('match $i isa Incident', args);
 
@@ -113,9 +114,10 @@ export const addIncident = async (user, incident) => {
 
   await wTx.commit();
 
-  return getById(createdIncidentId).then(created =>
-    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-  );
+  return getById(createdIncidentId).then(created => {
+    index('stix-domain-entities', 'stix_domain_entity', created);
+    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  });
 };
 
 export const incidentDelete = incidentId => deleteEntityById(incidentId);

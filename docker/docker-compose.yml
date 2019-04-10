@@ -6,6 +6,9 @@ services:
   redis:
     image: redis
     restart: always
+  elasticsearch:
+    image: elasticsearch:6.7.1
+    restart: always
   rabbitmq:
     image: rabbitmq
     restart: always  
@@ -15,24 +18,30 @@ services:
       context: .
     environment:
       - RUN_USER=root
-      - APP_PORT=4000
-      - APP_LOGS=./logs
-      - APP_SECRET=ChangeMe
-      - APP_REACTIVE=true
-      - APP_COOKIE_SECURE=false
-      - GRAKN_HOSTNAME=grakn
-      - GRAKN_PORT=48555
-      - GRAKN_TIMEOUT=30000
-      - REDIS_HOSTNAME=redis
-      - REDIS_PORT=6379
+      - APP__PORT=4000
+      - APP__LOGS=./logs
+      - APP__SECRET=ChangeMe
+      - APP__REACTIVE=true
+      - APP__COOKIE_SECURE=false
+      - GRAKN__HOSTNAME=grakn
+      - GRAKN__PORT=48555
+      - GRAKN__TIMEOUT=30000
+      - REDIS__HOSTNAME=redis
+      - REDIS__PORT=6379
+      - ELASTICSEARCH__HOSTNAME=elasticsearch
+      - ELASTICSEARCH__PORT=9200
+      - RABBITMQ__HOSTNAME=rabbitmq
+      - RABBITMQ__PORT=5672
     ports:
       - "4000:4000"
     depends_on:
       - grakn
       - redis
+      - elasticsearch
       - rabbitmq
     links:
      - grakn:grakn
      - redis:redis
+     - elasticsearch:elasticsearch
      - rabbitmq:rabbitmq
     restart: always

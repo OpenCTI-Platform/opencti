@@ -106,4 +106,5 @@ if (DEV_MODE) {
 console.log(`🚀 OpenCTI started in ${environment} mode with ${externalConfigurationFile ? 'external' : 'embedded'} file`);
 export const isAppRealTime =
   nconf.get('app:reactive') && JSON.parse(nconf.get('app:reactive'));
+export const isAppSearchable = nconf.get('elasticsearch:hostname');
 export default nconf;

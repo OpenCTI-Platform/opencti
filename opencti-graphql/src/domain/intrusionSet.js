@@ -13,6 +13,7 @@ import {
   paginate,
   prepareString
 } from '../database/grakn';
+import { index } from '../database/elasticSearch';
 import { BUS_TOPICS, logger } from '../config/conf';
 
 export const findAll = args => paginate('match $i isa Intrusion-Set', args);
@@ -131,9 +132,10 @@ export const addIntrusionSet = async (user, intrusionSet) => {
 
   await wTx.commit();
 
-  return getById(createdIntrusionSetId).then(created =>
-    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-  );
+  return getById(createdIntrusionSetId).then(created => {
+    index('stix-domain-entities', 'stix_domain_entity', created);
+    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  });
 };
 
 export const intrusionSetDelete = intrusionSetId =>

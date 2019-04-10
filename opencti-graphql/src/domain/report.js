@@ -1,4 +1,4 @@
-import { map, assoc } from 'ramda';
+import { map, assoc, append } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   deleteEntityById,
@@ -16,6 +16,7 @@ import {
   timeSeries
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args => {
   if (args.orderBy === 'createdByRef') {
@@ -33,6 +34,8 @@ export const findAll = args => {
       'x'
     );
   }
+  return elPaginate('stix-domain-entities', assoc('type', 'Report', args));
+  /*
   return paginate(
     `match $r isa Report${
       args.reportClass
@@ -41,7 +44,7 @@ export const findAll = args => {
         : ''
     }`,
     args
-  );
+  ); */
 };
 
 export const reportsTimeSeries = args =>
@@ -190,9 +193,10 @@ export const addReport = async (user, report) => {
 
   await wTx.commit();
 
-  return getById(createdReportId).then(created =>
-    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-  );
+  return getById(createdReportId).then(created => {
+    index('stix-domain-entities', 'stix_domain_entity', created);
+    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  });
 };
 
 export const reportDelete = reportId => deleteEntityById(reportId);

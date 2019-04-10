@@ -29,6 +29,7 @@ import {
   prepareString,
   queryOne
 } from '../database/grakn';
+import { index } from '../database/elasticSearch';
 
 // Security related
 export const generateOpenCTIWebToken = () => ({
@@ -114,9 +115,10 @@ export const addPerson = async (user, newUser) => {
 
   await wTx.commit();
 
-  return getById(createdUserId).then(created =>
-    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-  );
+  return getById(createdUserId).then(created => {
+    index('stix-domain-entities', 'stix_domain_entity', created);
+    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  });
 };
 
 export const addUser = async (user, newUser) => {
@@ -191,9 +193,10 @@ export const addUser = async (user, newUser) => {
 
   await wTx.commit();
 
-  return getById(createdUserId).then(created =>
-    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-  );
+  return getById(createdUserId).then(created => {
+    index('stix-domain-entities', 'stix_domain_entity', created);
+    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  });
 };
 
 // User related

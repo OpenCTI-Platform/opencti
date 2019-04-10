@@ -22,6 +22,7 @@ import {
   findAll as relationFindAll,
   search as relationSearch
 } from './stixRelation';
+import { index } from '../database/elasticSearch';
 
 export const findAll = args =>
   paginate(
@@ -151,9 +152,10 @@ export const addStixObservable = async (user, stixObservable) => {
 
   await wTx.commit();
 
-  return getById(createdStixObservableId).then(created =>
-    notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user)
-  );
+  return getById(createdStixObservableId).then(created => {
+    index('stix-observable', 'stix_observable', created);
+    return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user)
+  });
 };
 
 export const stixObservableDelete = stixObservableId =>

@@ -20,29 +20,31 @@ import {
   getSingleValueNumber,
   prepareDate
 } from '../database/grakn';
+import { index, paginate as elPaginate } from '../database/elasticSearch';
+
 import { BUS_TOPICS } from '../config/conf';
 import {
   findAll as relationFindAll,
   search as relationSearch
 } from './stixRelation';
 
-export const findAll = args =>
-  paginate(
+export const findAll = args => elPaginate('stix-domain-entities', args);
+/* paginate(
     `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'}`,
     args,
     false
-  );
+  ); */
 
-export const search = args =>
-  paginate(
-    `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'};
-    $x has name $name;
-    $x has alias $alias;
-    { $name contains "${prepareString(args.search)}"; } or
-    { $alias contains "${prepareString(args.search)}"; }`,
-    args,
-    false
-  );
+export const search = args => elPaginate('stix-domain-entities', args);
+/* paginate(
+   `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'};
+   $x has name $name;
+   $x has alias $alias;
+   { $name contains "${prepareString(args.search)}"; } or
+   { $alias contains "${prepareString(args.search)}"; }`,
+   args,
+   false
+ ); */
 
 export const stixDomainEntitiesTimeSeries = args =>
   timeSeries(
@@ -214,9 +216,10 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
 
   await wTx.commit();
 
-  return getById(createdStixDomainEntityId).then(created =>
-    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-  );
+  return getById(createdStixDomainEntityId).then(created => {
+    index('stix-domain-entities', 'stix_domain_entity', created);
+    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  });
 };
 
 export const stixDomainEntityDelete = stixDomainEntityId =>

@@ -14,6 +14,7 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import { index } from '../database/elasticSearch';
 
 export const findAll = args => paginate('match $org isa Organization', args);
 
@@ -75,9 +76,10 @@ export const addOrganization = async (user, organization) => {
 
   await wTx.commit();
 
-  return getById(createdOrganizationId).then(created =>
-    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-  );
+  return getById(createdOrganizationId).then(created => {
+    index('stix-domain-entities', 'stix_domain_entity', created);
+    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  });
 };
 
 export const organizationDelete = organizationId =>

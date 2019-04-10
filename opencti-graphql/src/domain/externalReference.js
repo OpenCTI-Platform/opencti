@@ -18,9 +18,10 @@ import {
   takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
-  paginate('match $e isa External-Reference', args)
+  paginate('match $e isa External-Reference', args);
 
 export const findByEntity = args =>
   paginate(
@@ -32,8 +33,8 @@ export const findByEntity = args =>
 
 export const findById = externalReferenceId => getById(externalReferenceId);
 
-export const search = args =>
-  paginate(
+export const search = args => elPaginate('external-references', args);
+/*  paginate(
     `match $e isa External-Reference; 
     $e has source_name $sn; 
     $e has description $desc; 
@@ -44,6 +45,7 @@ export const search = args =>
     args,
     false
   );
+*/
 
 export const addExternalReference = async (user, externalReference) => {
   const wTx = await takeWriteTx();
@@ -106,9 +108,10 @@ export const addExternalReference = async (user, externalReference) => {
 
   await wTx.commit();
 
-  return getById(createdExternalReferenceId).then(created =>
-    notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user)
-  );
+  return getById(createdExternalReferenceId).then(created => {
+    index('external-references', 'external_reference', created);
+    return notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user);
+  });
 };
 
 export const externalReferenceDelete = externalReferenceId =>

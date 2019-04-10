@@ -41,6 +41,7 @@
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^7.0.0",
+    "elasticsearch": "^15.4.1",
     "express": "^4.16.4",
     "grakn-client": "^1.5.1",
     "graphql": "^14.1.1",

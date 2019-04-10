@@ -14,6 +14,7 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
+import { index } from '../database/elasticSearch';
 
 export const findAll = args => {
   if (args.orderBy === 'killChainPhases') {
@@ -128,9 +129,10 @@ export const addAttackPattern = async (user, attackPattern) => {
 
   await wTx.commit();
 
-  return getById(createdAttackPatternId).then(created =>
-    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-  );
+  return getById(createdAttackPatternId).then(created => {
+    index('stix-domain-entities', 'stix_domain_entity', created);
+    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  });
 };
 
 export const attackPatternDelete = attackPatternId =>

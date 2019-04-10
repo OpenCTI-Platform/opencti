@@ -14,6 +14,7 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import { index } from '../database/elasticSearch';
 
 export const findAll = args => paginate('match $c isa Course-Of-Action', args);
 
@@ -89,9 +90,10 @@ export const addCourseOfAction = async (user, courseOfAction) => {
 
   await wTx.commit();
 
-  return getById(createdCourseOfActionId).then(created =>
-    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-  );
+  return getById(createdCourseOfActionId).then(created => {
+    index('stix-domain-entities', 'stix_domain_entity', created);
+    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  });
 };
 
 export const courseOfActionDelete = courseOfActionId =>

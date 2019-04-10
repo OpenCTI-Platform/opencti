@@ -159,11 +159,7 @@ class ReportsLines extends Component {
         ? list.length + 25
         : list.length;
     return (
-      <WindowScroller
-        ref={this._setRef}
-        scrollElement={window}
-        key={this.props.searchTerm}
-      >
+      <WindowScroller ref={this._setRef} scrollElement={window}>
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (

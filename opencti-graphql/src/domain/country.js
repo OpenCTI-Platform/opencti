@@ -14,6 +14,7 @@ import {
   takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import { index } from '../database/elasticSearch';
 
 export const findAll = args => paginate('match $c isa Country', args);
 
@@ -67,9 +68,10 @@ export const addCountry = async (user, country) => {
 
   await wTx.commit();
 
-  return getById(createdCountryId).then(created =>
-    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-  );
+  return getById(createdCountryId).then(created => {
+    index('stix-domain-entities', 'stix_domain_entity', created);
+    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  });
 };
 
 export const countryDelete = countryId => deleteEntityById(countryId);

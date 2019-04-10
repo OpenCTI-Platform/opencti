@@ -6,6 +6,7 @@
 - JAVA (== 8)
 - Grakn (>= 1.5)
 - Redis (>= 3.0)
+- ElasticSearch (>= 6)
 - RabbitMQ (>= 3.7)
 
 *Installation of dependencies (Ubuntu 18.04)*:
@@ -26,7 +27,7 @@ $ cd opencti-release-0.1
 $ cp config/default.json config/production.json
 ```
 
-Change the *config/production.json* file according to your configuration of Grakn, Redis, RabbitMQ and keys.
+Change the *config/production.json* file according to your configuration of Grakn, Redis, ElasticSearch, RabbitMQ and keys.
 
 *Create the database schema and initial data*:
 ```bash

@@ -1,0 +1,10 @@
+indexor:
+  interval: 300
+
+grakn:
+  hostname: 'grakn'
+  port: 48555
+
+elasticsearch:
+  hostname: 'elasticsearch'
+  port: 9200
