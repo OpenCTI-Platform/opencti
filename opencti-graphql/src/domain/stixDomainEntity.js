@@ -20,7 +20,11 @@ import {
   getSingleValueNumber,
   prepareDate
 } from '../database/grakn';
-import { index, paginate as elPaginate } from '../database/elasticSearch';
+import {
+  deleteEntity,
+  index,
+  paginate as elPaginate
+} from '../database/elasticSearch';
 
 import { BUS_TOPICS } from '../config/conf';
 import {
@@ -222,8 +226,14 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   });
 };
 
-export const stixDomainEntityDelete = stixDomainEntityId =>
-  deleteEntityById(stixDomainEntityId);
+export const stixDomainEntityDelete = stixDomainEntityId => {
+  deleteEntity(
+    'stix-domain-entities',
+    'stix_domain_entity',
+    stixDomainEntityId
+  );
+  return deleteEntityById(stixDomainEntityId);
+};
 
 export const stixDomainEntityAddRelation = (user, stixDomainEntityId, input) =>
   createRelation(stixDomainEntityId, input).then(relationData => {

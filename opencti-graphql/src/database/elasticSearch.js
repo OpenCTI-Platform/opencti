@@ -4,6 +4,15 @@ import { pipe, map, append } from 'ramda';
 import { buildPagination } from './grakn';
 import conf, { isAppSearchable, logger } from '../config/conf';
 
+const dateFields = [
+  'created',
+  'modified',
+  'created_at',
+  'updated_at',
+  'first_seen',
+  'last_seen',
+  'published'
+];
 export const el = isAppSearchable
   ? new elasticsearch.Client({
       host: `${conf.get('elasticsearch:hostname')}:${conf.get(
@@ -34,6 +43,18 @@ export const index = (indexName, documentType, documentBody) => {
     id: documentBody.id,
     type: documentType,
     body: documentBody
+  }).catch(() => {
+    return false;
+  });
+};
+
+export const deleteEntity = (indexName, documentType, documentId) => {
+  el.delete({
+    index: indexName,
+    id: documentId,
+    type: documentType
+  }).catch(() => {
+    return false;
   });
 };
 
@@ -42,6 +63,7 @@ export const paginate = (indexName, options) => {
     first = 200,
     after,
     type = null,
+    types = null,
     reportClass = null,
     search = null,
     orderBy = null,
@@ -62,9 +84,12 @@ export const paginate = (indexName, options) => {
       must
     );
   } else {
-    must = append({
-      match_all: {}
-    });
+    must = append(
+      {
+        match_all: {}
+      },
+      must
+    );
   }
   if (type !== null && type.length > 0) {
     must = append(
@@ -73,6 +98,24 @@ export const paginate = (indexName, options) => {
           entity_type: {
             query: type
           }
+        }
+      },
+      must
+    );
+  }
+  if (types !== null && types.length > 0) {
+    const should = types.map(typeValue => {
+      return {
+        match_phrase: {
+          entity_type: typeValue
+        }
+      };
+    });
+    must = append(
+      {
+        bool: {
+          should,
+          minimum_should_match: 1
         }
       },
       must
@@ -92,7 +135,9 @@ export const paginate = (indexName, options) => {
   }
   if (orderBy !== null && orderBy.length > 0) {
     const order = {};
-    order[orderBy] = orderMode;
+    order[
+      dateFields.includes(orderBy) ? orderBy : `${orderBy}.keyword`
+    ] = orderMode;
     ordering = append(order, ordering);
   }
 
@@ -120,7 +165,8 @@ export const paginate = (indexName, options) => {
       )(data.hits.hits);
       return buildPagination(first, offset, finalData, data.hits.total);
     })
-    .catch(() => {
+    .catch(error => {
+      console.log(error);
       return buildPagination(first, offset, [], 0);
     });
 };

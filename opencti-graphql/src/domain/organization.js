@@ -14,7 +14,7 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { index } from '../database/elasticSearch';
+import { deleteEntity, index } from '../database/elasticSearch';
 
 export const findAll = args => paginate('match $org isa Organization', args);
 
@@ -82,5 +82,7 @@ export const addOrganization = async (user, organization) => {
   });
 };
 
-export const organizationDelete = organizationId =>
-  deleteEntityById(organizationId);
+export const organizationDelete = organizationId => {
+  deleteEntity('stix-domain-entities', 'stix_domain_entity', organizationId);
+  return deleteEntityById(organizationId);
+};

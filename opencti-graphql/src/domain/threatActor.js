@@ -1,4 +1,4 @@
-import { map } from 'ramda';
+import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   takeWriteTx,
@@ -14,9 +14,15 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { index } from '../database/elasticSearch';
+import {
+  deleteEntity,
+  index,
+  paginate as elPaginate
+} from '../database/elasticSearch';
 
-export const findAll = args => paginate('match $t isa Threat-Actor', args);
+export const findAll = args =>
+  elPaginate('stix-domain-entities', assoc('type', 'threat-actor', args));
+// paginate('match $t isa Threat-Actor', args);
 
 export const search = args =>
   paginate(
@@ -100,5 +106,7 @@ export const addThreatActor = async (user, threatActor) => {
   });
 };
 
-export const threatActorDelete = threatActorId =>
-  deleteEntityById(threatActorId);
+export const threatActorDelete = threatActorId => {
+  deleteEntity('stix-domain-entities', 'stix_domain_entity', threatActorId);
+  return deleteEntityById(threatActorId);
+};

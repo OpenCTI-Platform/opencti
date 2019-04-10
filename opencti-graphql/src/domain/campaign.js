@@ -1,4 +1,4 @@
-import { map } from 'ramda';
+import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   deleteEntityById,
@@ -15,9 +15,15 @@ import {
   timeSeries
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { index } from '../database/elasticSearch';
+import {
+  deleteEntity,
+  index,
+  paginate as elPaginate
+} from '../database/elasticSearch';
 
-export const findAll = args => paginate('match $m isa Campaign', args);
+export const findAll = args =>
+  elPaginate('stix-domain-entities', assoc('type', 'campaign', args));
+// paginate('match $m isa Campaign', args);
 
 export const search = args =>
   paginate(
@@ -134,4 +140,7 @@ export const addCampaign = async (user, campaign) => {
   });
 };
 
-export const campaignDelete = campaignId => deleteEntityById(campaignId);
+export const campaignDelete = campaignId => {
+  deleteEntity('stix-domain-entities', 'stix_domain_entity', campaignId);
+  return deleteEntityById(campaignId);
+};

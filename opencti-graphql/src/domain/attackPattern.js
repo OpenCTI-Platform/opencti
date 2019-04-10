@@ -14,7 +14,11 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { index } from '../database/elasticSearch';
+import {
+  deleteEntity,
+  index,
+  paginate as elPaginate
+} from '../database/elasticSearch';
 
 export const findAll = args => {
   if (args.orderBy === 'killChainPhases') {
@@ -27,7 +31,11 @@ export const findAll = args => {
       'x'
     );
   }
-  return paginate('match $a isa Attack-Pattern', args);
+  return elPaginate(
+    'stix-domain-entities',
+    assoc('type', 'attack-pattern', args)
+  );
+  // paginate('match $a isa Attack-Pattern', args);
 };
 
 export const findById = attackPatternId => getById(attackPatternId);
@@ -135,5 +143,7 @@ export const addAttackPattern = async (user, attackPattern) => {
   });
 };
 
-export const attackPatternDelete = attackPatternId =>
-  deleteEntityById(attackPatternId);
+export const attackPatternDelete = attackPatternId => {
+  deleteEntity('stix-domain-entities', 'stix_domain_entity', attackPatternId);
+  return deleteEntityById(attackPatternId);
+};

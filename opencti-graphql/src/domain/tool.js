@@ -14,7 +14,7 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { index } from '../database/elasticSearch';
+import { deleteEntity, index } from '../database/elasticSearch';
 
 export const findAll = args => paginate('match $t isa Tool', args);
 
@@ -86,4 +86,7 @@ export const addTool = async (user, tool) => {
   });
 };
 
-export const toolDelete = toolId => deleteEntityById(toolId);
+export const toolDelete = toolId => {
+  deleteEntity('stix-domain-entities', 'stix_domain_entity', toolId);
+  return deleteEntityById(toolId);
+};

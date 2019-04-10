@@ -18,7 +18,11 @@ import {
   takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { index, paginate as elPaginate } from '../database/elasticSearch';
+import {
+  deleteEntity,
+  index,
+  paginate as elPaginate
+} from '../database/elasticSearch';
 
 export const findAll = args =>
   paginate('match $e isa External-Reference', args);
@@ -114,8 +118,14 @@ export const addExternalReference = async (user, externalReference) => {
   });
 };
 
-export const externalReferenceDelete = externalReferenceId =>
-  deleteEntityById(externalReferenceId);
+export const externalReferenceDelete = externalReferenceId => {
+  deleteEntity(
+    'external-references',
+    'external_reference',
+    externalReferenceId
+  );
+  return deleteEntityById(externalReferenceId);
+};
 
 export const externalReferenceAddRelation = (
   user,

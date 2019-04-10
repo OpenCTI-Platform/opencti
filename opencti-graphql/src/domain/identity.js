@@ -14,7 +14,7 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { index } from '../database/elasticSearch';
+import { deleteEntity, index } from '../database/elasticSearch';
 
 export const findAll = args => paginate('match $i isa Identity', args, false);
 
@@ -89,4 +89,7 @@ export const addIdentity = async (user, identity) => {
   });
 };
 
-export const identityDelete = identityId => deleteEntityById(identityId);
+export const identityDelete = identityId => {
+  deleteEntity('stix-domain-entities', 'stix_domain_entity', identityId);
+  return deleteEntityById(identityId);
+}

@@ -1,4 +1,4 @@
-import { assoc, map, head, join } from 'ramda';
+import { assoc, map } from 'ramda';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -22,9 +22,14 @@ import {
   findAll as relationFindAll,
   search as relationSearch
 } from './stixRelation';
-import { index } from '../database/elasticSearch';
+import {
+  deleteEntity,
+  index,
+  paginate as elPaginate
+} from '../database/elasticSearch';
 
-export const findAll = args =>
+export const findAll = args => elPaginate('stix-observables', args);
+/*
   paginate(
     `match ${
       args.types
@@ -37,6 +42,7 @@ export const findAll = args =>
     args,
     false
   );
+*/
 
 export const stixObservablesTimeSeries = args =>
   timeSeries(`match $x isa ${args.type ? args.type : 'Stix-Observable'}`, args);
@@ -154,12 +160,14 @@ export const addStixObservable = async (user, stixObservable) => {
 
   return getById(createdStixObservableId).then(created => {
     index('stix-observable', 'stix_observable', created);
-    return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user)
+    return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
   });
 };
 
-export const stixObservableDelete = stixObservableId =>
-  deleteEntityById(stixObservableId);
+export const stixObservableDelete = stixObservableId => {
+  deleteEntity('stix-observables', 'stix_observable', stixObservableId);
+  return deleteEntityById(stixObservableId);
+};
 
 export const stixObservableAddRelation = (user, stixObservableId, input) =>
   createRelation(stixObservableId, input).then(relationData => {

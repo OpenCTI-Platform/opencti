@@ -3,6 +3,8 @@
 import os
 import time
 import yaml
+import datetime
+
 from grakn.client import GraknClient
 from elasticsearch import Elasticsearch
 
@@ -36,7 +38,12 @@ class Indexor:
                 else:
                     attributes[attribute_type.label()].append(attribute.value().replace('\\"', '"'))
             else:
-                attributes[attribute_type.label()] = attribute.value()
+                if str(attribute_type.data_type()) == 'DataType.DATE':
+                    attributes[attribute_type.label()] = attribute.value().strftime('%Y-%m-%dT%H:%M:%SZ')
+                elif str(attribute_type.data_type()) == 'DataType.STRING':
+                    attributes[attribute_type.label()] = attribute.value().replace('\\"', '"')
+                else:
+                    attributes[attribute_type.label()] = attribute.value()
         return attributes
 
     def index_stix_domain_entities(self):
@@ -52,10 +59,38 @@ class Indexor:
                 body=entity_data,
             )
 
+    def index_stix_observables(self):
+        rtx = self.session.transaction().read()
+        iterator = rtx.query('match $x isa Stix-Observable; get;')
+        for answer in iterator:
+            entity = answer.map().get('x')
+            entity_data = self.get_attributes(entity)
+            self.elasticsearch.index(
+                index='stix-observables',
+                id=entity_data['id'],
+                doc_type='stix_observable',
+                body=entity_data,
+            )
+
+    def index_external_references(self):
+        rtx = self.session.transaction().read()
+        iterator = rtx.query('match $x isa External-Reference; get;')
+        for answer in iterator:
+            entity = answer.map().get('x')
+            entity_data = self.get_attributes(entity)
+            self.elasticsearch.index(
+                index='external-references',
+                id=entity_data['id'],
+                doc_type='external_reference',
+                body=entity_data,
+            )
+
     def loop(self):
         while True:
             print('Starting indexing...')
-            self.index_stix_domain_entities();
+            self.index_stix_observables()
+            self.index_stix_domain_entities()
+            self.index_external_references()
             print('Index done.')
             time.sleep(self.config['indexor']['interval'])
 

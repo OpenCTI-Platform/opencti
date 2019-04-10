@@ -1,4 +1,4 @@
-import { map } from 'ramda';
+import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   deleteEntityById,
@@ -14,9 +14,15 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { index } from '../database/elasticSearch';
+import {
+  deleteEntity,
+  index,
+  paginate as elPaginate
+} from '../database/elasticSearch';
 
-export const findAll = args => paginate('match $s isa Sector', args);
+export const findAll = args =>
+  elPaginate('stix-domain-entities', assoc('type', 'sector', args));
+// paginate('match $s isa Sector', args);
 
 export const findById = sectorId => getById(sectorId);
 
@@ -82,4 +88,7 @@ export const addSector = async (user, sector) => {
   });
 };
 
-export const sectorDelete = sectorId => deleteEntityById(sectorId);
+export const sectorDelete = sectorId => {
+  deleteEntity('stix-domain-entities', 'stix_domain_entity', sectorId);
+  return deleteEntityById(sectorId);
+};

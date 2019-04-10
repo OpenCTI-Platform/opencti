@@ -1,4 +1,4 @@
-import { map, assoc, append } from 'ramda';
+import { map, assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   deleteEntityById,
@@ -16,7 +16,11 @@ import {
   timeSeries
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { index, paginate as elPaginate } from '../database/elasticSearch';
+import {
+  deleteEntity,
+  index,
+  paginate as elPaginate
+} from '../database/elasticSearch';
 
 export const findAll = args => {
   if (args.orderBy === 'createdByRef') {
@@ -34,7 +38,7 @@ export const findAll = args => {
       'x'
     );
   }
-  return elPaginate('stix-domain-entities', assoc('type', 'Report', args));
+  return elPaginate('stix-domain-entities', assoc('type', 'report', args));
   /*
   return paginate(
     `match $r isa Report${
@@ -199,4 +203,7 @@ export const addReport = async (user, report) => {
   });
 };
 
-export const reportDelete = reportId => deleteEntityById(reportId);
+export const reportDelete = reportId => {
+  deleteEntity('stix-domain-entities', 'stix_domain_entity', reportId);
+  return deleteEntityById(reportId);
+};

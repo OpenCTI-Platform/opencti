@@ -14,7 +14,7 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { index } from '../database/elasticSearch';
+import { deleteEntity, index } from '../database/elasticSearch';
 
 export const findAll = args => paginate('match $r isa Region', args);
 
@@ -82,4 +82,7 @@ export const addRegion = async (user, region) => {
   });
 };
 
-export const regionDelete = regionId => deleteEntityById(regionId);
+export const regionDelete = regionId => {
+  deleteEntity('stix-domain-entities', 'stix_domain_entity', regionId);
+  return deleteEntityById(regionId);
+};

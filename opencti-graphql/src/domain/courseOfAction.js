@@ -1,4 +1,4 @@
-import { map } from 'ramda';
+import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   deleteEntityById,
@@ -14,9 +14,15 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { index } from '../database/elasticSearch';
+import {
+  deleteEntity,
+  index,
+  paginate as elPaginate
+} from '../database/elasticSearch';
 
-export const findAll = args => paginate('match $c isa Course-Of-Action', args);
+export const findAll = args =>
+  elPaginate('stix-domain-entities', assoc('type', 'course-of-action', args));
+// paginate('match $c isa Course-Of-Action', args);
 
 export const findById = courseOfActionId => getById(courseOfActionId);
 
@@ -96,5 +102,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
   });
 };
 
-export const courseOfActionDelete = courseOfActionId =>
-  deleteEntityById(courseOfActionId);
+export const courseOfActionDelete = courseOfActionId => {
+  deleteEntity('stix-domain-entities', 'stix_domain_entity', courseOfActionId);
+  return deleteEntityById(courseOfActionId);
+};

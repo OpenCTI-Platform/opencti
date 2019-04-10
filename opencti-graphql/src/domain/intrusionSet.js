@@ -1,4 +1,4 @@
-import { map } from 'ramda';
+import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   takeWriteTx,
@@ -13,10 +13,16 @@ import {
   paginate,
   prepareString
 } from '../database/grakn';
-import { index } from '../database/elasticSearch';
+import {
+  deleteEntity,
+  index,
+  paginate as elPaginate
+} from '../database/elasticSearch';
 import { BUS_TOPICS, logger } from '../config/conf';
 
-export const findAll = args => paginate('match $i isa Intrusion-Set', args);
+export const findAll = args =>
+  elPaginate('stix-domain-entities', assoc('type', 'intrusion-set', args));
+// paginate('match $i isa Intrusion-Set', args);
 
 export const search = args =>
   paginate(
@@ -138,5 +144,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   });
 };
 
-export const intrusionSetDelete = intrusionSetId =>
-  deleteEntityById(intrusionSetId);
+export const intrusionSetDelete = intrusionSetId => {
+  deleteEntity('stix-domain-entities', 'stix_domain_entity', intrusionSetId);
+  return deleteEntityById(intrusionSetId);
+};
