@@ -235,7 +235,7 @@ class Reports extends Component {
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
     fetchQuery(exportReportsQuery, {
-      count: 100000,
+      count: 90000,
       ...paginationOptions,
     }).then((data) => {
       const finalData = pipe(

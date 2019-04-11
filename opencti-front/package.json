@@ -75,7 +75,7 @@
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 9009 -s public",
     "build-storybook": "build-storybook -s public",
-    "relay": "relay-compiler --src ./src --schema ../opencti-graphql/config/schema/opencti.graphql --extensions js jsx"
+    "relay": "relay-compiler --watchman false --src ./src --schema ../opencti-graphql/config/schema/opencti.graphql --extensions js jsx"
   },
   "eslintConfig": {
     "extends": "react-app"

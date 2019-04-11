@@ -223,7 +223,7 @@ class AttackPatterns extends Component {
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
     fetchQuery(exportAttackPatternsQuery, {
-      count: 100000,
+      count: 90000,
       ...paginationOptions,
     }).then((data) => {
       const finalData = pipe(

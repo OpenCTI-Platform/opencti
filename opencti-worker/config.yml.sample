@@ -9,3 +9,8 @@ elasticsearch:
   hostname: 'elasticsearch'
   port: 9200
 
+rabbitmq:
+  hostname: 'opencti.io'
+  port: 5672
+  username: 'guest'
+  password: 'guest'

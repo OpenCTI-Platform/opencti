@@ -1,4 +1,4 @@
-import { map } from 'ramda';
+import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   deleteEntityById,
@@ -14,9 +14,15 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { deleteEntity, index } from '../database/elasticSearch';
+import {
+  deleteEntity,
+  index,
+  paginate as elPaginate
+} from '../database/elasticSearch';
 
-export const findAll = args => paginate('match $t isa Tool', args);
+export const findAll = args =>
+  elPaginate('stix-domain-entities', assoc('type', 'tool', args));
+// paginate('match $t isa Tool', args);
 
 export const findById = toolId => getById(toolId);
 

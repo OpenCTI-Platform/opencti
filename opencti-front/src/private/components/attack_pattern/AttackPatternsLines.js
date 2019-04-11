@@ -90,7 +90,7 @@ class AttackPatternsLines extends Component {
       return;
     }
     this.props.relay.loadMore(
-      this.props.searchTerm.length > 0 ? 100000 : 25,
+      this.props.searchTerm.length > 0 ? 90000 : 25,
     );
   }
 

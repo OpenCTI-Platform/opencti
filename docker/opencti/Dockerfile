@@ -4,8 +4,14 @@ FROM ubuntu:18.04
 # Update the base image
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
 
-# Setup install environment and OpenCTI dependencies
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install nodejs npm sudo rsyslog wget
+# Node v11
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl sudo rsyslog wget netcat
+RUN curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+
+# Download archive
+RUN wget -O /opt/opencti.tar.gz https://releases.opencti.io/opencti-release-201904.tar.gz
+RUN cd /opt && tar xvfz opencti.tar.gz
 
 # Expose and entrypoint
 COPY entrypoint.sh /

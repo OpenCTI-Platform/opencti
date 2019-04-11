@@ -3,6 +3,9 @@
 import os
 import time
 import yaml
+import datetime
+
+config = yaml.load(open(os.path.dirname(__file__) + '/config.yml'))
 
 from grakn.client import GraknClient
 from elasticsearch import Elasticsearch
@@ -11,7 +14,7 @@ multiple_attributes = ['alias']
 
 
 class Indexor:
-    def __init__(self):
+    def __init__(self, verbose=True):
         # Load configuration
         self.config = yaml.load(open(os.path.dirname(__file__) + '/config.yml'))
 

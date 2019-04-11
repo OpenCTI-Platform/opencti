@@ -7,7 +7,7 @@ services:
     image: redis
     restart: always
   elasticsearch:
-    image: elasticsearch:6.7.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
     restart: always
   rabbitmq:
     image: rabbitmq
@@ -38,7 +38,7 @@ services:
       - RABBITMQ__HOSTNAME=rabbitmq
       - RABBITMQ__PORT=5672
     ports:
-      - "4000:4000"
+      - "8080:4000"
     depends_on:
       - grakn
       - redis

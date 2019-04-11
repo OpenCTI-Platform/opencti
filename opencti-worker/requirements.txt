@@ -2,3 +2,4 @@ requests
 PyYAML
 grakn-client
 elasticsearch
+pika

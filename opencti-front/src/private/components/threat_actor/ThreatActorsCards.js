@@ -75,7 +75,7 @@ class ThreatActorsCards extends Component {
       return;
     }
     this.props.relay.loadMore(
-      this.props.searchTerm.length > 0 ? 100000 : nbCardsToLoad,
+      this.props.searchTerm.length > 0 ? 90000 : nbCardsToLoad,
     );
   }
 
