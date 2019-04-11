@@ -7,10 +7,10 @@ import dateutil.parser
 import json
 import uuid
 
-from python.pycti.stix2 import Stix2
+from .stix2 import Stix2
 
 
-class OpenCti:
+class OpenCTI:
     """
         Python API for OpenCTI
         :param url: OpenCTI URL
@@ -40,10 +40,10 @@ class OpenCti:
     def parse_multiple(self, data):
         result = []
         for edge in data['edges'] if 'edges' in data and data['edges'] is not None else []:
-            result.append(self.parse_stix_domain_entity(edge['node']))
+            result.append(self.parse_stix(edge['node']))
         return result
 
-    def parse_stix_domain_entity(self, data):
+    def parse_stix(self, data):
         if 'createdByRef' in data and data['createdByRef'] is not None and 'node' in data['createdByRef']:
             data['createdByRef'] = data['createdByRef']['node']
         if 'markingDefinitions' in data:
@@ -181,6 +181,20 @@ class OpenCti:
             }
         })
 
+    def push_stix_domain_entity_export(self, id, export_id, data):
+        query = """
+            mutation StixDomainEntityEdit($id: ID!, $exportId: String!, $rawData: String!) {
+                stixDomainEntityEdit(id: $id) {
+                    exportPush(exportId: $exportId, rawData: $rawData)
+                }
+            }
+        """
+        self.query(query, {
+            'id': id,
+            'exportId': export_id,
+            'rawData': data
+        })
+
     def delete_stix_domain_entity(self, id):
         self.log('Deleting + ' + id + '...')
         query = """
@@ -193,6 +207,7 @@ class OpenCti:
         self.query(query, {'id': id})
 
     def get_stix_relation_by_stix_id(self, stix_id):
+        self.log('Getting relation ' + stix_id + '...')
         query = """
             query StixRelations($stix_id: String) {
                 stixRelations(stix_id: $stix_id) {
@@ -209,6 +224,35 @@ class OpenCti:
             return result['data']['stixRelations']['edges'][0]['node']
         else:
             return None
+
+    def get_stix_relation_by_id(self, id):
+        self.log('Getting relation ' + id + '...')
+        query = """
+            query StixRelation($id: String!) {
+                stixRelation(id: $id) {
+                    id
+                    stix_id
+                    entity_type
+                    relationship_type
+                    description
+                    weight
+                    first_seen
+                    last_seen
+                    created
+                    modified
+                    from {
+                        id
+                        stix_id
+                    }
+                    to {
+                        id
+                        stix_id
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'id': id})
+        return result['data']['stixRelation']
 
     def get_stix_relations(self, from_id=None, to_id=None, type='stix_relation', first_seen=None, last_seen=None):
         if first_seen is not None and last_seen is not None:
@@ -607,6 +651,54 @@ class OpenCti:
                 modified
             )
 
+    def get_identity(self, id):
+        self.log('Getting identity ' + id + '...')
+        query = """
+            query Identity($id: String!) {
+                identity(id: $id) {
+                   id
+                    entity_type
+                    stix_id
+                    stix_label
+                    name
+                    alias
+                    description
+                    created
+                    modified
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                    }
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'id': id})
+        return result['data']['identity']
+
     def get_identities(self, limit=10000):
         self.log('Getting identities...')
         query = """
@@ -698,6 +790,60 @@ class OpenCti:
                 created,
                 modified
             )
+
+    def get_threat_actor(self, id):
+        self.log('Getting threat actor ' + id + '...')
+        query = """
+            query ThreatActor($id: String!) {
+                threatActor(id: $id) {
+                    id
+                    entity_type
+                    stix_id
+                    stix_label
+                    name
+                    alias
+                    description
+                    goal
+                    sophistication
+                    resource_level
+                    primary_motivation
+                    secondary_motivation
+                    personal_motivation
+                    created
+                    modified
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                    }
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'id': id})
+        return result['data']['threatActor']
 
     def get_threat_actors(self, limit=10000):
         self.log('Getting threat actors...')
@@ -830,6 +976,60 @@ class OpenCti:
                 created,
                 modified
             )
+
+    def get_intrusion_set(self, id):
+        self.log('Getting intrusion set ' + id + '...')
+        query = """
+            query IntrusionSet($id: String!) {
+                intrusionSet(id: $id) {
+                    id
+                    stix_id
+                    stix_label
+                    name
+                    alias
+                    description
+                    goal
+                    sophistication
+                    resource_level
+                    primary_motivation
+                    secondary_motivation
+                    first_seen
+                    last_seen
+                    created
+                    modified
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                    }
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'id': id})
+        return result['data']['intrusionSet']
 
     def get_intrusion_sets(self, limit=10000):
         self.log('Getting intrusion sets...')
@@ -967,6 +1167,56 @@ class OpenCti:
                 modified
             )
 
+    def get_campaign(self, id):
+        self.log('Getting campaign ' + id + '...')
+        query = """
+            query Campaign($id: String!) {
+                campaign(id: $id) {
+                    id
+                    stix_id
+                    stix_label
+                    name
+                    alias
+                    description
+                    objective
+                    first_seen
+                    last_seen
+                    created
+                    modified
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                    }
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'id': id})
+        return result['data']['campaign']
+
     def get_campaigns(self, limit=10000):
         self.log('Getting campaigns...')
         query = """
@@ -1082,6 +1332,56 @@ class OpenCti:
                 created,
                 modified
             )
+
+    def get_incident(self, id):
+        self.log('Getting incident ' + id + '...')
+        query = """
+            query Incident($id: String!) {
+                incident(id: $id) {
+                    id
+                    stix_id
+                    stix_label
+                    name
+                    alias
+                    description
+                    objective
+                    first_seen
+                    last_seen
+                    created
+                    modified
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                    }
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'id': id})
+        return result['data']['incident']
 
     def get_incidents(self, limit=10000):
         self.log('Getting incidents...')
@@ -1205,6 +1505,66 @@ class OpenCti:
                 modified
             )
 
+    def get_malware(self, id):
+        self.log('Getting malware ' + id + '...')
+        query = """
+            query Malware($id: String!) {
+                malware(id: $id) {
+                    id
+                    stix_id
+                    stix_label
+                    name
+                    alias
+                    description
+                    created
+                    modified
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                    }
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                        }
+                    }
+                    killChainPhases {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                kill_chain_name
+                                phase_name
+                                created
+                                modified
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'id': id})
+        return result['data']['malware']
+
     def get_malwares(self, limit=10000):
         self.log('Getting malwares...')
         query = """
@@ -1307,6 +1667,54 @@ class OpenCti:
                 modified
             )
 
+    def get_tool(self, id):
+        self.log('Getting tool ' + id + '...')
+        query = """
+            query Tool($id: String!) {
+                tool(id: $id) {
+                    id
+                    stix_id
+                    stix_label
+                    name
+                    alias
+                    description
+                    tool_version
+                    created
+                    modified
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                    }
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'id': id})
+        return result['data']['tool']
+
     def get_tools(self, limit=10000):
         self.log('Getting tools...')
         query = """
@@ -1397,6 +1805,53 @@ class OpenCti:
                 modified
             )
 
+    def get_vulnerability(self, id):
+        self.log('Getting vulnerability ' + id + '...')
+        query = """
+            query Vulnerability($id: String!) {
+                vulnerability(id: $id) {
+                    id
+                    stix_id
+                    stix_label
+                    name
+                    alias
+                    description
+                    created
+                    modified
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                    }
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'id': id})
+        return result['data']['vulnerability']
+
     def get_vulnerabilities(self, limit=10000):
         self.log('Getting vulnerabilities...')
         query = """
@@ -1485,6 +1940,85 @@ class OpenCti:
                 created,
                 modified
             )
+
+    def get_attack_pattern(self, id):
+        self.log('Getting attack pattern ' + id + '...')
+        query = """
+            query AttackPattern($id: String!) {
+                attackPattern(id: $id) {
+                    id
+                    stix_id
+                    stix_label
+                    name
+                    alias
+                    description
+                    platform
+                    required_permission
+                    created
+                    modified
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                    }
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                        }
+                    }
+                    killChainPhases {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                kill_chain_name
+                                phase_name
+                                phase_order
+                                created
+                                modified
+                            }
+                        }
+                    }
+                    externalReferences {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                source_name
+                                description
+                                url
+                                hash
+                                external_id
+                                created
+                                modified
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'id': id})
+        return result['data']['attackPattern']
 
     def get_attack_patterns(self, limit=10000):
         self.log('Getting attack patterns...')
@@ -1632,6 +2166,53 @@ class OpenCti:
                 modified
             )
 
+    def get_course_of_action(self, id):
+        self.log('Getting course of action ' + id + '...')
+        query = """
+            query CourseOfAction($id: String!) {
+                courseOfAction(id: $id) {
+                    id
+                    stix_id
+                    stix_label
+                    name
+                    alias
+                    description
+                    created
+                    modified
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                    }
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'id': id})
+        return result['data']['courseOfAction']
+
     def get_course_of_actions(self, limit=10000):
         self.log('Getting course of actions...')
         query = """
@@ -1767,11 +2348,28 @@ class OpenCti:
                             }
                         }
                     }
+                    externalReferences {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                source_name
+                                description
+                                url
+                                hash
+                                external_id
+                                created
+                                modified
+                            }
+                        }
+                    }
                     objectRefs {
                         edges {
                             node {
                                 id
                                 stix_id
+                                entity_type
                             }
                         }
                     }
@@ -1832,6 +2430,22 @@ class OpenCti:
                                         definition
                                         level
                                         color
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                            externalReferences {
+                                edges {
+                                    node {
+                                        id
+                                        entity_type
+                                        stix_id
+                                        source_name
+                                        description
+                                        url
+                                        hash
+                                        external_id
                                         created
                                         modified
                                     }
@@ -2301,7 +2915,7 @@ class OpenCti:
         stix2 = Stix2(self)
         stix2.import_bundle(data)
 
-    def stix2_export_entity(self, entity_type, entity_id):
+    def stix2_export_entity(self, entity_type, entity_id, mode='simple'):
         stix2 = Stix2(self)
         bundle = {
             'type': 'bundle',
@@ -2310,16 +2924,8 @@ class OpenCti:
             'objects': []
         }
         if entity_type == 'Report':
-            bundle['objects'] = stix2.export_report(self.parse_stix_domain_entity(self.get_report(entity_id)))
-            print(bundle)
+            bundle['objects'] = stix2.export_report(self.parse_stix(self.get_report(entity_id)), mode)
         return bundle
-
-    def stix2_filter_objects(self, uuids, objects):
-        result = []
-        for object in objects:
-            if object['id'] not in uuids:
-                result.append(object)
-        return result
 
     def stix2_export_bundle(self, types=[]):
         stix2 = Stix2(self)
@@ -2335,74 +2941,74 @@ class OpenCti:
             identities = self.get_identities()
             for identity in identities:
                 if identity['entity_type'] != 'Threat-Actor':
-                    identity_bundle = self.stix2_filter_objects(uuids, stix2.export_identity(identity))
+                    identity_bundle = stix2.filter_objects(uuids, stix2.export_identity(identity))
                     uuids = uuids + [x['id'] for x in identity_bundle]
                     bundle['objects'] = bundle['objects'] + identity_bundle
         if 'Threat-Actor' in types:
             threat_actors = self.get_threat_actors()
             for threat_actor in threat_actors:
-                threat_actor_bundle = self.stix2_filter_objects(uuids, stix2.export_threat_actor(threat_actor))
+                threat_actor_bundle = stix2.filter_objects(uuids, stix2.export_threat_actor(threat_actor))
                 uuids = uuids + [x['id'] for x in threat_actor_bundle]
                 bundle['objects'] = bundle['objects'] + threat_actor_bundle
         if 'Intrusion-Set' in types:
             intrusion_sets = self.get_intrusion_sets()
             for intrusion_set in intrusion_sets:
-                intrusion_set_bundle = self.stix2_filter_objects(uuids, stix2.export_intrusion_set(intrusion_set))
+                intrusion_set_bundle = stix2.filter_objects(uuids, stix2.export_intrusion_set(intrusion_set))
                 uuids = uuids + [x['id'] for x in intrusion_set_bundle]
                 bundle['objects'] = bundle['objects'] + intrusion_set_bundle
         if 'Campaign' in types:
             campaigns = self.get_campaigns()
             for campaign in campaigns:
-                campaign_bundle = self.stix2_filter_objects(uuids, stix2.export_campaign(campaign))
+                campaign_bundle = stix2.filter_objects(uuids, stix2.export_campaign(campaign))
                 uuids = uuids + [x['id'] for x in campaign_bundle]
                 bundle['objects'] = bundle['objects'] + campaign_bundle
         if 'Incident' in types:
             incidents = self.get_incidents()
             for incident in incidents:
-                incident_bundle = self.stix2_filter_objects(uuids, stix2.export_incident(incident))
+                incident_bundle = stix2.filter_objects(uuids, stix2.export_incident(incident))
                 uuids = uuids + [x['id'] for x in incident_bundle]
                 bundle['objects'] = bundle['objects'] + incident_bundle
         if 'Malware' in types:
             malwares = self.get_malwares()
             for malware in malwares:
-                malware_bundle = self.stix2_filter_objects(uuids, stix2.export_malware(malware))
+                malware_bundle = stix2.filter_objects(uuids, stix2.export_malware(malware))
                 uuids = uuids + [x['id'] for x in malware_bundle]
                 bundle['objects'] = bundle['objects'] + malware_bundle
         if 'Tool' in types:
             tools = self.get_tools()
             for tool in tools:
-                tool_bundle = self.stix2_filter_objects(uuids, stix2.export_tool(tool))
+                tool_bundle = stix2.filter_objects(uuids, stix2.export_tool(tool))
                 uuids = uuids + [x['id'] for x in tool_bundle]
                 bundle['objects'] = bundle['objects'] + tool_bundle
         if 'Vulnerability' in types:
             vulnerabilities = self.get_vulnerabilities()
             for vulnerability in vulnerabilities:
-                vulnerability_bundle = self.stix2_filter_objects(uuids, stix2.export_vulnerability(vulnerability))
+                vulnerability_bundle = stix2.filter_objects(uuids, stix2.export_vulnerability(vulnerability))
                 uuids = uuids + [x['id'] for x in vulnerability_bundle]
                 bundle['objects'] = bundle['objects'] + vulnerability_bundle
         if 'Attack-Pattern' in types:
             attack_patterns = self.get_attack_patterns()
             for attack_pattern in attack_patterns:
-                attack_pattern_bundle = self.stix2_filter_objects(uuids, stix2.export_attack_pattern(attack_pattern))
+                attack_pattern_bundle = stix2.filter_objects(uuids, stix2.export_attack_pattern(attack_pattern))
                 uuids = uuids + [x['id'] for x in attack_pattern_bundle]
                 bundle['objects'] = bundle['objects'] + attack_pattern_bundle
         if 'Course-Of-Action' in types:
             course_of_actions = self.get_course_of_actions()
             for course_of_action in course_of_actions:
-                course_of_action_bundle = self.stix2_filter_objects(uuids,
-                                                                    stix2.export_course_of_action(course_of_action))
+                course_of_action_bundle = stix2.filter_objects(uuids,
+                                                               stix2.export_course_of_action(course_of_action))
                 uuids = uuids + [x['id'] for x in course_of_action_bundle]
                 bundle['objects'] = bundle['objects'] + course_of_action_bundle
         if 'Report' in types:
             reports = self.get_reports()
             for report in reports:
-                report_bundle = self.stix2_filter_objects(uuids, stix2.export_report(report))
+                report_bundle = stix2.filter_objects(uuids, stix2.export_report(report))
                 uuids = uuids + [x['id'] for x in report_bundle]
                 bundle['objects'] = bundle['objects'] + report_bundle
         if 'Relationship' in types:
             stix_relations = self.get_stix_relations()
             for stix_relation in stix_relations:
-                stix_relation_bundle = self.stix2_filter_objects(uuids, stix2.export_stix_relation(stix_relation))
+                stix_relation_bundle = stix2.filter_objects(uuids, stix2.export_stix_relation(stix_relation))
                 uuids = uuids + [x['id'] for x in stix_relation_bundle]
                 bundle['objects'] = bundle['objects'] + stix_relation_bundle
         return bundle

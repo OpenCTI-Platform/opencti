@@ -8,7 +8,6 @@ import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 import StixObservablePopover from './StixObservablePopover';
-import { truncate } from '../../../utils/String';
 
 const styles = () => ({
   title: {
@@ -28,7 +27,7 @@ const styles = () => ({
 class StixObservableHeaderComponent extends Component {
   render() {
     const {
-      classes, variant, stixObservable,
+      t, classes, variant, stixObservable,
     } = this.props;
     return (
       <div>
@@ -37,7 +36,7 @@ class StixObservableHeaderComponent extends Component {
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {truncate(stixObservable.observable_value, 80)}
+          {t(`observable_${stixObservable.entity_type}`)}
         </Typography>
         <div className={classes.popover}>
           <StixObservablePopover stixObservableId={stixObservable.id} />
@@ -76,7 +75,7 @@ const StixObservableHeader = createFragmentContainer(
     stixObservable: graphql`
       fragment StixObservableHeader_stixObservable on StixObservable {
         id
-        observable_value
+        entity_type
         markingDefinitions {
           edges {
             node {

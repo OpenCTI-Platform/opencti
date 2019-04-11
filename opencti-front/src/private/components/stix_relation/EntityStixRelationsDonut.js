@@ -157,7 +157,6 @@ class EntityStixRelationsDonut extends Component {
                 && props.stixRelationsDistribution
                 && props.stixRelationsDistribution.length > 0
               ) {
-                console.log(props.stixRelationsDistribution);
                 return (
                   <ResponsiveContainer height={300} width="100%">
                     <PieChart

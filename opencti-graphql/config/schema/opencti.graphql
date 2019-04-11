@@ -116,6 +116,16 @@ input SettingsAddInput {
   platform_registration: Boolean
 }
 
+### Export
+type Export {
+  id: ID!
+  description: String
+  object_status: Int
+  export_type: String
+  raw_data: String
+  created_at: DateTime
+}
+
 ### Global objects
 interface GlobalObject {
   id: ID!
@@ -1854,6 +1864,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
   objectRefs: StixDomainEntityConnection
   observableRefs: StixObservableConnection
   relationRefs(relationType: String): StixRelationConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -2279,6 +2290,7 @@ type StixDomainEntityEditMutations {
   contextClean: StixDomainEntity
   relationAdd(input: RelationAddInput): RelationData
   relationDelete(relationId: ID!): RelationData
+  exportPush(exportId: String!, rawData: String!): Boolean @auth(for: ROLE_ADMIN)
 }
 
 # StixObservable
@@ -2521,6 +2533,7 @@ type ReportEditMutations {
   contextClean: Report
   relationAdd(input: RelationAddInput): RelationData
   relationDelete(relationId: ID!): RelationData
+  refreshExport(type: String!): Report
 }
 
 # Mutations

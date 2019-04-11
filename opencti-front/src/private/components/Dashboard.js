@@ -17,7 +17,7 @@ import CardContent from '@material-ui/core/CardContent';
 import {
   Assignment, Layers, DeviceHub, Description,
 } from '@material-ui/icons';
-import { Database } from 'mdi-material-ui';
+import { Database, Tag } from 'mdi-material-ui';
 import BarChart from 'recharts/lib/chart/BarChart';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import Bar from 'recharts/lib/cartesian/Bar';
@@ -125,13 +125,11 @@ const dashboardStixDomainEntitiesTimeSeriesQuery = graphql`
 
 const dashboardLastReportsQuery = graphql`
   query DashboardLastReportsQuery(
-    $reportClass: String
     $first: Int
     $orderBy: ReportsOrdering
     $orderMode: OrderingMode
   ) {
     reports(
-      reportClass: $reportClass
       first: $first
       orderBy: $orderBy
       orderMode: $orderMode
@@ -142,6 +140,36 @@ const dashboardLastReportsQuery = graphql`
           name
           description
           published
+          markingDefinitions {
+            edges {
+              node {
+                definition
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const dashboardLastObservablesQuery = graphql`
+  query DashboardLastObservablesQuery(
+  $first: Int
+  $orderBy: StixObservablesOrdering
+  $orderMode: OrderingMode
+  ) {
+    stixObservables(
+      first: $first
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) {
+      edges {
+        node {
+          id
+          observable_value
+          description
+          created_at
           markingDefinitions {
             edges {
               node {
@@ -295,7 +323,7 @@ class Dashboard extends Component {
                 variables={{ type: 'Workspace', endDate: dayAgo() }}
                 render={({ props }) => {
                   if (props && props.stixDomainEntitiesNumber) {
-                    const total = props.stixDomainEntitiesNumber.total;
+                    const { total } = props.stixDomainEntitiesNumber;
                     const difference = total - props.stixDomainEntitiesNumber.count;
                     return (
                       <CardContent>
@@ -395,83 +423,12 @@ class Dashboard extends Component {
         <Grid container={true} spacing={16} style={{ marginTop: 20 }}>
           <Grid item={true} xs={6}>
             <Typography variant="h2" gutterBottom={true}>
-              {t('Last internal reports')}
+              {t('Last reports')}
             </Typography>
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <QueryRenderer
                 query={dashboardLastReportsQuery}
                 variables={{
-                  reportClass: 'internal',
-                  first: 10,
-                  orderBy: 'published',
-                  orderMode: 'desc',
-                }}
-                render={({ props }) => {
-                  if (props && props.reports) {
-                    return (
-                      <List>
-                        {props.reports.edges.map((reportEdge) => {
-                          const report = reportEdge.node;
-                          const markingDefinition = head(
-                            pathOr([], ['markingDefinitions', 'edges'], report),
-                          );
-                          return (
-                            <ListItem
-                              key={report.id}
-                              dense={true}
-                              classes={{ default: classes.item }}
-                              divider={true}
-                              component={Link}
-                              to={`/dashboard/reports/all/${report.id}`}
-                            >
-                              <ListItemIcon
-                                classes={{ root: classes.itemIconSecondary }}
-                              >
-                                <Description />
-                              </ListItemIcon>
-                              <ListItemText
-                                primary={truncate(report.name, 70)}
-                                secondary={truncate(report.description, 70)}
-                              />
-                              <div style={{ minWidth: 100 }}>
-                                {markingDefinition ? (
-                                  <ItemMarking
-                                    key={markingDefinition.node.id}
-                                    label={markingDefinition.node.definition}
-                                  />
-                                ) : (
-                                  ''
-                                )}
-                              </div>
-                              <div style={inlineStyles.itemDate}>
-                                {nsd(report.published)}
-                              </div>
-                            </ListItem>
-                          );
-                        })}
-                      </List>
-                    );
-                  }
-                  return (
-                    <div
-                      style={{ textAlign: 'center', padding: '60px 0 30px 0' }}
-                    >
-                      <CircularProgress size={40} thickness={2} />
-                    </div>
-                  );
-                }}
-              />
-            </Paper>
-          </Grid>
-          <Grid item={true} xs={6}>
-            <Typography variant="h2" gutterBottom={true}>
-              {t('Last external reports')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
-              <QueryRenderer
-                query={dashboardLastReportsQuery}
-                variables={{
-                  reportClass: 'external',
                   first: 10,
                   orderBy: 'published',
                   orderMode: 'desc',
@@ -515,6 +472,75 @@ class Dashboard extends Component {
                               </div>
                               <div style={inlineStyles.itemDate}>
                                 {nsd(report.published)}
+                              </div>
+                            </ListItem>
+                          );
+                        })}
+                      </List>
+                    );
+                  }
+                  return (
+                    <div
+                      style={{ textAlign: 'center', padding: '60px 0 30px 0' }}
+                    >
+                      <CircularProgress size={40} thickness={2} />
+                    </div>
+                  );
+                }}
+              />
+            </Paper>
+          </Grid>
+          <Grid item={true} xs={6}>
+            <Typography variant="h2" gutterBottom={true}>
+              {t('Last observables')}
+            </Typography>
+            <Paper classes={{ root: classes.paper }} elevation={2}>
+              <QueryRenderer
+                query={dashboardLastObservablesQuery}
+                variables={{
+                  first: 10,
+                  orderBy: 'created_at',
+                  orderMode: 'desc',
+                }}
+                render={({ props }) => {
+                  if (props && props.stixObservables) {
+                    return (
+                      <List>
+                        {props.stixObservables.edges.map((stixObservableEdge) => {
+                          const stixObservable = stixObservableEdge.node;
+                          const markingDefinition = head(
+                            pathOr([], ['markingDefinitions', 'edges'], stixObservable),
+                          );
+                          return (
+                            <ListItem
+                              key={stixObservable.id}
+                              dense={true}
+                              classes={{ default: classes.item }}
+                              divider={true}
+                              component={Link}
+                              to={`/dashboard/observables/all/${stixObservable.id}`}
+                            >
+                              <ListItemIcon
+                                classes={{ root: classes.itemIcon }}
+                              >
+                                <Tag />
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={truncate(stixObservable.observable_value, 70)}
+                                secondary={truncate(stixObservable.description, 70)}
+                              />
+                              <div style={{ minWidth: 100 }}>
+                                {markingDefinition ? (
+                                  <ItemMarking
+                                    key={markingDefinition.node.id}
+                                    label={markingDefinition.node.definition}
+                                  />
+                                ) : (
+                                  ''
+                                )}
+                              </div>
+                              <div style={inlineStyles.itemDate}>
+                                {nsd(stixObservable.created_at)}
                               </div>
                             </ListItem>
                           );

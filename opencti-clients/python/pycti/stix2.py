@@ -22,8 +22,18 @@ class Stix2:
             replace('<code>', '`'). \
             replace('</code>', '`')
 
-    def prepare_export(self, entity, stix_object):
+    def filter_objects(self, uuids, objects):
         result = []
+        for object in objects:
+            if object['id'] not in uuids:
+                result.append(object)
+        return result
+
+    def prepare_export(self, entity, stix_object, mode='simple'):
+        result = []
+        other_objects = []
+        other_observables = []
+        other_relations = []
         if 'createdByRef' in entity and entity['createdByRef'] is not None:
             entity_created_by_ref = entity['createdByRef']
             if entity_created_by_ref['entity_type'] == 'User':
@@ -92,13 +102,131 @@ class Stix2:
             stix_object['external_references'] = external_references
         if 'objectRefs' in entity and len(entity['objectRefs']) > 0:
             object_refs = []
+            other_objects = entity['objectRefs']
             for entity_object_ref in entity['objectRefs']:
                 object_refs.append(entity_object_ref['stix_id'])
+            if 'observableRefs' in entity and len(entity['observableRefs']) > 0:
+                other_observables = entity['observableRefs']
+                for entity_observable_ref in entity['observableRefs']:
+                    if entity_observable_ref['stix_id'] not in object_refs:
+                        object_refs.append(entity_observable_ref['stix_id'])
             if 'relationRefs' in entity and len(entity['relationRefs']) > 0:
+                other_relations = entity['relationRefs']
                 for entity_relation_ref in entity['relationRefs']:
-                    object_refs.append(entity_relation_ref['stix_id'])
+                    if entity_relation_ref['stix_id'] not in object_refs:
+                        object_refs.append(entity_relation_ref['stix_id'])
             stix_object['object_refs'] = object_refs
+
         result.append(stix_object)
+
+        uuids = [x['id'] for x in result]
+        if mode == 'full' and len(other_objects) > 0:
+            for entity_object in other_objects:
+                entity_object_data = None
+                # Sector
+                entity_object_data = self.export_identity(
+                    self.opencti.parse_stix(
+                        self.opencti.get_identity(entity_object['id'])
+                    )
+                ) if entity_object['entity_type'] == 'sector' else entity_object_data
+                # Region
+                entity_object_data = self.export_identity(
+                    self.opencti.parse_stix(
+                        self.opencti.get_identity(entity_object['id'])
+                    )
+                ) if entity_object['entity_type'] == 'region' else entity_object_data
+                # Country
+                entity_object_data = self.export_identity(
+                    self.opencti.parse_stix(
+                        self.opencti.get_identity(entity_object['id'])
+                    )
+                ) if entity_object['entity_type'] == 'country' else entity_object_data
+                # City
+                entity_object_data = self.export_identity(
+                    self.opencti.parse_stix(
+                        self.opencti.get_identity(entity_object['id'])
+                    )
+                ) if entity_object['entity_type'] == 'city' else entity_object_data
+                # Organization
+                entity_object_data = self.export_identity(
+                    self.opencti.parse_stix(
+                        self.opencti.get_identity(entity_object['id'])
+                    )
+                ) if entity_object['entity_type'] == 'organization' else entity_object_data
+                # User
+                entity_object_data = self.export_identity(
+                    self.opencti.parse_stix(
+                        self.opencti.get_identity(entity_object['id'])
+                    )
+                ) if entity_object['entity_type'] == 'user' else entity_object_data
+                # Threat Actor
+                entity_object_data = self.export_threat_actor(
+                    self.opencti.parse_stix
+                    (self.opencti.get_threat_actor(entity_object['id'])
+                     )
+                ) if entity_object['entity_type'] == 'threat-actor' else entity_object_data
+                # Intrusion Set
+                entity_object_data = self.export_intrusion_set(
+                    self.opencti.parse_stix(
+                        self.opencti.get_intrusion_set(entity_object['id'])
+                    )
+                ) if entity_object['entity_type'] == 'intrusion-set' else entity_object_data
+                # Campaign
+                entity_object_data = self.export_campaign(
+                    self.opencti.parse_stix(
+                        self.opencti.get_campaign(entity_object['id'])
+                    )
+                ) if entity_object['entity_type'] == 'campaign' else entity_object_data
+                # Incident
+                entity_object_data = self.export_incident(
+                    self.opencti.parse_stix(
+                        self.opencti.get_incident(entity_object['id'])
+                    )
+                ) if entity_object['entity_type'] == 'incident' else entity_object_data
+                # Malware
+                entity_object_data = self.export_malware(
+                    self.opencti.parse_stix(
+                        self.opencti.get_malware(entity_object['id'])
+                    )
+                ) if entity_object['entity_type'] == 'malware' else entity_object_data
+                # Tool
+                entity_object_data = self.export_tool(
+                    self.opencti.parse_stix(
+                        self.opencti.get_tool(entity_object['id'])
+                    )
+                ) if entity_object['entity_type'] == 'tool' else entity_object_data
+                # Vulnerability
+                entity_object_data = self.export_vulnerability(
+                    self.opencti.parse_stix(
+                        self.opencti.get_vulnerability(entity_object['id'])
+                    )
+                ) if entity_object['entity_type'] == 'vulnerability' else entity_object_data
+                # Attack pattern
+                entity_object_data = self.export_attack_pattern(
+                    self.opencti.parse_stix(
+                        self.opencti.get_attack_pattern(entity_object['id'])
+                    )
+                ) if entity_object['entity_type'] == 'attack-pattern' else entity_object_data
+                # Course Of Action
+                entity_object_data = self.export_course_of_action(
+                    self.opencti.parse_stix(
+                        self.opencti.get_course_of_action(entity_object['id'])
+                    )
+                ) if entity_object['entity_type'] == 'course-of-action' else entity_object_data
+
+                # Add to result
+                entity_object_bundle = self.filter_objects(uuids, entity_object_data)
+                uuids = uuids + [x['id'] for x in entity_object_bundle]
+                result = result + entity_object_bundle
+            for relation_object in other_relations:
+                relation_object_data = self.export_stix_relation(
+                    self.opencti.parse_stix(
+                        self.opencti.get_stix_relation_by_id(relation_object['id'])
+                    )
+                )
+                relation_object_bundle = self.filter_objects(uuids, relation_object_data)
+                uuids = uuids + [x['id'] for x in relation_object_bundle]
+                result = result + relation_object_bundle
 
         return result
 
@@ -535,7 +663,7 @@ class Stix2:
             stix_object['modified'] if 'modified' in stix_object else None,
         )
 
-    def export_report(self, entity):
+    def export_report(self, entity, mode='simple'):
         report = {
             'id': entity['stix_id'],
             'type': 'report',
@@ -551,7 +679,7 @@ class Stix2:
             'created': entity['created'],
             'modified': entity['modified']
         }
-        return self.prepare_export(entity, report)
+        return self.prepare_export(entity, report, mode)
 
     def create_report(self, stix_object):
         return self.opencti.create_report_if_not_exists(

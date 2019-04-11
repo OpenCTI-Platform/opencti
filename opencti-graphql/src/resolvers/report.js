@@ -8,7 +8,9 @@ import {
   findById,
   objectRefs,
   observableRefs,
-  relationRefs
+  relationRefs,
+  reportExports,
+  reportRefreshExport
 } from '../domain/report';
 import {
   createdByRef,
@@ -36,7 +38,7 @@ const reportResolvers = {
         return reportsTimeSeriesByEntity(args);
       }
       return reportsTimeSeries(args);
-    }
+    },
   },
   Report: {
     createdByRef: (report, args) => createdByRef(report.id, args),
@@ -45,11 +47,13 @@ const reportResolvers = {
     objectRefs: (report, args) => objectRefs(report.id, args),
     observableRefs: (report, args) => observableRefs(report.id, args),
     relationRefs: (report, args) => relationRefs(report.id, args),
+    exports: (report, args) => reportExports(report.id, args),
     editContext: report => fetchEditContext(report.id)
   },
   Mutation: {
     reportEdit: (_, { id }, { user }) => ({
       delete: () => reportDelete(id),
+      refreshExport: ({ type, mode }) => reportRefreshExport(id, type, mode),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

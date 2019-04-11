@@ -24,7 +24,6 @@ import conf, { logger } from '../config/conf';
 import { pubsub } from './redis';
 import { fillTimeSeries, randomKey } from './utils';
 import { Unknown } from '../config/errors';
-import { index } from './elasticSearch';
 
 // Global variables
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss';
@@ -1003,8 +1002,6 @@ export const updateAttribute = async (id, input, tx = null) => {
     }
     const result = await getById(id, wTx);
     await wTx.commit();
-    // Update ES
-    index('stix-domain-entities', 'stix_domain_entity', result);
     return result;
   } catch (error) {
     if (tx === null && wTx) {

@@ -13,9 +13,6 @@ import {
   pick,
   difference,
   head,
-  sortWith,
-  ascend,
-  path,
   union,
 } from 'ramda';
 import * as Yup from 'yup';
@@ -28,7 +25,6 @@ import {
   fetchQuery,
   WS_ACTIVATED,
 } from '../../../relay/environment';
-import { killChainPhasesLinesSearchQuery } from '../kill_chain_phase/KillChainPhasesLines';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import IdentityCreation, {
@@ -74,7 +70,10 @@ const stixObservableMutationFieldPatch = graphql`
 `;
 
 export const stixObservableEditionOverviewFocus = graphql`
-  mutation StixObservableEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
+  mutation StixObservableEditionOverviewFocusMutation(
+    $id: ID!
+    $input: EditContext!
+  ) {
     stixObservableEdit(id: $id) {
       contextPatch(input: $input) {
         ...StixObservableEditionOverview_stixObservable
@@ -125,7 +124,6 @@ class StixObservableEditionOverviewComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      killChainPhases: [],
       markingDefinitions: [],
       identityCreation: false,
       identities: [],
@@ -151,24 +149,6 @@ class StixObservableEditionOverviewComponent extends Component {
 
   handleCloseIdentityCreation() {
     this.setState({ identityCreation: false });
-  }
-
-  searchKillChainPhases(event) {
-    fetchQuery(killChainPhasesLinesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const killChainPhases = pipe(
-        pathOr([], ['killChainPhases', 'edges']),
-        sortWith([ascend(path(['node', 'phase_order']))]),
-        map(n => ({
-          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-          value: n.node.id,
-        })),
-      )(data);
-      this.setState({
-        killChainPhases: union(this.state.killChainPhases, killChainPhases),
-      });
-    });
   }
 
   searchMarkingDefinitions(event) {
@@ -208,7 +188,10 @@ class StixObservableEditionOverviewComponent extends Component {
       .then(() => {
         commitMutation({
           mutation: stixObservableMutationFieldPatch,
-          variables: { id: this.props.stixObservable.id, input: { key: name, value } },
+          variables: {
+            id: this.props.stixObservable.id,
+            input: { key: name, value },
+          },
         });
       })
       .catch(() => false);
@@ -253,46 +236,6 @@ class StixObservableEditionOverviewComponent extends Component {
             toRole: 'so',
             through: 'created_by_ref',
           },
-        },
-      });
-    }
-  }
-
-  handleChangeKillChainPhases(name, values) {
-    const { stixObservable } = this.props;
-    const currentKillChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map(n => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-        relationId: n.relation.id,
-      })),
-    )(stixObservable);
-
-    const added = difference(values, currentKillChainPhases);
-    const removed = difference(currentKillChainPhases, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: stixObservableMutationRelationAdd,
-        variables: {
-          id: head(added).value,
-          input: {
-            fromRole: 'kill_chain_phase',
-            toId: this.props.stixObservable.id,
-            toRole: 'phase_belonging',
-            through: 'kill_chain_phases',
-          },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: stixObservableMutationRelationDelete,
-        variables: {
-          id: this.props.stixObservable.id,
-          relationId: head(removed).relationId,
         },
       });
     }
@@ -345,18 +288,18 @@ class StixObservableEditionOverviewComponent extends Component {
     const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], stixObservable) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], stixObservable),
+        label: pathOr(
+          null,
+          ['createdByRef', 'node', 'name'],
+          stixObservable,
+        ),
         value: pathOr(null, ['createdByRef', 'node', 'id'], stixObservable),
-        relation: pathOr(null, ['createdByRef', 'relation', 'id'], stixObservable),
+        relation: pathOr(
+          null,
+          ['createdByRef', 'relation', 'id'],
+          stixObservable,
+        ),
       };
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map(n => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-        relationId: n.relation.id,
-      })),
-    )(stixObservable);
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map(n => ({
@@ -367,10 +310,9 @@ class StixObservableEditionOverviewComponent extends Component {
     )(stixObservable);
     const initialValues = pipe(
       assoc('createdByRef', createdByRef),
-      assoc('killChainPhases', killChainPhases),
       assoc('markingDefinitions', markingDefinitions),
       pick([
-        'name',
+        'observable_value',
         'description',
         'createdByRef',
         'killChainPhases',
@@ -388,17 +330,19 @@ class StixObservableEditionOverviewComponent extends Component {
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
-                  name="name"
+                  name="observable_value"
                   component={TextField}
-                  label={t('Name')}
+                  label={t('Observable value')}
                   fullWidth={true}
+                  multiline={true}
+                  rows="4"
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
                     <SubscriptionFocus
                       me={me}
                       users={editUsers}
-                      fieldName="name"
+                      fieldName="observable_value"
                     />
                   }
                 />
@@ -435,23 +379,6 @@ class StixObservableEditionOverviewComponent extends Component {
                       me={me}
                       users={editUsers}
                       fieldName="createdByRef"
-                    />
-                  }
-                />
-                <Field
-                  name="killChainPhases"
-                  component={Autocomplete}
-                  multiple={true}
-                  label={t('Kill chain phases')}
-                  options={this.state.killChainPhases}
-                  onInputChange={this.searchKillChainPhases.bind(this)}
-                  onChange={this.handleChangeKillChainPhases.bind(this)}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="killChainPhases"
                     />
                   }
                 />

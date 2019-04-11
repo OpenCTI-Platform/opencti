@@ -21,6 +21,7 @@ const stixObservableQuery = graphql`
       ...StixObservable_stixObservable
       ...StixObservableHeader_stixObservable
       ...StixObservableOverview_stixObservable
+      ...StixObservableIdentity_stixObservable
     }
   }
 `;
@@ -29,12 +30,12 @@ class RootStixObservable extends Component {
   componentDidMount() {
     const {
       match: {
-        params: { stixObservableId },
+        params: { observableId },
       },
     } = this.props;
     const sub = requestSubscription({
       subscription,
-      variables: { id: stixObservableId },
+      variables: { id: observableId },
     });
     this.setState({ sub });
   }

@@ -1,78 +1,53 @@
 # coding: utf-8
 
 import os
-import time
 import yaml
-import datetime
 import pika
+import json
+import base64
 
-class Indexor:
+from pycti import OpenCTI
+
+
+class WorkerExportStix2:
     def __init__(self, verbose=True):
         # Load configuration
         self.config = yaml.load(open(os.path.dirname(__file__) + '/config.yml'))
 
-        # Initialize Grakn client
-        self.grakn = GraknClient(uri=self.config['grakn']['hostname'] + ':' + str(self.config['grakn']['port']))
-        self.session = self.grakn.session(keyspace='grakn')
+        # Initialize OpenCTI client
+        self.opencti = OpenCTI(self.config['opencti']['api_url'], self.config['opencti']['api_key'], self.config['opencti']['verbose'])
 
-        # Initialize ElasticSearch client
-        self.elasticsearch = Elasticsearch(
-            [{'host': self.config['elasticsearch']['hostname'], 'port': self.config['elasticsearch']['port']}])
+        # Initialize the RabbitMQ connection
+        credentials = pika.PlainCredentials(self.config['rabbitmq']['username'], self.config['rabbitmq']['password'])
+        connection = pika.BlockingConnection(pika.ConnectionParameters(
+            host=self.config['rabbitmq']['hostname'],
+            port=self.config['rabbitmq']['port'],
+            virtual_host='/',
+            credentials=credentials
+        ))
+        self.channel = connection.channel()
+        self.channel.exchange_declare(exchange='export', exchange_type='topic', durable=True)
+        self.channel.queue_declare('export-stix2', durable=True)
+        self.channel.queue_bind(exchange='export', queue='export-stix2', routing_key='stix2.*')
 
+    def export_action(self, ch, method, properties, body):
+        print('Receiving...')
+        data = json.loads(body)
+        bundle = None
+        if data['type'] == 'stix2.simple':
+            bundle = self.opencti.stix2_export_entity(data['entity_type'], data['entity_id'], 'simple')
+        if data["type"] == 'stix2.full':
+            bundle = self.opencti.stix2_export_entity(data['entity_type'], data['entity_id'], 'full')
 
-config = yaml.load(open(os.path.dirname(__file__) + '/config.yml'))
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-channel = connection.channel()
+        if bundle is not None:
+            bundle = base64.b64encode(bytes(json.dumps(bundle, indent=4), 'utf-8')).decode('utf-8')
+            self.opencti.push_stix_domain_entity_export(data['entity_id'], data['export_id'], bundle)
 
-
-        rtx = self.session.transaction().read()
-        iterator = rtx.query('match $x isa Stix-Domain-Entity; get;')
-        for answer in iterator:
-            entity = answer.map().get('x')
-            entity_data = self.get_attributes(entity)
-            self.elasticsearch.index(
-                index='stix-domain-entities',
-                id=entity_data['id'],
-                doc_type='stix_domain_entity',
-                body=entity_data,
-            )
-
-    def index_stix_observables(self):
-        rtx = self.session.transaction().read()
-        iterator = rtx.query('match $x isa Stix-Observable; get;')
-        for answer in iterator:
-            entity = answer.map().get('x')
-            entity_data = self.get_attributes(entity)
-            self.elasticsearch.index(
-                index='stix-observables',
-                id=entity_data['id'],
-                doc_type='stix_observable',
-                body=entity_data,
-            )
-
-    def index_external_references(self):
-        rtx = self.session.transaction().read()
-        iterator = rtx.query('match $x isa External-Reference; get;')
-        for answer in iterator:
-            entity = answer.map().get('x')
-            entity_data = self.get_attributes(entity)
-            self.elasticsearch.index(
-                index='external-references',
-                id=entity_data['id'],
-                doc_type='external_reference',
-                body=entity_data,
-            )
-
-    def loop(self):
-        while True:
-            print('Starting indexing...')
-            self.index_stix_observables()
-            self.index_stix_domain_entities()
-            self.index_external_references()
-            print('Index done.')
-            time.sleep(self.config['indexor']['interval'])
+    def consume(self):
+        self.channel.basic_consume(queue='export-stix2', on_message_callback=self.export_action, auto_ack=True)
+        self.channel.start_consuming()
 
 
 if __name__ == '__main__':
-    indexor = Indexor()
-    indexor.loop()
+    worker_export = WorkerExportStix2()
+    worker_export.consume()

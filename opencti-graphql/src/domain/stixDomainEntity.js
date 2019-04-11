@@ -162,6 +162,20 @@ export const stixRelations = (stixDomainEntityId, args) => {
   return relationFindAll(finalArgs);
 };
 
+export const stixDomainEntityExportPush = async (
+  user,
+  stixDomainEntityId,
+  exportId,
+  rawData
+) => {
+  await updateAttribute(exportId, { key: 'raw_data', value: [rawData] });
+  await updateAttribute(exportId, { key: 'object_status', value: [1] });
+  return getById(stixDomainEntityId).then(stixDomainEntity => {
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user);
+    return true;
+  });
+};
+
 export const addStixDomainEntity = async (user, stixDomainEntity) => {
   const wTx = await takeWriteTx();
   const stixDomainEntityIterator = await wTx.query(`insert $stixDomainEntity isa ${
@@ -270,6 +284,11 @@ export const stixDomainEntityEditContext = (
 };
 
 export const stixDomainEntityEditField = (user, stixDomainEntityId, input) =>
-  updateAttribute(stixDomainEntityId, input).then(stixDomainEntity =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user)
-  );
+  updateAttribute(stixDomainEntityId, input).then(stixDomainEntity => {
+    index('stix-domain-entities', 'stix_domain_entity', stixDomainEntity);
+    return notify(
+      BUS_TOPICS.StixDomainEntity.EDIT_TOPIC,
+      stixDomainEntity,
+      user
+    );
+  });

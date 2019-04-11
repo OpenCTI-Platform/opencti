@@ -30,6 +30,9 @@ define
   "platform_registration" sub attribute, datatype boolean;
   "graph_data" sub attribute, datatype string;
   "object_status" sub attribute, datatype long;
+  "export_type" sub attribute, datatype string;
+  "export_mode" sub attribute, datatype string;
+  "raw_data" sub attribute, datatype string;
 
   # STIX common properties
   "stix_id" sub attribute, datatype string;
@@ -101,6 +104,10 @@ define
   # Migration
   "status" sub role;
   "state" sub role;
+
+  # Export
+  "exported" sub role;
+  "export" sub role;
 
   # OpenCTI roles
   "author" sub role;
@@ -181,6 +188,11 @@ define
   "migrate" sub relation,
     relates "status",
     relates "state";
+
+  # Export relationship
+  "exports" sub relation,
+    relates "export",
+    relates "exported";
 
   # Group membership relationships
   "membership" sub relation,
@@ -385,6 +397,18 @@ define
     has "created_at_year",
     has "updated_at";
 
+  "Export" sub entity,
+    has "description",
+    has "export_type",
+    has "object_status",
+    has "raw_data",
+    has "created_at",
+    has "created_at_day",
+    has "created_at_month",
+    has "created_at_year",
+    has "updated_at",
+    plays "export";
+
   "Group" sub entity,
     has "entity_type",
     has "name",
@@ -442,7 +466,8 @@ define
     has "updated_at",
     plays "relate_from",
     plays "relate_to",
-    plays "so";
+    plays "so",
+    plays "exported";
 
   "Stix-Domain-Entity" sub "Stix-Domain",
     abstract,
@@ -650,7 +675,8 @@ define
     has "updated_at",
     plays "so",
     plays "soo",
-    plays "indicator";
+    plays "indicator",
+    plays "exported";
 
     "Domain" sub "Stix-Observable";
 

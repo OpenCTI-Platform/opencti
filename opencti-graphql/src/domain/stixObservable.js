@@ -200,6 +200,7 @@ export const stixObservableEditContext = (user, stixObservableId, input) => {
 };
 
 export const stixObservableEditField = (user, stixObservableId, input) =>
-  updateAttribute(stixObservableId, input).then(stixObservable =>
-    notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user)
-  );
+  updateAttribute(stixObservableId, input).then(stixObservable => {
+    index('stix-observables', 'stix_observable', stixObservable);
+    return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user);
+  });

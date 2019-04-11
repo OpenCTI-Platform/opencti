@@ -1,2 +1,4 @@
 requests
 PyYAML
+setuptools
+pypandoc

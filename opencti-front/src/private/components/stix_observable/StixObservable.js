@@ -8,10 +8,10 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import StixObservableHeader from './StixObservableHeader';
 import StixObservableOverview from './StixObservableOverview';
+import StixObservableIdentity from './StixObservableIdentity';
 import StixObservableEdition from './StixObservableEdition';
 import EntityLastReports from '../report/EntityLastReports';
-import EntityReportsChart from '../report/EntityReportsChart';
-import EntityStixRelationsChart from '../stix_relation/EntityStixRelationsChart';
+import StixObservableEntities from './StixObservableEntities';
 
 const styles = () => ({
   container: {
@@ -33,35 +33,20 @@ class StixObservableComponent extends Component {
           spacing={32}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={3}>
             <StixObservableOverview stixObservable={stixObservable} />
+          </Grid>
+          <Grid item={true} xs={3}>
+            <StixObservableIdentity stixObservable={stixObservable} />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={stixObservable.id} />
           </Grid>
         </Grid>
-        <Grid
-          container={true}
-          spacing={32}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 20 }}
-        >
-          <Grid item={true} xs={4}>
-            <EntityStixRelationsChart
-              entityId={stixObservable.id}
-              relationType="uses"
-              resolveInferences={true}
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-            />
-          </Grid>
-          <Grid item={true} xs={4}>
-            &nbsp;
-          </Grid>
-          <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={stixObservable.id} />
-          </Grid>
-        </Grid>
+        <StixObservableEntities
+          entityId={stixObservable.id}
+          relationType="indicates"
+        />
         <StixObservableEdition stixObservableId={stixObservable.id} />
       </div>
     );
@@ -80,6 +65,7 @@ const StixObservable = createFragmentContainer(StixObservableComponent, {
       id
       ...StixObservableHeader_stixObservable
       ...StixObservableOverview_stixObservable
+      ...StixObservableIdentity_stixObservable
     }
   `,
 });

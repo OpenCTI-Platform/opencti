@@ -14,7 +14,7 @@ setup(
     name='pycti',
     version='1.0.0',
     description='Python API client for OpenCTI.',
-    long_description=read_md('README.md'),
+    long_description='This is the official Python client for the OpenCTI application',
     author='Luatix',
     author_email='contact@luatix.org',
     maintainer='Luatix',

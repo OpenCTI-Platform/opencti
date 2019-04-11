@@ -1,6 +1,11 @@
 indexor:
   interval: 300
 
+opencti:
+  api_url: 'http://opencti.example.com'
+  api_key : 'XXxxXxXXxxX'
+  verbose: true
+
 grakn:
   hostname: 'grakn'
   port: 48555

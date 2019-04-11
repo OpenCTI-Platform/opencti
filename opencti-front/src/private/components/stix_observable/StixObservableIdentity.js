@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import Markdown from 'react-markdown';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -20,82 +19,54 @@ const styles = theme => ({
   },
 });
 
-class StixObservableOverviewComponent extends Component {
+class StixObservableIdentityComponent extends Component {
   render() {
-    const {
-      t, fld, classes, stixObservable,
-    } = this.props;
+    const { t, classes } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Information')}
+          {t('Enrichment')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant="h3" gutterBottom={true}>
-            {t('Observable value')}
+            {t('Location')}
           </Typography>
-          {stixObservable.observable_value}
+          United States, North America
           <Typography
             variant="h3"
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Creation date')}
+            {t('Autonomous system')}
           </Typography>
-          {fld(stixObservable.created_at)}
+          AS15169 (Google LLC)
           <Typography
             variant="h3"
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Modification date')}
+            {t('FireHOL')}
           </Typography>
-          {fld(stixObservable.updated_at)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Creator')}
-          </Typography>
-          {pathOr('-', ['createdByRef', 'node', 'name'], stixObservable)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Description')}
-          </Typography>
-          <Markdown className="markdown" source={stixObservable.description} />
         </Paper>
       </div>
     );
   }
 }
 
-StixObservableOverviewComponent.propTypes = {
+StixObservableIdentityComponent.propTypes = {
   stixObservable: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const StixObservableOverview = createFragmentContainer(
-  StixObservableOverviewComponent,
+const StixObservableIdentity = createFragmentContainer(
+  StixObservableIdentityComponent,
   {
     stixObservable: graphql`
-      fragment StixObservableOverview_stixObservable on StixObservable {
+      fragment StixObservableIdentity_stixObservable on StixObservable {
         id
-        name
-        description
-        created_at
-        updated_at
         observable_value
-        createdByRef {
-          node {
-            name
-          }
-        }
       }
     `,
   },
@@ -104,4 +75,4 @@ const StixObservableOverview = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixObservableOverview);
+)(StixObservableIdentity);

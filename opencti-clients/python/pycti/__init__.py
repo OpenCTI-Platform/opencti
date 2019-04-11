@@ -1,2 +1,1 @@
-# coding: utf-8
-
+from .opencti import OpenCTI

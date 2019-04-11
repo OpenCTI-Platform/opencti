@@ -2,7 +2,7 @@ import elasticsearch from 'elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import { pipe, map, append } from 'ramda';
 import { buildPagination } from './grakn';
-import conf, { isAppSearchable, logger } from '../config/conf';
+import conf, { logger } from '../config/conf';
 
 const dateFields = [
   'created',
@@ -13,13 +13,11 @@ const dateFields = [
   'last_seen',
   'published'
 ];
-export const el = isAppSearchable
-  ? new elasticsearch.Client({
-      host: `${conf.get('elasticsearch:hostname')}:${conf.get(
-        'elasticsearch:port'
-      )}`
-    })
-  : null;
+export const el = new elasticsearch.Client({
+  host: `${conf.get('elasticsearch:hostname')}:${conf.get(
+    'elasticsearch:port'
+  )}`
+});
 
 export const createIndexes = () => {
   const indexes = [
@@ -174,8 +172,7 @@ export const paginate = (indexName, options) => {
       )(data.hits.hits);
       return buildPagination(first, offset, finalData, data.hits.total);
     })
-    .catch(error => {
-      console.log(error);
+    .catch(() => {
       return buildPagination(first, offset, [], 0);
     });
 };

@@ -10,7 +10,7 @@ from elasticsearch import Elasticsearch
 multiple_attributes = ['alias']
 
 
-class Indexor:
+class ElasticIndexer:
     def __init__(self):
         # Load configuration
         self.config = yaml.load(open(os.path.dirname(__file__) + '/config.yml'))
@@ -92,5 +92,5 @@ class Indexor:
 
 
 if __name__ == '__main__':
-    indexor = Indexor()
-    indexor.loop()
+    indexer = ElasticIndexer()
+    indexer.loop()

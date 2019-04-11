@@ -295,7 +295,14 @@ class StixRelationEditionContainer extends Component {
       assoc('first_seen', dateFormat(stixRelation.first_seen)),
       assoc('last_seen', dateFormat(stixRelation.last_seen)),
       assoc('locations', locations),
-      pick(['weight', 'first_seen', 'last_seen', 'description', 'locations']),
+      pick([
+        'weight',
+        'first_seen',
+        'last_seen',
+        'description',
+        'locations',
+        'role_played',
+      ]),
     )(stixRelation);
     const link = stixDomainEntity
       ? resolveLink(stixDomainEntity.entity_type)
@@ -323,6 +330,35 @@ class StixRelationEditionContainer extends Component {
             validationSchema={stixRelationValidation(t)}
             render={() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
+                {stixRelation.relationship_type === 'indicates' ? (
+                  <Field
+                    name="role_played"
+                    component={Select}
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onChange={this.handleSubmitField.bind(this)}
+                    label={t('Played role')}
+                    fullWidth={true}
+                    inputProps={{
+                      name: 'role_played',
+                      id: 'role_played',
+                    }}
+                    containerstyle={{ marginTop: 10, width: '100%' }}
+                    helpertext={
+                      <SubscriptionFocus
+                        me={me}
+                        users={editUsers}
+                        fieldName="role_played"
+                      />
+                    }
+                  >
+                    <MenuItem value="C2 server">{t('C2 server')}</MenuItem>
+                    <MenuItem value="Relay node">{t('Relay node')}</MenuItem>
+                    <MenuItem value="Proxy">{t('Proxy')}</MenuItem>
+                    <MenuItem value="Sender">{t('Sender')}</MenuItem>
+                  </Field>
+                ) : (
+                  ''
+                )}
                 <Field
                   name="weight"
                   component={Select}

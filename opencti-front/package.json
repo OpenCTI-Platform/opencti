@@ -19,6 +19,7 @@
     "graphql": "^14.1.1",
     "http-proxy-middleware": "^0.19.1",
     "js-cookie": "^2.2.0",
+    "js-file-download": "^0.4.5",
     "jsonwebtoken": "^8.5.0",
     "lodash": "^4.17.11",
     "material-ui-pickers": "^2.2.4",

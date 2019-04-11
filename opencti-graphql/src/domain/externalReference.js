@@ -1,4 +1,4 @@
-import { map } from 'ramda';
+import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
@@ -24,8 +24,8 @@ import {
   paginate as elPaginate
 } from '../database/elasticSearch';
 
-export const findAll = args =>
-  paginate('match $e isa External-Reference', args);
+export const findAll = args => elPaginate('external-references', args);
+//  paginate('match $e isa External-Reference', args);
 
 export const findByEntity = args =>
   paginate(
@@ -166,6 +166,11 @@ export const externalReferenceEditContext = (
 };
 
 export const externalReferenceEditField = (user, externalReferenceId, input) =>
-  updateAttribute(externalReferenceId, input).then(externalReference =>
-    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
-  );
+  updateAttribute(externalReferenceId, input).then(externalReference => {
+    index('external-references', 'external_reference', externalReference);
+    return notify(
+      BUS_TOPICS.ExternalReference.EDIT_TOPIC,
+      externalReference,
+      user
+    );
+  });

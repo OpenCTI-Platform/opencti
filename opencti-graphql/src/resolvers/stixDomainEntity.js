@@ -17,6 +17,7 @@ import {
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
   stixDomainEntityDeleteRelation,
+  stixDomainEntityExportPush,
   stixRelations,
   createdByRef
 } from '../domain/stixDomainEntity';
@@ -70,7 +71,9 @@ const stixDomainEntityResolvers = {
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+        stixDomainEntityDeleteRelation(user, id, relationId),
+      exportPush: ({ exportId, rawData }) =>
+        stixDomainEntityExportPush(user, id, exportId, rawData)
     }),
     stixDomainEntityAdd: (_, { input }, { user }) =>
       addStixDomainEntity(user, input)
