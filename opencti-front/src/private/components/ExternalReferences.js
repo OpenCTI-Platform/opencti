@@ -197,7 +197,7 @@ class ExternalReferences extends Component {
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
     fetchQuery(exportExternalReferencesQuery, {
-      count: 2147483647,
+      count: 100000,
       ...paginationOptions,
     }).then((data) => {
       const finalData = pipe(

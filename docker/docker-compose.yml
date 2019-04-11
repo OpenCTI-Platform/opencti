@@ -11,11 +11,16 @@ services:
     restart: always
   rabbitmq:
     image: rabbitmq
-    restart: always  
+    restart: always
+  worker:
+    image: luatix/opencti-worker
+    build:
+     context: ./worker
+    restart: always
   opencti:
     image: luatix/opencti
     build:
-      context: .
+      context: ./opencti
     environment:
       - RUN_USER=root
       - APP__PORT=4000

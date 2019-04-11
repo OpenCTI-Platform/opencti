@@ -10,6 +10,5 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y install nodejs npm sudo rsyslog wg
 # Expose and entrypoint
 COPY entrypoint.sh /
 RUN chmod +x /entrypoint.sh 
-VOLUME /var/opencti
 EXPOSE 4000/tcp
 ENTRYPOINT ["/entrypoint.sh"]

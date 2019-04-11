@@ -226,7 +226,7 @@ class IntrusionSets extends Component {
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
     fetchQuery(exportIntrusionSetsQuery, {
-      count: 2147483647,
+      count: 100000,
       ...paginationOptions,
     }).then((data) => {
       const finalData = pipe(

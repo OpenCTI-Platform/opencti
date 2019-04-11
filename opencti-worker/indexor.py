@@ -23,9 +23,6 @@ class Indexor:
         # Initialize ElasticSearch client
         self.elasticsearch = Elasticsearch(
             [{'host': self.config['elasticsearch']['hostname'], 'port': self.config['elasticsearch']['port']}])
-        self.elasticsearch.indices.create(index='stix-domain-entities', ignore=400)
-        self.elasticsearch.indices.create(index='stix-observables', ignore=400)
-        self.elasticsearch.indices.create(index='external-references', ignore=400)
 
     def get_attributes(self, entity):
         attributes = {'id': entity.id}

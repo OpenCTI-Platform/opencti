@@ -198,7 +198,7 @@ class Users extends Component {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
-    fetchQuery(exportUsersQuery, { count: 2147483647, ...paginationOptions }).then(
+    fetchQuery(exportUsersQuery, { count: 100000, ...paginationOptions }).then(
       (data) => {
         const finalData = pipe(
           map(n => n.node),

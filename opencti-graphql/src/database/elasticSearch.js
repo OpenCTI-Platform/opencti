@@ -30,7 +30,16 @@ export const createIndexes = () => {
   indexes.map(index => {
     return el.indices.exists({ index }).then(result => {
       if (result === false) {
-        return el.indices.create({ index });
+        return el.indices.create({
+          index,
+          body: {
+            settings: {
+              index: {
+                max_result_window: 100000
+              }
+            }
+          }
+        });
       }
       return result;
     });
