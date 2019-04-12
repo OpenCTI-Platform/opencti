@@ -1,9 +1,0 @@
-setup.py
-pycti/__init__.py
-pycti/opencti.py
-pycti/stix2.py
-pycti.egg-info/PKG-INFO
-pycti.egg-info/SOURCES.txt
-pycti.egg-info/dependency_links.txt
-pycti.egg-info/requires.txt
-pycti.egg-info/top_level.txt
