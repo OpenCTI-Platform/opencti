@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
 import { DeviceHub, AccountBalance } from '@material-ui/icons';
-import { TargetVariant, SourceFork } from 'mdi-material-ui';
+import { TargetVariant, SourceFork, CityVariant } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
@@ -91,6 +91,29 @@ class CountryKnowledgeBar extends Component {
             <span className={classes.title}>{t('Overview')}</span>
             <br />
             <span className={classes.subtitle}>{t('Knowledge graph')}</span>
+          </div>
+        </Paper>
+        <Paper
+          classes={{
+            root:
+              location.pathname
+              === `/dashboard/catalogs/countries/${countryId}/knowledge/cities`
+                ? classes.paperActive
+                : classes.paper,
+          }}
+          elevation={2}
+          component={Link}
+          to={`/dashboard/catalogs/countries/${countryId}/knowledge/cities`}
+        >
+          <div className={classes.icon}>
+            <CityVariant fontSize="default" />
+          </div>
+          <div className={classes.content}>
+            <span className={classes.title}>{t('Cities')}</span>
+            <br />
+            <span className={classes.subtitle}>
+              {t('Localized in this country')}
+            </span>
           </div>
         </Paper>
         <Paper

@@ -108,7 +108,7 @@ export const itemColor = (type, dark) => {
       if (dark) {
         return '#37474f';
       }
-      return '#607d8b';
+      return stringToColour(type);
     default:
       return stringToColour(type);
   }

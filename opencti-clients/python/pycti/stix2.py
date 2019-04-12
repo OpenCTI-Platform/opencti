@@ -763,7 +763,7 @@ class Stix2:
             stix_relation['modified'] if 'modified' in stix_relation else None,
         )
 
-    def import_bundle(self, stix_bundle):
+    def import_bundle(self, stix_bundle, types=[]):
         # Check if the bundle is correctly formated
         if 'type' not in stix_bundle or stix_bundle['type'] != 'bundle':
             self.opencti.log('JSON data type is not a STIX2 bundle')
@@ -781,14 +781,15 @@ class Stix2:
 
         start_time = time.time()
         for item in stix_bundle['objects']:
-            if item['type'] == 'identity':
+            if item['type'] == 'identity' and (len(types) == 0 or 'identity' in types):
                 self.import_object(item)
         end_time = time.time()
         self.opencti.log("Identities imported in: %ssecs" % round(end_time - start_time))
 
         start_time = time.time()
         for item in stix_bundle['objects']:
-            if item['type'] != 'relationship' and item['type'] != 'report':
+            if item['type'] != 'relationship' and item['type'] != 'report' and (
+                    len(types) == 0 or item['type'] in types):
                 self.import_object(item)
         end_time = time.time()
         self.opencti.log("Objects imported in: %ssecs" % round(end_time - start_time))
@@ -802,7 +803,7 @@ class Stix2:
 
         start_time = time.time()
         for item in stix_bundle['objects']:
-            if item['type'] == 'report':
+            if item['type'] == 'report' and (len(types) == 0 or 'report' in types):
                 self.import_object(item)
         end_time = time.time()
         self.opencti.log("Reports imported in: %ssecs" % round(end_time - start_time))

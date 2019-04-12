@@ -1,4 +1,5 @@
 /* eslint-disable no-await-in-loop */
+import uuid from 'uuid/v4';
 import {
   assoc,
   chain,
@@ -885,7 +886,20 @@ export const createRelation = async (id, input) => {
       $to id ${input.toId}; 
       insert $rel(${input.fromRole}: $from, ${input.toRole}: $to) isa ${
       input.through
-    };`;
+    } ${input.stix_id ? `, has relationship_type "${input.through}"` : ''}
+        ${
+          input.stix_id
+            ? input.stix_id === 'create'
+              ? `, has stix_id "relationship--${uuid()}"`
+              : `, has stix_id "${prepareString(input.stix_id)}"`
+            : ''
+        } ${
+      input.first_seen
+        ? `, has first_seen ${prepareDate(input.first_seen)}`
+        : ''
+    } ${
+      input.last_seen ? `, has last_seen ${prepareDate(input.last_seen)}` : ''
+    } ${input.weight ? `, has weight ${input.weight}` : ''};`;
     logger.debug(`[GRAKN - infer: false] ${query}`);
     const iterator = await wTx.query(query);
     const answer = await iterator.next();

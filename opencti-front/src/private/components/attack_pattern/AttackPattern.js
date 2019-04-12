@@ -1,27 +1,27 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
-import { compose } from "ramda";
-import { createFragmentContainer } from "react-relay";
-import graphql from "babel-plugin-relay/macro";
-import { withStyles } from "@material-ui/core/styles";
-import Grid from "@material-ui/core/Grid";
-import inject18n from "../../../components/i18n";
-import AttackPatternHeader from "./AttackPatternHeader";
-import AttackPatternOverview from "./AttackPatternOverview";
-import AttackPatternIdentity from "./AttackPatternIdentity";
-import AttackPatternEdition from "./AttackPatternEdition";
-import EntityExternalReferences from "../external_reference/EntityExternalReferences";
-import EntityStixRelationsPie from "../stix_relation/EntityStixRelationsPie";
-import EntityReportsChart from "../report/EntityReportsChart";
-import EntityStixRelationsChart from "../stix_relation/EntityStixRelationsChart";
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { compose } from 'ramda';
+import { createFragmentContainer } from 'react-relay';
+import graphql from 'babel-plugin-relay/macro';
+import { withStyles } from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
+import inject18n from '../../../components/i18n';
+import AttackPatternHeader from './AttackPatternHeader';
+import AttackPatternOverview from './AttackPatternOverview';
+import AttackPatternIdentity from './AttackPatternIdentity';
+import AttackPatternEdition from './AttackPatternEdition';
+import EntityExternalReferences from '../external_reference/EntityExternalReferences';
+import EntityStixRelationsPie from '../stix_relation/EntityStixRelationsPie';
+import EntityReportsChart from '../report/EntityReportsChart';
+import EntityStixRelationsChart from '../stix_relation/EntityStixRelationsChart';
 
 const styles = () => ({
   container: {
-    margin: 0
+    margin: 0,
   },
   gridContainer: {
-    marginBottom: 20
-  }
+    marginBottom: 20,
+  },
 });
 
 class AttackPatternComponent extends Component {
@@ -77,7 +77,7 @@ class AttackPatternComponent extends Component {
 AttackPatternComponent.propTypes = {
   attackPattern: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func
+  t: PropTypes.func,
 };
 
 const AttackPattern = createFragmentContainer(AttackPatternComponent, {
@@ -88,10 +88,10 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
       ...AttackPatternOverview_attackPattern
       ...AttackPatternIdentity_attackPattern
     }
-  `
+  `,
 });
 
 export default compose(
   inject18n,
-  withStyles(styles)
+  withStyles(styles),
 )(AttackPattern);

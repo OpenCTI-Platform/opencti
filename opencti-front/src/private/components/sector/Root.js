@@ -26,6 +26,7 @@ const sectorQuery = graphql`
       ...Sector_sector
       ...SectorHeader_sector
       ...SectorOverview_sector
+      ...SectorSubsectors_sector
       ...SectorReports_sector
       ...SectorKnowledge_sector
     }

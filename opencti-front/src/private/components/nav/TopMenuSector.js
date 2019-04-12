@@ -115,26 +115,6 @@ class TopMenuSector extends Component {
         >
           {t('Knowledge')}
         </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/knowledge/sectors/${sectorId}/observables`}
-          variant={
-            location.pathname
-            === `/dashboard/knowledge/sectors/${sectorId}/observables`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/knowledge/sectors/${sectorId}/observables`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Observables')}
-        </Button>
       </div>
     );
   }

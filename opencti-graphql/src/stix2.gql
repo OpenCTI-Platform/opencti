@@ -576,7 +576,8 @@ define
     plays "attribution",
     plays "source",
     plays "user",
-    plays "characterize";
+    plays "characterize",
+    plays "localized";
 
   "User" sub "Identity",
     has "password",

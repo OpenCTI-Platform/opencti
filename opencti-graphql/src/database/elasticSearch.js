@@ -83,7 +83,7 @@ export const paginate = (indexName, options) => {
     must = append(
       {
         query_string: {
-          query: search,
+          query: `*${search}*`,
           analyze_wildcard: true,
           default_field: '*'
         }

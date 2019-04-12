@@ -22,6 +22,7 @@ const styles = () => ({
 });
 
 const inversedRelations = [
+  'city',
   'organization',
   'intrusion-set',
   'campaign',
@@ -56,6 +57,21 @@ class CountryKnowledgeComponent extends Component {
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={country.id}
+                {...routeProps}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/catalogs/countries/:countryId/knowledge/cities"
+            render={routeProps => (
+              <EntityStixRelations
+                resolveRelationType="localization"
+                resolveRelationRole="location"
+                entityId={country.id}
+                relationType="localization"
+                targetEntityTypes={['City']}
+                entityLink={link}
                 {...routeProps}
               />
             )}

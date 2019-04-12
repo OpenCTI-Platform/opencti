@@ -34,6 +34,14 @@ export const markingDefinitions = (sectorId, args) =>
     args
   );
 
+export const subsectors = (sectorId, args) =>
+  paginate(
+    `match $subsector isa Sector; 
+    $rel(gather:$s, part_of:$subsector) isa gathering; 
+    $s id ${sectorId}`,
+    args
+  );
+
 export const addSector = async (user, sector) => {
   const wTx = await takeWriteTx();
   const sectorIterator = await wTx.query(`insert $sector isa Sector,

@@ -197,6 +197,19 @@ export const sectorsLinesQuery = graphql`
   }
 `;
 
+export const sectorsLinesSearchQuery = graphql`
+  query SectorsLinesSearchQuery($search: String) {
+    sectors(search: $search) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
 export default withStyles(styles)(
   createPaginationContainer(
     SectorsLines,

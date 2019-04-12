@@ -636,6 +636,7 @@ type SectorConnection {
 type SectorEdge {
   cursor: String!
   node: Sector!
+  relation: RelationEmbedded!
 }
 type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
@@ -650,6 +651,7 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   modified: DateTime
   revoked: Boolean
   graph_data: String
+  subsectors: SectorConnection
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection

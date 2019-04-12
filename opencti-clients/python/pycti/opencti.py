@@ -2528,7 +2528,40 @@ class OpenCTI:
         if stix_id is not None:
             object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
         else:
-            object_result = self.search_stix_domain_entity(name, 'Report')
+            object_result = None
+        if object_result is not None:
+            return object_result
+        else:
+            return self.create_report(
+                name,
+                description,
+                published,
+                report_class,
+                object_status,
+                source_confidence_level,
+                graph_data,
+                stix_id,
+                created,
+                modified
+            )
+
+    def create_report_if_not_exists_from_external_reference(self,
+                                                            external_reference_id,
+                                                            name,
+                                                            description,
+                                                            published,
+                                                            report_class,
+                                                            object_status=None,
+                                                            source_confidence_level=None,
+                                                            graph_data=None,
+                                                            stix_id=None,
+                                                            created=None,
+                                                            modified=None
+                                                            ):
+        if stix_id is not None:
+            object_result = self.get_stix_domain_entity_by_external_reference(external_reference_id, 'Report')
+        else:
+            object_result = None
         if object_result is not None:
             return object_result
         else:
@@ -2904,7 +2937,7 @@ class OpenCTI:
         else:
             return None
 
-    def stix2_import_bundle(self, file_path):
+    def stix2_import_bundle(self, file_path, types=[]):
         if not os.path.isfile(file_path):
             self.log('The bundle file does not exists')
             return None
@@ -2913,7 +2946,7 @@ class OpenCTI:
             data = json.load(file)
 
         stix2 = Stix2(self)
-        stix2.import_bundle(data)
+        stix2.import_bundle(data, types)
 
     def stix2_export_entity(self, entity_type, entity_id, mode='simple'):
         stix2 = Stix2(self)

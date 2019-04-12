@@ -1,4 +1,10 @@
-import { addSector, sectorDelete, findAll, findById } from '../domain/sector';
+import {
+  addSector,
+  sectorDelete,
+  findAll,
+  findById,
+  subsectors
+} from '../domain/sector';
 import {
   createdByRef,
   markingDefinitions,
@@ -19,6 +25,7 @@ const sectorResolvers = {
     sectors: (_, args) => findAll(args)
   },
   Sector: {
+    subsectors: (sector, args) => subsectors(sector.id, args),
     createdByRef: (sector, args) => createdByRef(sector.id, args),
     markingDefinitions: (sector, args) => markingDefinitions(sector.id, args),
     reports: (sector, args) => reports(sector.id, args),

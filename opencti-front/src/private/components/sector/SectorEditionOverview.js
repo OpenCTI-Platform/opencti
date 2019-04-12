@@ -14,6 +14,7 @@ import {
   difference,
   head,
   union,
+  filter,
 } from 'ramda';
 import * as Yup from 'yup';
 import inject18n from '../../../components/i18n';
@@ -25,7 +26,9 @@ import {
   fetchQuery,
   WS_ACTIVATED,
 } from '../../../relay/environment';
+import { now } from '../../../utils/Time';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
+import { sectorsLinesSearchQuery } from './SectorsLines';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
@@ -121,7 +124,7 @@ class SectorEditionOverviewComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      killChainPhases: [],
+      subsectors: [],
       markingDefinitions: [],
       identityCreation: false,
       identities: [],
@@ -161,6 +164,23 @@ class SectorEditionOverviewComponent extends Component {
         markingDefinitions: union(
           this.state.markingDefinitions,
           markingDefinitions,
+        ),
+      });
+    });
+  }
+
+  searchSubsector(event) {
+    fetchQuery(sectorsLinesSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
+      const subsectors = pipe(
+        pathOr([], ['sectors', 'edges']),
+        map(n => ({ label: n.node.name, value: n.node.id })),
+      )(data);
+      this.setState({
+        subsectors: union(
+          this.state.subsectors,
+          filter(n => n.id !== this.props.sector.id, subsectors),
         ),
       });
     });
@@ -276,6 +296,50 @@ class SectorEditionOverviewComponent extends Component {
     }
   }
 
+  handleChangeSubsectors(name, values) {
+    const { sector } = this.props;
+    const currentSubsectors = pipe(
+      pathOr([], ['sectors', 'edges']),
+      map(n => ({
+        label: n.node.name,
+        value: n.node.id,
+        relationId: n.relation.id,
+      })),
+    )(sector);
+
+    const added = difference(values, currentSubsectors);
+    const removed = difference(currentSubsectors, values);
+
+    if (added.length > 0) {
+      commitMutation({
+        mutation: sectorMutationRelationAdd,
+        variables: {
+          id: head(added).value,
+          input: {
+            fromRole: 'part_of',
+            toId: this.props.sector.id,
+            toRole: 'gather',
+            through: 'gathering',
+            stix_id: 'create',
+            first_seen: now(),
+            last_seen: now(),
+            weight: 3,
+          },
+        },
+      });
+    }
+
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: sectorMutationRelationDelete,
+        variables: {
+          id: this.props.sector.id,
+          relationId: head(removed).relationId,
+        },
+      });
+    }
+  }
+
   render() {
     const {
       t, sector, editUsers, me,
@@ -287,10 +351,10 @@ class SectorEditionOverviewComponent extends Component {
         value: pathOr(null, ['createdByRef', 'node', 'id'], sector),
         relation: pathOr(null, ['createdByRef', 'relation', 'id'], sector),
       };
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
+    const subsectors = pipe(
+      pathOr([], ['subsectors', 'edges']),
       map(n => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+        label: n.node.name,
         value: n.node.id,
         relationId: n.relation.id,
       })),
@@ -305,13 +369,13 @@ class SectorEditionOverviewComponent extends Component {
     )(sector);
     const initialValues = pipe(
       assoc('createdByRef', createdByRef),
-      assoc('killChainPhases', killChainPhases),
+      assoc('subsectors', subsectors),
       assoc('markingDefinitions', markingDefinitions),
       pick([
         'name',
         'description',
         'createdByRef',
-        'killChainPhases',
+        'subsectors',
         'markingDefinitions',
       ]),
     )(sector);
@@ -373,6 +437,23 @@ class SectorEditionOverviewComponent extends Component {
                       me={me}
                       users={editUsers}
                       fieldName="createdByRef"
+                    />
+                  }
+                />
+                <Field
+                  name="subsectors"
+                  component={Autocomplete}
+                  multiple={true}
+                  label={t('Subsectors')}
+                  options={this.state.subsectors}
+                  onInputChange={this.searchSubsector.bind(this)}
+                  onChange={this.handleChangeSubsectors.bind(this)}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="subsectors"
                     />
                   }
                 />
@@ -442,6 +523,17 @@ const SectorEditionOverview = createFragmentContainer(
           }
           relation {
             id
+          }
+        }
+        subsectors {
+          edges {
+            node {
+              id
+              name
+            }
+            relation {
+              id
+            }
           }
         }
         markingDefinitions {
