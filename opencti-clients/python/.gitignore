@@ -3,3 +3,4 @@ __pycache__
 exports
 build
 dist
+pycti.egg-info
