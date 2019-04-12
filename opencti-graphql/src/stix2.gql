@@ -689,11 +689,15 @@ define
     "URL" sub "Stix-Observable";
 
     "Email" sub "Stix-Observable";
+    "Email-Address" sub "Email";
+    "Email-Subject" sub "Email";
 
     "Mutex" sub "Stix-Observable";
 
-    "File" sub "Stix-Observable",
-    has "hash_type";
+    "File" sub "Stix-Observable";
+    "File-MD5" sub "File";
+    "File-SHA1" sub "File";
+    "File-SHA256" sub "File";
 
     "Stix-Observable-Data" sub entity,
     abstract,

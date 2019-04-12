@@ -71,7 +71,15 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <BugReport style={style} fontSize={fontSize} />;
     case 'report':
       return <Description style={style} fontSize={fontSize} />;
-    case 'observable':
+    case 'domain':
+    case 'ipv4-addr':
+    case 'ipv6-addr':
+    case 'url':
+    case 'email-address':
+    case 'mutex':
+    case 'file-md5':
+    case 'file-sha1':
+    case 'file-sha256':
       return <Tag style={style} fontSize={fontSize} />;
     default:
       return <Help style={style} fontSize={fontSize} />;

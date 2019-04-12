@@ -137,6 +137,7 @@ interface StixEntity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   description: String
   created_at: DateTime
@@ -162,6 +163,7 @@ interface StixDomainEntity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   description: String
   alias: [String]
@@ -228,6 +230,7 @@ type StixObservable implements GlobalObject & StixEntity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   observable_value: String!
   description: String
@@ -298,6 +301,7 @@ type StixRelation implements GlobalObject & StixEntity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   relationship_type: String
   inferred: Boolean
@@ -395,6 +399,7 @@ interface Identity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -467,6 +472,7 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -561,6 +567,7 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -634,6 +641,7 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -707,6 +715,7 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -780,6 +789,7 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -853,6 +863,7 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -923,6 +934,7 @@ type Group implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1134,6 +1146,7 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1213,6 +1226,7 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1284,6 +1298,7 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1369,6 +1384,7 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1458,6 +1474,7 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1538,6 +1555,7 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1616,6 +1634,7 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1690,6 +1709,7 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1766,6 +1786,7 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1845,6 +1866,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
   stix_id: String!
   entity_type: String!
+  parent_type: String!
   name: String!
   stix_label: [String]
   description: String

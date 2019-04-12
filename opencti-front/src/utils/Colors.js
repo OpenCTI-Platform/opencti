@@ -93,9 +93,22 @@ export const itemColor = (type, dark) => {
       return '#4caf50';
     case 'vulnerability':
       if (dark) {
-        return '#3e2723';
+        return '#5d4037';
       }
       return '#795548';
+    case 'domain':
+    case 'ipv4-addr':
+    case 'ipv6-addr':
+    case 'url':
+    case 'email-address':
+    case 'mutex':
+    case 'file-md5':
+    case 'file-sha1':
+    case 'file-sha256':
+      if (dark) {
+        return '#37474f';
+      }
+      return '#607d8b';
     default:
       return stringToColour(type);
   }

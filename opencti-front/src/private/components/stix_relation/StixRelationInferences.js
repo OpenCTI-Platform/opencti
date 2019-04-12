@@ -59,7 +59,10 @@ class StixRelationInferences extends Component {
       if (!includes(inference.from.id, createdNodesIds)) {
         const newNodeFrom = new EntityNodeModel({
           id: inference.from.id,
-          name: inference.from.name,
+          name:
+            inference.from.parent_type === 'Stix-Observable'
+              ? inference.from.observable_value
+              : inference.from.name,
           type: inference.from.entity_type,
         });
         if (inference.from.id === from.id) {
@@ -75,7 +78,10 @@ class StixRelationInferences extends Component {
       if (!includes(inference.to.id, createdNodesIds)) {
         const newNodeTo = new EntityNodeModel({
           id: inference.to.id,
-          name: inference.to.name,
+          name:
+            inference.to.parent_type === 'Stix-Observable'
+              ? inference.to.observable_value
+              : inference.to.name,
           type: inference.to.entity_type,
         });
         if (inference.to.id === from.id) {

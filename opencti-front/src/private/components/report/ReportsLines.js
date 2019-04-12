@@ -14,6 +14,7 @@ import {
   List,
   WindowScroller,
 } from 'react-virtualized';
+import { dateFormat } from '../../../utils/Time';
 import { ReportLine, ReportLineDummy } from './ReportLine';
 
 const styles = () => ({
@@ -57,6 +58,7 @@ class ReportsLines extends Component {
     const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''
       || n.node.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || dateFormat(n.node.published).toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || n.node.createdByRef_inline
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1

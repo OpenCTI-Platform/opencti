@@ -131,7 +131,7 @@ class EntityStixObservableLineComponent extends Component {
                 {stixObservable.observable_value}
               </div>
               <div className={classes.bodyItem} style={inlineStyles.role_played}>
-                {t(stixRelation.role_played)}
+                {stixRelation.inferred ? '-' : t(stixRelation.role_played)}
               </div>
               <div className={classes.bodyItem} style={inlineStyles.first_seen}>
                 {stixRelation.inferred ? '-' : nsd(stixRelation.first_seen)}

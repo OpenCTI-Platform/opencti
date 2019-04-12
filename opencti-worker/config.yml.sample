@@ -2,8 +2,8 @@ indexor:
   interval: 300
 
 opencti:
-  api_url: 'http://opencti.example.com'
-  api_key : 'XXxxXxXXxxX'
+  api_url: 'http://opencti'
+  api_key : 'REPLACE_API_KEY'
   verbose: true
 
 grakn:
@@ -15,7 +15,7 @@ elasticsearch:
   port: 9200
 
 rabbitmq:
-  hostname: 'opencti.io'
+  hostname: 'rabbitmq'
   port: 5672
   username: 'guest'
   password: 'guest'

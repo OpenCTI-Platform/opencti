@@ -7,6 +7,7 @@ import TopBar from '../nav/TopBar';
 import ThreatActor from './ThreatActor';
 import ThreatActorReports from './ThreatActorReports';
 import ThreatActorKnowledge from './ThreatActorKnowledge';
+import ThreatActorObservables from './ThreatActorObservables';
 
 const subscription = graphql`
   subscription RootThreatActorSubscription($id: ID!) {
@@ -29,6 +30,7 @@ const threatActorQuery = graphql`
       ...ThreatActorIdentity_threatActor
       ...ThreatActorReports_threatActor
       ...ThreatActorKnowledge_threatActor
+      ...ThreatActorObservables_threatActor
     }
   }
 `;
@@ -101,6 +103,15 @@ class RootThreatActor extends Component {
                     path="/dashboard/knowledge/threat_actors/:threatActorId/knowledge"
                     render={routeProps => (
                       <ThreatActorKnowledge
+                        {...routeProps}
+                        threatActor={props.threatActor}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/knowledge/threat_actors/:threatActorId/observables"
+                    render={routeProps => (
+                      <ThreatActorObservables
                         {...routeProps}
                         threatActor={props.threatActor}
                       />

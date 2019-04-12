@@ -97,6 +97,9 @@ export const write = async query => {
  * @returns {Promise<any[] | never>}
  */
 export const getAttributes = async concept => {
+  const conceptType = await concept.type();
+  const parentType = await conceptType.sup();
+  const parentTypeLabel = await parentType.label();
   const attributesIterator = await concept.attributes();
   const attributes = await attributesIterator.collect();
   const attributesPromises = attributes.map(async attribute => {
@@ -131,7 +134,12 @@ export const getAttributes = async concept => {
           : []
       ) // Remove extra list then contains only 1 element
     )(attributesData);
-    return Promise.resolve(assoc('id', concept.id, transform));
+    return Promise.resolve(
+      pipe(
+        assoc('id', concept.id),
+        assoc('parent_type', parentTypeLabel)
+      )(transform)
+    );
   });
   return Promise.resolve(resultPromise);
 };
