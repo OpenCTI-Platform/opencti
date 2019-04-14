@@ -12,7 +12,7 @@ except ImportError:
 
 setup(
     name='pycti',
-    version='1.0.1',
+    version='1.0.2',
     description='Python API client for OpenCTI.',
     long_description='This is the official Python client for the OpenCTI application',
     author='Luatix',

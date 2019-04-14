@@ -11,7 +11,8 @@ module.exports.up = async next => {
       lastname: '',
       email: 'admin@opencti.io',
       grant: ['ROLE_ROOT', 'ROLE_ADMIN']
-    }
+    },
+    true
   );
   await addUser(
     {},

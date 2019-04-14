@@ -8,6 +8,7 @@ import {
 } from '../domain/group';
 import {
   createdByRef,
+  exports,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
@@ -24,6 +25,7 @@ const groupResolvers = {
   Group: {
     createdByRef: (group, args) => createdByRef(group.id, args),
     members: (group, args) => members(group.id, args),
+    exports: (group, args) => exports(group.id, args),
     permissions: (group, args) => permissions(group.id, args),
     editContext: group => fetchEditContext(group.id)
   },

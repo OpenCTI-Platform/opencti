@@ -141,55 +141,6 @@ export const relationRefs = (reportId, args) =>
     'extraRel'
   );
 
-export const reportExports = (reportId, args) => {
-  const { types } = args;
-
-  const result = Promise.all(
-    types.map(type => {
-      const query = `match $e isa Export; $e has export_type "${prepareString(
-        type
-      )}"; $e has created_at $c; (export: $e, exported: $r) isa exports; $r id ${reportId}; get $e, $c; sort $c desc;`;
-      return queryOne(query, ['e']).then(data => {
-        return data.e;
-      });
-    })
-  );
-  return result.then(data => {
-    return filter(n => !isNil(n), data);
-  });
-};
-
-export const reportRefreshExport = async (reportId, type) => {
-  const wTx = await takeWriteTx();
-  const query = `insert $export isa Export, 
-  has export_type "${prepareString(type)}",
-  has object_status 0,
-  has raw_data "",
-  has created_at ${now()},
-  has created_at_day "${dayFormat(now())}",
-  has created_at_month "${monthFormat(now())}",
-  has created_at_year "${yearFormat(now())}",
-  has updated_at ${now()};`;
-  const exportIterator = await wTx.query(query);
-  const createdExport = await exportIterator.next();
-  const createdExportId = await createdExport.map().get('export').id;
-  await wTx.query(
-    `match $from id ${createdExportId}; $to id ${reportId}; insert (export: $from, exported: $to) isa exports;`
-  );
-  await wTx.commit();
-  send(
-    'export',
-    type,
-    JSON.stringify({
-      type,
-      entity_type: 'Report',
-      entity_id: reportId,
-      export_id: createdExportId
-    })
-  );
-  return getById(reportId);
-};
-
 export const addReport = async (user, report) => {
   const wTx = await takeWriteTx();
   const reportIterator = await wTx.query(`insert $report isa Report,

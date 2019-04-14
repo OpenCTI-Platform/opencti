@@ -108,6 +108,7 @@ class Stix2:
             if 'observableRefs' in entity and len(entity['observableRefs']) > 0:
                 other_observables = entity['observableRefs']
                 for entity_observable_ref in entity['observableRefs']:
+                    print(entity_observable_ref)
                     if entity_observable_ref['stix_id'] not in object_refs:
                         object_refs.append(entity_observable_ref['stix_id'])
             if 'relationRefs' in entity and len(entity['relationRefs']) > 0:

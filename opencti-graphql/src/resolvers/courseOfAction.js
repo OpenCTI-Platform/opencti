@@ -8,6 +8,7 @@ import {
   createdByRef,
   markingDefinitions,
   reports,
+  exports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -28,6 +29,7 @@ const courseOfActionResolvers = {
     markingDefinitions: (courseOfAction, args) =>
       markingDefinitions(courseOfAction.id, args),
     reports: (courseOfAction, args) => reports(courseOfAction.id, args),
+    exports: (courseOfAction, args) => exports(courseOfAction.id, args),
     stixRelations: (courseOfAction, args) =>
       stixRelations(courseOfAction.id, args),
     editContext: courseOfAction => fetchEditContext(courseOfAction.id)

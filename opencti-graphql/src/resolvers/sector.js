@@ -9,12 +9,13 @@ import {
   createdByRef,
   markingDefinitions,
   reports,
+  exports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
 } from '../domain/stixDomainEntity';
 
 import { fetchEditContext } from '../database/redis';
@@ -29,6 +30,7 @@ const sectorResolvers = {
     createdByRef: (sector, args) => createdByRef(sector.id, args),
     markingDefinitions: (sector, args) => markingDefinitions(sector.id, args),
     reports: (sector, args) => reports(sector.id, args),
+    exports: (sector, args) => exports(sector.id, args),
     stixRelations: (campaign, args) => stixRelations(campaign.id, args),
     editContext: sector => fetchEditContext(sector.id)
   },

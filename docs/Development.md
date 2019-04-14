@@ -2,8 +2,6 @@
 
 *Prerequisites*:
 
-- NodeJS (>= 8)
-- JAVA (== 8)
 - Grakn (>= 1.5)
 - Redis (>= 3.0)
 - ElasticSearch (>= 6)
@@ -11,24 +9,11 @@
 
 *Installation of dependencies (Ubuntu 18.04)*:
 ```bash
-$ sudo apt-get install nodejs redis-server rabbitmq-server elasticsearch
+$ sudo apt-get install nodejs python3 python3-pip
 $ sudo curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 $ sudo echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 $ sudo apt-get update && sudo apt-get install yarn
 ```
-
-*Installation of the database (Grakn)*:
-```bash
-$ sudo apt-get install openjdk-8-jre
-$ mkdir /your/path/to/grakn
-$ cd /your/path/to/grakn
-$ wget https://github.com/graknlabs/grakn/releases/download/1.5.0/grakn-core-all-linux-1.5.0.tar.gz
-$ tar xvfz grakn-core-all-linux-1.5.0.tar.gz
-$ cd grakn-core-all-linux-1.5.0
-$ ./grakn server start
-```
-
-More information on the Grakn installation and configuration can be found on the [official documentation](https://dev.grakn.ai/docs/running-grakn/install-and-run).
 
 *Download the application files*:
 ```bash
@@ -65,7 +50,23 @@ $ yarn install
 *Start the application*:
 ```bash
 $ cd opencti-graphql
-$ yarn start
+$ yarn start &
 $ cd opencti-frontend
 $ yarn start
+```
+
+The default username is *admin@opencti.io* and the password is *admin*. Login and get the administrator token in your profile.
+
+*Configure the worker*:
+```bash
+$ cd worker
+$ cp config.yml.sample config.yml
+```
+
+Change the *config.yml* file according to your OpenCTI token, ElasticSearch, Grakn and RabbitMQ configuration.
+
+*Start the workers*:
+```bash
+$ python3 worker_export.py &
+$ python3 worker_import.py &
 ```

@@ -1,4 +1,4 @@
-import { assoc, map } from 'ramda';
+import { assoc, isNil, map, filter } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
@@ -18,7 +18,8 @@ import {
   getObject,
   prepareString,
   getSingleValueNumber,
-  prepareDate
+  prepareDate,
+  queryOne
 } from '../database/grakn';
 import {
   deleteEntity,
@@ -31,6 +32,7 @@ import {
   findAll as relationFindAll,
   search as relationSearch
 } from './stixRelation';
+import { send } from '../database/rabbitmq';
 
 export const findAll = args => elPaginate('stix-domain-entities', args);
 /* paginate(
@@ -160,6 +162,59 @@ export const stixRelations = (stixDomainEntityId, args) => {
     return relationSearch(finalArgs);
   }
   return relationFindAll(finalArgs);
+};
+
+export const exports = (stixDomainEntityId, args) => {
+  const { types } = args;
+
+  const result = Promise.all(
+    types.map(type => {
+      const query = `match $e isa Export; $e has export_type "${prepareString(
+        type
+      )}"; $e has created_at $c; (export: $e, exported: $x) isa exports; $x id ${stixDomainEntityId}; get $e, $c; sort $c desc;`;
+      return queryOne(query, ['e']).then(data => {
+        return data.e;
+      });
+    })
+  );
+  return result.then(data => {
+    return filter(n => !isNil(n), data);
+  });
+};
+
+export const stixDomainEntityRefreshExport = async (
+  stixDomainEntityId,
+  stixDomainEntityType,
+  type
+) => {
+  const wTx = await takeWriteTx();
+  const query = `insert $export isa Export, 
+  has export_type "${prepareString(type)}",
+  has object_status 0,
+  has raw_data "",
+  has created_at ${now()},
+  has created_at_day "${dayFormat(now())}",
+  has created_at_month "${monthFormat(now())}",
+  has created_at_year "${yearFormat(now())}",
+  has updated_at ${now()};`;
+  const exportIterator = await wTx.query(query);
+  const createdExport = await exportIterator.next();
+  const createdExportId = await createdExport.map().get('export').id;
+  await wTx.query(
+    `match $from id ${createdExportId}; $to id ${stixDomainEntityId}; insert (export: $from, exported: $to) isa exports;`
+  );
+  await wTx.commit();
+  send(
+    'opencti',
+    type,
+    JSON.stringify({
+      type,
+      entity_type: stixDomainEntityType,
+      entity_id: stixDomainEntityId,
+      export_id: createdExportId
+    })
+  );
+  return getById(stixDomainEntityId);
 };
 
 export const stixDomainEntityExportPush = async (

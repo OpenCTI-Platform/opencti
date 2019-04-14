@@ -9,7 +9,6 @@
     "build": "babel --out-dir ./dist ./src && pkg package.json --output ./build/opencti",
     "serv": "node dist/server.js",
     "schema": "babel-node ./src/schema/schema-init.js",
-    "schema:clear-rules": "babel-node ./src/schema/schema-clear-rules.js",
     "migrate": "babel-node ./src/database/migration.js",
     "migrate:add": "migrate create",
     "lint": "eslint .",

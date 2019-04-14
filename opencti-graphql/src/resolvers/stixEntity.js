@@ -1,3 +1,5 @@
+import { importData } from '../domain/stixEntity';
+
 const stixEntityResolvers = {
   StixEntity: {
     __resolveType(obj) {
@@ -11,6 +13,9 @@ const stixEntityResolvers = {
       }
       return 'Unknown';
     }
+  },
+  Mutation: {
+    importData: (_, { type, file }) => importData(type, file)
   }
 };
 

@@ -9,18 +9,16 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../relay/environment';
+import StixDomainEntityExport from '../stix_domain_entity/StixDomainEntityExport';
 import { reportEditionQuery } from './ReportEdition';
-import ReportExport, { reportExportQuery } from './ReportExport';
 import ReportEditionContainer from './ReportEditionContainer';
 
 const styles = theme => ({
@@ -38,14 +36,6 @@ const styles = theme => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
-  },
-  export: {
-    width: '100%',
-    paddingTop: 10,
-    textAlign: 'center',
-  },
-  loaderCircle: {
-    display: 'inline-block',
   },
 });
 
@@ -197,44 +187,12 @@ class ReportPopover extends Component {
             }}
           />
         </Drawer>
-        <Dialog
+        <StixDomainEntityExport
+          stixDomainEntityId={reportId}
+          stixDomainEntityType='Report'
+          handleClose={this.handleCloseExport.bind(this)}
           open={this.state.displayExport}
-          fullWidth={true}
-          TransitionComponent={Transition}
-          onClose={this.handleCloseExport.bind(this)}
-        >
-          <DialogTitle>{t('Export the report')}</DialogTitle>
-          <DialogContent>
-            <QueryRenderer
-              query={reportExportQuery}
-              variables={{ id: reportId, types: ['stix2.simple', 'stix2.full'] }}
-              render={({ props }) => {
-                if (props) {
-                  return (
-                    <ReportExport
-                      report={props.report}
-                      handleClose={this.handleCloseExport.bind(this)}
-                    />
-                  );
-                }
-                return (
-                  <div className={classes.export}>
-                    <CircularProgress
-                      size={40}
-                      thickness={2}
-                      className={classes.loaderCircle}
-                    />
-                  </div>
-                );
-              }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.handleCloseExport.bind(this)} color="primary">
-              {t('Close')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        />
       </div>
     );
   }

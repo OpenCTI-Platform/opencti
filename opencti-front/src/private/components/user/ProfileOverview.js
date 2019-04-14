@@ -82,7 +82,6 @@ class ProfileOverviewComponent extends Component {
       onCompleted: () => {
         setSubmitting(false);
         MESSAGING$.notifySuccess('The password has been updated');
-        this.setState({ displayMessage: true });
         resetForm();
       },
     });

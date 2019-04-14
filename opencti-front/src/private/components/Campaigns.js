@@ -2,7 +2,6 @@
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { CSVLink } from 'react-csv';
 import {
   assoc, compose, defaultTo, lensProp, map, over, pipe,
 } from 'ramda';
@@ -12,18 +11,10 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogActions from '@material-ui/core/DialogActions';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import IconButton from '@material-ui/core/IconButton';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
-import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import {
   ArrowDropDown,
@@ -32,11 +23,12 @@ import {
   ArrowDownward,
   Dashboard,
   TableChart,
-  SaveAlt,
 } from '@material-ui/icons';
 import { fetchQuery, QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 import SearchInput from '../../components/SearchInput';
+import StixDomainEntitiesImportData from './stix_domain_entity/StixDomainEntitiesImportData';
+import StixDomainEntitiesExportData from './stix_domain_entity/StixDomainEntitiesExportData';
 import CampaignsLines, { campaignsLinesQuery } from './campaign/CampaignsLines';
 import CampaignsCards, {
   campaignsCardsQuery,
@@ -45,7 +37,7 @@ import CampaignsCards, {
 import CampaignCreation from './campaign/CampaignCreation';
 import { dateFormat } from '../../utils/Time';
 
-const styles = theme => ({
+const styles = () => ({
   linesContainer: {
     marginTop: 10,
     paddingTop: 0,
@@ -77,17 +69,6 @@ const styles = theme => ({
   sortIcon: {
     float: 'left',
     margin: '-5px 0 0 15px',
-  },
-  export: {
-    width: '100%',
-    paddingTop: 10,
-    textAlign: 'center',
-  },
-  loaderCircle: {
-    display: 'inline-block',
-  },
-  rightIcon: {
-    marginLeft: theme.spacing.unit,
   },
 });
 
@@ -151,8 +132,7 @@ class Campaigns extends Component {
       sortBy: 'name',
       orderAsc: true,
       searchTerm: '',
-      exportCsvOpen: false,
-      exportCsvData: null,
+      csvData: null,
     };
   }
 
@@ -197,21 +177,8 @@ class Campaigns extends Component {
     );
   }
 
-  handleOpenExport(event) {
-    this.setState({ anchorExport: event.currentTarget });
-  }
-
-  handleCloseExport() {
-    this.setState({ anchorExport: null });
-  }
-
-  handleCloseExportCsv() {
-    this.setState({ exportCsvOpen: false, exportCsvData: null });
-  }
-
-  handleDownloadCSV() {
-    this.handleCloseExport();
-    this.setState({ exportCsvOpen: true });
+  handleGenerateCSV() {
+    this.setState({ csvData: null });
     const paginationOptions = {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
@@ -228,7 +195,7 @@ class Campaigns extends Component {
         map(n => assoc('created', dateFormat(n.created))(n)),
         map(n => assoc('modified', dateFormat(n.modified))(n)),
       )(data.campaigns.edges);
-      this.setState({ exportCsvData: finalData });
+      this.setState({ csvData: finalData });
     });
   }
 
@@ -367,7 +334,7 @@ class Campaigns extends Component {
   }
 
   render() {
-    const { classes, t } = this.props;
+    const { classes } = this.props;
     return (
       <div>
         <div className={classes.parameters}>
@@ -389,23 +356,12 @@ class Campaigns extends Component {
           >
             <TableChart />
           </IconButton>
-          <IconButton
-            onClick={this.handleOpenExport.bind(this)}
-            aria-haspopup="true"
-            color="primary"
-          >
-            <SaveAlt />
-          </IconButton>
-          <Menu
-            anchorEl={this.state.anchorExport}
-            open={Boolean(this.state.anchorExport)}
-            onClose={this.handleCloseExport.bind(this)}
-            style={{ marginTop: 50 }}
-          >
-            <MenuItem onClick={this.handleDownloadCSV.bind(this)}>
-              {t('CSV file')}
-            </MenuItem>
-          </Menu>
+          <StixDomainEntitiesImportData />
+          <StixDomainEntitiesExportData
+            fileName="Campaigns"
+            handleGenerateCSV={this.handleGenerateCSV.bind(this)}
+            csvData={this.state.csvData}
+          />
         </div>
         <div className="clearfix" />
         {this.state.view === 'cards' ? this.renderCards() : ''}
@@ -416,52 +372,6 @@ class Campaigns extends Component {
             orderMode: this.state.orderAsc ? 'asc' : 'desc',
           }}
         />
-        <Dialog
-          open={this.state.exportCsvOpen}
-          onClose={this.handleCloseExportCsv.bind(this)}
-          fullWidth={true}
-        >
-          <DialogTitle>{t('Export data in CSV')}</DialogTitle>
-          <DialogContent>
-            {this.state.exportCsvData === null ? (
-              <div className={classes.export}>
-                <CircularProgress
-                  size={40}
-                  thickness={2}
-                  className={classes.loaderCircle}
-                />
-              </div>
-            ) : (
-              <DialogContentText>
-                {t(
-                  'The CSV file has been generated with the parameters of the view and is ready for download.',
-                )}
-              </DialogContentText>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={this.handleCloseExportCsv.bind(this)}
-              color="primary"
-            >
-              {t('Cancel')}
-            </Button>
-            {this.state.exportCsvData !== null ? (
-              <Button
-                component={CSVLink}
-                data={this.state.exportCsvData}
-                separator={';'}
-                enclosingCharacter={'"'}
-                color="primary"
-                filename={`${t('Campaigns')}.csv`}
-              >
-                {t('Download')}
-              </Button>
-            ) : (
-              ''
-            )}
-          </DialogActions>
-        </Dialog>
       </div>
     );
   }

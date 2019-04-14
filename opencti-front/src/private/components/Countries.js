@@ -2,7 +2,6 @@
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { CSVLink } from 'react-csv';
 import {
   assoc, compose, defaultTo, lensProp, map, over, pipe,
 } from 'ramda';
@@ -13,29 +12,17 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import IconButton from '@material-ui/core/IconButton';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogActions from '@material-ui/core/DialogActions';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import {
-  ArrowDropDown,
-  ArrowDropUp,
-  TableChart,
-  SaveAlt,
-} from '@material-ui/icons';
+import { ArrowDropDown, ArrowDropUp, TableChart } from '@material-ui/icons';
 import { fetchQuery, QueryRenderer } from '../../relay/environment';
 import CountriesLines, { countriesLinesQuery } from './country/CountriesLines';
 import inject18n from '../../components/i18n';
 import SearchInput from '../../components/SearchInput';
+import StixDomainEntitiesImportData from './stix_domain_entity/StixDomainEntitiesImportData';
+import StixDomainEntitiesExportData from './stix_domain_entity/StixDomainEntitiesExportData';
 import CountryCreation from './country/CountryCreation';
 import { dateFormat } from '../../utils/Time';
 
-const styles = theme => ({
+const styles = () => ({
   header: {
     margin: '0 0 10px 0',
   },
@@ -54,17 +41,6 @@ const styles = theme => ({
   sortIcon: {
     float: 'left',
     margin: '-5px 0 0 15px',
-  },
-  export: {
-    width: '100%',
-    paddingTop: 10,
-    textAlign: 'center',
-  },
-  loaderCircle: {
-    display: 'inline-block',
-  },
-  rightIcon: {
-    marginLeft: theme.spacing.unit,
   },
 });
 
@@ -126,8 +102,7 @@ class Countries extends Component {
       orderAsc: true,
       searchTerm: '',
       view: 'lines',
-      exportCsvOpen: false,
-      exportCsvData: null,
+      csvData: null,
     };
   }
 
@@ -164,21 +139,8 @@ class Countries extends Component {
     );
   }
 
-  handleOpenExport(event) {
-    this.setState({ anchorExport: event.currentTarget });
-  }
-
-  handleCloseExport() {
-    this.setState({ anchorExport: null });
-  }
-
-  handleCloseExportCsv() {
-    this.setState({ exportCsvOpen: false, exportCsvData: null });
-  }
-
-  handleDownloadCSV() {
-    this.handleCloseExport();
-    this.setState({ exportCsvOpen: true });
+  handleGenerateCSV() {
+    this.setState({ csvData: null });
     const paginationOptions = {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
@@ -193,12 +155,12 @@ class Countries extends Component {
         map(n => assoc('created', dateFormat(n.created))(n)),
         map(n => assoc('modified', dateFormat(n.modified))(n)),
       )(data.countries.edges);
-      this.setState({ exportCsvData: finalData });
+      this.setState({ csvData: finalData });
     });
   }
 
   render() {
-    const { classes, t } = this.props;
+    const { classes } = this.props;
     const paginationOptions = {
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
@@ -220,23 +182,12 @@ class Countries extends Component {
             >
               <TableChart />
             </IconButton>
-            <IconButton
-              onClick={this.handleOpenExport.bind(this)}
-              aria-haspopup="true"
-              color="primary"
-            >
-              <SaveAlt />
-            </IconButton>
-            <Menu
-              anchorEl={this.state.anchorExport}
-              open={Boolean(this.state.anchorExport)}
-              onClose={this.handleCloseExport.bind(this)}
-              style={{ marginTop: 50 }}
-            >
-              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>
-                {t('CSV file')}
-              </MenuItem>
-            </Menu>
+            <StixDomainEntitiesImportData />
+            <StixDomainEntitiesExportData
+              fileName="Countries"
+              handleGenerateCSV={this.handleGenerateCSV.bind(this)}
+              csvData={this.state.csvData}
+            />
           </div>
           <div className="clearfix" />
         </div>
@@ -291,52 +242,6 @@ class Countries extends Component {
           />
         </List>
         <CountryCreation paginationOptions={paginationOptions} />
-        <Dialog
-          open={this.state.exportCsvOpen}
-          onClose={this.handleCloseExportCsv.bind(this)}
-          fullWidth={true}
-        >
-          <DialogTitle>{t('Export data in CSV')}</DialogTitle>
-          <DialogContent>
-            {this.state.exportCsvData === null ? (
-              <div className={this.props.classes.export}>
-                <CircularProgress
-                  size={40}
-                  thickness={2}
-                  className={this.props.classes.loaderCircle}
-                />
-              </div>
-            ) : (
-              <DialogContentText>
-                {t(
-                  'The CSV file has been generated with the parameters of the view and is ready for download.',
-                )}
-              </DialogContentText>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={this.handleCloseExportCsv.bind(this)}
-              color="primary"
-            >
-              {t('Cancel')}
-            </Button>
-            {this.state.exportCsvData !== null ? (
-              <Button
-                component={CSVLink}
-                data={this.state.exportCsvData}
-                separator={';'}
-                enclosingCharacter={'"'}
-                color="primary"
-                filename={`${t('Countries')}.csv`}
-              >
-                {t('Download')}
-              </Button>
-            ) : (
-              ''
-            )}
-          </DialogActions>
-        </Dialog>
       </div>
     );
   }

@@ -3,3 +3,4 @@ PyYAML
 grakn-client
 elasticsearch
 pika
+pycti

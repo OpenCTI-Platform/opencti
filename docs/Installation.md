@@ -2,8 +2,6 @@
 
 *Prerequisites*:
 
-- NodeJS (>= 8)
-- JAVA (== 8)
 - Grakn (>= 1.5)
 - Redis (>= 3.0)
 - ElasticSearch (>= 6)
@@ -11,7 +9,7 @@
 
 *Installation of dependencies (Ubuntu 18.04)*:
 ```bash
-$ sudo apt-get install nodejs npm redis-server rabbitmq-server
+$ sudo apt-get install nodejs npm python3 python3-pip
 ```
 
 *Download the application files*:
@@ -38,4 +36,20 @@ $ npm run migrate
 *Start the application*:
 ```bash
 $ node dist/server.js
+```
+
+The default username is *admin@opencti.io* and the password is *admin*. Login and get the administrator token in your profile.
+
+*Configure the worker*:
+```bash
+$ cd worker
+$ cp config.yml.sample config.yml
+```
+
+Change the *config.yml* file according to your OpenCTI token, ElasticSearch, Grakn and RabbitMQ configuration.
+
+*Start the workers*:
+```bash
+$ python3 worker_export.py &
+$ python3 worker_import.py &
 ```

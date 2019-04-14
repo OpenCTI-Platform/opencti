@@ -10,6 +10,7 @@ import {
   createdByRef,
   markingDefinitions,
   reports,
+  exports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -35,6 +36,7 @@ const incidentResolvers = {
     markingDefinitions: (incident, args) =>
       markingDefinitions(incident.id, args),
     reports: (incident, args) => reports(incident.id, args),
+    exports: (incident, args) => exports(incident.id, args),
     stixRelations: (incident, args) => stixRelations(incident.id, args),
     editContext: incident => fetchEditContext(incident.id)
   },

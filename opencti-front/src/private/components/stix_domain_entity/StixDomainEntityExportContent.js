@@ -34,26 +34,27 @@ const styles = () => ({
   },
 });
 
-export const reportMutationRefreshExport = graphql`
-  mutation ReportExportRefreshExportMutation(
+export const stixDomainEntityExportContentRefreshExportMutation = graphql`
+  mutation StixDomainEntityExportContentRefreshExportMutation(
     $id: ID!
+    $entityType: String!
     $type: String!
     $types: [String]!
   ) {
-    reportEdit(id: $id) {
-      refreshExport(type: $type) {
-        ...ReportExport_report @arguments(types: $types)
+    stixDomainEntityEdit(id: $id) {
+      refreshExport(entityType: $entityType, type: $type) {
+        ...StixDomainEntityExportContent_stixDomainEntity @arguments(types: $types)
       }
     }
   }
 `;
 
-class ReportExportComponent extends Component {
+class StixDomainEntityExportContentComponent extends Component {
   componentDidMount() {
     this.subscription = interval$.subscribe(() => {
       this.props.relay.refetch({
-        id: this.props.report.id,
-        types: ['stix2.simple', 'stix2.full'],
+        id: this.props.stixDomainEntity.id,
+        types: ['export.stix2.simple', 'export.stix2.full'],
       });
     });
   }
@@ -64,11 +65,12 @@ class ReportExportComponent extends Component {
 
   handleRefreshExport(type) {
     commitMutation({
-      mutation: reportMutationRefreshExport,
+      mutation: stixDomainEntityExportContentRefreshExportMutation,
       variables: {
-        id: this.props.report.id,
+        id: this.props.stixDomainEntity.id,
+        entityType: this.props.stixDomainEntityType,
         type,
-        types: ['stix2.simple', 'stix2.full'],
+        types: ['export.stix2.simple', 'export.stix2.full'],
       },
     });
   }
@@ -76,18 +78,20 @@ class ReportExportComponent extends Component {
   handleDownload(content) {
     fileDownload(
       Buffer.from(content, 'base64').toString('utf-8'),
-      `${this.props.report.name}.stix2.json`,
+      `${this.props.stixDomainEntity.name}.stix2.json`,
     );
   }
 
   render() {
-    const { t, nsdt, report } = this.props;
+    const { t, nsdt, stixDomainEntity } = this.props;
     const exportStix2Simple = head(
-      filter(n => n.export_type === 'stix2.simple', report.exports),
+      filter(n => n.export_type === 'export.stix2.simple', stixDomainEntity.exports),
     );
     const exportStix2Full = head(
-      filter(n => n.export_type === 'stix2.full', report.exports),
+      filter(n => n.export_type === 'export.stix2.full', stixDomainEntity.exports),
     );
+
+    console.log(stixDomainEntity);
 
     return (
       <div>
@@ -128,7 +132,7 @@ class ReportExportComponent extends Component {
             <ListItemSecondaryAction>
               <IconButton
                 color="secondary"
-                onClick={this.handleRefreshExport.bind(this, 'stix2.simple')}
+                onClick={this.handleRefreshExport.bind(this, 'export.stix2.simple')}
               >
                 <Refresh />
               </IconButton>
@@ -168,7 +172,7 @@ class ReportExportComponent extends Component {
             <ListItemSecondaryAction>
               <IconButton
                 color="secondary"
-                onClick={this.handleRefreshExport.bind(this, 'stix2.full')}
+                onClick={this.handleRefreshExport.bind(this, 'export.stix2.full')}
               >
                 <Refresh />
               </IconButton>
@@ -180,32 +184,32 @@ class ReportExportComponent extends Component {
   }
 }
 
-ReportExportComponent.propTypes = {
+StixDomainEntityExportContentComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
   nsdt: PropTypes.func,
-  report: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  stixDomainEntity: PropTypes.object,
+  stixDomainEntityType: PropTypes.string,
 };
 
-export const reportExportQuery = graphql`
-  query ReportExportQuery($id: String!, $types: [String]!) {
-    report(id: $id) {
-      ...ReportExport_report @arguments(types: $types)
+export const stixDomainEntityExportContentQuery = graphql`
+  query StixDomainEntityExportContentQuery($id: String!, $types: [String]!) {
+    stixDomainEntity(id: $id) {
+      ...StixDomainEntityExportContent_stixDomainEntity @arguments(types: $types)
     }
   }
 `;
 
-const ReportExport = createRefetchContainer(
-  ReportExportComponent,
+const StixDomainEntityExportContent = createRefetchContainer(
+  StixDomainEntityExportContentComponent,
   {
-    report: graphql`
-      fragment ReportExport_report on Report
+    stixDomainEntity: graphql`
+      fragment StixDomainEntityExportContent_stixDomainEntity on StixDomainEntity
         @argumentDefinitions(types: { type: "[String]!" }) {
         id
         name
+        entity_type
         exports(types: $types) {
           id
           export_type
@@ -216,10 +220,10 @@ const ReportExport = createRefetchContainer(
       }
     `,
   },
-  reportExportQuery,
+  stixDomainEntityExportContentQuery,
 );
 
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(ReportExport);
+)(StixDomainEntityExportContent);

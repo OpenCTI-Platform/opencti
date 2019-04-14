@@ -8,14 +8,13 @@ import {
   findById,
   objectRefs,
   observableRefs,
-  relationRefs,
-  reportExports,
-  reportRefreshExport
+  relationRefs
 } from '../domain/report';
 import {
   createdByRef,
   markingDefinitions,
   externalReferences,
+  exports,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
@@ -38,22 +37,21 @@ const reportResolvers = {
         return reportsTimeSeriesByEntity(args);
       }
       return reportsTimeSeries(args);
-    },
+    }
   },
   Report: {
     createdByRef: (report, args) => createdByRef(report.id, args),
     markingDefinitions: (report, args) => markingDefinitions(report.id, args),
     externalReferences: (report, args) => externalReferences(report.id, args),
     objectRefs: (report, args) => objectRefs(report.id, args),
+    exports: (report, args) => exports(report.id, args),
     observableRefs: (report, args) => observableRefs(report.id, args),
     relationRefs: (report, args) => relationRefs(report.id, args),
-    exports: (report, args) => reportExports(report.id, args),
     editContext: report => fetchEditContext(report.id)
   },
   Mutation: {
     reportEdit: (_, { id }, { user }) => ({
       delete: () => reportDelete(id),
-      refreshExport: ({ type, mode }) => reportRefreshExport(id, type, mode),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

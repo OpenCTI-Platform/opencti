@@ -11,6 +11,7 @@ import {
   createdByRef,
   markingDefinitions,
   reports,
+  exports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -41,6 +42,7 @@ const campaignResolvers = {
     markingDefinitions: (campaign, args) =>
       markingDefinitions(campaign.id, args),
     reports: (campaign, args) => reports(campaign.id, args),
+    exports: (campaign, args) => exports(campaign.id, args),
     stixRelations: (campaign, args) => stixRelations(campaign.id, args),
     editContext: campaign => fetchEditContext(campaign.id)
   },

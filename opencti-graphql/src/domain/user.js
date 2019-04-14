@@ -121,7 +121,7 @@ export const addPerson = async (user, newUser) => {
   });
 };
 
-export const addUser = async (user, newUser) => {
+export const addUser = async (user, newUser, displayToken = false) => {
   const newToken = generateOpenCTIWebToken();
   const wTx = await takeWriteTx();
   const query = `insert $user isa User,
@@ -193,6 +193,16 @@ export const addUser = async (user, newUser) => {
 
   await wTx.commit();
 
+  if (displayToken) {
+    // eslint-disable-next-line
+    console.log(
+      `Token for user ${newUser.name}: ${sign(
+        newToken,
+        conf.get('app:secret')
+      )}`
+    );
+  }
+
   return getById(createdUserId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
@@ -202,7 +212,9 @@ export const addUser = async (user, newUser) => {
 // User related
 export const loginFromProvider = async (email, name) => {
   const result = await queryOne(
-    `match $client isa User, has email "${email}"; (authorization:$token, client:$client); get;`,
+    `match $client isa User, has email "${prepareString(
+      email
+    )}"; (authorization:$token, client:$client); get;`,
     ['client', 'token']
   );
   if (isEmpty(result)) {
@@ -219,7 +231,9 @@ export const loginFromProvider = async (email, name) => {
 
 export const login = async (email, password) => {
   const result = await queryOne(
-    `match $client isa User, has email "${email}"; (authorization:$token, client:$client); get;`,
+    `match $client isa User, has email "${prepareString(
+      email
+    )}"; (authorization:$token, client:$client); get;`,
     ['client', 'token']
   );
   if (isEmpty(result)) {

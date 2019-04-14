@@ -8,12 +8,13 @@ import {
   createdByRef,
   markingDefinitions,
   reports,
+  exports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -26,6 +27,7 @@ const regionResolvers = {
     createdByRef: (region, args) => createdByRef(region.id, args),
     markingDefinitions: (region, args) => markingDefinitions(region.id, args),
     reports: (region, args) => reports(region.id, args),
+    exports: (region, args) => exports(region.id, args),
     stixRelations: (region, args) => stixRelations(region.id, args),
     editContext: region => fetchEditContext(region.id)
   },

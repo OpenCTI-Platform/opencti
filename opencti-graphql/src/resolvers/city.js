@@ -3,12 +3,13 @@ import {
   createdByRef,
   markingDefinitions,
   reports,
+  exports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -21,6 +22,7 @@ const cityResolvers = {
     createdByRef: (city, args) => createdByRef(city.id, args),
     markingDefinitions: (city, args) => markingDefinitions(city.id, args),
     reports: (city, args) => reports(city.id, args),
+    exports: (city, args) => exports(city.id, args),
     stixRelations: (city, args) => stixRelations(city.id, args),
     editContext: city => fetchEditContext(city.id)
   },

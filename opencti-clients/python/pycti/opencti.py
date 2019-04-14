@@ -54,6 +54,8 @@ class OpenCTI:
             data['externalReferences'] = self.parse_multiple(data['externalReferences'])
         if 'objectRefs' in data:
             data['objectRefs'] = self.parse_multiple(data['objectRefs'])
+        if 'observableRefs' in data:
+            data['observableRefs'] = self.parse_multiple(data['observableRefs'])
         if 'relationRefs' in data:
             data['relationRefs'] = self.parse_multiple(data['relationRefs'])
         return data
@@ -2373,6 +2375,15 @@ class OpenCTI:
                             }
                         }
                     }
+                    observableRefs {
+                        edges {
+                            node {
+                                id
+                                stix_id
+                                entity_type
+                            }
+                        }
+                    }
                     relationRefs {
                         edges {
                             node {
@@ -2937,7 +2948,7 @@ class OpenCTI:
         else:
             return None
 
-    def stix2_import_bundle(self, file_path, types=[]):
+    def stix2_import_bundle_from_file(self, file_path, types=[]):
         if not os.path.isfile(file_path):
             self.log('The bundle file does not exists')
             return None
@@ -2945,6 +2956,11 @@ class OpenCTI:
         with open(os.path.join(file_path)) as file:
             data = json.load(file)
 
+        stix2 = Stix2(self)
+        stix2.import_bundle(data, types)
+
+    def stix2_import_bundle(self, json_data, types=[]):
+        data = json.loads(json_data)
         stix2 = Stix2(self)
         stix2.import_bundle(data, types)
 

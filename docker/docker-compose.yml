@@ -16,6 +16,10 @@ services:
     image: luatix/opencti-worker
     build:
      context: ./worker
+    environment:
+      - RUN_USER=root
+    volumes:
+      - "./config:/opt/opencti/shared_config:rw"
     restart: always
   opencti:
     image: luatix/opencti
@@ -39,6 +43,8 @@ services:
       - RABBITMQ__PORT=5672
     ports:
       - "8080:4000"
+    volumes:
+      - "./config:/opt/opencti/shared_config:rw"
     depends_on:
       - grakn
       - redis

@@ -23,6 +23,14 @@ scalar DateTime
 scalar ConstraintString
 scalar ConstraintNumber
 
+### Upload
+input Upload {
+  name: String!
+  type: String!
+  size: Int!
+  base64: String!
+}
+
 ### Relations
 type RelationEmbedded {
   id: ID!
@@ -171,6 +179,7 @@ interface StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -238,6 +247,7 @@ type StixObservable implements GlobalObject & StixEntity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -407,6 +417,7 @@ interface Identity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -491,6 +502,7 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   token: String
   groups: GroupConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -580,6 +592,7 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -656,6 +669,7 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -730,6 +744,7 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -804,6 +819,7 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -878,6 +894,7 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -948,6 +965,7 @@ type Group implements GlobalObject & StixEntity & StixDomainEntity {
   members: UserConnection
   permissions: MarkingDefinitionConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1165,6 +1183,7 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   externalReferences: ExternalReferenceConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1241,6 +1260,7 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1320,6 +1340,7 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1406,6 +1427,7 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1492,6 +1514,7 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1573,6 +1596,7 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1650,6 +1674,7 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
   markingDefinitions: MarkingDefinitionConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1726,6 +1751,7 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
   markingDefinitions: MarkingDefinitionConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1801,6 +1827,7 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -2314,6 +2341,7 @@ type StixDomainEntityEditMutations {
   contextClean: StixDomainEntity
   relationAdd(input: RelationAddInput): RelationData
   relationDelete(relationId: ID!): RelationData
+  refreshExport(entityType: String!, type: String!): StixDomainEntity
   exportPush(exportId: String!, rawData: String!): Boolean @auth(for: ROLE_ADMIN)
 }
 
@@ -2557,7 +2585,6 @@ type ReportEditMutations {
   contextClean: Report
   relationAdd(input: RelationAddInput): RelationData
   relationDelete(relationId: ID!): RelationData
-  refreshExport(type: String!): Report
 }
 
 # Mutations
@@ -2567,6 +2594,8 @@ type Mutation {
   # Settings
   settingsAdd(input: SettingsAddInput): Settings @auth(for: ROLE_ADMIN)
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: ROLE_ADMIN)
+  # Import data
+  importData(type: String!, file: Upload!): Boolean @auth
   # StixDomainEntity
   stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth
   stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations @auth

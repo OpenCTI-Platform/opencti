@@ -10,13 +10,12 @@ import ReportKnowledge from './ReportKnowledge';
 import ReportObservables from './ReportObservables';
 
 const subscription = graphql`
-  subscription RootReportSubscription($id: ID!, $types: [String]!) {
+  subscription RootReportSubscription($id: ID!) {
     stixDomainEntity(id: $id) {
       ... on Report {
         ...Report_report
         ...ReportKnowledgeGraph_report
         ...ReportEditionContainer_report
-        ...ReportExport_report @arguments(types: $types)
       }
     }
   }
@@ -48,7 +47,7 @@ class RootReport extends Component {
     } = this.props;
     const sub = requestSubscription({
       subscription,
-      variables: { id: reportId, types: ['stix2.simple', 'stix2.full'] },
+      variables: { id: reportId, types: ['export.stix2.simple', 'export.stix2.full'] },
     });
     this.setState({ sub });
   }
