@@ -2,3 +2,4 @@ requests
 PyYAML
 setuptools
 pypandoc
+python-dateutil
