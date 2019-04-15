@@ -780,7 +780,7 @@ class OpenCTI:
         if stix_id is not None:
             object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
         else:
-            object_result = self.search_stix_domain_entity(name, 'Identity')
+            object_result = self.search_stix_domain_entity(name, type)
         if object_result is not None:
             return object_result
         else:
