@@ -2569,10 +2569,7 @@ class OpenCTI:
                                                             created=None,
                                                             modified=None
                                                             ):
-        if stix_id is not None:
-            object_result = self.get_stix_domain_entity_by_external_reference(external_reference_id, 'Report')
-        else:
-            object_result = None
+        object_result = self.get_stix_domain_entity_by_external_reference(external_reference_id, 'Report')
         if object_result is not None:
             return object_result
         else:
