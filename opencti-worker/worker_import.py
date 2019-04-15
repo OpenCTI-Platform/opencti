@@ -37,7 +37,8 @@ class WorkerExport:
             data = json.loads(body)
             if data['type'] == 'import.stix2.bundle':
                 self.opencti.stix2_import_bundle(base64.b64decode(data['content']).decode('utf-8'))
-        except:
+        except Exception as e:
+            print(e)
             return False
 
     def consume(self):

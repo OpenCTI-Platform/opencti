@@ -3,7 +3,7 @@ indexor:
 
 opencti:
   api_url: 'http://opencti'
-  api_key : 'REPLACE_API_KEY'
+  api_key: 'REPLACE_API_KEY'
   verbose: true
 
 grakn:
