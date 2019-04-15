@@ -80,10 +80,11 @@ export const paginate = (indexName, options) => {
   let must = [];
   let ordering = [];
   if (search !== null && search.length > 0) {
+    const finalSearch = search.replace('http://', '').replace('https://', '');
     must = append(
       {
         query_string: {
-          query: `*${search}*`,
+          query: `*${finalSearch}*`,
           analyze_wildcard: true,
           default_field: '*'
         }

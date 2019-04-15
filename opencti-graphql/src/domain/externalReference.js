@@ -1,4 +1,4 @@
-import { assoc, map } from 'ramda';
+import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
