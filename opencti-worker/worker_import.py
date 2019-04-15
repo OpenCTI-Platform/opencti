@@ -42,7 +42,7 @@ class WorkerExport:
             return False
 
     def consume(self):
-        self.channel.basic_consume('opencti-import', self.import_action, auto_ack=True)
+        self.channel.basic_consume(queue='opencti-import', on_message_callback=self.import_action, auto_ack=True)
         self.channel.start_consuming()
 
 
