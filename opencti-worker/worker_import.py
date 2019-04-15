@@ -12,7 +12,7 @@ from pycti import OpenCTI
 class WorkerExport:
     def __init__(self, verbose=True):
         # Load configuration
-        self.config = yaml.load(open(os.path.abspath(__file__) + '/config.yml'), Loader=yaml.FullLoader)
+        self.config = yaml.load(open(os.path.dirname(os.path.abspath(__file__)) + '/config.yml'), Loader=yaml.FullLoader)
 
         # Initialize OpenCTI client
         self.opencti = OpenCTI(self.config['opencti']['api_url'], self.config['opencti']['api_key'],
