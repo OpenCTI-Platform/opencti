@@ -12,7 +12,7 @@ from pycti import OpenCTI
 class WorkerExport:
     def __init__(self, verbose=True):
         # Load configuration
-        self.config = yaml.load(open(os.path.dirname(os.path.abspath(__file__)) + '/config.yml'), Loader=yaml.FullLoader)
+        self.config = yaml.load(open(os.path.dirname(os.path.abspath(__file__)) + '/config.yml'))
 
         # Initialize OpenCTI client
         self.opencti = OpenCTI(self.config['opencti']['api_url'], self.config['opencti']['api_key'],
@@ -42,7 +42,7 @@ class WorkerExport:
             return False
 
     def consume(self):
-        self.channel.basic_consume(queue='opencti-import', on_message_callback=self.import_action, auto_ack=True)
+        self.channel.basic_consume('opencti-import', self.import_action, auto_ack=True)
         self.channel.start_consuming()
 
 
