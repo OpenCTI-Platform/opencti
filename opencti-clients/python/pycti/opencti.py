@@ -2969,7 +2969,7 @@ class OpenCTI:
             'spec_version': '2.0',
             'objects': []
         }
-        if entity_type == 'Report':
+        if entity_type == 'report':
             bundle['objects'] = stix2.export_report(self.parse_stix(self.get_report(entity_id)), mode)
         return bundle
 
@@ -2986,7 +2986,7 @@ class OpenCTI:
         if 'Identity' in types:
             identities = self.get_identities()
             for identity in identities:
-                if identity['entity_type'] != 'Threat-Actor':
+                if identity['entity_type'] != 'threat-actor':
                     identity_bundle = stix2.filter_objects(uuids, stix2.export_identity(identity))
                     uuids = uuids + [x['id'] for x in identity_bundle]
                     bundle['objects'] = bundle['objects'] + identity_bundle

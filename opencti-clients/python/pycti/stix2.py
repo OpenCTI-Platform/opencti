@@ -36,12 +36,12 @@ class Stix2:
         other_relations = []
         if 'createdByRef' in entity and entity['createdByRef'] is not None:
             entity_created_by_ref = entity['createdByRef']
-            if entity_created_by_ref['entity_type'] == 'User':
+            if entity_created_by_ref['entity_type'] == 'user':
                 identity_class = 'individual'
-            elif entity_created_by_ref['entity_type'] == 'Sector':
+            elif entity_created_by_ref['entity_type'] == 'sector':
                 identity_class = 'class'
             else:
-                identity_class = entity_created_by_ref['entity_type'].lower()
+                identity_class = entity_created_by_ref['entity_type']
 
             created_by_ref = {
                 'id': entity_created_by_ref['stix_id'],
@@ -377,12 +377,12 @@ class Stix2:
         )
 
     def export_identity(self, entity):
-        if entity['entity_type'] == 'User':
+        if entity['entity_type'] == 'user':
             identity_class = 'individual'
-        elif entity['entity_type'] == 'Sector':
+        elif entity['entity_type'] == 'sector':
             identity_class = 'class'
         else:
-            identity_class = entity['entity_type'].lower()
+            identity_class = entity['entity_type']
 
         identity = {
             'id': entity['stix_id'],

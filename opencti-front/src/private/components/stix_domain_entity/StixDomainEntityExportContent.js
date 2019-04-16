@@ -91,8 +91,6 @@ class StixDomainEntityExportContentComponent extends Component {
       filter(n => n.export_type === 'export.stix2.full', stixDomainEntity.exports),
     );
 
-    console.log(stixDomainEntity);
-
     return (
       <div>
         <List>

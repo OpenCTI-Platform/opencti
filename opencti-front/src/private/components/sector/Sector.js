@@ -29,20 +29,24 @@ class SectorComponent extends Component {
     const { classes, sector } = this.props;
     return (
       <div className={classes.container}>
-        <SectorHeader sector={sector}/>
+        <SectorHeader sector={sector} />
         <Grid
           container={true}
           spacing={32}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={3}>
-            <SectorOverview sector={sector}/>
+          <Grid item={true} xs={sector.subsectors.edges.length > 0 ? 3 : 6}>
+            <SectorOverview sector={sector} />
           </Grid>
-          <Grid item={true} xs={3}>
-            <SectorSubsectors sector={sector}/>
-          </Grid>
+          {sector.subsectors.edges.length > 0 ? (
+            <Grid item={true} xs={3}>
+              <SectorSubsectors sector={sector} />
+            </Grid>
+          ) : (
+            ''
+          )}
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={sector.id}/>
+            <EntityLastReports entityId={sector.id} />
           </Grid>
         </Grid>
         <Grid
@@ -52,16 +56,16 @@ class SectorComponent extends Component {
           style={{ marginTop: 20 }}
         >
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart entityId={sector.id}/>
+            <EntityCampaignsChart entityId={sector.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={sector.id}/>
+            <EntityIncidentsChart entityId={sector.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={sector.id}/>
+            <EntityReportsChart entityId={sector.id} />
           </Grid>
         </Grid>
-        <SectorEdition sectorId={sector.id}/>
+        <SectorEdition sectorId={sector.id} />
       </div>
     );
   }
@@ -77,6 +81,13 @@ const Sector = createFragmentContainer(SectorComponent, {
   sector: graphql`
     fragment Sector_sector on Sector {
       id
+      subsectors {
+        edges {
+          node {
+            id
+          }
+        }
+      }
       ...SectorHeader_sector
       ...SectorOverview_sector
       ...SectorSubsectors_sector
