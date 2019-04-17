@@ -17,10 +17,6 @@ opencti = OpenCTI(config['opencti']['api_url'], config['opencti']['api_key'], co
 # Import the bundle
 #opencti.stix2_import_bundle_from_file(file_to_import)
 
-report = opencti.create_external_reference_if_not_exists(
-    'Mitre',
-    'T1044',
-    'https://attack.mitre.org/techniques/T1044',
-    'fdsfsd'
-    'internal'
-)['id']
+test = opencti.search_stix_domain_entity_by_name('APT28', 'Threat-Actor')
+
+print(test)

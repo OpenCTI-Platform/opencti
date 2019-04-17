@@ -138,7 +138,7 @@ class OpenCTI:
         else:
             return None
 
-    def search_stix_domain_entities(self, name_or_alias, type='Stix-Domain-Entity'):
+    def search_stix_domain_entities(self, keyword, type='Stix-Domain-Entity'):
         query = """
                query StixDomainEntities($search: String, $type: String) {
                    stixDomainEntities(search: $search, type: $type) {
@@ -152,11 +152,28 @@ class OpenCTI:
                    }
                }
            """
-        result = self.query(query, {'search': name_or_alias, 'type': type})
+        result = self.query(query, {'search': keyword, 'type': type})
         return self.parse_multiple(result['data']['stixDomainEntities'])
 
-    def search_stix_domain_entity(self, name_or_alias, type='Stix-Domain-Entity'):
-        result = self.search_stix_domain_entities(name_or_alias, type)
+    def search_stix_domain_entities_by_name(self, name_or_alias, type='Stix-Domain-Entity'):
+        query = """
+               query StixDomainEntities($name: String, $type: String) {
+                   stixDomainEntities(name: $name, type: $type) {
+                       edges {
+                           node {
+                               id
+                               entity_type
+                               alias
+                           }
+                       }
+                   }
+               }
+           """
+        result = self.query(query, {'name': name_or_alias, 'type': type})
+        return self.parse_multiple(result['data']['stixDomainEntities'])
+
+    def search_stix_domain_entity_by_name(self, name_or_alias, type='Stix-Domain-Entity'):
+        result = self.search_stix_domain_entities_by_name(name_or_alias, type)
         if len(result) > 0:
             return result[0]
         else:
@@ -780,7 +797,7 @@ class OpenCTI:
         if stix_id is not None:
             object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
         else:
-            object_result = self.search_stix_domain_entity(name, type)
+            object_result = self.search_stix_domain_entity_by_name(name, type)
         if object_result is not None:
             return object_result
         else:
@@ -961,7 +978,7 @@ class OpenCTI:
         if stix_id is not None:
             object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
         else:
-            object_result = self.search_stix_domain_entity(name, 'Threat-Actor')
+            object_result = self.search_stix_domain_entity_by_name(name, 'Threat-Actor')
         if object_result is not None:
             return object_result
         else:
@@ -1150,7 +1167,7 @@ class OpenCTI:
         if stix_id is not None:
             object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
         else:
-            object_result = self.search_stix_domain_entity(name, 'Intrusion-Set')
+            object_result = self.search_stix_domain_entity_by_name(name, 'Intrusion-Set')
         if object_result is not None:
             return object_result
         else:
@@ -1320,7 +1337,7 @@ class OpenCTI:
         if stix_id is not None:
             object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
         else:
-            object_result = self.search_stix_domain_entity(name, 'Campaign')
+            object_result = self.search_stix_domain_entity_by_name(name, 'Campaign')
         if object_result is not None:
             return object_result
         else:
@@ -1486,7 +1503,7 @@ class OpenCTI:
         if stix_id is not None:
             object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
         else:
-            object_result = self.search_stix_domain_entity(name, 'Incident')
+            object_result = self.search_stix_domain_entity_by_name(name, 'Incident')
         if object_result is not None:
             self.update_stix_domain_entity_field(object_result['id'], 'name', name)
             description is not None and self.update_stix_domain_entity_field(object_result['id'], 'description',
@@ -1657,7 +1674,7 @@ class OpenCTI:
         if stix_id is not None:
             object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
         else:
-            object_result = self.search_stix_domain_entity(name, 'Malware')
+            object_result = self.search_stix_domain_entity_by_name(name, 'Malware')
         if object_result is not None:
             return object_result
         else:
@@ -1795,7 +1812,7 @@ class OpenCTI:
         if stix_id is not None:
             object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
         else:
-            object_result = self.search_stix_domain_entity(name, 'Tool')
+            object_result = self.search_stix_domain_entity_by_name(name, 'Tool')
         if object_result is not None:
             return object_result
         else:
@@ -1931,7 +1948,7 @@ class OpenCTI:
         if stix_id is not None:
             object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
         else:
-            object_result = self.search_stix_domain_entity(name, 'Vulnerability')
+            object_result = self.search_stix_domain_entity_by_name(name, 'Vulnerability')
         if object_result is not None:
             return object_result
         else:
@@ -2147,7 +2164,7 @@ class OpenCTI:
         if stix_id is not None:
             object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
         else:
-            object_result = self.search_stix_domain_entity(name, 'Attack-Pattern')
+            object_result = self.search_stix_domain_entity_by_name(name, 'Attack-Pattern')
         if object_result is not None:
             self.update_stix_domain_entity_field(object_result['id'], 'name', name)
             description is not None and self.update_stix_domain_entity_field(object_result['id'], 'description',
@@ -2292,7 +2309,7 @@ class OpenCTI:
         if stix_id is not None:
             object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
         else:
-            object_result = self.search_stix_domain_entity(name, 'Course-Of-Action')
+            object_result = self.search_stix_domain_entity_by_name(name, 'Course-Of-Action')
         if object_result is not None:
             return object_result
         else:

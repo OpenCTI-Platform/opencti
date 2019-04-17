@@ -90,7 +90,10 @@ export const findByStixId = args =>
 export const findByName = args =>
   paginate(
     `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'};
-    $x has name "${prepareString(args.name)}"`,
+   $x has name $name;
+   $x has alias $alias;
+   { $name contains "${prepareString(args.name)}"; } or
+   { $alias contains "${prepareString(args.name)}"; }`,
     args,
     false
   );
