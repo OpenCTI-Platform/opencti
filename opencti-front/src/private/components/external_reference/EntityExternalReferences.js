@@ -18,7 +18,7 @@ import EntityExternalReferencesLines, {
 const styles = theme => ({
   paper: {
     minHeight: '100%',
-    margin: '-4px 0 0 0',
+    margin: '3px 0 0 0',
     padding: 0,
     backgroundColor: theme.palette.paper.background,
     color: theme.palette.text.main,
@@ -69,11 +69,7 @@ class EntityExternalReferences extends Component {
           }
           return (
             <div style={{ height: '100%' }}>
-              <Typography
-                variant="h4"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
+              <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
                 {t('External references')}
               </Typography>
               <div className="clearfix" />

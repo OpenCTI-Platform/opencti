@@ -189,7 +189,7 @@ class ReportPopover extends Component {
         </Drawer>
         <StixDomainEntityExport
           stixDomainEntityId={reportId}
-          stixDomainEntityType='Report'
+          stixDomainEntityType='report'
           handleClose={this.handleCloseExport.bind(this)}
           open={this.state.displayExport}
         />
