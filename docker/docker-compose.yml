@@ -1,7 +1,7 @@
 version: '3'
 services:
   grakn:
-    image: graknlabs/grakn:1.5.0
+    image: graknlabs/grakn:1.5.1
     restart: always
   redis:
     image: redis

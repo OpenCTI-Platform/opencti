@@ -43,7 +43,7 @@ matrix:
       install:
         - yarn install
       script:
-        - yarn build
+        - yarn test
 
 notifications:
   email: contact@luatix.org

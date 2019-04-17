@@ -158,6 +158,7 @@ class WorkspaceGraphComponent extends Component {
   }
 
   componentWillUnmount() {
+    this.saveGraph();
     this.subscription.unsubscribe();
   }
 

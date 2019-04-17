@@ -120,7 +120,9 @@ export const getAttributes = async concept => {
           transformedVal = `${moment(attribute.value).format(dateFormat)}Z`;
         }
         if (type === String) {
-          transformedVal = attribute.value.replace(/\\"/g, '"');
+          transformedVal = attribute.value
+            .replace(/\\"/g, '"')
+            .replace(/\\\\/g, '\\');
         }
         return { [attribute.type]: transformedVal };
       }), // Extract values
@@ -956,7 +958,9 @@ export const updateAttribute = async (id, input, tx = null) => {
       const oldValue = await oldValuesConcept[i].value();
       const typedOldValue =
         attrType === String
-          ? `"${prepareString(oldValue.replace(/\\"/g, '"'))}"`
+          ? `"${prepareString(
+              oldValue.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+            )}"`
           : attrType === Date
           ? prepareDate(oldValue)
           : oldValue;

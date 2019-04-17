@@ -113,6 +113,8 @@ class ReportKnowledgeGraphComponent extends Component {
       openEditRelation: false,
       editRelationId: null,
       currentLink: null,
+      lastLinkFirstSeen: null,
+      lastLinkLastSeen: null,
     };
     this.diagramContainer = React.createRef();
   }
@@ -144,6 +146,7 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   componentWillUnmount() {
+    this.saveGraph();
     this.subscription.unsubscribe();
   }
 
@@ -500,6 +503,10 @@ class ReportKnowledgeGraphComponent extends Component {
   handleResultRelationCreation(result) {
     const model = this.props.engine.getDiagramModel();
     const linkObject = model.getLink(this.state.currentLink);
+    this.setState({
+      lastLinkFirstSeen: result.first_seen,
+      lastLinkLastSeen: result.last_seen,
+    });
     const label = new EntityLabelModel();
     label.setExtras([
       {
@@ -606,6 +613,8 @@ class ReportKnowledgeGraphComponent extends Component {
       createRelationTo,
       openEditRelation,
       editRelationId,
+      lastLinkFirstSeen,
+      lastLinkLastSeen,
     } = this.state;
     return (
       <div className={classes.container} ref={this.diagramContainer}>
@@ -634,8 +643,12 @@ class ReportKnowledgeGraphComponent extends Component {
           open={openCreateRelation}
           from={createRelationFrom}
           to={createRelationTo}
-          firstSeen={dateFormat(report.published)}
-          lastSeen={dateFormat(report.published)}
+          firstSeen={
+            lastLinkFirstSeen || dateFormat(report.published)
+          }
+          lastSeen={
+            lastLinkLastSeen || dateFormat(report.published)
+          }
           weight={report.source_confidence_level}
           handleClose={this.handleCloseRelationCreation.bind(this)}
           handleResult={this.handleResultRelationCreation.bind(this)}
