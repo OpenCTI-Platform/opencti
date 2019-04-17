@@ -1,0 +1,21 @@
+indexor:
+  interval: 300
+
+opencti:
+  api_url: 'http://opencti'
+  api_key: ''
+  verbose: true
+
+grakn:
+  hostname: 'grakn'
+  port: 48555
+
+elasticsearch:
+  hostname: 'elasticsearch'
+  port: 9200
+
+rabbitmq:
+  hostname: 'rabbitmq'
+  port: 5672
+  username: 'guest'
+  password: 'guest'

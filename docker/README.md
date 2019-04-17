@@ -14,4 +14,4 @@ $ cd opencti/docker
 $ docker-compose up
 ```
 
-You can now go to http://localhost:4000 and log in with username *admin@opencti.io* and password *admin*.
+You can now go to http://localhost:8080 and log in with username *admin@opencti.io* and password *admin*.

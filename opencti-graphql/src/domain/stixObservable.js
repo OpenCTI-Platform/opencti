@@ -159,7 +159,7 @@ export const addStixObservable = async (user, stixObservable) => {
   await wTx.commit();
 
   return getById(createdStixObservableId).then(created => {
-    index('stix-observable', 'stix_observable', created);
+    index('stix-observables', 'stix_observable', created);
     return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
   });
 };

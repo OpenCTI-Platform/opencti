@@ -4,13 +4,13 @@
 /etc/init.d/rsyslog start
 
 # Wait launching
-echo "Waiting ElasticSearch to launch..."
-while ! nc -z elasticsearch 9200; do   
-  sleep 0.1
+while ! nc -z elasticsearch 9200; do
+  echo "Waiting ElasticSearch to launch..."
+  sleep 2
 done
-echo "Waiting Grakn to launch..."
-while ! nc -z grakn 48555; do   
-  sleep 0.1
+while ! nc -z grakn 48555; do
+  echo "Waiting Grakn to launch..."
+  sleep 2
 done
 
 # Chown the application
