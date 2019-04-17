@@ -299,7 +299,7 @@ class SectorEditionOverviewComponent extends Component {
   handleChangeSubsectors(name, values) {
     const { sector } = this.props;
     const currentSubsectors = pipe(
-      pathOr([], ['sectors', 'edges']),
+      pathOr([], ['subsectors', 'edges']),
       map(n => ({
         label: n.node.name,
         value: n.node.id,

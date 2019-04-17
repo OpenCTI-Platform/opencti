@@ -1,5 +1,8 @@
-import { generateOpenCTIWebToken } from '../user';
-import { OPENCTI_DEFAULT_DURATION, OPENCTI_ISSUER } from '../../config/conf';
+import { generateOpenCTIWebToken } from '../../../src/domain/user';
+import {
+  OPENCTI_DEFAULT_DURATION,
+  OPENCTI_ISSUER
+} from '../../../src/config/conf';
 
 test('Validation of roles assertion', () => {
   const webToken = generateOpenCTIWebToken();

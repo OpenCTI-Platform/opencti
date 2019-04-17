@@ -1079,7 +1079,7 @@ export const deleteById = async id => {
  * Grakn generic function to delete a relationship
  * @param id
  * @param relationId
- * @returns {Promise<AxiosResponse<any> | never | never>}
+ * @returns {Promise<any[] | never>}
  */
 export const deleteRelationById = async (id, relationId) => {
   const wTx = await takeWriteTx();

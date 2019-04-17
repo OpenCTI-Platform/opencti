@@ -6,13 +6,13 @@
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "start": "babel-node -r node_modules/dotenv/config ./src/server.js",
-    "build": "babel --out-dir ./dist ./src && pkg package.json --output ./build/opencti",
+    "build": "babel --out-dir ./dist ./src",
     "serv": "node dist/server.js",
     "schema": "babel-node ./src/schema/schema-init.js",
     "migrate": "babel-node ./src/database/migration.js",
     "migrate:add": "migrate create",
     "lint": "eslint .",
-    "test": "jest --coverage",
+    "test": "yarn build && jest --coverage --e test",
     "clean": "babel-node ./src/database/clean.js"
   },
   "bin": "./dist/server.js",
@@ -85,5 +85,8 @@
     "jest": "^24.5.0",
     "pkg": "^4.3.7",
     "prettier": "^1.16.4"
+  },
+  "jest": {
+    "testRegex": "/tests/.*/.*-test.js$"
   }
 }
