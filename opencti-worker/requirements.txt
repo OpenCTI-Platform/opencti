@@ -3,4 +3,5 @@ PyYAML
 grakn-client
 elasticsearch
 pika
+python-dateutil
 #pycti
