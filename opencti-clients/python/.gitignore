@@ -4,3 +4,4 @@ exports
 build
 dist
 pycti.egg-info
+logs

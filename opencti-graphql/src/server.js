@@ -29,6 +29,7 @@ const app = express();
 app.use(cookieParser());
 app.use(compression());
 app.use(helmet());
+app.use(bodyParser.json({ limit: '100mb' }));
 
 // Static for generated fronted
 const pub = path.join(__dirname, '../public');

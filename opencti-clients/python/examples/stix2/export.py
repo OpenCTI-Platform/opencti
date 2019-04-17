@@ -13,7 +13,7 @@ config = yaml.load(open(os.path.dirname(__file__) + '/config.yml'))
 export_file = './exports/IntrusionSets.json'
 
 # OpenCTI initialization
-opencti = OpenCTI(config['opencti']['api_url'], config['opencti']['api_key'], config['opencti']['verbose'])
+opencti = OpenCTI(config['opencti']['api_url'], config['opencti']['api_key'], config['opencti']['log_file'], config['opencti']['verbose'])
 
 # Import the bundle
 bundle = opencti.stix2_export_bundle(['Intrusion-Set'])

@@ -7,10 +7,14 @@ import json
 import base64
 
 from pycti import OpenCTI
+from logger import Logger
 
 
 class WorkerExport:
     def __init__(self, verbose=True):
+        # Initialize logger
+        self.logger = Logger(os.path.dirname(os.path.abspath(__file__)) + './logs/worker.log')
+
         # Load configuration
         self.config = yaml.load(open(os.path.dirname(os.path.abspath(__file__)) + '/config.yml'))
 
@@ -33,8 +37,8 @@ class WorkerExport:
 
     def export_action(self, ch, method, properties, body):
         try:
-            print('Receiving new action...')
             data = json.loads(body)
+            self.logger.log('Receiving new action of type: { ' + data['type'] + '}')
             bundle = None
             if data['type'] == 'export.stix2.simple':
                 bundle = self.opencti.stix2_export_entity(data['entity_type'], data['entity_id'], 'simple')
@@ -45,7 +49,7 @@ class WorkerExport:
                 bundle = base64.b64encode(bytes(json.dumps(bundle, indent=4), 'utf-8')).decode('utf-8')
                 self.opencti.push_stix_domain_entity_export(data['entity_id'], data['export_id'], bundle)
         except Exception as e:
-            print(e)
+            self.logger.log('An unexpected error occurred: { ' + str(e) + '}')
             return False
 
     def consume(self):

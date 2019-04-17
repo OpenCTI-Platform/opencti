@@ -7,6 +7,7 @@ import dateutil.parser
 import json
 import uuid
 
+from datetime import datetime
 from .stix2 import Stix2
 
 
@@ -18,17 +19,20 @@ class OpenCTI:
         :param verbose: Log all requests. Defaults to None
     """
 
-    def __init__(self, url, key, verbose=True):
-        self.verbose = verbose
+    def __init__(self, url, key, log_file='', verbose=True):
         self.api_url = url + '/graphql'
+        self.log_file = log_file
+        self.verbose = verbose
         self.request_headers = {
             'Authorization': 'Bearer ' + key,
             'Content-Type': 'application/json'
         }
 
     def log(self, message):
-        if self.verbose:
-            print(message)
+        if self.verbose and len(self.log_file) > 0:
+            file = open(self.log_file, 'a')
+            file.write('[' + datetime.today().strftime('%Y-%m-%d') + ']' + message + "\n")
+            file.close()
 
     def query(self, query, variables):
         r = requests.post(self.api_url, json={'query': query, 'variables': variables}, headers=self.request_headers)
