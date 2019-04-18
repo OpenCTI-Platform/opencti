@@ -96,16 +96,18 @@ export const write = async query => {
 /**
  * Load any grakn instance with internal grakn ID.
  * @param concept
+ * @param graknAttributes
  * @returns {Promise<any[] | never>}
  */
-export const getAttributes = async concept => {
+export const getAttributes = async (concept, graknAttributes = false) => {
   const conceptType = await concept.type();
   const parentType = await conceptType.sup();
   const parentTypeLabel = await parentType.label();
   // temporary workaround due to Grakn performances
   if (
-    (concept.isEntity() && parentTypeLabel === 'Stix-Domain-Entity') ||
-    parentTypeLabel === 'Identity'
+    !graknAttributes &&
+    concept.isEntity() &&
+    (parentTypeLabel === 'Stix-Domain-Entity' || parentTypeLabel === 'Identity')
   ) {
     const attributes = await elGetAttributes(
       'stix-domain-entities',
@@ -169,9 +171,10 @@ export const getAttributes = async concept => {
  * Load any grakn instance with internal grakn ID.
  * @param id
  * @param tx
+ * @param graknAttributes
  * @returns {Promise<any[] | never>}
  */
-export const getById = async (id, tx = null) => {
+export const getById = async (id, tx = null, graknAttributes = false) => {
   let iTx = null;
   if (tx === null) {
     iTx = await takeReadTx();
@@ -184,7 +187,7 @@ export const getById = async (id, tx = null) => {
     const iterator = await iTx.query(query);
     const answer = await iterator.next();
     const concept = answer.map().get('x');
-    const result = await getAttributes(concept);
+    const result = await getAttributes(concept, graknAttributes);
     if (tx === null) {
       await iTx.close();
     }
@@ -1006,7 +1009,7 @@ export const updateAttribute = async (id, input, tx = null) => {
     if (tx !== null) {
       return true;
     }
-    const result = await getById(id, wTx);
+    const result = await getById(id, wTx, true);
     await wTx.commit();
     return result;
   } catch (error) {
