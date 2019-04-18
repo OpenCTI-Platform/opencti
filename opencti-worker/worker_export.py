@@ -19,8 +19,12 @@ class WorkerExport:
         self.config = yaml.load(open(os.path.dirname(os.path.abspath(__file__)) + '/config.yml'))
 
         # Initialize OpenCTI client
-        self.opencti = OpenCTI(self.config['opencti']['api_url'], self.config['opencti']['api_key'],
-                               self.config['opencti']['verbose'])
+        self.opencti = OpenCTI(
+            self.config['opencti']['api_url'],
+            self.config['opencti']['api_key'],
+            os.path.dirname(os.path.abspath(__file__)) + '/logs/worker.log',
+            self.config['opencti']['verbose']
+        )
 
         # Initialize the RabbitMQ connection
         credentials = pika.PlainCredentials(self.config['rabbitmq']['username'], self.config['rabbitmq']['password'])

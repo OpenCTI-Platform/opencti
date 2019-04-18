@@ -1,7 +1,7 @@
 ![](docs/logo.png)
 ---
 [![Website](https://img.shields.io/badge/website-opencti.io-blue.svg)](https://www.opencti.io)
-[![CircleCI](https://circleci.com/gh/LuatixHQ/opencti/tree/master.svg?style=shield)](https://circleci.com/gh/LuatixHQ/opencti/tree/master)
+[![Jenkins](https://img.shields.io/jenkins/s/https/jenkins.luatix.org/job/opencti.svg)](https://jenkins.luatix.org/job/opencti)
 [![GitHub release](https://img.shields.io/github/release/LuatixHQ/opencti.svg)](https://github.com/LuatixHQ/opencti/releases/latest)
 
 OpenCTI is an open source platform allowing organizations to manage their cyber threat intelligence knowledge, investigations and indicators of compromise. OpenCTI can be integrated with other applications such as [Maltego](https://www.paterva.com/web7/buy/maltego-clients/maltego-ce.php), [MISP](https://www.misp-project.org/), [CORTEX](https://github.com/TheHive-Project/Cortex) and many other STIX2 compliant products. It has been designed as a modern web application including a GraphQL API and an UX oriented frontend.

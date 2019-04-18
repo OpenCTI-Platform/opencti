@@ -31,7 +31,7 @@ class OpenCTI:
     def log(self, message):
         if self.verbose and len(self.log_file) > 0:
             file = open(self.log_file, 'a')
-            file.write('[' + datetime.today().strftime('%Y-%m-%d') + ']' + message + "\n")
+            file.write('[' + datetime.today().strftime('%Y-%m-%d') + '] ' + message + "\n")
             file.close()
 
     def query(self, query, variables):

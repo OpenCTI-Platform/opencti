@@ -7,5 +7,5 @@ class Logger:
 
     def log(self, message):
         file = open(self.log_file, 'a')
-        file.write('[' + datetime.today().strftime('%Y-%m-%d') + ']' + message + "\n")
+        file.write('[' + datetime.today().strftime('%Y-%m-%d') + '] ' + message + "\n")
         file.close()
