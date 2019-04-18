@@ -93,15 +93,15 @@ class TopMenuExplore extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/explore/ttp"
+          to="/dashboard/explore/attack_patterns"
           variant={
-            location.pathname.includes('/dashboard/explore/ttp')
+            location.pathname.includes('/dashboard/explore/attack_patterns')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/explore/ttp')
+            location.pathname.includes('/dashboard/explore/attack_patterns')
               ? 'primary'
               : 'inherit'
           }

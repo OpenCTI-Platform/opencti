@@ -7,6 +7,7 @@ import TopBar from '../nav/TopBar';
 import Incident from './Incident';
 import IncidentReports from './IncidentReports';
 import IncidentKnowledge from './IncidentKnowledge';
+import IncidentObservables from './IncidentObservables';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -29,6 +30,7 @@ const incidentQuery = graphql`
       ...IncidentIdentity_incident
       ...IncidentReports_incident
       ...IncidentKnowledge_incident
+      ...IncidentObservables_incident
     }
   }
 `;
@@ -98,6 +100,15 @@ class RootIncident extends Component {
                     path="/dashboard/knowledge/incidents/:incidentId/knowledge"
                     render={routeProps => (
                       <IncidentKnowledge
+                        {...routeProps}
+                        incident={props.incident}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/knowledge/incidents/:incidentId/observables"
+                    render={routeProps => (
+                      <IncidentObservables
                         {...routeProps}
                         incident={props.incident}
                       />

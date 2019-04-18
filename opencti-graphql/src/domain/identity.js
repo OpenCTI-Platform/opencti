@@ -1,4 +1,4 @@
-import { map } from 'ramda';
+import { map, assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   deleteEntityById,
@@ -14,13 +14,22 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { deleteEntity, index } from '../database/elasticSearch';
+import {
+  deleteEntity,
+  index,
+  paginate as elPaginate
+} from '../database/elasticSearch';
 
 export const findAll = args => paginate('match $i isa Identity', args, false);
 
 export const findById = identityId => getById(identityId);
 
 export const search = args =>
+  elPaginate(
+    'stix-domain-entities',
+    assoc('types', ['user', 'organization', 'region', 'country', 'city'], args)
+  );
+/*
   paginate(
     `match $i isa Identity; 
     $i has name $name; 
@@ -30,6 +39,7 @@ export const search = args =>
     args,
     false
   );
+*/
 
 export const addIdentity = async (user, identity) => {
   const wTx = await takeWriteTx();
@@ -92,4 +102,4 @@ export const addIdentity = async (user, identity) => {
 export const identityDelete = identityId => {
   deleteEntity('stix-domain-entities', 'stix_domain_entity', identityId);
   return deleteEntityById(identityId);
-}
+};

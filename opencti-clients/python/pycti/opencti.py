@@ -259,6 +259,7 @@ class OpenCTI:
                     relationship_type
                     description
                     weight
+                    role_played
                     first_seen
                     last_seen
                     created
@@ -302,6 +303,7 @@ class OpenCTI:
                             relationship_type
                             description
                             weight
+                            role_played
                             first_seen
                             last_seen
                             created
@@ -445,6 +447,21 @@ class OpenCTI:
             }
         """
         self.query(query, {'id': id})
+
+    def get_stix_observable_by_id(self, id):
+        self.log('Getting stix observable ' + id + '...')
+        query = """
+            query StixObservable($id: String!) {
+                stixObservable(id: $id) {
+                    id
+                    stix_id
+                    entity_type
+                    observable_value
+                }
+            }
+        """
+        result = self.query(query, {'id': id})
+        return result['data']['stixObservable']
 
     def get_marking_definition_by_stix_id(self, stix_id):
         query = """

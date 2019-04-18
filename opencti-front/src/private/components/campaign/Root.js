@@ -7,6 +7,7 @@ import TopBar from '../nav/TopBar';
 import Campaign from './Campaign';
 import CampaignReports from './CampaignReports';
 import CampaignKnowledge from './CampaignKnowledge';
+import CampaignObservables from './CampaignObservables';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -29,6 +30,7 @@ const campaignQuery = graphql`
       ...CampaignIdentity_campaign
       ...CampaignReports_campaign
       ...CampaignKnowledge_campaign
+      ...CampaignObservables_campaign
     }
   }
 `;
@@ -98,6 +100,15 @@ class RootCampaign extends Component {
                     path="/dashboard/knowledge/campaigns/:campaignId/knowledge"
                     render={routeProps => (
                       <CampaignKnowledge
+                        {...routeProps}
+                        campaign={props.campaign}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/knowledge/campaigns/:campaignId/observables"
+                    render={routeProps => (
+                      <CampaignObservables
                         {...routeProps}
                         campaign={props.campaign}
                       />

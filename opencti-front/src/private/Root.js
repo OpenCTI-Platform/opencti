@@ -12,7 +12,8 @@ import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
 import StixDomainEntities from './components/StixDomainEntities';
 import ExploreVictimology from './components/explore/Victimology';
-import Workspaces from './components/Workspaces';
+import ExploreAttackPatterns from './components/explore/AttackPatterns';
+// import Workspaces from './components/Workspaces';
 import StixObservables from './components/StixObservables';
 import RootStixObservable from './components/stix_observable/Root';
 import RootWorkspace from './components/workspace/Root';
@@ -354,9 +355,18 @@ class Root extends Component {
                         />
                         <BoundaryRoute
                           exact
+                          path="/dashboard/explore/attack_patterns"
+                          component={ExploreAttackPatterns}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/explore/attack_patterns/:stixDomainEntityId"
+                          component={ExploreAttackPatterns}
+                        />
+                        {/* <BoundaryRoute
+                          exact
                           path="/dashboard/investigate"
                           component={Workspaces}
-                        />
+                        /> */}
                         <BoundaryRoute
                           exact
                           path="/dashboard/investigate/:workspaceId"

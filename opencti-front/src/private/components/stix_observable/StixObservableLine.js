@@ -78,10 +78,52 @@ const inlineStyles = {
   },
 };
 
+const inlineStylesSeen = {
+  entity_type: {
+    float: 'left',
+    width: '15%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  observable_value: {
+    float: 'left',
+    width: '35%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  first_seen: {
+    float: 'left',
+    width: '15%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  last_seen: {
+    float: 'left',
+    width: '15%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  marking: {
+    float: 'left',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+};
+
 class StixObservableLineComponent extends Component {
   render() {
     const {
-      t, fd, classes, stixObservable,
+      t, fd, classes, stixObservable, displaySeen,
     } = this.props;
 
     return (
@@ -99,20 +141,60 @@ class StixObservableLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.entity_type}
+                style={
+                  displaySeen
+                    ? inlineStylesSeen.entity_type
+                    : inlineStyles.entity_type
+                }
               >
                 {t(`observable_${stixObservable.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.observable_value}
+                style={
+                  displaySeen
+                    ? inlineStylesSeen.observable_value
+                    : inlineStyles.observable_value
+                }
               >
                 {stixObservable.observable_value}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created_at}>
-                {fd(stixObservable.created_at)}
-              </div>
-              <div className={classes.bodyItem} style={inlineStyles.marking}>
+              {!displaySeen ? (
+                <div
+                  className={classes.bodyItem}
+                  style={inlineStyles.created_at}
+                >
+                  {fd(stixObservable.created_at)}
+                </div>
+              ) : (
+                ''
+              )}
+              {displaySeen ? (
+                <div
+                  className={classes.bodyItem}
+                  style={inlineStylesSeen.first_seen}
+                >
+                  {fd(stixObservable.first_seen)}
+                </div>
+              ) : (
+                ''
+              )}
+              {displaySeen ? (
+                <div
+                  className={classes.bodyItem}
+                  style={inlineStylesSeen.last_seen}
+                >
+                  {fd(stixObservable.last_seen)}
+                </div>
+              ) : (
+                ''
+              )}
+              <div
+                className={classes.bodyItem}
+                style={
+                  displaySeen ? inlineStylesSeen.marking : inlineStyles.marking
+                }
+              >
                 {take(
                   1,
                   pathOr([], ['markingDefinitions', 'edges'], stixObservable),
@@ -137,6 +219,7 @@ class StixObservableLineComponent extends Component {
 
 StixObservableLineComponent.propTypes = {
   stixObservable: PropTypes.object,
+  displaySeen: PropTypes.bool,
   classes: PropTypes.object,
   fd: PropTypes.func,
   t: PropTypes.func,
@@ -150,6 +233,8 @@ const StixObservableLineFragment = createFragmentContainer(
         id
         entity_type
         observable_value
+        first_seen
+        last_seen
         created_at
         markingDefinitions {
           edges {
@@ -171,7 +256,7 @@ export const StixObservableLine = compose(
 
 class StixObservableLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, displaySeen } = this.props;
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -182,20 +267,60 @@ class StixObservableLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.entity_type}
+                style={
+                  displaySeen
+                    ? inlineStylesSeen.entity_type
+                    : inlineStyles.entity_type
+                }
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.observable_value}
+                style={
+                  displaySeen
+                    ? inlineStylesSeen.observable_value
+                    : inlineStyles.observable_value
+                }
               >
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created_at}>
-                <div className="fakeItem" style={{ width: 140 }} />
-              </div>
-              <div className={classes.bodyItem} style={inlineStyles.marking}>
+              {!displaySeen ? (
+                <div
+                  className={classes.bodyItem}
+                  style={inlineStyles.created_at}
+                >
+                  <div className="fakeItem" style={{ width: 140 }} />
+                </div>
+              ) : (
+                ''
+              )}
+              {displaySeen ? (
+                <div
+                  className={classes.bodyItem}
+                  style={inlineStylesSeen.first_seen}
+                >
+                  <div className="fakeItem" style={{ width: 140 }} />
+                </div>
+              ) : (
+                ''
+              )}
+              {displaySeen ? (
+                <div
+                  className={classes.bodyItem}
+                  style={inlineStylesSeen.last_seen}
+                >
+                  <div className="fakeItem" style={{ width: 140 }} />
+                </div>
+              ) : (
+                ''
+              )}
+              <div
+                className={classes.bodyItem}
+                style={
+                  displaySeen ? inlineStylesSeen.marking : inlineStyles.marking
+                }
+              >
                 <div className="fakeItem" style={{ width: 100 }} />
               </div>
             </div>
@@ -210,6 +335,7 @@ class StixObservableLineDummyComponent extends Component {
 }
 
 StixObservableLineDummyComponent.propTypes = {
+  displaySeen: PropTypes.bool,
   classes: PropTypes.object,
 };
 

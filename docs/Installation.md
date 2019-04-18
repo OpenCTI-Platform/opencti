@@ -21,7 +21,7 @@ $ tar xvfz opencti-release-0.1.tar.gz
 
 *Configure the application*:
 ```bash
-$ cd opencti-release-0.1
+$ cd opencti
 $ cp config/default.json config/production.json
 ```
 

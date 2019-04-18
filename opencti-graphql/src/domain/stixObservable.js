@@ -1,4 +1,5 @@
-import { assoc, map } from 'ramda';
+import { assoc, map, pipe, assocPath } from 'ramda';
+import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -28,7 +29,31 @@ import {
   paginate as elPaginate
 } from '../database/elasticSearch';
 
-export const findAll = args => elPaginate('stix-observables', args);
+export const findAll = args => {
+  if (
+    !args.firstSeenStart &&
+    !args.firstSeenStop &&
+    !args.lastSeenStart &&
+    !args.lastSeenStop
+  ) {
+    return elPaginate('stix-observables', args);
+  }
+  return relationFindAll({
+    relationType: 'indicates',
+    fromTypes: args.types ? args.types : ['Stix-Observable'],
+    firstSeenStart: args.firstSeenStart,
+    firstSeenStop: args.firstSeenStop,
+    lastSeenStart: args.lastSeenStart,
+    lastSeenStop: args.lastSeenStop
+  }).then(relations => {
+    const observablesEdges = pipe(
+      map(n => assocPath(['node', 'from', 'first_seen'], n.node.first_seen, n)),
+      map(n => assocPath(['node', 'from', 'last_seen'], n.node.last_seen, n)),
+      map(n => ({ node: n.node.from, cursor: n.cursor }))
+    )(relations.edges);
+    return assoc('edges', observablesEdges, relations);
+  });
+};
 /*
   paginate(
     `match ${
@@ -57,7 +82,8 @@ export const findByValue = args =>
     false
   );
 
-export const search = args =>
+export const search = args => elPaginate('stix-observables', args);
+/*
   paginate(
     `match $x isa ${args.type ? args.type : 'Stix-Observable'};
     $x has observable_value $value;
@@ -67,6 +93,7 @@ export const search = args =>
     args,
     false
   );
+*/
 
 export const createdByRef = stixObservableId =>
   getObject(
@@ -116,6 +143,11 @@ export const stixRelations = (stixObservableId, args) => {
 export const addStixObservable = async (user, stixObservable) => {
   const wTx = await takeWriteTx();
   const query = `insert $stixObservable isa ${stixObservable.type},
+    has stix_id "${
+      stixObservable.stix_id
+        ? prepareString(stixObservable.stix_id)
+        : `observable--${uuid()}`
+    }",
     has entity_type "${prepareString(stixObservable.type.toLowerCase())}",
     has name "",
     has description "",

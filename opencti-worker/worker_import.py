@@ -13,7 +13,7 @@ from logger import Logger
 class WorkerExport:
     def __init__(self, verbose=True):
         # Initialize logger
-        self.logger = Logger(os.path.dirname(os.path.abspath(__file__)) + './logs/worker.log')
+        self.logger = Logger(os.path.dirname(os.path.abspath(__file__)) + '/logs/worker.log')
 
         # Load configuration
         self.config = yaml.load(open(os.path.dirname(os.path.abspath(__file__)) + '/config.yml'))
@@ -38,11 +38,11 @@ class WorkerExport:
     def import_action(self, ch, method, properties, body):
         try:
             data = json.loads(body)
-            self.logger.log('Receiving new action of type: { ' + data['type'] + '}')
+            self.logger.log('Receiving new action of type: { ' + data['type'] + ' }')
             if data['type'] == 'import.stix2.bundle':
                 self.opencti.stix2_import_bundle(base64.b64decode(data['content']).decode('utf-8'))
         except Exception as e:
-            self.logger.log('An unexpected error occurred: { ' + str(e) + '}')
+            self.logger.log('An unexpected error occurred: { ' + str(e) + ' }')
             return False
 
     def consume(self):

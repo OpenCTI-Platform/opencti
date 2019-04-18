@@ -808,7 +808,7 @@ export const paginateRelationships = (
   } = options;
   const offset = after ? cursorToOffset(after) : 0;
   const finalQuery = `
-  ${query}; 
+  ${query};
   ${fromId ? `$from id ${fromId};` : ''}
   ${toId ? `$to id ${toId};` : ''} ${
     fromTypes && fromTypes.length > 0
@@ -822,18 +822,12 @@ export const paginateRelationships = (
       ? `${join(' ', map(toType => `{ $to isa ${toType}; } or`, toTypes))}
   { $to isa ${head(toTypes)}; };`
       : ''
-  } ${
-    firstSeenStart
-      ? `$rel has first_seen $fs; $fs > ${prepareDate(
-          firstSeenStart
-        )}; $fs < ${prepareDate(firstSeenStop)};`
-      : ''
-  } ${
-    lastSeenStart
-      ? `$rel has last_seen $ls; $ls > ${prepareDate(
-          lastSeenStart
-        )}; $ls < ${prepareDate(lastSeenStop)};`
-      : ''
+  } ${firstSeenStart || firstSeenStop ? `$rel has first_seen $fs; ` : ''} ${
+    firstSeenStart ? `$fs > ${prepareDate(firstSeenStart)}; ` : ''
+  } ${firstSeenStop ? `$fs < ${prepareDate(firstSeenStop)}; ` : ''} ${
+    lastSeenStart || lastSeenStop ? `$rel has last_seen $ls; ` : ''
+  } ${lastSeenStart ? `$ls > ${prepareDate(lastSeenStart)}; ` : ''} ${
+    lastSeenStop ? `$ls < ${prepareDate(lastSeenStop)}; ` : ''
   } ${
     weights
       ? `$rel has weight $weight; ${join(

@@ -665,6 +665,7 @@ define
 
    "Stix-Observable" sub entity,
     abstract,
+    has "stix_id",
     has "entity_type",
     has "name",
     has "description",

@@ -71,9 +71,7 @@ class SectorsLines extends Component {
     if (!this.props.relay.hasMore() || this.props.relay.isLoading()) {
       return;
     }
-    this.props.relay.loadMore(
-      this.props.searchTerm.length > 0 ? 90000 : 25,
-    );
+    this.props.relay.loadMore(this.props.searchTerm.length > 0 ? 90000 : 25);
   }
 
   _isRowLoaded({ index }) {

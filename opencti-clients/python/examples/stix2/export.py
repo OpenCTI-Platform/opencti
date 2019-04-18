@@ -16,7 +16,7 @@ export_file = './exports/IntrusionSets.json'
 opencti = OpenCTI(config['opencti']['api_url'], config['opencti']['api_key'], config['opencti']['log_file'], config['opencti']['verbose'])
 
 # Import the bundle
-bundle = opencti.stix2_export_bundle(['Intrusion-Set'])
+bundle = opencti.stix2_export_entity('report', 'V946288', 'full')
 
 with open(export_file, 'w') as file:
     json.dump(bundle, file, indent=4)

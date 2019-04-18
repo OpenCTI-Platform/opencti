@@ -93,6 +93,8 @@ class EntityStixRelationsTableTime extends Component {
   render() {
     const {
       t,
+      md,
+      yd,
       classes,
       entityId,
       toTypes,
@@ -179,25 +181,33 @@ class EntityStixRelationsTableTime extends Component {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {stixRelationsTimeSeries.map(row => (
-                        <TableRow key={row.date} hover={true}>
-                          <TableCell
-                            component="th"
-                            scope="row"
-                            padding="dense"
-                            className={classes.tableBody}
-                          >
-                            {row.date}
-                          </TableCell>
-                          <TableCell
-                            align="right"
-                            padding="dense"
-                            className={classes.tableBody}
-                          >
-                            {row.value}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {stixRelationsTimeSeries.map((row) => {
+                        let date;
+                        if (this.state.interval === 'month') {
+                          date = md(row.date);
+                        } else if (this.state.interval === 'year') {
+                          date = yd(row.date);
+                        }
+                        return (
+                          <TableRow key={row.date} hover={true}>
+                            <TableCell
+                              component="th"
+                              scope="row"
+                              padding="dense"
+                              className={classes.tableBody}
+                            >
+                              {date}
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              padding="dense"
+                              className={classes.tableBody}
+                            >
+                              {row.value}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 );
@@ -256,6 +266,7 @@ EntityStixRelationsTableTime.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   md: PropTypes.func,
+  yd: PropTypes.func,
 };
 
 export default compose(

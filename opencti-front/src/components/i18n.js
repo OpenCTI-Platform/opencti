@@ -31,11 +31,7 @@ const inject18n = (WrappedComponent) => {
       });
       const standardDate = date => this.props.intl.formatDate(date);
       const monthDate = date => this.props.intl.formatDate(date, { month: 'short', year: 'numeric' });
-      const yearDate = date => this.props.intl.formatDate(date, {
-        day: 'numeric',
-        month: 'numeric',
-        year: 'numeric',
-      });
+      const yearDate = date => this.props.intl.formatDate(date, { year: 'numeric' });
       return (
         <WrappedComponent
           {...this.props}

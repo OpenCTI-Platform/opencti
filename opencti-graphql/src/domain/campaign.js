@@ -26,6 +26,8 @@ export const findAll = args =>
 // paginate('match $m isa Campaign', args);
 
 export const search = args =>
+  elPaginate('stix-domain-entities', assoc('type', 'campaign', args));
+/*
   paginate(
     `match $c isa Campaign; 
     $c has name $name; 
@@ -35,6 +37,7 @@ export const search = args =>
     args,
     false
   );
+*/
 
 export const campaignsTimeSeries = args =>
   timeSeries('match $x isa Campaign', args);

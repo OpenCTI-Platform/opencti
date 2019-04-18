@@ -135,7 +135,11 @@ class StixObservablesRightBar extends Component {
 
 StixObservablesRightBar.propTypes = {
   types: PropTypes.array,
+  lastSeenStart: PropTypes.string,
+  lastSeenStop: PropTypes.string,
   handleToggle: PropTypes.func,
+  handleChangeLastSeenStart: PropTypes.func,
+  handleChangeLastSeenStop: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

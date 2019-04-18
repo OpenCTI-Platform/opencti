@@ -31,9 +31,9 @@ class Stix2:
 
     def prepare_export(self, entity, stix_object, mode='simple'):
         result = []
-        other_objects = []
-        other_observables = []
-        other_relations = []
+        objects_to_get = []
+        observables_to_get = []
+        relations_to_get = []
         if 'createdByRef' in entity and entity['createdByRef'] is not None:
             entity_created_by_ref = entity['createdByRef']
             if entity_created_by_ref['entity_type'] == 'user':
@@ -102,17 +102,16 @@ class Stix2:
             stix_object['external_references'] = external_references
         if 'objectRefs' in entity and len(entity['objectRefs']) > 0:
             object_refs = []
-            other_objects = entity['objectRefs']
+            objects_to_get = entity['objectRefs']
             for entity_object_ref in entity['objectRefs']:
                 object_refs.append(entity_object_ref['stix_id'])
             if 'observableRefs' in entity and len(entity['observableRefs']) > 0:
-                other_observables = entity['observableRefs']
+                observables_to_get = entity['observableRefs']
                 for entity_observable_ref in entity['observableRefs']:
-                    print(entity_observable_ref)
                     if entity_observable_ref['stix_id'] not in object_refs:
                         object_refs.append(entity_observable_ref['stix_id'])
             if 'relationRefs' in entity and len(entity['relationRefs']) > 0:
-                other_relations = entity['relationRefs']
+                relations_to_get = entity['relationRefs']
                 for entity_relation_ref in entity['relationRefs']:
                     if entity_relation_ref['stix_id'] not in object_refs:
                         object_refs.append(entity_relation_ref['stix_id'])
@@ -121,8 +120,8 @@ class Stix2:
         result.append(stix_object)
 
         uuids = [x['id'] for x in result]
-        if mode == 'full' and len(other_objects) > 0:
-            for entity_object in other_objects:
+        if mode == 'full' and len(objects_to_get) > 0:
+            for entity_object in objects_to_get:
                 entity_object_data = None
                 # Sector
                 entity_object_data = self.export_identity(
@@ -219,7 +218,16 @@ class Stix2:
                 entity_object_bundle = self.filter_objects(uuids, entity_object_data)
                 uuids = uuids + [x['id'] for x in entity_object_bundle]
                 result = result + entity_object_bundle
-            for relation_object in other_relations:
+            for observable_object in observables_to_get:
+                observable_object_data = self.export_stix_observable(
+                    self.opencti.parse_stix(
+                        self.opencti.get_stix_observable_by_id(observable_object['id'])
+                    )
+                )
+                observable_object_bundle = self.filter_objects(uuids, observable_object_data)
+                uuids = uuids + [x['id'] for x in observable_object_bundle]
+                result = result + observable_object_bundle
+            for relation_object in relations_to_get:
                 relation_object_data = self.export_stix_relation(
                     self.opencti.parse_stix(
                         self.opencti.get_stix_relation_by_id(relation_object['id'])
@@ -697,6 +705,14 @@ class Stix2:
             stix_object['modified'] if 'modified' in stix_object else None,
         )
 
+    def export_stix_observable(self, entity):
+        stix_observable = {
+            'id': entity['stix_id'],
+            'type': entity['entity_type'],
+            'value': entity['observable_value']
+        }
+        return self.prepare_export(entity, stix_observable)
+
     def export_stix_relation(self, entity):
         stix_relation = {
             'id': entity['stix_id'],
@@ -706,6 +722,7 @@ class Stix2:
             'x_opencti_first_seen': entity['first_seen'],
             'x_opencti_last_seen': entity['last_seen'],
             'x_opencti_weight': entity['weight'],
+            'x_opencti_role_played': entity['role_played'],
             'source_ref': entity['from']['stix_id'],
             'target_ref': entity['to']['stix_id'],
             'created': entity['created'],

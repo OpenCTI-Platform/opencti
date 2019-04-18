@@ -25,6 +25,8 @@ export const findAll = args =>
 // paginate('match $t isa Threat-Actor', args);
 
 export const search = args =>
+  elPaginate('stix-domain-entities', assoc('type', 'threat-actor', args));
+/*
   paginate(
     `match $t isa Threat-Actor;
     $t has name $name;
@@ -34,6 +36,7 @@ export const search = args =>
     args,
     false
   );
+*/
 
 export const findById = threatActorId => getById(threatActorId);
 
@@ -48,7 +51,7 @@ export const addThreatActor = async (user, threatActor) => {
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(threatActor.name)}",
+    has name "${prepareString(threatActor.name)}", 
     has description "${prepareString(threatActor.description)}",
     has goal "${prepareString(threatActor.goal)}",
     has sophistication "${prepareString(threatActor.sophistication)}",

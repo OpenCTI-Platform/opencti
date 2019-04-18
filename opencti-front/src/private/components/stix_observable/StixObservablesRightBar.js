@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
+import { DatePicker } from 'material-ui-pickers';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListSubheader from '@material-ui/core/ListSubheader';
@@ -28,13 +29,23 @@ const styles = theme => ({
   item: {
     padding: '0 0 0 10px',
   },
+  itemField: {
+    padding: '0 15px 0 15px',
+  },
   toolbar: theme.mixins.toolbar,
 });
 
 class StixObservablesRightBar extends Component {
   render() {
     const {
-      classes, t, types, handleToggle,
+      classes,
+      t,
+      types,
+      lastSeenStart,
+      lastSeenStop,
+      handleToggle,
+      handleChangeLastSeenStart,
+      handleChangeLastSeenStop,
     } = this.props;
     return (
       <Drawer
@@ -120,6 +131,49 @@ class StixObservablesRightBar extends Component {
             <ListItemText primary={t('File hashes')} />
           </ListItem>
         </List>
+        <List
+          subheader={
+            <ListSubheader component="div">{t('Parameters')}</ListSubheader>
+          }
+        >
+          <ListItem
+            dense={true}
+            classes={{ root: classes.itemField }}
+          >
+            <DatePicker
+              name="lastSeenStart"
+              label={t('Start date')}
+              fullWidth={true}
+              value={lastSeenStart}
+              emptyLabel={t('Nonee')}
+              format="YYYY-MM-DD"
+              clearable={true}
+              autoOk={true}
+              clearLabel={t('Clear')}
+              cancelLabel={t('Cancel')}
+              onChange={handleChangeLastSeenStart.bind(this)}
+            />
+          </ListItem>
+          <ListItem
+            dense={true}
+            classes={{ root: classes.itemField }}
+          >
+            <DatePicker
+              name="lastSeenStart"
+              label={t('End date')}
+              fullWidth={true}
+              value={lastSeenStop}
+              emptyLabel={t('Nonee')}
+              format="YYYY-MM-DD"
+              clearable={true}
+              autoOk={true}
+              clearLabel={t('Clear')}
+              cancelLabel={t('Cancel')}
+              onChange={handleChangeLastSeenStop.bind(this)}
+              style={{ marginTop: 20 }}
+            />
+          </ListItem>
+        </List>
       </Drawer>
     );
   }
@@ -127,7 +181,11 @@ class StixObservablesRightBar extends Component {
 
 StixObservablesRightBar.propTypes = {
   types: PropTypes.array,
+  lastSeenStart: PropTypes.string,
+  lastSeenStop: PropTypes.string,
   handleToggle: PropTypes.func,
+  handleChangeLastSeenStart: PropTypes.func,
+  handleChangeLastSeenStop: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

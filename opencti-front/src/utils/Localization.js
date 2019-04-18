@@ -312,6 +312,8 @@ const i18n = {
       Month: 'Mois',
       Year: 'Année',
       Role: 'Rôle',
+      'Start date': 'Date de début',
+      'End date': 'Date de fin',
       // Properties
       'Sort by': 'Trier par',
       'Filter by': 'Filtrer par',
@@ -414,6 +416,7 @@ const i18n = {
       Playground: 'Playground',
       Details: 'Détails',
       All: 'Tout',
+      Clear: 'Effacer',
       'No entities of this type has been found.':
         "Aucune entité de ce type n'a été trouvée.",
       // Explore
@@ -440,6 +443,7 @@ const i18n = {
       Platform: "Système d'exploitation",
       'Required permissions': 'Permissions requises',
       None: 'Aucun',
+      Nonee: 'Aucune',
       // Types
       'entity_threat-actor': 'Acteur',
       'entity_attack-pattern': 'TTP',
@@ -532,6 +536,7 @@ const i18n = {
       report_status_3: 'Fermé',
     },
     en: {
+      Nonee: 'None',
       // Types
       'entity_threat-actor': 'Threat actor',
       'entity_attack-pattern': 'TTP',

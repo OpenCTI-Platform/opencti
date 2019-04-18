@@ -25,6 +25,8 @@ export const findAll = args =>
 // paginate('match $i isa Intrusion-Set', args);
 
 export const search = args =>
+  elPaginate('stix-domain-entities', assoc('type', 'intrusion-set', args));
+/*
   paginate(
     `match $i isa Intrusion-Set; 
     $i has name $name; 
@@ -34,6 +36,7 @@ export const search = args =>
     args,
     false
   );
+*/
 
 export const findById = intrusionSetId => getById(intrusionSetId);
 

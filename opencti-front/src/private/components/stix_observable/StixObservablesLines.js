@@ -59,7 +59,8 @@ class StixObservablesLines extends Component {
   filterList(list) {
     const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''
-      || n.node.entity_type.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.entity_type.toLowerCase().indexOf(searchTerm.toLowerCase())
+        !== -1
       || n.node.observable_value
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;
@@ -92,9 +93,7 @@ class StixObservablesLines extends Component {
     if (!this.props.relay.hasMore() || this.props.relay.isLoading()) {
       return;
     }
-    this.props.relay.loadMore(
-      this.props.searchTerm.length > 0 ? 90000 : 25,
-    );
+    this.props.relay.loadMore(this.props.searchTerm.length > 0 ? 90000 : 25);
   }
 
   _isRowLoaded({ index }) {
@@ -112,7 +111,7 @@ class StixObservablesLines extends Component {
     if (dummy) {
       return (
         <div key={key} style={style}>
-          <StixObservableLineDummy />
+          <StixObservableLineDummy displaySeen={this.props.displaySeen} />
         </div>
       );
     }
@@ -123,7 +122,7 @@ class StixObservablesLines extends Component {
     if (!this._isRowLoaded({ index })) {
       return (
         <div key={key} style={style}>
-          <StixObservableLineDummy />
+          <StixObservableLineDummy displaySeen={this.props.displaySeen} />
         </div>
       );
     }
@@ -138,6 +137,7 @@ class StixObservablesLines extends Component {
           key={stixObservable.id}
           stixObservable={stixObservable}
           paginationOptions={this.props.paginationOptions}
+          displaySeen={this.props.displaySeen}
         />
       </div>
     );
@@ -210,11 +210,14 @@ StixObservablesLines.propTypes = {
   stixObservables: PropTypes.object,
   dummy: PropTypes.bool,
   searchTerm: PropTypes.string,
+  displaySeen: PropTypes.bool,
 };
 
 export const stixObservablesLinesQuery = graphql`
   query StixObservablesLinesPaginationQuery(
     $types: [String]
+    $lastSeenStart: DateTime
+    $lastSeenStop: DateTime
     $count: Int!
     $cursor: ID
     $orderBy: StixObservablesOrdering
@@ -223,6 +226,8 @@ export const stixObservablesLinesQuery = graphql`
     ...StixObservablesLines_data
       @arguments(
         types: $types
+        lastSeenStart: $lastSeenStart
+        lastSeenStop: $lastSeenStop
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -255,6 +260,8 @@ export default withStyles(styles)(
         fragment StixObservablesLines_data on Query
           @argumentDefinitions(
             types: { type: "[String]" }
+            lastSeenStart: { type: "DateTime" }
+            lastSeenStop: { type: "DateTime" }
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
             orderBy: { type: "StixObservablesOrdering", defaultValue: ID }
@@ -262,6 +269,8 @@ export default withStyles(styles)(
           ) {
           stixObservables(
             types: $types
+            lastSeenStart: $lastSeenStart
+            lastSeenStop: $lastSeenStop
             first: $count
             after: $cursor
             orderBy: $orderBy
@@ -272,6 +281,8 @@ export default withStyles(styles)(
                 id
                 entity_type
                 observable_value
+                first_seen
+                last_seen
                 created_at
                 markingDefinitions {
                   edges {
@@ -302,6 +313,8 @@ export default withStyles(styles)(
       getVariables(props, { count, cursor }, fragmentVariables) {
         return {
           types: fragmentVariables.types,
+          lastSeenStart: fragmentVariables.lastSeenStart,
+          lastSeenStop: fragmentVariables.lastSeenStop,
           count,
           cursor,
           orderBy: fragmentVariables.orderBy,

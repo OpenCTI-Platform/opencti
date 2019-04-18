@@ -12,11 +12,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import IconButton from '@material-ui/core/IconButton';
-import {
-  ArrowDropDown,
-  ArrowDropUp,
-  TableChart,
-} from '@material-ui/icons';
+import { ArrowDropDown, ArrowDropUp, TableChart } from '@material-ui/icons';
 import { fetchQuery, QueryRenderer } from '../../relay/environment';
 import StixObservablesLines, {
   stixObservablesLinesQuery,
@@ -87,6 +83,45 @@ const inlineStyles = {
   },
 };
 
+const inlineStylesSeen = {
+  iconSort: {
+    position: 'absolute',
+    margin: '-3px 0 0 5px',
+    padding: 0,
+    top: '0px',
+  },
+  entity_type: {
+    float: 'left',
+    width: '15%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  observable_value: {
+    float: 'left',
+    width: '35%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  first_seen: {
+    float: 'left',
+    width: '15%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  last_seen: {
+    float: 'left',
+    width: '15%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  marking: {
+    float: 'left',
+    fontSize: 12,
+    fontWeight: '700',
+    cursor: 'default',
+  },
+};
+
 export const exportStixObservablesQuery = graphql`
   query StixObservablesExportStixObservablesQuery(
     $count: Int!
@@ -130,6 +165,8 @@ class StixObservables extends Component {
       view: 'lines',
       csvData: null,
       types: [],
+      lastSeenStart: null,
+      lastSeenStop: null,
     };
   }
 
@@ -147,10 +184,11 @@ class StixObservables extends Component {
 
   SortHeader(field, label, isSortable) {
     const { t } = this.props;
+    const displaySeen = !!(this.state.lastSeenStart || this.state.lastSeenStop);
     if (isSortable) {
       return (
         <div
-          style={inlineStyles[field]}
+          style={displaySeen ? inlineStylesSeen[field] : inlineStyles[field]}
           onClick={this.reverseBy.bind(this, field)}
         >
           <span>{t(label)}</span>
@@ -167,7 +205,7 @@ class StixObservables extends Component {
       );
     }
     return (
-      <div style={inlineStyles[field]}>
+      <div style={displaySeen ? inlineStylesSeen[field] : inlineStyles[field]}>
         <span>{t(label)}</span>
       </div>
     );
@@ -181,10 +219,20 @@ class StixObservables extends Component {
     }
   }
 
+  handleChangeLastSeenStart(lastSeenStart) {
+    this.setState({ lastSeenStart });
+  }
+
+  handleChangeLastSeenStop(lastSeenStop) {
+    this.setState({ lastSeenStop });
+  }
+
   handleGenerateCSV() {
     this.setState({ csvData: null });
     const paginationOptions = {
       types: this.state.types.length > 0 ? this.state.types : null,
+      lastSeenStart: this.state.lastSeenStart,
+      lastSeenStop: this.state.lastSeenStop,
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
@@ -195,6 +243,8 @@ class StixObservables extends Component {
       const finalData = pipe(
         map(n => n.node),
         map(n => assoc('created_at', dateFormat(n.created_at))(n)),
+        map(n => assoc('first_seen', dateFormat(n.first_seen))(n)),
+        map(n => assoc('last_seen', dateFormat(n.last_seen))(n)),
         map(n => assoc(
           'markingDefinitions',
           pipe(
@@ -212,9 +262,12 @@ class StixObservables extends Component {
     const { classes } = this.props;
     const paginationOptions = {
       types: this.state.types.length > 0 ? this.state.types : null,
+      lastSeenStart: this.state.lastSeenStart,
+      lastSeenStop: this.state.lastSeenStop,
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
+    const displaySeen = !!(this.state.lastSeenStart || this.state.lastSeenStop);
     return (
       <div className={classes.container}>
         <div className={classes.header}>
@@ -260,12 +313,22 @@ class StixObservables extends Component {
             </ListItemIcon>
             <ListItemText
               primary={
-                <div>
-                  {this.SortHeader('entity_type', 'Type', true)}
-                  {this.SortHeader('observable_value', 'Value', true)}
-                  {this.SortHeader('created_at', 'Creation date', true)}
-                  {this.SortHeader('marking', 'Marking', false)}
-                </div>
+                displaySeen ? (
+                  <div>
+                    {this.SortHeader('entity_type', 'Type', false)}
+                    {this.SortHeader('observable_value', 'Value', false)}
+                    {this.SortHeader('first_seen', 'First seen', true)}
+                    {this.SortHeader('first_seen', 'Last seen', true)}
+                    {this.SortHeader('marking', 'Marking', false)}
+                  </div>
+                ) : (
+                  <div>
+                    {this.SortHeader('entity_type', 'Type', true)}
+                    {this.SortHeader('observable_value', 'Value', true)}
+                    {this.SortHeader('created_at', 'Creation date', true)}
+                    {this.SortHeader('marking', 'Marking', false)}
+                  </div>
+                )
               }
             />
           </ListItem>
@@ -279,6 +342,7 @@ class StixObservables extends Component {
                     data={props}
                     paginationOptions={paginationOptions}
                     searchTerm={this.state.searchTerm}
+                    displaySeen={displaySeen}
                   />
                 );
               }
@@ -287,6 +351,7 @@ class StixObservables extends Component {
                   data={null}
                   dummy={true}
                   searchTerm={this.state.searchTerm}
+                  displaySeen={displaySeen}
                 />
               );
             }}
@@ -295,6 +360,10 @@ class StixObservables extends Component {
         <StixObservablesRightBar
           types={this.state.types}
           handleToggle={this.handleToggle.bind(this)}
+          lastSeenStart={this.state.lastSeenStart}
+          lastSeenStop={this.state.lastSeenStop}
+          handleChangeLastSeenStart={this.handleChangeLastSeenStart.bind(this)}
+          handleChangeLastSeenStop={this.handleChangeLastSeenStop.bind(this)}
         />
       </div>
     );

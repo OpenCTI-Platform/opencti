@@ -1,0 +1,108 @@
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { compose } from 'ramda';
+import { Route, withRouter } from 'react-router-dom';
+import { createFragmentContainer } from 'react-relay';
+import graphql from 'babel-plugin-relay/macro';
+import { withStyles } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
+import inject18n from '../../../components/i18n';
+import IncidentHeader from './IncidentHeader';
+import StixRelation from '../stix_relation/StixRelation';
+import EntityStixObservables from '../stix_observable/EntityStixObservables';
+
+const styles = theme => ({
+  container: {
+    margin: 0,
+    padding: '0 260px 0 0',
+  },
+  containerWithoutPadding: {
+    margin: 0,
+    padding: 0,
+  },
+  paper: {
+    minHeight: '100%',
+    margin: '5px 0 0 0',
+    padding: '15px',
+    backgroundColor: theme.palette.paper.background,
+    color: theme.palette.text.main,
+    borderRadius: 6,
+  },
+});
+
+const inversedRelations = [];
+
+class IncidentObservablesComponent extends Component {
+  render() {
+    const { classes, incident, location } = this.props;
+    const link = `/dashboard/knowledge/incidents/${
+      incident.id
+    }/observables`;
+    return (
+      <div
+        className={
+          location.pathname.includes(
+            `/dashboard/knowledge/incidents/${
+              incident.id
+            }/observables/relations/`,
+          )
+            ? classes.containerWithoutPadding
+            : classes.container
+        }
+      >
+        <IncidentHeader incident={incident} variant="noalias" />
+        <Route
+          exact
+          path="/dashboard/knowledge/incidents/:incidentId/observables/relations/:relationId"
+          render={routeProps => (
+            <StixRelation
+              entityId={incident.id}
+              inversedRelations={inversedRelations}
+              observable={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/knowledge/incidents/:incidentId/observables"
+          render={routeProps => (
+            <Paper classes={{ root: classes.paper }} elevation={2}>
+              <EntityStixObservables
+                entityId={incident.id}
+                relationType="indicates"
+                entityLink={link}
+                {...routeProps}
+              />
+            </Paper>
+          )}
+        />
+      </div>
+    );
+  }
+}
+
+IncidentObservablesComponent.propTypes = {
+  incident: PropTypes.object,
+  location: PropTypes.object,
+  classes: PropTypes.object,
+  t: PropTypes.func,
+};
+
+const IncidentObservables = createFragmentContainer(
+  IncidentObservablesComponent,
+  {
+    incident: graphql`
+      fragment IncidentObservables_incident on Incident {
+        id
+        ...IncidentHeader_incident
+      }
+    `,
+  },
+);
+
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(IncidentObservables);

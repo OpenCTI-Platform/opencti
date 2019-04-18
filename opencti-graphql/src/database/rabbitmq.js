@@ -20,7 +20,7 @@ export const send = (exchangeName, key, message) => {
               channel.publish(exchangeName, key, Buffer.from(message));
               setTimeout(() => {
                 connection.close();
-              }, 500);
+              }, 5000);
             });
         });
       });
