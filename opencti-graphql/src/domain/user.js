@@ -294,9 +294,10 @@ export const userEditField = (user, userId, input) => {
   const value =
     key === 'password' ? [bcrypt.hashSync(head(input.value), 10)] : input.value;
   const finalInput = { key, value };
-  return updateAttribute(userId, finalInput).then(userToEdit =>
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user)
-  );
+  return updateAttribute(userId, finalInput).then(userToEdit => {
+    index('stix-domain-entities', 'stix_domain_entity', userToEdit);
+    return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
+  });
 };
 
 // Token related
