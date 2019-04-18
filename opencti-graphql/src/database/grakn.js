@@ -1030,7 +1030,7 @@ export const deleteEntityById = async id => {
   try {
     const query = `match $x id ${id}; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] ${query}`);
-    await wTx.query(query);
+    await wTx.query(query, { infer: false });
     await wTx.commit();
     return Promise.resolve(id);
   } catch (error) {
@@ -1051,7 +1051,7 @@ export const deleteById = async id => {
   try {
     const query = `match $x id ${id}; delete $x;`;
     logger.debug(`[GRAKN - infer: false] ${query}`);
-    await wTx.query(query);
+    await wTx.query(query, { infer: false });
     await wTx.commit();
     return Promise.resolve(id);
   } catch (error) {
@@ -1073,7 +1073,7 @@ export const deleteRelationById = async (id, relationId) => {
   try {
     const query = `match $x id ${relationId}; delete $x;`;
     logger.debug(`[GRAKN - infer: false] ${query}`);
-    await wTx.query(query);
+    await wTx.query(query, { infer: false });
     await wTx.commit();
     return getById(id).then(data => ({
       node: data,
