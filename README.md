@@ -1,11 +1,12 @@
 ![](docs/logo.png)
 ---
+[![Website](https://img.shields.io/badge/website-opencti.io-blue.svg)](https://www.opencti.io)
 [![CircleCI](https://circleci.com/gh/LuatixHQ/opencti/tree/master.svg?style=shield)](https://circleci.com/gh/LuatixHQ/opencti/tree/master)
 [![GitHub release](https://img.shields.io/github/release/LuatixHQ/opencti.svg)](https://github.com/LuatixHQ/opencti/releases/latest)
 
 OpenCTI is an open source platform allowing organizations to manage their cyber threat intelligence knowledge, investigations and indicators of compromise. OpenCTI can be integrated with other applications such as [Maltego](https://www.paterva.com/web7/buy/maltego-clients/maltego-ce.php), [MISP](https://www.misp-project.org/), [CORTEX](https://github.com/TheHive-Project/Cortex) and many other STIX2 compliant products. It has been designed as a modern web application including a GraphQL API and an UX oriented frontend.
 
-![alt text](https://www.openex.io/wp-content/uploads/2016/12/screenshot.png "OpenCTI")
+![alt text](https://www.opencti.io/wp-content/uploads/2019/04/screenshot.png "OpenCTI")
 
 ## Releases download
 
@@ -17,18 +18,28 @@ The releases are available on the [Github releases page](https://github.com/Luat
 * [Install OpenCTI manually](docs/Installation.md)
 * [Install OpenCTI for development](docs/Development.md)
 
-## Architecture
+## Details
 
-![alt text](docs/architecture.png "OpenCTI architecture")
+### Architecture
 
-## Native graph database visualizer
+![Architecture](docs/architecture.png "OpenCTI architecture")
 
+### Native graph database visualizer
 
+The [Grakn](https://github.com/graknlabs/grakn) knowledge graph database provides a client called the [Grakn workbase](https://github.com/graknlabs/workbase) that can be used to explore the whole database. You can use it in order to explore your data in an original way.
 
-## Status & Bugs
+![Grakn workbase](docs/workbase.png "OpenCTI architecture")
 
-Currently OpenCTI is under heavy development, if you wish to report bugs or ask for new features, you can directly use the Github issues module.
+## Community
 
-## About
+### Status & bugs
+
+Currently OpenCTI is under heavy development, if you wish to report bugs or ask for new features, you can directly use the [Github issues module](https://github.com/LuatixHQ/opencti/issues).
+
+### Discussion
+
+If you need support or you wish to engage a discussion about the OpenCTI platform, feel free to join us on our [Slack channel](http://luatix.slack.com)
+
+### About
 
 OpenCTI is a product powered by the [Luatix](https://www.luatix.org) non-profit organization.
