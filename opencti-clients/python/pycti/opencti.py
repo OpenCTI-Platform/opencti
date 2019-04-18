@@ -7,7 +7,6 @@ import dateutil.parser
 import json
 import uuid
 
-from datetime import datetime
 from .stix2 import Stix2
 
 
@@ -31,7 +30,7 @@ class OpenCTI:
     def log(self, message):
         if self.verbose and len(self.log_file) > 0:
             file = open(self.log_file, 'a')
-            file.write('[' + datetime.today().strftime('%Y-%m-%d %H:%M:%S') + '] ' + message + "\n")
+            file.write('[' + datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S') + '] ' + message + "\n")
             file.close()
 
     def query(self, query, variables):
@@ -63,6 +62,14 @@ class OpenCTI:
         if 'relationRefs' in data:
             data['relationRefs'] = self.parse_multiple(data['relationRefs'])
         return data
+
+    def check_existing_stix_domain_entity(self, stix_id, name, type):
+        object_result = None
+        if stix_id is not None:
+            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+            if object_result is None:
+                object_result = self.search_stix_domain_entity_by_name(name, type)
+        return object_result
 
     def get_stix_domain_entity(self, id):
         """
@@ -396,15 +403,16 @@ class OpenCTI:
                                       created=None,
                                       modified=None
                                       ):
+        stix_relation_result = None
         if stix_id is not None:
             stix_relation_result = self.get_stix_relation_by_stix_id(stix_id)
-        else:
-            stix_relation_result = self.get_stix_relation(
-                from_id,
-                to_id,
-                type,
-                first_seen,
-                last_seen)
+            if stix_relation_result is None:
+                stix_relation_result = self.get_stix_relation(
+                    from_id,
+                    to_id,
+                    type,
+                    first_seen,
+                    last_seen)
         if stix_relation_result is not None:
             return stix_relation_result
         else:
@@ -538,10 +546,11 @@ class OpenCTI:
                                                 created=None,
                                                 modified=None
                                                 ):
+        object_result = None
         if stix_id is not None:
             object_result = self.get_marking_definition_by_stix_id(stix_id)
-        else:
-            object_result = self.get_marking_definition_by_definition(definition_type, definition)
+            if object_result is None:
+                object_result = self.get_marking_definition_by_definition(definition_type, definition)
         if object_result is not None:
             return object_result
         else:
@@ -815,10 +824,7 @@ class OpenCTI:
         return result['data']['identityAdd']
 
     def create_identity_if_not_exists(self, type, name, description, stix_id=None, created=None, modified=None):
-        if stix_id is not None:
-            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
-        else:
-            object_result = self.search_stix_domain_entity_by_name(name, type)
+        object_result = self.check_existing_stix_domain_entity(stix_id, name, type)
         if object_result is not None:
             return object_result
         else:
@@ -996,10 +1002,7 @@ class OpenCTI:
                                           created=None,
                                           modified=None
                                           ):
-        if stix_id is not None:
-            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
-        else:
-            object_result = self.search_stix_domain_entity_by_name(name, 'Threat-Actor')
+        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Threat-Actor')
         if object_result is not None:
             return object_result
         else:
@@ -1185,10 +1188,7 @@ class OpenCTI:
                                            created=None,
                                            modified=None
                                            ):
-        if stix_id is not None:
-            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
-        else:
-            object_result = self.search_stix_domain_entity_by_name(name, 'Intrusion-Set')
+        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Intrusion-Set')
         if object_result is not None:
             return object_result
         else:
@@ -1355,10 +1355,7 @@ class OpenCTI:
                                       created=None,
                                       modified=None
                                       ):
-        if stix_id is not None:
-            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
-        else:
-            object_result = self.search_stix_domain_entity_by_name(name, 'Campaign')
+        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Campaign')
         if object_result is not None:
             return object_result
         else:
@@ -1521,10 +1518,7 @@ class OpenCTI:
                                       created=None,
                                       modified=None
                                       ):
-        if stix_id is not None:
-            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
-        else:
-            object_result = self.search_stix_domain_entity_by_name(name, 'Incident')
+        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Incident')
         if object_result is not None:
             self.update_stix_domain_entity_field(object_result['id'], 'name', name)
             description is not None and self.update_stix_domain_entity_field(object_result['id'], 'description',
@@ -1692,10 +1686,7 @@ class OpenCTI:
         return result['data']['malwareAdd']
 
     def create_malware_if_not_exists(self, name, description, stix_id=None, created=None, modified=None):
-        if stix_id is not None:
-            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
-        else:
-            object_result = self.search_stix_domain_entity_by_name(name, 'Malware')
+        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Malware')
         if object_result is not None:
             return object_result
         else:
@@ -1830,10 +1821,7 @@ class OpenCTI:
         return result['data']['toolAdd']
 
     def create_tool_if_not_exists(self, name, description, stix_id=None, created=None, modified=None):
-        if stix_id is not None:
-            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
-        else:
-            object_result = self.search_stix_domain_entity_by_name(name, 'Tool')
+        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Tool')
         if object_result is not None:
             return object_result
         else:
@@ -1966,10 +1954,7 @@ class OpenCTI:
         return result['data']['vulnerabilityAdd']
 
     def create_vulnerability_if_not_exists(self, name, description, stix_id=None, created=None, modified=None):
-        if stix_id is not None:
-            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
-        else:
-            object_result = self.search_stix_domain_entity_by_name(name, 'Vulnerability')
+        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Vulnerability')
         if object_result is not None:
             return object_result
         else:
@@ -2182,10 +2167,7 @@ class OpenCTI:
                                             stix_id=None,
                                             created=None,
                                             modified=None):
-        if stix_id is not None:
-            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
-        else:
-            object_result = self.search_stix_domain_entity_by_name(name, 'Attack-Pattern')
+        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Attack-Pattern')
         if object_result is not None:
             self.update_stix_domain_entity_field(object_result['id'], 'name', name)
             description is not None and self.update_stix_domain_entity_field(object_result['id'], 'description',
@@ -2327,10 +2309,7 @@ class OpenCTI:
         return result['data']['courseOfActionAdd']
 
     def create_course_of_action_if_not_exists(self, name, description, stix_id=None, created=None, modified=None):
-        if stix_id is not None:
-            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
-        else:
-            object_result = self.search_stix_domain_entity_by_name(name, 'Course-Of-Action')
+        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Course-Of-Action')
         if object_result is not None:
             return object_result
         else:
@@ -2942,25 +2921,25 @@ class OpenCTI:
             },
             'attributed-to': {
                 'intrusion-set': {
-                    'identity': {'from_role': 'origin', 'to_role': 'attribution'},
-                    'threat-actor': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'identity': {'from_role': 'attribution', 'to_role': 'origin'},
+                    'threat-actor': {'from_role': 'attribution', 'to_role': 'origin'},
                     'country': {'from_role': 'source', 'to_role': 'target'},
-                    'organization': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'organization': {'from_role': 'attribution', 'to_role': 'origin'},
                 },
                 'campaign': {
-                    'identity': {'from_role': 'origin', 'to_role': 'attribution'},
-                    'threat-actor': {'from_role': 'origin', 'to_role': 'attribution'},
-                    'intrusion-set': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'identity': {'from_role': 'attribution', 'to_role': 'origin'},
+                    'threat-actor': {'from_role': 'attribution', 'to_role': 'origin'},
+                    'intrusion-set': {'from_role': 'attribution', 'to_role': 'origin'},
                     'country': {'from_role': 'source', 'to_role': 'target'},
-                    'organization': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'organization': {'from_role': 'attribution', 'to_role': 'origin'},
                 },
                 'incident': {
-                    'identity': {'from_role': 'origin', 'to_role': 'attribution'},
-                    'threat-actor': {'from_role': 'origin', 'to_role': 'attribution'},
-                    'intrusion-set': {'from_role': 'origin', 'to_role': 'attribution'},
-                    'campaign': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'identity': {'from_role': 'attribution', 'to_role': 'origin'},
+                    'threat-actor': {'from_role': 'attribution', 'to_role': 'origin'},
+                    'intrusion-set': {'from_role': 'attribution', 'to_role': 'origin'},
+                    'campaign': {'from_role': 'attribution', 'to_role': 'origin'},
                     'country': {'from_role': 'source', 'to_role': 'target'},
-                    'organization': {'from_role': 'origin', 'to_role': 'attribution'},
+                    'organization': {'from_role': 'attribution', 'to_role': 'origin'},
                 },
             },
             'mitigates': {
