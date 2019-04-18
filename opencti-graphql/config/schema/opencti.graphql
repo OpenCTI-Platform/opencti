@@ -1994,6 +1994,7 @@ type Query {
     orderBy: StixDomainEntitiesOrdering
     orderMode: OrderingMode
     name: String
+    names: [String]
     stix_id: String
     search: String
     externalReferenceId: String

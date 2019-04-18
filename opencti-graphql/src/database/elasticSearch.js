@@ -1,7 +1,7 @@
 import elasticsearch from 'elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import { pipe, map, append } from 'ramda';
-import { buildPagination } from './grakn';
+import { pipe, map, append, head } from 'ramda';
+import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
 
 const dateFields = [
@@ -173,14 +173,31 @@ export const paginate = (indexName, options) => {
   return el
     .search(query)
     .then(data => {
-      const finalData = pipe(
-        map(n => ({
+      const finalData = map(
+        n => ({
           node: n._source
-        }))
-      )(data.hits.hits);
+        }),
+        data.hits.hits
+      );
       return buildPagination(first, offset, finalData, data.hits.total);
     })
     .catch(() => {
       return buildPagination(first, offset, [], 0);
+    });
+};
+
+export const getAttributes = (indexName, type, id) => {
+  logger.debug(`[ELASTICSEARCH] getById ${id} on ${indexName}`);
+  return el
+    .get({
+      index: indexName,
+      type,
+      id
+    })
+    .then(data => {
+      return data._source;
+    })
+    .catch(() => {
+      return {};
     });
 };

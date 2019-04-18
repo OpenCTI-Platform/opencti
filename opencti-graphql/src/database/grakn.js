@@ -14,16 +14,17 @@ import {
   pluck,
   fromPairs,
   toPairs,
-  values,
-  tail
+  tail,
+  isEmpty,
+  isNil
 } from 'ramda';
 import moment from 'moment';
-import { offsetToCursor } from 'graphql-relay';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
 import conf, { logger } from '../config/conf';
 import { pubsub } from './redis';
-import { fillTimeSeries, randomKey } from './utils';
+import { fillTimeSeries, randomKey, buildPagination } from './utils';
+import { getAttributes as elGetAttributes } from './elasticSearch';
 import { Unknown } from '../config/errors';
 
 // Global variables
@@ -101,6 +102,23 @@ export const getAttributes = async concept => {
   const conceptType = await concept.type();
   const parentType = await conceptType.sup();
   const parentTypeLabel = await parentType.label();
+  // temporary workaround due to Grakn performances
+  if (
+    (concept.isEntity() && parentTypeLabel === 'Stix-Domain-Entity') ||
+    parentTypeLabel === 'Identity'
+  ) {
+    const attributes = await elGetAttributes(
+      'stix-domain-entities',
+      'stix_domain_entity',
+      concept.id
+    );
+    if (!isEmpty(attributes) && !isNil(attributes)) {
+      return pipe(
+        assoc('id', concept.id),
+        assoc('parent_type', parentTypeLabel)
+      )(attributes);
+    }
+  }
   const attributesIterator = await concept.attributes();
   const attributes = await attributesIterator.collect();
   const attributesPromises = attributes.map(async attribute => {
@@ -608,38 +626,6 @@ export const getObjectsWithoutAttributes = async (
  */
 export const getObject = (query, key = 'x', relationKey, infer = false) =>
   getObjects(query, key, relationKey, infer).then(result => head(result));
-
-/**
- * Pure building of pagination expected format.
- * @param first
- * @param offset
- * @param instances
- * @param globalCount
- * @returns {{edges: *, pageInfo: *}}
- */
-export const buildPagination = (first, offset, instances, globalCount) => {
-  const edges = pipe(
-    mapObjIndexed((record, key) => {
-      const { node } = record;
-      const { relation } = record;
-      const nodeOffset = offset + parseInt(key, 10) + 1;
-      return { node, relation, cursor: offsetToCursor(nodeOffset) };
-    }),
-    values
-  )(instances);
-  const hasNextPage = first + offset < globalCount;
-  const hasPreviousPage = offset > 0;
-  const startCursor = edges.length > 0 ? head(edges).cursor : '';
-  const endCursor = edges.length > 0 ? last(edges).cursor : '';
-  const pageInfo = {
-    startCursor,
-    endCursor,
-    hasNextPage,
-    hasPreviousPage,
-    globalCount
-  };
-  return { edges, pageInfo };
-};
 
 /**
  * Grakn generic pagination query.

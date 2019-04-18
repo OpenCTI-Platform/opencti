@@ -10,7 +10,6 @@ import {
   prepareDate,
   notify,
   now,
-  paginate,
   prepareString
 } from '../database/grakn';
 import {
