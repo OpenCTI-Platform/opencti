@@ -71,14 +71,14 @@ export const findAll = args =>
 
 export const findByStixId = args =>
   paginateRelationships(
-    `match $rel($from, $to) isa relation; 
+    `match $rel($fromRole: $from, $toRole: $to) isa relation; 
     $rel has stix_id "${prepareString(args.stix_id)}"`,
     args
   );
 
 export const search = args =>
   paginateRelationships(
-    `match $rel($from, $to) isa relation;
+    `match $rel($fromRole: $from, $toRole: $to) isa relation;
     $rel has name $name;
     $rel has description $desc;
     { $name contains "${prepareString(args.search)}"; } or

@@ -1,4 +1,4 @@
-import { map, assoc, filter, isNil } from 'ramda';
+import { map, assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   deleteEntityById,
@@ -14,7 +14,6 @@ import {
   takeWriteTx,
   prepareString,
   timeSeries,
-  queryOne
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import {
@@ -22,7 +21,6 @@ import {
   index,
   paginate as elPaginate
 } from '../database/elasticSearch';
-import { send } from '../database/rabbitmq';
 
 export const findAll = args => {
   if (args.orderBy === 'createdByRef') {
@@ -132,7 +130,7 @@ export const observableRefs = (reportId, args) =>
 
 export const relationRefs = (reportId, args) =>
   paginateRelationships(
-    `match $rel($from, $to) isa ${
+    `match $rel($fromRole:$from, $toRole:$to) isa ${
       args.relationType ? args.relationType : 'stix_relation'
     }; 
     $extraRel(so:$rel, knowledge_aggregation:$r) isa object_refs; 

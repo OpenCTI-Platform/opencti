@@ -7,7 +7,6 @@ import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
 import { Compare } from '@material-ui/icons';
 import { ChartTimeline, ChartDonutVariant, Hubspot } from 'mdi-material-ui';
@@ -104,9 +103,6 @@ class VictimologyRightBar extends Component {
               classes={{ root: classes.listText }}
             />
           </MenuItem>
-        </MenuList>
-        <Divider />
-        <MenuList component="nav">
           <MenuItem
             style={{ padding: '20px 10px 20px 10px' }}
             component={Link}
@@ -124,26 +120,6 @@ class VictimologyRightBar extends Component {
             <ListItemText
               primary={t('Compare')}
               secondary={t('Threats targeting')}
-              classes={{ root: classes.listText }}
-            />
-          </MenuItem>
-          <MenuItem
-            style={{ padding: '20px 10px 20px 10px' }}
-            component={Link}
-            disabled={!threatId}
-            to={`/dashboard/explore/victimology/${threatId}/knowledge`}
-            selected={
-              location.pathname
-              === `/dashboard/explore/victimology/${threatId}/knowledge`
-            }
-            dense={false}
-          >
-            <ListItemIcon classes={{ root: classes.listIcon }}>
-              <Hubspot />
-            </ListItemIcon>
-            <ListItemText
-              primary={t('Graph')}
-              secondary={t('Targeting knowledge')}
               classes={{ root: classes.listText }}
             />
           </MenuItem>

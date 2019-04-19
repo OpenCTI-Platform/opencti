@@ -214,6 +214,9 @@ class StixDomainEntityCreation extends Component {
                     <MenuItem value="Organization">
                       {t('Organization')}
                     </MenuItem>
+                    <MenuItem value="Sector">
+                      {t('Sector')}
+                    </MenuItem>
                     <MenuItem value="User">{t('Person')}</MenuItem>
                     <MenuItem value="Threat-Actor">
                       {t('Threat actor')}
@@ -322,6 +325,9 @@ class StixDomainEntityCreation extends Component {
                   >
                     <MenuItem value="Organization">
                       {t('Organization')}
+                    </MenuItem>
+                    <MenuItem value="Sector">
+                      {t('Sector')}
                     </MenuItem>
                     <MenuItem value="User">{t('Person')}</MenuItem>
                     <MenuItem value="Threat-Actor">

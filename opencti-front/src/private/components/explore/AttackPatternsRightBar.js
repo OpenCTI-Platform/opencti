@@ -7,7 +7,6 @@ import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
 import { Compare } from '@material-ui/icons';
 import { ChartTimeline, ChartDonutVariant, Hubspot } from 'mdi-material-ui';
@@ -60,7 +59,7 @@ class AttackPatternsRightBar extends Component {
             </ListItemIcon>
             <ListItemText
               primary={t('Distribution')}
-              secondary={t('Targeting types')}
+              secondary={t('Used TTPs')}
               classes={{ root: classes.listText }}
             />
           </MenuItem>
@@ -80,7 +79,7 @@ class AttackPatternsRightBar extends Component {
             </ListItemIcon>
             <ListItemText
               primary={t('Evolution')}
-              secondary={t('Targeting through time')}
+              secondary={t('TTPs through time')}
               classes={{ root: classes.listText }}
             />
           </MenuItem>
@@ -100,13 +99,10 @@ class AttackPatternsRightBar extends Component {
             </ListItemIcon>
             <ListItemText
               primary={t('Graph')}
-              secondary={t('Targeting knowledge')}
+              secondary={t('TTPs knowledge')}
               classes={{ root: classes.listText }}
             />
           </MenuItem>
-        </MenuList>
-        <Divider />
-        <MenuList component="nav">
           <MenuItem
             style={{ padding: '20px 10px 20px 10px' }}
             component={Link}
@@ -123,27 +119,7 @@ class AttackPatternsRightBar extends Component {
             </ListItemIcon>
             <ListItemText
               primary={t('Compare')}
-              secondary={t('Threats targeting')}
-              classes={{ root: classes.listText }}
-            />
-          </MenuItem>
-          <MenuItem
-            style={{ padding: '20px 10px 20px 10px' }}
-            component={Link}
-            disabled={!threatId}
-            to={`/dashboard/explore/attack_patterns/${threatId}/knowledge`}
-            selected={
-              location.pathname
-              === `/dashboard/explore/attack_patterns/${threatId}/knowledge`
-            }
-            dense={false}
-          >
-            <ListItemIcon classes={{ root: classes.listIcon }}>
-              <Hubspot />
-            </ListItemIcon>
-            <ListItemText
-              primary={t('Graph')}
-              secondary={t('Targeting knowledge')}
+              secondary={t('Threats TTPs')}
               classes={{ root: classes.listText }}
             />
           </MenuItem>

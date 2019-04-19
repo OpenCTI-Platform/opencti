@@ -16,7 +16,7 @@ import {
   toPairs,
   tail,
   isEmpty,
-  isNil
+  isNil,
 } from 'ramda';
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
@@ -275,9 +275,16 @@ export const getRelationById = async id => {
     logger.debug(`[GRAKN - infer: false] ${query}`);
     const iterator = await rTx.query(query);
     const answer = await iterator.next();
-    const relationPromise = await getAttributes(answer.map().get('x')).then(
-      result => assoc('inferred', false, result)
+    const relationObject = answer.map().get('x');
+    const relationPromise = await getAttributes(relationObject).then(result =>
+      assoc('inferred', false, result)
     );
+    const rolePlayersMap = await relationObject.rolePlayersMap();
+    const roles = rolePlayersMap.keys();
+    const fromRole = roles.next().value;
+    const fromRoleLabel = await fromRole.label();
+    const toRole = roles.next().value;
+    const toRoleLabel = await toRole.label();
     const fromPromise = await getAttributes(answer.map().get('from'));
     const toPromise = await getAttributes(answer.map().get('to'));
     const resultPromise = Promise.all([
@@ -285,9 +292,7 @@ export const getRelationById = async id => {
       fromPromise,
       toPromise
     ]).then(([relation, from, to]) => {
-      if (
-        isInversed(relation.relationship_type, from.entity_type, to.entity_type)
-      ) {
+      if (isInversed(relation.relationship_type, fromRoleLabel, toRoleLabel)) {
         return pipe(
           assoc('from', to),
           assoc('to', from)
@@ -331,6 +336,12 @@ export const getRelationInferredById = async id => {
     const rel = answer.map().get(relKey);
     const relationType = await rel.type();
     const relationTypeValue = await relationType.label();
+    const rolePlayersMap = await rel.rolePlayersMap();
+    const roles = rolePlayersMap.keys();
+    const fromRole = roles.next().value;
+    const fromRoleLabel = await fromRole.label();
+    const toRole = roles.next().value;
+    const toRoleLabel = await toRole.label();
     const from = answer.map().get(fromKey);
     const to = answer.map().get(toKey);
     const relationPromise = await Promise.resolve({
@@ -449,13 +460,7 @@ export const getRelationInferredById = async id => {
       toPromise,
       inferencesPromises
     ]).then(([node, fromResult, toResult, relationInferences]) => {
-      if (
-        isInversed(
-          node.relationship_type,
-          fromResult.entity_type,
-          toResult.entity_type
-        )
-      ) {
+      if (isInversed(node.relationship_type, fromRoleLabel, toRoleLabel)) {
         return pipe(
           assoc('from', toResult),
           assoc('to', fromResult),
@@ -709,6 +714,7 @@ export const paginate = (
  * @param toKey the key to bind relation result.
  * @param extraRelKey the key of the relation pointing the relation
  * @param infer (get inferred relationships)
+ * @param enforceDirection enforce relation direction
  * @returns {Promise<any[] | never>}
  */
 export const getRelations = async (
@@ -717,7 +723,8 @@ export const getRelations = async (
   fromKey = 'from',
   toKey = 'to',
   extraRelKey,
-  infer = false
+  infer = false,
+  enforceDirection = true
 ) => {
   const rTx = await takeReadTx();
   try {
@@ -726,8 +733,14 @@ export const getRelations = async (
     const answers = await iterator.collect();
     const resultPromise = Promise.all(
       answers.map(async answer => {
-        const relationObject = await answer.map().get(key);
+        const relationObject = answer.map().get(key);
         const relationType = await relationObject.type();
+        const rolePlayersMap = await relationObject.rolePlayersMap();
+        const roles = rolePlayersMap.keys();
+        const fromRole = roles.next().value;
+        const fromRoleLabel = await fromRole.label();
+        const toRole = roles.next().value;
+        const toRoleLabel = await toRole.label();
         const relationIsInferred = await relationObject.isInferred();
         let relationPromise = await Promise.resolve(null);
         if (relationIsInferred) {
@@ -767,7 +780,8 @@ export const getRelations = async (
           extraRelationPromise
         ]).then(([node, from, to, relation]) => {
           if (
-            isInversed(node.relationship_type, from.entity_type, to.entity_type)
+            enforceDirection &&
+            isInversed(node.relationship_type, fromRoleLabel, toRoleLabel)
           ) {
             return {
               node: pipe(
@@ -875,7 +889,8 @@ export const paginateRelationships = (
     'from',
     'to',
     extraRel,
-    inferred
+    inferred,
+    !(fromId || toId)
   );
   if (pagination) {
     return Promise.all([count, elements]).then(data => {

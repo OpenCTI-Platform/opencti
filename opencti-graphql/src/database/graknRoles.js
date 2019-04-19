@@ -1,92 +1,53 @@
 const rolesMap = {
-  uses: {
-    'threat-actor': ['malware', 'tool', 'attack-pattern'],
-    'intrusion-set': ['malware', 'tool', 'attack-pattern'],
-    campaign: ['malware', 'tool', 'attack-pattern'],
-    incident: ['malware', 'tool', 'attack-pattern'],
-    malware: ['tool', 'attack-pattern'],
-    tool: ['attack-pattern']
-  },
   targets: {
-    'threat-actor': [
-      'sector',
-      'region',
-      'country',
-      'city',
-      'organization',
-      'user',
-      'vulnerability'
-    ],
-    'intrusion-set': [
-      'sector',
-      'region',
-      'country',
-      'city',
-      'organization',
-      'user',
-      'vulnerability'
-    ],
-    campaign: [
-      'sector',
-      'region',
-      'country',
-      'city',
-      'organization',
-      'user',
-      'vulnerability'
-    ],
-    incident: [
-      'sector',
-      'region',
-      'country',
-      'city',
-      'organization',
-      'user',
-      'vulnerability'
-    ],
-    malware: [
-      'sector',
-      'region',
-      'country',
-      'city',
-      'organization',
-      'user',
-      'vulnerability'
-    ]
+    source: 'from',
+    target: 'to'
+  },
+  uses: {
+    user: 'from',
+    usage: 'to'
   },
   'attributed-to': {
-    'intrusion-set': ['threat-actor'],
-    campaign: ['threat-actor', 'intrusion-set'],
-    incident: ['threat-actor', 'intrusion-set', 'campaign']
+    attribution: 'from',
+    origin: 'to'
   },
   mitigates: {
-    'course-of-action': ['attack-pattern']
+    mitigation: 'from',
+    problem: 'to'
+  },
+  indicates: {
+    indicator: 'from',
+    characterize: 'to'
+  },
+  'variant-of': {
+    variation: 'from',
+    original: 'to'
+  },
+  impersonates: {
+    dummy: 'from',
+    genuine: 'to'
+  },
+  'related-to': {
+    relate_from: 'from',
+    relate_to: 'to'
   },
   localization: {
-    country: ['region'],
-    city: ['region', 'country'],
-    organization: ['region', 'country', 'city']
+    localized: 'from',
+    location: 'to'
   },
-  gathering: {
-    sector: ['sector'],
-    organization: ['sector'],
-    user: ['organization']
+  belonging: {
+    part_of: 'from',
+    gather: 'to'
   }
 };
 
-export const isInversed = (relationType, fromType, toType) => {
-  if (fromType && toType) {
+export const isInversed = (relationType, fromRole) => {
+  if (fromRole) {
     if (rolesMap[relationType]) {
-      if (
-        rolesMap[relationType][fromType] &&
-        rolesMap[relationType][fromType].includes(toType)
-      ) {
+      if (rolesMap[relationType][fromRole] === 'from') {
         return false;
       }
-      if (
-        rolesMap[relationType][toType] &&
-        rolesMap[relationType][toType].includes(fromType)
-      ) {
+      if (rolesMap[relationType][fromRole] === 'to') {
         return true;
       }
     }
