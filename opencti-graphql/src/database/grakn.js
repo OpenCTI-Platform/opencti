@@ -16,7 +16,7 @@ import {
   toPairs,
   tail,
   isEmpty,
-  isNil,
+  isNil
 } from 'ramda';
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
@@ -282,11 +282,19 @@ export const getRelationById = async id => {
     const rolePlayersMap = await relationObject.rolePlayersMap();
     const roles = rolePlayersMap.keys();
     const fromRole = roles.next().value;
+    const fromObject = rolePlayersMap
+      .get(fromRole)
+      .values()
+      .next().value;
     const fromRoleLabel = await fromRole.label();
     const toRole = roles.next().value;
+    const toObject = rolePlayersMap
+      .get(toRole)
+      .values()
+      .next().value;
     const toRoleLabel = await toRole.label();
-    const fromPromise = await getAttributes(answer.map().get('from'));
-    const toPromise = await getAttributes(answer.map().get('to'));
+    const fromPromise = await getAttributes(fromObject);
+    const toPromise = await getAttributes(toObject);
     const resultPromise = Promise.all([
       relationPromise,
       fromPromise,
@@ -328,8 +336,6 @@ export const getRelationInferredById = async id => {
       query
     );
     const relKey = queryRegex[1];
-    const fromKey = queryRegex[2];
-    const toKey = queryRegex[3];
     logger.debug(`[GRAKN - infer: true] ${query}`);
     const answerIterator = await rTx.query(query);
     const answer = await answerIterator.next();
@@ -339,19 +345,25 @@ export const getRelationInferredById = async id => {
     const rolePlayersMap = await rel.rolePlayersMap();
     const roles = rolePlayersMap.keys();
     const fromRole = roles.next().value;
+    const fromObject = rolePlayersMap
+      .get(fromRole)
+      .values()
+      .next().value;
     const fromRoleLabel = await fromRole.label();
     const toRole = roles.next().value;
+    const toObject = rolePlayersMap
+      .get(toRole)
+      .values()
+      .next().value;
     const toRoleLabel = await toRole.label();
-    const from = answer.map().get(fromKey);
-    const to = answer.map().get(toKey);
     const relationPromise = await Promise.resolve({
       id,
       type: 'stix_relation',
       relationship_type: relationTypeValue,
       inferred: true
     });
-    const fromPromise = await getAttributes(from);
-    const toPromise = await getAttributes(to);
+    const fromPromise = await getAttributes(fromObject);
+    const toPromise = await getAttributes(toObject);
     const explanation = answer.explanation();
     const explanationAnswers = explanation.answers();
     const inferences = explanationAnswers.map(explanationAnswer => {
@@ -738,8 +750,16 @@ export const getRelations = async (
         const rolePlayersMap = await relationObject.rolePlayersMap();
         const roles = rolePlayersMap.keys();
         const fromRole = roles.next().value;
+        const fromObject = rolePlayersMap
+          .get(fromRole)
+          .values()
+          .next().value;
         const fromRoleLabel = await fromRole.label();
         const toRole = roles.next().value;
+        const toObject = rolePlayersMap
+          .get(toRole)
+          .values()
+          .next().value;
         const toRoleLabel = await toRole.label();
         const relationIsInferred = await relationObject.isInferred();
         let relationPromise = await Promise.resolve(null);
@@ -767,8 +787,8 @@ export const getRelations = async (
           );
           relationPromise = await Promise.resolve(relationData);
         }
-        const fromPromise = getAttributes(answer.map().get(fromKey));
-        const toPromise = getAttributes(answer.map().get(toKey));
+        const fromPromise = getAttributes(answer.map().get(fromObject));
+        const toPromise = getAttributes(answer.map().get(toObject));
         const extraRelationPromise = !extraRelKey
           ? Promise.resolve(null)
           : getAttributes(answer.map().get(extraRelKey));

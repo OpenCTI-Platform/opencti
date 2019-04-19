@@ -1,5 +1,7 @@
 # Development installation
 
+### Development start
+
 *Prerequisites*:
 
 - Grakn (>= 1.5)
@@ -69,4 +71,19 @@ Change the *config.yml* file according to your OpenCTI token, ElasticSearch, Gra
 ```bash
 $ python3 worker_export.py &
 $ python3 worker_import.py &
+```
+
+### Build for production use
+
+*Build the application*:
+```bash
+$ cd opencti-frontend
+$ yarn build
+$ cd ../opencti-graphql
+$ yarn build
+```
+
+*Start the production package*:
+```bash
+$ yarn serv
 ```
