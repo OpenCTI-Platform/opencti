@@ -76,15 +76,15 @@ const rolesMap = {
 
 export const isInversed = (relationType, fromType, toType) => {
   if (fromType && toType) {
-    if (rolesMap[relationType].length > 0) {
+    if (rolesMap[relationType]) {
       if (
-        rolesMap[relationType][fromType].length > 0 &&
+        rolesMap[relationType][fromType] &&
         rolesMap[relationType][fromType].includes(toType)
       ) {
         return false;
       }
       if (
-        rolesMap[relationType][toType].length > 0 &&
+        rolesMap[relationType][toType] &&
         rolesMap[relationType][toType].includes(fromType)
       ) {
         return true;
