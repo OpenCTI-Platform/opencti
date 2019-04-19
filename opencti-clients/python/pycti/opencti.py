@@ -2885,6 +2885,7 @@ class OpenCTI:
                     'country': {'from_role': 'source', 'to_role': 'target'},
                     'city': {'from_role': 'source', 'to_role': 'target'},
                     'organization': {'from_role': 'source', 'to_role': 'target'},
+                    'vulnerability': {'from_role': 'source', 'to_role': 'target'},
                 },
                 'intrusion-set': {
                     'identity': {'from_role': 'source', 'to_role': 'target'},
@@ -2893,6 +2894,7 @@ class OpenCTI:
                     'country': {'from_role': 'source', 'to_role': 'target'},
                     'city': {'from_role': 'source', 'to_role': 'target'},
                     'organization': {'from_role': 'source', 'to_role': 'target'},
+                    'vulnerability': {'from_role': 'source', 'to_role': 'target'},
                 },
                 'campaign': {
                     'identity': {'from_role': 'source', 'to_role': 'target'},
@@ -2901,6 +2903,7 @@ class OpenCTI:
                     'country': {'from_role': 'source', 'to_role': 'target'},
                     'city': {'from_role': 'source', 'to_role': 'target'},
                     'organization': {'from_role': 'source', 'to_role': 'target'},
+                    'vulnerability': {'from_role': 'source', 'to_role': 'target'},
                 },
                 'incident': {
                     'identity': {'from_role': 'source', 'to_role': 'target'},
@@ -2909,6 +2912,7 @@ class OpenCTI:
                     'country': {'from_role': 'source', 'to_role': 'target'},
                     'city': {'from_role': 'source', 'to_role': 'target'},
                     'organization': {'from_role': 'source', 'to_role': 'target'},
+                    'vulnerability': {'from_role': 'source', 'to_role': 'target'},
                 },
                 'malware': {
                     'identity': {'from_role': 'source', 'to_role': 'target'},
@@ -2917,6 +2921,7 @@ class OpenCTI:
                     'country': {'from_role': 'source', 'to_role': 'target'},
                     'city': {'from_role': 'source', 'to_role': 'target'},
                     'organization': {'from_role': 'source', 'to_role': 'target'},
+                    'vulnerability': {'from_role': 'source', 'to_role': 'target'},
                 },
             },
             'attributed-to': {
@@ -2948,13 +2953,13 @@ class OpenCTI:
                 }
             },
             'localization': {
-                'region': {
-                    'country': {'from_role': 'location', 'to_role': 'localized'}
-                },
                 'country': {
-                    'country': {'from_role': 'location', 'to_role': 'localized'}
+                    'region': {'from_role': 'localized', 'to_role': 'location'}
+                },
+                'city': {
+                    'country': {'from_role': 'localized', 'to_role': 'location'}
                 }
-            }
+            },
         }
         if relation_type in mapping and from_type in mapping[relation_type] and to_type in mapping[relation_type][
             from_type]:

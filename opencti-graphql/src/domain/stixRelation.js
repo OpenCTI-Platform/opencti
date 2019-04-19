@@ -45,9 +45,9 @@ import {
   timeSeries,
   distribution,
   takeWriteTx,
-  getObjectsWithoutAttributes,
-  buildPagination
+  getObjectsWithoutAttributes
 } from '../database/grakn';
+import { buildPagination } from '../database/utils';
 import { BUS_TOPICS, logger } from '../config/conf';
 
 const sumBy = attribute => vals =>

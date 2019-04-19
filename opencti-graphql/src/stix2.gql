@@ -153,8 +153,8 @@ define
   "mitigation" sub role;
 
   # indicates
-  "indicator" sub role;
   "characterize" sub role;
+  "indicator" sub role;
 
   # variant-of
   "original" sub role;
@@ -165,8 +165,8 @@ define
   "dummy" sub role;
 
   # related-to
-  "relate_from" sub role;
   "relate_to" sub role;
+  "relate_from" sub role;
 
   # localization
   "location" sub role;

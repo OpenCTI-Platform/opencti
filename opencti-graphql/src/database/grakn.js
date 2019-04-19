@@ -24,6 +24,7 @@ import Grakn from 'grakn-client';
 import conf, { logger } from '../config/conf';
 import { pubsub } from './redis';
 import { fillTimeSeries, randomKey, buildPagination } from './utils';
+import { isInversed } from './graknRoles';
 import { getAttributes as elGetAttributes } from './elasticSearch';
 import { Unknown } from '../config/errors';
 
@@ -284,9 +285,17 @@ export const getRelationById = async id => {
       fromPromise,
       toPromise
     ]).then(([relation, from, to]) => {
+      if (
+        isInversed(relation.relationship_type, from.entity_type, to.entity_type)
+      ) {
+        return pipe(
+          assoc('from', to),
+          assoc('to', from)
+        )(relation);
+      }
       return pipe(
-        assoc('from', to),
-        assoc('to', from)
+        assoc('from', from),
+        assoc('to', to)
       )(relation);
     });
     const result = await Promise.resolve(resultPromise);
@@ -440,6 +449,19 @@ export const getRelationInferredById = async id => {
       toPromise,
       inferencesPromises
     ]).then(([node, fromResult, toResult, relationInferences]) => {
+      if (
+        isInversed(
+          node.relationship_type,
+          fromResult.entity_type,
+          toResult.entity_type
+        )
+      ) {
+        return pipe(
+          assoc('from', toResult),
+          assoc('to', fromResult),
+          assoc('inferences', { edges: relationInferences })
+        )(node);
+      }
       return pipe(
         assoc('from', fromResult),
         assoc('to', toResult),
@@ -744,6 +766,17 @@ export const getRelations = async (
           toPromise,
           extraRelationPromise
         ]).then(([node, from, to, relation]) => {
+          if (
+            isInversed(node.relationship_type, from.entity_type, to.entity_type)
+          ) {
+            return {
+              node: pipe(
+                assoc('from', to),
+                assoc('to', from)
+              )(node),
+              relation
+            };
+          }
           return {
             node: pipe(
               assoc('from', from),

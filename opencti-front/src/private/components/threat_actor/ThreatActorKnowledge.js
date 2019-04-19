@@ -108,6 +108,11 @@ class ThreatActorKnowledgeComponent extends Component {
                 resolveRelationRole="origin"
                 resolveViaTypes={[
                   {
+                    entityType: 'User',
+                    relationType: 'gathering',
+                    relationRole: 'part_of',
+                  },
+                  {
                     entityType: 'Organization',
                     relationType: 'gathering',
                     relationRole: 'part_of',
@@ -130,6 +135,7 @@ class ThreatActorKnowledgeComponent extends Component {
                   'Sector',
                   'Country',
                   'Region',
+                  'User',
                 ]}
                 entityLink={link}
                 exploreLink={`/dashboard/explore/victimology/${threatActor.id}`}
