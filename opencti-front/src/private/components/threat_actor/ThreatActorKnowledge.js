@@ -169,6 +169,7 @@ class ThreatActorKnowledgeComponent extends Component {
                 relationType="uses"
                 targetEntityTypes={['Attack-Pattern']}
                 entityLink={link}
+                exploreLink={`/dashboard/explore/attack_patterns/${threatActor.id}`}
                 {...routeProps}
               />
             )}

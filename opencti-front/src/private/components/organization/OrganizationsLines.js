@@ -127,7 +127,7 @@ class OrganizationsLines extends Component {
         pathOr([], ['organizations', 'edges'], this.props.data),
       );
     const rowCount = dummy
-      ? 20
+      ? 25
       : this.props.relay.isLoading()
         ? list.length + 25
         : list.length;

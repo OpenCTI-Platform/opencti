@@ -570,6 +570,7 @@ class ReportAddObservable extends Component {
                       <MenuItem value='Relay node'>{t('Relay node')}</MenuItem>
                       <MenuItem value='Proxy'>{t('Proxy')}</MenuItem>
                       <MenuItem value='Sender'>{t('Sender')}</MenuItem>
+                      <MenuItem value='Implant'>{t('Implant')}</MenuItem>
                     </Field>
                     <Field
                       name="observable_value"

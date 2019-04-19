@@ -952,53 +952,19 @@ type GroupEdge {
   node: Group!
   relation: RelationEmbedded!
 }
-type Group implements GlobalObject & StixEntity & StixDomainEntity {
+type Group implements GlobalObject {
   id: ID!
-  stix_id: String!
   entity_type: String!
   parent_type: String!
   name: String!
-  stix_label: [String]
-  alias: [String]
   description: String
-  graph_data: String
   editContext: [EditUserContext]
-  markingDefinitions: MarkingDefinitionConnection
-  createdByRef: createdByRef
   members: UserConnection
   permissions: MarkingDefinitionConnection
-  reports: ReportConnection
-  exports(types: [String]!): [Export]
-  stixRelations(
-    first: Int
-    after: ID
-    orderBy: StixRelationsOrdering
-    orderMode: OrderingMode
-    stix_id: String
-    fromId: String
-    inferred: Boolean
-    toId: String
-    fromTypes: [String]
-    toTypes: [String]
-    relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    weights: [Int]
-    search: String
-    infrastructure: Boolean
-  ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
 }
 input GroupAddInput {
-  stix_id: String
   name: String!
   description: String
   markingDefinitions: [String]
@@ -2079,6 +2045,8 @@ type Query {
     resolveViaTypes: [EntityRelation]
     entityTypes: [String]
     toTypes: [String]
+    startDate: DateTime
+    endDate: DateTime
     field: String!
     operation: StatsOperation!
     limit: Int

@@ -135,7 +135,7 @@ class ReportAddObjectRefs extends Component {
               query={reportAddObjectRefsLinesQuery}
               variables={{
                 search: this.state.search,
-                count: 200,
+                count: 50,
                 orderBy: 'created_at',
                 orderMode: 'desc',
               }}

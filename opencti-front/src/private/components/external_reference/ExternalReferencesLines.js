@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
+import { filter, pathOr, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer,
@@ -54,6 +54,17 @@ class ExternalReferencesLines extends Component {
     }
   }
 
+  filterList(list) {
+    const searchTerm = propOr('', 'searchTerm', this.props);
+    const filterByKeyword = n => searchTerm === ''
+      || n.node.source_name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
+    if (searchTerm.length > 0) {
+      return filter(filterByKeyword, list);
+    }
+    return list;
+  }
+
   _setRef(windowScroller) {
     // noinspection JSUnusedGlobalSymbols
     this._windowScroller = windowScroller;
@@ -72,7 +83,7 @@ class ExternalReferencesLines extends Component {
     if (this.props.dummy) {
       return true;
     }
-    const list = pathOr([], ['externalReferences', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['externalReferences', 'edges'], this.props.data));
     return !this.props.relay.hasMore() || index < list.length;
   }
 
@@ -86,7 +97,7 @@ class ExternalReferencesLines extends Component {
       );
     }
 
-    const list = pathOr([], ['externalReferences', 'edges'], this.props.data);
+    const list = this.filterList(pathOr([], ['externalReferences', 'edges'], this.props.data));
     if (!this._isRowLoaded({ index })) {
       return (
         <div key={key} style={style}>
@@ -115,9 +126,9 @@ class ExternalReferencesLines extends Component {
     const { scrollToIndex } = this.state;
     const list = dummy
       ? []
-      : pathOr([], ['externalReferences', 'edges'], this.props.data);
+      : this.filterList(pathOr([], ['externalReferences', 'edges'], this.props.data));
     const rowCount = dummy
-      ? 20
+      ? 25
       : this.props.relay.isLoading()
         ? list.length + 25
         : list.length;

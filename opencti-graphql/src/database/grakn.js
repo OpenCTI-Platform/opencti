@@ -1205,10 +1205,16 @@ export const timeSeries = async (query, options) => {
  * @returns Promise
  */
 export const distribution = async (query, options) => {
-  const { operation, field, inferred = false } = options;
+  const { startDate, endDate, operation, field, inferred = false } = options;
   const rTx = await takeReadTx();
   try {
-    const finalQuery = `${query}; $x has ${field} $g; get; group $g; ${operation};`;
+    const finalQuery = `${query}; ${
+      startDate && endDate
+        ? `$rel has first_seen $fs; $fs > ${prepareDate(
+            startDate
+          )}; $fs < ${prepareDate(endDate)};`
+        : ''
+    } $x has ${field} $g; get; group $g; ${operation};`;
     logger.debug(`[GRAKN - infer: ${inferred}] ${finalQuery}`);
     const iterator = await rTx.query(finalQuery, { infer: inferred });
     const answer = await iterator.collect();

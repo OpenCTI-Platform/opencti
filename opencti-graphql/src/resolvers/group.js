@@ -23,9 +23,7 @@ const groupResolvers = {
     groups: (_, args) => findAll(args)
   },
   Group: {
-    createdByRef: (group, args) => createdByRef(group.id, args),
     members: (group, args) => members(group.id, args),
-    exports: (group, args) => exports(group.id, args),
     permissions: (group, args) => permissions(group.id, args),
     editContext: group => fetchEditContext(group.id)
   },

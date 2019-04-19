@@ -115,7 +115,7 @@ class EntityStixObservablesLines extends Component {
       ? []
       : pathOr([], ['stixRelations', 'edges'], this.props.data);
     const rowCount = dummy
-      ? 20
+      ? 25
       : this.props.relay.isLoading()
         ? list.length + 25
         : list.length;

@@ -546,7 +546,7 @@ export const addStixRelation = async (user, stixRelation) => {
       wTx.query(
         `match $from id ${createdStixRelationId};
         $to id ${location};
-        insert (localized: $from, location: $to) isa localization;`
+        insert $rel(localized: $from, location: $to) isa localization, has stix_id "relationship--${uuid()}", has relationship_type 'localization', has first_seen ${now()}, has last_seen ${now()}, has weight 3;`
       );
     const locationsPromises = map(createLocation, stixRelation.locations);
     await Promise.all(locationsPromises);

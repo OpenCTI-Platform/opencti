@@ -12,7 +12,6 @@ import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { Close } from '@material-ui/icons';
-import { requestSubscription } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { SubscriptionAvatars } from '../../../components/Subscription';
 import GroupEditionOverview from './GroupEditionOverview';
@@ -48,32 +47,10 @@ const styles = theme => ({
   },
 });
 
-const subscription = graphql`
-  subscription GroupEditionSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
-      ... on Group {
-        ...GroupEdition_group
-      }
-    }
-  }
-`;
-
 class GroupEdition extends Component {
   constructor(props) {
     super(props);
     this.state = { currentTab: 0 };
-  }
-
-  componentDidMount() {
-    const sub = requestSubscription({
-      subscription,
-      variables: { id: this.props.group.id },
-    });
-    this.setState({ sub });
-  }
-
-  componentWillUnmount() {
-    this.state.sub.dispose();
   }
 
   handleChangeTab(event, value) {

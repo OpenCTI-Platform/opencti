@@ -125,7 +125,7 @@ class CountriesLines extends Component {
       ? []
       : this.filterList(pathOr([], ['countries', 'edges'], this.props.data));
     const rowCount = dummy
-      ? 20
+      ? 25
       : this.props.relay.isLoading()
         ? list.length + 25
         : list.length;

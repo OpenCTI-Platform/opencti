@@ -3,9 +3,12 @@ import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
 import EntityStixRelationsTableTime from '../stix_relation/EntityStixRelationsTableTime';
 import EntityStixRelationsChart from '../stix_relation/EntityStixRelationsChart';
+import EntityStixRelationsTable from '../stix_relation/EntityStixRelationsTable';
+import { currentYear } from '../../../utils/Time';
 
 const styles = () => ({
   container: {
@@ -18,6 +21,11 @@ class VictimologyTime extends Component {
     const {
       classes, t, stixDomainEntity, inferred,
     } = this.props;
+    const fourYearsAgo = currentYear() - 3;
+    const yearsList = [];
+    for (let i = currentYear(); i >= fourYearsAgo; i--) {
+      yearsList.push(i);
+    }
     return (
       <div className={classes.container}>
         <Grid
@@ -60,7 +68,64 @@ class VictimologyTime extends Component {
             />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={32} style={{ marginTop: 30 }} />
+        <div className="clearfix" style={{ marginBottom: 20 }} />
+        <Grid
+          container={true}
+          spacing={32}
+          classes={{ container: classes.gridContainer }}
+        >
+          {yearsList.map(year => (
+            <Grid item={true} key={year} xs={6} style={{ marginBottom: 40 }}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginBottom: 10 }}
+              >
+                {t('Year')} {year}
+              </Typography>
+              <div style={{ float: 'left', width: '48%', height: '100%' }}>
+                <EntityStixRelationsTable
+                  entityId={stixDomainEntity.id}
+                  entityType="Sector"
+                  relationType="targets"
+                  startDate={`${year}-01-01T00:00:00Z`}
+                  endDate={`${year}-12-31T23:59:59Z`}
+                  field="name"
+                  resolveInferences={inferred}
+                  resolveRelationType="attributed-to"
+                  resolveRelationRole="origin"
+                  resolveViaTypes={[
+                    {
+                      entityType: 'Organization',
+                      relationType: 'gathering',
+                      relationRole: 'part_of',
+                    },
+                  ]}
+                />
+              </div>
+              <div style={{ float: 'right', width: '48%', height: '100%' }}>
+                <EntityStixRelationsTable
+                  entityId={stixDomainEntity.id}
+                  entityType="Country"
+                  relationType="targets"
+                  startDate={`${year}-01-01T00:00:00Z`}
+                  endDate={`${year}-12-31T23:59:59Z`}
+                  field="name"
+                  resolveInferences={inferred}
+                  resolveRelationType="attributed-to"
+                  resolveRelationRole="origin"
+                  resolveViaTypes={[
+                    {
+                      entityType: 'Organization',
+                      relationType: 'localization',
+                      relationRole: 'localized',
+                    },
+                  ]}
+                />
+              </div>
+            </Grid>
+          ))}
+        </Grid>
       </div>
     );
   }

@@ -164,6 +164,7 @@ class IntrusionSetKnowledgeComponent extends Component {
                 relationType="uses"
                 targetEntityTypes={['Attack-Pattern']}
                 entityLink={link}
+                exploreLink={`/dashboard/explore/attack_patterns/${intrusionSet.id}`}
                 {...routeProps}
               />
             )}

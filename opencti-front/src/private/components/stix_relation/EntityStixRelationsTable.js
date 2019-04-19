@@ -40,6 +40,8 @@ const entityStixRelationsTableStixRelationDistributionQuery = graphql`
     $toTypes: [String]
     $entityTypes: [String]
     $relationType: String
+    $startDate: DateTime
+    $endDate: DateTime
     $resolveInferences: Boolean
     $resolveRelationType: String
     $resolveRelationRole: String
@@ -53,6 +55,8 @@ const entityStixRelationsTableStixRelationDistributionQuery = graphql`
       toTypes: $toTypes
       entityTypes: $entityTypes
       relationType: $relationType
+      startDate: $startDate
+      endDate: $endDate
       resolveInferences: $resolveInferences
       resolveRelationType: $resolveRelationType
       resolveRelationRole: $resolveRelationRole
@@ -82,11 +86,15 @@ class EntityStixRelationsTable extends Component {
       resolveRelationRole,
       resolveRelationToTypes,
       resolveViaTypes,
+      startDate,
+      endDate
     } = this.props;
     const stixRelationsDistributionVariables = {
       fromId: entityId,
       toTypes: entityType ? [entityType] : null,
       entityTypes: entityTypes || null,
+      startDate: startDate || null,
+      endDate: endDate || null,
       resolveInferences,
       resolveRelationType,
       resolveRelationRole,
@@ -118,9 +126,7 @@ class EntityStixRelationsTable extends Component {
                         <TableCell>
                           {t(`entity_${entityType.toLowerCase()}`)}
                         </TableCell>
-                        <TableCell align="right">{`${t('Number of')} ${t(
-                          `relation_${relationType}`,
-                        )}s`}</TableCell>
+                        <TableCell align="right">{t('Number')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -191,6 +197,8 @@ EntityStixRelationsTable.propTypes = {
   entityId: PropTypes.string,
   relationType: PropTypes.string,
   entityType: PropTypes.string,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
   resolveInferences: PropTypes.bool,
   resolveRelationType: PropTypes.string,
   resolveRelationRole: PropTypes.string,

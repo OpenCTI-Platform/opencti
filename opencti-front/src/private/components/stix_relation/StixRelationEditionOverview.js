@@ -514,6 +514,7 @@ const StixRelationEditionFragment = createFragmentContainer(
         last_seen
         description
         relationship_type
+        role_played
         locations {
           edges {
             node {

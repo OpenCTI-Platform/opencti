@@ -112,7 +112,7 @@ class GroupsLines extends Component {
     const { scrollToIndex } = this.state;
     const list = dummy ? [] : pathOr([], ['groups', 'edges'], this.props.data);
     const rowCount = dummy
-      ? 20
+      ? 25
       : this.props.relay.isLoading()
         ? list.length + 25
         : list.length;

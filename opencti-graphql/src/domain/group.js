@@ -38,9 +38,6 @@ export const addGroup = async (user, group) => {
   const wTx = await takeWriteTx();
   const groupIterator = await wTx.query(`insert $group isa Group,
     has entity_type "group",
-    has stix_id "${
-      group.stix_id ? prepareString(group.stix_id) : `group--${uuid()}`
-    }",
     has name "${prepareString(group.name)}",
     has description "${prepareString(group.description)}",
     has created_at ${now()},
