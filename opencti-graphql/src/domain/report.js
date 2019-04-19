@@ -130,7 +130,7 @@ export const observableRefs = (reportId, args) =>
 
 export const relationRefs = (reportId, args) =>
   paginateRelationships(
-    `match $rel($fromRole:$from, $toRole:$to) isa ${
+    `match $rel($from, $to) isa ${
       args.relationType ? args.relationType : 'stix_relation'
     }; 
     $extraRel(so:$rel, knowledge_aggregation:$r) isa object_refs; 

@@ -787,8 +787,8 @@ export const getRelations = async (
           );
           relationPromise = await Promise.resolve(relationData);
         }
-        const fromPromise = getAttributes(answer.map().get(fromObject));
-        const toPromise = getAttributes(answer.map().get(toObject));
+        const fromPromise = getAttributes(fromObject);
+        const toPromise = getAttributes(toObject);
         const extraRelationPromise = !extraRelKey
           ? Promise.resolve(null)
           : getAttributes(answer.map().get(extraRelKey));
