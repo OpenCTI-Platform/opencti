@@ -73,7 +73,7 @@ jobs:
           command: git clone ssh://opencti-fiqid45E@opencti.io:/~/opencti-fiqid45E.git .
       - run:
           working_directory: ~/opencti/deploy
-          command: git remote add ci ~/opencti && git pull ci master
+          command: git remote add ci ~/opencti && git pull --no-edit ci master
       - run:
           working_directory: ~/opencti/deploy
           command: rsync -auv --delete ~/opencti/opencti-graphql/public ./opencti-graphql/public
@@ -101,7 +101,7 @@ jobs:
           command: git clone ssh://opencti-b0gY5UHe@opencti.io:/~/opencti-b0gY5UHe.git .
       - run:
           working_directory: ~/opencti/deploy
-          command: git remote add ci ~/opencti && git pull ci master          
+          command: git remote add ci ~/opencti && git pull --no-edit ci master          
       - run:
           working_directory: ~/opencti/deploy
           command: rsync -auv --delete ~/opencti/opencti-graphql/public ./opencti-graphql/public
