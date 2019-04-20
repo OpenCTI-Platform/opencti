@@ -4,7 +4,7 @@ jobs:
   build:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:9.11-stretch
+      - image: circleci/node:9.11.2-stretch
     steps:
       - checkout
       - run: 
