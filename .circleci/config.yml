@@ -36,11 +36,11 @@ jobs:
 
   package_rolling:
     working_directory: ~/opencti
-    - attach_workspace:
-          at: ~/opencti
     docker:
       - image: circleci/node:11-stretch
       steps:
+        - attach_workspace:
+            at: ~/opencti
         - run:
             run: mkdir -p release/opencti
             run: cp -a opencti-graphql release/opencti
