@@ -6,7 +6,7 @@ jobs:
       - image: circleci/node:9.9-stretch
     steps:
       - checkout
-      - run: cd opencti-frontend
+      - run: cd opencti-front
       - run: yarn install
       - run: yarn build
       - run: cd ../opencti-graphql
