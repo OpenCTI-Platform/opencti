@@ -19,21 +19,40 @@ jobs:
       - run:
           working_directory: ~/opencti/opencti-graphql
           command: yarn build
-
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - opencti
   test:
     working_directory: ~/opencti
     docker:
       - image: circleci/node:11-stretch
     steps:
+      - attach_workspace:
+          at: ~/opencti
       - run:
           working_directory: ~/opencti/opencti-graphql
           command: yarn test
 
+  package_rolling:
+    working_directory: ~/opencti
+    - attach_workspace:
+          at: ~/opencti
+    docker:
+      - image: circleci/node:11-stretch
+      steps:
+        - run:
+            run: mkdir -p release/opencti
+            run: cp -a opencti-graphql release/opencti
+            run: cp -a opencti-worker release/opencti/worker
+            run: cp -a opencti-clients release/
   deploy_community:
     working_directory: ~/opencti
     docker:
       - image: circleci/node:11-stretch
     steps:
+      - attach_workspace:
+          at: ~/opencti
       - run: sudo apt-get update -qq && apt install rsync
       - run: mkdir -p deploy/community
       - run:
