@@ -56,7 +56,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: sudo apt-get update -qq && apt install rsync
+      - run: sudo apt-get update -qq && sudo apt install rsync
       - run: mkdir -p deploy/community
       - run:
           working_directory: ~/opencti/deploy/community
@@ -82,7 +82,7 @@ jobs:
       - run: mkdir -p deploy/community
       - run:
           working_directory: ~/opencti/deploy/community
-          command: git clone ssh://opencti-fiqid45E@opencti.io:/~/opencti-fiqid45E.git .
+          command: git clone ssh://opencti-b0gY5UHe@opencti.io:/~/opencti-b0gY5UHe.git .
       - run:
           working_directory: ~/opencti/deploy/community
           command: rsync -auv --delete ~/opencti/opencti-graphql/public ./opencti-graphql/public
@@ -105,6 +105,10 @@ workflows:
             - build
             - test
       - deploy_community:
+          requires:
+            - build
+            - test
+      - deploy_demo:
           requires:
             - build
             - test
