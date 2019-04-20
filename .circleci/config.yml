@@ -66,19 +66,22 @@ jobs:
       - add_ssh_keys
       - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts
       - run: sudo apt-get update -qq && sudo apt install rsync
-      - run: mkdir -p deploy/community
-      - run:
-          working_directory: ~/opencti/deploy/community
-          command: git clone ssh://opencti-fiqid45E@opencti.io:/~/opencti-fiqid45E.git .
-      - run:
-          working_directory: ~/opencti/deploy/community
-          command: rsync -auv --delete ~/opencti/opencti-graphql/public ./opencti-graphql/public
-      - run:
-          working_directory: ~/opencti/deploy/community
-          command: rsync -auv --delete ~/opencti/opencti-graphql/dist ./opencti-graphql/dist
+      - run: mkdir deploy
       - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
       - run:
-          working_directory: ~/opencti/deploy/community
+          working_directory: ~/opencti/deploy
+          command: git clone ssh://opencti-fiqid45E@opencti.io:/~/opencti-fiqid45E.git .
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git remote add ci ~/opencti && git pull ci master
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -auv --delete ~/opencti/opencti-graphql/public ./opencti-graphql/public
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -auv --delete ~/opencti/opencti-graphql/dist ./opencti-graphql/dist
+      - run:
+          working_directory: ~/opencti/deploy
           command: git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
   deploy_demo:
@@ -91,19 +94,22 @@ jobs:
       - add_ssh_keys
       - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts    
       - run: sudo apt-get update -qq && sudo apt install rsync
-      - run: mkdir -p deploy/community
-      - run:
-          working_directory: ~/opencti/deploy/community
-          command: git clone ssh://opencti-b0gY5UHe@opencti.io:/~/opencti-b0gY5UHe.git .
-      - run:
-          working_directory: ~/opencti/deploy/community
-          command: rsync -auv --delete ~/opencti/opencti-graphql/public ./opencti-graphql/public
-      - run:
-          working_directory: ~/opencti/deploy/community
-          command: rsync -auv --delete ~/opencti/opencti-graphql/dist ./opencti-graphql/dist
+      - run: mkdir -p deploy
       - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
       - run:
-          working_directory: ~/opencti/deploy/community
+          working_directory: ~/opencti/deploy
+          command: git clone ssh://opencti-b0gY5UHe@opencti.io:/~/opencti-b0gY5UHe.git .
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git remote add ci ~/opencti && git pull ci master          
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -auv --delete ~/opencti/opencti-graphql/public ./opencti-graphql/public
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -auv --delete ~/opencti/opencti-graphql/dist ./opencti-graphql/dist
+      - run:
+          working_directory: ~/opencti/deploy
           command: git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
 workflows:
