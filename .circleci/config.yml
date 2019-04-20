@@ -35,7 +35,7 @@ jobs:
           command: yarn test
 
   package_rolling:
-    working_directory: ~/
+    working_directory: ~/opencti
     docker:
       - image: circleci/node:11-stretch
     steps:
@@ -51,7 +51,7 @@ jobs:
 
 
   deploy_community:
-    working_directory: ~/
+    working_directory: ~/opencti
     docker:
       - image: circleci/node:11-stretch
     steps:
@@ -73,7 +73,7 @@ jobs:
           command: git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
   deploy_demo:
-    working_directory: ~/
+    working_directory: ~/opencti
     docker:
       - image: circleci/node:11-stretch
     steps:
