@@ -1,19 +1,33 @@
 version: 2.1
 jobs:
-  build_opencti:
+  build:
     working_directory: ~/opencti
     docker:
       - image: circleci/node:9.9-stretch
     steps:
       - checkout
-      - run: cd opencti-front
-      - run: yarn install
-      - run: yarn build
-      - run: cd ../opencti-graphql
-      - run: yarn install
-      - run: yarn test
-      - run: yarn build
+      - run: 
+          working_directory: ~/opencti/opencti-front
+          command: yarn install
+      - run:
+          working_directory: ~/opencti/opencti-front
+          command: yarn build
+      - run:
+          working_directory: ~/opencti/opencti-graphql
+          command: yarn install
+      - run:
+          working_directory: ~/opencti/opencti-graphql
+          command: yarn build
+  test:
+    working_directory: ~/opencti
+    docker:
+      - image: circleci/node:9.9-stretch
+    steps:
+      - run:
+        working_directory: ~/opencti/opencti-graphql
+        command: yarn test
 workflows:
   opencti:
     jobs:
-      - build_opencti
+      - build
+      - test
