@@ -24,7 +24,7 @@ jobs:
           paths:
             - opencti
   test:
-    working_directory: ~/
+    working_directory: ~/opencti
     docker:
       - image: circleci/node:11-stretch
     steps:
@@ -48,6 +48,7 @@ jobs:
       - run: cp -a opencti-clients release/opencti/clients
       - run: tar -zcvf "opencti-$(date '+%Y%m%d').tar.gz" release/opencti
       - run: scp "opencti-$(date '+%Y%m%d').tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
+
 
   deploy_community:
     working_directory: ~/
