@@ -76,13 +76,13 @@ jobs:
           command: git remote add ci ~/opencti && git pull --no-edit ci master
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -auv --delete ~/opencti/opencti-graphql/public/ ./opencti-graphql/public/
+          command: rsync -av --delete ~/opencti/opencti-graphql/public/ ./opencti-graphql/public/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -auv --delete ~/opencti/opencti-graphql/dist/ ./opencti-graphql/dist/
+          command: rsync -av --delete ~/opencti/opencti-graphql/dist/ ./opencti-graphql/dist/
       - run:
           working_directory: ~/opencti/deploy
-          command: git add --all && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
+          command: git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
   deploy_demo:
     working_directory: ~/opencti
@@ -104,13 +104,13 @@ jobs:
           command: git remote add ci ~/opencti && git pull --no-edit ci master          
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -auv --delete ~/opencti/opencti-graphql/public/ ./opencti-graphql/public/
+          command: rsync -av --delete ~/opencti/opencti-graphql/public/ ./opencti-graphql/public/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -auv --delete ~/opencti/opencti-graphql/dist/ ./opencti-graphql/dist/
+          command: rsync -av --delete ~/opencti/opencti-graphql/dist/ ./opencti-graphql/dist/
       - run:
           working_directory: ~/opencti/deploy
-          command: git add --all && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
+          command: git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
 workflows:
   opencti:
