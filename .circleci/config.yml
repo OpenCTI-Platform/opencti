@@ -2,24 +2,27 @@ version: 2.1
 commands:
   install-yarn:
     steps:
-      - run curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-      - echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-      - sudo apt-get update -qq && sudo apt-get install -y -qq yarn
+      - run: curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+      - run: echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq yarn
 jobs:
-  build_frontend:
+  build_opencti:
     working_directory: ~/opencti
     docker:
       - image: circleci/node:9.9-stretch
     steps:
       - checkout
       - install-yarn
-      - run:
-          name: install-depedencies
-          command: yarn install
-      - run:
-          name: build-frontend
-          command: yarn build
+      - run: cd opencti-frontend
+      - run: yarn install
+      - run: yarn build
+      - run: cd ../opencti-graphql
+      - run: yarn install
+      - run: yarn test
+      - run: yarn build
+  deploy_opencti:
+      working_directory: ~/opencti
 workflows:
   opencti:
     jobs:
-      - build_frontend
+      - build_opencti
