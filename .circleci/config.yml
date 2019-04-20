@@ -29,15 +29,25 @@ jobs:
           working_directory: ~/opencti/opencti-graphql
           command: yarn test
 
-    deploy:
-      working_directory: ~/opencti
-      docker:
-        - image: circleci/node:11-stretch
-      steps:
-        - run: mkdir deploy
-        - run:
-            working_directory: ~/opencti/deploy
-            command: git clone 
+  deploy_community:
+    working_directory: ~/opencti
+    docker:
+      - image: circleci/node:11-stretch
+    steps:
+      - run: sudo apt-get update -qq && apt install rsync
+      - run: mkdir -p deploy/community
+      - run:
+          working_directory: ~/opencti/deploy/community
+          command: git clone ssh://opencti-fiqid45E@opencti.io:/~/opencti-fiqid45E.git .
+      - run:
+          working_directory: ~/opencti/deploy/community
+          command: rsync -auv --delete ~/opencti/opencti-graphql/public ./opencti-graphql/public
+      - run:
+          working_directory: ~/opencti/deploy/community
+          command: rsync -auv --delete ~/opencti/opencti-graphql/dist ./opencti-graphql/dist
+      - run:
+          working_directory: ~/opencti/deploy/community
+          command: git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 workflows:
   opencti:
     jobs:
