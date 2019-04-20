@@ -57,7 +57,8 @@ class ExternalReferencesLines extends Component {
   filterList(list) {
     const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''
-      || n.node.source_name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.node.source_name.toLowerCase().indexOf(searchTerm.toLowerCase())
+        !== -1
       || n.node.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
     if (searchTerm.length > 0) {
       return filter(filterByKeyword, list);
@@ -74,16 +75,16 @@ class ExternalReferencesLines extends Component {
     if (!this.props.relay.hasMore() || this.props.relay.isLoading()) {
       return;
     }
-    this.props.relay.loadMore(
-      this.props.searchTerm.length > 0 ? 90000 : 25,
-    );
+    this.props.relay.loadMore(this.props.searchTerm.length > 0 ? 90000 : 25);
   }
 
   _isRowLoaded({ index }) {
     if (this.props.dummy) {
       return true;
     }
-    const list = this.filterList(pathOr([], ['externalReferences', 'edges'], this.props.data));
+    const list = this.filterList(
+      pathOr([], ['externalReferences', 'edges'], this.props.data),
+    );
     return !this.props.relay.hasMore() || index < list.length;
   }
 
@@ -97,7 +98,9 @@ class ExternalReferencesLines extends Component {
       );
     }
 
-    const list = this.filterList(pathOr([], ['externalReferences', 'edges'], this.props.data));
+    const list = this.filterList(
+      pathOr([], ['externalReferences', 'edges'], this.props.data),
+    );
     if (!this._isRowLoaded({ index })) {
       return (
         <div key={key} style={style}>
@@ -126,12 +129,17 @@ class ExternalReferencesLines extends Component {
     const { scrollToIndex } = this.state;
     const list = dummy
       ? []
-      : this.filterList(pathOr([], ['externalReferences', 'edges'], this.props.data));
+      : this.filterList(
+        pathOr([], ['externalReferences', 'edges'], this.props.data),
+      );
+    const listLength = this.props.relay.isLoading()
+      ? list.length + 25
+      : list.length;
     const rowCount = dummy
-      ? 25
-      : this.props.relay.isLoading()
-        ? list.length + 25
-        : list.length;
+      ? listLength > 0
+        ? listLength - 1
+        : 24
+      : listLength;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
         {({

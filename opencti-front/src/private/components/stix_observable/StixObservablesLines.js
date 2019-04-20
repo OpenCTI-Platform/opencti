@@ -151,11 +151,14 @@ class StixObservablesLines extends Component {
       : this.filterList(
         pathOr([], ['stixObservables', 'edges'], this.props.data),
       );
+    const listLength = this.props.relay.isLoading()
+      ? list.length + 25
+      : list.length;
     const rowCount = dummy
-      ? 25
-      : this.props.relay.isLoading()
-        ? list.length + 25
-        : list.length;
+      ? listLength > 0
+        ? listLength - 1
+        : 24
+      : listLength;
     return (
       <WindowScroller
         ref={this._setRef}

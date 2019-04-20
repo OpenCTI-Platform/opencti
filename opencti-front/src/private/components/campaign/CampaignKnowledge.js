@@ -23,7 +23,6 @@ const styles = () => ({
 
 const inversedRelations = [
   'incident',
-  'malware',
   'attack-pattern',
   'tool',
   'vulnerability',
