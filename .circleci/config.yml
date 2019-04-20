@@ -20,8 +20,6 @@ jobs:
       - run: yarn install
       - run: yarn test
       - run: yarn build
-  deploy_opencti:
-      working_directory: ~/opencti
 workflows:
   opencti:
     jobs:
