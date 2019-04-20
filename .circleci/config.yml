@@ -1,10 +1,4 @@
 version: 2.1
-commands:
-  install-yarn:
-    steps:
-      - run: curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-      - run: echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-      - run: sudo apt-get update -qq && sudo apt-get install -y -qq yarn
 jobs:
   build_opencti:
     working_directory: ~/opencti
@@ -12,7 +6,6 @@ jobs:
       - image: circleci/node:9.9-stretch
     steps:
       - checkout
-      - install-yarn
       - run: cd opencti-frontend
       - run: yarn install
       - run: yarn build
