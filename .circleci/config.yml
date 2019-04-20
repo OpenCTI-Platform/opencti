@@ -43,6 +43,7 @@ jobs:
           at: ~/
       - add_ssh_keys
       - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts
+      - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
       - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push opencti master
       - run: mkdir release
       - run: cp -a opencti-graphql release/opencti
@@ -100,9 +101,10 @@ jobs:
       - run:
           working_directory: ~/opencti/deploy/community
           command: rsync -auv --delete ~/opencti/opencti-graphql/dist ./opencti-graphql/dist
+      - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
       - run:
           working_directory: ~/opencti/deploy/community
-          command: git config --global user.email "ci@opencti.io" && git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
+          command: git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
 workflows:
   opencti:
