@@ -41,6 +41,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+      - add_ssh_keys
       - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts
       - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push opencti master
       - run: mkdir -p release/opencti
@@ -58,6 +59,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+      - add_ssh_keys
       - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts
       - run: sudo apt-get update -qq && sudo apt install rsync
       - run: mkdir -p deploy/community
@@ -81,6 +83,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+      - add_ssh_keys
       - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts    
       - run: sudo apt-get update -qq && apt install rsync
       - run: mkdir -p deploy/community
