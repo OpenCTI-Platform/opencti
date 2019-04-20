@@ -1,4 +1,5 @@
 version: 2.1
+
 jobs:
   build:
     working_directory: ~/opencti
@@ -18,14 +19,16 @@ jobs:
       - run:
           working_directory: ~/opencti/opencti-graphql
           command: yarn build
+
   test:
     working_directory: ~/opencti
     docker:
       - image: circleci/node:9.9-stretch
     steps:
       - run:
-        working_directory: ~/opencti/opencti-graphql
-        command: yarn test
+          working_directory: ~/opencti/opencti-graphql
+          command: yarn test
+
 workflows:
   opencti:
     jobs:
