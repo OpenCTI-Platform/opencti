@@ -55,7 +55,7 @@ workflows:
       - test:
           requires:
             - build
-      - deploy:
+      - deploy_community:
           requires:
             - build
             - test
