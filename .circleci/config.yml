@@ -24,23 +24,23 @@ jobs:
           paths:
             - opencti
   test:
-    working_directory: ~/opencti
+    working_directory: ~/
     docker:
       - image: circleci/node:11-stretch
     steps:
       - attach_workspace:
-          at: ~/opencti
+          at: ~/
       - run:
           working_directory: ~/opencti/opencti-graphql
           command: yarn test
 
   package_rolling:
-    working_directory: ~/opencti
+    working_directory: ~/
     docker:
       - image: circleci/node:11-stretch
     steps:
       - attach_workspace:
-          at: ~/opencti
+          at: ~/
       - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push opencti master
       - run: mkdir -p release/opencti
       - run: cp -a opencti-graphql release/opencti
@@ -50,12 +50,12 @@ jobs:
       - run: scp "opencti-$(date '+%Y%m%d').tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
 
   deploy_community:
-    working_directory: ~/opencti
+    working_directory: ~/
     docker:
       - image: circleci/node:11-stretch
     steps:
       - attach_workspace:
-          at: ~/opencti
+          at: ~/
       - run: sudo apt-get update -qq && apt install rsync
       - run: mkdir -p deploy/community
       - run:
@@ -70,6 +70,29 @@ jobs:
       - run:
           working_directory: ~/opencti/deploy/community
           command: git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
+
+  deploy_demo:
+    working_directory: ~/
+    docker:
+      - image: circleci/node:11-stretch
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: sudo apt-get update -qq && apt install rsync
+      - run: mkdir -p deploy/community
+      - run:
+          working_directory: ~/opencti/deploy/community
+          command: git clone ssh://opencti-fiqid45E@opencti.io:/~/opencti-fiqid45E.git .
+      - run:
+          working_directory: ~/opencti/deploy/community
+          command: rsync -auv --delete ~/opencti/opencti-graphql/public ./opencti-graphql/public
+      - run:
+          working_directory: ~/opencti/deploy/community
+          command: rsync -auv --delete ~/opencti/opencti-graphql/dist ./opencti-graphql/dist
+      - run:
+          working_directory: ~/opencti/deploy/community
+          command: git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
+
 workflows:
   opencti:
     jobs:
