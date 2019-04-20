@@ -15,6 +15,9 @@ jobs:
           command: yarn build
       - run:
           working_directory: ~/opencti/opencti-graphql
+          command: ls -la public/
+      - run:
+          working_directory: ~/opencti/opencti-graphql
           command: yarn install
       - run:
           working_directory: ~/opencti/opencti-graphql
@@ -82,7 +85,7 @@ jobs:
           command: rsync -auv --delete ~/opencti/opencti-graphql/dist ./opencti-graphql/dist
       - run:
           working_directory: ~/opencti/deploy
-          command: git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
+          command: git add --all && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
   deploy_demo:
     working_directory: ~/opencti
@@ -110,7 +113,7 @@ jobs:
           command: rsync -auv --delete ~/opencti/opencti-graphql/dist ./opencti-graphql/dist
       - run:
           working_directory: ~/opencti/deploy
-          command: git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
+          command: git add --all && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
 workflows:
   opencti:
