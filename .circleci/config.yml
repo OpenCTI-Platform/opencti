@@ -4,7 +4,7 @@ jobs:
   build:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:9.11.2-stretch
+      - image: circleci/node:11-stretch
     steps:
       - checkout
       - run: 
@@ -23,14 +23,29 @@ jobs:
   test:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:9.9-stretch
+      - image: circleci/node:11-stretch
     steps:
       - run:
           working_directory: ~/opencti/opencti-graphql
           command: yarn test
 
+    deploy:
+      working_directory: ~/opencti
+      docker:
+        - image: circleci/node:11-stretch
+      steps:
+        - run: mkdir deploy
+        - run:
+            working_directory: ~/opencti/deploy
+            command: git clone 
 workflows:
   opencti:
     jobs:
       - build
-      - test
+      - test:
+          requires:
+            - build
+      - deploy:
+          requires:
+            - build
+            - test

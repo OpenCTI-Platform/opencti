@@ -23,6 +23,9 @@
       "public/**/*"
     ]
   },
+  "engines": {
+    "node": ">= 10.*"
+  },
   "dependencies": {
     "@babel/core": "^7.3.4",
     "@babel/runtime": "^7.3.4",

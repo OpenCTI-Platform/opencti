@@ -4,6 +4,8 @@
 
 *Prerequisites*:
 
+- Node.JS (>= 10)
+- Python (>= 3)
 - Grakn (>= 1.5)
 - Redis (>= 3.0)
 - ElasticSearch (>= 6)

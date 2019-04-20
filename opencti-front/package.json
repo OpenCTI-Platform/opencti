@@ -68,6 +68,9 @@
     "prettier": "^1.16.4",
     "relay-devtools": "^1.4.0"
   },
+  "engines": {
+    "node": ">= 10.*"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "yarn relay && react-scripts build && node src/setupBuild.js",
