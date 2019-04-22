@@ -71,6 +71,25 @@ class OpenCTI:
                 object_result = self.search_stix_domain_entity_by_name(name, type)
         return object_result
 
+    def update_settings_field(self, id, key, value):
+        self.log('Updating settings field ' + key + ' of ' + id + '...')
+        query = """
+            mutation SettingsEdit($id: ID!, $input: EditInput!) {
+                settingsEdit(id: $id) {
+                    fieldPatch(input: $input) {
+                        id
+                    }
+                }
+            }
+        """
+        self.query(query, {
+            'id': id,
+            'input': {
+                'key': key,
+                'value': value
+            }
+        })
+
     def get_stix_domain_entity(self, id):
         """
             :param id: StixDomain entity identifier

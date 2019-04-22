@@ -10,7 +10,7 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
 
 ## Releases download
 
-The releases are available on the [Github releases page](https://github.com/LuatixHQ/opencti/releases).
+The releases are available on the [Github releases page](https://github.com/LuatixHQ/opencti/releases). You can also access to the [rolling release package](https://releases.opencti.io) generated from the mater branch of the repository.
 
 ## Installation
 

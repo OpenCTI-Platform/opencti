@@ -2,7 +2,7 @@ indexor:
   interval: 300
 
 opencti:
-  api_url: 'http://opencti'
+  api_url: 'http://opencti:8080'
   api_key: 'REPLACE_API_KEY'
   verbose: true
 
