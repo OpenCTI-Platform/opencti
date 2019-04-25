@@ -285,7 +285,7 @@ define
   # STIX SRO relationships
   "stix_relation" sub relation,
     abstract,
-    key "stix_id",
+    has "stix_id",
     has "created",
     has "modified",
     has "revoked",
@@ -452,7 +452,7 @@ define
 
   "Stix-Domain" sub entity,
     abstract,
-    key "stix_id",
+    has "stix_id",
     has "stix_label",
     has "entity_type",
     has "created",
@@ -764,6 +764,14 @@ define
       ("source": $entity, "target": $target) isa "targets";
     }, then {
       ("source": $origin, "target": $target) isa "targets";
+    };
+
+    "UsageTargetsRule" sub rule,
+    when {
+      ("user": $user, "usage": $entity) isa "uses";
+      ("source": $entity, "target": $target) isa "targets";
+    }, then {
+      ("source": $user, "target": $target) isa "targets";
     };
 
     "GatheringTargetsRule" sub rule,

@@ -16,6 +16,8 @@ import {
   merge,
   concat,
   assoc,
+  find,
+  propEq,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
@@ -224,6 +226,10 @@ class ReportObservablesComponent extends Component {
     const {
       t, fd, classes, report,
     } = this.props;
+    const observableRefs = map(
+      n => ({ id: n.node.id, relationId: n.relation.id }),
+      report.observableRefs.edges,
+    );
     const relationRefs = pipe(
       map(n => assoc('relation', n.relation, n.node)),
       groupBy(prop('id')),
@@ -235,6 +241,7 @@ class ReportObservablesComponent extends Component {
           threat: n.from.name,
           threat_id: n.from.id,
           threat_type: n.from.entity_type,
+          observable_id: n.to.id,
           observable_value: n.to.observable_value,
         })
         : merge(n, {
@@ -242,11 +249,20 @@ class ReportObservablesComponent extends Component {
           threat: n.to.name,
           threat_id: n.to.id,
           threat_type: n.to.entity_type,
+          observable_id: n.from.id,
           observable_value: n.from.observable_value,
         }))),
+      map(n => assoc(
+        'observableRelationId',
+        find(propEq('id', n.observable_id))(observableRefs).id,
+        n,
+      )),
     )(report.relationRefs.edges);
-    const observableRefsIds = map(n => n.node.id, report.observableRefs.edges);
-    const objectRefsIds = concat(observableRefsIds, map(n => n.node.id, report.objectRefs.edges));
+    const observableRefsIds = map(n => n.id, observableRefs);
+    const objectRefsIds = concat(
+      observableRefsIds,
+      map(n => n.node.id, report.objectRefs.edges),
+    );
     const sort = sortWith(
       this.state.orderAsc
         ? [ascend(prop(this.state.sortBy))]
@@ -289,7 +305,9 @@ class ReportObservablesComponent extends Component {
             <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
           </ListItem>
           {sortedRelationRefs.map((relationRef) => {
-            const link = `${resolveLink(relationRef.threat_type)}/${relationRef.threat_id}/observables/relations`;
+            const link = `${resolveLink(relationRef.threat_type)}/${
+              relationRef.threat_id
+            }/observables/relations`;
             return (
               <ListItem
                 key={relationRef.id}
@@ -357,6 +375,7 @@ class ReportObservablesComponent extends Component {
                     reportId={report.id}
                     entityId={relationRef.id}
                     relationId={relationRef.relation.id}
+                    secondaryRelationId={relationRef.observableRelationId}
                     isRelation={true}
                   />
                 </ListItemSecondaryAction>
@@ -395,11 +414,17 @@ const ReportObservables = createFragmentContainer(ReportObservablesComponent, {
           node {
             id
           }
+          relation {
+            id
+          }
         }
       }
       observableRefs {
         edges {
           node {
+            id
+          }
+          relation {
             id
           }
         }

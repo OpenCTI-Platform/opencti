@@ -40,7 +40,11 @@ function Transition(props) {
 }
 
 const reportRefPopoverDeletionMutation = graphql`
-  mutation ReportRefPopoverDeletionMutation($id: ID!, $relationId: ID!, $relationType: String) {
+  mutation ReportRefPopoverDeletionMutation(
+    $id: ID!
+    $relationId: ID!
+    $relationType: String
+  ) {
     reportEdit(id: $id) {
       relationDelete(relationId: $relationId) {
         node {
@@ -92,7 +96,7 @@ class ReportRefPopover extends Component {
   }
 
   handleCloseDelete() {
-    this.setState({ displayDelete: false });
+    this.setState({ deleting: false, displayDelete: false });
   }
 
   submitDelete() {
@@ -113,26 +117,30 @@ class ReportRefPopover extends Component {
           mutation: reportRefPopoverDeletionMutation,
           variables: {
             id: this.props.reportId,
-            relationId: this.props.relationId,
+            relationId: this.props.secondaryRelationId,
             relationType: 'indicates',
-          },
-          onCompleted: () => {
-            this.setState({ deleting: false });
-            this.handleCloseDelete();
           },
         });
       });
     }
+    commitMutation({
+      mutation: reportRefPopoverDeletionMutation,
+      variables: {
+        id: this.props.reportId,
+        relationId: this.props.relationId,
+        relationType: 'indicates',
+      },
+      onCompleted: () => {
+        this.handleCloseDelete();
+      },
+    });
   }
 
   render() {
     const { classes, t } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-        >
+        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
           <MoreVert />
         </IconButton>
         <Menu
@@ -180,8 +188,9 @@ class ReportRefPopover extends Component {
 
 ReportRefPopover.propTypes = {
   reportId: PropTypes.string,
-  relationId: PropTypes.string,
   entityId: PropTypes.string,
+  relationId: PropTypes.string,
+  secondaryRelationId: PropTypes.string,
   isRelation: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
