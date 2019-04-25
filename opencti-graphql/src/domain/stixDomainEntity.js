@@ -92,8 +92,8 @@ export const findByName = args =>
     `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'};
    $x has name $name;
    $x has alias $alias;
-   { $name contains "${prepareString(args.name)}"; } or
-   { $alias contains "${prepareString(args.name)}"; }`,
+   { $name "${prepareString(args.name)}"; } or
+   { $alias "${prepareString(args.name)}"; }`,
     args,
     false
   );

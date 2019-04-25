@@ -2944,26 +2944,24 @@ class OpenCTI:
                 },
             },
             'attributed-to': {
+                'threat-actor': {
+                    'identity': {'from_role': 'attribution', 'to_role': 'origin'},
+                    'organization': {'from_role': 'attribution', 'to_role': 'origin'},
+                },
                 'intrusion-set': {
                     'identity': {'from_role': 'attribution', 'to_role': 'origin'},
                     'threat-actor': {'from_role': 'attribution', 'to_role': 'origin'},
-                    'country': {'from_role': 'source', 'to_role': 'target'},
-                    'organization': {'from_role': 'attribution', 'to_role': 'origin'},
                 },
                 'campaign': {
                     'identity': {'from_role': 'attribution', 'to_role': 'origin'},
                     'threat-actor': {'from_role': 'attribution', 'to_role': 'origin'},
                     'intrusion-set': {'from_role': 'attribution', 'to_role': 'origin'},
-                    'country': {'from_role': 'source', 'to_role': 'target'},
-                    'organization': {'from_role': 'attribution', 'to_role': 'origin'},
                 },
                 'incident': {
                     'identity': {'from_role': 'attribution', 'to_role': 'origin'},
                     'threat-actor': {'from_role': 'attribution', 'to_role': 'origin'},
                     'intrusion-set': {'from_role': 'attribution', 'to_role': 'origin'},
                     'campaign': {'from_role': 'attribution', 'to_role': 'origin'},
-                    'country': {'from_role': 'source', 'to_role': 'target'},
-                    'organization': {'from_role': 'attribution', 'to_role': 'origin'},
                 },
             },
             'mitigates': {

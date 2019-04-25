@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc, compose, defaultTo, lensProp, map, over, pipe,
+  assoc, compose, defaultTo, join, lensProp, map, over, propOr, pipe,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -118,6 +118,7 @@ const exportIntrusionSetsQuery = graphql`
           id
           name
           description
+          alias
           first_seen
           last_seen
           goal
@@ -198,6 +199,14 @@ class IntrusionSets extends Component {
     }).then((data) => {
       const finalData = pipe(
         map(n => n.node),
+        map(n => assoc(
+          'aliases',
+          pipe(
+            propOr([], 'alias'),
+            map(o => o),
+            join(', '),
+          )(n),
+        )(n)),
         map(n => over(lensProp('description'), defaultTo('-'))(n)),
         map(n => assoc('first_seen', dateFormat(n.first_seen))(n)),
         map(n => assoc('last_seen', dateFormat(n.last_seen))(n)),

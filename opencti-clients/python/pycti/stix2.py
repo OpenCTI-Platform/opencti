@@ -695,7 +695,7 @@ class Stix2:
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['published'] if 'published' in stix_object else '',
-            stix_object['x_opencti_report_class'] if 'x_opencti_report_class' in stix_object else '',
+            stix_object['x_opencti_report_class'] if 'x_opencti_report_class' in stix_object else 'external',
             stix_object['x_opencti_object_status'] if 'x_opencti_object_status' in stix_object else 0,
             stix_object[
                 'x_opencti_source_confidence_level'] if 'x_opencti_source_confidence_level' in stix_object else 3,
