@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`User resolver standard behavior should user created 1`] = `
+Object {
+  "data": Object {
+    "userAdd": Object {
+      "email": "admin@opencti.io",
+      "firstname": "Administrator",
+      "lastname": "OpenCTI",
+      "name": "admin",
+    },
+  },
+  "errors": undefined,
+  "extensions": undefined,
+  "http": Object {
+    "headers": Headers {
+      Symbol(map): Object {},
+    },
+  },
+}
+`;
