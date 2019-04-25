@@ -88,6 +88,12 @@ export const notify = (topic, instance, user, context) => {
   return instance;
 };
 
+export const read = async query => {
+  const rTx = await takeReadTx();
+  await rTx.query(query);
+  await rTx.close();
+};
+
 export const write = async query => {
   const wTx = await takeWriteTx();
   await wTx.query(query);
@@ -303,12 +309,16 @@ export const getRelationById = async id => {
       if (isInversed(relation.relationship_type, fromRoleLabel, toRoleLabel)) {
         return pipe(
           assoc('from', to),
-          assoc('to', from)
+          assoc('fromRole', toRoleLabel),
+          assoc('to', from),
+          assoc('toRole', fromRoleLabel)
         )(relation);
       }
       return pipe(
         assoc('from', from),
-        assoc('to', to)
+        assoc('fromRole', fromRoleLabel),
+        assoc('to', to),
+        assoc('toRole', toRoleLabel)
       )(relation);
     });
     const result = await Promise.resolve(resultPromise);
@@ -475,13 +485,17 @@ export const getRelationInferredById = async id => {
       if (isInversed(node.relationship_type, fromRoleLabel, toRoleLabel)) {
         return pipe(
           assoc('from', toResult),
+          assoc('fromRole', toRoleLabel),
           assoc('to', fromResult),
+          assoc('toRole', fromRoleLabel),
           assoc('inferences', { edges: relationInferences })
         )(node);
       }
       return pipe(
         assoc('from', fromResult),
+        assoc('fromRole', fromRoleLabel),
         assoc('to', toResult),
+        assoc('toRole', toRoleLabel),
         assoc('inferences', { edges: relationInferences })
       )(node);
     });
@@ -810,7 +824,9 @@ export const getRelations = async (
             return {
               node: pipe(
                 assoc('from', to),
-                assoc('to', from)
+                assoc('fromRole', toRoleLabel),
+                assoc('to', from),
+                assoc('toRole', fromRoleLabel)
               )(node),
               relation
             };
@@ -818,7 +834,9 @@ export const getRelations = async (
           return {
             node: pipe(
               assoc('from', from),
-              assoc('to', to)
+              assoc('fromRole', fromRoleLabel),
+              assoc('to', to),
+              assoc('toRole', toRoleLabel)
             )(node),
             relation
           };

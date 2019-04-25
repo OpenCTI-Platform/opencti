@@ -154,7 +154,7 @@ interface StixEntity {
 
 enum StixDomainEntitiesOrdering {
   name
-  type
+  entity_type
   created_at
   updated_at
 }
@@ -221,7 +221,7 @@ input StixDomainEntityAddInput {
 ### STIX obseravables
 enum StixObservablesOrdering {
   name
-  type
+  entity_type
   value
   created_at
   updated_at
@@ -332,7 +332,9 @@ type StixRelation implements GlobalObject & StixEntity {
   locations: IdentityConnection
   reports: ReportConnection
   from: StixEntity
+  fromRole: String
   to: StixEntity
+  toRole: String
   inferences: StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!

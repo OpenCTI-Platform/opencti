@@ -27,9 +27,22 @@ jobs:
     working_directory: ~/opencti
     docker:
       - image: circleci/node:11-stretch
+      - image: graknlabs/grakn:1.5.1
+      - image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
     steps:
       - attach_workspace:
           at: ~/
+      - run:
+        name: install dockerize
+        command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+        environment:
+          DOCKERIZE_VERSION: v0.3.0
+      - run:
+        name: Wait for Grakn
+        command: dockerize -wait tcp://localhost:48555 -timeout 1m
+      - run:
+        name: Wait for ElasticSearch
+        command: dockerize -wait tcp://localhost:9200 -timeout 1m        
       - run:
           working_directory: ~/opencti/opencti-graphql
           command: yarn test

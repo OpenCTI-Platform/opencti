@@ -57,7 +57,7 @@ app.get(
   }
 );
 
-const authentication = async token => {
+export const authentication = async token => {
   if (!token) return undefined;
   try {
     const decodedToken = verify(token, conf.get('app:secret'));

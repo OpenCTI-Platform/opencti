@@ -126,6 +126,10 @@ div.clearfix {
     clear: both;
 }
 
+div.break {
+    word-break: break-word;
+}
+
 .recharts-legend-item-text, .recharts-polar-angle-axis-tick-value, .recharts-text, .recharts-layer {
     font-size: 11px;
     font-family: Roboto, sans-serif;

@@ -46,11 +46,13 @@ export const setAuthenticationCookie = (token, res) => {
   const maxDuration = moment.duration(token.duration);
   const expires = creation.add(maxDuration).toDate();
   const signedToken = sign(token, conf.get('app:secret'));
-  res.cookie('opencti_token', signedToken, {
-    httpOnly: true,
-    expires,
-    secure: conf.get('app:cookie_secure')
-  });
+  if (res) {
+    res.cookie('opencti_token', signedToken, {
+      httpOnly: true,
+      expires,
+      secure: conf.get('app:cookie_secure')
+    });
+  }
 };
 
 export const findAll = args => {

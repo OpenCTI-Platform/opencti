@@ -30,8 +30,6 @@ const styles = theme => ({
   },
 });
 
-const inversedRelations = [];
-
 class CampaignObservablesComponent extends Component {
   render() {
     const { classes, campaign, location } = this.props;
@@ -57,7 +55,7 @@ class CampaignObservablesComponent extends Component {
           render={routeProps => (
             <StixRelation
               entityId={campaign.id}
-              inversedRelations={inversedRelations}
+              inversedRoles={[]}
               observable={true}
               {...routeProps}
             />

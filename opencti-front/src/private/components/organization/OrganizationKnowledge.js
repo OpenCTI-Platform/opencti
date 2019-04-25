@@ -21,14 +21,7 @@ const styles = () => ({
   },
 });
 
-const inversedRelations = [
-  'user',
-  'threat-actor',
-  'intrusion-set',
-  'campaign',
-  'incident',
-  'malware',
-];
+const inversedRoles = ['target'];
 
 class OrganizationKnowledgeComponent extends Component {
   render() {
@@ -47,7 +40,7 @@ class OrganizationKnowledgeComponent extends Component {
             render={routeProps => (
               <StixRelation
                 entityId={organization.id}
-                inversedRelations={inversedRelations}
+                inversedRoles={inversedRoles}
                 {...routeProps}
               />
             )}

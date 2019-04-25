@@ -265,6 +265,9 @@ class ReportKnowledgeGraphComponent extends Component {
         const toPort = finalNodesObject[l.node.to.id]
           ? finalNodesObject[l.node.to.id].node.getPort('main')
           : null;
+        if (fromPort === null || toPort === null) {
+          return false;
+        }
         const newLink = new EntityLinkModel();
         newLink.setExtras({
           relation: l.node,
@@ -287,7 +290,9 @@ class ReportKnowledgeGraphComponent extends Component {
         });
         model.addLink(newLink);
         createdRelations.push(l.relation.id);
+        return true;
       }
+      return false;
     }, relations);
 
     // add listeners
@@ -643,12 +648,8 @@ class ReportKnowledgeGraphComponent extends Component {
           open={openCreateRelation}
           from={createRelationFrom}
           to={createRelationTo}
-          firstSeen={
-            lastLinkFirstSeen || dateFormat(report.published)
-          }
-          lastSeen={
-            lastLinkLastSeen || dateFormat(report.published)
-          }
+          firstSeen={lastLinkFirstSeen || dateFormat(report.published)}
+          lastSeen={lastLinkLastSeen || dateFormat(report.published)}
           weight={report.source_confidence_level}
           handleClose={this.handleCloseRelationCreation.bind(this)}
           handleResult={this.handleResultRelationCreation.bind(this)}

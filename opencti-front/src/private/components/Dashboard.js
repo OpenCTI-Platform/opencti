@@ -129,11 +129,7 @@ const dashboardLastReportsQuery = graphql`
     $orderBy: ReportsOrdering
     $orderMode: OrderingMode
   ) {
-    reports(
-      first: $first
-      orderBy: $orderBy
-      orderMode: $orderMode
-    ) {
+    reports(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
       edges {
         node {
           id
@@ -155,18 +151,15 @@ const dashboardLastReportsQuery = graphql`
 
 const dashboardLastObservablesQuery = graphql`
   query DashboardLastObservablesQuery(
-  $first: Int
-  $orderBy: StixObservablesOrdering
-  $orderMode: OrderingMode
+    $first: Int
+    $orderBy: StixObservablesOrdering
+    $orderMode: OrderingMode
   ) {
-    stixObservables(
-      first: $first
-      orderBy: $orderBy
-      orderMode: $orderMode
-    ) {
+    stixObservables(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
       edges {
         node {
           id
+          entity_type
           observable_value
           description
           created_at
@@ -509,7 +502,11 @@ class Dashboard extends Component {
                         {props.stixObservables.edges.map((stixObservableEdge) => {
                           const stixObservable = stixObservableEdge.node;
                           const markingDefinition = head(
-                            pathOr([], ['markingDefinitions', 'edges'], stixObservable),
+                            pathOr(
+                              [],
+                              ['markingDefinitions', 'edges'],
+                              stixObservable,
+                            ),
                           );
                           return (
                             <ListItem
@@ -518,7 +515,9 @@ class Dashboard extends Component {
                               classes={{ default: classes.item }}
                               divider={true}
                               component={Link}
-                              to={`/dashboard/observables/all/${stixObservable.id}`}
+                              to={`/dashboard/observables/all/${
+                                stixObservable.id
+                              }`}
                             >
                               <ListItemIcon
                                 classes={{ root: classes.itemIcon }}
@@ -526,8 +525,13 @@ class Dashboard extends Component {
                                 <Tag />
                               </ListItemIcon>
                               <ListItemText
-                                primary={truncate(stixObservable.observable_value, 70)}
-                                secondary={truncate(stixObservable.description, 70)}
+                                primary={truncate(
+                                  stixObservable.observable_value,
+                                  70,
+                                )}
+                                secondary={t(
+                                  `observable_${stixObservable.entity_type}`,
+                                )}
                               />
                               <div style={{ minWidth: 100 }}>
                                 {markingDefinition ? (

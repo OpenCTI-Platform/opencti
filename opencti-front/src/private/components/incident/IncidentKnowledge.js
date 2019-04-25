@@ -21,7 +21,7 @@ const styles = () => ({
   },
 });
 
-const inversedRelations = [];
+const inversedRoles = [];
 
 class IncidentKnowledgeComponent extends Component {
   render() {
@@ -38,7 +38,7 @@ class IncidentKnowledgeComponent extends Component {
             render={routeProps => (
               <StixRelation
                 entityId={incident.id}
-                inversedRelations={inversedRelations}
+                inversedRoles={inversedRoles}
                 {...routeProps}
               />
             )}

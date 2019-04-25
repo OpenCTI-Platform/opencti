@@ -171,11 +171,12 @@ class StixRelationContainer extends Component {
       classes,
       entityId,
       stixRelation,
-      inversedRelations,
+      inversedRoles,
       observable,
     } = this.props;
     const linkedEntity = stixRelation.to;
     const from = linkedEntity.id === entityId ? stixRelation.to : stixRelation.from;
+    const fromRole = linkedEntity.id === entityId ? stixRelation.toRole : stixRelation.fromRole;
     const to = linkedEntity.id === entityId ? stixRelation.from : stixRelation.to;
     const linkTo = resolveLink(
       to.parent_type === 'Stix-Observable' ? 'observable' : to.entity_type,
@@ -222,7 +223,7 @@ class StixRelationContainer extends Component {
           </div>
         </Link>
         <div className={classes.middle}>
-          {includes(to.entity_type, inversedRelations)
+          {includes(fromRole, inversedRoles)
           || to.parent_type === 'Stix-Observable' ? (
             <ArrowRightAlt
               fontSize="large"
@@ -396,7 +397,7 @@ class StixRelationContainer extends Component {
 StixRelationContainer.propTypes = {
   entityId: PropTypes.string,
   stixRelation: PropTypes.object,
-  inversedRelations: PropTypes.array,
+  inversedRoles: PropTypes.array,
   observable: PropTypes.bool,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -418,6 +419,8 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
       description
       inferred
       role_played
+      fromRole
+      toRole
       inferences {
         edges {
           node {

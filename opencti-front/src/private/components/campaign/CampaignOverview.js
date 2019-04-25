@@ -26,7 +26,7 @@ class CampaignOverviewComponent extends Component {
       t, fld, classes, campaign,
     } = this.props;
     return (
-      <div style={{ height: '100%' }}>
+      <div style={{ height: '100%' }} className='break'>
         <Typography variant="h4" gutterBottom={true}>
           {t('Information')}
         </Typography>

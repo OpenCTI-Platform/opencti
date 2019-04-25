@@ -12,7 +12,7 @@
     "migrate": "babel-node ./src/database/migration.js",
     "migrate:add": "migrate create",
     "lint": "eslint .",
-    "test": "yarn build && jest --coverage --e test",
+    "test": "yarn build && yarn schema --e test && jest --coverage --e test",
     "clean": "babel-node ./src/database/clean.js"
   },
   "bin": "./dist/server.js",
@@ -78,6 +78,7 @@
     "@babel/node": "^7.2.2",
     "@babel/plugin-transform-runtime": "^7.3.4",
     "@babel/preset-env": "^7.3.4",
+    "apollo-server-testing": "^2.4.8",
     "babel-jest": "^24.5.0",
     "eslint": "^5.15.1",
     "eslint-config-airbnb": "^17.1.0",
