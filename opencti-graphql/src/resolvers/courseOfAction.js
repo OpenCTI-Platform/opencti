@@ -1,9 +1,4 @@
-import {
-  addCourseOfAction,
-  courseOfActionDelete,
-  findAll,
-  findById
-} from '../domain/courseOfAction';
+import { addCourseOfAction, findAll, findById } from '../domain/courseOfAction';
 import {
   createdByRef,
   markingDefinitions,
@@ -14,7 +9,8 @@ import {
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -36,7 +32,7 @@ const courseOfActionResolvers = {
   },
   Mutation: {
     courseOfActionEdit: (_, { id }, { user }) => ({
-      delete: () => courseOfActionDelete(id),
+      delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

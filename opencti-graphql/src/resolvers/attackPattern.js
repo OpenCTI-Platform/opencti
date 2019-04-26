@@ -1,9 +1,4 @@
-import {
-  addAttackPattern,
-  attackPatternDelete,
-  findAll,
-  findById
-} from '../domain/attackPattern';
+import { addAttackPattern, findAll, findById } from '../domain/attackPattern';
 import {
   createdByRef,
   killChainPhases,
@@ -17,6 +12,7 @@ import {
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
   stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -41,7 +37,7 @@ const attackPatternResolvers = {
   },
   Mutation: {
     attackPatternEdit: (_, { id }, { user }) => ({
-      delete: () => attackPatternDelete(id),
+      delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

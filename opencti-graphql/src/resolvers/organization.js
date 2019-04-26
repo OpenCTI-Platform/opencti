@@ -1,9 +1,4 @@
-import {
-  addOrganization,
-  organizationDelete,
-  findAll,
-  findById
-} from '../domain/organization';
+import { addOrganization, findAll, findById } from '../domain/organization';
 import {
   createdByRef,
   markingDefinitions,
@@ -14,7 +9,8 @@ import {
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -34,7 +30,7 @@ const organizationResolvers = {
   },
   Mutation: {
     organizationEdit: (_, { id }, { user }) => ({
-      delete: () => organizationDelete(id),
+      delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

@@ -56,13 +56,15 @@ export const index = (indexName, documentType, documentBody) => {
 };
 
 export const deleteEntity = (indexName, documentType, documentId) => {
-  el.delete({
-    index: indexName,
-    id: documentId,
-    type: documentType
-  }).catch(() => {
-    return false;
-  });
+  return el
+    .delete({
+      index: indexName,
+      id: documentId,
+      type: documentType
+    })
+    .catch(() => {
+      return false;
+    });
 };
 
 export const paginate = (indexName, options) => {

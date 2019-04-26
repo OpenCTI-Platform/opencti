@@ -1,6 +1,5 @@
 import {
   addReport,
-  reportDelete,
   findAll,
   findByEntity,
   reportsTimeSeries,
@@ -19,7 +18,8 @@ import {
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -51,7 +51,7 @@ const reportResolvers = {
   },
   Mutation: {
     reportEdit: (_, { id }, { user }) => ({
-      delete: () => reportDelete(id),
+      delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

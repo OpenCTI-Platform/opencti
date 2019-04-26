@@ -1,7 +1,6 @@
 import { map, assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  deleteEntityById,
   getById,
   notify,
   now,
@@ -13,14 +12,10 @@ import {
   yearFormat,
   takeWriteTx,
   prepareString,
-  timeSeries,
+  timeSeries
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import {
-  deleteEntity,
-  index,
-  paginate as elPaginate
-} from '../database/elasticSearch';
+import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args => {
   if (args.orderBy === 'createdByRef') {
@@ -201,9 +196,4 @@ export const addReport = async (user, report) => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
-};
-
-export const reportDelete = reportId => {
-  deleteEntity('stix-domain-entities', 'stix_domain_entity', reportId);
-  return deleteEntityById(reportId);
 };

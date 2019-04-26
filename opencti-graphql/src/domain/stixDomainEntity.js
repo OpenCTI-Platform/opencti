@@ -298,8 +298,8 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   });
 };
 
-export const stixDomainEntityDelete = stixDomainEntityId => {
-  deleteEntity(
+export const stixDomainEntityDelete = async stixDomainEntityId => {
+  await deleteEntity(
     'stix-domain-entities',
     'stix_domain_entity',
     stixDomainEntityId

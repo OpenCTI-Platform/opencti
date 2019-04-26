@@ -1,10 +1,4 @@
-import {
-  addSector,
-  sectorDelete,
-  findAll,
-  findById,
-  subsectors
-} from '../domain/sector';
+import { addSector, findAll, findById, subsectors } from '../domain/sector';
 import {
   createdByRef,
   markingDefinitions,
@@ -16,6 +10,7 @@ import {
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
   stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 
 import { fetchEditContext } from '../database/redis';
@@ -36,7 +31,7 @@ const sectorResolvers = {
   },
   Mutation: {
     sectorEdit: (_, { id }, { user }) => ({
-      delete: () => sectorDelete(id),
+      delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

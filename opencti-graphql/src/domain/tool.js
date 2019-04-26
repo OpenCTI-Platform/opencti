@@ -1,7 +1,6 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  deleteEntityById,
   getById,
   prepareDate,
   dayFormat,
@@ -9,16 +8,11 @@ import {
   yearFormat,
   notify,
   now,
-  paginate,
   takeWriteTx,
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import {
-  deleteEntity,
-  index,
-  paginate as elPaginate
-} from '../database/elasticSearch';
+import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
   elPaginate('stix-domain-entities', assoc('type', 'tool', args));
@@ -90,9 +84,4 @@ export const addTool = async (user, tool) => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
-};
-
-export const toolDelete = toolId => {
-  deleteEntity('stix-domain-entities', 'stix_domain_entity', toolId);
-  return deleteEntityById(toolId);
 };

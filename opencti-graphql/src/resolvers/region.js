@@ -1,9 +1,4 @@
-import {
-  addRegion,
-  regionDelete,
-  findAll,
-  findById
-} from '../domain/region';
+import { addRegion, findAll, findById } from '../domain/region';
 import {
   createdByRef,
   markingDefinitions,
@@ -15,6 +10,7 @@ import {
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
   stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -33,7 +29,7 @@ const regionResolvers = {
   },
   Mutation: {
     regionEdit: (_, { id }, { user }) => ({
-      delete: () => regionDelete(id),
+      delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

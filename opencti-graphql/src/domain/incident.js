@@ -1,7 +1,6 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  deleteEntityById,
   getById,
   prepareDate,
   dayFormat,
@@ -15,11 +14,7 @@ import {
   timeSeries
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import {
-  deleteEntity,
-  index,
-  paginate as elPaginate
-} from '../database/elasticSearch';
+import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
   elPaginate('stix-domain-entities', assoc('type', 'incident', args));
@@ -124,9 +119,4 @@ export const addIncident = async (user, incident) => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
-};
-
-export const incidentDelete = incidentId => {
-  deleteEntity('stix-domain-entities', 'stix_domain_entity', incidentId);
-  return deleteEntityById(incidentId);
 };

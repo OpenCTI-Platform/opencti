@@ -1,6 +1,5 @@
 import {
   addIncident,
-  incidentDelete,
   findAll,
   findById,
   incidentsTimeSeriesByEntity,
@@ -16,7 +15,8 @@ import {
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -42,7 +42,7 @@ const incidentResolvers = {
   },
   Mutation: {
     incidentEdit: (_, { id }, { user }) => ({
-      delete: () => incidentDelete(id),
+      delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

@@ -1,4 +1,4 @@
-import { addTool, toolDelete, findAll, findById } from '../domain/tool';
+import { addTool, findAll, findById } from '../domain/tool';
 import {
   createdByRef,
   killChainPhases,
@@ -10,7 +10,8 @@ import {
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -30,7 +31,7 @@ const toolResolvers = {
   },
   Mutation: {
     toolEdit: (_, { id }, { user }) => ({
-      delete: () => toolDelete(id),
+      delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

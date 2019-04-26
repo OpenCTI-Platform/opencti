@@ -1,10 +1,4 @@
-import {
-  addIdentity,
-  identityDelete,
-  findAll,
-  findById,
-  search
-} from '../domain/identity';
+import { addIdentity, findAll, findById, search } from '../domain/identity';
 import {
   createdByRef,
   markingDefinitions,
@@ -15,7 +9,8 @@ import {
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 
 const identityResolvers = {
@@ -46,7 +41,7 @@ const identityResolvers = {
   },
   Mutation: {
     identityEdit: (_, { id }, { user }) => ({
-      delete: () => identityDelete(id),
+      delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

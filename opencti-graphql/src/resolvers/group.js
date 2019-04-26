@@ -7,8 +7,6 @@ import {
   permissions
 } from '../domain/group';
 import {
-  createdByRef,
-  exports,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,

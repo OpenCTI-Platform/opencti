@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
 import {
   addIntrusionSet,
-  intrusionSetDelete,
   findAll,
   search,
   findById
@@ -16,7 +15,8 @@ import {
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -41,7 +41,7 @@ const intrusionSetResolvers = {
   },
   Mutation: {
     intrusionSetEdit: (_, { id }, { user }) => ({
-      delete: () => intrusionSetDelete(id),
+      delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

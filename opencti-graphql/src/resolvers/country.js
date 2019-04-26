@@ -1,9 +1,4 @@
-import {
-  addCountry,
-  countryDelete,
-  findAll,
-  findById
-} from '../domain/country';
+import { addCountry, findAll, findById } from '../domain/country';
 import {
   createdByRef,
   markingDefinitions,
@@ -14,7 +9,8 @@ import {
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -33,7 +29,7 @@ const countryResolvers = {
   },
   Mutation: {
     countryEdit: (_, { id }, { user }) => ({
-      delete: () => countryDelete(id),
+      delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

@@ -2,11 +2,9 @@ import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   takeWriteTx,
-  deleteEntityById,
   getById,
   notify,
   now,
-  paginate,
   prepareDate,
   dayFormat,
   monthFormat,
@@ -14,11 +12,7 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import {
-  deleteEntity,
-  index,
-  paginate as elPaginate
-} from '../database/elasticSearch';
+import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
   elPaginate('stix-domain-entities', assoc('type', 'threat-actor', args));
@@ -107,9 +101,4 @@ export const addThreatActor = async (user, threatActor) => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
-};
-
-export const threatActorDelete = threatActorId => {
-  deleteEntity('stix-domain-entities', 'stix_domain_entity', threatActorId);
-  return deleteEntityById(threatActorId);
 };

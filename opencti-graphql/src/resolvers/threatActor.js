@@ -1,6 +1,5 @@
 import {
   addThreatActor,
-  threatActorDelete,
   findAll,
   search,
   findById
@@ -15,7 +14,8 @@ import {
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -40,7 +40,7 @@ const threatActorResolvers = {
   },
   Mutation: {
     threatActorEdit: (_, { id }, { user }) => ({
-      delete: () => threatActorDelete(id),
+      delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

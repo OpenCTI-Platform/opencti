@@ -1,4 +1,4 @@
-import { addCity, cityDelete, findAll, findById } from '../domain/city';
+import { addCity, findAll, findById } from '../domain/city';
 import {
   createdByRef,
   markingDefinitions,
@@ -10,6 +10,7 @@ import {
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
   stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -28,7 +29,7 @@ const cityResolvers = {
   },
   Mutation: {
     cityEdit: (_, { id }, { user }) => ({
-      delete: () => cityDelete(id),
+      delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

@@ -2,7 +2,6 @@ import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   takeWriteTx,
-  deleteEntityById,
   getById,
   dayFormat,
   monthFormat,
@@ -12,11 +11,7 @@ import {
   now,
   prepareString
 } from '../database/grakn';
-import {
-  deleteEntity,
-  index,
-  paginate as elPaginate
-} from '../database/elasticSearch';
+import { index, paginate as elPaginate } from '../database/elasticSearch';
 import { BUS_TOPICS, logger } from '../config/conf';
 
 export const findAll = args =>
@@ -144,9 +139,4 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
-};
-
-export const intrusionSetDelete = intrusionSetId => {
-  deleteEntity('stix-domain-entities', 'stix_domain_entity', intrusionSetId);
-  return deleteEntityById(intrusionSetId);
 };

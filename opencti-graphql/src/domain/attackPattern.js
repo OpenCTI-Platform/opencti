@@ -1,7 +1,6 @@
 import { assoc, map, join } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  deleteEntityById,
   getById,
   prepareDate,
   dayFormat,
@@ -14,11 +13,7 @@ import {
   prepareString
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import {
-  deleteEntity,
-  index,
-  paginate as elPaginate
-} from '../database/elasticSearch';
+import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args => {
   if (args.orderBy === 'killChainPhases') {
@@ -141,9 +136,4 @@ export const addAttackPattern = async (user, attackPattern) => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
-};
-
-export const attackPatternDelete = attackPatternId => {
-  deleteEntity('stix-domain-entities', 'stix_domain_entity', attackPatternId);
-  return deleteEntityById(attackPatternId);
 };
