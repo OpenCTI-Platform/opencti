@@ -1607,6 +1607,7 @@ class OpenCTI:
                                 stix_id
                                 kill_chain_name
                                 phase_name
+                                phase_order
                                 created
                                 modified
                             }
@@ -1669,6 +1670,7 @@ class OpenCTI:
                                         stix_id
                                         kill_chain_name
                                         phase_name
+                                        phase_order
                                         created
                                         modified
                                     }
