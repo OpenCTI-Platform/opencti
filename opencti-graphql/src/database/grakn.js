@@ -123,6 +123,13 @@ export const getAttributes = async (concept, graknAttributes = false) => {
     );
     if (!isEmpty(attributes) && !isNil(attributes)) {
       return pipe(
+        mapObjIndexed((num, key, obj) =>
+          obj[key].length === 1 && !includes(key, multipleAttributes)
+            ? head(obj[key])
+            : head(obj[key]) && head(obj[key]).length > 0
+            ? obj[key]
+            : []
+        ),
         assoc('id', concept.id),
         assoc('parent_type', parentTypeLabel)
       )(attributes);
