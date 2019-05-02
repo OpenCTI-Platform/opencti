@@ -33,6 +33,9 @@ jobs:
           ELASTICSEARCH__HOSTNAME: 127.0.0.1
       - image: graknlabs/grakn:1.5.1
       - image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
+        environment:
+          - bootstrap.memory_lock=true
+          - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     steps:
       - attach_workspace:
           at: ~/
