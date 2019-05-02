@@ -1,6 +1,8 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  escape,
+  escapeString,
   takeWriteTx,
   getById,
   dayFormat,
@@ -8,8 +10,7 @@ import {
   yearFormat,
   prepareDate,
   notify,
-  now,
-  prepareString
+  now
 } from '../database/grakn';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
 import { BUS_TOPICS, logger } from '../config/conf';
@@ -25,8 +26,8 @@ export const search = args =>
     `match $i isa Intrusion-Set; 
     $i has name $name; 
     $i has alias $alias; 
-    { $name contains "${prepareString(args.search)}"; } or
-    { $alias contains "${prepareString(args.search)}"; }`,
+    { $name contains "${escapeString(args.search)}"; } or
+    { $alias contains "${escapeString(args.search)}"; }`,
     args,
     false
   );
@@ -40,13 +41,13 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     has entity_type "intrusion-set",
     has stix_id "${
       intrusionSet.stix_id
-        ? prepareString(intrusionSet.stix_id)
+        ? escapeString(intrusionSet.stix_id)
         : `intrusion-set--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(intrusionSet.name)}",
-    has description "${prepareString(intrusionSet.description)}",
+    has name "${escapeString(intrusionSet.name)}",
+    has description "${escapeString(intrusionSet.description)}",
     has first_seen ${
       intrusionSet.first_seen ? prepareDate(intrusionSet.first_seen) : now()
     },
@@ -83,11 +84,11 @@ export const addIntrusionSet = async (user, intrusionSet) => {
         ? yearFormat(intrusionSet.last_seen)
         : yearFormat(now())
     }",
-    has goal "${prepareString(intrusionSet.goal)}",
-    has sophistication "${prepareString(intrusionSet.sophistication)}",
-    has resource_level "${prepareString(intrusionSet.resource_level)}",
-    has primary_motivation "${prepareString(intrusionSet.primary_motivation)}",
-    has secondary_motivation "${prepareString(
+    has goal "${escapeString(intrusionSet.goal)}",
+    has sophistication "${escapeString(intrusionSet.sophistication)}",
+    has resource_level "${escapeString(intrusionSet.resource_level)}",
+    has primary_motivation "${escapeString(intrusionSet.primary_motivation)}",
+    has secondary_motivation "${escapeString(
       intrusionSet.secondary_motivation
     )}",
     has created ${
@@ -113,7 +114,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   if (intrusionSet.createdByRef) {
     await wTx.query(
       `match $from id ${createdIntrusionSetId};
-      $to id ${intrusionSet.createdByRef};
+      $to id ${escape(intrusionSet.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -123,7 +124,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdIntrusionSetId}; 
-        $to id ${markingDefinition}; 
+        $to id ${escape(markingDefinition)}; 
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(

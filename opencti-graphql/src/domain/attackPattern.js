@@ -1,6 +1,8 @@
 import { assoc, map, join } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  escape,
+  escapeString,
   getById,
   prepareDate,
   dayFormat,
@@ -9,8 +11,7 @@ import {
   notify,
   now,
   paginate,
-  takeWriteTx,
-  prepareString
+  takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -41,19 +42,19 @@ export const addAttackPattern = async (user, attackPattern) => {
     has entity_type "attack-pattern",
     has stix_id "${
       attackPattern.stix_id
-        ? prepareString(attackPattern.stix_id)
+        ? escapeString(attackPattern.stix_id)
         : `attack-patern--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(attackPattern.name)}",
-    has description "${prepareString(attackPattern.description)}",
+    has name "${escapeString(attackPattern.name)}",
+    has description "${escapeString(attackPattern.description)}",
     ${
       attackPattern.platform
         ? join(
             ' ',
             map(
-              platform => `has platform "${prepareString(platform)}",`,
+              platform => `has platform "${escapeString(platform)}",`,
               attackPattern.platform
             )
           )
@@ -65,7 +66,7 @@ export const addAttackPattern = async (user, attackPattern) => {
             ' ',
             map(
               requiredPermission =>
-                `has required_permission "${prepareString(
+                `has required_permission "${escapeString(
                   requiredPermission
                 )}",`,
               attackPattern.required_permission
@@ -96,7 +97,7 @@ export const addAttackPattern = async (user, attackPattern) => {
   if (attackPattern.createdByRef) {
     await wTx.query(
       `match $from id ${createdAttackPatternId};
-      $to id ${attackPattern.createdByRef};
+      $to id ${escape(attackPattern.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -106,7 +107,7 @@ export const addAttackPattern = async (user, attackPattern) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdAttackPatternId}; 
-        $to id ${markingDefinition}; 
+        $to id ${escape(markingDefinition)}; 
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(
@@ -120,7 +121,7 @@ export const addAttackPattern = async (user, attackPattern) => {
     const createKillChainPhase = killChainPhase =>
       wTx.query(
         `match $from id ${createdAttackPatternId}; 
-        $to id ${killChainPhase};
+        $to id ${escape(killChainPhase)};
         insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases;`
       );
     const killChainPhasesPromises = map(

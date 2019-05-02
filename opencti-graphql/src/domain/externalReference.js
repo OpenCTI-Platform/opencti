@@ -2,6 +2,8 @@ import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
+  escape,
+  escapeString,
   createRelation,
   deleteEntityById,
   deleteRelationById,
@@ -14,7 +16,6 @@ import {
   notify,
   now,
   paginate,
-  prepareString,
   takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -31,7 +32,7 @@ export const findByEntity = args =>
   paginate(
     `match $e isa External-Reference; 
     $rel(external_reference:$e, so:$so) isa external_references;
-    $so id ${args.objectId}`,
+    $so id ${escape(args.objectId)}`,
     args
   );
 
@@ -43,9 +44,9 @@ export const search = args => elPaginate('external-references', args);
     $e has source_name $sn; 
     $e has description $desc; 
     $e has url $url; 
-    { $sn contains "${prepareString(args.search)}"; } or 
-    { $desc contains "${prepareString(args.search)}"; } or 
-    { $url contains "${prepareString(args.search)}"; }`,
+    { $sn contains "${escapeString(args.search)}"; } or
+    { $desc contains "${escapeString(args.search)}"; } or
+    { $url contains "${escapeString(args.search)}"; }`,
     args,
     false
   );
@@ -57,16 +58,16 @@ export const addExternalReference = async (user, externalReference) => {
     has entity_type "external-reference",
     has stix_id "${
       externalReference.stix_id
-        ? prepareString(externalReference.stix_id)
+        ? escapeString(externalReference.stix_id)
         : `external-reference--${uuid()}`
     }",
-    has source_name "${prepareString(externalReference.source_name)}",
-    has description "${prepareString(externalReference.description)}",
+    has source_name "${escapeString(externalReference.source_name)}",
+    has description "${escapeString(externalReference.description)}",
     has url "${
-      externalReference.url ? prepareString(externalReference.url) : ''
+      externalReference.url ? escapeString(externalReference.url) : ''
     }",
-    has hash "${prepareString(externalReference.hash)}",
-    has external_id "${prepareString(externalReference.external_id)}",
+    has hash "${escapeString(externalReference.hash)}",
+    has external_id "${escapeString(externalReference.external_id)}",
     has created ${
       externalReference.created ? prepareDate(externalReference.created) : now()
     },
@@ -90,7 +91,7 @@ export const addExternalReference = async (user, externalReference) => {
   if (externalReference.createdByRef) {
     await wTx.query(
       `match $from id ${createdExternalReferenceId};
-      $to id ${externalReference.createdByRef};
+      $to id ${escape(externalReference.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -100,7 +101,7 @@ export const addExternalReference = async (user, externalReference) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdExternalReferenceId}; 
-        $to id ${markingDefinition}; 
+        $to id ${escape(markingDefinition)}; 
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(

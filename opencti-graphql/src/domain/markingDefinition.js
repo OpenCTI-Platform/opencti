@@ -1,6 +1,8 @@
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
+  escape,
+  escapeString,
   createRelation,
   deleteEntityById,
   deleteRelationById,
@@ -13,8 +15,7 @@ import {
   notify,
   now,
   paginate,
-  takeWriteTx,
-  prepareString
+  takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -25,15 +26,15 @@ export const findByEntity = args =>
   paginate(
     `match $m isa Marking-Definition; 
     $rel(marking:$m, so:$so) isa object_marking_refs; 
-    $so id ${args.objectId}`,
+    $so id ${escape(args.objectId)}`,
     args
   );
 
 export const findByDefinition = args =>
   paginate(
     `match $m isa Marking-Definition; 
-    $m has definition_type "${prepareString(args.definition_type)}"; 
-    $m has definition "${prepareString(args.definition)}"`,
+    $m has definition_type "${escapeString(args.definition_type)}"; 
+    $m has definition "${escapeString(args.definition)}"`,
     args,
     false
   );
@@ -41,7 +42,7 @@ export const findByDefinition = args =>
 export const findByStixId = args =>
   paginate(
     `match $m isa Marking-Definition; 
-    $m has stix_id "${prepareString(args.stix_id)}"`,
+    $m has stix_id "${escapeString(args.stix_id)}"`,
     args,
     false
   );
@@ -54,12 +55,12 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
     has entity_type "marking-definition",
     has stix_id "${
       markingDefinition.stix_id
-        ? prepareString(markingDefinition.stix_id)
+        ? escapeString(markingDefinition.stix_id)
         : `marking-definition--${uuid()}`
     }",
-    has definition_type "${prepareString(markingDefinition.definition_type)}",
-    has definition "${prepareString(markingDefinition.definition)}",
-    has color "${prepareString(markingDefinition.color)}",
+    has definition_type "${escapeString(markingDefinition.definition_type)}",
+    has definition "${escapeString(markingDefinition.definition)}",
+    has color "${escapeString(markingDefinition.color)}",
     has level ${markingDefinition.level},
     has created ${
       markingDefinition.created ? prepareDate(markingDefinition.created) : now()
@@ -84,7 +85,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   if (markingDefinition.createdByRef) {
     await wTx.query(
       `match $from id ${createdMarkingDefinitionId};
-      $to id ${markingDefinition.createdByRef};
+      $to id ${escape(markingDefinition.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );

@@ -1,6 +1,8 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  escape,
+  escapeString,
   getById,
   prepareDate,
   dayFormat,
@@ -8,8 +10,7 @@ import {
   yearFormat,
   notify,
   now,
-  takeWriteTx,
-  prepareString
+  takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -26,13 +27,13 @@ export const addOrganization = async (user, organization) => {
     has entity_type "organization",
     has stix_id "${
       organization.stix_id
-        ? prepareString(organization.stix_id)
+        ? escapeString(organization.stix_id)
         : `organization--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(organization.name)}",
-    has description "${prepareString(organization.description)}",
+    has name "${escapeString(organization.name)}",
+    has description "${escapeString(organization.description)}",
     has created ${
       organization.created ? prepareDate(organization.created) : now()
     },
@@ -54,7 +55,7 @@ export const addOrganization = async (user, organization) => {
   if (organization.createdByRef) {
     await wTx.query(
       `match $from id ${createdOrganizationId};
-      $to id ${organization.createdByRef};
+      $to id ${escape(organization.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -64,7 +65,7 @@ export const addOrganization = async (user, organization) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdOrganizationId}; 
-        $to id ${markingDefinition}; 
+        $to id ${escape(markingDefinition)}; 
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(

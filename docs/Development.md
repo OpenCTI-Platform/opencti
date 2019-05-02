@@ -6,7 +6,7 @@
 
 - Node.JS (>= 10)
 - Python (>= 3)
-- Grakn (>= 1.5)
+- Grakn (>= 1.5.2)
 - Redis (>= 3.0)
 - ElasticSearch (>= 6)
 - RabbitMQ (>= 3.7)

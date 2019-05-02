@@ -1,6 +1,8 @@
 import { map } from 'ramda';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
+  escape,
+  escapeString,
   createRelation,
   deleteEntityById,
   deleteRelationById,
@@ -13,8 +15,7 @@ import {
   now,
   paginate,
   getObject,
-  takeWriteTx,
-  prepareString
+  takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -26,7 +27,7 @@ export const ownedBy = workspaceId =>
   getObject(
     `match $x isa User; 
     $rel(owner:$x, to:$workspace) isa owned_by; 
-    $workspace id ${workspaceId}; get $x, $rel; offset 0; limit 1;`,
+    $workspace id ${escape(workspaceId)}; get $x, $rel; offset 0; limit 1;`,
     'x',
     'rel'
   );
@@ -35,7 +36,7 @@ export const markingDefinitions = (workspaceId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
     $rel(marking:$marking, so:$workspace) isa object_marking_refs; 
-    $workspace id ${workspaceId}`,
+    $workspace id ${escape(workspaceId)}`,
     args,
     false
   );
@@ -44,7 +45,7 @@ export const objectRefs = (workspaceId, args) =>
   paginate(
     `match $so isa Stix-Domain-Entity; 
     $rel(so:$so, knowledge_aggregation:$workspace) isa object_refs; 
-    $workspace id ${workspaceId}`,
+    $workspace id ${escape(workspaceId)}`,
     args,
     false
   );
@@ -53,8 +54,8 @@ export const addWorkspace = async (user, workspace) => {
   const wTx = await takeWriteTx();
   const workspaceIterator = await wTx.query(`insert $workspace isa Workspace,
     has entity_type "workspace",
-    has name "${prepareString(workspace.name)}",
-    has description "${prepareString(workspace.description)}",
+    has name "${escapeString(workspace.name)}",
+    has description "${escapeString(workspace.description)}",
     has created_at ${now()},
     has created_at_day "${dayFormat(now())}",
     has created_at_month "${monthFormat(now())}",
@@ -72,7 +73,9 @@ export const addWorkspace = async (user, workspace) => {
   if (workspace.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
-        `match $from id ${createdWorkspaceId}; $to id ${markingDefinition}; insert (so: $from, marking: $to) isa object_marking_refs;`
+        `match $from id ${createdWorkspaceId}; 
+        $to id ${escape(markingDefinition)}; 
+        insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

@@ -1,6 +1,8 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  escape,
+  escapeString,
   getById,
   prepareDate,
   dayFormat,
@@ -8,8 +10,7 @@ import {
   yearFormat,
   notify,
   now,
-  takeWriteTx,
-  prepareString
+  takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -26,13 +27,13 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     has entity_type "course-of-action",
     has stix_id "${
       courseOfAction.stix_id
-        ? prepareString(courseOfAction.stix_id)
+        ? escapeString(courseOfAction.stix_id)
         : `course-of-action--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(courseOfAction.name)}",
-    has description "${prepareString(courseOfAction.description)}",
+    has name "${escapeString(courseOfAction.name)}",
+    has description "${escapeString(courseOfAction.description)}",
     has created ${
       courseOfAction.created ? prepareDate(courseOfAction.created) : now()
     },
@@ -54,7 +55,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
   if (courseOfAction.createdByRef) {
     await wTx.query(
       `match $from id ${createdCourseOfActionId};
-      $to id ${courseOfAction.createdByRef};
+      $to id ${escape(courseOfAction.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -64,7 +65,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdCourseOfActionId}; 
-        $to id ${markingDefinition}; 
+        $to id ${escape(markingDefinition)}; 
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(

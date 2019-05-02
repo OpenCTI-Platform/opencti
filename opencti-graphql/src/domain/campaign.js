@@ -1,6 +1,8 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  escape,
+  escapeString,
   getById,
   dayFormat,
   monthFormat,
@@ -10,7 +12,6 @@ import {
   paginate,
   prepareDate,
   takeWriteTx,
-  prepareString,
   timeSeries
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
@@ -27,8 +28,8 @@ export const search = args =>
     `match $c isa Campaign; 
     $c has name $name; 
     $c has alias $alias;
-    { $name contains "${prepareString(args.search)}"; } or
-    { $alias contains "${prepareString(args.search)}"; }`,
+    { $name contains "${escapeString(args.search)}"; } or
+    { $alias contains "${escapeString(args.search)}"; }`,
     args,
     false
   );
@@ -41,7 +42,7 @@ export const findByEntity = args =>
   paginate(
     `match $c isa Campaign; 
     $rel($c, $to) isa stix_relation; 
-    $to id ${args.objectId}`,
+    $to id ${escape(args.objectId)}`,
     args
   );
 
@@ -49,7 +50,7 @@ export const campaignsTimeSeriesByEntity = args =>
   timeSeries(
     `match $x isa Campaign;
      $rel($x, $to) isa stix_relation;
-     $to id ${args.objectId}`,
+     $to id ${escape(args.objectId)}`,
     args
   );
 
@@ -60,13 +61,13 @@ export const addCampaign = async (user, campaign) => {
   const query = `insert $campaign isa Campaign,
     has entity_type "campaign",
     has stix_id "${
-      campaign.stix_id ? prepareString(campaign.stix_id) : `campaign--${uuid()}`
+      campaign.stix_id ? escapeString(campaign.stix_id) : `campaign--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(campaign.name)}",
-    has description "${prepareString(campaign.description)}",
-    has objective "${prepareString(campaign.objective)}",
+    has name "${escapeString(campaign.name)}",
+    has description "${escapeString(campaign.description)}",
+    has objective "${escapeString(campaign.objective)}",
     has first_seen ${
       campaign.first_seen ? prepareDate(campaign.first_seen) : now()
     },
@@ -110,7 +111,7 @@ export const addCampaign = async (user, campaign) => {
   if (campaign.createdByRef) {
     await wTx.query(
       `match $from id ${createdCampaignId};
-      $to id ${campaign.createdByRef};
+      $to id ${escape(campaign.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -120,7 +121,7 @@ export const addCampaign = async (user, campaign) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdCampaignId};
-        $to id ${markingDefinition};
+        $to id ${escape(markingDefinition)};
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(

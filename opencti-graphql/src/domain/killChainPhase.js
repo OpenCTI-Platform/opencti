@@ -1,6 +1,8 @@
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
+  escape,
+  escapeString,
   createRelation,
   deleteEntityById,
   deleteRelationById,
@@ -13,8 +15,7 @@ import {
   notify,
   now,
   paginate,
-  takeWriteTx,
-  prepareString
+  takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -23,7 +24,7 @@ export const findByEntity = args =>
   paginate(
     `match $k isa Kill-Chain-Phase; 
     $rel(kill_chain_phase:$k, phase_belonging:$so) isa kill_chain_phases; 
-    $so id ${args.objectId}`,
+    $so id ${escape(args.objectId)}`,
     args
   );
 
@@ -32,7 +33,7 @@ export const findById = killChainPhaseId => getById(killChainPhaseId);
 export const findByPhaseName = args =>
   paginate(
     `match $k isa Kill-Chain-Phase; 
-    $k has phase_name "${prepareString(args.phaseName)}"`,
+    $k has phase_name "${escapeString(args.phaseName)}"`,
     args,
     false
   );
@@ -41,7 +42,7 @@ export const markingDefinitions = (killChainPhaseId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
     (marking:$marking, so:$k) isa object_marking_refs; 
-    $k id ${killChainPhaseId}`,
+    $k id ${escape(killChainPhaseId)}`,
     args,
     false
   );
@@ -52,12 +53,12 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     has entity_type "kill-chain-phase",
     has stix_id "${
       killChainPhase.stix_id
-        ? prepareString(killChainPhase.stix_id)
+        ? escapeString(killChainPhase.stix_id)
         : `kill-chain-phase--${uuid()}`
     }",
-    has kill_chain_name "${prepareString(killChainPhase.kill_chain_name)}",
-    has phase_name "${prepareString(killChainPhase.phase_name)}",
-    has phase_order ${killChainPhase.phase_order},
+    has kill_chain_name "${escapeString(killChainPhase.kill_chain_name)}",
+    has phase_name "${escapeString(killChainPhase.phase_name)}",
+    has phase_order ${escape(killChainPhase.phase_order)},
     has created ${
       killChainPhase.created ? prepareDate(killChainPhase.created) : now()
     },

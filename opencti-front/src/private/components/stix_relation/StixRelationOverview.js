@@ -72,6 +72,7 @@ const styles = theme => ({
     lineHeight: '40px',
     color: '#ffffff',
     textAlign: 'center',
+    wordBreak: 'break-word',
   },
   name: {
     display: 'inline-block',

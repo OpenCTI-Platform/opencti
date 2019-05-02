@@ -1,6 +1,7 @@
 import { map } from 'ramda';
-import uuid from 'uuid/v4';
 import {
+  escape,
+  escapeString,
   deleteEntityById,
   getById,
   dayFormat,
@@ -9,8 +10,7 @@ import {
   notify,
   now,
   paginate,
-  takeWriteTx,
-  prepareString
+  takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -22,7 +22,7 @@ export const members = (groupId, args) =>
   paginate(
     `match $user isa User; 
     $rel((member:$user, grouping:$g) isa membership; 
-    $ id ${groupId}`,
+    $g id ${escape(groupId)}`,
     args
   );
 
@@ -30,7 +30,7 @@ export const permissions = (groupId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
     $rel(allow:$marking, allowed:$g) isa permission; 
-    $g id ${groupId}`,
+    $g id ${escape(groupId)}`,
     args
   );
 
@@ -38,8 +38,8 @@ export const addGroup = async (user, group) => {
   const wTx = await takeWriteTx();
   const groupIterator = await wTx.query(`insert $group isa Group,
     has entity_type "group",
-    has name "${prepareString(group.name)}",
-    has description "${prepareString(group.description)}",
+    has name "${escapeString(group.name)}",
+    has description "${escapeString(group.description)}",
     has created_at ${now()},
     has created_at_day "${dayFormat(now())}",
     has created_at_month "${monthFormat(now())}",
@@ -52,7 +52,7 @@ export const addGroup = async (user, group) => {
   if (group.createdByRef) {
     await wTx.query(
       `match $from id ${createdGroupId};
-      $to id ${group.createdByRef};
+      $to id ${escape(group.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -62,7 +62,7 @@ export const addGroup = async (user, group) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdGroupId}; 
-        $to id ${markingDefinition};
+        $to id ${escape(markingDefinition)};
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(

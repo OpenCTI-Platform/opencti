@@ -1,6 +1,8 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  escape,
+  escapeString,
   getById,
   prepareDate,
   dayFormat,
@@ -8,9 +10,7 @@ import {
   yearFormat,
   notify,
   now,
-  paginate,
-  takeWriteTx,
-  prepareString
+  takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -21,25 +21,17 @@ export const findAll = args =>
 
 export const findById = regionId => getById(regionId);
 
-export const markingDefinitions = (regionId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(marking:$marking, so:$r) isa object_marking_refs; 
-    $r id ${regionId}`,
-    args
-  );
-
 export const addRegion = async (user, region) => {
   const wTx = await takeWriteTx();
   const regionIterator = await wTx.query(`insert $region isa Region,
     has entity_type "region",
     has stix_id "${
-      region.stix_id ? prepareString(region.stix_id) : `region--${uuid()}`
+      region.stix_id ? escapeString(region.stix_id) : `region--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(region.name)}",
-    has description "${prepareString(region.description)}",
+    has name "${escapeString(region.name)}",
+    has description "${escapeString(region.description)}",
     has created ${region.created ? prepareDate(region.created) : now()},
     has modified ${region.modified ? prepareDate(region.modified) : now()},
     has revoked false,
@@ -55,7 +47,7 @@ export const addRegion = async (user, region) => {
   if (region.createdByRef) {
     await wTx.query(
       `match $from id ${createdRegionId};
-      $to id ${region.createdByRef};
+      $to id ${escape(region.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -65,7 +57,7 @@ export const addRegion = async (user, region) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdRegionId}; 
-        $to id ${markingDefinition}; 
+        $to id ${escape(markingDefinition)}; 
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(

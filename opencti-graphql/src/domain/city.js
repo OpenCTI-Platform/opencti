@@ -1,6 +1,8 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  escape,
+  escapeString,
   getById,
   prepareDate,
   dayFormat,
@@ -8,8 +10,7 @@ import {
   yearFormat,
   notify,
   now,
-  takeWriteTx,
-  prepareString
+  takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -25,12 +26,12 @@ export const addCity = async (user, city) => {
   const cityIterator = await wTx.query(`insert $city isa City,
     has entity_type "city",
     has stix_id "${
-      city.stix_id ? prepareString(city.stix_id) : `city--${uuid()}`
+      city.stix_id ? escapeString(city.stix_id) : `city--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(city.name)}",
-    has description "${prepareString(city.description)}",
+    has name "${escapeString(city.name)}",
+    has description "${escapeString(city.description)}",
     has created ${city.created ? prepareDate(city.created) : now()},
     has modified ${city.modified ? prepareDate(city.modified) : now()},
     has revoked false,
@@ -46,7 +47,7 @@ export const addCity = async (user, city) => {
   if (city.createdByRef) {
     await wTx.query(
       `match $from id ${createdCityId};
-      $to id ${city.createdByRef};
+      $to id ${escape(city.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -56,7 +57,7 @@ export const addCity = async (user, city) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdCityId}; 
-        $to id ${markingDefinition}; 
+        $to id ${escape(markingDefinition)}; 
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(

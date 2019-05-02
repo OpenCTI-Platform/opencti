@@ -2,6 +2,8 @@ import { assoc, isNil, map, filter } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
+  escape,
+  escapeString,
   createRelation,
   deleteEntityById,
   deleteRelationById,
@@ -16,7 +18,6 @@ import {
   takeWriteTx,
   timeSeries,
   getObject,
-  prepareString,
   getSingleValueNumber,
   prepareDate,
   queryOne
@@ -46,21 +47,21 @@ export const search = args => elPaginate('stix-domain-entities', args);
    `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'};
    $x has name $name;
    $x has alias $alias;
-   { $name contains "${prepareString(args.search)}"; } or
-   { $alias contains "${prepareString(args.search)}"; }`,
+   { $name contains "${escapeString(args.search)}"; } or
+   { $alias contains "${escapeString(args.search)}"; }`,
    args,
    false
  ); */
 
 export const stixDomainEntitiesTimeSeries = args =>
   timeSeries(
-    `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'}`,
+    `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'}`,
     args
   );
 
 export const stixDomainEntitiesNumber = args => ({
   count: getSingleValueNumber(
-    `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'};
+    `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
     ${
       args.endDate
         ? `$x has created_at $date;
@@ -71,7 +72,7 @@ export const stixDomainEntitiesNumber = args => ({
     count;`
   ),
   total: getSingleValueNumber(
-    `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'};
+    `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
     get;
     count;`
   )
@@ -81,28 +82,28 @@ export const findById = stixDomainEntityId => getById(stixDomainEntityId);
 
 export const findByStixId = args =>
   paginate(
-    `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'};
-    $x has stix_id "${prepareString(args.stix_id)}"`,
+    `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
+    $x has stix_id "${escapeString(args.stix_id)}"`,
     args,
     false
   );
 
 export const findByName = args =>
   paginate(
-    `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'};
+    `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
    $x has name $name;
    $x has alias $alias;
-   { $name "${prepareString(args.name)}"; } or
-   { $alias "${prepareString(args.name)}"; }`,
+   { $name "${escapeString(args.name)}"; } or
+   { $alias "${escapeString(args.name)}"; }`,
     args,
     false
   );
 
 export const findByExternalReference = args =>
   paginate(
-    `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'};
+    `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
      $rel(external_reference:$externalReference, so:$x) isa external_references;
-     $externalReference id "${prepareString(args.externalReferenceId)}"`,
+     $externalReference id "${escapeString(args.externalReferenceId)}"`,
     args,
     false
   );
@@ -111,7 +112,7 @@ export const createdByRef = stixDomainEntityId =>
   getObject(
     `match $i isa Identity; 
     $rel(creator:$i, so:$x) isa created_by_ref; 
-    $x id ${stixDomainEntityId}; get $i, $rel; offset 0; limit 1;`,
+    $x id ${escape(stixDomainEntityId)}; get $i, $rel; offset 0; limit 1;`,
     'i',
     'rel'
   );
@@ -120,7 +121,7 @@ export const killChainPhases = (stixDomainEntityId, args) =>
   paginate(
     `match $k isa Kill-Chain-Phase; 
     $rel(kill_chain_phase:$k, phase_belonging:$x) isa kill_chain_phases; 
-    $x id ${stixDomainEntityId}`,
+    $x id ${escape(stixDomainEntityId)}`,
     args,
     false
   );
@@ -129,7 +130,7 @@ export const markingDefinitions = (stixDomainEntityId, args) =>
   paginate(
     `match $m isa Marking-Definition; 
     $rel(marking:$m, so:$x) isa object_marking_refs; 
-    $x id ${stixDomainEntityId}`,
+    $x id ${escape(stixDomainEntityId)}`,
     args,
     false
   );
@@ -138,7 +139,7 @@ export const reports = (stixDomainEntityId, args) =>
   paginate(
     `match $r isa Report; 
     $rel(knowledge_aggregation:$r, so:$x) isa object_refs; 
-    $x id ${stixDomainEntityId}`,
+    $x id ${escape(stixDomainEntityId)}`,
     args
   );
 
@@ -146,7 +147,7 @@ export const reportsTimeSeries = (stixDomainEntityId, args) =>
   timeSeries(
     `match $x isa Report; 
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
-    $so id ${stixDomainEntityId}`,
+    $so id ${escape(stixDomainEntityId)}`,
     args
   );
 
@@ -154,7 +155,7 @@ export const externalReferences = (stixDomainEntityId, args) =>
   paginate(
     `match $e isa External-Reference; 
     $rel(external_reference:$e, so:$x) isa external_references; 
-    $x id ${stixDomainEntityId}`,
+    $x id ${escape(stixDomainEntityId)}`,
     args,
     false
   );
@@ -172,9 +173,11 @@ export const exports = (stixDomainEntityId, args) => {
 
   const result = Promise.all(
     types.map(type => {
-      const query = `match $e isa Export; $e has export_type "${prepareString(
+      const query = `match $e isa Export; $e has export_type "${escapeString(
         type
-      )}"; $e has created_at $c; (export: $e, exported: $x) isa exports; $x id ${stixDomainEntityId}; get $e, $c; sort $c desc;`;
+      )}"; $e has created_at $c; (export: $e, exported: $x) isa exports; $x id ${escape(
+        stixDomainEntityId
+      )}; get $e, $c; sort $c desc;`;
       return queryOne(query, ['e']).then(data => {
         return data.e;
       });
@@ -192,7 +195,7 @@ export const stixDomainEntityRefreshExport = async (
 ) => {
   const wTx = await takeWriteTx();
   const query = `insert $export isa Export, 
-  has export_type "${prepareString(type)}",
+  has export_type "${escapeString(type)}",
   has object_status 0,
   has raw_data "",
   has created_at ${now()},
@@ -204,7 +207,9 @@ export const stixDomainEntityRefreshExport = async (
   const createdExport = await exportIterator.next();
   const createdExportId = await createdExport.map().get('export').id;
   await wTx.query(
-    `match $from id ${createdExportId}; $to id ${stixDomainEntityId}; insert (export: $from, exported: $to) isa exports;`
+    `match $from id ${createdExportId}; $to id ${escape(
+      stixDomainEntityId
+    )}; insert (export: $from, exported: $to) isa exports;`
   );
   await wTx.commit();
   send(
@@ -236,19 +241,19 @@ export const stixDomainEntityExportPush = async (
 
 export const addStixDomainEntity = async (user, stixDomainEntity) => {
   const wTx = await takeWriteTx();
-  const stixDomainEntityIterator = await wTx.query(`insert $stixDomainEntity isa ${
+  const stixDomainEntityIterator = await wTx.query(`insert $stixDomainEntity isa ${escape(
     stixDomainEntity.type
-  },
-    has entity_type "${prepareString(stixDomainEntity.type.toLowerCase())}",
+  )},
+    has entity_type "${escapeString(stixDomainEntity.type.toLowerCase())}",
     has stix_id "${
       stixDomainEntity.stix_id
-        ? prepareString(stixDomainEntity.stix_id)
-        : `${prepareString(stixDomainEntity.type.toLowerCase())}--${uuid()}`
+        ? escapeString(stixDomainEntity.stix_id)
+        : `${escapeString(stixDomainEntity.type.toLowerCase())}--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(stixDomainEntity.name)}",
-    has description "${prepareString(stixDomainEntity.description)}",
+    has name "${escapeString(stixDomainEntity.name)}",
+    has description "${escapeString(stixDomainEntity.description)}",
     has created ${
       stixDomainEntity.created ? prepareDate(stixDomainEntity.created) : now()
     },
@@ -270,7 +275,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   if (stixDomainEntity.createdByRef) {
     await wTx.query(
       `match $from id ${createdStixDomainEntityId};
-      $to id ${stixDomainEntity.createdByRef};
+      $to id ${escape(stixDomainEntity.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -280,7 +285,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdStixDomainEntityId}; 
-        $to id ${markingDefinition}; 
+        $to id ${escape(markingDefinition)}; 
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(

@@ -1,6 +1,8 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  escape,
+  escapeString,
   getById,
   prepareDate,
   dayFormat,
@@ -9,8 +11,7 @@ import {
   notify,
   now,
   paginate,
-  takeWriteTx,
-  prepareString
+  takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -42,12 +43,12 @@ export const addSector = async (user, sector) => {
   const sectorIterator = await wTx.query(`insert $sector isa Sector,
     has entity_type "sector",
     has stix_id "${
-      sector.stix_id ? prepareString(sector.stix_id) : `sector--${uuid()}`
+      sector.stix_id ? escapeString(sector.stix_id) : `sector--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(sector.name)}",
-    has description "${prepareString(sector.description)}",
+    has name "${escapeString(sector.name)}",
+    has description "${escapeString(sector.description)}",
     has created ${sector.created ? prepareDate(sector.created) : now()},
     has modified ${sector.modified ? prepareDate(sector.modified) : now()},
     has revoked false,
@@ -63,7 +64,7 @@ export const addSector = async (user, sector) => {
   if (sector.createdByRef) {
     await wTx.query(
       `match $from id ${createdSectorId};
-      $to id ${sector.createdByRef};
+      $to id ${escape(sector.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -73,7 +74,7 @@ export const addSector = async (user, sector) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdSectorId}; 
-        $to id ${markingDefinition};
+        $to id ${escape(markingDefinition)};
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(

@@ -102,7 +102,7 @@ export const itemColor = (type, dark) => {
     case 'url':
     case 'email-address':
     case 'mutex':
-    case 'file-md5':
+    case 'file':
     case 'file-sha1':
     case 'file-sha256':
       if (dark) {

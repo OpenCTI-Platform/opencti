@@ -1,6 +1,8 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  escape,
+  escapeString,
   getById,
   prepareDate,
   dayFormat,
@@ -8,7 +10,6 @@ import {
   yearFormat,
   notify,
   now,
-  prepareString,
   takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -25,12 +26,12 @@ export const addCountry = async (user, country) => {
   const countryIterator = await wTx.query(`insert $country isa Country,
     has entity_type "country",
     has stix_id "${
-      country.stix_id ? prepareString(country.stix_id) : `country--${uuid()}`
+      country.stix_id ? escapeString(country.stix_id) : `country--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(country.name)}",
-    has description "${prepareString(country.description)}",
+    has name "${escapeString(country.name)}",
+    has description "${escapeString(country.description)}",
     has created ${country.created ? prepareDate(country.created) : now()},
     has modified ${country.modified ? prepareDate(country.modified) : now()},
     has revoked false,
@@ -46,7 +47,7 @@ export const addCountry = async (user, country) => {
   if (country.createdByRef) {
     await wTx.query(
       `match $from id ${createdCountryId};
-      $to id ${country.createdByRef};
+      $to id ${escape(country.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -56,7 +57,7 @@ export const addCountry = async (user, country) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdCountryId};
-         $to id ${markingDefinition}; 
+         $to id ${escape(markingDefinition)}; 
          insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(

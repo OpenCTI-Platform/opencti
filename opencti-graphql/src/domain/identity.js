@@ -1,6 +1,8 @@
 import { map, assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  escape,
+  escapeString,
   getById,
   prepareDate,
   dayFormat,
@@ -9,8 +11,7 @@ import {
   notify,
   now,
   paginate,
-  takeWriteTx,
-  prepareString
+  takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -29,8 +30,8 @@ export const search = args =>
     `match $i isa Identity; 
     $i has name $name; 
     $i has alias $alias; 
-    { $name contains "${prepareString(args.search)}"; } or 
-    { $alias contains "${prepareString(args.search)}"; }`,
+    { $name contains "${escapeString(args.search)}"; } or
+    { $alias contains "${escapeString(args.search)}"; }`,
     args,
     false
   );
@@ -42,13 +43,13 @@ export const addIdentity = async (user, identity) => {
     has entity_type "${identity.type.toLowerCase()}",
     has stix_id "${
       identity.stix_id
-        ? prepareString(identity.stix_id)
-        : `${prepareString(identity.type.toLowerCase())}--${uuid()}`
+        ? escapeString(identity.stix_id)
+        : `${escapeString(identity.type.toLowerCase())}--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(identity.name)}",
-    has description "${prepareString(identity.description)}",
+    has name "${escapeString(identity.name)}",
+    has description "${escapeString(identity.description)}",
     has created ${identity.created ? prepareDate(identity.created) : now()},
     has modified ${identity.modified ? prepareDate(identity.modified) : now()},
     has revoked false,
@@ -66,7 +67,7 @@ export const addIdentity = async (user, identity) => {
   if (identity.createdByRef) {
     await wTx.query(
       `match $from id ${createdIdentityId};
-      $to id ${identity.createdByRef};
+      $to id ${escape(identity.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -76,7 +77,7 @@ export const addIdentity = async (user, identity) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdIdentityId}; 
-        $to id ${markingDefinition}; 
+        $to id ${escape(markingDefinition)}; 
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(

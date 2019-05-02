@@ -28,6 +28,8 @@ import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
+  escape,
+  escapeString,
   deleteById,
   updateAttribute,
   getById,
@@ -41,7 +43,6 @@ import {
   dayFormat,
   monthFormat,
   yearFormat,
-  prepareString,
   timeSeries,
   distribution,
   takeWriteTx,
@@ -64,7 +65,7 @@ const groupSumBy = curry((groupOn, sumOn, vals) =>
 export const findAll = args =>
   paginateRelationships(
     `match $rel($from, $to) isa ${
-      args.relationType ? args.relationType : 'stix_relation'
+      args.relationType ? escape(args.relationType) : 'stix_relation'
     }`,
     args
   );
@@ -72,7 +73,7 @@ export const findAll = args =>
 export const findByStixId = args =>
   paginateRelationships(
     `match $rel($from, $to) isa relation; 
-    $rel has stix_id "${prepareString(args.stix_id)}"`,
+    $rel has stix_id "${escapeString(args.stix_id)}"`,
     args
   );
 
@@ -81,28 +82,28 @@ export const search = args =>
     `match $rel($from, $to) isa relation;
     $rel has name $name;
     $rel has description $desc;
-    { $name contains "${prepareString(args.search)}"; } or
-    { $desc contains "${prepareString(args.search)}"; }`,
+    { $name contains "${escapeString(args.search)}"; } or
+    { $desc contains "${escapeString(args.search)}"; }`,
     args
   );
 
 export const findAllWithInferences = async args => {
   const entities = await getObjectsWithoutAttributes(
-    `match $x isa entity; (${args.resolveRelationRole}: $from, $x) isa ${
+    `match $x isa entity; (${args.resolveRelationRole}: $from, $x) isa ${escape(
       args.resolveRelationType
-    };
+    )};
     ${
       args.resolveRelationToTypes
         ? `${join(
             ' ',
             map(
               resolveRelationToType =>
-                `{ $x isa ${resolveRelationToType}; } or`,
+                `{ $x isa ${escape(resolveRelationToType)}; } or`,
               args.resolveRelationToTypes
             )
-          )} { $x isa ${head(args.resolveRelationToTypes)}; };`
+          )} { $x isa ${escape(head(args.resolveRelationToTypes))}; };`
         : ''
-    } $from id ${args.fromId};
+    } $from id ${escape(args.fromId)};
     get $x;`,
     'x',
     null,
@@ -110,11 +111,11 @@ export const findAllWithInferences = async args => {
   );
   const fromIds = append(args.fromId, map(e => e.node.id, entities));
   const query = `match $rel($from, $to) isa ${
-    args.relationType ? args.relationType : 'stix_relation'
+    args.relationType ? escape(args.relationType) : 'stix_relation'
   }; ${join(
     ' ',
-    map(fromId => `{ $from id ${fromId}; } or`, fromIds)
-  )} { $from id ${head(fromIds)}; }`;
+    map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
+  )} { $from id ${escape(head(fromIds))}; }`;
   const resultPromise = await paginateRelationships(
     query,
     assoc('inferred', false, omit(['fromId'], args)),
@@ -125,15 +126,15 @@ export const findAllWithInferences = async args => {
     const viaPromise = Promise.all(
       map(async resolveViaType => {
         const viaQuery = `match $from isa entity; $rel($from, $entity) isa ${
-          args.relationType ? args.relationType : 'stix_relation'
+          args.relationType ? escape(args.relationType) : 'stix_relation'
         }; ${join(
           ' ',
-          map(fromId => `{ $from id ${fromId}; } or`, fromIds)
-        )} { $from id ${head(fromIds)}; }; $entity isa ${
+          map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
+        )} { $from id ${escape(head(fromIds))}; }; $entity isa ${escape(
           resolveViaType.entityType
-        }; $link(${resolveViaType.relationRole}: $entity, $to) isa ${
-          resolveViaType.relationType
-        }`;
+        )}; $link(${escape(
+          resolveViaType.relationRole
+        )}: $entity, $to) isa ${escape(resolveViaType.relationType)}`;
         return paginateRelationships(
           viaQuery,
           omit(['fromId'], args),
@@ -145,13 +146,13 @@ export const findAllWithInferences = async args => {
     const viaRelationQueries = map(
       resolveViaType =>
         `match $from isa entity; $rel($from, $entity) isa ${
-          args.relationType ? args.relationType : 'stix_relation'
+          args.relationType ? escape(args.relationType) : 'stix_relation'
         }; ${join(
           ' ',
-          map(fromId => `{ $from id ${fromId}; } or`, fromIds)
-        )} { $from id ${head(fromIds)}; }; $link(${
+          map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
+        )} { $from id ${escape(head(fromIds))}; }; $link(${escape(
           resolveViaType.relationRole
-        }: $rel, $to) isa ${resolveViaType.relationType}`
+        )}: $rel, $to) isa ${escape(resolveViaType.relationType)}`
     )(args.resolveViaTypes);
     const viaOfRelationPromise = Promise.all(
       map(async viaRelationQuery =>
@@ -191,52 +192,54 @@ export const findAllWithInferences = async args => {
 export const stixRelationsTimeSeries = args =>
   timeSeries(
     `match $x($from, $to) isa ${
-      args.relationType ? args.relationType : 'stix_relation'
+      args.relationType ? escape(args.relationType) : 'stix_relation'
     }; ${
       args.toTypes && args.toTypes.length > 0
         ? `${join(
             ' ',
-            map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
-          )} { $to isa ${head(args.toTypes)}; };`
+            map(toType => `{ $to isa ${escape(toType)}; } or`, args.toTypes)
+          )} { $to isa ${escape(head(args.toTypes))}; };`
         : ''
     } ${
-      args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
+      args.fromId
+        ? `$from id ${escape(args.fromId)}`
+        : '$from isa Stix-Domain-Entity'
     }`,
     args
   );
 
 export const stixRelationsTimeSeriesWithInferences = async args => {
   const entities = await getObjectsWithoutAttributes(
-    `match $x isa entity; (${args.resolveRelationRole}: $from, $x) isa ${
-      args.resolveRelationType
-    }; ${
+    `match $x isa entity; (${escape(
+      args.resolveRelationRole
+    )}: $from, $x) isa ${escape(args.resolveRelationType)}; ${
       args.resolveRelationToTypes
         ? `${join(
             ' ',
             map(
               resolveRelationToType =>
-                `{ $x isa ${resolveRelationToType}; } or`,
+                `{ $x isa ${escape(resolveRelationToType)}; } or`,
               args.resolveRelationToTypes
             )
-          )} { $x isa ${head(args.resolveRelationToTypes)}; };`
+          )} { $x isa ${escape(head(args.resolveRelationToTypes))}; };`
         : ''
-    } $from id ${args.fromId}; get $x;`,
+    } $from id ${escape(args.fromId)}; get $x;`,
     'x',
     null,
     true
   );
   const fromIds = append(args.fromId, map(e => e.node.id, entities));
   const query = `match $x($from, $to) isa ${
-    args.relationType ? args.relationType : 'stix_relation'
+    args.relationType ? escape(args.relationType) : 'stix_relation'
   }; ${join(
     ' ',
-    map(fromId => `{ $from id ${fromId}; } or`, fromIds)
-  )} { $from id ${head(fromIds)}; }${
+    map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
+  )} { $from id ${escape(head(fromIds))}; }${
     args.toTypes && args.toTypes.length > 0
       ? `; ${join(
           ' ',
-          map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
-        )} { $to isa ${head(args.toTypes)}; }`
+          map(toType => `{ $to isa ${escape(toType)}; } or`, args.toTypes)
+        )} { $to isa ${escape(head(args.toTypes))}; }`
       : ''
   }`;
   const resultPromise = timeSeries(query, assoc('inferred', false, args));
@@ -244,20 +247,20 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
     const viaPromise = Promise.all(
       map(resolveViaType => {
         const viaQuery = `match $from isa entity; $x($from, $entity) isa ${
-          args.relationType ? args.relationType : 'stix_relation'
+          args.relationType ? escape(args.relationType) : 'stix_relation'
         }; ${join(
           ' ',
-          map(fromId => `{ $from id ${fromId}; } or`, fromIds)
-        )} { $from id ${head(fromIds)}; }; $entity isa ${
+          map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
+        )} { $from id ${escape(head(fromIds))}; }; $entity isa ${escape(
           resolveViaType.entityType
-        }; $link(${resolveViaType.relationRole}: $entity, $to) isa ${
-          resolveViaType.relationType
-        } ${
+        )}; $link(${escape(
+          resolveViaType.relationRole
+        )}: $entity, $to) isa ${escape(resolveViaType.relationType)} ${
           args.toTypes && args.toTypes.length > 0
             ? `; ${join(
                 ' ',
-                map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
-              )} { $to isa ${head(args.toTypes)}; }`
+                map(toType => `{ $to isa ${escape(toType)}; } or`, args.toTypes)
+              )} { $to isa ${escape(head(args.toTypes))}; }`
             : ''
         }`;
         return timeSeries(viaQuery, assoc('inferred', true, args));
@@ -266,18 +269,18 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
     const viaRelationQueries = map(
       resolveViaType =>
         `match $from isa entity; $x($from, $entity) isa ${
-          args.relationType ? args.relationType : 'stix_relation'
+          args.relationType ? escape(args.relationType) : 'stix_relation'
         }; ${join(
           ' ',
-          map(fromId => `{ $from id ${fromId}; } or`, fromIds)
-        )} { $from id ${head(fromIds)}; }; $link(${
+          map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
+        )} { $from id ${escape(head(fromIds))}; }; $link(${
           resolveViaType.relationRole
-        }: $x, $to) isa ${resolveViaType.relationType} ${
+        }: $x, $to) isa ${escape(resolveViaType.relationType)} ${
           args.toTypes && args.toTypes.length > 0
             ? `; ${join(
                 ' ',
-                map(toType => `{ $to isa ${toType}; } or`, args.toTypes)
-              )} { $to isa ${head(args.toTypes)}; }`
+                map(toType => `{ $to isa ${escape(toType)}; } or`, args.toTypes)
+              )} { $to isa ${escape(head(args.toTypes))}; }`
             : ''
         }`
     )(args.resolveViaTypes);
@@ -309,16 +312,18 @@ export const stixRelationsDistribution = args => {
   const { limit = 10 } = args;
   return distribution(
     `match $rel($from, $x) isa ${
-      args.relationType ? args.relationType : 'stix_relation'
+      args.relationType ? escape(args.relationType) : 'stix_relation'
     }; ${
       args.toTypes && args.toTypes.length > 0
         ? `${join(
             ' ',
-            map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
-          )} { $x isa ${head(args.toTypes)}; };`
+            map(toType => `{ $x isa ${escape(toType)}; } or`, args.toTypes)
+          )} { $x isa ${escape(head(args.toTypes))}; };`
         : ''
     } ${
-      args.fromId ? `$from id ${args.fromId}` : '$from isa Stix-Domain-Entity'
+      args.fromId
+        ? `$from id ${escape(args.fromId)}`
+        : '$from isa Stix-Domain-Entity'
     }`,
     args
   ).then(result => {
@@ -331,36 +336,36 @@ export const stixRelationsDistribution = args => {
 export const stixRelationsDistributionWithInferences = async args => {
   const { limit = 10 } = args;
   const entities = await getObjectsWithoutAttributes(
-    `match $x isa entity; (${args.resolveRelationRole}: $from, $x) isa ${
-      args.resolveRelationType
-    }; ${
+    `match $x isa entity; (${escape(
+      args.resolveRelationRole
+    )}: $from, $x) isa ${escape(args.resolveRelationType)}; ${
       args.resolveRelationToTypes
         ? `${join(
             ' ',
             map(
               resolveRelationToType =>
-                `{ $x isa ${resolveRelationToType}; } or`,
+                `{ $x isa ${escape(resolveRelationToType)}; } or`,
               args.resolveRelationToTypes
             )
-          )} { $x isa ${head(args.resolveRelationToTypes)}; };`
+          )} { $x isa ${escape(head(args.resolveRelationToTypes))}; };`
         : ''
-    } $from id ${args.fromId}; get $x;`,
+    } $from id ${escape(args.fromId)}; get $x;`,
     'x',
     null,
     true
   );
   const fromIds = append(args.fromId, map(e => e.node.id, entities));
   const query = `match $rel($from, $x) isa ${
-    args.relationType ? args.relationType : 'stix_relation'
+    args.relationType ? escape(args.relationType) : 'stix_relation'
   }; ${join(
     ' ',
-    map(fromId => `{ $from id ${fromId}; } or`, fromIds)
-  )} { $from id ${head(fromIds)}; }${
+    map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
+  )} { $from id ${escape(head(fromIds))}; }${
     args.toTypes && args.toTypes.length > 0
       ? `; ${join(
           ' ',
-          map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
-        )} { $x isa ${head(args.toTypes)}; }`
+          map(toType => `{ $x isa ${escape(toType)}; } or`, args.toTypes)
+        )} { $x isa ${escape(head(args.toTypes))}; }`
       : ''
   }`;
   const resultPromise = distribution(query, assoc('inferred', false, args));
@@ -368,20 +373,20 @@ export const stixRelationsDistributionWithInferences = async args => {
     const viaPromise = Promise.all(
       map(resolveViaType => {
         const viaQuery = `match $from isa entity; $rel($from, $entity) isa ${
-          args.relationType ? args.relationType : 'stix_relation'
+          args.relationType ? escape(args.relationType) : 'stix_relation'
         }; ${join(
           ' ',
-          map(fromId => `{ $from id ${fromId}; } or`, fromIds)
-        )} { $from id ${head(fromIds)}; }; $entity isa ${
+          map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
+        )} { $from id ${escape(head(fromIds))}; }; $entity isa ${
           resolveViaType.entityType
-        }; $link(${resolveViaType.relationRole}: $entity, $x) isa ${
-          resolveViaType.relationType
-        }; ${
+        }; $link(${escape(
+          resolveViaType.relationRole
+        )}: $entity, $x) isa ${escape(resolveViaType.relationType)}; ${
           args.toTypes && args.toTypes.length > 0
             ? `${join(
                 ' ',
-                map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
-              )} { $x isa ${head(args.toTypes)}; };`
+                map(toType => `{ $x isa ${escape(toType)}; } or`, args.toTypes)
+              )} { $x isa ${escape(head(args.toTypes))}; };`
             : ''
         } $rel has first_seen $o`;
         return distribution(viaQuery, assoc('inferred', true, args));
@@ -390,18 +395,18 @@ export const stixRelationsDistributionWithInferences = async args => {
     const viaRelationQueries = map(
       resolveViaType =>
         `match $from isa entity; $rel($from, $entity) isa ${
-          args.relationType ? args.relationType : 'stix_relation'
+          args.relationType ? escape(args.relationType) : 'stix_relation'
         }; ${join(
           ' ',
-          map(fromId => `{ $from id ${fromId}; } or`, fromIds)
-        )} { $from id ${head(fromIds)}; }; $link(${
+          map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
+        )} { $from id ${escape(head(fromIds))}; }; $link(${escape(
           resolveViaType.relationRole
-        }: $rel, $x) isa ${resolveViaType.relationType}; ${
+        )}: $rel, $x) isa ${escape(resolveViaType.relationType)}; ${
           args.toTypes && args.toTypes.length > 0
             ? `${join(
                 ' ',
-                map(toType => `{ $x isa ${toType}; } or`, args.toTypes)
-              )} { $x isa ${head(args.toTypes)}; };`
+                map(toType => `{ $x isa ${escape(toType)}; } or`, args.toTypes)
+              )} { $x isa ${escape(head(args.toTypes))}; };`
             : ''
         } $rel has first_seen $o`
     )(args.resolveViaTypes);
@@ -457,7 +462,7 @@ export const markingDefinitions = (stixRelationId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
     $rel(marking:$marking, so:$stixRelation) isa object_marking_refs; 
-    $stixRelation id ${stixRelationId}`,
+    $stixRelation id ${escape(stixRelationId)}`,
     args
   );
 
@@ -465,7 +470,7 @@ export const reports = (stixRelationId, args) =>
   paginate(
     `match $report isa Report; 
     $rel(knowledge_aggregation:$report, so:$stixRelation) isa object_refs; 
-    $stixRelation id ${stixRelationId}`,
+    $stixRelation id ${escape(stixRelationId)}`,
     args
   );
 
@@ -473,32 +478,32 @@ export const locations = (stixRelationId, args) =>
   paginate(
     `match $location isa Country; 
     $rel(location:$location, localized:$stixRelation) isa localization; 
-    $stixRelation id ${stixRelationId}`,
+    $stixRelation id ${escape(stixRelationId)}`,
     args,
     false
   );
 
 export const addStixRelation = async (user, stixRelation) => {
   const wTx = await takeWriteTx();
-  const query = `match $from id ${stixRelation.fromId}; 
-    $to id ${stixRelation.toId}; 
-    insert $stixRelation(${stixRelation.fromRole}: $from, ${
+  const query = `match $from id ${escape(stixRelation.fromId)}; 
+    $to id ${escape(stixRelation.toId)}; 
+    insert $stixRelation(${escape(stixRelation.fromRole)}: $from, ${escape(
     stixRelation.toRole
-  }: $to) 
-    isa ${stixRelation.relationship_type},
-    has relationship_type "${prepareString(
+  )}: $to) 
+    isa ${escape(stixRelation.relationship_type)},
+    has relationship_type "${escapeString(
       stixRelation.relationship_type.toLowerCase()
     )}",
     has entity_type "stix-relation",
     has stix_id "${
       stixRelation.stix_id
-        ? prepareString(stixRelation.stix_id)
+        ? escapeString(stixRelation.stix_id)
         : `relationship--${uuid()}`
     }",
     has name "",
-    has description "${prepareString(stixRelation.description)}",
-    has role_played "${prepareString(stixRelation.role_played)}",
-    has weight ${stixRelation.weight},
+    has description "${escapeString(stixRelation.description)}",
+    has role_played "${escapeString(stixRelation.role_played)}",
+    has weight ${escape(stixRelation.weight)},
     has first_seen ${prepareDate(stixRelation.first_seen)},
     has first_seen_day "${dayFormat(stixRelation.first_seen)}",
     has first_seen_month "${monthFormat(stixRelation.first_seen)}",
@@ -531,7 +536,7 @@ export const addStixRelation = async (user, stixRelation) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdStixRelationId}; $x
-        $to id ${markingDefinition};
+        $to id ${escape(markingDefinition)};
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(
@@ -545,7 +550,7 @@ export const addStixRelation = async (user, stixRelation) => {
     const createLocation = location =>
       wTx.query(
         `match $from id ${createdStixRelationId};
-        $to id ${location};
+        $to id ${escape(location)};
         insert $rel(localized: $from, location: $to) isa localization, has stix_id "relationship--${uuid()}", has relationship_type 'localization', has first_seen ${now()}, has last_seen ${now()}, has weight 3;`
       );
     const locationsPromises = map(createLocation, stixRelation.locations);

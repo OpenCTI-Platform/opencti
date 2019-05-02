@@ -1,12 +1,13 @@
 import {
+  escape,
+  escapeString,
   deleteEntityById,
   updateAttribute,
   getById,
   getObject,
   notify,
   now,
-  takeWriteTx,
-  prepareString
+  takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, setEditContext } from '../database/redis';
@@ -23,12 +24,12 @@ export const addSettings = async (user, settings) => {
   const wTx = await takeWriteTx();
   const settingsIterator = await wTx.query(`insert $settings isa Settings,
     has entity_type "settings",
-    has platform_title "${prepareString(settings.platform_title)}",
-    has platform_email "${prepareString(settings.platform_email)}",
-    has platform_url "${prepareString(settings.platform_url)}",
-    has platform_language "${prepareString(settings.platform_language)}",
-    has platform_external_auth ${settings.platform_external_auth},
-    has platform_registration ${settings.platform_registration},
+    has platform_title "${escapeString(settings.platform_title)}",
+    has platform_email "${escapeString(settings.platform_email)}",
+    has platform_url "${escapeString(settings.platform_url)}",
+    has platform_language "${escapeString(settings.platform_language)}",
+    has platform_external_auth ${escape(settings.platform_external_auth)},
+    has platform_registration ${escape(settings.platform_registration)},
     has created_at ${now()},
     has updated_at ${now()};
   `);

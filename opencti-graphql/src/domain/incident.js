@@ -1,6 +1,8 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  escape,
+  escapeString,
   getById,
   prepareDate,
   dayFormat,
@@ -10,7 +12,6 @@ import {
   now,
   paginate,
   takeWriteTx,
-  prepareString,
   timeSeries
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -27,7 +28,7 @@ export const findByEntity = args =>
   paginate(
     `match $x isa Incident;
     $rel($x, $to) isa stix_relation;
-    $to id ${args.objectId}`,
+    $to id ${escape(args.objectId)}`,
     args
   );
 
@@ -35,7 +36,7 @@ export const incidentsTimeSeriesByEntity = args =>
   timeSeries(
     `match $x isa Incident; 
     $rel($x, $to) isa stix_relation; 
-    $to id ${args.objectId}`,
+    $to id ${escape(args.objectId)}`,
     args
   );
 
@@ -46,12 +47,12 @@ export const addIncident = async (user, incident) => {
   const incidentIterator = await wTx.query(`insert $incident isa Incident,
     has entity_type "incident",
     has stix_id "${
-      incident.stix_id ? prepareString(incident.stix_id) : `incident--${uuid()}`
+      incident.stix_id ? escapeString(incident.stix_id) : `incident--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(incident.name)}",
-    has description "${prepareString(incident.description)}",
+    has name "${escapeString(incident.name)}",
+    has description "${escapeString(incident.description)}",
     has first_seen ${
       incident.first_seen ? prepareDate(incident.first_seen) : now()
     },
@@ -93,7 +94,7 @@ export const addIncident = async (user, incident) => {
   if (incident.createdByRef) {
     await wTx.query(
       `match $from id ${createdIncidentId};
-      $to id ${incident.createdByRef};
+      $to id ${escape(incident.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -103,7 +104,7 @@ export const addIncident = async (user, incident) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdIncidentId}; 
-        $to id ${markingDefinition}; 
+        $to id ${escape(markingDefinition)}; 
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(

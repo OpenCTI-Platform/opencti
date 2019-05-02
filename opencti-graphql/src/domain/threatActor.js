@@ -1,6 +1,8 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  escape,
+  escapeString,
   takeWriteTx,
   getById,
   notify,
@@ -8,8 +10,7 @@ import {
   prepareDate,
   dayFormat,
   monthFormat,
-  yearFormat,
-  prepareString
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -25,8 +26,8 @@ export const search = args =>
     `match $t isa Threat-Actor;
     $t has name $name;
     $t has alias $alias;
-    { $name contains "${prepareString(args.search)}"; } or
-    { $alias contains "${prepareString(args.search)}"; }`,
+    { $name contains "${escapeString(args.search)}"; } or
+    { $alias contains "${escapeString(args.search)}"; }`,
     args,
     false
   );
@@ -40,21 +41,21 @@ export const addThreatActor = async (user, threatActor) => {
     has entity_type "threat-actor",
     has stix_id "${
       threatActor.stix_id
-        ? prepareString(threatActor.stix_id)
+        ? escapeString(threatActor.stix_id)
         : `threat-actor--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(threatActor.name)}", 
-    has description "${prepareString(threatActor.description)}",
-    has goal "${prepareString(threatActor.goal)}",
-    has sophistication "${prepareString(threatActor.sophistication)}",
-    has resource_level "${prepareString(threatActor.resource_level)}",
-    has primary_motivation "${prepareString(threatActor.primary_motivation)}",
-    has secondary_motivation "${prepareString(
+    has name "${escapeString(threatActor.name)}", 
+    has description "${escapeString(threatActor.description)}",
+    has goal "${escapeString(threatActor.goal)}",
+    has sophistication "${escapeString(threatActor.sophistication)}",
+    has resource_level "${escapeString(threatActor.resource_level)}",
+    has primary_motivation "${escapeString(threatActor.primary_motivation)}",
+    has secondary_motivation "${escapeString(
       threatActor.secondary_motivation
     )}",
-    has personal_motivation "${prepareString(threatActor.personal_motivation)}",
+    has personal_motivation "${escapeString(threatActor.personal_motivation)}",
     has created ${
       threatActor.created ? prepareDate(threatActor.created) : now()
     },
@@ -75,7 +76,7 @@ export const addThreatActor = async (user, threatActor) => {
   if (threatActor.createdByRef) {
     await wTx.query(
       `match $from id ${createThreatActorId};
-      $to id ${threatActor.createdByRef};
+      $to id ${escape(threatActor.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -85,7 +86,7 @@ export const addThreatActor = async (user, threatActor) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createThreatActorId};
-        $to id ${markingDefinition};
+        $to id ${escape(markingDefinition)};
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(

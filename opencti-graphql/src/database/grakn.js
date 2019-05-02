@@ -43,7 +43,14 @@ export const prepareDate = date =>
 export const yearFormat = date => moment(date).format('YYYY');
 export const monthFormat = date => moment(date).format('YYYY-MM');
 export const dayFormat = date => moment(date).format('YYYY-MM-DD');
-export const prepareString = s =>
+export const escape = s =>
+  s && typeof s === 'string'
+    ? s
+        .replace(/\\/g, '\\\\')
+        .replace(/;/g, '\\;')
+        .replace(/,/g, '\\,')
+    : s;
+export const escapeString = s =>
   s ? s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') : '';
 
 // Attributes key that can contains multiple values.
@@ -194,7 +201,7 @@ export const getById = async (id, tx = null, graknAttributes = false) => {
     iTx = tx;
   }
   try {
-    const query = `match $x id ${id}; get $x;`;
+    const query = `match $x id ${escape(id)}; get $x;`;
     logger.debug(`[GRAKN - infer: false] ${query}`);
     const iterator = await iTx.query(query);
     const answer = await iterator.next();
@@ -282,7 +289,9 @@ export const queryMultiple = async (query, entities) => {
 export const getRelationById = async id => {
   const rTx = await takeReadTx();
   try {
-    const query = `match $x($from, $to) isa relation; $x id ${id}; get;`;
+    const query = `match $x($from, $to) isa relation; $x id ${escape(
+      id
+    )}; get;`;
     logger.debug(`[GRAKN - infer: false] ${query}`);
     const iterator = await rTx.query(query);
     const answer = await iterator.next();
@@ -346,6 +355,7 @@ export const getRelationInferredById = async id => {
   const rTx = await takeReadTx();
   try {
     const decodedQuery = Buffer.from(id, 'base64').toString('ascii');
+    // TODO : Secure this!
     const query = `match ${decodedQuery} get;`;
     const queryRegex = /\$([a-z_\d]+)\s?[([a-z_]+:\s\$(\w+),\s[a-z_]+:\s\$(\w+)\)\s[a-z_]+\s([\w-]+);/i.exec(
       query
@@ -964,14 +974,18 @@ export const createRelation = async (id, input) => {
   try {
     const query = `match $from id ${id};
       $to id ${input.toId}; 
-      insert $rel(${input.fromRole}: $from, ${input.toRole}: $to) isa ${
-      input.through
-    } ${input.stix_id ? `, has relationship_type "${input.through}"` : ''}
+      insert $rel(${escape(input.fromRole)}: $from, ${escape(
+      input.toRole
+    )}: $to) isa ${input.through} ${
+      input.stix_id
+        ? `, has relationship_type "${escapeString(input.through)}"`
+        : ''
+    }
         ${
           input.stix_id
             ? input.stix_id === 'create'
               ? `, has stix_id "relationship--${uuid()}"`
-              : `, has stix_id "${prepareString(input.stix_id)}"`
+              : `, has stix_id "${escapeString(input.stix_id)}"`
             : ''
         } ${
       input.first_seen
@@ -979,7 +993,7 @@ export const createRelation = async (id, input) => {
         : ''
     } ${
       input.last_seen ? `, has last_seen ${prepareDate(input.last_seen)}` : ''
-    } ${input.weight ? `, has weight ${input.weight}` : ''};`;
+    } ${input.weight ? `, has weight ${escape(input.weight)}` : ''};`;
     logger.debug(`[GRAKN - infer: false] ${query}`);
     const iterator = await wTx.query(query);
     const answer = await iterator.next();
@@ -1018,8 +1032,9 @@ export const updateAttribute = async (id, input, tx = null) => {
     wTx = tx;
   }
   try {
+    const escapedKey = escape(key);
     // 01. We need to fetch the type to quote the string if needed.
-    const labelTypeQuery = `match $x type ${key}; get;`;
+    const labelTypeQuery = `match $x type ${escapedKey}; get;`;
     const labelIterator = await wTx.query(labelTypeQuery);
     const labelAnswer = await labelIterator.next();
     // eslint-disable-next-line prettier/prettier
@@ -1028,7 +1043,9 @@ export const updateAttribute = async (id, input, tx = null) => {
       .get('x')
       .dataType();
     // 02. For each old values
-    const getOldValueQuery = `match $x id ${id}; $x has ${key} $old; get $old;`;
+    const getOldValueQuery = `match $x id ${escape(
+      id
+    )}; $x has ${escapedKey} $old; get $old;`;
     logger.debug(`[GRAKN - infer: false] ${getOldValueQuery}`);
     const oldValIterator = await wTx.query(getOldValueQuery);
     const oldValuesConcept = await oldValIterator.collectConcepts();
@@ -1036,14 +1053,14 @@ export const updateAttribute = async (id, input, tx = null) => {
       const oldValue = await oldValuesConcept[i].value();
       const typedOldValue =
         attrType === String
-          ? `"${prepareString(
+          ? `"${escapeString(
               oldValue.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
             )}"`
           : attrType === Date
           ? prepareDate(oldValue)
           : oldValue;
       // If the attribute is alone we can delete it, if not we need to remove the relation to it (via)
-      const countRemainQuery = `match $x isa ${key}; $x == ${typedOldValue}; $rel($x); get; count;`;
+      const countRemainQuery = `match $x isa ${escapedKey}; $x == ${typedOldValue}; $rel($x); get; count;`;
       logger.debug(`[GRAKN - infer: false] ${countRemainQuery}`);
       const countRemainIterator = await wTx.query(countRemainQuery);
       const countRemain = await countRemainIterator.next();
@@ -1052,10 +1069,12 @@ export const updateAttribute = async (id, input, tx = null) => {
       let deleteQuery = null;
       if (oldNumOfRef > 1) {
         // In this case we need to remove the reference to the value
-        deleteQuery = `match $x id ${id}; $x has ${key} $del via $d; $del == ${typedOldValue}; delete $d;`;
+        deleteQuery = `match $x id ${escape(
+          id
+        )}; $x has ${escapedKey} $del via $d; $del == ${typedOldValue}; delete $d;`;
       } else {
         // In this case the instance of the attribute can be removed
-        const attrGetQuery = `match $x isa ${key}; $x == ${typedOldValue}; $rel($x); get $x;`;
+        const attrGetQuery = `match $x isa ${escapedKey}; $x == ${typedOldValue}; $rel($x); get $x;`;
         const attrIterator = await wTx.query(attrGetQuery);
         const attrAnswer = await attrIterator.next();
         if (attrAnswer) {
@@ -1070,7 +1089,7 @@ export const updateAttribute = async (id, input, tx = null) => {
     }
     // Setup the new attribute
     let typedValues = map(
-      v => (attrType === String ? `"${prepareString(v)}"` : v),
+      v => (attrType === String ? `"${escapeString(v)}"` : escape(v)),
       value
     );
     if (typedValues.length === 0) {
@@ -1078,14 +1097,14 @@ export const updateAttribute = async (id, input, tx = null) => {
     }
     let graknValues;
     if (typedValues.length === 1) {
-      graknValues = `has ${key} ${head(typedValues)}`;
+      graknValues = `has ${escapedKey} ${head(typedValues)}`;
     } else {
       graknValues = `${join(
         ' ',
-        map(val => `has ${key} ${val},`, tail(typedValues))
-      )} has ${key} ${head(typedValues)}`;
+        map(val => `has ${escapedKey} ${val},`, tail(typedValues))
+      )} has ${escapedKey} ${head(typedValues)}`;
     }
-    const createQuery = `match $m id ${id}; insert $m ${graknValues};`;
+    const createQuery = `match $m id ${escape(id)}; insert $m ${graknValues};`;
     logger.debug(`[GRAKN - infer: false] ${createQuery}`);
     await wTx.query(createQuery);
 
@@ -1123,7 +1142,7 @@ export const updateAttribute = async (id, input, tx = null) => {
 export const deleteEntityById = async id => {
   const wTx = await takeWriteTx();
   try {
-    const query = `match $x id ${id}; $z($x, $y); delete $z, $x;`;
+    const query = `match $x id ${escape(id)}; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] ${query}`);
     await wTx.query(query, { infer: false });
     await wTx.commit();
@@ -1144,7 +1163,7 @@ export const deleteEntityById = async id => {
 export const deleteById = async id => {
   const wTx = await takeWriteTx();
   try {
-    const query = `match $x id ${id}; delete $x;`;
+    const query = `match $x id ${escape(id)}; delete $x;`;
     logger.debug(`[GRAKN - infer: false] ${query}`);
     await wTx.query(query, { infer: false });
     await wTx.commit();
@@ -1166,7 +1185,7 @@ export const deleteById = async id => {
 export const deleteRelationById = async (id, relationId) => {
   const wTx = await takeWriteTx();
   try {
-    const query = `match $x id ${relationId}; delete $x;`;
+    const query = `match $x id ${escape(relationId)}; delete $x;`;
     logger.debug(`[GRAKN - infer: false] ${query}`);
     await wTx.query(query, { infer: false });
     await wTx.commit();

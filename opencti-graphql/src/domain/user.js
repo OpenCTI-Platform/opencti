@@ -14,6 +14,8 @@ import conf, {
   OPENCTI_WEB_TOKEN
 } from '../config/conf';
 import {
+  escape,
+  escapeString,
   getObject,
   deleteEntityById,
   getById,
@@ -26,7 +28,6 @@ import {
   dayFormat,
   monthFormat,
   yearFormat,
-  prepareString,
   queryOne
 } from '../database/grakn';
 import { deleteEntity, index } from '../database/elasticSearch';
@@ -70,7 +71,7 @@ export const groups = (userId, args) =>
   paginate(
     `match $group isa Group; 
     $rel(grouping:$group, member:$user) isa membership; 
-    $user id ${userId}`,
+    $user id ${escape(userId)}`,
     args
   );
 
@@ -78,7 +79,7 @@ export const token = userId =>
   getObject(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
-    $client id ${userId}; get $x, $rel; offset 0; limit 1;`,
+    $client id ${escape(userId)}; get $x, $rel; offset 0; limit 1;`,
     'x',
     'rel'
   ).then(result => sign(result.node, conf.get('app:secret')));
@@ -88,12 +89,12 @@ export const addPerson = async (user, newUser) => {
   const query = `insert $user isa User,
     has entity_type "user",
     has stix_id "${
-      newUser.stix_id ? prepareString(newUser.stix_id) : `user--${uuid()}`
+      newUser.stix_id ? escapeString(newUser.stix_id) : `user--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(newUser.name)}",
-    has description "${prepareString(newUser.description)}",
+    has name "${escapeString(newUser.name)}",
+    has description "${escapeString(newUser.description)}",
     has created ${newUser.created ? prepareDate(newUser.created) : now()},
     has modified ${newUser.modified ? prepareDate(newUser.modified) : now()},
     has revoked false,
@@ -110,7 +111,7 @@ export const addPerson = async (user, newUser) => {
 
   if (user.createdByRef) {
     await wTx.query(`match $from id ${createdUserId};
-         $to id ${user.createdByRef};
+         $to id ${escape(user.createdByRef)};
          insert (so: $from, creator: $to)
          isa created_by_ref;`);
   }
@@ -129,30 +130,33 @@ export const addUser = async (user, newUser, displayToken = false) => {
   const query = `insert $user isa User,
     has entity_type "user",
     has stix_id "${
-      newUser.stix_id ? prepareString(newUser.stix_id) : `user--${uuid()}`
+      newUser.stix_id ? escapeString(newUser.stix_id) : `user--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(newUser.name)}",
-    has description "${prepareString(newUser.description)}",
-    has email "${newUser.email}",
+    has name "${escapeString(newUser.name)}",
+    has description "${escapeString(newUser.description)}",
+    has email "${escapeString(newUser.email)}",
     ${
       newUser.password
         ? `has password "${bcrypt.hashSync(newUser.password)}",`
         : ''
     }
-    has firstname "${prepareString(newUser.firstname)}",
-    has lastname "${prepareString(newUser.lastname)}",
+    has firstname "${escapeString(newUser.firstname)}",
+    has lastname "${escapeString(newUser.lastname)}",
     ${
       newUser.language
-        ? `has language "${prepareString(newUser.language)}",`
+        ? `has language "${escapeString(newUser.language)}",`
         : 'has language "auto",'
     }
     has created ${newUser.created ? prepareDate(newUser.created) : now()},
     has modified ${newUser.modified ? prepareDate(newUser.modified) : now()},
     ${
       newUser.grant
-        ? join(' ', map(role => `has grant "${role}",`, newUser.grant))
+        ? join(
+            ' ',
+            map(role => `has grant "${escapeString(role)}",`, newUser.grant)
+          )
         : ''
     }
     has revoked false,
@@ -170,7 +174,7 @@ export const addUser = async (user, newUser, displayToken = false) => {
 
   if (user.createdByRef) {
     await wTx.query(`match $from id ${createdUserId};
-         $to id ${user.createdByRef};
+         $to id ${escape(user.createdByRef)};
          insert (so: $from, creator: $to)
          isa created_by_ref;`);
   }
@@ -214,7 +218,7 @@ export const addUser = async (user, newUser, displayToken = false) => {
 // User related
 export const loginFromProvider = async (email, name) => {
   const result = await queryOne(
-    `match $client isa User, has email "${prepareString(
+    `match $client isa User, has email "${escapeString(
       email
     )}"; (authorization:$token, client:$client); get;`,
     ['client', 'token']
@@ -233,7 +237,7 @@ export const loginFromProvider = async (email, name) => {
 
 export const login = async (email, password) => {
   const result = await queryOne(
-    `match $client isa User, has email "${prepareString(
+    `match $client isa User, has email "${escapeString(
       email
     )}"; (authorization:$token, client:$client); get;`,
     ['client', 'token']
@@ -258,7 +262,7 @@ export const logout = async (user, res) => {
 export const userRenewToken = async (user, userId) => {
   const wTx = await takeWriteTx();
   await wTx.query(
-    `match $user id ${userId};
+    `match $user id ${escape(userId)};
     $rel(authorization:$token, client:$user);
     delete $rel, $token;`
   );
@@ -277,7 +281,7 @@ export const userRenewToken = async (user, userId) => {
   const createdToken = await tokenIterator.next();
   await createdToken.map().get('token').id;
   await wTx.query(
-    `match $user id ${userId}";
+    `match $user id ${escape(userId)}";
     $token isa Token,
     has uuid "${newToken.uuid}";
     insert (client: $user, authorization: $token) isa authorize;`
@@ -306,7 +310,7 @@ export const userEditField = (user, userId, input) => {
 export const findByTokenId = async tokenId => {
   const result = await queryOne(
     `match $token isa Token,
-    has uuid "${tokenId}",
+    has uuid "${escapeString(tokenId)}",
     has revoked false;
     (authorization:$token, client:$client); get;`,
     ['client', 'token']

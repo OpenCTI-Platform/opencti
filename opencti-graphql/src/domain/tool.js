@@ -1,6 +1,8 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  escape,
+  escapeString,
   getById,
   prepareDate,
   dayFormat,
@@ -8,8 +10,7 @@ import {
   yearFormat,
   notify,
   now,
-  takeWriteTx,
-  prepareString
+  takeWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -25,12 +26,12 @@ export const addTool = async (user, tool) => {
   const toolIterator = await wTx.query(`insert $tool isa Tool,
     has entity_type "tool",
     has stix_id "${
-      tool.stix_id ? prepareString(tool.stix_id) : `tool--${uuid()}`
+      tool.stix_id ? escapeString(tool.stix_id) : `tool--${uuid()}`
     }",
     has stix_label "",
     has alias "",
-    has name "${prepareString(tool.name)}",
-    has description "${prepareString(tool.description)}",
+    has name "${escapeString(tool.name)}",
+    has description "${escapeString(tool.description)}",
     has created ${tool.created ? prepareDate(tool.created) : now()},
     has modified ${tool.modified ? prepareDate(tool.modified) : now()},
     has revoked false,
@@ -46,7 +47,7 @@ export const addTool = async (user, tool) => {
   if (tool.createdByRef) {
     await wTx.query(
       `match $from id ${createdToolId};
-      $to id ${tool.createdByRef};
+      $to id ${escape(tool.createdByRef)};
       insert (so: $from, creator: $to)
       isa created_by_ref;`
     );
@@ -56,7 +57,7 @@ export const addTool = async (user, tool) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdToolId}; 
-        $to id ${markingDefinition}; 
+        $to id ${escape(markingDefinition)}; 
         insert (so: $from, marking: $to) isa object_marking_refs;`
       );
     const markingDefinitionsPromises = map(
@@ -69,7 +70,9 @@ export const addTool = async (user, tool) => {
   if (tool.killChainPhases) {
     const createKillChainPhase = killChainPhase =>
       wTx.query(
-        `match $from id ${createdToolId}; $to id ${killChainPhase}; insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases;`
+        `match $from id ${createdToolId}; 
+        $to id ${escape(killChainPhase)}; 
+        insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases;`
       );
     const killChainPhasesPromises = map(
       createKillChainPhase,

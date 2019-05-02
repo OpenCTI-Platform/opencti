@@ -55,8 +55,8 @@ export const index = (indexName, documentType, documentBody) => {
   });
 };
 
-export const deleteEntity = (indexName, documentType, documentId) => {
-  return el
+export const deleteEntity = async (indexName, documentType, documentId) => {
+  await el
     .delete({
       index: indexName,
       id: documentId,
@@ -65,6 +65,7 @@ export const deleteEntity = (indexName, documentType, documentId) => {
     .catch(() => {
       return false;
     });
+  return true;
 };
 
 export const paginate = (indexName, options) => {
