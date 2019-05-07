@@ -69,7 +69,7 @@ export const findByEntity = args => {
           : ''
       } 
       $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
-      $so id ${escape(args.objectId)};
+      $so has internal_id "${escapeString(args.objectId)}";
       $relCreatedByRef(creator:$x, so:$r) isa created_by_ref`,
       finalArgs,
       true,
@@ -80,7 +80,7 @@ export const findByEntity = args => {
   return paginate(
     `match $r isa Report; 
     $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
-    $so id ${escape(args.objectId)} ${
+    $so has internal_id "${escapeString(args.objectId)}" ${
       args.reportClass
         ? `; 
     $r has report_class "${escapeString(args.reportClass)}"`
@@ -97,7 +97,7 @@ export const reportsTimeSeriesByEntity = args =>
   timeSeries(
     `match $x isa Report;
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
-    $so id ${args.objectId} ${
+    $so has internal_id "${escapeString(args.objectId)}" ${
       args.reportClass
         ? `; 
     $x has report_class "${escapeString(args.reportClass)}"`
@@ -112,7 +112,7 @@ export const objectRefs = (reportId, args) =>
   paginate(
     `match $so isa Stix-Domain-Entity;
     $rel(so:$so, knowledge_aggregation:$r) isa object_refs;
-    $r id ${escape(reportId)}`,
+    $r has internal_id "${escapeString(reportId)}"`,
     args
   );
 
@@ -120,7 +120,7 @@ export const observableRefs = (reportId, args) =>
   paginate(
     `match $so isa Stix-Observable; 
     $rel(so:$so, knowledge_aggregation:$r) isa object_refs; 
-    $r id ${escape(reportId)}`,
+    $r has internal_id "${escapeString(reportId)}"`,
     args
   );
 
@@ -130,7 +130,7 @@ export const relationRefs = (reportId, args) =>
       args.relationType ? args.relationType : 'stix_relation'
     }; 
     $extraRel(so:$rel, knowledge_aggregation:$r) isa object_refs; 
-    $r id ${escape(reportId)}`,
+    $r has internal_id "${escapeString(reportId)}"`,
     args,
     'extraRel'
   );
@@ -138,6 +138,9 @@ export const relationRefs = (reportId, args) =>
 export const addReport = async (user, report) => {
   const wTx = await takeWriteTx();
   const reportIterator = await wTx.query(`insert $report isa Report,
+    has internal_id "${
+      report.internal_id ? escapeString(report.internal_id) : uuid()
+    }",
     has entity_type "report",
     has stix_id "${
       report.stix_id ? escapeString(report.stix_id) : `report--${uuid()}`
@@ -173,9 +176,9 @@ export const addReport = async (user, report) => {
   if (report.createdByRef) {
     await wTx.query(
       `match $from id ${createdReportId};
-      $to id ${escape(report.createdByRef)};
+      $to has internal_id "${escapeString(report.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref;`
+      isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
 
@@ -183,8 +186,8 @@ export const addReport = async (user, report) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdReportId}; 
-        $to id ${escape(markingDefinition)}; 
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

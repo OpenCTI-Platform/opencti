@@ -52,6 +52,7 @@ class Stix2:
                 'identity_class': identity_class,
                 'created': entity_created_by_ref['created'],
                 'modified': entity_created_by_ref['modified'],
+                'x_opencti_id': entity_created_by_ref['id'],
                 'x_opencti_aliases': entity_created_by_ref['alias']
             }
             stix_object['created_by_ref'] = created_by_ref['id']
@@ -68,6 +69,7 @@ class Stix2:
                     },
                     'created': entity_marking_definition['created'],
                     'modified': entity_marking_definition['modified'],
+                    'x_opencti_id': entity_marking_definition['id']
                 }
                 marking_definitions.append(marking_definition['id'])
                 result.append(marking_definition)
@@ -79,6 +81,7 @@ class Stix2:
                     'id': entity_kill_chain_phase['stix_id'],
                     'kill_chain_name': entity_kill_chain_phase['kill_chain_name'],
                     'phase_name': entity_kill_chain_phase['phase_name'],
+                    'x_opencti_id':  entity_kill_chain_phase['id'],
                     'x_opencti_phase_order': entity_kill_chain_phase['phase_order'],
                     'x_opencti_created': entity_kill_chain_phase['created'],
                     'x_opencti_modified': entity_kill_chain_phase['modified'],
@@ -95,6 +98,7 @@ class Stix2:
                     'url': entity_external_reference['url'],
                     'hash': entity_external_reference['hash'],
                     'external_id': entity_external_reference['external_id'],
+                    'x_opencti_id': entity_external_reference['id'],
                     'x_opencti_created': entity_external_reference['created'],
                     'x_opencti_modified': entity_external_reference['modified'],
                 }
@@ -282,6 +286,7 @@ class Stix2:
                         external_reference['external_id'] if 'external_id' in external_reference else None,
                         external_reference['description'] if 'description' in external_reference else None,
                         external_reference['id'] if 'id' in external_reference else None,
+                        external_reference['x_opencti_id'] if 'x_opencti_id' in external_reference else None,
                         external_reference['x_opencti_created'] if 'x_opencti_created' in external_reference else None,
                         external_reference[
                             'x_opencti_modified'] if 'x_opencti_modified' in external_reference else None,
@@ -298,6 +303,7 @@ class Stix2:
                     kill_chain_phase_id = self.opencti.create_kill_chain_phase_if_not_exists(
                         kill_chain_phase['kill_chain_name'],
                         kill_chain_phase['phase_name'],
+                        kill_chain_phase['x_opencti_id'] if 'x_opencti_id' in kill_chain_phase else None,
                         kill_chain_phase[
                             'x_opencti_phase_order'] if 'x_opencti_phase_order' in kill_chain_phase else 0,
                         kill_chain_phase['id'] if 'id' in kill_chain_phase else None,
@@ -377,6 +383,7 @@ class Stix2:
         return self.opencti.create_marking_definition_if_not_exists(
             stix_object['definition_type'],
             stix_object['definition'][stix_object['definition_type']],
+            stix_object['x_opencti_id'] if 'x_opencti_id' in stix_object else None,
             stix_object['x_opencti_level'] if 'x_opencti_level' in stix_object else 0,
             stix_object['x_opencti_color'] if 'x_opencti_color' in stix_object else None,
             stix_object['id'],
@@ -397,11 +404,12 @@ class Stix2:
             'type': 'identity',
             'labels': entity['stix_label'],
             'name': entity['name'],
-            'x_opencti_aliases': entity['alias'],
             'description': entity['description'],
             'identity_class': identity_class,
             'created': entity['created'],
-            'modified': entity['modified']
+            'modified': entity['modified'],
+            'x_opencti_id': entity['id'],
+            'x_opencti_aliases': entity['alias'],
         }
         return self.prepare_export(entity, identity)
 
@@ -426,9 +434,10 @@ class Stix2:
             type,
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            stix_object['x_opencti_id'] if 'x_opencti_id' in stix_object else None,
             stix_object['id'].replace('identity', type.lower()) if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
-            stix_object['modified'] if 'modified' in stix_object else None,
+            stix_object['modified'] if 'modified' in stix_object else None
         )
 
     def export_threat_actor(self, entity):
@@ -446,7 +455,8 @@ class Stix2:
             'secondary_motivations': entity['secondary_motivation'],
             'personal_motivations': entity['personal_motivation'],
             'created': entity['created'],
-            'modified': entity['modified']
+            'modified': entity['modified'],
+            'x_opencti_id': entity['id']
         }
         return self.prepare_export(entity, threat_actor)
 
@@ -481,7 +491,8 @@ class Stix2:
             'first_seen': entity['first_seen'],
             'last_seen': entity['last_seen'],
             'created': entity['created'],
-            'modified': entity['modified']
+            'modified': entity['modified'],
+            'x_opencti_id': entity['id']
         }
         return self.prepare_export(entity, intrusion_set)
 
@@ -513,7 +524,8 @@ class Stix2:
             'first_seen': entity['first_seen'],
             'last_seen': entity['last_seen'],
             'created': entity['created'],
-            'modified': entity['modified']
+            'modified': entity['modified'],
+            'x_opencti_id': entity['id']
         }
         return self.prepare_export(entity, campaign)
 
@@ -541,7 +553,8 @@ class Stix2:
             'first_seen': entity['first_seen'],
             'last_seen': entity['last_seen'],
             'created': entity['created'],
-            'modified': entity['modified']
+            'modified': entity['modified'],
+            'x_opencti_id': entity['id']
         }
         return self.prepare_export(entity, incident)
 
@@ -563,10 +576,11 @@ class Stix2:
             'type': 'malware',
             'labels': entity['stix_label'],
             'name': entity['name'],
-            'x_opencti_aliases': entity['alias'],
             'description': entity['description'],
             'created': entity['created'],
-            'modified': entity['modified']
+            'modified': entity['modified'],
+            'x_opencti_id': entity['id'],
+            'x_opencti_aliases': entity['alias']
         }
         return self.prepare_export(entity, malware)
 
@@ -585,11 +599,12 @@ class Stix2:
             'type': 'tool',
             'labels': entity['stix_label'],
             'name': entity['name'],
-            'x_opencti_aliases': entity['alias'],
             'description': entity['description'],
             'tool_version': entity['tool_version'],
             'created': entity['created'],
-            'modified': entity['modified']
+            'modified': entity['modified'],
+            'x_opencti_id': entity['id'],
+            'x_opencti_aliases': entity['alias']
         }
         return self.prepare_export(entity, tool)
 
@@ -608,10 +623,11 @@ class Stix2:
             'type': 'vulnerability',
             'labels': entity['stix_label'],
             'name': entity['name'],
-            'x_opencti_aliases': entity['alias'],
             'description': entity['description'],
             'created': entity['created'],
-            'modified': entity['modified']
+            'modified': entity['modified'],
+            'x_opencti_id': entity['id'],
+            'x_opencti_aliases': entity['alias'],
         }
         return self.prepare_export(entity, vulnerability)
 
@@ -630,12 +646,13 @@ class Stix2:
             'type': 'attack-pattern',
             'labels': entity['stix_label'],
             'name': entity['name'],
-            'x_mitre_platforms': entity['platform'],
-            'x_mitre_permissions_required': entity['required_permission'],
-            'x_opencti_aliases': entity['alias'],
             'description': entity['description'],
             'created': entity['created'],
-            'modified': entity['modified']
+            'modified': entity['modified'],
+            'x_mitre_platforms': entity['platform'],
+            'x_mitre_permissions_required': entity['required_permission'],
+            'x_opencti_id': entity['id'],
+            'x_opencti_aliases': entity['alias'],
         }
         return self.prepare_export(entity, attack_pattern)
 
@@ -656,10 +673,11 @@ class Stix2:
             'type': 'course-of-action',
             'labels': entity['stix_label'],
             'name': entity['name'],
-            'x_opencti_aliases': entity['alias'],
             'description': entity['description'],
             'created': entity['created'],
-            'modified': entity['modified']
+            'modified': entity['modified'],
+            'x_opencti_id': entity['id'],
+            'x_opencti_aliases': entity['alias']
         }
         return self.prepare_export(entity, course_of_action)
 
@@ -678,15 +696,16 @@ class Stix2:
             'type': 'report',
             'labels': entity['stix_label'],
             'name': entity['name'],
-            'x_opencti_aliases': entity['alias'],
             'description': entity['description'],
             'published': entity['published'],
+            'created': entity['created'],
+            'modified': entity['modified'],
+            'x_opencti_id': entity['id'],
+            'x_opencti_aliases': entity['alias'],
             'x_opencti_report_class': entity['report_class'],
             'x_opencti_object_status': entity['object_status'],
             'x_opencti_source_confidence_level': entity['source_confidence_level'],
-            'x_opencti_graph_data': entity['graph_data'],
-            'created': entity['created'],
-            'modified': entity['modified']
+            'x_opencti_graph_data': entity['graph_data']
         }
         return self.prepare_export(entity, report, mode)
 
@@ -719,14 +738,15 @@ class Stix2:
             'type': 'relationship',
             'relationship_type': entity['relationship_type'],
             'description': entity['description'],
+            'source_ref': entity['from']['stix_id'],
+            'target_ref': entity['to']['stix_id'],
+            'created': entity['created'],
+            'modified': entity['modified'],
+            'x_opencti_id': entity['id'],
             'x_opencti_first_seen': entity['first_seen'],
             'x_opencti_last_seen': entity['last_seen'],
             'x_opencti_weight': entity['weight'],
             'x_opencti_role_played': entity['role_played'],
-            'source_ref': entity['from']['stix_id'],
-            'target_ref': entity['to']['stix_id'],
-            'created': entity['created'],
-            'modified': entity['modified']
         }
         return self.prepare_export(entity, stix_relation)
 

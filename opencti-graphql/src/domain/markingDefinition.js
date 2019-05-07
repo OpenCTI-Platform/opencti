@@ -26,7 +26,7 @@ export const findByEntity = args =>
   paginate(
     `match $m isa Marking-Definition; 
     $rel(marking:$m, so:$so) isa object_marking_refs; 
-    $so id ${escape(args.objectId)}`,
+    $so has internal_id "${escapeString(args.objectId)}"`,
     args
   );
 
@@ -52,6 +52,11 @@ export const findById = markingDefinitionId => getById(markingDefinitionId);
 export const addMarkingDefinition = async (user, markingDefinition) => {
   const wTx = await takeWriteTx();
   const markingDefinitionIterator = await wTx.query(`insert $markingDefinition isa Marking-Definition,
+    has internal_id "${
+      markingDefinition.internal_id
+        ? escapeString(markingDefinition.internal_id)
+        : uuid()
+    }",
     has entity_type "marking-definition",
     has stix_id "${
       markingDefinition.stix_id
@@ -85,9 +90,9 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   if (markingDefinition.createdByRef) {
     await wTx.query(
       `match $from id ${createdMarkingDefinitionId};
-      $to id ${escape(markingDefinition.createdByRef)};
+      $to has internal_id "${escapeString(markingDefinition.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref;`
+      isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
 

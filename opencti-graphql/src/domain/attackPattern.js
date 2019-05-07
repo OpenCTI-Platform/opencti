@@ -39,6 +39,11 @@ export const findById = attackPatternId => getById(attackPatternId);
 export const addAttackPattern = async (user, attackPattern) => {
   const wTx = await takeWriteTx();
   const query = `insert $attackPattern isa Attack-Pattern,
+    has internal_id "${
+      attackPattern.internal_id
+        ? escapeString(attackPattern.internal_id)
+        : uuid()
+    }",
     has entity_type "attack-pattern",
     has stix_id "${
       attackPattern.stix_id
@@ -97,9 +102,9 @@ export const addAttackPattern = async (user, attackPattern) => {
   if (attackPattern.createdByRef) {
     await wTx.query(
       `match $from id ${createdAttackPatternId};
-      $to id ${escape(attackPattern.createdByRef)};
+      $to has internal_id "${escapeString(attackPattern.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref;`
+      isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
 
@@ -107,8 +112,8 @@ export const addAttackPattern = async (user, attackPattern) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdAttackPatternId}; 
-        $to id ${escape(markingDefinition)}; 
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,
@@ -121,8 +126,8 @@ export const addAttackPattern = async (user, attackPattern) => {
     const createKillChainPhase = killChainPhase =>
       wTx.query(
         `match $from id ${createdAttackPatternId}; 
-        $to id ${escape(killChainPhase)};
-        insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases;`
+        $to has internal_id "${escapeString(killChainPhase)}";
+        insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id "${uuid()}";`
       );
     const killChainPhasesPromises = map(
       createKillChainPhase,

@@ -46,10 +46,11 @@ import {
   timeSeries,
   distribution,
   takeWriteTx,
-  getObjectsWithoutAttributes
+  getObjects
 } from '../database/grakn';
 import { buildPagination } from '../database/utils';
 import { BUS_TOPICS, logger } from '../config/conf';
+import { index } from '../database/elasticSearch';
 
 const sumBy = attribute => vals =>
   reduce(
@@ -88,7 +89,7 @@ export const search = args =>
   );
 
 export const findAllWithInferences = async args => {
-  const entities = await getObjectsWithoutAttributes(
+  const entities = await getObjects(
     `match $x isa entity; (${args.resolveRelationRole}: $from, $x) isa ${escape(
       args.resolveRelationType
     )};
@@ -103,7 +104,7 @@ export const findAllWithInferences = async args => {
             )
           )} { $x isa ${escape(head(args.resolveRelationToTypes))}; };`
         : ''
-    } $from id ${escape(args.fromId)};
+    } $from has internal_id "${escapeString(args.fromId)}";
     get $x;`,
     'x',
     null,
@@ -114,8 +115,11 @@ export const findAllWithInferences = async args => {
     args.relationType ? escape(args.relationType) : 'stix_relation'
   }; ${join(
     ' ',
-    map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
-  )} { $from id ${escape(head(fromIds))}; }`;
+    map(
+      fromId => `{ $from has internal_id "${escapeString(fromId)}"; } or`,
+      fromIds
+    )
+  )} { $from has internal_id "${escapeString(head(fromIds))}"; }`;
   const resultPromise = await paginateRelationships(
     query,
     assoc('inferred', false, omit(['fromId'], args)),
@@ -129,8 +133,13 @@ export const findAllWithInferences = async args => {
           args.relationType ? escape(args.relationType) : 'stix_relation'
         }; ${join(
           ' ',
-          map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
-        )} { $from id ${escape(head(fromIds))}; }; $entity isa ${escape(
+          map(
+            fromId => `{ $from has internal_id "${escapeString(fromId)}"; } or`,
+            fromIds
+          )
+        )} { $from has internal_id "${escapeString(
+          head(fromIds)
+        )}"; }; $entity isa ${escape(
           resolveViaType.entityType
         )}; $link(${escape(
           resolveViaType.relationRole
@@ -149,8 +158,13 @@ export const findAllWithInferences = async args => {
           args.relationType ? escape(args.relationType) : 'stix_relation'
         }; ${join(
           ' ',
-          map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
-        )} { $from id ${escape(head(fromIds))}; }; $link(${escape(
+          map(
+            fromId => `{ $from has internal_id "${escapeString(fromId)}"; } or`,
+            fromIds
+          )
+        )} { $from has internal_id "${escapeString(
+          head(fromIds)
+        )}"; }; $link(${escape(
           resolveViaType.relationRole
         )}: $rel, $to) isa ${escape(resolveViaType.relationType)}`
     )(args.resolveViaTypes);
@@ -202,14 +216,14 @@ export const stixRelationsTimeSeries = args =>
         : ''
     } ${
       args.fromId
-        ? `$from id ${escape(args.fromId)}`
+        ? `$from has internal_id "${escapeString(args.fromId)}"`
         : '$from isa Stix-Domain-Entity'
     }`,
     args
   );
 
 export const stixRelationsTimeSeriesWithInferences = async args => {
-  const entities = await getObjectsWithoutAttributes(
+  const entities = await getObjects(
     `match $x isa entity; (${escape(
       args.resolveRelationRole
     )}: $from, $x) isa ${escape(args.resolveRelationType)}; ${
@@ -223,7 +237,7 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
             )
           )} { $x isa ${escape(head(args.resolveRelationToTypes))}; };`
         : ''
-    } $from id ${escape(args.fromId)}; get $x;`,
+    } $from has internal_id "${escapeString(args.fromId)}"; get $x;`,
     'x',
     null,
     true
@@ -233,8 +247,11 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
     args.relationType ? escape(args.relationType) : 'stix_relation'
   }; ${join(
     ' ',
-    map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
-  )} { $from id ${escape(head(fromIds))}; }${
+    map(
+      fromId => `{ $from has internal_id "${escapeString(fromId)}"; } or`,
+      fromIds
+    )
+  )} { $from has internal_id "${escapeString(head(fromIds))}"; }${
     args.toTypes && args.toTypes.length > 0
       ? `; ${join(
           ' ',
@@ -250,8 +267,13 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
           args.relationType ? escape(args.relationType) : 'stix_relation'
         }; ${join(
           ' ',
-          map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
-        )} { $from id ${escape(head(fromIds))}; }; $entity isa ${escape(
+          map(
+            fromId => `{ $from has internal_id "${escapeString(fromId)}"; } or`,
+            fromIds
+          )
+        )} { $from has internal_id "${escapeString(
+          head(fromIds)
+        )}"; }; $entity isa ${escape(
           resolveViaType.entityType
         )}; $link(${escape(
           resolveViaType.relationRole
@@ -272,8 +294,11 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
           args.relationType ? escape(args.relationType) : 'stix_relation'
         }; ${join(
           ' ',
-          map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
-        )} { $from id ${escape(head(fromIds))}; }; $link(${
+          map(
+            fromId => `{ $from has internal_id "${escapeString(fromId)}"; } or`,
+            fromIds
+          )
+        )} { $from has internal_id "${escapeString(head(fromIds))}"; }; $link(${
           resolveViaType.relationRole
         }: $x, $to) isa ${escape(resolveViaType.relationType)} ${
           args.toTypes && args.toTypes.length > 0
@@ -322,7 +347,7 @@ export const stixRelationsDistribution = args => {
         : ''
     } ${
       args.fromId
-        ? `$from id ${escape(args.fromId)}`
+        ? `$from has internal_id "${escapeString(args.fromId)}`
         : '$from isa Stix-Domain-Entity'
     }`,
     args
@@ -335,7 +360,7 @@ export const stixRelationsDistribution = args => {
 };
 export const stixRelationsDistributionWithInferences = async args => {
   const { limit = 10 } = args;
-  const entities = await getObjectsWithoutAttributes(
+  const entities = await getObjects(
     `match $x isa entity; (${escape(
       args.resolveRelationRole
     )}: $from, $x) isa ${escape(args.resolveRelationType)}; ${
@@ -349,7 +374,7 @@ export const stixRelationsDistributionWithInferences = async args => {
             )
           )} { $x isa ${escape(head(args.resolveRelationToTypes))}; };`
         : ''
-    } $from id ${escape(args.fromId)}; get $x;`,
+    } $from has internal_id "${escapeString(args.fromId)}"; get $x;`,
     'x',
     null,
     true
@@ -359,8 +384,11 @@ export const stixRelationsDistributionWithInferences = async args => {
     args.relationType ? escape(args.relationType) : 'stix_relation'
   }; ${join(
     ' ',
-    map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
-  )} { $from id ${escape(head(fromIds))}; }${
+    map(
+      fromId => `{ $from has internal_id "${escapeString(fromId)}"; } or`,
+      fromIds
+    )
+  )} { $from has internal_id "${escapeString(head(fromIds))}"; }${
     args.toTypes && args.toTypes.length > 0
       ? `; ${join(
           ' ',
@@ -376,10 +404,13 @@ export const stixRelationsDistributionWithInferences = async args => {
           args.relationType ? escape(args.relationType) : 'stix_relation'
         }; ${join(
           ' ',
-          map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
-        )} { $from id ${escape(head(fromIds))}; }; $entity isa ${
-          resolveViaType.entityType
-        }; $link(${escape(
+          map(
+            fromId => `{ $from has internal_id "${escapeString(fromId)}"; } or`,
+            fromIds
+          )
+        )} { $from has internal_id "${escapeString(
+          head(fromIds)
+        )}"; }; $entity isa ${resolveViaType.entityType}; $link(${escape(
           resolveViaType.relationRole
         )}: $entity, $x) isa ${escape(resolveViaType.relationType)}; ${
           args.toTypes && args.toTypes.length > 0
@@ -398,8 +429,13 @@ export const stixRelationsDistributionWithInferences = async args => {
           args.relationType ? escape(args.relationType) : 'stix_relation'
         }; ${join(
           ' ',
-          map(fromId => `{ $from id ${escape(fromId)}; } or`, fromIds)
-        )} { $from id ${escape(head(fromIds))}; }; $link(${escape(
+          map(
+            fromId => `{ $from has internal_id "${escapeString(fromId)}"; } or`,
+            fromIds
+          )
+        )} { $from has internal_id "${escapeString(
+          head(fromIds)
+        )}"; }; $link(${escape(
           resolveViaType.relationRole
         )}: $rel, $x) isa ${escape(resolveViaType.relationType)}; ${
           args.toTypes && args.toTypes.length > 0
@@ -462,7 +498,7 @@ export const markingDefinitions = (stixRelationId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
     $rel(marking:$marking, so:$stixRelation) isa object_marking_refs; 
-    $stixRelation id ${escape(stixRelationId)}`,
+    $stixRelation has internal_id "${escapeString(stixRelationId)}"`,
     args
   );
 
@@ -470,7 +506,7 @@ export const reports = (stixRelationId, args) =>
   paginate(
     `match $report isa Report; 
     $rel(knowledge_aggregation:$report, so:$stixRelation) isa object_refs; 
-    $stixRelation id ${escape(stixRelationId)}`,
+    $stixRelation has internal_id "${escapeString(stixRelationId)}"`,
     args
   );
 
@@ -478,19 +514,24 @@ export const locations = (stixRelationId, args) =>
   paginate(
     `match $location isa Country; 
     $rel(location:$location, localized:$stixRelation) isa localization; 
-    $stixRelation id ${escape(stixRelationId)}`,
+    $stixRelation has internal_id "${escapeString(stixRelationId)}"`,
     args,
     false
   );
 
 export const addStixRelation = async (user, stixRelation) => {
   const wTx = await takeWriteTx();
-  const query = `match $from id ${escape(stixRelation.fromId)}; 
-    $to id ${escape(stixRelation.toId)}; 
+  const query = `match $from has internal_id "${escapeString(
+    stixRelation.fromId
+  )}"; 
+    $to has internal_id "${escapeString(stixRelation.toId)}"; 
     insert $stixRelation(${escape(stixRelation.fromRole)}: $from, ${escape(
     stixRelation.toRole
   )}: $to) 
     isa ${escape(stixRelation.relationship_type)},
+    has internal_id "${
+      stixRelation.internal_id ? escapeString(stixRelation.internal_id) : uuid()
+    }",
     has relationship_type "${escapeString(
       stixRelation.relationship_type.toLowerCase()
     )}",
@@ -536,8 +577,8 @@ export const addStixRelation = async (user, stixRelation) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdStixRelationId}; $x
-        $to id ${escape(markingDefinition)};
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}";
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,
@@ -550,8 +591,8 @@ export const addStixRelation = async (user, stixRelation) => {
     const createLocation = location =>
       wTx.query(
         `match $from id ${createdStixRelationId};
-        $to id ${escape(location)};
-        insert $rel(localized: $from, location: $to) isa localization, has stix_id "relationship--${uuid()}", has relationship_type 'localization', has first_seen ${now()}, has last_seen ${now()}, has weight 3;`
+        $to has internal_id "${escapeString(location)}";
+        insert $rel(localized: $from, location: $to) isa localization, has internal_id "${uuid()}", has stix_id "relationship--${uuid()}", has relationship_type 'localization', has first_seen ${now()}, has last_seen ${now()}, has weight 3;`
       );
     const locationsPromises = map(createLocation, stixRelation.locations);
     await Promise.all(locationsPromises);
@@ -559,9 +600,10 @@ export const addStixRelation = async (user, stixRelation) => {
 
   await wTx.commit();
 
-  return getById(createdStixRelationId).then(created =>
-    notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user)
-  );
+  return getById(createdStixRelationId).then(created => {
+    index('stix-relations', 'stix_relation', created);
+    return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
+  });
 };
 
 export const stixRelationDelete = stixRelationId => deleteById(stixRelationId);
@@ -581,9 +623,10 @@ export const stixRelationEditContext = (user, stixRelationId, input) => {
 };
 
 export const stixRelationEditField = (user, stixRelationId, input) =>
-  updateAttribute(stixRelationId, input).then(stixRelation =>
-    notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user)
-  );
+  updateAttribute(stixRelationId, input).then(stixRelation => {
+    index('stix-relations', 'stix_relation', stixRelation);
+    return notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user);
+  });
 
 export const stixRelationAddRelation = (user, stixRelationId, input) => {
   const finalInput = pipe(

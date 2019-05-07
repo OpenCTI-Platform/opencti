@@ -32,7 +32,7 @@ export const findByEntity = args =>
   paginate(
     `match $e isa External-Reference; 
     $rel(external_reference:$e, so:$so) isa external_references;
-    $so id ${escape(args.objectId)}`,
+    $so has internal_id "${escapeString(args.objectId)}"`,
     args
   );
 
@@ -55,6 +55,11 @@ export const search = args => elPaginate('external-references', args);
 export const addExternalReference = async (user, externalReference) => {
   const wTx = await takeWriteTx();
   const externalReferenceIterator = await wTx.query(`insert $externalReference isa External-Reference,
+    has internal_id "${
+      externalReference.internal_id
+        ? escapeString(externalReference.internal_id)
+        : uuid()
+    }",
     has entity_type "external-reference",
     has stix_id "${
       externalReference.stix_id
@@ -91,9 +96,9 @@ export const addExternalReference = async (user, externalReference) => {
   if (externalReference.createdByRef) {
     await wTx.query(
       `match $from id ${createdExternalReferenceId};
-      $to id ${escape(externalReference.createdByRef)};
+      $to has internal_id "${escapeString(externalReference.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref;`
+      isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
 
@@ -101,8 +106,8 @@ export const addExternalReference = async (user, externalReference) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdExternalReferenceId}; 
-        $to id ${escape(markingDefinition)}; 
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

@@ -71,7 +71,10 @@ export const findAll = args => {
 */
 
 export const stixObservablesTimeSeries = args =>
-  timeSeries(`match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'}`, args);
+  timeSeries(
+    `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'}`,
+    args
+  );
 
 export const findById = stixObservableId => getById(stixObservableId);
 
@@ -100,7 +103,7 @@ export const createdByRef = stixObservableId =>
   getObject(
     `match $i isa Identity;
     $rel(creator:$i, so:$x) isa created_by_ref; 
-    $x id ${escape(stixObservableId)}; 
+    $x has internal_id "${escapeString(stixObservableId)}"; 
     get $i, $rel; 
     offset 0; 
     limit 1;`,
@@ -112,7 +115,7 @@ export const markingDefinitions = (stixObservableId, args) =>
   paginate(
     `match $m isa Marking-Definition;
     $rel(marking:$m, so:$x) isa object_marking_refs; 
-    $x id ${escape(stixObservableId)}`,
+    $x has internal_id "${escapeString(stixObservableId)}"`,
     args,
     false
   );
@@ -121,7 +124,7 @@ export const reports = (stixObservableId, args) =>
   paginate(
     `match $r isa Report; 
     $rel(knowledge_aggregation:$r, so:$x) isa object_refs; 
-    $x id ${escape(stixObservableId)}`,
+    $x has internal_id "${escapeString(stixObservableId)}"`,
     args
   );
 
@@ -129,7 +132,7 @@ export const reportsTimeSeries = (stixObservableId, args) =>
   timeSeries(
     `match $x isa Report; 
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs;
-    $so id ${escape(stixObservableId)}`,
+    $so has internal_id "${escapeString(stixObservableId)}"`,
     args
   );
 
@@ -144,6 +147,11 @@ export const stixRelations = (stixObservableId, args) => {
 export const addStixObservable = async (user, stixObservable) => {
   const wTx = await takeWriteTx();
   const query = `insert $stixObservable isa ${escape(stixObservable.type)},
+    has internal_id "${
+      stixObservable.internal_id
+        ? escapeString(stixObservable.internal_id)
+        : uuid()
+    }",
     has stix_id "${
       stixObservable.stix_id
         ? escapeString(stixObservable.stix_id)
@@ -169,9 +177,9 @@ export const addStixObservable = async (user, stixObservable) => {
   if (stixObservable.createdByRef) {
     await wTx.query(
       `match $from id ${createdStixObservableId};
-      $to id ${escape(stixObservable.createdByRef)};
+      $to has internal_id "${escapeString(stixObservable.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref;`
+      isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
 
@@ -179,8 +187,8 @@ export const addStixObservable = async (user, stixObservable) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdStixObservableId}; 
-        $to id ${escape(markingDefinition)}; 
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

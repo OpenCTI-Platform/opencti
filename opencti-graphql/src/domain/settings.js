@@ -1,3 +1,4 @@
+import uuid from 'uuid/v4';
 import {
   escape,
   escapeString,
@@ -23,6 +24,9 @@ export const getSettings = () =>
 export const addSettings = async (user, settings) => {
   const wTx = await takeWriteTx();
   const settingsIterator = await wTx.query(`insert $settings isa Settings,
+    has internal_id "${
+      settings.internal_id ? escapeString(settings.internal_id) : uuid()
+    }",
     has entity_type "settings",
     has platform_title "${escapeString(settings.platform_title)}",
     has platform_email "${escapeString(settings.platform_email)}",

@@ -24,6 +24,11 @@ export const findById = courseOfActionId => getById(courseOfActionId);
 export const addCourseOfAction = async (user, courseOfAction) => {
   const wTx = await takeWriteTx();
   const courseOfActionIterator = await wTx.query(`insert $courseOfAction isa Course-Of-Action,
+    has internal_id "${
+      courseOfAction.internal_id
+        ? escapeString(courseOfAction.internal_id)
+        : uuid()
+    }",
     has entity_type "course-of-action",
     has stix_id "${
       courseOfAction.stix_id
@@ -55,9 +60,9 @@ export const addCourseOfAction = async (user, courseOfAction) => {
   if (courseOfAction.createdByRef) {
     await wTx.query(
       `match $from id ${createdCourseOfActionId};
-      $to id ${escape(courseOfAction.createdByRef)};
+      $to has internal_id "${escapeString(courseOfAction.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref;`
+      isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
 
@@ -65,8 +70,8 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdCourseOfActionId}; 
-        $to id ${escape(markingDefinition)}; 
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,
@@ -79,8 +84,8 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     const createKillChainPhase = killChainPhase =>
       wTx.query(
         `match $from id ${createdCourseOfActionId};
-         $to id ${killChainPhase}; 
-         insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases;`
+         $to has internal_id "${escapeString(killChainPhase)}"; 
+         insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id "${uuid()}";`
       );
     const killChainPhasesPromises = map(
       createKillChainPhase,

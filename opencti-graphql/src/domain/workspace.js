@@ -1,3 +1,4 @@
+import uuid from 'uuid/v4';
 import { map } from 'ramda';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
@@ -27,7 +28,9 @@ export const ownedBy = workspaceId =>
   getObject(
     `match $x isa User; 
     $rel(owner:$x, to:$workspace) isa owned_by; 
-    $workspace id ${escape(workspaceId)}; get $x, $rel; offset 0; limit 1;`,
+    $workspace has internal_id "${escapeString(
+      workspaceId
+    )}"; get $x, $rel; offset 0; limit 1;`,
     'x',
     'rel'
   );
@@ -36,7 +39,7 @@ export const markingDefinitions = (workspaceId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
     $rel(marking:$marking, so:$workspace) isa object_marking_refs; 
-    $workspace id ${escape(workspaceId)}`,
+    $workspace has internal_id "${escapeString(workspaceId)}"`,
     args,
     false
   );
@@ -45,7 +48,7 @@ export const objectRefs = (workspaceId, args) =>
   paginate(
     `match $so isa Stix-Domain-Entity; 
     $rel(so:$so, knowledge_aggregation:$workspace) isa object_refs; 
-    $workspace id ${escape(workspaceId)}`,
+    $workspace has internal_id "${escapeString(workspaceId)}"`,
     args,
     false
   );
@@ -53,6 +56,9 @@ export const objectRefs = (workspaceId, args) =>
 export const addWorkspace = async (user, workspace) => {
   const wTx = await takeWriteTx();
   const workspaceIterator = await wTx.query(`insert $workspace isa Workspace,
+    has internal_id "${
+      workspace.internal_id ? escapeString(workspace.internal_id) : uuid()
+    }",
     has entity_type "workspace",
     has name "${escapeString(workspace.name)}",
     has description "${escapeString(workspace.description)}",
@@ -65,17 +71,17 @@ export const addWorkspace = async (user, workspace) => {
   const createdWorkspace = await workspaceIterator.next();
   const createdWorkspaceId = await createdWorkspace.map().get('workspace').id;
 
-  await wTx.query(`match $from id ${createdWorkspaceId};
-         $to id ${user.id};
+  await wTx.query(`match $from id "${createdWorkspaceId}";
+         $to has internal_id ${user.id};
          insert (to: $from, owner: $to)
-         isa owned_by;`);
+         isa owned_by, has internal_id "${uuid()}";`);
 
   if (workspace.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdWorkspaceId}; 
-        $to id ${escape(markingDefinition)}; 
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,
@@ -112,12 +118,12 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
 
   const wTx = await takeWriteTx();
   const createRelationPromise = relationInput =>
-    wTx.query(`match $from id ${workspaceId}; 
-         $to id ${relationInput.toId}; 
+    wTx.query(`match $from has internal_id ${workspaceId}; 
+         $to has internal_id ${relationInput.toId}; 
          insert $rel(${relationInput.fromRole}: $from, ${
       relationInput.toRole
     }: $to) 
-         isa ${relationInput.through};`);
+         isa ${relationInput.through}, has internal_id "${uuid()}";`);
 
   const relationsPromises = map(createRelationPromise, finalInput);
   await Promise.all(relationsPromises);

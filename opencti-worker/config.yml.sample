@@ -1,5 +1,5 @@
-indexor:
-  interval: 300
+dumper:
+  file: './dump.gql'
 
 opencti:
   api_url: 'http://opencti:8080'

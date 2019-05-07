@@ -26,7 +26,7 @@ export const markingDefinitions = (sectorId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
     $rel(marking:$marking, so:$s) isa object_marking_refs; 
-    $s id ${sectorId}`,
+    $s has internal_id "${escapeString(sectorId)}"`,
     args
   );
 
@@ -34,13 +34,16 @@ export const subsectors = (sectorId, args) =>
   paginate(
     `match $subsector isa Sector; 
     $rel(gather:$s, part_of:$subsector) isa gathering; 
-    $s id ${sectorId}`,
+    $s has internal_id "${escapeString(sectorId)}"`,
     args
   );
 
 export const addSector = async (user, sector) => {
   const wTx = await takeWriteTx();
   const sectorIterator = await wTx.query(`insert $sector isa Sector,
+    has internal_id "${
+      sector.internal_id ? escapeString(sector.internal_id) : uuid()
+    }",
     has entity_type "sector",
     has stix_id "${
       sector.stix_id ? escapeString(sector.stix_id) : `sector--${uuid()}`
@@ -64,9 +67,9 @@ export const addSector = async (user, sector) => {
   if (sector.createdByRef) {
     await wTx.query(
       `match $from id ${createdSectorId};
-      $to id ${escape(sector.createdByRef)};
+      $to has internal_id "${escapeString(sector.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref;`
+      isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
 
@@ -74,8 +77,8 @@ export const addSector = async (user, sector) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdSectorId}; 
-        $to id ${escape(markingDefinition)};
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}";
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

@@ -24,6 +24,9 @@ export const findById = organizationId => getById(organizationId);
 export const addOrganization = async (user, organization) => {
   const wTx = await takeWriteTx();
   const organizationIterator = await wTx.query(`insert $organization isa Organization,
+    has internal_id "${
+      organization.internal_id ? escapeString(organization.internal_id) : uuid()
+    }",
     has entity_type "organization",
     has stix_id "${
       organization.stix_id
@@ -55,9 +58,9 @@ export const addOrganization = async (user, organization) => {
   if (organization.createdByRef) {
     await wTx.query(
       `match $from id ${createdOrganizationId};
-      $to id ${escape(organization.createdByRef)};
+      $to has internal_id "${escapeString(organization.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref;`
+      isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
 
@@ -65,8 +68,8 @@ export const addOrganization = async (user, organization) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdOrganizationId}; 
-        $to id ${escape(markingDefinition)}; 
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

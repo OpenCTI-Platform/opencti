@@ -1,3 +1,4 @@
+import uuid from 'uuid/v4';
 import { map } from 'ramda';
 import {
   escape,
@@ -22,7 +23,7 @@ export const members = (groupId, args) =>
   paginate(
     `match $user isa User; 
     $rel((member:$user, grouping:$g) isa membership; 
-    $g id ${escape(groupId)}`,
+    $g has internal_id "${escapeString(groupId)}"`,
     args
   );
 
@@ -30,13 +31,16 @@ export const permissions = (groupId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
     $rel(allow:$marking, allowed:$g) isa permission; 
-    $g id ${escape(groupId)}`,
+    $g has internal_id "${escapeString(groupId)}"`,
     args
   );
 
 export const addGroup = async (user, group) => {
   const wTx = await takeWriteTx();
   const groupIterator = await wTx.query(`insert $group isa Group,
+    has internal_id "${
+      group.internal_id ? escapeString(group.internal_id) : uuid()
+    }",
     has entity_type "group",
     has name "${escapeString(group.name)}",
     has description "${escapeString(group.description)}",
@@ -52,9 +56,9 @@ export const addGroup = async (user, group) => {
   if (group.createdByRef) {
     await wTx.query(
       `match $from id ${createdGroupId};
-      $to id ${escape(group.createdByRef)};
+      $to has internal_id "${escapeString(group.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref;`
+      isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
 
@@ -62,8 +66,8 @@ export const addGroup = async (user, group) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdGroupId}; 
-        $to id ${escape(markingDefinition)};
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}";
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

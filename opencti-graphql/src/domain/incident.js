@@ -28,7 +28,7 @@ export const findByEntity = args =>
   paginate(
     `match $x isa Incident;
     $rel($x, $to) isa stix_relation;
-    $to id ${escape(args.objectId)}`,
+    $to has internal_id "${escapeString(args.objectId)}"`,
     args
   );
 
@@ -36,7 +36,7 @@ export const incidentsTimeSeriesByEntity = args =>
   timeSeries(
     `match $x isa Incident; 
     $rel($x, $to) isa stix_relation; 
-    $to id ${escape(args.objectId)}`,
+    $to has internal_id "${escapeString(args.objectId)}"`,
     args
   );
 
@@ -45,6 +45,9 @@ export const findById = incidentId => getById(incidentId);
 export const addIncident = async (user, incident) => {
   const wTx = await takeWriteTx();
   const incidentIterator = await wTx.query(`insert $incident isa Incident,
+    has internal_id "${
+      incident.internal_id ? escapeString(incident.internal_id) : uuid()
+    }",
     has entity_type "incident",
     has stix_id "${
       incident.stix_id ? escapeString(incident.stix_id) : `incident--${uuid()}`
@@ -94,9 +97,9 @@ export const addIncident = async (user, incident) => {
   if (incident.createdByRef) {
     await wTx.query(
       `match $from id ${createdIncidentId};
-      $to id ${escape(incident.createdByRef)};
+      $to has internal_id "${escapeString(incident.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref;`
+      isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
 
@@ -104,8 +107,8 @@ export const addIncident = async (user, incident) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdIncidentId}; 
-        $to id ${escape(markingDefinition)}; 
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

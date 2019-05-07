@@ -1,3 +1,4 @@
+import uuid from 'uuid/v4';
 import { isEmpty, head, map, filter } from 'ramda';
 import migrate from 'migrate';
 import { queryOne, queryMultiple, write } from './grakn';
@@ -52,19 +53,21 @@ const graknStateStorage = {
       );
     } else {
       await write(
-        `insert $x isa MigrationStatus, 
+        `insert $x isa MigrationStatus,
+        has internal_id "${uuid()}",
         has lastRun "${set.lastRun}";`
       );
     }
     await write(
       `insert $x isa MigrationReference,
+      has internal_id "${uuid()}",
       has title "${mig.title}",
       has timestamp ${mig.timestamp};`
     );
     await write(
       `match $status isa MigrationStatus; 
       $ref isa MigrationReference, has title "${mig.title}"; 
-      insert (status: $status, state: $ref) isa migrate;`
+      insert (status: $status, state: $ref) isa migrate, has internal_id "${uuid()}";`
     );
     fn();
   }

@@ -71,7 +71,7 @@ export const groups = (userId, args) =>
   paginate(
     `match $group isa Group; 
     $rel(grouping:$group, member:$user) isa membership; 
-    $user id ${escape(userId)}`,
+    $user has internal_id "${escapeString(userId)}"`,
     args
   );
 
@@ -79,7 +79,9 @@ export const token = userId =>
   getObject(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
-    $client id ${escape(userId)}; get $x, $rel; offset 0; limit 1;`,
+    $client has internal_id "${escapeString(
+      userId
+    )}"; get $x, $rel; offset 0; limit 1;`,
     'x',
     'rel'
   ).then(result => sign(result.node, conf.get('app:secret')));
@@ -87,6 +89,9 @@ export const token = userId =>
 export const addPerson = async (user, newUser) => {
   const wTx = await takeWriteTx();
   const query = `insert $user isa User,
+    has internal_id "${
+      newUser.internal_id ? escapeString(newUser.internal_id) : uuid()
+    }",
     has entity_type "user",
     has stix_id "${
       newUser.stix_id ? escapeString(newUser.stix_id) : `user--${uuid()}`
@@ -111,9 +116,9 @@ export const addPerson = async (user, newUser) => {
 
   if (user.createdByRef) {
     await wTx.query(`match $from id ${createdUserId};
-         $to id ${escape(user.createdByRef)};
+         $to has internal_id "${escapeString(user.createdByRef)}";
          insert (so: $from, creator: $to)
-         isa created_by_ref;`);
+         isa created_by_ref, has internal_id "${uuid()}";`);
   }
 
   await wTx.commit();
@@ -128,6 +133,9 @@ export const addUser = async (user, newUser, displayToken = false) => {
   const newToken = generateOpenCTIWebToken();
   const wTx = await takeWriteTx();
   const query = `insert $user isa User,
+    has internal_id "${
+      newUser.internal_id ? escapeString(newUser.internal_id) : uuid()
+    }",
     has entity_type "user",
     has stix_id "${
       newUser.stix_id ? escapeString(newUser.stix_id) : `user--${uuid()}`
@@ -174,12 +182,13 @@ export const addUser = async (user, newUser, displayToken = false) => {
 
   if (user.createdByRef) {
     await wTx.query(`match $from id ${createdUserId};
-         $to id ${escape(user.createdByRef)};
+         $to has internal_id "${escapeString(user.createdByRef)}";
          insert (so: $from, creator: $to)
-         isa created_by_ref;`);
+         isa created_by_ref, has internal_id "${uuid()}";`);
   }
 
   const tokenIterator = await wTx.query(`insert $token isa Token,
+    has internal_id "${uuid()}",
     has entity_type "token",
     has uuid "${newToken.uuid}",
     has name "${newToken.name}",
@@ -195,7 +204,7 @@ export const addUser = async (user, newUser, displayToken = false) => {
   await createdToken.map().get('token').id;
   await wTx.query(`match $user isa User, has email "${newUser.email}"; 
                    $token isa Token, has uuid "${newToken.uuid}"; 
-                   insert (client: $user, authorization: $token) isa authorize;`);
+                   insert (client: $user, authorization: $token) isa authorize, has internal_id "${uuid()}";`);
 
   await wTx.commit();
 
@@ -262,12 +271,13 @@ export const logout = async (user, res) => {
 export const userRenewToken = async (user, userId) => {
   const wTx = await takeWriteTx();
   await wTx.query(
-    `match $user id ${escape(userId)};
+    `match $user has internal_id "${escapeString(userId)}";
     $rel(authorization:$token, client:$user);
     delete $rel, $token;`
   );
   const newToken = generateOpenCTIWebToken();
   const tokenIterator = await wTx.query(`insert $token isa Token,
+    has internal_id "${uuid()}",
     has entity_type "token",
     has uuid "${newToken.uuid}",
     has name "${newToken.name}",
@@ -281,10 +291,10 @@ export const userRenewToken = async (user, userId) => {
   const createdToken = await tokenIterator.next();
   await createdToken.map().get('token').id;
   await wTx.query(
-    `match $user id ${escape(userId)}";
+    `match $user has internal_id "${escapeString(userId)}"";
     $token isa Token,
     has uuid "${newToken.uuid}";
-    insert (client: $user, authorization: $token) isa authorize;`
+    insert (client: $user, authorization: $token) isa authorize, has internal_id "${uuid()}";`
   );
   await wTx.commit();
   return getById(userId);

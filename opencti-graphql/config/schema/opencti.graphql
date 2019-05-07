@@ -137,12 +137,14 @@ type Export {
 ### Global objects
 interface GlobalObject {
   id: ID!
+  internal_id: String!
   entity_type: String!
 }
 
 ### STIX objects
 interface StixEntity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -169,6 +171,7 @@ type StixDomainEntityEdge {
 }
 interface StixDomainEntity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -209,6 +212,7 @@ interface StixDomainEntity {
   updated_at: DateTime!
 }
 input StixDomainEntityAddInput {
+  internal_id: String
   name: String!
   description: String
   type: String!
@@ -237,6 +241,7 @@ type StixObservableEdge {
 }
 type StixObservable implements GlobalObject & StixEntity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -279,6 +284,7 @@ type StixObservable implements GlobalObject & StixEntity {
   updated_at: DateTime!
 }
 input StixObservableAddInput {
+  internal_id: String
   stix_id: String
   type: String!
   observable_value: String!
@@ -312,6 +318,7 @@ type StixRelationEdge {
 }
 type StixRelation implements GlobalObject & StixEntity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -340,6 +347,7 @@ type StixRelation implements GlobalObject & StixEntity {
   updated_at: DateTime!
 }
 input StixRelationAddInput {
+  internal_id: String
   stix_id: String
   fromId: String!
   fromRole: String!
@@ -376,6 +384,7 @@ type WorkspaceEdge {
 }
 type Workspace implements GlobalObject {
   id: ID!
+  internal_id: String!
   entity_type: String!
   name: String!
   description: String
@@ -389,6 +398,7 @@ type Workspace implements GlobalObject {
 }
 input WorkspaceAddInput {
   name: String!
+  internal_id: String
   description: String
   markingDefinitions: [String]
   clientMutationId: String
@@ -412,6 +422,7 @@ type IdentityEdge {
 }
 interface Identity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -452,6 +463,7 @@ interface Identity {
   modified: DateTime
 }
 input IdentityAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String
@@ -486,6 +498,7 @@ type UserEdge {
 }
 type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -537,6 +550,7 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   updated_at: DateTime!
 }
 input UserAddInput {
+  internal_id: String
   stix_id: String
   email: String @constraint(minLength: 5, format: "email")
   name: String! @constraint(minLength: 3)
@@ -551,6 +565,7 @@ input UserAddInput {
   modified: DateTime
 }
 input PersonAddInput {
+  internal_id: String
   stix_id: String
   name: String! @constraint(minLength: 3)
   description: String
@@ -582,6 +597,7 @@ type OrganizationEdge {
 }
 type Organization implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -627,6 +643,7 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
   updated_at: DateTime!
 }
 input OrganizationAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String
@@ -658,6 +675,7 @@ type SectorEdge {
 }
 type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -704,6 +722,7 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   updated_at: DateTime!
 }
 input SectorAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String
@@ -734,6 +753,7 @@ type CityEdge {
 }
 type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -779,6 +799,7 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   updated_at: DateTime!
 }
 input CityAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String
@@ -809,6 +830,7 @@ type CountryEdge {
 }
 type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -854,6 +876,7 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
   updated_at: DateTime!
 }
 input CountryAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String
@@ -884,6 +907,7 @@ type RegionEdge {
 }
 type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -929,6 +953,7 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   updated_at: DateTime!
 }
 input RegionAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String
@@ -956,6 +981,7 @@ type GroupEdge {
 }
 type Group implements GlobalObject {
   id: ID!
+  internal_id: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -967,6 +993,7 @@ type Group implements GlobalObject {
   updated_at: DateTime!
 }
 input GroupAddInput {
+  internal_id: String
   name: String!
   description: String
   markingDefinitions: [String]
@@ -997,6 +1024,7 @@ type MarkingDefinitionEdge {
 }
 type MarkingDefinition implements GlobalObject {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   definition_type: String!
@@ -1011,6 +1039,7 @@ type MarkingDefinition implements GlobalObject {
   updated_at: DateTime!
 }
 input MarkingDefinitionAddInput {
+  internal_id: String
   stix_id: String
   definition_type: String!
   definition: String!
@@ -1045,6 +1074,7 @@ type ExternalReferenceEdge {
 }
 type ExternalReference implements GlobalObject {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   source_name: String!
@@ -1060,6 +1090,7 @@ type ExternalReference implements GlobalObject {
   updated_at: DateTime!
 }
 input ExternalReferenceAddInput {
+  internal_id: String
   stix_id: String
   source_name: String!
   description: String
@@ -1091,6 +1122,7 @@ type KillChainPhaseEdge {
 }
 type KillChainPhase implements GlobalObject {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   kill_chain_name: String!
@@ -1105,6 +1137,7 @@ type KillChainPhase implements GlobalObject {
   updated_at: DateTime!
 }
 input KillChainPhaseAddInput {
+  internal_id: String
   stix_id: String
   kill_chain_name: String!
   phase_name: String!
@@ -1135,6 +1168,7 @@ type AttackPatternEdge {
 }
 type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -1184,6 +1218,7 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input AttackPatternAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String!
@@ -1216,6 +1251,7 @@ type CourseOfActionEdge {
 }
 type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -1261,6 +1297,7 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input CourseOfActionAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String!
@@ -1289,6 +1326,7 @@ type ThreatActorEdge {
 }
 type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -1341,6 +1379,7 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
   updated_at: DateTime!
 }
 input ThreatActorAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String!
@@ -1376,6 +1415,7 @@ type IntrusionSetEdge {
 }
 type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -1428,6 +1468,7 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input IntrusionSetAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String!
@@ -1467,6 +1508,7 @@ type CampaignEdge {
 }
 type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -1515,6 +1557,7 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input CampaignAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String!
@@ -1549,6 +1592,7 @@ type IncidentEdge {
 }
 type Incident implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -1597,6 +1641,7 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input IncidentAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String!
@@ -1629,6 +1674,7 @@ type MalwareEdge {
 }
 type Malware implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -1675,6 +1721,7 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input MalwareAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String
@@ -1705,6 +1752,7 @@ type ToolEdge {
 }
 type Tool implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -1752,6 +1800,7 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input ToolAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String!
@@ -1783,6 +1832,7 @@ type VulnerabilityEdge {
 }
 type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -1828,6 +1878,7 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input VulnerabilityAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String!
@@ -1864,6 +1915,7 @@ type ReportPayload {
 }
 type Report implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
+  internal_id: String!
   stix_id: String!
   entity_type: String!
   parent_type: String!
@@ -1916,6 +1968,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input ReportAddInput {
+  internal_id: String
   stix_id: String
   name: String!
   description: String
@@ -1933,6 +1986,7 @@ input ReportAddInput {
 
 ### Relations
 input RelationAddInput {
+  internal_id: String
   stix_id: String
   fromRole: String!
   toId: ID!

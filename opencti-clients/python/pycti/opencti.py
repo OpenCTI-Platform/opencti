@@ -529,7 +529,8 @@ class OpenCTI:
     def create_marking_definition(self,
                                   definition_type,
                                   definition,
-                                  level,
+                                  id=None,
+                                  level=0,
                                   color=None,
                                   stix_id=None,
                                   created=None,
@@ -547,6 +548,7 @@ class OpenCTI:
             'input': {
                 'definition_type': definition_type,
                 'definition': definition,
+                'internal_id': id,
                 'level': level,
                 'color': color,
                 'stix_id': stix_id,
@@ -559,7 +561,8 @@ class OpenCTI:
     def create_marking_definition_if_not_exists(self,
                                                 definition_type,
                                                 definition,
-                                                level,
+                                                id=None,
+                                                level=0,
                                                 color=None,
                                                 stix_id=None,
                                                 created=None,
@@ -576,6 +579,7 @@ class OpenCTI:
             return self.create_marking_definition(
                 definition_type,
                 definition,
+                id,
                 level,
                 color,
                 stix_id,
@@ -675,7 +679,8 @@ class OpenCTI:
     def create_kill_chain_phase(self,
                                 kill_chain_name,
                                 phase_name,
-                                phase_order,
+                                id=None,
+                                phase_order=0,
                                 stix_id=None,
                                 created=None,
                                 modified=None):
@@ -691,6 +696,7 @@ class OpenCTI:
             'input': {
                 'kill_chain_name': kill_chain_name,
                 'phase_name': phase_name,
+                'internal_id': id,
                 'phase_order': phase_order,
                 'stix_id': stix_id,
                 'created': created,
@@ -702,7 +708,8 @@ class OpenCTI:
     def create_kill_chain_phase_if_not_exists(self,
                                               kill_chain_name,
                                               phase_name,
-                                              phase_order,
+                                              id=None,
+                                              phase_order=0,
                                               stix_id=None,
                                               created=None,
                                               modified=None):
@@ -713,6 +720,7 @@ class OpenCTI:
             return self.create_kill_chain_phase(
                 kill_chain_name,
                 phase_name,
+                id,
                 phase_order,
                 stix_id,
                 created,
@@ -819,7 +827,7 @@ class OpenCTI:
         result = self.query(query, {'first': limit})
         return self.parse_multiple(result['data']['identities'])
 
-    def create_identity(self, type, name, description, stix_id=None, created=None, modified=None):
+    def create_identity(self, type, name, description, id=None, stix_id=None, created=None, modified=None):
         self.log('Creating identity ' + name + '...')
         query = """
             mutation IdentityAdd($input: IdentityAddInput) {
@@ -835,6 +843,7 @@ class OpenCTI:
                 'name': name,
                 'description': description,
                 'type': type,
+                'internal_id': id,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -842,7 +851,7 @@ class OpenCTI:
         })
         return result['data']['identityAdd']
 
-    def create_identity_if_not_exists(self, type, name, description, stix_id=None, created=None, modified=None):
+    def create_identity_if_not_exists(self, type, name, description, id=None, stix_id=None, created=None, modified=None):
         object_result = self.check_existing_stix_domain_entity(stix_id, name, type)
         if object_result is not None:
             return object_result
@@ -851,6 +860,7 @@ class OpenCTI:
                 type,
                 name,
                 description,
+                id,
                 stix_id,
                 created,
                 modified
@@ -977,6 +987,7 @@ class OpenCTI:
                             primary_motivation=None,
                             secondary_motivation=None,
                             personal_motivation=None,
+                            id=None,
                             stix_id=None,
                             created=None,
                             modified=None
@@ -1001,6 +1012,7 @@ class OpenCTI:
                 'primary_motivation': primary_motivation,
                 'secondary_motivation': secondary_motivation,
                 'personal_motivation': personal_motivation,
+                'internal_id': id,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -1017,6 +1029,7 @@ class OpenCTI:
                                           primary_motivation=None,
                                           secondary_motivation=None,
                                           personal_motivation=None,
+                                          id=None,
                                           stix_id=None,
                                           created=None,
                                           modified=None
@@ -1034,6 +1047,7 @@ class OpenCTI:
                 primary_motivation,
                 secondary_motivation,
                 personal_motivation,
+                id,
                 stix_id,
                 created,
                 modified
@@ -1161,6 +1175,7 @@ class OpenCTI:
                              resource_level=None,
                              primary_motivation=None,
                              secondary_motivation=None,
+                             id=None,
                              stix_id=None,
                              created=None,
                              modified=None
@@ -1186,6 +1201,7 @@ class OpenCTI:
                 'resource_level': resource_level,
                 'primary_motivation': primary_motivation,
                 'secondary_motivation': secondary_motivation,
+                'internal_id': id,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -1221,6 +1237,7 @@ class OpenCTI:
                 resource_level,
                 primary_motivation,
                 secondary_motivation,
+                id,
                 stix_id,
                 created,
                 modified
@@ -1336,6 +1353,7 @@ class OpenCTI:
                         objective=None,
                         first_seen=None,
                         last_seen=None,
+                        id=None,
                         stix_id=None,
                         created=None,
                         modified=None
@@ -1357,6 +1375,7 @@ class OpenCTI:
                 'objective': objective,
                 'first_seen': first_seen,
                 'last_seen': last_seen,
+                'internal_id': id,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -1370,6 +1389,7 @@ class OpenCTI:
                                       objective=None,
                                       first_seen=None,
                                       last_seen=None,
+                                      id=None,
                                       stix_id=None,
                                       created=None,
                                       modified=None
@@ -1384,6 +1404,7 @@ class OpenCTI:
                 objective,
                 first_seen,
                 last_seen,
+                id,
                 stix_id,
                 created,
                 modified
@@ -1499,6 +1520,7 @@ class OpenCTI:
                         objective=None,
                         first_seen=None,
                         last_seen=None,
+                        id=None,
                         stix_id=None,
                         created=None,
                         modified=None
@@ -1520,6 +1542,7 @@ class OpenCTI:
                 'objective': objective,
                 'first_seen': first_seen,
                 'last_seen': last_seen,
+                'internal_id': id,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -1533,6 +1556,7 @@ class OpenCTI:
                                       objective=None,
                                       first_seen=None,
                                       last_seen=None,
+                                      id=None,
                                       stix_id=None,
                                       created=None,
                                       modified=None
@@ -1553,6 +1577,7 @@ class OpenCTI:
                 objective,
                 first_seen,
                 last_seen,
+                id,
                 stix_id,
                 created,
                 modified
@@ -1684,7 +1709,7 @@ class OpenCTI:
         result = self.query(query, {'first': limit})
         return self.parse_multiple(result['data']['malwares'])
 
-    def create_malware(self, name, description, stix_id=None, created=None, modified=None):
+    def create_malware(self, name, description, id=None, stix_id=None, created=None, modified=None):
         self.log('Creating malware ' + name + '...')
         query = """
             mutation MalwareAdd($input: MalwareAddInput) {
@@ -1699,6 +1724,7 @@ class OpenCTI:
             'input': {
                 'name': name,
                 'description': description,
+                'internal_id': id,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -1706,7 +1732,7 @@ class OpenCTI:
         })
         return result['data']['malwareAdd']
 
-    def create_malware_if_not_exists(self, name, description, stix_id=None, created=None, modified=None):
+    def create_malware_if_not_exists(self, name, description, id=None, stix_id=None, created=None, modified=None):
         object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Malware')
         if object_result is not None:
             return object_result
@@ -1714,6 +1740,7 @@ class OpenCTI:
             return self.create_malware(
                 name,
                 description,
+                id,
                 stix_id,
                 created,
                 modified
@@ -1819,7 +1846,7 @@ class OpenCTI:
         result = self.query(query, {'first': limit})
         return self.parse_multiple(result['data']['tools'])
 
-    def create_tool(self, name, description, stix_id=None, created=None, modified=None):
+    def create_tool(self, name, description, id=None, stix_id=None, created=None, modified=None):
         self.log('Creating tool ' + name + '...')
         query = """
             mutation ToolAdd($input: ToolAddInput) {
@@ -1834,6 +1861,7 @@ class OpenCTI:
             'input': {
                 'name': name,
                 'description': description,
+                'internal_id': id,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -1841,7 +1869,7 @@ class OpenCTI:
         })
         return result['data']['toolAdd']
 
-    def create_tool_if_not_exists(self, name, description, stix_id=None, created=None, modified=None):
+    def create_tool_if_not_exists(self, name, description, id=None, stix_id=None, created=None, modified=None):
         object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Tool')
         if object_result is not None:
             return object_result
@@ -1849,6 +1877,7 @@ class OpenCTI:
             return self.create_tool(
                 name,
                 description,
+                id,
                 stix_id,
                 created,
                 modified
@@ -1952,7 +1981,7 @@ class OpenCTI:
         result = self.query(query, {'first': limit})
         return self.parse_multiple(result['data']['vulnerabilities'])
 
-    def create_vulnerability(self, name, description, stix_id=None, created=None, modified=None):
+    def create_vulnerability(self, name, description, id=None, stix_id=None, created=None, modified=None):
         self.log('Creating tool ' + name + '...')
         query = """
             mutation VulnerabilityAdd($input: VulnerabilityAddInput) {
@@ -1967,6 +1996,7 @@ class OpenCTI:
             'input': {
                 'name': name,
                 'description': description,
+                'internal_id': id,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -1974,7 +2004,7 @@ class OpenCTI:
         })
         return result['data']['vulnerabilityAdd']
 
-    def create_vulnerability_if_not_exists(self, name, description, stix_id=None, created=None, modified=None):
+    def create_vulnerability_if_not_exists(self, name, description, id=None, stix_id=None, created=None, modified=None):
         object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Vulnerability')
         if object_result is not None:
             return object_result
@@ -1982,6 +2012,7 @@ class OpenCTI:
             return self.create_vulnerability(
                 name,
                 description,
+                id,
                 stix_id,
                 created,
                 modified
@@ -2152,8 +2183,9 @@ class OpenCTI:
     def create_attack_pattern(self,
                               name,
                               description,
-                              platform,
-                              required_permission,
+                              platform=None,
+                              required_permission=None,
+                              id=None,
                               stix_id=None,
                               created=None,
                               modified=None):
@@ -2173,6 +2205,7 @@ class OpenCTI:
                 'description': description,
                 'platform': platform,
                 'required_permission': required_permission,
+                'internal_id': id,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -2183,8 +2216,9 @@ class OpenCTI:
     def create_attack_pattern_if_not_exists(self,
                                             name,
                                             description,
-                                            platform,
-                                            required_permission,
+                                            platform=None,
+                                            required_permission=None,
+                                            id=None,
                                             stix_id=None,
                                             created=None,
                                             modified=None):
@@ -2204,6 +2238,7 @@ class OpenCTI:
                 description,
                 platform,
                 required_permission,
+                id,
                 stix_id,
                 created,
                 modified
@@ -2307,7 +2342,7 @@ class OpenCTI:
         result = self.query(query, {'first': limit})
         return self.parse_multiple(result['data']['courseOfActions'])
 
-    def create_course_of_action(self, name, description, stix_id=None, created=None, modified=None):
+    def create_course_of_action(self, name, description, id=None, stix_id=None, created=None, modified=None):
         self.log('Creating course of action ' + name + '...')
         query = """
            mutation CourseOfActionAdd($input: CourseOfActionAddInput) {
@@ -2322,6 +2357,7 @@ class OpenCTI:
             'input': {
                 'name': name,
                 'description': description,
+                'internal_id': id,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -2329,7 +2365,7 @@ class OpenCTI:
         })
         return result['data']['courseOfActionAdd']
 
-    def create_course_of_action_if_not_exists(self, name, description, stix_id=None, created=None, modified=None):
+    def create_course_of_action_if_not_exists(self, name, description, id=None, stix_id=None, created=None, modified=None):
         object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Course-Of-Action')
         if object_result is not None:
             return object_result
@@ -2337,6 +2373,7 @@ class OpenCTI:
             return self.create_course_of_action(
                 name,
                 description,
+                id,
                 stix_id,
                 created,
                 modified
@@ -2532,6 +2569,7 @@ class OpenCTI:
                       object_status=None,
                       source_confidence_level=None,
                       graph_data=None,
+                      id=None,
                       stix_id=None,
                       created=None,
                       modified=None
@@ -2555,6 +2593,7 @@ class OpenCTI:
                 'object_status': object_status,
                 'source_confidence_level': source_confidence_level,
                 'graph_data': graph_data,
+                'internal_id': id,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -2570,6 +2609,7 @@ class OpenCTI:
                                     object_status=None,
                                     source_confidence_level=None,
                                     graph_data=None,
+                                    id=None,
                                     stix_id=None,
                                     created=None,
                                     modified=None
@@ -2589,6 +2629,7 @@ class OpenCTI:
                 object_status,
                 source_confidence_level,
                 graph_data,
+                id,
                 stix_id,
                 created,
                 modified
@@ -2603,6 +2644,7 @@ class OpenCTI:
                                                             object_status=None,
                                                             source_confidence_level=None,
                                                             graph_data=None,
+                                                            id=None,
                                                             stix_id=None,
                                                             created=None,
                                                             modified=None
@@ -2619,6 +2661,7 @@ class OpenCTI:
                 object_status,
                 source_confidence_level,
                 graph_data,
+                id,
                 stix_id,
                 created,
                 modified

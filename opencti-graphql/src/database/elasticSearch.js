@@ -1,6 +1,6 @@
 import elasticsearch from 'elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import { pipe, map, append, head } from 'ramda';
+import { pipe, map, append, head, assoc } from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
 
@@ -22,6 +22,7 @@ export const el = new elasticsearch.Client({
 export const createIndexes = () => {
   const indexes = [
     'stix-domain-entities',
+    'stix-relations',
     'stix-observables',
     'external-references'
   ];
@@ -47,7 +48,7 @@ export const createIndexes = () => {
 export const index = (indexName, documentType, documentBody) => {
   el.index({
     index: indexName,
-    id: documentBody.id,
+    id: documentBody.grakn_id,
     type: documentType,
     body: documentBody
   }).catch(() => {
@@ -178,7 +179,7 @@ export const paginate = (indexName, options) => {
     .then(data => {
       const finalData = map(
         n => ({
-          node: n._source
+          node: assoc('id', n._source.internal_id, n._source)
         }),
         data.hits.hits
       );

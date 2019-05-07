@@ -40,6 +40,9 @@ export const search = args =>
 export const addIdentity = async (user, identity) => {
   const wTx = await takeWriteTx();
   const query = `insert $identity isa ${identity.type},
+    has internal_id "${
+      identity.internal_id ? escapeString(identity.internal_id) : uuid()
+    }",
     has entity_type "${identity.type.toLowerCase()}",
     has stix_id "${
       identity.stix_id
@@ -67,9 +70,9 @@ export const addIdentity = async (user, identity) => {
   if (identity.createdByRef) {
     await wTx.query(
       `match $from id ${createdIdentityId};
-      $to id ${escape(identity.createdByRef)};
+      $to has internal_id "${escapeString(identity.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref;`
+      isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
 
@@ -77,8 +80,8 @@ export const addIdentity = async (user, identity) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdIdentityId}; 
-        $to id ${escape(markingDefinition)}; 
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

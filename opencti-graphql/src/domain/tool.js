@@ -24,6 +24,9 @@ export const findById = toolId => getById(toolId);
 export const addTool = async (user, tool) => {
   const wTx = await takeWriteTx();
   const toolIterator = await wTx.query(`insert $tool isa Tool,
+    has internal_id "${
+      tool.internal_id ? escapeString(tool.internal_id) : uuid()
+    }",
     has entity_type "tool",
     has stix_id "${
       tool.stix_id ? escapeString(tool.stix_id) : `tool--${uuid()}`
@@ -47,9 +50,9 @@ export const addTool = async (user, tool) => {
   if (tool.createdByRef) {
     await wTx.query(
       `match $from id ${createdToolId};
-      $to id ${escape(tool.createdByRef)};
+      $to has internal_id "${escapeString(tool.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref;`
+      isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
 
@@ -57,8 +60,8 @@ export const addTool = async (user, tool) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdToolId}; 
-        $to id ${escape(markingDefinition)}; 
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,
@@ -71,8 +74,8 @@ export const addTool = async (user, tool) => {
     const createKillChainPhase = killChainPhase =>
       wTx.query(
         `match $from id ${createdToolId}; 
-        $to id ${escape(killChainPhase)}; 
-        insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases;`
+        $to has internal_id "${escapeString(killChainPhase)}"; 
+        insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id "${uuid()}";`
       );
     const killChainPhasesPromises = map(
       createKillChainPhase,

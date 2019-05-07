@@ -24,6 +24,9 @@ export const findById = regionId => getById(regionId);
 export const addRegion = async (user, region) => {
   const wTx = await takeWriteTx();
   const regionIterator = await wTx.query(`insert $region isa Region,
+    has internal_id "${
+      region.internal_id ? escapeString(region.internal_id) : uuid()
+    }",
     has entity_type "region",
     has stix_id "${
       region.stix_id ? escapeString(region.stix_id) : `region--${uuid()}`
@@ -47,9 +50,9 @@ export const addRegion = async (user, region) => {
   if (region.createdByRef) {
     await wTx.query(
       `match $from id ${createdRegionId};
-      $to id ${escape(region.createdByRef)};
+      $to has internal_id "${escapeString(region.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref;`
+      isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
 
@@ -57,8 +60,8 @@ export const addRegion = async (user, region) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdRegionId}; 
-        $to id ${escape(markingDefinition)}; 
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

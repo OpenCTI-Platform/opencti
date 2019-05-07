@@ -42,7 +42,7 @@ export const findByEntity = args =>
   paginate(
     `match $c isa Campaign; 
     $rel($c, $to) isa stix_relation; 
-    $to id ${escape(args.objectId)}`,
+    $to has internal_id "${escapeString(args.objectId)}"`,
     args
   );
 
@@ -50,7 +50,7 @@ export const campaignsTimeSeriesByEntity = args =>
   timeSeries(
     `match $x isa Campaign;
      $rel($x, $to) isa stix_relation;
-     $to id ${escape(args.objectId)}`,
+     $to has internal_id "${escapeString(args.objectId)}"`,
     args
   );
 
@@ -59,6 +59,9 @@ export const findById = campaignId => getById(campaignId);
 export const addCampaign = async (user, campaign) => {
   const wTx = await takeWriteTx();
   const query = `insert $campaign isa Campaign,
+    has internal_id "${
+      campaign.internal_id ? escapeString(campaign.internal_id) : uuid()
+    }",
     has entity_type "campaign",
     has stix_id "${
       campaign.stix_id ? escapeString(campaign.stix_id) : `campaign--${uuid()}`
@@ -111,9 +114,9 @@ export const addCampaign = async (user, campaign) => {
   if (campaign.createdByRef) {
     await wTx.query(
       `match $from id ${createdCampaignId};
-      $to id ${escape(campaign.createdByRef)};
+      $to has internal_id "${escapeString(campaign.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref;`
+      isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
 
@@ -121,8 +124,8 @@ export const addCampaign = async (user, campaign) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.query(
         `match $from id ${createdCampaignId};
-        $to id ${escape(markingDefinition)};
-        insert (so: $from, marking: $to) isa object_marking_refs;`
+        $to has internal_id "${escapeString(markingDefinition)}";
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

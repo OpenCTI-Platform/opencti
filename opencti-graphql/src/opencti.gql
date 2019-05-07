@@ -9,6 +9,7 @@ define
   timestamp sub attribute, datatype long;
 
   # OpenCTI properties
+  internal_id sub attribute, datatype string;
   created_at sub attribute, datatype date;
   created_at_day sub attribute, datatype string;
   created_at_month sub attribute, datatype string;
@@ -181,38 +182,45 @@ define
 
   # Login relationship
   authorize sub relation,
+    key internal_id,
     relates authorization,
     relates client;
 
   # Migration relationships
   migrate sub relation,
+    key internal_id,
     relates status,
     relates state;
 
   # Export relationship
   exports sub relation,
+    key internal_id,
     relates export,
     relates exported;
 
   # Group membership relationships
   membership sub relation,
+    key internal_id,
     relates grouping,
     relates member;
 
   # Access relationships
   permission sub relation,
+    key internal_id,
     has grant,
     relates allow,
     relates allowed;
 
   user_permission sub relation,
+    key internal_id,
     has grant,
     relates allow,
     relates allowed;
 
   # OpenCTI embeded relationships
   relation_embedded sub relation,
-    abstract;
+    abstract,
+    key internal_id;
 
   authored_by sub relation_embedded,
     relates author,
@@ -225,6 +233,7 @@ define
   # STIX embeded relationships
   stix_relation_embedded sub relation,
     abstract,
+    key internal_id,
     has stix_id;
 
   created_by_ref sub stix_relation_embedded,
@@ -250,6 +259,7 @@ define
   # STIX SOO embeded relationships
    stix_relation_observable_embedded sub relation,
     abstract,
+    key internal_id,
     has stix_id,
     has created,
     has modified,
@@ -285,6 +295,7 @@ define
   # STIX SRO relationships
   stix_relation sub relation,
     abstract,
+    key internal_id,
     has stix_id,
     has created,
     has modified,
@@ -374,16 +385,19 @@ define
   ## ENTITIES
   # Migration entities
   MigrationStatus sub entity,
+    key internal_id,
     has lastRun,
     plays status;
 
   MigrationReference sub entity,
+    key internal_id,
     has title,
     has timestamp,
     plays state;
 
   # OpenCTI entities
   Settings sub entity,
+    key internal_id,
     has entity_type,
     has platform_title,
     has platform_email,
@@ -398,6 +412,7 @@ define
     has updated_at;
 
   Export sub entity,
+    key internal_id,
     has description,
     has export_type,
     has object_status,
@@ -410,6 +425,7 @@ define
     plays export;
 
   Group sub entity,
+    key internal_id,
     has entity_type,
     has name,
     has description,
@@ -422,6 +438,7 @@ define
     plays grouping;
 
   Workspace sub entity,
+    key internal_id,
     has entity_type,
     has name,
     has description,
@@ -436,6 +453,7 @@ define
     plays knowledge_aggregation;
 
   Token sub entity,
+    key internal_id,
     key uuid,
     has entity_type,
     has name,
@@ -452,6 +470,7 @@ define
 
   Stix-Domain sub entity,
     abstract,
+    key internal_id,
     has stix_id,
     has stix_label,
     has entity_type,
@@ -665,6 +684,7 @@ define
 
    Stix-Observable sub entity,
     abstract,
+    key internal_id,
     has stix_id,
     has entity_type,
     has name,
@@ -703,6 +723,7 @@ define
 
     Stix-Observable-Data sub entity,
     abstract,
+    key internal_id,
     has entity_type,
     has value,
     has created_at,
