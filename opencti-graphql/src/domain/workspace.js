@@ -55,10 +55,9 @@ export const objectRefs = (workspaceId, args) =>
 
 export const addWorkspace = async (user, workspace) => {
   const wTx = await takeWriteTx();
+  const internalId =  workspace.internal_id ? escapeString(workspace.internal_id) : uuid()
   const workspaceIterator = await wTx.query(`insert $workspace isa Workspace,
-    has internal_id "${
-      workspace.internal_id ? escapeString(workspace.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "workspace",
     has name "${escapeString(workspace.name)}",
     has description "${escapeString(workspace.description)}",
@@ -92,7 +91,7 @@ export const addWorkspace = async (user, workspace) => {
 
   await wTx.commit();
 
-  return getById(createdWorkspaceId).then(created =>
+  return getById(internalId).then(created =>
     notify(BUS_TOPICS.Workspace.ADDED_TOPIC, created, user)
   );
 };

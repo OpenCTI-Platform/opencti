@@ -39,10 +39,11 @@ export const search = args =>
 
 export const addIdentity = async (user, identity) => {
   const wTx = await takeWriteTx();
+  const internalId = identity.internal_id
+    ? escapeString(identity.internal_id)
+    : uuid();
   const query = `insert $identity isa ${identity.type},
-    has internal_id "${
-      identity.internal_id ? escapeString(identity.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "${identity.type.toLowerCase()}",
     has stix_id "${
       identity.stix_id
@@ -92,7 +93,7 @@ export const addIdentity = async (user, identity) => {
 
   await wTx.commit();
 
-  return getById(createdIdentityId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

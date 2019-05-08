@@ -521,6 +521,9 @@ export const locations = (stixRelationId, args) =>
 
 export const addStixRelation = async (user, stixRelation) => {
   const wTx = await takeWriteTx();
+  const internalId = stixRelation.internal_id
+    ? escapeString(stixRelation.internal_id)
+    : uuid();
   const query = `match $from has internal_id "${escapeString(
     stixRelation.fromId
   )}"; 
@@ -529,9 +532,7 @@ export const addStixRelation = async (user, stixRelation) => {
     stixRelation.toRole
   )}: $to) 
     isa ${escape(stixRelation.relationship_type)},
-    has internal_id "${
-      stixRelation.internal_id ? escapeString(stixRelation.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has relationship_type "${escapeString(
       stixRelation.relationship_type.toLowerCase()
     )}",
@@ -600,7 +601,7 @@ export const addStixRelation = async (user, stixRelation) => {
 
   await wTx.commit();
 
-  return getById(createdStixRelationId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-relations', 'stix_relation', created);
     return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
   });

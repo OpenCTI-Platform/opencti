@@ -37,10 +37,11 @@ export const permissions = (groupId, args) =>
 
 export const addGroup = async (user, group) => {
   const wTx = await takeWriteTx();
+  const internalId = group.internal_id
+    ? escapeString(group.internal_id)
+    : uuid();
   const groupIterator = await wTx.query(`insert $group isa Group,
-    has internal_id "${
-      group.internal_id ? escapeString(group.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "group",
     has name "${escapeString(group.name)}",
     has description "${escapeString(group.description)}",
@@ -78,7 +79,7 @@ export const addGroup = async (user, group) => {
 
   await wTx.commit();
 
-  return getById(createdGroupId).then(created =>
+  return getById(internalId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };

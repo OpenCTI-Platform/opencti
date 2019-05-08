@@ -54,12 +54,11 @@ export const search = args => elPaginate('external-references', args);
 
 export const addExternalReference = async (user, externalReference) => {
   const wTx = await takeWriteTx();
+  const internalId = externalReference.internal_id
+    ? escapeString(externalReference.internal_id)
+    : uuid();
   const externalReferenceIterator = await wTx.query(`insert $externalReference isa External-Reference,
-    has internal_id "${
-      externalReference.internal_id
-        ? escapeString(externalReference.internal_id)
-        : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "external-reference",
     has stix_id "${
       externalReference.stix_id
@@ -118,7 +117,7 @@ export const addExternalReference = async (user, externalReference) => {
 
   await wTx.commit();
 
-  return getById(createdExternalReferenceId).then(created => {
+  return getById(internalId).then(created => {
     index('external-references', 'external_reference', created);
     return notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user);
   });

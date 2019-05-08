@@ -23,10 +23,11 @@ export const findById = organizationId => getById(organizationId);
 
 export const addOrganization = async (user, organization) => {
   const wTx = await takeWriteTx();
+  const internalId = organization.internal_id
+    ? escapeString(organization.internal_id)
+    : uuid();
   const organizationIterator = await wTx.query(`insert $organization isa Organization,
-    has internal_id "${
-      organization.internal_id ? escapeString(organization.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "organization",
     has stix_id "${
       organization.stix_id
@@ -80,7 +81,7 @@ export const addOrganization = async (user, organization) => {
 
   await wTx.commit();
 
-  return getById(createdOrganizationId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

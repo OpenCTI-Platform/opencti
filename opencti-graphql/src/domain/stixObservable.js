@@ -146,12 +146,11 @@ export const stixRelations = (stixObservableId, args) => {
 
 export const addStixObservable = async (user, stixObservable) => {
   const wTx = await takeWriteTx();
+  const internalId = stixObservable.internal_id
+    ? escapeString(stixObservable.internal_id)
+    : uuid();
   const query = `insert $stixObservable isa ${escape(stixObservable.type)},
-    has internal_id "${
-      stixObservable.internal_id
-        ? escapeString(stixObservable.internal_id)
-        : uuid()
-    }",
+    has internal_id "${internalId}",
     has stix_id "${
       stixObservable.stix_id
         ? escapeString(stixObservable.stix_id)
@@ -199,7 +198,7 @@ export const addStixObservable = async (user, stixObservable) => {
 
   await wTx.commit();
 
-  return getById(createdStixObservableId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-observables', 'stix_observable', created);
     return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
   });

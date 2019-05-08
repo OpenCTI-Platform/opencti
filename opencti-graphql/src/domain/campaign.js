@@ -58,10 +58,11 @@ export const findById = campaignId => getById(campaignId);
 
 export const addCampaign = async (user, campaign) => {
   const wTx = await takeWriteTx();
+  const internalId = campaign.internal_id
+    ? escapeString(campaign.internal_id)
+    : uuid();
   const query = `insert $campaign isa Campaign,
-    has internal_id "${
-      campaign.internal_id ? escapeString(campaign.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "campaign",
     has stix_id "${
       campaign.stix_id ? escapeString(campaign.stix_id) : `campaign--${uuid()}`
@@ -136,7 +137,7 @@ export const addCampaign = async (user, campaign) => {
 
   await wTx.commit();
 
-  return getById(createdCampaignId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

@@ -38,12 +38,11 @@ export const findById = attackPatternId => getById(attackPatternId);
 
 export const addAttackPattern = async (user, attackPattern) => {
   const wTx = await takeWriteTx();
+  const internalId = attackPattern.internal_id
+    ? escapeString(attackPattern.internal_id)
+    : uuid();
   const query = `insert $attackPattern isa Attack-Pattern,
-    has internal_id "${
-      attackPattern.internal_id
-        ? escapeString(attackPattern.internal_id)
-        : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "attack-pattern",
     has stix_id "${
       attackPattern.stix_id
@@ -138,7 +137,7 @@ export const addAttackPattern = async (user, attackPattern) => {
 
   await wTx.commit();
 
-  return getById(createdAttackPatternId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

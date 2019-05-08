@@ -196,8 +196,9 @@ export const stixDomainEntityRefreshExport = async (
   type
 ) => {
   const wTx = await takeWriteTx();
+  const internalId = uuid();
   const query = `insert $export isa Export, 
-  has internal_id "${uuid()}",
+  has internal_id "${internalId}",
   has export_type "${escapeString(type)}",
   has object_status 0,
   has raw_data "",
@@ -244,14 +245,13 @@ export const stixDomainEntityExportPush = async (
 
 export const addStixDomainEntity = async (user, stixDomainEntity) => {
   const wTx = await takeWriteTx();
+  const internalId = stixDomainEntity.internal_id
+    ? escapeString(stixDomainEntity.internal_id)
+    : uuid();
   const stixDomainEntityIterator = await wTx.query(`insert $stixDomainEntity isa ${escape(
     stixDomainEntity.type
   )},
-    has internal_id "${
-      stixDomainEntity.internal_id
-        ? escapeString(stixDomainEntity.internal_id)
-        : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "${escapeString(stixDomainEntity.type.toLowerCase())}",
     has stix_id "${
       stixDomainEntity.stix_id
@@ -305,7 +305,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
 
   await wTx.commit();
 
-  return getById(createdStixDomainEntityId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

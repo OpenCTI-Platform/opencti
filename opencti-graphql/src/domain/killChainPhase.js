@@ -49,12 +49,11 @@ export const markingDefinitions = (killChainPhaseId, args) =>
 
 export const addKillChainPhase = async (user, killChainPhase) => {
   const wTx = await takeWriteTx();
+  const internalId = killChainPhase.internal_id
+    ? escapeString(killChainPhase.internal_id)
+    : uuid();
   const killChainPhaseIterator = await wTx.query(`insert $killChainPhase isa Kill-Chain-Phase,
-    has internal_id "${
-      killChainPhase.internal_id
-        ? escapeString(killChainPhase.internal_id)
-        : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "kill-chain-phase",
     has stix_id "${
       killChainPhase.stix_id
@@ -93,7 +92,7 @@ export const addKillChainPhase = async (user, killChainPhase) => {
 
   await wTx.commit();
 
-  return getById(createdKillChainPhaseId).then(created =>
+  return getById(internalId).then(created =>
     notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created, user)
   );
 };

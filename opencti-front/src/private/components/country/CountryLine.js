@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight, AccountBalance } from '@material-ui/icons';
+import { KeyboardArrowRight, Flag } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
 
@@ -78,7 +78,7 @@ class CountryLineComponent extends Component {
         to={`/dashboard/catalogs/countries/${country.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <AccountBalance />
+          <Flag />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -131,7 +131,7 @@ class CountryLineDummyComponent extends Component {
     return (
       <ListItem classes={{ default: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <AccountBalance />
+          <Flag />
         </ListItemIcon>
         <ListItemText
           primary={

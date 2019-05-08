@@ -51,12 +51,11 @@ export const findById = markingDefinitionId => getById(markingDefinitionId);
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
   const wTx = await takeWriteTx();
+  const internalId = markingDefinition.internal_id
+    ? escapeString(markingDefinition.internal_id)
+    : uuid();
   const markingDefinitionIterator = await wTx.query(`insert $markingDefinition isa Marking-Definition,
-    has internal_id "${
-      markingDefinition.internal_id
-        ? escapeString(markingDefinition.internal_id)
-        : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "marking-definition",
     has stix_id "${
       markingDefinition.stix_id
@@ -98,7 +97,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
 
   await wTx.commit();
 
-  return getById(createdMarkingDefinitionId).then(created =>
+  return getById(internalId).then(created =>
     notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created, user)
   );
 };

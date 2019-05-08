@@ -37,10 +37,11 @@ export const findById = intrusionSetId => getById(intrusionSetId);
 
 export const addIntrusionSet = async (user, intrusionSet) => {
   const wTx = await takeWriteTx();
+  const internalId = intrusionSet.internal_id
+    ? escapeString(intrusionSet.internal_id)
+    : uuid();
   const query = `insert $intrusionSet isa Intrusion-Set,
-    has internal_id "${
-      intrusionSet.internal_id ? escapeString(intrusionSet.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "intrusion-set",
     has stix_id "${
       intrusionSet.stix_id
@@ -139,7 +140,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
 
   await wTx.commit();
 
-  return getById(createdIntrusionSetId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

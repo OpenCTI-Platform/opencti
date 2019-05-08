@@ -23,10 +23,9 @@ export const findById = cityId => getById(cityId);
 
 export const addCity = async (user, city) => {
   const wTx = await takeWriteTx();
+  const internalId = city.internal_id ? escapeString(city.internal_id) : uuid();
   const cityIterator = await wTx.query(`insert $city isa City,
-    has internal_id "${
-      city.internal_id ? escapeString(city.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "city",
     has stix_id "${
       city.stix_id ? escapeString(city.stix_id) : `city--${uuid()}`
@@ -72,7 +71,7 @@ export const addCity = async (user, city) => {
 
   await wTx.commit();
 
-  return getById(createdCityId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

@@ -87,14 +87,13 @@ export const token = userId =>
 
 export const addPerson = async (user, newUser) => {
   const wTx = await takeWriteTx();
+  const internalId = newUser.internal_id
+    ? escapeString(newUser.internal_id)
+    : uuid();
   const query = `insert $user isa User,
-    has internal_id "${
-      newUser.internal_id ? escapeString(newUser.internal_id) : uuid()
-    }",
+    has internal_id "",
     has entity_type "user",
-    has stix_id "${
-      newUser.stix_id ? escapeString(newUser.stix_id) : `user--${uuid()}`
-    }",
+    has stix_id "${internalId}",
     has stix_label "",
     has alias "",
     has name "${escapeString(newUser.name)}",
@@ -122,7 +121,7 @@ export const addPerson = async (user, newUser) => {
 
   await wTx.commit();
 
-  return getById(createdUserId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
@@ -131,10 +130,11 @@ export const addPerson = async (user, newUser) => {
 export const addUser = async (user, newUser, displayToken = false) => {
   const newToken = generateOpenCTIWebToken();
   const wTx = await takeWriteTx();
+  const internalId = newUser.internal_id
+    ? escapeString(newUser.internal_id)
+    : uuid();
   const query = `insert $user isa User,
-    has internal_id "${
-      newUser.internal_id ? escapeString(newUser.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "user",
     has stix_id "${
       newUser.stix_id ? escapeString(newUser.stix_id) : `user--${uuid()}`
@@ -204,7 +204,6 @@ export const addUser = async (user, newUser, displayToken = false) => {
   await wTx.query(`match $user isa User, has email "${newUser.email}"; 
                    $token isa Token, has uuid "${newToken.uuid}"; 
                    insert (client: $user, authorization: $token) isa authorize, has internal_id "${uuid()}";`);
-
   await wTx.commit();
 
   if (displayToken) {
@@ -217,7 +216,7 @@ export const addUser = async (user, newUser, displayToken = false) => {
     );
   }
 
-  return getById(createdUserId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

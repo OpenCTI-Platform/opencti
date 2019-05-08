@@ -23,10 +23,11 @@ export const getSettings = () =>
 
 export const addSettings = async (user, settings) => {
   const wTx = await takeWriteTx();
+  const internalId = settings.internal_id
+    ? escapeString(settings.internal_id)
+    : uuid();
   const settingsIterator = await wTx.query(`insert $settings isa Settings,
-    has internal_id "${
-      settings.internal_id ? escapeString(settings.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "settings",
     has platform_title "${escapeString(settings.platform_title)}",
     has platform_email "${escapeString(settings.platform_email)}",
@@ -42,7 +43,7 @@ export const addSettings = async (user, settings) => {
 
   await wTx.commit();
 
-  return getById(createdSettingsId).then(created =>
+  return getById(internalId).then(created =>
     notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user)
   );
 };

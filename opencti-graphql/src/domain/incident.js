@@ -44,10 +44,11 @@ export const findById = incidentId => getById(incidentId);
 
 export const addIncident = async (user, incident) => {
   const wTx = await takeWriteTx();
+  const internalId = incident.internal_id
+    ? escapeString(incident.internal_id)
+    : uuid();
   const incidentIterator = await wTx.query(`insert $incident isa Incident,
-    has internal_id "${
-      incident.internal_id ? escapeString(incident.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "incident",
     has stix_id "${
       incident.stix_id ? escapeString(incident.stix_id) : `incident--${uuid()}`
@@ -119,7 +120,7 @@ export const addIncident = async (user, incident) => {
 
   await wTx.commit();
 
-  return getById(createdIncidentId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

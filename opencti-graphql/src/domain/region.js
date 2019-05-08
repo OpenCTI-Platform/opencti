@@ -23,10 +23,11 @@ export const findById = regionId => getById(regionId);
 
 export const addRegion = async (user, region) => {
   const wTx = await takeWriteTx();
+  const internalId = region.internal_id
+    ? escapeString(region.internal_id)
+    : uuid();
   const regionIterator = await wTx.query(`insert $region isa Region,
-    has internal_id "${
-      region.internal_id ? escapeString(region.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "region",
     has stix_id "${
       region.stix_id ? escapeString(region.stix_id) : `region--${uuid()}`
@@ -72,7 +73,7 @@ export const addRegion = async (user, region) => {
 
   await wTx.commit();
 
-  return getById(createdRegionId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

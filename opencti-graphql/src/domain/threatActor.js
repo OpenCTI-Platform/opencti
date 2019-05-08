@@ -37,10 +37,9 @@ export const findById = threatActorId => getById(threatActorId);
 
 export const addThreatActor = async (user, threatActor) => {
   const wTx = await takeWriteTx();
+  const internalId = threatActor.internal_id ? escapeString(threatActor.internal_id) : uuid()
   const threatActorIterator = await wTx.query(`insert $threatActor isa Threat-Actor,
-    has internal_id "${
-      threatActor.internal_id ? escapeString(threatActor.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "threat-actor",
     has stix_id "${
       threatActor.stix_id
@@ -101,7 +100,7 @@ export const addThreatActor = async (user, threatActor) => {
 
   await wTx.commit();
 
-  return getById(createThreatActorId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

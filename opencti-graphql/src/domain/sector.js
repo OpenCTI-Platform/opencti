@@ -40,10 +40,11 @@ export const subsectors = (sectorId, args) =>
 
 export const addSector = async (user, sector) => {
   const wTx = await takeWriteTx();
+  const internalId = sector.internal_id
+    ? escapeString(sector.internal_id)
+    : uuid();
   const sectorIterator = await wTx.query(`insert $sector isa Sector,
-    has internal_id "${
-      sector.internal_id ? escapeString(sector.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "sector",
     has stix_id "${
       sector.stix_id ? escapeString(sector.stix_id) : `sector--${uuid()}`
@@ -89,7 +90,7 @@ export const addSector = async (user, sector) => {
 
   await wTx.commit();
 
-  return getById(createdSectorId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

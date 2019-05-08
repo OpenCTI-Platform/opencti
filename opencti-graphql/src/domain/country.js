@@ -23,10 +23,9 @@ export const findById = countryId => getById(countryId);
 
 export const addCountry = async (user, country) => {
   const wTx = await takeWriteTx();
+  const internalId = country.internal_id ? escapeString(country.internal_id) : uuid()
   const countryIterator = await wTx.query(`insert $country isa Country,
-    has internal_id "${
-      country.internal_id ? escapeString(country.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "country",
     has stix_id "${
       country.stix_id ? escapeString(country.stix_id) : `country--${uuid()}`
@@ -72,7 +71,7 @@ export const addCountry = async (user, country) => {
 
   await wTx.commit();
 
-  return getById(createdCountryId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

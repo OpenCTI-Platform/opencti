@@ -23,10 +23,9 @@ export const findById = toolId => getById(toolId);
 
 export const addTool = async (user, tool) => {
   const wTx = await takeWriteTx();
+  const internalId = tool.internal_id ? escapeString(tool.internal_id) : uuid()
   const toolIterator = await wTx.query(`insert $tool isa Tool,
-    has internal_id "${
-      tool.internal_id ? escapeString(tool.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "tool",
     has stix_id "${
       tool.stix_id ? escapeString(tool.stix_id) : `tool--${uuid()}`
@@ -86,7 +85,7 @@ export const addTool = async (user, tool) => {
 
   await wTx.commit();
 
-  return getById(createdToolId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

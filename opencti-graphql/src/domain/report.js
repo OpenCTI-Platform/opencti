@@ -137,10 +137,11 @@ export const relationRefs = (reportId, args) =>
 
 export const addReport = async (user, report) => {
   const wTx = await takeWriteTx();
+  const internalId = report.internal_id
+    ? escapeString(report.internal_id)
+    : uuid();
   const reportIterator = await wTx.query(`insert $report isa Report,
-    has internal_id "${
-      report.internal_id ? escapeString(report.internal_id) : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "report",
     has stix_id "${
       report.stix_id ? escapeString(report.stix_id) : `report--${uuid()}`
@@ -198,7 +199,7 @@ export const addReport = async (user, report) => {
 
   await wTx.commit();
 
-  return getById(createdReportId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

@@ -23,12 +23,11 @@ export const findById = courseOfActionId => getById(courseOfActionId);
 
 export const addCourseOfAction = async (user, courseOfAction) => {
   const wTx = await takeWriteTx();
+  const internalId = courseOfAction.internal_id
+    ? escapeString(courseOfAction.internal_id)
+    : uuid();
   const courseOfActionIterator = await wTx.query(`insert $courseOfAction isa Course-Of-Action,
-    has internal_id "${
-      courseOfAction.internal_id
-        ? escapeString(courseOfAction.internal_id)
-        : uuid()
-    }",
+    has internal_id "${internalId}",
     has entity_type "course-of-action",
     has stix_id "${
       courseOfAction.stix_id
@@ -96,7 +95,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
 
   await wTx.commit();
 
-  return getById(createdCourseOfActionId).then(created => {
+  return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
