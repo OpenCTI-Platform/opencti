@@ -28,7 +28,7 @@ import { stixDomainEntityDeleteRelation } from '../domain/stixDomainEntity';
 const stixRelationResolvers = {
   Query: {
     stixRelation: (_, { id }) => {
-      if (/V(\d+)$/i.exec(id) === null) {
+      if (id.length !== 36) {
         return findByIdInferred(id);
       }
       return findById(id);

@@ -4,7 +4,7 @@ import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { delUserContext } from '../database/redis';
-import { AuthenticationFailure } from '../config/errors';
+import { AuthenticationFailure, ForbiddenAccess } from '../config/errors';
 import conf, {
   BUS_TOPICS,
   logger,
@@ -14,7 +14,6 @@ import conf, {
   OPENCTI_WEB_TOKEN
 } from '../config/conf';
 import {
-  escape,
   escapeString,
   getObject,
   deleteEntityById,
@@ -307,6 +306,20 @@ export const userDelete = userId => {
 
 export const userEditField = (user, userId, input) => {
   const { key } = input;
+  const value =
+    key === 'password' ? [bcrypt.hashSync(head(input.value), 10)] : input.value;
+  const finalInput = { key, value };
+  return updateAttribute(userId, finalInput).then(userToEdit => {
+    index('stix-domain-entities', 'stix_domain_entity', userToEdit);
+    return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
+  });
+};
+
+export const meEditField = (user, userId, input) => {
+  const { key } = input;
+  if (key === 'grant') {
+    throw new ForbiddenAccess();
+  }
   const value =
     key === 'password' ? [bcrypt.hashSync(head(input.value), 10)] : input.value;
   const finalInput = { key, value };

@@ -2645,7 +2645,7 @@ type Mutation {
   identityEdit(id: ID!): IdentityEditMutations @auth
   # User
   userAdd(input: UserAddInput): User @auth(for: ROLE_ADMIN)
-  personAdd(input: PersonAddInput): User @auth(for: ROLE_ADMIN)
+  personAdd(input: PersonAddInput): User @auth
   userEdit(id: ID!): UserEditMutations @auth(for: ROLE_ADMIN)
   meEdit(input: EditInput): User @auth
   logout: ID @auth

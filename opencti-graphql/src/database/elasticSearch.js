@@ -202,6 +202,6 @@ export const getAttributes = (indexName, type, id) => {
       return data._source;
     })
     .catch(() => {
-      return {};
+      return Promise.resolve({});
     });
 };

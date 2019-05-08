@@ -11,6 +11,7 @@ import {
   login,
   logout,
   userEditField,
+  meEditField,
   userRenewToken,
   setAuthenticationCookie
 } from '../domain/user';
@@ -60,7 +61,7 @@ const userResolvers = {
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)
     }),
-    meEdit: (_, { input }, { user }) => userEditField(user, user.id, input),
+    meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
     personAdd: (_, { input }, { user }) => addPerson(user, input),
     userAdd: (_, { input }, { user }) => addUser(user, input)
   }

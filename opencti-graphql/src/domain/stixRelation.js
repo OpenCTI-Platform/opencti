@@ -347,7 +347,7 @@ export const stixRelationsDistribution = args => {
         : ''
     } ${
       args.fromId
-        ? `$from has internal_id "${escapeString(args.fromId)}`
+        ? `$from has internal_id "${escapeString(args.fromId)}"`
         : '$from isa Stix-Domain-Entity'
     }`,
     args

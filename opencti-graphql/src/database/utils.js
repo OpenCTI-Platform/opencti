@@ -49,6 +49,12 @@ export const randomKey = number => {
   return key;
 };
 
+export const replaceAll = (str, replaceWhat, replaceTo) => {
+  const replace = replaceWhat.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const re = new RegExp(replace, 'g');
+  return str.replace(re, replaceTo);
+};
+
 /**
  * Pure building of pagination expected format.
  * @param first

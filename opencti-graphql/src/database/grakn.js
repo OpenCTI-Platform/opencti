@@ -23,7 +23,12 @@ import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
 import conf, { logger } from '../config/conf';
 import { pubsub } from './redis';
-import { fillTimeSeries, randomKey, buildPagination } from './utils';
+import {
+  fillTimeSeries,
+  randomKey,
+  buildPagination,
+  replaceAll
+} from './utils';
 import { isInversed } from './graknRoles';
 import { getAttributes as elGetAttributes } from './elasticSearch';
 import { Unknown } from '../config/errors';
@@ -447,6 +452,7 @@ export const getRelationInferredById = async id => {
     });
     const inferencesQueries = pluck('inferenceQuery', inferences);
     const inferencesQuery = `match {${join(' ', inferencesQueries)} }; get;`;
+    logger.debug(`[GRAKN - infer: true] ${inferencesQuery}`);
     const inferencesAnswerIterator = await rTx.query(inferencesQuery);
     const inferencesAnswer = await inferencesAnswerIterator.next();
     const inferencesPromises = Promise.all(
@@ -509,7 +515,10 @@ export const getRelationInferredById = async id => {
             .replace(regexToType, '');
           inferenceId = Buffer.from(inferenceQuery).toString('base64');
         } else {
-          inferenceId = inferencesAnswer.map().get(inference.relationKey).id;
+          const inferenceAttributes = await getAttributes(
+            inferencesAnswer.map().get(inference.relationKey)
+          );
+          inferenceId = inferenceAttributes.internal_id;
         }
         const fromAttributes = await getAttributes(inferenceFrom);
         const toAttributes = await getAttributes(inferenceTo);
@@ -749,6 +758,7 @@ export const getRelations = async (
       answers.map(async answer => {
         const relationObject = answer.map().get(key);
         const relationType = await relationObject.type();
+        const relationTypeLabel = await relationType.label();
         const rolePlayersMap = await relationObject.rolePlayersMap();
         const roles = rolePlayersMap.keys();
         const fromRole = roles.next().value;
@@ -766,21 +776,13 @@ export const getRelations = async (
         const relationIsInferred = await relationObject.isInferred();
         let relationPromise = await Promise.resolve(null);
         if (relationIsInferred) {
-          const explanation = answer.explanation();
-          let queryPattern = explanation.queryPattern();
-          queryPattern = queryPattern
-            .replace(
-              `$from id ${answer.map().get(fromKey).id};`,
-              `$from id ${answer.map().get(fromKey).id}; $to id ${
-                answer.map().get(toKey).id
-              };`
-            )
-            .replace(/\$from\sisa\s[\w-_]+;/gi, '')
-            .replace(/\$to\sisa\s[\w-_]+;/gi, '');
+          const queryPattern = `{ $rel(${fromRoleLabel}: $from, ${toRoleLabel}: $to) isa ${relationTypeLabel}; $from id ${
+            fromObject.id
+          }; $to id ${toObject.id}; };`;
           relationPromise = await Promise.resolve({
             id: Buffer.from(queryPattern).toString('base64'),
             type: 'stix_relation',
-            relationship_type: await relationType.label(),
+            relationship_type: relationTypeLabel,
             inferred: true
           });
         } else {
