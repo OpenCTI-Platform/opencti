@@ -57,6 +57,7 @@ export const index = (indexName, documentType, documentBody) => {
 };
 
 export const deleteEntity = async (indexName, documentType, documentId) => {
+  logger.debug(`[ELASTICSEARCH] deleteById ${documentId} on ${indexName}`);
   await el
     .delete({
       index: indexName,

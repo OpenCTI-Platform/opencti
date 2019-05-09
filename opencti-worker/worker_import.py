@@ -10,7 +10,7 @@ from pycti import OpenCTI
 from logger import Logger
 
 
-class WorkerExport:
+class WorkerImport:
     def __init__(self, verbose=True):
         # Initialize logger
         self.logger = Logger(os.path.dirname(os.path.abspath(__file__)) + '/logs/worker.log')
@@ -55,5 +55,5 @@ class WorkerExport:
 
 
 if __name__ == '__main__':
-    worker_export = WorkerExport()
-    worker_export.consume()
+    worker_import = WorkerImport()
+    worker_import.consume()

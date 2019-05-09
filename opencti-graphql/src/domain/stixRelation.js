@@ -50,7 +50,7 @@ import {
 } from '../database/grakn';
 import { buildPagination } from '../database/utils';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { index } from '../database/elasticSearch';
+import { deleteEntity, index } from '../database/elasticSearch';
 
 const sumBy = attribute => vals =>
   reduce(
@@ -607,7 +607,10 @@ export const addStixRelation = async (user, stixRelation) => {
   });
 };
 
-export const stixRelationDelete = stixRelationId => deleteById(stixRelationId);
+export const stixRelationDelete = async stixRelationId => {
+  await deleteEntity('stix-relations', 'stix_relation', stixRelationId);
+  return deleteById(stixRelationId);
+};
 
 export const stixRelationCleanContext = (user, stixRelationId) => {
   delEditContext(user, stixRelationId);

@@ -165,7 +165,6 @@ class ReportKnowledgeGraphComponent extends Component {
       const newNodes = map(
         n => new EntityNodeModel({
           id: n.node.id,
-          internalId: n.node.internal_id,
           relationId: n.relation.id,
           name: n.node.name,
           type: n.node.entity_type,
@@ -227,7 +226,6 @@ class ReportKnowledgeGraphComponent extends Component {
     forEach((n) => {
       const newNode = new EntityNodeModel({
         id: n.node.id,
-        internalId: n.node.internal_id,
         relationId: n.relation.id,
         name: n.node.name,
         type: n.node.entity_type,
@@ -235,7 +233,6 @@ class ReportKnowledgeGraphComponent extends Component {
       newNode.addListener({
         selectionChanged: this.handleSelection.bind(this),
       });
-      console.log(graphData);
       const position = pathOr(
         null,
         ['nodes', n.node.id, 'position'],
@@ -681,7 +678,6 @@ const ReportKnowledgeGraph = createFragmentContainer(
     report: graphql`
       fragment ReportKnowledgeGraph_report on Report {
         id
-        internal_id
         name
         graph_data
         published
@@ -690,7 +686,6 @@ const ReportKnowledgeGraph = createFragmentContainer(
           edges {
             node {
               id
-              internal_id
               entity_type
               name
               description
@@ -706,19 +701,16 @@ const ReportKnowledgeGraph = createFragmentContainer(
           edges {
             node {
               id
-              internal_id
               relationship_type
               first_seen
               last_seen
               from {
                 id
-                internal_id
                 entity_type
                 name
               }
               to {
                 id
-                internal_id
                 entity_type
                 name
               }

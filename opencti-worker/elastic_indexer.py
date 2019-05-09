@@ -113,9 +113,13 @@ class ElasticIndexer:
 
     def index(self):
         print('Indexing...')
+        print('Observables...')
         self.index_stix_observables()
+        print('Entities...')
         self.index_stix_domain_entities()
+        print('External references...')
         self.index_external_references()
+        print('Relations...')
         self.index_relations()
         print('Index done.')
 

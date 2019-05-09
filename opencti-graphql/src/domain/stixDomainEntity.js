@@ -223,7 +223,7 @@ export const stixDomainEntityRefreshExport = async (
       type,
       entity_type: stixDomainEntityType,
       entity_id: stixDomainEntityId,
-      export_id: createdExportId
+      export_id: internalId
     })
   );
   return getById(stixDomainEntityId);

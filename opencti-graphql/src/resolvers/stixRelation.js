@@ -75,10 +75,10 @@ const stixRelationResolvers = {
       markingDefinitions(stixRelation.id, args),
     locations: (stixRelation, args) => locations(stixRelation.id, args),
     reports: (stixRelation, args) => {
-      if (/V(\d+)$/i.exec(stixRelation.id) !== null) {
-        return reports(stixRelation.id, args);
+      if (stixRelation.id.length !== 36) {
+        return null;
       }
-      return null;
+      return reports(stixRelation.id, args);
     },
     editContext: stixRelation => fetchEditContext(stixRelation.id)
   },
