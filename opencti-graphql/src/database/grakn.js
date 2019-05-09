@@ -123,6 +123,29 @@ export const write = async query => {
 };
 
 /**
+ * Get the Grakn ID from internal id
+ * @param internalId
+ * @returns {Promise<any[] | never>}
+ */
+export const getId = async internalId => {
+  const rTx = await takeReadTx();
+  try {
+    const query = `match $x has internal_id "${escapeString(
+      internalId
+    )}"; get $x;`;
+    logger.debug(`[GRAKN - infer: false] ${query}`);
+    const iterator = await rTx.query(query);
+    const answer = await iterator.next();
+    const concept = answer.map().get('x');
+    await rTx.close();
+    return Promise.resolve(concept.id);
+  } catch (error) {
+    rTx.close();
+    return Promise.resolve(null);
+  }
+};
+
+/**
  * Load any grakn instance with internal grakn ID.
  * @param concept
  * @param graknAttributes

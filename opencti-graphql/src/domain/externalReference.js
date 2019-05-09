@@ -2,7 +2,6 @@ import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
-  escape,
   escapeString,
   createRelation,
   deleteEntityById,
@@ -16,9 +15,10 @@ import {
   notify,
   now,
   paginate,
-  takeWriteTx
+  takeWriteTx,
+  getId
 } from '../database/grakn';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logger } from '../config/conf';
 import {
   deleteEntity,
   index,
@@ -57,7 +57,7 @@ export const addExternalReference = async (user, externalReference) => {
   const internalId = externalReference.internal_id
     ? escapeString(externalReference.internal_id)
     : uuid();
-  const externalReferenceIterator = await wTx.query(`insert $externalReference isa External-Reference,
+  const query = `insert $externalReference isa External-Reference,
     has internal_id "${internalId}",
     has entity_type "external-reference",
     has stix_id "${
@@ -86,7 +86,9 @@ export const addExternalReference = async (user, externalReference) => {
     has created_at_month "${monthFormat(now())}",
     has created_at_year "${yearFormat(now())}",  
     has updated_at ${now()};
-  `);
+  `;
+  logger.debug(`[GRAKN - infer: false] ${query}`);
+  const externalReferenceIterator = await wTx.query(query);
   const createExternalReference = await externalReferenceIterator.next();
   const createdExternalReferenceId = await createExternalReference
     .map()
@@ -123,12 +125,9 @@ export const addExternalReference = async (user, externalReference) => {
   });
 };
 
-export const externalReferenceDelete = externalReferenceId => {
-  deleteEntity(
-    'external-references',
-    'external_reference',
-    externalReferenceId
-  );
+export const externalReferenceDelete = async externalReferenceId => {
+  const graknId = await getId(externalReferenceId);
+  await deleteEntity('external-references', 'external_reference', graknId);
   return deleteEntityById(externalReferenceId);
 };
 

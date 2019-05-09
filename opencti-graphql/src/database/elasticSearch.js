@@ -91,7 +91,7 @@ export const paginate = (indexName, options) => {
         .replace('http://', '')
         .replace('https://', '')}*"`;
     } else {
-      finalSearch = `*${search}*`;
+      finalSearch = `${search}`;
     }
     must = append(
       {

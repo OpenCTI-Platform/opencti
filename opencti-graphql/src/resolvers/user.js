@@ -3,7 +3,6 @@ import conf from '../config/conf';
 import {
   addUser,
   addPerson,
-  userDelete,
   findAll,
   findById,
   groups,
@@ -24,7 +23,8 @@ import {
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -52,7 +52,7 @@ const userResolvers = {
       }),
     logout: (_, args, context) => logout(context.user, context.res),
     userEdit: (_, { id }, { user }) => ({
-      delete: () => userDelete(id),
+      delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => userEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

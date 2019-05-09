@@ -92,8 +92,6 @@ class AddExternalReferences extends Component {
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
-      orderBy: 'created_at',
-      orderMode: 'desc',
     };
     return (
       <div>

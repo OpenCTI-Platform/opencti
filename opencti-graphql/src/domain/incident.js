@@ -1,7 +1,6 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escape,
   escapeString,
   getById,
   prepareDate,
@@ -14,7 +13,7 @@ import {
   takeWriteTx,
   timeSeries
 } from '../database/grakn';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logger } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
@@ -47,7 +46,7 @@ export const addIncident = async (user, incident) => {
   const internalId = incident.internal_id
     ? escapeString(incident.internal_id)
     : uuid();
-  const incidentIterator = await wTx.query(`insert $incident isa Incident,
+  const query = `insert $incident isa Incident,
     has internal_id "${internalId}",
     has entity_type "incident",
     has stix_id "${
@@ -91,7 +90,9 @@ export const addIncident = async (user, incident) => {
     has created_at_month "${monthFormat(now())}",
     has created_at_year "${yearFormat(now())}", 
     has updated_at ${now()};
-  `);
+  `;
+  logger.debug(`[GRAKN - infer: false] ${query}`);
+  const incidentIterator = await wTx.query(query);
   const createIncident = await incidentIterator.next();
   const createdIncidentId = await createIncident.map().get('incident').id;
 

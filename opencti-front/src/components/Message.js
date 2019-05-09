@@ -38,9 +38,11 @@ class Message extends Component {
     this.subscription = MESSAGING$.messages.subscribe({
       next: (messages) => {
         const firstMessage = head(messages);
-        const text = this.props.t(firstMessage.text);
-        const error = firstMessage.type === 'error';
-        this.setState({ open: true, error, text });
+        if (firstMessage) {
+          const text = this.props.t(firstMessage.text);
+          const error = firstMessage.type === 'error';
+          this.setState({ open: true, error, text });
+        }
       },
     });
   }

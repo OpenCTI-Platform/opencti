@@ -20,7 +20,8 @@ import {
   getObject,
   getSingleValueNumber,
   prepareDate,
-  queryOne
+  queryOne,
+  getId
 } from '../database/grakn';
 import {
   deleteEntity,
@@ -312,11 +313,8 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
 };
 
 export const stixDomainEntityDelete = async stixDomainEntityId => {
-  await deleteEntity(
-    'stix-domain-entities',
-    'stix_domain_entity',
-    stixDomainEntityId
-  );
+  const graknId = await getId(stixDomainEntityId);
+  await deleteEntity('stix-domain-entities', 'stix_domain_entity', graknId);
   return deleteEntityById(stixDomainEntityId);
 };
 

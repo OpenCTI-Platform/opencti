@@ -17,7 +17,8 @@ import {
   paginate,
   takeWriteTx,
   timeSeries,
-  getObject
+  getObject,
+  getId
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import {
@@ -204,8 +205,9 @@ export const addStixObservable = async (user, stixObservable) => {
   });
 };
 
-export const stixObservableDelete = stixObservableId => {
-  deleteEntity('stix-observables', 'stix_observable', stixObservableId);
+export const stixObservableDelete = async stixObservableId => {
+  const graknId = await getId(stixObservableId);
+  await deleteEntity('stix-observables', 'stix_observable', graknId);
   return deleteEntityById(stixObservableId);
 };
 

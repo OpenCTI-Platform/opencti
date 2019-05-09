@@ -64,7 +64,7 @@ class StixObservableEditionContainer extends Component {
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a stixObservable')}
+            {t('Update an observable')}
           </Typography>
           <SubscriptionAvatars users={editUsers} />
           <div className="clearfix" />

@@ -46,7 +46,8 @@ import {
   timeSeries,
   distribution,
   takeWriteTx,
-  getObjects
+  getObjects,
+  getId
 } from '../database/grakn';
 import { buildPagination } from '../database/utils';
 import { BUS_TOPICS, logger } from '../config/conf';
@@ -608,7 +609,8 @@ export const addStixRelation = async (user, stixRelation) => {
 };
 
 export const stixRelationDelete = async stixRelationId => {
-  await deleteEntity('stix-relations', 'stix_relation', stixRelationId);
+  const graknId = await getId(stixRelationId);
+  await deleteEntity('stix-relations', 'stix_relation', graknId);
   return deleteById(stixRelationId);
 };
 

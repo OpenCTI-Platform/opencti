@@ -298,11 +298,6 @@ export const userRenewToken = async (user, userId) => {
   return getById(userId);
 };
 
-export const userDelete = userId => {
-  deleteEntity('stix-domain-entities', 'stix_domain_entity', userId);
-  return deleteEntityById(userId);
-};
-
 export const userEditField = (user, userId, input) => {
   const { key } = input;
   const value =
