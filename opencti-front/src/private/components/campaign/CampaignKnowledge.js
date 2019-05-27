@@ -143,7 +143,9 @@ class CampaignKnowledgeComponent extends Component {
                 relationType="uses"
                 targetEntityTypes={['Attack-Pattern']}
                 entityLink={link}
-                exploreLink={`/dashboard/explore/attack_patterns/${campaign.id}`}
+                exploreLink={`/dashboard/explore/attack_patterns/${
+                  campaign.id
+                }`}
                 {...routeProps}
               />
             )}

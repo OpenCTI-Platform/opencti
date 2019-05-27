@@ -262,8 +262,8 @@ export default withStyles(styles)(
           @argumentDefinitions(
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
-            orderBy: { type: "CampaignsOrdering", defaultValue: ID }
-            orderMode: { type: "OrderingMode", defaultValue: "name" }
+            orderBy: { type: "CampaignsOrdering", defaultValue: "name" }
+            orderMode: { type: "OrderingMode", defaultValue: "asc" }
           ) {
           campaigns(
             first: $count

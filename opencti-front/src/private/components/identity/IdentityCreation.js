@@ -46,7 +46,7 @@ const styles = theme => ({
     textAlign: 'right',
   },
   button: {
-    marginLeft: theme.spacing.unit * 2,
+    marginLeft: theme.spacing(2),
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
@@ -284,7 +284,6 @@ class IdentityCreation extends Component {
                     component={Select}
                     label={t('Entity type')}
                     fullWidth={true}
-                    displayEmpty={true}
                     inputProps={{
                       name: 'type',
                       id: 'type',

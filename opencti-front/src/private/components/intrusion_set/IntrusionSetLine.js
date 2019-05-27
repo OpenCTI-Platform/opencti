@@ -33,12 +33,12 @@ const styles = theme => ({
     marginRight: 0,
   },
   itemIconDisabled: {
-    color: theme.palette.text.disabled,
+    color: theme.palette.grey[700],
   },
   placeholder: {
     display: 'inline-block',
     height: '1em',
-    backgroundColor: theme.palette.text.disabled,
+    backgroundColor: theme.palette.grey[700],
   },
 });
 
@@ -73,7 +73,7 @@ class IntrusionSetLineComponent extends Component {
     const { fd, classes, intrusionSet } = this.props;
     return (
       <ListItem
-        classes={{ default: classes.item }}
+        classes={{ root: classes.item }}
         divider={true}
         component={Link}
         to={`/dashboard/knowledge/intrusion_sets/${intrusionSet.id}`}
@@ -133,7 +133,7 @@ class IntrusionSetLineDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true}>
+      <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <Diamond />
         </ListItemIcon>

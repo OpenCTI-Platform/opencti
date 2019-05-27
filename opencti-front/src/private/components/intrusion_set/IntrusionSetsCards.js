@@ -262,8 +262,8 @@ export default withStyles(styles)(
           @argumentDefinitions(
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
-            orderBy: { type: "IntrusionSetsOrdering", defaultValue: ID }
-            orderMode: { type: "OrderingMode", defaultValue: "name" }
+            orderBy: { type: "IntrusionSetsOrdering", defaultValue: "name" }
+            orderMode: { type: "OrderingMode", defaultValue: "asc" }
           ) {
           intrusionSets(
             first: $count

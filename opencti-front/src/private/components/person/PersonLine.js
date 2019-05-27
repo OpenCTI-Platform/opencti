@@ -1,76 +1,78 @@
-import React, { Component } from "react";
-import * as PropTypes from "prop-types";
-import { compose, includes, propOr } from "ramda";
-import { createFragmentContainer } from "react-relay";
-import graphql from "babel-plugin-relay/macro";
-import { withStyles } from "@material-ui/core/styles";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import { MoreVert, Person } from "@material-ui/icons";
-import inject18n from "../../../components/i18n";
-import PersonPopover from "./PersonPopover";
+import React, { Component } from 'react';
+import * as PropTypes from 'prop-types';
+import { compose, includes, propOr } from 'ramda';
+import { createFragmentContainer } from 'react-relay';
+import graphql from 'babel-plugin-relay/macro';
+import { withStyles } from '@material-ui/core/styles';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import { MoreVert, Person } from '@material-ui/icons';
+import inject18n from '../../../components/i18n';
+import PersonPopover from './PersonPopover';
 
 const styles = theme => ({
   item: {
     paddingLeft: 10,
-    transition: "background-color 0.1s ease",
-    "&:hover": {
-      background: "rgba(0, 0, 0, 0.1)"
-    }
+    transition: 'background-color 0.1s ease',
+    '&:hover': {
+      background: 'rgba(0, 0, 0, 0.1)',
+    },
   },
   itemIcon: {
-    color: theme.palette.primary.main
+    color: theme.palette.primary.main,
   },
   bodyItem: {
-    fontSize: 13
+    fontSize: 13,
   },
   goIcon: {
-    position: "absolute",
+    position: 'absolute',
     right: 10,
-    marginRight: 0
+    marginRight: 0,
   },
   itemIconDisabled: {
-    color: theme.palette.text.disabled
+    color: theme.palette.grey[700],
   },
   placeholder: {
-    display: "inline-block",
-    height: "1em",
-    backgroundColor: theme.palette.text.disabled
-  }
+    display: 'inline-block',
+    height: '1em',
+    backgroundColor: theme.palette.grey[700],
+  },
 });
 
 const inlineStyles = {
   name: {
-    float: "left",
-    width: "60%",
+    float: 'left',
+    width: '60%',
     height: 20,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis"
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   created_at: {
-    float: "left",
-    width: "15%",
+    float: 'left',
+    width: '15%',
     height: 20,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis"
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   updated_at: {
-    float: "left",
+    float: 'left',
     height: 20,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis"
-  }
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
 };
 
 class PersonLineComponent extends Component {
   render() {
-    const { fd, classes, person, me, paginationOptions } = this.props;
+    const {
+      fd, classes, person, me, paginationOptions,
+    } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true}>
+      <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Person />
         </ListItemIcon>
@@ -93,7 +95,7 @@ class PersonLineComponent extends Component {
           <PersonPopover
             personId={person.id}
             paginationOptions={paginationOptions}
-            disabled={!includes("ROLE_ADMIN", propOr([], "grant", me))}
+            disabled={!includes('ROLE_ADMIN', propOr([], 'grant', me))}
           />
         </ListItemIcon>
       </ListItem>
@@ -106,7 +108,7 @@ PersonLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
-  fd: PropTypes.func
+  fd: PropTypes.func,
 };
 
 const PersonLineFragment = createFragmentContainer(PersonLineComponent, {
@@ -122,19 +124,19 @@ const PersonLineFragment = createFragmentContainer(PersonLineComponent, {
     fragment PersonLine_me on User {
       grant
     }
-  `
+  `,
 });
 
 export const PersonLine = compose(
   inject18n,
-  withStyles(styles)
+  withStyles(styles),
 )(PersonLineFragment);
 
 class PersonLineDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true}>
+      <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <Person />
         </ListItemIcon>
@@ -142,7 +144,7 @@ class PersonLineDummyComponent extends Component {
           primary={
             <div>
               <div className={classes.bodyItem} style={inlineStyles.name}>
-                <div className="fakeItem" style={{ width: "80%" }} />
+                <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div className={classes.bodyItem} style={inlineStyles.created_at}>
                 <div className="fakeItem" style={{ width: 80 }} />
@@ -162,10 +164,10 @@ class PersonLineDummyComponent extends Component {
 }
 
 PersonLineDummyComponent.propTypes = {
-  classes: PropTypes.object
+  classes: PropTypes.object,
 };
 
 export const PersonLineDummy = compose(
   inject18n,
-  withStyles(styles)
+  withStyles(styles),
 )(PersonLineDummyComponent);

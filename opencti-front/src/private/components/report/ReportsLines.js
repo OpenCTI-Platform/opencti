@@ -268,7 +268,7 @@ export default withStyles(styles)(
             reportClass: { type: "String" }
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
-            orderBy: { type: "ReportsOrdering", defaultValue: ID }
+            orderBy: { type: "ReportsOrdering", defaultValue: "name" }
             orderMode: { type: "OrderingMode", defaultValue: "asc" }
           ) {
           reports(

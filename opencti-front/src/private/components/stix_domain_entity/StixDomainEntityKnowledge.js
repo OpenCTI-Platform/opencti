@@ -39,7 +39,7 @@ const styles = theme => ({
     flexWrap: 'wrap',
   },
   chip: {
-    margin: theme.spacing.unit / 4,
+    margin: theme.spacing(1) / 4,
   },
 });
 
@@ -88,7 +88,7 @@ const stixDomainEntityKnowledgeQuery = graphql`
           lastSeenStart: $lastSeenStart
           lastSeenStop: $lastSeenStop
           weights: $weights
-          first: $count
+          count: $count
         )
     }
   }

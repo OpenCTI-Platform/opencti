@@ -2,20 +2,22 @@ export default {
   fontFamily: 'Roboto, sans-serif',
   palette: {
     type: 'dark',
-    text: { main: '#ffffff', disabled: '#4f4f4f', disabledDark: '#434343' },
+    text: { secondary: 'rgba(255, 255, 255, 0.5)' },
     primary: { main: '#00bcd4' },
     secondary: { main: '#ff3d00' },
     header: { background: '#000000', text: '#ffffff' },
     nav: { background: '#1a1a1a' },
     navAlt: { background: '#14262c', backgroundHeader: '#2d4b5b' },
     navBottom: { background: '#0f181f' },
-    paper: { background: '#303a3d', disabled: '#181f22' },
-    field: { background: '#265058' },
+    background: { paper: '#303a3d', paperLight: '#265058' },
     action: { disabled: '#4f4f4f' },
     divider: 'rgba(255, 255, 255, 0.2)',
   },
   typography: {
     useNextVariants: true,
+    body2: {
+      fontSize: '0.8rem',
+    },
     h1: {
       margin: '0 0 10px 0',
       padding: 0,

@@ -53,7 +53,7 @@ const styles = theme => ({
     textAlign: 'right',
   },
   button: {
-    marginLeft: theme.spacing.unit * 2,
+    marginLeft: theme.spacing(2),
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
@@ -539,7 +539,6 @@ class ReportAddObservable extends Component {
                       component={Select}
                       label={t('Observable type')}
                       fullWidth={true}
-                      displayEmpty={true}
                       inputProps={{
                         name: 'type',
                         id: 'type',
@@ -559,18 +558,17 @@ class ReportAddObservable extends Component {
                       component={Select}
                       label={t('Played role')}
                       fullWidth={true}
-                      displayEmpty={true}
                       inputProps={{
                         name: 'role_played',
                         id: 'role_played',
                       }}
                       containerstyle={{ marginTop: 20, width: '100%' }}
                     >
-                      <MenuItem value='C2 server'>{t('C2 server')}</MenuItem>
-                      <MenuItem value='Relay node'>{t('Relay node')}</MenuItem>
-                      <MenuItem value='Proxy'>{t('Proxy')}</MenuItem>
-                      <MenuItem value='Sender'>{t('Sender')}</MenuItem>
-                      <MenuItem value='Implant'>{t('Implant')}</MenuItem>
+                      <MenuItem value="C2 server">{t('C2 server')}</MenuItem>
+                      <MenuItem value="Relay node">{t('Relay node')}</MenuItem>
+                      <MenuItem value="Proxy">{t('Proxy')}</MenuItem>
+                      <MenuItem value="Sender">{t('Sender')}</MenuItem>
+                      <MenuItem value="Implant">{t('Implant')}</MenuItem>
                     </Field>
                     <Field
                       name="observable_value"
@@ -586,7 +584,6 @@ class ReportAddObservable extends Component {
                       component={Select}
                       label={t('Confidence level')}
                       fullWidth={true}
-                      displayEmpty={true}
                       inputProps={{
                         name: 'weight',
                         id: 'weight',

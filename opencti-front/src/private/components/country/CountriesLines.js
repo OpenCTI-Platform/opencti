@@ -221,7 +221,7 @@ export default withStyles(styles)(
           @argumentDefinitions(
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
-            orderBy: { type: "CountriesOrdering", defaultValue: ID }
+            orderBy: { type: "CountriesOrdering", defaultValue: "name" }
             orderMode: { type: "OrderingMode", defaultValue: "asc" }
           ) {
           countries(

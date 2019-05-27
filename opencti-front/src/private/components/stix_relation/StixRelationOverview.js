@@ -104,8 +104,6 @@ const styles = theme => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     borderRadius: 6,
   },
 });
@@ -177,7 +175,9 @@ class StixRelationContainer extends Component {
     } = this.props;
     const linkedEntity = stixRelation.to;
     const from = linkedEntity.id === entityId ? stixRelation.to : stixRelation.from;
-    const fromRole = linkedEntity.id === entityId ? stixRelation.toRole : stixRelation.fromRole;
+    const fromRole = linkedEntity.id === entityId
+      ? stixRelation.toRole
+      : stixRelation.fromRole;
     const to = linkedEntity.id === entityId ? stixRelation.from : stixRelation.to;
     const linkTo = resolveLink(
       to.parent_type === 'Stix-Observable' ? 'observable' : to.entity_type,

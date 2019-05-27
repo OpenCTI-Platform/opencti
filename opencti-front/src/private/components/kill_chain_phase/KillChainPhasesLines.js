@@ -214,7 +214,10 @@ export default withStyles(styles)(
           @argumentDefinitions(
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
-            orderBy: { type: "KillChainPhasesOrdering", defaultValue: ID }
+            orderBy: {
+              type: "KillChainPhasesOrdering"
+              defaultValue: "phase_name"
+            }
             orderMode: { type: "OrderingMode", defaultValue: "asc" }
           ) {
           killChainPhases(

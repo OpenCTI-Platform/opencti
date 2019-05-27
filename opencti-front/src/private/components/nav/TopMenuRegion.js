@@ -9,7 +9,7 @@ import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
   buttonHome: {
-    marginRight: theme.spacing.unit * 2,
+    marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
@@ -17,13 +17,13 @@ const styles = theme => ({
     backgroundColor: '#ffffff',
   },
   button: {
-    marginRight: theme.spacing.unit * 2,
+    marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
   },
   icon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
   arrow: {
     verticalAlign: 'middle',

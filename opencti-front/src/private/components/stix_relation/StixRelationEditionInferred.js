@@ -80,7 +80,9 @@ class StixRelationEditionInferred extends Component {
       handleClose,
       stixRelationId,
     } = this.props;
-    const link = stixDomainEntity ? resolveLink(stixDomainEntity.entity_type) : '';
+    const link = stixDomainEntity
+      ? resolveLink(stixDomainEntity.entity_type)
+      : '';
     return (
       <Drawer
         open={open}

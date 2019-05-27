@@ -19,8 +19,6 @@ const styles = theme => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '5px 0 10px 0',
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     borderRadius: 6,
   },
   item: {
@@ -49,7 +47,7 @@ class SectorSubsectorsComponent extends Component {
                   key={subsector.id}
                   dense={true}
                   divider={true}
-                  classes={{ default: classes.item }}
+                  classes={{ root: classes.item }}
                   button={true}
                   component={Link}
                   to={`/dashboard/knowledge/sectors/${subsector.id}`}

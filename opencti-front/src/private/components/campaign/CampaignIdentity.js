@@ -14,8 +14,6 @@ const styles = theme => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     borderRadius: 6,
   },
 });
@@ -27,16 +25,16 @@ class CampaignIdentityComponent extends Component {
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant='h4' gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Identity')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant='h3' gutterBottom={true}>
+          <Typography variant="h3" gutterBottom={true}>
             {t('First seen')}
           </Typography>
           {fld(campaign.first_seen)}
           <Typography
-            variant='h3'
+            variant="h3"
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
@@ -44,13 +42,13 @@ class CampaignIdentityComponent extends Component {
           </Typography>
           {fld(campaign.last_seen)}
           <Typography
-            variant='h3'
+            variant="h3"
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
             {t('Objective')}
           </Typography>
-          <Markdown className='markdown' source={campaign.objective} />
+          <Markdown className="markdown" source={campaign.objective} />
         </Paper>
       </div>
     );

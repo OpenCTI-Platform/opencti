@@ -24,8 +24,6 @@ const styles = theme => ({
     height: '100%',
     padding: '20px 20px 30px 20px',
     textAlign: 'left',
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     borderRadius: 6,
   },
   button: {
@@ -158,7 +156,7 @@ class Settings extends Component {
                 validationSchema={settingsValidation(t)}
                 render={() => (
                   <Form>
-                    <Grid container={true} spacing={32}>
+                    <Grid container={true} spacing={3}>
                       <Grid item={true} xs={9}>
                         <Paper classes={{ root: classes.paper }} elevation={2}>
                           <Typography variant="h1" gutterBottom={true}>
@@ -265,7 +263,7 @@ class Settings extends Component {
             );
           }
           return (
-            <Grid container={true} spacing={32}>
+            <Grid container={true} spacing={3}>
               <Grid item={true} xs={9}>
                 <Paper classes={{ root: classes.paper }} elevation={2}>
                   <Typography variant="h1" gutterBottom={true}>

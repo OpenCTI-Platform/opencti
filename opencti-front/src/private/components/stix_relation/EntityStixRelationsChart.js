@@ -23,8 +23,6 @@ const styles = theme => ({
     minHeight: 340,
     height: '100%',
     margin: '4px 0 0 0',
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     borderRadius: 6,
   },
   chip: {

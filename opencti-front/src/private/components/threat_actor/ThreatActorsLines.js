@@ -207,7 +207,7 @@ export default withStyles(styles)(
           @argumentDefinitions(
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
-            orderBy: { type: "ThreatActorsOrdering", defaultValue: ID }
+            orderBy: { type: "ThreatActorsOrdering", defaultValue: "name" }
             orderMode: { type: "OrderingMode", defaultValue: "asc" }
           ) {
           threatActors(

@@ -38,7 +38,7 @@ const styles = theme => ({
     textAlign: 'right',
   },
   button: {
-    marginLeft: theme.spacing.unit * 2,
+    marginLeft: theme.spacing(2),
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
@@ -104,9 +104,9 @@ class MarkingDefinitionCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(
-      assoc('level', parseInt(values.level, 10)),
-    )(values);
+    const finalValues = pipe(assoc('level', parseInt(values.level, 10)))(
+      values,
+    );
     commitMutation({
       mutation: markingDefinitionMutation,
       variables: {

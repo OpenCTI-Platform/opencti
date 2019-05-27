@@ -30,7 +30,7 @@ class VictimologyTime extends Component {
       <div className={classes.container}>
         <Grid
           container={true}
-          spacing={32}
+          spacing={3}
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={4}>
@@ -71,7 +71,7 @@ class VictimologyTime extends Component {
         <div className="clearfix" style={{ marginBottom: 20 }} />
         <Grid
           container={true}
-          spacing={32}
+          spacing={3}
           classes={{ container: classes.gridContainer }}
         >
           {yearsList.map(year => (

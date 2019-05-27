@@ -10,7 +10,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, pathOr, pipe, map, pluck, union,
+  compose, pathOr, pipe, map, pluck, union, assoc,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -50,7 +50,7 @@ const styles = theme => ({
     textAlign: 'right',
   },
   button: {
-    marginLeft: theme.spacing.unit * 2,
+    marginLeft: theme.spacing(2),
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
@@ -152,18 +152,19 @@ class ReportCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // TODO @sam fix me
-    values.published = parse(values.published).format();
-    values.createdByRef = values.createdByRef.value;
-    values.markingDefinitions = pluck('value', values.markingDefinitions);
+    const finalValues = pipe(
+      assoc('published', parse(values.published).format()),
+      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+      assoc('createdByRef', values.createdByRef.value),
+    )(values);
     commitMutation({
       mutation: reportMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       updater: (store) => {
         const payload = store.getRootField('reportAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
+        const newEdge = payload.setLinkedRecord(payload, 'node');
         const container = store.getRoot();
         sharedUpdater(
           store,
@@ -252,7 +253,6 @@ class ReportCreation extends Component {
                       component={Select}
                       label={t('Report type')}
                       fullWidth={true}
-                      displayEmpty={true}
                       inputProps={{
                         name: 'report_class',
                         id: 'report_class',

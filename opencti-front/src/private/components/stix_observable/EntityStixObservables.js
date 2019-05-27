@@ -78,7 +78,7 @@ const styles = theme => ({
     flexWrap: 'wrap',
   },
   chip: {
-    margin: theme.spacing.unit / 4,
+    margin: theme.spacing(1) / 4,
   },
   views: {
     position: 'absolute',
@@ -94,10 +94,10 @@ const styles = theme => ({
     display: 'inline-block',
   },
   rightIcon: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(1),
   },
   icon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
     fontSize: 20,
   },
 });
@@ -477,7 +477,7 @@ class EntityStixObservables extends Component {
     return (
       <List classes={{ root: classes.linesContainer }}>
         <ListItem
-          classes={{ default: classes.item }}
+          classes={{ root: classes.item }}
           divider={false}
           style={{ paddingTop: 0 }}
         >
@@ -525,10 +525,7 @@ class EntityStixObservables extends Component {
 
   render() {
     const {
-      t,
-      classes,
-      entityId,
-      relationType,
+      t, classes, entityId, relationType,
     } = this.props;
     const startYear = this.state.firstSeenFirstYear === currentYear()
       ? this.state.firstSeenFirstYear - 1
@@ -543,7 +540,6 @@ class EntityStixObservables extends Component {
           types={this.state.targetEntityTypes}
           handleToggle={this.handleToggle.bind(this)}
           firstSeenFirstYear={this.state.firstSeenFirstYear}
-
         />
         <div className={classes.header}>
           <div style={{ float: 'left' }}>

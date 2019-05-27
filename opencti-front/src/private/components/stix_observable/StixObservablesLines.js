@@ -267,7 +267,10 @@ export default withStyles(styles)(
             lastSeenStop: { type: "DateTime" }
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
-            orderBy: { type: "StixObservablesOrdering", defaultValue: ID }
+            orderBy: {
+              type: "StixObservablesOrdering"
+              defaultValue: "observable_value"
+            }
             orderMode: { type: "OrderingMode", defaultValue: "asc" }
           ) {
           stixObservables(

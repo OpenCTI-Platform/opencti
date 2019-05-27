@@ -226,6 +226,7 @@ input StixDomainEntityAddInput {
 enum StixObservablesOrdering {
   name
   entity_type
+  observable_value
   value
   created_at
   updated_at
@@ -485,7 +486,6 @@ enum UsersOrdering {
 }
 enum UserRole {
   ROLE_ROOT
-  ROLE_F
   ROLE_ADMIN
 }
 type UserConnection {

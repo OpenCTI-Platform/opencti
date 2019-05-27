@@ -1,0 +1,21 @@
+{
+  "docs": {
+    "Getting Started": [
+      "introduction",
+      "installation",
+      "configuration",
+      "update"
+    ],
+    "Usage": [
+      "knowledge",
+      "reports",
+      "inferences",
+      "analytics"
+    ],
+    "Development": [
+      "data-sources",
+      "python-client"
+    ],
+    "Support": ["troubleshooting"]
+  }
+}

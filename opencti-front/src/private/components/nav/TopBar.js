@@ -300,7 +300,7 @@ class TopBar extends Component {
             />
           </div>
           <IconButton
-            size="large"
+            size="medium"
             classes={{ root: classes.menuButton }}
             aria-owns={this.state.open ? 'menu-appbar' : null}
             aria-haspopup="true"

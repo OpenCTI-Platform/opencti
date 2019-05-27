@@ -24,8 +24,6 @@ const styles = theme => ({
     minHeight: '100%',
     margin: '5px 0 0 0',
     padding: '15px',
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     borderRadius: 6,
   },
 });
@@ -33,9 +31,7 @@ const styles = theme => ({
 class IncidentObservablesComponent extends Component {
   render() {
     const { classes, incident, location } = this.props;
-    const link = `/dashboard/knowledge/incidents/${
-      incident.id
-    }/observables`;
+    const link = `/dashboard/knowledge/incidents/${incident.id}/observables`;
     return (
       <div
         className={

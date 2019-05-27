@@ -21,8 +21,6 @@ const styles = theme => ({
     minHeight: 300,
     height: '100%',
     margin: '10px 0 0 0',
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     borderRadius: 6,
   },
 });

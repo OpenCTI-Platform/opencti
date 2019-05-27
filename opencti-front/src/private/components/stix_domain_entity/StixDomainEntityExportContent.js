@@ -43,7 +43,8 @@ export const stixDomainEntityExportContentRefreshExportMutation = graphql`
   ) {
     stixDomainEntityEdit(id: $id) {
       refreshExport(entityType: $entityType, type: $type) {
-        ...StixDomainEntityExportContent_stixDomainEntity @arguments(types: $types)
+        ...StixDomainEntityExportContent_stixDomainEntity
+          @arguments(types: $types)
       }
     }
   }
@@ -85,10 +86,16 @@ class StixDomainEntityExportContentComponent extends Component {
   render() {
     const { t, nsdt, stixDomainEntity } = this.props;
     const exportStix2Simple = head(
-      filter(n => n.export_type === 'export.stix2.simple', stixDomainEntity.exports),
+      filter(
+        n => n.export_type === 'export.stix2.simple',
+        stixDomainEntity.exports,
+      ),
     );
     const exportStix2Full = head(
-      filter(n => n.export_type === 'export.stix2.full', stixDomainEntity.exports),
+      filter(
+        n => n.export_type === 'export.stix2.full',
+        stixDomainEntity.exports,
+      ),
     );
 
     return (
@@ -130,7 +137,10 @@ class StixDomainEntityExportContentComponent extends Component {
             <ListItemSecondaryAction>
               <IconButton
                 color="secondary"
-                onClick={this.handleRefreshExport.bind(this, 'export.stix2.simple')}
+                onClick={this.handleRefreshExport.bind(
+                  this,
+                  'export.stix2.simple',
+                )}
               >
                 <Refresh />
               </IconButton>
@@ -170,7 +180,10 @@ class StixDomainEntityExportContentComponent extends Component {
             <ListItemSecondaryAction>
               <IconButton
                 color="secondary"
-                onClick={this.handleRefreshExport.bind(this, 'export.stix2.full')}
+                onClick={this.handleRefreshExport.bind(
+                  this,
+                  'export.stix2.full',
+                )}
               >
                 <Refresh />
               </IconButton>
@@ -194,7 +207,8 @@ StixDomainEntityExportContentComponent.propTypes = {
 export const stixDomainEntityExportContentQuery = graphql`
   query StixDomainEntityExportContentQuery($id: String!, $types: [String]!) {
     stixDomainEntity(id: $id) {
-      ...StixDomainEntityExportContent_stixDomainEntity @arguments(types: $types)
+      ...StixDomainEntityExportContent_stixDomainEntity
+        @arguments(types: $types)
     }
   }
 `;

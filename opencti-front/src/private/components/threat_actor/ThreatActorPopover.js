@@ -38,9 +38,7 @@ const styles = theme => ({
   },
 });
 
-function Transition(props) {
-  return <Slide direction="up" {...props} />;
-}
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
 const ThreatActorPopoverDeletionMutation = graphql`
   mutation ThreatActorPopoverDeletionMutation($id: ID!) {
@@ -85,10 +83,12 @@ class ThreatActorPopover extends Component {
       variables: {
         id: this.props.threatActorId,
       },
-      config: [{
-        type: 'NODE_DELETE',
-        deletedIDFieldName: 'id',
-      }],
+      config: [
+        {
+          type: 'NODE_DELETE',
+          deletedIDFieldName: 'id',
+        },
+      ],
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();

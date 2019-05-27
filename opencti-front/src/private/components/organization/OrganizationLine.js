@@ -32,7 +32,7 @@ const styles = theme => ({
     marginRight: 0,
   },
   itemIconDisabled: {
-    color: theme.palette.text.disabled,
+    color: theme.palette.grey[700],
   },
 });
 
@@ -67,7 +67,7 @@ class OrganizationLineComponent extends Component {
     const { fd, classes, organization } = this.props;
     return (
       <ListItem
-        classes={{ default: classes.item }}
+        classes={{ root: classes.item }}
         divider={true}
         component={Link}
         to={`/dashboard/catalogs/organizations/${organization.id}`}
@@ -127,7 +127,7 @@ class OrganizationLineDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true}>
+      <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <AccountBalance />
         </ListItemIcon>

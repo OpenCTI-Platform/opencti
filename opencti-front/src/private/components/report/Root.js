@@ -47,7 +47,10 @@ class RootReport extends Component {
     } = this.props;
     const sub = requestSubscription({
       subscription,
-      variables: { id: reportId, types: ['export.stix2.simple', 'export.stix2.full'] },
+      variables: {
+        id: reportId,
+        types: ['export.stix2.simple', 'export.stix2.full'],
+      },
     });
     this.setState({ sub });
   }

@@ -22,7 +22,7 @@ class AttackPatternsTime extends Component {
       <div className={classes.container}>
         <Grid
           container={true}
-          spacing={32}
+          spacing={3}
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={4}>
@@ -60,7 +60,7 @@ class AttackPatternsTime extends Component {
             />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={32} style={{ marginTop: 30 }} />
+        <Grid container={true} spacing={3} style={{ marginTop: 30 }} />
       </div>
     );
   }

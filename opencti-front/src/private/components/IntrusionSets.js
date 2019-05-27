@@ -3,7 +3,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc, compose, defaultTo, join, lensProp, map, over, propOr, pipe,
+  assoc,
+  compose,
+  defaultTo,
+  join,
+  lensProp,
+  map,
+  over,
+  propOr,
+  pipe,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -300,7 +308,7 @@ class IntrusionSets extends Component {
     return (
       <List classes={{ root: classes.linesContainer }}>
         <ListItem
-          classes={{ default: classes.item }}
+          classes={{ root: classes.item }}
           divider={false}
           style={{ paddingTop: 0 }}
         >

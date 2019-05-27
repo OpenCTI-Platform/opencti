@@ -235,7 +235,10 @@ export default withStyles(styles)(
             weights: { type: "[Int]" }
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
-            orderBy: { type: "StixRelationsOrdering", defaultValue: ID }
+            orderBy: {
+              type: "StixRelationsOrdering"
+              defaultValue: "first_seen"
+            }
             orderMode: { type: "OrderingMode", defaultValue: "asc" }
           ) {
           stixRelations(

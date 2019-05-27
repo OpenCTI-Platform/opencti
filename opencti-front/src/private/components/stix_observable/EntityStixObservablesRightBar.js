@@ -122,12 +122,9 @@ class StixObservablesRightBar extends Component {
         </List>
         <List
           subheader={
-            <ListSubheader component="div">
-              {t('Parameters')}
-            </ListSubheader>
+            <ListSubheader component="div">{t('Parameters')}</ListSubheader>
           }
-        >
-        </List>
+        />
       </Drawer>
     );
   }

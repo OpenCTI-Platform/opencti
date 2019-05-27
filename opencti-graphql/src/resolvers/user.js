@@ -37,7 +37,7 @@ const userResolvers = {
   User: {
     createdByRef: (user, args) => createdByRef(user.id, args),
     groups: (user, args) => groups(user.id, args),
-    token: (user, args) => token(user.id, args),
+    token: (user, args, context) => token(user.id, args, context),
     markingDefinitions: (user, args) => markingDefinitions(user.id, args),
     reports: (user, args) => reports(user.id, args),
     exports: (user, args) => exports(user.id, args),

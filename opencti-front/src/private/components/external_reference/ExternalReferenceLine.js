@@ -41,12 +41,12 @@ const styles = theme => ({
     marginRight: 0,
   },
   itemIconDisabled: {
-    color: theme.palette.text.disabled,
+    color: theme.palette.grey[700],
   },
   placeholder: {
     display: 'inline-block',
     height: '1em',
-    backgroundColor: theme.palette.text.disabled,
+    backgroundColor: theme.palette.grey[700],
   },
 });
 
@@ -90,7 +90,7 @@ class ExternalReferenceLineComponent extends Component {
       fd, classes, externalReference, paginationOptions,
     } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true}>
+      <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Avatar classes={{ root: classes.avatar }}>
             {externalReference.source_name.substring(0, 1)}
@@ -163,7 +163,7 @@ class ExternalReferenceLineDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true}>
+      <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <Avatar classes={{ root: classes.avatarDisabled }}>A</Avatar>
         </ListItemIcon>

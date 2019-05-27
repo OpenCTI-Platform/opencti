@@ -255,7 +255,7 @@ const WorkspaceAddObjectRefsLines = createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixDomainEntitiesOrdering", defaultValue: ID }
+          orderBy: { type: "StixDomainEntitiesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
         stixDomainEntities(

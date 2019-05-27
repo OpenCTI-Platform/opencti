@@ -20,8 +20,6 @@ const styles = theme => ({
     minHeight: '100%',
     margin: '3px 0 0 0',
     padding: 0,
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     borderRadius: 6,
   },
   avatar: {
@@ -36,7 +34,7 @@ const styles = theme => ({
   placeholder: {
     display: 'inline-block',
     height: '1em',
-    backgroundColor: theme.palette.text.disabled,
+    backgroundColor: theme.palette.grey[700],
   },
 });
 
@@ -69,7 +67,11 @@ class EntityExternalReferences extends Component {
           }
           return (
             <div style={{ height: '100%' }}>
-              <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+              <Typography
+                variant="h4"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
                 {t('External references')}
               </Typography>
               <div className="clearfix" />

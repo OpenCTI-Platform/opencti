@@ -32,7 +32,7 @@ const styles = theme => ({
     overflow: 'hidden',
   },
   chip: {
-    margin: `${theme.spacing.unit / 2}px ${theme.spacing.unit / 4}px`,
+    margin: `${theme.spacing(1) / 2}px ${theme.spacing(1) / 4}px`,
   },
   chipFocused: {
     backgroundColor: emphasize(
@@ -43,7 +43,7 @@ const styles = theme => ({
     ),
   },
   noOptionsMessage: {
-    padding: `${theme.spacing.unit}px ${theme.spacing.unit * 2}px`,
+    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
   },
   singleValue: {
     fontSize: 16,
@@ -56,7 +56,7 @@ const styles = theme => ({
   paper: {
     position: 'absolute',
     zIndex: 1,
-    marginTop: theme.spacing.unit,
+    marginTop: theme.spacing(1),
     left: 0,
     right: 0,
   },
@@ -69,7 +69,7 @@ const styles = theme => ({
     height: 300,
   },
   divider: {
-    height: theme.spacing.unit * 2,
+    height: theme.spacing(2),
   },
 });
 
@@ -224,10 +224,10 @@ class Autocomplete extends Component {
     const selectStyles = {
       input: base => ({
         ...base,
-        color: theme.palette.text.primary,
         '& input': {
           font: 'inherit',
         },
+        color: theme.palette.text.main,
       }),
     };
 

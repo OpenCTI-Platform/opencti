@@ -31,7 +31,7 @@ class ToolComponent extends Component {
         <ToolHeader tool={tool} />
         <Grid
           container={true}
-          spacing={32}
+          spacing={3}
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6}>
@@ -43,9 +43,9 @@ class ToolComponent extends Component {
         </Grid>
         <Grid
           container={true}
-          spacing={32}
+          spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 20 }}
+          style={{ marginTop: 30 }}
         >
           <Grid item={true} xs={4}>
             <EntityStixRelationsChart

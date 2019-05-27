@@ -376,6 +376,7 @@ class OpenCTI:
                         last_seen,
                         weight,
                         role_played=None,
+                        id=None,
                         stix_id=None,
                         created=None,
                         modified=None
@@ -400,6 +401,7 @@ class OpenCTI:
                 'first_seen': first_seen,
                 'last_seen': last_seen,
                 'weight': weight,
+                'internal_id': id,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -418,6 +420,7 @@ class OpenCTI:
                                       last_seen,
                                       weight,
                                       role_played=None,
+                                      id=None,
                                       stix_id=None,
                                       created=None,
                                       modified=None
@@ -459,6 +462,7 @@ class OpenCTI:
                 last_seen,
                 weight,
                 role_played,
+                id,
                 stix_id,
                 created,
                 modified
@@ -529,9 +533,9 @@ class OpenCTI:
     def create_marking_definition(self,
                                   definition_type,
                                   definition,
-                                  id=None,
                                   level=0,
                                   color=None,
+                                  id=None,
                                   stix_id=None,
                                   created=None,
                                   modified=None
@@ -561,9 +565,9 @@ class OpenCTI:
     def create_marking_definition_if_not_exists(self,
                                                 definition_type,
                                                 definition,
-                                                id=None,
                                                 level=0,
                                                 color=None,
+                                                id=None,
                                                 stix_id=None,
                                                 created=None,
                                                 modified=None
@@ -579,9 +583,9 @@ class OpenCTI:
             return self.create_marking_definition(
                 definition_type,
                 definition,
-                id,
                 level,
                 color,
+                id,
                 stix_id,
                 created,
                 modified
@@ -610,6 +614,7 @@ class OpenCTI:
                                   url,
                                   external_id='',
                                   description='',
+                                  id=None,
                                   stix_id=None,
                                   created=None,
                                   modified=None
@@ -628,6 +633,7 @@ class OpenCTI:
                 'external_id': external_id,
                 'description': description,
                 'url': url,
+                'internal_id': id,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -640,6 +646,7 @@ class OpenCTI:
                                                 url,
                                                 external_id='',
                                                 description='',
+                                                id=None,
                                                 stix_id=None,
                                                 created=None,
                                                 modified=None
@@ -653,6 +660,7 @@ class OpenCTI:
                 url,
                 external_id,
                 description,
+                id,
                 stix_id,
                 created,
                 modified
@@ -679,8 +687,8 @@ class OpenCTI:
     def create_kill_chain_phase(self,
                                 kill_chain_name,
                                 phase_name,
-                                id=None,
                                 phase_order=0,
+                                id=None,
                                 stix_id=None,
                                 created=None,
                                 modified=None):
@@ -696,8 +704,8 @@ class OpenCTI:
             'input': {
                 'kill_chain_name': kill_chain_name,
                 'phase_name': phase_name,
-                'internal_id': id,
                 'phase_order': phase_order,
+                'internal_id': id,
                 'stix_id': stix_id,
                 'created': created,
                 'modified': modified
@@ -708,8 +716,8 @@ class OpenCTI:
     def create_kill_chain_phase_if_not_exists(self,
                                               kill_chain_name,
                                               phase_name,
-                                              id=None,
                                               phase_order=0,
+                                              id=None,
                                               stix_id=None,
                                               created=None,
                                               modified=None):
@@ -720,8 +728,8 @@ class OpenCTI:
             return self.create_kill_chain_phase(
                 kill_chain_name,
                 phase_name,
-                id,
                 phase_order,
+                id,
                 stix_id,
                 created,
                 modified

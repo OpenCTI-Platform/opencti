@@ -60,9 +60,7 @@ class WorkspacesLines extends Component {
     if (!this.props.relay.hasMore() || this.props.relay.isLoading()) {
       return;
     }
-    this.props.relay.loadMore(
-      this.props.searchTerm.length > 0 ? 90000 : 25,
-    );
+    this.props.relay.loadMore(this.props.searchTerm.length > 0 ? 90000 : 25);
   }
 
   _isRowLoaded({ index }) {
@@ -211,7 +209,7 @@ export default withStyles(styles)(
           @argumentDefinitions(
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
-            orderBy: { type: "WorkspacesOrdering", defaultValue: ID }
+            orderBy: { type: "WorkspacesOrdering", defaultValue: "name" }
             orderMode: { type: "OrderingMode", defaultValue: "asc" }
           ) {
           workspaces(

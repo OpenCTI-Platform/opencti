@@ -37,8 +37,6 @@ const styles = theme => ({
   card: {
     width: '100%',
     marginBottom: 20,
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     borderRadius: 6,
     position: 'relative',
   },
@@ -46,8 +44,6 @@ const styles = theme => ({
     minHeight: '100%',
     margin: '10px 0 20px 0',
     padding: 0,
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     borderRadius: 6,
   },
   item: {
@@ -62,7 +58,6 @@ const styles = theme => ({
     },
   },
   itemIcon: {
-    marginRight: 0,
     color: theme.palette.primary.main,
   },
   itemIconSecondary: {
@@ -200,7 +195,7 @@ class Dashboard extends Component {
     };
     return (
       <div>
-        <Grid container={true} spacing={16}>
+        <Grid container={true} spacing={2}>
           <Grid item={true} xs={3}>
             <Card
               raised={true}
@@ -212,7 +207,7 @@ class Dashboard extends Component {
                 variables={{ endDate: dayAgo() }}
                 render={({ props }) => {
                   if (props && props.stixDomainEntitiesNumber) {
-                    const total = props.stixDomainEntitiesNumber.total;
+                    const { total } = props.stixDomainEntitiesNumber;
                     const difference = total - props.stixDomainEntitiesNumber.count;
                     return (
                       <CardContent>
@@ -246,7 +241,7 @@ class Dashboard extends Component {
                 variables={{ type: 'Report', endDate: dayAgo() }}
                 render={({ props }) => {
                   if (props && props.stixDomainEntitiesNumber) {
-                    const total = props.stixDomainEntitiesNumber.total;
+                    const { total } = props.stixDomainEntitiesNumber;
                     const difference = total - props.stixDomainEntitiesNumber.count;
                     return (
                       <CardContent>
@@ -282,7 +277,7 @@ class Dashboard extends Component {
                 variables={{ type: 'Stix-Observable', endDate: dayAgo() }}
                 render={({ props }) => {
                   if (props && props.stixDomainEntitiesNumber) {
-                    const total = props.stixDomainEntitiesNumber.total;
+                    const { total } = props.stixDomainEntitiesNumber;
                     const difference = total - props.stixDomainEntitiesNumber.count;
                     return (
                       <CardContent>
@@ -413,7 +408,7 @@ class Dashboard extends Component {
             </Card>
           </Grid>
         </Grid>
-        <Grid container={true} spacing={16} style={{ marginTop: 20 }}>
+        <Grid container={true} spacing={2} style={{ marginTop: 20 }}>
           <Grid item={true} xs={6}>
             <Typography variant="h2" gutterBottom={true}>
               {t('Last reports')}
@@ -439,7 +434,7 @@ class Dashboard extends Component {
                             <ListItem
                               key={report.id}
                               dense={true}
-                              classes={{ default: classes.item }}
+                              classes={{ root: classes.item }}
                               divider={true}
                               component={Link}
                               to={`/dashboard/reports/all/${report.id}`}
@@ -512,7 +507,7 @@ class Dashboard extends Component {
                             <ListItem
                               key={stixObservable.id}
                               dense={true}
-                              classes={{ default: classes.item }}
+                              classes={{ root: classes.item }}
                               divider={true}
                               component={Link}
                               to={`/dashboard/observables/all/${

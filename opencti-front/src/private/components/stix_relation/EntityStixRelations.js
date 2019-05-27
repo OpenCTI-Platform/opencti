@@ -88,7 +88,7 @@ const styles = theme => ({
     flexWrap: 'wrap',
   },
   chip: {
-    margin: theme.spacing.unit / 4,
+    margin: theme.spacing(1) / 4,
   },
   views: {
     position: 'absolute',
@@ -104,10 +104,10 @@ const styles = theme => ({
     display: 'inline-block',
   },
   rightIcon: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(1),
   },
   icon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
     fontSize: 20,
   },
 });
@@ -487,7 +487,7 @@ class EntityStixRelations extends Component {
     return (
       <List classes={{ root: classes.linesContainer }}>
         <ListItem
-          classes={{ default: classes.item }}
+          classes={{ root: classes.item }}
           divider={false}
           style={{ paddingTop: 0 }}
         >

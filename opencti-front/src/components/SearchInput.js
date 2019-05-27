@@ -11,7 +11,7 @@ const styles = theme => ({
   searchRoot: {
     borderRadius: 5,
     padding: '0 10px 0 10px',
-    backgroundColor: theme.palette.field.background,
+    backgroundColor: theme.palette.background.paperLight,
   },
   searchRootInDrawer: {
     borderRadius: 5,

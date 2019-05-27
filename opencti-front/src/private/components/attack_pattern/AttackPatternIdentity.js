@@ -18,8 +18,6 @@ const styles = theme => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     borderRadius: 6,
   },
   item: {
@@ -51,7 +49,7 @@ class AttackPatternIdentityComponent extends Component {
                   key={killChainPhase.phase_name}
                   dense={true}
                   divider={true}
-                  classes={{ default: classes.item }}
+                  classes={{ root: classes.item }}
                 >
                   <ListItemIcon classes={{ root: classes.itemIcon }}>
                     <Launch />
@@ -74,7 +72,7 @@ class AttackPatternIdentityComponent extends Component {
                 key={platform}
                 dense={true}
                 divider={true}
-                classes={{ default: classes.item }}
+                classes={{ root: classes.item }}
               >
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
                   <SettingsApplications />
@@ -97,7 +95,7 @@ class AttackPatternIdentityComponent extends Component {
                   key={permission}
                   dense={true}
                   divider={true}
-                  classes={{ default: classes.item }}
+                  classes={{ root: classes.item }}
                 >
                   <ListItemIcon classes={{ root: classes.itemIcon }}>
                     <PermIdentity />

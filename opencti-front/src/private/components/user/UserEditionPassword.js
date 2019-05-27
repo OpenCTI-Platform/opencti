@@ -29,7 +29,7 @@ const styles = theme => ({
     textAlign: 'right',
   },
   button: {
-    marginLeft: theme.spacing.unit * 2,
+    marginLeft: theme.spacing(2),
   },
 });
 

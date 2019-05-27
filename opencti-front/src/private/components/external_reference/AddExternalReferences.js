@@ -56,7 +56,7 @@ const styles = theme => ({
   placeholder: {
     display: 'inline-block',
     height: '1em',
-    backgroundColor: theme.palette.text.disabled,
+    backgroundColor: theme.palette.grey[700],
   },
   avatar: {
     width: 24,

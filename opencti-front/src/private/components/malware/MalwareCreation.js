@@ -17,8 +17,9 @@ import {
   sortWith,
   path,
   ascend,
-  union, assoc
-} from "ramda";
+  union,
+  assoc,
+} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
@@ -55,7 +56,7 @@ const styles = theme => ({
     textAlign: 'right',
   },
   button: {
-    marginLeft: theme.spacing.unit * 2,
+    marginLeft: theme.spacing(2),
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,

@@ -72,7 +72,7 @@ const styles = theme => ({
     alignItems: 'center',
   },
   messageIcon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
   toolbar: theme.mixins.toolbar,
 });

@@ -74,8 +74,11 @@ export const groups = (userId, args) =>
     args
   );
 
-export const token = userId =>
-  getObject(
+export const token = (userId, args, context) => {
+  if (userId !== context.user.id) {
+    throw new ForbiddenAccess();
+  }
+  return getObject(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
     $client has internal_id "${escapeString(
@@ -84,6 +87,7 @@ export const token = userId =>
     'x',
     'rel'
   ).then(result => sign(result.node, conf.get('app:secret')));
+};
 
 export const addPerson = async (user, newUser) => {
   const wTx = await takeWriteTx();

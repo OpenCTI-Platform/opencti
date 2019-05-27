@@ -37,16 +37,31 @@ class ReportHeaderComponent extends Component {
     const { classes, report, variant } = this.props;
     return (
       <div>
-        <Typography variant='h1' gutterBottom={true} classes={{ root: classes.title }}>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
+        >
           {truncate(report.name, 80)}
         </Typography>
         <div className={classes.popover}>
-          <ReportPopover reportId={report.id}/>
+          <ReportPopover reportId={report.id} />
         </div>
-        {variant !== 'noMarking' ? <div className={classes.marking}>
-          {pathOr([], ['markingDefinitions', 'edges'], report).map(markingDefinition => <ItemMarking key={markingDefinition.node.id} label={markingDefinition.node.definition}/>)}
-        </div> : ''}
-        <div className='clearfix'/>
+        {variant !== 'noMarking' ? (
+          <div className={classes.marking}>
+            {pathOr([], ['markingDefinitions', 'edges'], report).map(
+              markingDefinition => (
+                <ItemMarking
+                  key={markingDefinition.node.id}
+                  label={markingDefinition.node.definition}
+                />
+              ),
+            )}
+          </div>
+        ) : (
+          ''
+        )}
+        <div className="clearfix" />
       </div>
     );
   }

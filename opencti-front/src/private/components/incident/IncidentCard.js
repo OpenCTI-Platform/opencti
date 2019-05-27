@@ -19,22 +19,19 @@ const styles = theme => ({
   card: {
     width: '100%',
     height: 170,
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     borderRadius: 6,
   },
   cardDummy: {
     width: '100%',
     height: 170,
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.disabled,
+    color: theme.palette.grey[700],
     borderRadius: 6,
   },
   avatar: {
     backgroundColor: theme.palette.primary.main,
   },
   avatarDisabled: {
-    backgroundColor: theme.palette.text.disabled,
+    backgroundColor: theme.palette.grey[700],
   },
   icon: {
     margin: '10px 20px 0 0',
@@ -54,7 +51,6 @@ const styles = theme => ({
     height: 89,
     overflow: 'hidden',
     paddingTop: 0,
-    fontSize: 15,
   },
   contentDummy: {
     width: '100%',
@@ -65,17 +61,17 @@ const styles = theme => ({
   placeholderHeader: {
     display: 'inline-block',
     height: '.8em',
-    backgroundColor: theme.palette.text.disabled,
+    backgroundColor: theme.palette.grey[700],
   },
   placeholderHeaderDark: {
     display: 'inline-block',
     height: '.8em',
-    backgroundColor: theme.palette.text.disabledDark,
+    backgroundColor: theme.palette.grey[800],
   },
   placeholder: {
     display: 'inline-block',
     height: '1em',
-    backgroundColor: theme.palette.text.disabled,
+    backgroundColor: theme.palette.grey[700],
   },
 });
 
@@ -105,7 +101,7 @@ class IncidentCardComponent extends Component {
           <CardContent classes={{ root: classes.content }}>
             <Markdown
               source={truncate(incident.description, 50)}
-              disallowedTypes={['link']}
+              disallowedTypes={['link', 'linkReference']}
               unwrapDisallowed={true}
             />
           </CardContent>

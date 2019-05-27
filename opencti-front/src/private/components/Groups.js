@@ -100,7 +100,7 @@ class Groups extends Component {
       <div>
         <List classes={{ root: classes.linesContainer }}>
           <ListItem
-            classes={{ default: classes.item }}
+            classes={{ root: classes.item }}
             divider={false}
             style={{ paddingTop: 0 }}
           >

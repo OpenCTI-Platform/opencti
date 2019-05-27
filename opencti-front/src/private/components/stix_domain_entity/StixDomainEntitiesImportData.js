@@ -22,10 +22,10 @@ import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 
 const styles = theme => ({
   button: {
-    marginLeft: theme.spacing.unit * 2,
+    marginLeft: theme.spacing(2),
   },
   rightIcon: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(1),
   },
   dialogActions: {
     padding: '0 17px 20px 0',
@@ -33,7 +33,10 @@ const styles = theme => ({
 });
 
 const stixDomainEntitiesImportDataMutation = graphql`
-  mutation StixDomainEntitiesImportDataMutation($type: String!, $file: Upload!) {
+  mutation StixDomainEntitiesImportDataMutation(
+    $type: String!
+    $file: Upload!
+  ) {
     importData(type: $type, file: $file)
   }
 `;
@@ -80,7 +83,9 @@ class StixDomainEntitiesImportData extends Component {
         mutation: stixDomainEntitiesImportDataMutation,
         variables: { type: this.state.type, file: fileInfo },
         onCompleted: () => {
-          MESSAGING$.notifySuccess('The importation of the file has been started');
+          MESSAGING$.notifySuccess(
+            'The importation of the file has been started',
+          );
           this.handleClose();
         },
       });
@@ -102,7 +107,7 @@ class StixDomainEntitiesImportData extends Component {
           aria-haspopup="true"
           color="primary"
         >
-          <FileUploadOutline/>
+          <FileUploadOutline />
         </IconButton>
         <Dialog
           open={this.state.open}
@@ -111,7 +116,7 @@ class StixDomainEntitiesImportData extends Component {
         >
           <DialogTitle>{t('Import data')}</DialogTitle>
           <DialogContent>
-            <FormControl fullWidth={true} margin='none'>
+            <FormControl fullWidth={true} margin="none">
               <InputLabel htmlFor="type">{t('Import type')}</InputLabel>
               <Select
                 style={{ width: '100%', marginBottom: 20 }}
@@ -125,11 +130,13 @@ class StixDomainEntitiesImportData extends Component {
                 onChange={this.handleChangeType.bind(this)}
                 value={this.state.type}
               >
-                <MenuItem value="import.stix2.bundle">{t('STIX2 bundle')}</MenuItem>
+                <MenuItem value="import.stix2.bundle">
+                  {t('STIX2 bundle')}
+                </MenuItem>
               </Select>
             </FormControl>
             <input
-              ref={ref => this.uploadRef = ref}
+              ref={ref => (this.uploadRef = ref)}
               type="file"
               style={{ display: 'none' }}
               onChange={this.handleUpload.bind(this)}
@@ -150,7 +157,7 @@ class StixDomainEntitiesImportData extends Component {
               onClick={this.handleOpenUpload.bind(this)}
             >
               Upload
-              <CloudUpload className={classes.rightIcon}/>
+              <CloudUpload className={classes.rightIcon} />
             </Button>
           </DialogActions>
         </Dialog>

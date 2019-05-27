@@ -235,7 +235,10 @@ export default withStyles(styles)(
           @argumentDefinitions(
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
-            orderBy: { type: "ExternalReferencesOrdering", defaultValue: ID }
+            orderBy: {
+              type: "ExternalReferencesOrdering"
+              defaultValue: "source_name"
+            }
             orderMode: { type: "OrderingMode", defaultValue: "asc" }
           ) {
           externalReferences(

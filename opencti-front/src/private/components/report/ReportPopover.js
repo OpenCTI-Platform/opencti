@@ -39,9 +39,7 @@ const styles = theme => ({
   },
 });
 
-function Transition(props) {
-  return <Slide direction="up" {...props} />;
-}
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
 const ReportPopoverDeletionMutation = graphql`
   mutation ReportPopoverDeletionMutation($id: ID!) {
@@ -138,7 +136,6 @@ class ReportPopover extends Component {
         </Menu>
         <Dialog
           open={this.state.displayDelete}
-          keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}
         >
@@ -189,7 +186,7 @@ class ReportPopover extends Component {
         </Drawer>
         <StixDomainEntityExport
           stixDomainEntityId={reportId}
-          stixDomainEntityType='report'
+          stixDomainEntityType="report"
           handleClose={this.handleCloseExport.bind(this)}
           open={this.state.displayExport}
         />

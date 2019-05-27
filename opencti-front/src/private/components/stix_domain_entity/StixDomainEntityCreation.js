@@ -48,7 +48,7 @@ const styles = theme => ({
     textAlign: 'right',
   },
   button: {
-    marginLeft: theme.spacing.unit * 2,
+    marginLeft: theme.spacing(2),
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
@@ -204,7 +204,6 @@ class StixDomainEntityCreation extends Component {
                     component={Select}
                     label={t('Entity type')}
                     fullWidth={true}
-                    displayEmpty={true}
                     inputProps={{
                       name: 'type',
                       id: 'type',
@@ -214,9 +213,7 @@ class StixDomainEntityCreation extends Component {
                     <MenuItem value="Organization">
                       {t('Organization')}
                     </MenuItem>
-                    <MenuItem value="Sector">
-                      {t('Sector')}
-                    </MenuItem>
+                    <MenuItem value="Sector">{t('Sector')}</MenuItem>
                     <MenuItem value="User">{t('Person')}</MenuItem>
                     <MenuItem value="Threat-Actor">
                       {t('Threat actor')}
@@ -316,7 +313,6 @@ class StixDomainEntityCreation extends Component {
                     component={Select}
                     label={t('Entity type')}
                     fullWidth={true}
-                    displayEmpty={true}
                     inputProps={{
                       name: 'type',
                       id: 'type',
@@ -326,9 +322,7 @@ class StixDomainEntityCreation extends Component {
                     <MenuItem value="Organization">
                       {t('Organization')}
                     </MenuItem>
-                    <MenuItem value="Sector">
-                      {t('Sector')}
-                    </MenuItem>
+                    <MenuItem value="Sector">{t('Sector')}</MenuItem>
                     <MenuItem value="User">{t('Person')}</MenuItem>
                     <MenuItem value="Threat-Actor">
                       {t('Threat actor')}

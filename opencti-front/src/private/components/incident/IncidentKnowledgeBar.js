@@ -30,12 +30,10 @@ const styles = theme => ({
     margin: '0 auto',
     marginTop: 15,
     padding: 10,
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     transition: 'all 0.3s',
     borderRadius: 6,
     '&:hover': {
-      backgroundColor: theme.palette.field.background,
+      backgroundColor: theme.palette.background.paperLight,
     },
   },
   paperActive: {
@@ -44,8 +42,7 @@ const styles = theme => ({
     margin: '0 auto',
     marginTop: 15,
     padding: 10,
-    backgroundColor: theme.palette.field.background,
-    color: theme.palette.text.main,
+    backgroundColor: theme.palette.background.paperLight,
     borderRadius: 6,
   },
   toolbar: theme.mixins.toolbar,

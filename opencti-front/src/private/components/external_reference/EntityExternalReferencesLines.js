@@ -26,8 +26,6 @@ const styles = theme => ({
     minHeight: '100%',
     margin: '-4px 0 0 0',
     padding: 0,
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     borderRadius: 6,
   },
   list: {
@@ -45,7 +43,7 @@ const styles = theme => ({
   placeholder: {
     display: 'inline-block',
     height: '1em',
-    backgroundColor: theme.palette.text.disabled,
+    backgroundColor: theme.palette.grey[700],
   },
 });
 
@@ -210,7 +208,10 @@ const EntityExternalReferencesLines = createPaginationContainer(
           objectId: { type: "String!" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "ExternalReferencesOrdering", defaultValue: ID }
+          orderBy: {
+            type: "ExternalReferencesOrdering"
+            defaultValue: "source_name"
+          }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
         externalReferences(

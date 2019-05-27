@@ -25,7 +25,7 @@ const styles = theme => ({
     margin: '0px 0px 20px 0px',
   },
   buttonGoogle: {
-    margin: theme.spacing.unit,
+    margin: theme.spacing(1),
     color: '#ffffff',
     backgroundColor: '#f44336',
     '&:hover': {
@@ -33,7 +33,7 @@ const styles = theme => ({
     },
   },
   buttonFacebook: {
-    margin: theme.spacing.unit,
+    margin: theme.spacing(1),
     color: '#ffffff',
     backgroundColor: '#4267b2',
     '&:hover': {
@@ -41,7 +41,7 @@ const styles = theme => ({
     },
   },
   buttonGithub: {
-    margin: theme.spacing.unit,
+    margin: theme.spacing(1),
     color: '#ffffff',
     backgroundColor: '#222222',
     '&:hover': {
@@ -49,7 +49,7 @@ const styles = theme => ({
     },
   },
   iconSmall: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
     fontSize: 20,
   },
 });

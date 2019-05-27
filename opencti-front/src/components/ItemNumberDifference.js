@@ -9,18 +9,18 @@ import inject18n from './i18n';
 const styles = () => ({
   diff: {
     float: 'left',
-    margin: '13px 0 0 10px',
+    margin: '18px 0 0 10px',
     fontSize: 13,
   },
   diffDescription: {
-    margin: '6px 0 0 10px',
+    margin: '5px 0 0 10px',
     float: 'left',
   },
   diffIcon: {
     float: 'left',
   },
   diffNumber: {
-    marginTop: 6,
+    marginTop: 5,
     float: 'left',
   },
 });

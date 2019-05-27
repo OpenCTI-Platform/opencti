@@ -136,10 +136,7 @@ class StixObservablesRightBar extends Component {
             <ListSubheader component="div">{t('Parameters')}</ListSubheader>
           }
         >
-          <ListItem
-            dense={true}
-            classes={{ root: classes.itemField }}
-          >
+          <ListItem dense={true} classes={{ root: classes.itemField }}>
             <DatePicker
               name="lastSeenStart"
               label={t('Start date')}
@@ -154,10 +151,7 @@ class StixObservablesRightBar extends Component {
               onChange={handleChangeLastSeenStart.bind(this)}
             />
           </ListItem>
-          <ListItem
-            dense={true}
-            classes={{ root: classes.itemField }}
-          >
+          <ListItem dense={true} classes={{ root: classes.itemField }}>
             <DatePicker
               name="lastSeenStart"
               label={t('End date')}

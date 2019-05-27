@@ -12,11 +12,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import IconButton from '@material-ui/core/IconButton';
-import {
-  ArrowDropDown,
-  ArrowDropUp,
-  TableChart,
-} from '@material-ui/icons';
+import { ArrowDropDown, ArrowDropUp, TableChart } from '@material-ui/icons';
 import { fetchQuery, QueryRenderer } from '../../relay/environment';
 import UsersLines, { usersLinesQuery } from './user/UsersLines';
 import inject18n from '../../components/i18n';
@@ -216,7 +212,7 @@ class Users extends Component {
         </div>
         <List classes={{ root: classes.linesContainer }}>
           <ListItem
-            classes={{ default: classes.item }}
+            classes={{ root: classes.item }}
             divider={false}
             style={{ paddingTop: 0 }}
           >

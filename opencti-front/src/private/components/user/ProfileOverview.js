@@ -22,8 +22,6 @@ const styles = theme => ({
     marginBottom: 30,
     padding: '20px 20px 20px 20px',
     textAlign: 'left',
-    backgroundColor: theme.palette.paper.background,
-    color: theme.palette.text.main,
     borderRadius: 6,
   },
 });

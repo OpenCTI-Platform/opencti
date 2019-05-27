@@ -50,7 +50,7 @@ const styles = theme => ({
     textAlign: 'right',
   },
   button: {
-    marginLeft: theme.spacing.unit * 2,
+    marginLeft: theme.spacing(2),
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
@@ -361,7 +361,6 @@ class StixRelationCreation extends Component {
                 component={Select}
                 label={t('Relationship type')}
                 fullWidth={true}
-                displayEmpty={true}
                 inputProps={{
                   name: 'relationship_type',
                   id: 'relationship_type',
@@ -388,7 +387,6 @@ class StixRelationCreation extends Component {
                 component={Select}
                 label={t('Confidence level')}
                 fullWidth={true}
-                displayEmpty={true}
                 inputProps={{
                   name: 'weight',
                   id: 'weight',

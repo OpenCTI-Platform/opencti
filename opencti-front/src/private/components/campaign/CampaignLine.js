@@ -33,7 +33,7 @@ const styles = theme => ({
     marginRight: 0,
   },
   itemIconDisabled: {
-    color: theme.palette.text.disabled,
+    color: theme.palette.grey[700],
   },
 });
 
@@ -68,7 +68,7 @@ class CampaignLineComponent extends Component {
     const { fd, classes, campaign } = this.props;
     return (
       <ListItem
-        classes={{ default: classes.item }}
+        classes={{ root: classes.item }}
         divider={true}
         component={Link}
         to={`/dashboard/knowledge/campaigns/${campaign.id}`}
@@ -125,7 +125,7 @@ class CampaignLineDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <ListItem classes={{ default: classes.item }} divider={true}>
+      <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <ChessKnight />
         </ListItemIcon>

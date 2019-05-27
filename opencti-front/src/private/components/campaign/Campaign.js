@@ -32,7 +32,7 @@ class CampaignComponent extends Component {
         <CampaignHeader campaign={campaign} />
         <Grid
           container={true}
-          spacing={32}
+          spacing={3}
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={3}>
@@ -47,9 +47,9 @@ class CampaignComponent extends Component {
         </Grid>
         <Grid
           container={true}
-          spacing={32}
+          spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 20 }}
+          style={{ marginTop: 30 }}
         >
           <Grid item={true} xs={4}>
             <EntityIncidentsChart entityId={campaign.id} />

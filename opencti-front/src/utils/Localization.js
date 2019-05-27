@@ -94,13 +94,15 @@ const i18n = {
       Cancel: 'Annuler',
       Import: 'Importer',
       'Import data': 'Importer des données',
-      'Import type': 'Type d\'import',
+      'Import type': "Type d'import",
       'STIX2 bundle': 'Bundle STIX2',
       'File to import': 'Fichier à importer',
-      'The importation of the file has been started': 'L\'importation du fichier a été lancée',
+      'The importation of the file has been started':
+        "L'importation du fichier a été lancée",
       Add: 'Ajouter',
       'Turn to user': 'Transformer en utilisateur',
-      'This person is now a user': 'Cette personne est maintenant un utilisateur',
+      'This person is now a user':
+        'Cette personne est maintenant un utilisateur',
       'This field is required': 'Ce champ est requis',
       'The value is too short': 'La valeur est trop courte',
       'The value is too long': 'La valeur est trop longue',
@@ -167,7 +169,7 @@ const i18n = {
       'Add observable': 'Ajouter un observable',
       'The password has been updated': 'Le mot de passe a été modifié',
       'Settings have been updated': 'Les paramètres ont été mis à jour',
-      'Export the entity': 'Exporter l\'entité',
+      'Export the entity': "Exporter l'entité",
       // Menu
       Dashboard: 'Tableau de bord',
       Workspaces: 'Espaces de travail',
