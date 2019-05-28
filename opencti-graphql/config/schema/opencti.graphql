@@ -2108,6 +2108,7 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth
+  stixRelationsNumber(type: String, fromId: String, endDate: DateTime): Number @auth
   # Workspaces
   workspace(id: String!): Workspace @auth
   workspaces(

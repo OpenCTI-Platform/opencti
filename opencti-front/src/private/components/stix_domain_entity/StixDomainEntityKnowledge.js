@@ -180,7 +180,7 @@ class StixDomainEntityKnowledge extends Component {
           variant="permanent"
           classes={{ paper: classes.bottomNav }}
         >
-          <Grid container={true} spacing={8}>
+          <Grid container={true} spacing={1}>
             <Grid item={true} xs="auto">
               <Select
                 style={{ width: 170, height: 50 }}

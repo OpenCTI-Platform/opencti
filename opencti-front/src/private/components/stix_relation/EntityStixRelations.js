@@ -569,7 +569,7 @@ class EntityStixRelations extends Component {
           variant="permanent"
           classes={{ paper: classes.bottomNav }}
         >
-          <Grid container={true} spacing={8}>
+          <Grid container={true} spacing={1}>
             {targetEntityTypes.length > 1 ? (
               <Grid item={true} xs="auto">
                 <Select

@@ -47,7 +47,8 @@ import {
   distribution,
   takeWriteTx,
   getObjects,
-  getId
+  getId,
+  getSingleValueNumber
 } from '../database/grakn';
 import { buildPagination } from '../database/utils';
 import { BUS_TOPICS, logger } from '../config/conf';
@@ -490,6 +491,27 @@ export const stixRelationsDistributionWithInferences = async args => {
     take(limit, sortWith([descend(prop('value'))])(data))
   );
 };
+
+export const stixRelationsNumber = args => ({
+  count: getSingleValueNumber(
+    `match $x($y, $z) isa ${args.type ? escape(args.type) : 'stix_relation'};
+    ${
+      args.endDate
+        ? `$x has created_at $date;
+    $date < ${prepareDate(args.endDate)};`
+        : ''
+    }
+    ${args.fromId ? `$y has internal_id "${escapeString(args.fromId)}";` : ''}
+    get;
+    count;`
+  ),
+  total: getSingleValueNumber(
+    `match $x isa ${args.type ? escape(args.type) : 'stix_relation'};
+    ${args.fromId ? `$y has internal_id "${escapeString(args.fromId)}";` : ''}
+    get;
+    count;`
+  )
+});
 
 export const findById = stixRelationId => getRelationById(stixRelationId);
 export const findByIdInferred = stixRelationId =>

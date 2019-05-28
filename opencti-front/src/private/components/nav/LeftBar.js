@@ -10,6 +10,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
 import {
+  Dashboard,
   Explore,
   Assignment,
   DeviceHub,
@@ -20,7 +21,7 @@ import {
   GroupWork,
 } from '@material-ui/icons';
 import {
-  Settings, ClipboardArrowDown, Gauge, Database,
+  Settings, ClipboardArrowDown, Database,
 } from 'mdi-material-ui';
 import { compose, includes, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
@@ -33,7 +34,7 @@ const styles = theme => ({
     position: 'fixed',
     width: 60,
     overflow: 'hidden',
-    backgroundColor: theme.palette.nav.background,
+    backgroundColor: theme.palette.background.nav,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
@@ -44,7 +45,7 @@ const styles = theme => ({
     position: 'fixed',
     width: 220,
     overflow: 'hidden',
-    backgroundColor: theme.palette.nav.background,
+    backgroundColor: theme.palette.background.nav,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -52,12 +53,6 @@ const styles = theme => ({
   },
   menuList: {
     height: '100%',
-  },
-  listIcon: {
-    marginRight: 5,
-  },
-  listText: {
-    paddingRight: 5,
   },
   lastItem: {
     bottom: 0,
@@ -112,17 +107,10 @@ class LeftBar extends Component {
               selected={location.pathname === '/dashboard'}
               dense={false}
             >
-              <ListItemIcon classes={{ root: classes.listIcon }}>
-                <Gauge />
+              <ListItemIcon>
+                <Dashboard />
               </ListItemIcon>
-              {this.state.open ? (
-                <ListItemText
-                  primary={t('Dashboard')}
-                  classes={{ root: classes.listText }}
-                />
-              ) : (
-                ''
-              )}
+              {this.state.open ? <ListItemText primary={t('Dashboard')} /> : ''}
             </MenuItem>
             <MenuItem
               component={Link}
@@ -131,7 +119,7 @@ class LeftBar extends Component {
               selected={location.pathname.includes('/dashboard/knowledge')}
               dense={false}
             >
-              <ListItemIcon classes={{ root: classes.listIcon }}>
+              <ListItemIcon>
                 <Database />
               </ListItemIcon>
               {this.state.open ? (
@@ -150,7 +138,7 @@ class LeftBar extends Component {
               selected={location.pathname.includes('/dashboard/observables')}
               dense={false}
             >
-              <ListItemIcon classes={{ root: classes.listIcon }}>
+              <ListItemIcon>
                 <Layers />
               </ListItemIcon>
               {this.state.open ? (
@@ -169,7 +157,7 @@ class LeftBar extends Component {
               selected={location.pathname.includes('/dashboard/reports')}
               dense={false}
             >
-              <ListItemIcon classes={{ root: classes.listIcon }}>
+              <ListItemIcon>
                 <Assignment />
               </ListItemIcon>
               {this.state.open ? (
@@ -188,7 +176,7 @@ class LeftBar extends Component {
               selected={location.pathname.includes('/dashboard/catalogs')}
               dense={false}
             >
-              <ListItemIcon classes={{ root: classes.listIcon }}>
+              <ListItemIcon>
                 <ListAlt />
               </ListItemIcon>
               {this.state.open ? (
@@ -210,7 +198,7 @@ class LeftBar extends Component {
               selected={location.pathname.includes('/dashboard/explore')}
               dense={false}
             >
-              <ListItemIcon classes={{ root: classes.listIcon }}>
+              <ListItemIcon>
                 <Explore />
               </ListItemIcon>
               {this.state.open ? (
@@ -229,7 +217,7 @@ class LeftBar extends Component {
               selected={location.pathname.includes('/dashboard/investigate')}
               dense={false}
             >
-              <ListItemIcon classes={{ root: classes.listIcon }}>
+              <ListItemIcon>
                 <DeviceHub />
               </ListItemIcon>
               {this.state.open ? (
@@ -248,7 +236,7 @@ class LeftBar extends Component {
               selected={location.pathname.includes('/dashboard/correlate')}
               dense={false}
             >
-              <ListItemIcon classes={{ root: classes.listIcon }}>
+              <ListItemIcon>
                 <GroupWork />
               </ListItemIcon>
               {this.state.open ? (
@@ -272,7 +260,7 @@ class LeftBar extends Component {
                   selected={location.pathname.includes('/dashboard/sources')}
                   dense={false}
                 >
-                  <ListItemIcon classes={{ root: classes.listIcon }}>
+                  <ListItemIcon>
                     <ClipboardArrowDown />
                   </ListItemIcon>
                   {this.state.open ? (
@@ -291,7 +279,7 @@ class LeftBar extends Component {
                   selected={location.pathname.includes('/dashboard/settings')}
                   dense={false}
                 >
-                  <ListItemIcon classes={{ root: classes.listIcon }}>
+                  <ListItemIcon>
                     <Settings />
                   </ListItemIcon>
                   {this.state.open ? (
@@ -315,7 +303,7 @@ class LeftBar extends Component {
               dense={false}
               style={{ position: 'absolute', bottom: 10, width: '100%' }}
             >
-              <ListItemIcon classes={{ root: classes.listIcon }}>
+              <ListItemIcon>
                 {this.state.open ? (
                   <KeyboardArrowLeft />
                 ) : (

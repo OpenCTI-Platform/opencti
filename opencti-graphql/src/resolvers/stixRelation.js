@@ -12,6 +12,7 @@ import {
   stixRelationsTimeSeriesWithInferences,
   stixRelationsDistribution,
   stixRelationsDistributionWithInferences,
+  stixRelationsNumber,
   search,
   reports,
   markingDefinitions,
@@ -68,7 +69,8 @@ const stixRelationResolvers = {
         return stixRelationsDistributionWithInferences(args);
       }
       return stixRelationsDistribution(args);
-    }
+    },
+    stixRelationsNumber: (_, args) => stixRelationsNumber(args)
   },
   StixRelation: {
     markingDefinitions: (stixRelation, args) =>
