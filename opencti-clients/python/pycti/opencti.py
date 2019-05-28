@@ -63,12 +63,12 @@ class OpenCTI:
             data['relationRefs'] = self.parse_multiple(data['relationRefs'])
         return data
 
-    def check_existing_stix_domain_entity(self, stix_id, name, type):
+    def check_existing_stix_domain_entity(self, stix_id=None, name=None, type=None):
         object_result = None
         if stix_id is not None:
             object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
-            if object_result is None:
-                object_result = self.search_stix_domain_entity_by_name(name, type)
+        if object_result is None and name is not None and type is not None:
+            object_result = self.search_stix_domain_entity_by_name(name, type)
         return object_result
 
     def update_settings_field(self, id, key, value):
@@ -204,6 +204,7 @@ class OpenCTI:
 
     def search_stix_domain_entity_by_name(self, name_or_alias, type='Stix-Domain-Entity'):
         result = self.search_stix_domain_entities_by_name(name_or_alias, type)
+        print(result)
         if len(result) > 0:
             return result[0]
         else:
@@ -861,6 +862,7 @@ class OpenCTI:
 
     def create_identity_if_not_exists(self, type, name, description, id=None, stix_id=None, created=None, modified=None):
         object_result = self.check_existing_stix_domain_entity(stix_id, name, type)
+        print(object_result)
         if object_result is not None:
             return object_result
         else:

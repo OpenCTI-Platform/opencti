@@ -14,5 +14,4 @@ file_to_import = config['mitre']['repository_path_cti'] + '/enterprise-attack/en
 # OpenCTI initialization
 opencti = OpenCTI(config['opencti']['api_url'], config['opencti']['api_key'], config['opencti']['log_file'], config['opencti']['verbose'])
 
-# Import the bundle
-opencti.stix2_import_bundle_from_file(file_to_import)
+opencti.create_identity_if_not_exists('Organization', 'The Guardian', '')
