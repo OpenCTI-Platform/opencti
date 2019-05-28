@@ -79,7 +79,7 @@ const styles = theme => ({
 const inlineStylesHeaders = {
   iconSort: {
     position: 'absolute',
-    margin: '-3px 0 0 5px',
+    margin: '0 0 0 5px',
     padding: 0,
     top: '0px',
   },
