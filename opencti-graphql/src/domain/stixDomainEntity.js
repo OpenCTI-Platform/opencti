@@ -104,7 +104,9 @@ export const findByExternalReference = args =>
   paginate(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
      $rel(external_reference:$externalReference, so:$x) isa external_references;
-     $externalReference id "${escapeString(args.externalReferenceId)}"`,
+     $externalReference has internal_id "${escapeString(
+       args.externalReferenceId
+     )}"`,
     args,
     false
   );
