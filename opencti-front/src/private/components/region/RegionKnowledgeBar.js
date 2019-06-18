@@ -3,58 +3,28 @@ import PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
-import { DeviceHub, Flag } from '@material-ui/icons';
-import { SourcePull, TargetVariant, SourceFork } from 'mdi-material-ui';
+import MenuList from '@material-ui/core/MenuList';
+import MenuItem from '@material-ui/core/MenuItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import { Flag } from '@material-ui/icons';
+import { Gauge, TargetVariant, SourceFork } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
-  drawerPaper: {
+  drawer: {
     minHeight: '100vh',
     width: 260,
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: '#303030',
     padding: 0,
+    backgroundColor: theme.palette.background.navLight,
   },
-  paper: {
-    width: '90%',
-    height: 60,
-    margin: '0 auto',
-    marginTop: 15,
-    padding: 10,
-    transition: 'all 0.3s',
-    borderRadius: 6,
-    '&:hover': {
-      backgroundColor: theme.palette.background.paperLight,
-    },
-  },
-  paperActive: {
-    width: '90%',
-    height: 60,
-    margin: '0 auto',
-    marginTop: 15,
-    padding: 10,
-    backgroundColor: theme.palette.background.paperLight,
-    borderRadius: 6,
+  item: {
+    padding: '0 0 0 15px',
   },
   toolbar: theme.mixins.toolbar,
-  icon: {
-    float: 'left',
-    paddingTop: 7,
-  },
-  content: {
-    float: 'left',
-    padding: '0 0 0 16px',
-  },
-  title: {
-    fontSize: 15,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: '#d3d3d3',
-  },
 });
 
 class RegionKnowledgeBar extends Component {
@@ -66,122 +36,80 @@ class RegionKnowledgeBar extends Component {
       <Drawer
         variant="permanent"
         anchor="right"
-        classes={{ paper: classes.drawerPaper }}
+        classes={{ paper: classes.drawer }}
       >
         <div className={classes.toolbar} />
-        <Paper
-          classes={{
-            root:
+        <MenuList component="nav">
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/regions/${regionId}/knowledge/overview`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/regions/${regionId}/knowledge/overview`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/regions/${regionId}/knowledge/overview`}
-        >
-          <div className={classes.icon}>
-            <DeviceHub fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Overview')}</span>
-            <br />
-            <span className={classes.subtitle}>{t('Knowledge graph')}</span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Gauge />
+            </ListItemIcon>
+            <ListItemText primary={t('Overview')} secondary={t('Statistics')} />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/regions/${regionId}/knowledge/countries`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/regions/${regionId}/knowledge/countries`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/regions/${regionId}/knowledge/countries`}
-        >
-          <div className={classes.icon}>
-            <Flag fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Countries')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Localized in this region')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Flag />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Countries')}
+              secondary={t('Localized in this region')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/regions/${regionId}/knowledge/threats`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/regions/${regionId}/knowledge/threats`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/regions/${regionId}/knowledge/threats`}
-        >
-          <div className={classes.icon}>
-            <TargetVariant fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Threats')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Targeting this region')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
-              location.pathname
-              === `/dashboard/catalogs/regions/${regionId}/knowledge/attribution`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/regions/${regionId}/knowledge/attribution`}
-        >
-          <div className={classes.icon}>
-            <SourcePull fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Threats')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Attributed to this region')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <TargetVariant />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Threats')}
+              secondary={t('Targeting this region')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/regions/${regionId}/knowledge/entities`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/regions/${regionId}/knowledge/entities`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/regions/${regionId}/knowledge/entities`}
-        >
-          <div className={classes.icon}>
-            <SourceFork fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Entities')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Related to this region')}
-            </span>
-          </div>
-        </Paper>
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <SourceFork />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Entities')}
+              secondary={t('Related to this region')}
+            />
+          </MenuItem>
+        </MenuList>
       </Drawer>
     );
   }

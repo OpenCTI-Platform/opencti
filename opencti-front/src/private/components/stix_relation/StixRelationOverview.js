@@ -319,7 +319,7 @@ class StixRelationContainer extends Component {
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h4" gutterBottom={true}>
-              {t('Information')}
+              {t('Details')}
             </Typography>
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <Typography variant="h3" gutterBottom={true}>

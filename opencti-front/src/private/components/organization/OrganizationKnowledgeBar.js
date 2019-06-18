@@ -3,58 +3,28 @@ import PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
-import { DeviceHub, Domain, Person } from '@material-ui/icons';
-import { SourceFork, TargetVariant } from 'mdi-material-ui';
+import MenuList from '@material-ui/core/MenuList';
+import MenuItem from '@material-ui/core/MenuItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import { Domain, Person } from '@material-ui/icons';
+import { Gauge, SourceFork, TargetVariant } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
-  drawerPaper: {
+  drawer: {
     minHeight: '100vh',
     width: 260,
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: '#303030',
     padding: 0,
+    backgroundColor: theme.palette.background.navLight,
   },
-  paper: {
-    width: '90%',
-    height: 60,
-    margin: '0 auto',
-    marginTop: 15,
-    padding: 10,
-    transition: 'all 0.3s',
-    borderRadius: 6,
-    '&:hover': {
-      backgroundColor: theme.palette.background.paperLight,
-    },
-  },
-  paperActive: {
-    width: '90%',
-    height: 60,
-    margin: '0 auto',
-    marginTop: 15,
-    padding: 10,
-    backgroundColor: theme.palette.background.paperLight,
-    borderRadius: 6,
+  item: {
+    padding: '0 0 0 15px',
   },
   toolbar: theme.mixins.toolbar,
-  icon: {
-    float: 'left',
-    paddingTop: 7,
-  },
-  content: {
-    float: 'left',
-    padding: '0 0 0 16px',
-  },
-  title: {
-    fontSize: 15,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: '#d3d3d3',
-  },
 });
 
 class OrganizationKnowledgeBar extends Component {
@@ -66,122 +36,98 @@ class OrganizationKnowledgeBar extends Component {
       <Drawer
         variant="permanent"
         anchor="right"
-        classes={{ paper: classes.drawerPaper }}
+        classes={{ paper: classes.drawer }}
       >
         <div className={classes.toolbar} />
-        <Paper
-          classes={{
-            root:
+        <MenuList component="nav">
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/overview`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/organizations/${organizationId}/knowledge/overview`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/overview`}
-        >
-          <div className={classes.icon}>
-            <DeviceHub fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Overview')}</span>
-            <br />
-            <span className={classes.subtitle}>{t('Knowledge graph')}</span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Gauge />
+            </ListItemIcon>
+            <ListItemText primary={t('Overview')} secondary={t('Statistics')} />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/sectors`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/organizations/${organizationId}/knowledge/sectors`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/sectors`}
-        >
-          <div className={classes.icon}>
-            <Domain fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Sectors')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Related to this organization')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Domain />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Sectors')}
+              secondary={t('Related to this organization')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/persons`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/organizations/${organizationId}/knowledge/persons`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/persons`}
-        >
-          <div className={classes.icon}>
-            <Person fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Persons')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Belonging to this organization')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Person />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Persons')}
+              secondary={t('Belonging to this organization')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/threats`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/organizations/${organizationId}/knowledge/threats`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/threats`}
-        >
-          <div className={classes.icon}>
-            <TargetVariant fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Threats')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Targeting this organization')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <TargetVariant />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Threats')}
+              secondary={t('Targeting this organization')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/entities`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/organizations/${organizationId}/knowledge/entities`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/entities`}
-        >
-          <div className={classes.icon}>
-            <SourceFork fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Entities')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Related to this organization')}
-            </span>
-          </div>
-        </Paper>
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <SourceFork />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Entities')}
+              secondary={t('Related to this organization')}
+            />
+          </MenuItem>
+        </MenuList>
       </Drawer>
     );
   }

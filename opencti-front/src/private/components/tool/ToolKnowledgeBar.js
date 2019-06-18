@@ -3,60 +3,29 @@ import PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
-import { DeviceHub } from '@material-ui/icons';
+import MenuList from '@material-ui/core/MenuList';
+import MenuItem from '@material-ui/core/MenuItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
 import {
-  ChessKnight, Fire, Diamond, Biohazard,
+  Gauge, ChessKnight, Fire, Diamond, Biohazard,
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
-  drawerPaper: {
+  drawer: {
     minHeight: '100vh',
     width: 260,
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: '#303030',
     padding: 0,
+    backgroundColor: theme.palette.background.navLight,
   },
-  paper: {
-    width: '90%',
-    height: 60,
-    margin: '0 auto',
-    marginTop: 15,
-    padding: 10,
-    transition: 'all 0.3s',
-    borderRadius: 6,
-    '&:hover': {
-      backgroundColor: theme.palette.background.paperLight,
-    },
-  },
-  paperActive: {
-    width: '90%',
-    height: 60,
-    margin: '0 auto',
-    marginTop: 15,
-    padding: 10,
-    backgroundColor: theme.palette.background.paperLight,
-    borderRadius: 6,
+  item: {
+    padding: '0 0 0 15px',
   },
   toolbar: theme.mixins.toolbar,
-  icon: {
-    float: 'left',
-    paddingTop: 7,
-  },
-  content: {
-    float: 'left',
-    padding: '0 0 0 16px',
-  },
-  title: {
-    fontSize: 15,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: '#d3d3d3',
-  },
 });
 
 class ToolKnowledgeBar extends Component {
@@ -68,114 +37,98 @@ class ToolKnowledgeBar extends Component {
       <Drawer
         variant="permanent"
         anchor="right"
-        classes={{ paper: classes.drawerPaper }}
+        classes={{ paper: classes.drawer }}
       >
         <div className={classes.toolbar} />
-        <Paper
-          classes={{
-            root:
+        <MenuList component="nav">
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/tools/${toolId}/knowledge/overview`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/tools/${toolId}/knowledge/overview`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/tools/${toolId}/knowledge/overview`}
-        >
-          <div className={classes.icon}>
-            <DeviceHub fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Overview')}</span>
-            <br />
-            <span className={classes.subtitle}>{t('Knowledge graph')}</span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Gauge />
+            </ListItemIcon>
+            <ListItemText primary={t('Overview')} secondary={t('Statistics')} />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/tools/${toolId}/knowledge/intrusion_sets`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/tools/${toolId}/knowledge/intrusion_sets`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/tools/${toolId}/knowledge/intrusion_sets`}
-        >
-          <div className={classes.icon}>
-            <Diamond fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Intrusion sets')}</span>
-            <br />
-            <span className={classes.subtitle}>{t('Using this tool')}</span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Diamond />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Intrusion sets')}
+              secondary={t('Using this tool')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/tools/${toolId}/knowledge/campaigns`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/tools/${toolId}/knowledge/campaigns`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/tools/${toolId}/knowledge/campaigns`}
-        >
-          <div className={classes.icon}>
-            <ChessKnight fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Campaigns')}</span>
-            <br />
-            <span className={classes.subtitle}>{t('Using this tool')}</span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <ChessKnight />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Campaigns')}
+              secondary={t('Using this tool')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/tools/${toolId}/knowledge/incidents`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/tools/${toolId}/knowledge/incidents`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/tools/${toolId}/knowledge/incidents`}
-        >
-          <div className={classes.icon}>
-            <Fire fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Incidents')}</span>
-            <br />
-            <span className={classes.subtitle}>{t('Using this tool')}</span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Fire />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Incidents')}
+              secondary={t('Using this tool')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/tools/${toolId}/knowledge/malwares`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/tools/${toolId}/knowledge/malwares`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/tools/${toolId}/knowledge/malwares`}
-        >
-          <div className={classes.icon}>
-            <Biohazard fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Malwares')}</span>
-            <br />
-            <span className={classes.subtitle}>{t('Using this tool')}</span>
-          </div>
-        </Paper>
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Biohazard />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Malwares')}
+              secondary={t('Using this tool')}
+            />
+          </MenuItem>
+        </MenuList>
       </Drawer>
     );
   }

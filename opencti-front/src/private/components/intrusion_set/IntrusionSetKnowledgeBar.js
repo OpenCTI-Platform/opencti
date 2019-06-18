@@ -77,7 +77,10 @@ class IntrusionSetKnowledgeBar extends Component {
             <ListItemIcon>
               <SourcePull />
             </ListItemIcon>
-            <ListItemText primary={t('Attribution')} secondary={t('Origins of this intrusion set')} />
+            <ListItemText
+              primary={t('Attribution')}
+              secondary={t('Origins of this intrusion set')}
+            />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -92,7 +95,10 @@ class IntrusionSetKnowledgeBar extends Component {
             <ListItemIcon>
               <Target />
             </ListItemIcon>
-            <ListItemText primary={t('Victimology')} secondary={t('Targeted by this intrusion set')} />
+            <ListItemText
+              primary={t('Victimology')}
+              secondary={t('Targeted by this intrusion set')}
+            />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -107,7 +113,10 @@ class IntrusionSetKnowledgeBar extends Component {
             <ListItemIcon>
               <ChessKnight />
             </ListItemIcon>
-            <ListItemText primary={t('Campaigns')} secondary={t('Attributed to this intrusion set')} />
+            <ListItemText
+              primary={t('Campaigns')}
+              secondary={t('Attributed to this intrusion set')}
+            />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -122,7 +131,10 @@ class IntrusionSetKnowledgeBar extends Component {
             <ListItemIcon>
               <Fire />
             </ListItemIcon>
-            <ListItemText primary={t('Incidents')} secondary={t('Attributed to this intrusion set')} />
+            <ListItemText
+              primary={t('Incidents')}
+              secondary={t('Attributed to this intrusion set')}
+            />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -137,7 +149,10 @@ class IntrusionSetKnowledgeBar extends Component {
             <ListItemIcon>
               <Biohazard />
             </ListItemIcon>
-            <ListItemText primary={t('Malwares')} secondary={t('Used by this intrusion set')} />
+            <ListItemText
+              primary={t('Malwares')}
+              secondary={t('Used by this intrusion set')}
+            />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -152,7 +167,10 @@ class IntrusionSetKnowledgeBar extends Component {
             <ListItemIcon>
               <LockPattern />
             </ListItemIcon>
-            <ListItemText primary={t('Tactics')} secondary={t('Used by this intrusion set')} />
+            <ListItemText
+              primary={t('Tactics')}
+              secondary={t('Used by this intrusion set')}
+            />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -167,7 +185,10 @@ class IntrusionSetKnowledgeBar extends Component {
             <ListItemIcon>
               <Application />
             </ListItemIcon>
-            <ListItemText primary={t('Tools')} secondary={t('Used by this intrusion set')} />
+            <ListItemText
+              primary={t('Tools')}
+              secondary={t('Used by this intrusion set')}
+            />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -182,7 +203,10 @@ class IntrusionSetKnowledgeBar extends Component {
             <ListItemIcon>
               <BugReport />
             </ListItemIcon>
-            <ListItemText primary={t('Vulnerabilities')} secondary={t('Used by this intrusion set')} />
+            <ListItemText
+              primary={t('Vulnerabilities')}
+              secondary={t('Used by this intrusion set')}
+            />
           </MenuItem>
         </MenuList>
       </Drawer>
