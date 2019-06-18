@@ -1,9 +1,12 @@
 /* eslint-disable no-underscore-dangle */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import windowDimensions from 'react-window-dimensions';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { filter, pathOr, propOr } from 'ramda';
+import {
+  compose, filter, pathOr, propOr,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer,
@@ -54,6 +57,19 @@ class IncidentsCards extends Component {
     }
   }
 
+  numberOfCardsPerLine() {
+    if (this.props.width < 576) {
+      return 1;
+    }
+    if (this.props.width < 900) {
+      return 2;
+    }
+    if (this.props.width < 1200) {
+      return 3;
+    }
+    return 4;
+  }
+
   filterList(list) {
     const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''
@@ -85,8 +101,8 @@ class IncidentsCards extends Component {
     rowStartIndex,
     rowStopIndex,
   }) {
-    const startIndex = rowStartIndex * nbCardsPerLine + columnStartIndex;
-    const stopIndex = rowStopIndex * nbCardsPerLine + columnStopIndex;
+    const startIndex = rowStartIndex * this.numberOfCardsPerLine() + columnStartIndex;
+    const stopIndex = rowStopIndex * this.numberOfCardsPerLine() + columnStopIndex;
     this._onRowsRendered({
       startIndex,
       stopIndex,
@@ -107,7 +123,7 @@ class IncidentsCards extends Component {
     columnIndex, key, rowIndex, style,
   }) {
     const { classes, dummy, data } = this.props;
-    const index = rowIndex * nbCardsPerLine + columnIndex;
+    const index = rowIndex * this.numberOfCardsPerLine() + columnIndex;
     let className = classes.bottomPad;
     switch (columnIndex) {
       case 0:
@@ -160,14 +176,16 @@ class IncidentsCards extends Component {
       rowCount = nbDummyRowsInit;
     } else {
       // Else we load the lines for the result + dummy if loading in progress
-      const nbLineForCards = Math.ceil(list.length / nbCardsPerLine);
+      const nbLineForCards = Math.ceil(
+        list.length / this.numberOfCardsPerLine(),
+      );
       rowCount = this.props.relay.isLoading()
         ? nbLineForCards + nbDummyRowsInit
         : nbLineForCards;
     }
 
     const { scrollToIndex } = this.state;
-    // console.log(`globalCount: ${rowCount}/${Math.ceil(globalCount / nbCardsPerLine)}`);
+    // console.log(`globalCount: ${rowCount}/${Math.ceil(globalCount / this.numberOfCardsPerLine())}`);
 
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
@@ -188,7 +206,7 @@ class IncidentsCards extends Component {
                       <ColumnSizer
                         columnMaxWidth={440}
                         columnMinWidth={150}
-                        columnCount={4}
+                        columnCount={this.numberOfCardsPerLine()}
                         width={width}
                       >
                         {({ adjustedWidth, columnWidth }) => (
@@ -202,9 +220,9 @@ class IncidentsCards extends Component {
                             isScrolling={isScrolling}
                             onScroll={onChildScroll}
                             columnWidth={columnWidth}
-                            columnCount={4}
+                            columnCount={this.numberOfCardsPerLine()}
                             rowHeight={195}
-                            overscanColumnCount={4}
+                            overscanColumnCount={this.numberOfCardsPerLine()}
                             overscanRowCount={2}
                             rowCount={rowCount}
                             cellRenderer={this._cellRenderer}
@@ -234,6 +252,7 @@ IncidentsCards.propTypes = {
   incidents: PropTypes.object,
   dummy: PropTypes.bool,
   searchTerm: PropTypes.string,
+  width: PropTypes.number,
 };
 
 export const incidentsCardsQuery = graphql`
@@ -253,59 +272,62 @@ export const incidentsCardsQuery = graphql`
   }
 `;
 
-export default withStyles(styles)(
-  createPaginationContainer(
-    IncidentsCards,
-    {
-      data: graphql`
-        fragment IncidentsCards_data on Query
-          @argumentDefinitions(
-            count: { type: "Int", defaultValue: 25 }
-            cursor: { type: "ID" }
-            orderBy: { type: "IncidentsOrdering", defaultValue: "name" }
-            orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          ) {
-          incidents(
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-          ) @connection(key: "Pagination_incidents") {
-            edges {
-              node {
-                id
-                name
-                description
-                ...IncidentCard_incident
-              }
-            }
-            pageInfo {
-              globalCount
+const incidentsCards = createPaginationContainer(
+  IncidentsCards,
+  {
+    data: graphql`
+      fragment IncidentsCards_data on Query
+        @argumentDefinitions(
+          count: { type: "Int", defaultValue: 25 }
+          cursor: { type: "ID" }
+          orderBy: { type: "IncidentsOrdering", defaultValue: "name" }
+          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+        ) {
+        incidents(
+          first: $count
+          after: $cursor
+          orderBy: $orderBy
+          orderMode: $orderMode
+        ) @connection(key: "Pagination_incidents") {
+          edges {
+            node {
+              id
+              name
+              description
+              ...IncidentCard_incident
             }
           }
+          pageInfo {
+            globalCount
+          }
         }
-      `,
+      }
+    `,
+  },
+  {
+    direction: 'forward',
+    getConnectionFromProps(props) {
+      return props.data && props.data.incidents;
     },
-    {
-      direction: 'forward',
-      getConnectionFromProps(props) {
-        return props.data && props.data.incidents;
-      },
-      getFragmentVariables(prevVars, totalCount) {
-        return {
-          ...prevVars,
-          count: totalCount,
-        };
-      },
-      getVariables(props, { count, cursor }, fragmentVariables) {
-        return {
-          count,
-          cursor,
-          orderBy: fragmentVariables.orderBy,
-          orderMode: fragmentVariables.orderMode,
-        };
-      },
-      query: incidentsCardsQuery,
+    getFragmentVariables(prevVars, totalCount) {
+      return {
+        ...prevVars,
+        count: totalCount,
+      };
     },
-  ),
+    getVariables(props, { count, cursor }, fragmentVariables) {
+      return {
+        count,
+        cursor,
+        orderBy: fragmentVariables.orderBy,
+        orderMode: fragmentVariables.orderMode,
+      };
+    },
+    query: incidentsCardsQuery,
+  },
 );
+
+export default compose(
+  windowDimensions(),
+  withStyles(styles, { withTheme: true }),
+)(incidentsCards);

@@ -90,6 +90,8 @@ export const paginate = (indexName, options) => {
       finalSearch = `"*${search
         .replace('http://', '')
         .replace('https://', '')}*"`;
+    } else if (!search.startsWith('"')) {
+      finalSearch = `*${search}*`;
     } else {
       finalSearch = `${search}`;
     }

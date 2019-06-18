@@ -1,9 +1,12 @@
 /* eslint-disable no-underscore-dangle */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import windowDimensions from 'react-window-dimensions';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { filter, pathOr, propOr } from 'ramda';
+import {
+  compose, filter, pathOr, propOr,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer,
@@ -54,6 +57,19 @@ class SectorsCards extends Component {
     }
   }
 
+  numberOfCardsPerLine() {
+    if (this.props.width < 576) {
+      return 1;
+    }
+    if (this.props.width < 900) {
+      return 2;
+    }
+    if (this.props.width < 1200) {
+      return 3;
+    }
+    return 4;
+  }
+
   filterList(list) {
     const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''
@@ -86,8 +102,8 @@ class SectorsCards extends Component {
     rowStartIndex,
     rowStopIndex,
   }) {
-    const startIndex = rowStartIndex * nbCardsPerLine + columnStartIndex;
-    const stopIndex = rowStopIndex * nbCardsPerLine + columnStopIndex;
+    const startIndex = rowStartIndex * this.numberOfCardsPerLine() + columnStartIndex;
+    const stopIndex = rowStopIndex * this.numberOfCardsPerLine() + columnStopIndex;
     this._onRowsRendered({
       startIndex,
       stopIndex,
@@ -108,7 +124,7 @@ class SectorsCards extends Component {
     columnIndex, key, rowIndex, style,
   }) {
     const { classes, dummy, data } = this.props;
-    const index = rowIndex * nbCardsPerLine + columnIndex;
+    const index = rowIndex * this.numberOfCardsPerLine() + columnIndex;
     let className = classes.bottomPad;
     switch (columnIndex) {
       case 0:
@@ -161,14 +177,16 @@ class SectorsCards extends Component {
       rowCount = nbDummyRowsInit;
     } else {
       // Else we load the lines for the result + dummy if loading in progress
-      const nbLineForCards = Math.ceil(list.length / nbCardsPerLine);
+      const nbLineForCards = Math.ceil(
+        list.length / this.numberOfCardsPerLine(),
+      );
       rowCount = this.props.relay.isLoading()
         ? nbLineForCards + nbDummyRowsInit
         : nbLineForCards;
     }
 
     const { scrollToIndex } = this.state;
-    // console.log(`globalCount: ${rowCount}/${Math.ceil(globalCount / nbCardsPerLine)}`);
+    // console.log(`globalCount: ${rowCount}/${Math.ceil(globalCount / this.numberOfCardsPerLine())}`);
 
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
@@ -189,7 +207,7 @@ class SectorsCards extends Component {
                       <ColumnSizer
                         columnMaxWidth={440}
                         columnMinWidth={150}
-                        columnCount={4}
+                        columnCount={this.numberOfCardsPerLine()}
                         width={width}
                       >
                         {({ adjustedWidth, columnWidth }) => (
@@ -203,9 +221,9 @@ class SectorsCards extends Component {
                             isScrolling={isScrolling}
                             onScroll={onChildScroll}
                             columnWidth={columnWidth}
-                            columnCount={4}
+                            columnCount={this.numberOfCardsPerLine()}
                             rowHeight={195}
-                            overscanColumnCount={4}
+                            overscanColumnCount={this.numberOfCardsPerLine()}
                             overscanRowCount={2}
                             rowCount={rowCount}
                             cellRenderer={this._cellRenderer}
@@ -235,6 +253,7 @@ SectorsCards.propTypes = {
   sectors: PropTypes.object,
   dummy: PropTypes.bool,
   searchTerm: PropTypes.string,
+  width: PropTypes.number,
 };
 
 export const sectorsCardsQuery = graphql`
@@ -254,59 +273,62 @@ export const sectorsCardsQuery = graphql`
   }
 `;
 
-export default withStyles(styles)(
-  createPaginationContainer(
-    SectorsCards,
-    {
-      data: graphql`
-        fragment SectorsCards_data on Query
-          @argumentDefinitions(
-            count: { type: "Int", defaultValue: 25 }
-            cursor: { type: "ID" }
-            orderBy: { type: "SectorsOrdering", defaultValue: "name" }
-            orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          ) {
-          sectors(
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-          ) @connection(key: "Pagination_sectors") {
-            edges {
-              node {
-                id
-                name
-                description
-                ...SectorCard_sector
-              }
-            }
-            pageInfo {
-              globalCount
+const sectorsCards = createPaginationContainer(
+  SectorsCards,
+  {
+    data: graphql`
+      fragment SectorsCards_data on Query
+        @argumentDefinitions(
+          count: { type: "Int", defaultValue: 25 }
+          cursor: { type: "ID" }
+          orderBy: { type: "SectorsOrdering", defaultValue: "name" }
+          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+        ) {
+        sectors(
+          first: $count
+          after: $cursor
+          orderBy: $orderBy
+          orderMode: $orderMode
+        ) @connection(key: "Pagination_sectors") {
+          edges {
+            node {
+              id
+              name
+              description
+              ...SectorCard_sector
             }
           }
+          pageInfo {
+            globalCount
+          }
         }
-      `,
+      }
+    `,
+  },
+  {
+    direction: 'forward',
+    getConnectionFromProps(props) {
+      return props.data && props.data.sectors;
     },
-    {
-      direction: 'forward',
-      getConnectionFromProps(props) {
-        return props.data && props.data.sectors;
-      },
-      getFragmentVariables(prevVars, totalCount) {
-        return {
-          ...prevVars,
-          count: totalCount,
-        };
-      },
-      getVariables(props, { count, cursor }, fragmentVariables) {
-        return {
-          count,
-          cursor,
-          orderBy: fragmentVariables.orderBy,
-          orderMode: fragmentVariables.orderMode,
-        };
-      },
-      query: sectorsCardsQuery,
+    getFragmentVariables(prevVars, totalCount) {
+      return {
+        ...prevVars,
+        count: totalCount,
+      };
     },
-  ),
+    getVariables(props, { count, cursor }, fragmentVariables) {
+      return {
+        count,
+        cursor,
+        orderBy: fragmentVariables.orderBy,
+        orderMode: fragmentVariables.orderMode,
+      };
+    },
+    query: sectorsCardsQuery,
+  },
 );
+
+export default compose(
+  windowDimensions(),
+  withStyles(styles, { withTheme: true }),
+)(sectorsCards);

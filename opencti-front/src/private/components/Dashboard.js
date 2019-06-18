@@ -34,6 +34,9 @@ import ItemNumberDifference from '../../components/ItemNumberDifference';
 import ItemMarking from '../../components/ItemMarking';
 
 const styles = theme => ({
+  root: {
+    flexGrow: 1,
+  },
   card: {
     width: '100%',
     marginBottom: 20,
@@ -194,9 +197,9 @@ class Dashboard extends Component {
       interval: 'day',
     };
     return (
-      <div>
+      <div className={classes.root}>
         <Grid container={true} spacing={2}>
-          <Grid item={true} xs={3}>
+          <Grid item={true} lg={3} xs={6}>
             <Card
               raised={true}
               classes={{ root: classes.card }}
@@ -272,7 +275,7 @@ class Dashboard extends Component {
               />
             </Card>
           </Grid>
-          <Grid item={true} xs={3}>
+          <Grid item={true} lg={3} xs={6}>
             <Card
               raised={true}
               classes={{ root: classes.card }}
@@ -348,7 +351,7 @@ class Dashboard extends Component {
               />
             </Card>
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} lg={6} xs={12}>
             <Card
               raised={true}
               classes={{ root: classes.card }}
@@ -421,7 +424,7 @@ class Dashboard extends Component {
           </Grid>
         </Grid>
         <Grid container={true} spacing={2} style={{ marginTop: 20 }}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} lg={6} xs={12}>
             <Typography variant="h2" gutterBottom={true}>
               {t('Last reports')}
             </Typography>
@@ -490,7 +493,7 @@ class Dashboard extends Component {
               />
             </Paper>
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} lg={6} xs={12}>
             <Typography variant="h2" gutterBottom={true}>
               {t('Last observables')}
             </Typography>

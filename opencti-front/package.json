@@ -42,6 +42,7 @@
     "react-scripts": "^3.0.1",
     "react-select": "^3.0.4",
     "react-virtualized": "^9.21.1",
+    "react-window-dimensions": "^1.0.2",
     "recharts": "^1.6.2",
     "relay-compiler": "^4.0.0",
     "relay-runtime": "^4.0.0",

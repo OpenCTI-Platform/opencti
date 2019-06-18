@@ -249,7 +249,7 @@ const i18n = {
       Persons: 'Personnes',
       Threats: 'Menaces',
       'All observables': 'Tous les observables',
-      'Domain names': 'Noms de dmaine',
+      'Domain names': 'Noms de domaine',
       'IPv4 addresses': 'Adresses IPv4',
       'IPv6 addresses': 'Adresses IPv6',
       'Email addresses': 'Adresses email',

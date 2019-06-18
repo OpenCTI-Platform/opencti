@@ -11112,6 +11112,11 @@ react-virtualized@^9.21.1:
     prop-types "^15.6.0"
     react-lifecycles-compat "^3.0.4"
 
+react-window-dimensions@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/react-window-dimensions/-/react-window-dimensions-1.0.2.tgz#94f9cd24e96152b4c706fc0590e87a0ece27d2a3"
+  integrity sha512-G1q7VE+gncnNPyEwiLAbPk/vx7iEsarkd6kEUtTCIxImY1ZStj9BXuaR3dbWP/+gBvRgBn/jE8ZtnxZoVZXKNg==
+
 react@^16.3.2, react@^16.8.3, react@^16.8.6:
   version "16.8.6"
   resolved "https://registry.yarnpkg.com/react/-/react-16.8.6.tgz#ad6c3a9614fd3a4e9ef51117f54d888da01f2bbe"

@@ -33,7 +33,6 @@ const styles = theme => ({
     minHeight: '100vh',
     position: 'fixed',
     width: 60,
-    overflow: 'hidden',
     backgroundColor: theme.palette.background.nav,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
@@ -44,7 +43,6 @@ const styles = theme => ({
     minHeight: '100vh',
     position: 'fixed',
     width: 220,
-    overflow: 'hidden',
     backgroundColor: theme.palette.background.nav,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,

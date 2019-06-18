@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import windowDimensions from 'react-window-dimensions';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
@@ -24,7 +25,9 @@ const styles = theme => ({
 
 class TopMenuKnowledge extends Component {
   render() {
-    const { t, location, classes } = this.props;
+    const {
+      t, location, classes, width,
+    } = this.props;
     return (
       <div>
         <Button
@@ -43,8 +46,8 @@ class TopMenuKnowledge extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Public className={classes.icon} fontSize="small" />
-          {t('Threat actors')}
+          <Public className={width > 950 ? classes.icon : ''} fontSize="small" />
+          {width > 950 ? t('Threat actors') : ''}
         </Button>
         <Button
           component={Link}
@@ -62,8 +65,8 @@ class TopMenuKnowledge extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Domain className={classes.icon} fontSize="small" />
-          {t('Sectors')}
+          <Domain className={width > 950 ? classes.icon : ''} fontSize="small" />
+          {width > 950 ? t('Sectors') : ''}
         </Button>
         <Button
           component={Link}
@@ -81,8 +84,8 @@ class TopMenuKnowledge extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Diamond className={classes.icon} fontSize="small" />
-          {t('Intrusion sets')}
+          <Diamond className={width > 950 ? classes.icon : ''} fontSize="small" />
+          {width > 950 ? t('Intrusion sets') : ''}
         </Button>
         <Button
           component={Link}
@@ -100,8 +103,8 @@ class TopMenuKnowledge extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <ChessKnight className={classes.icon} fontSize="small" />
-          {t('Campaigns')}
+          <ChessKnight className={width > 950 ? classes.icon : ''} fontSize="small" />
+          {width > 950 ? t('Campaigns') : ''}
         </Button>
         <Button
           component={Link}
@@ -119,8 +122,8 @@ class TopMenuKnowledge extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Fire className={classes.icon} fontSize="small" />
-          {t('Incidents')}
+          <Fire className={width > 950 ? classes.icon : ''} fontSize="small" />
+          {width > 950 ? t('Incidents') : ''}
         </Button>
         <Button
           component={Link}
@@ -138,8 +141,8 @@ class TopMenuKnowledge extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Biohazard className={classes.icon} fontSize="small" />
-          {t('Malwares')}
+          <Biohazard className={width > 950 ? classes.icon : ''} fontSize="small" />
+          {width > 950 ? t('Malwares') : ''}
         </Button>
       </div>
     );
@@ -151,10 +154,12 @@ TopMenuKnowledge.propTypes = {
   location: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  width: PropTypes.number,
 };
 
 export default compose(
   inject18n,
   withRouter,
+  windowDimensions(),
   withStyles(styles),
 )(TopMenuKnowledge);
