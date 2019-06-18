@@ -14,4 +14,4 @@ $ pip3 install pycti
 
 ## About
 
-OpenCTI is a product powered by the [Luatix](https://www.luatix.org) non-profit organization.
+OpenCTI is a product powered by the collaboration of the [Luatix](https://www.luatix.org) non-profit organization, the [French national cybersecurity agency (ANSSI)](https://ssi.gouv.fr) and the [CERT-EU](https://cert.europa.eu).

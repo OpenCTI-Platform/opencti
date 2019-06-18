@@ -16,9 +16,9 @@ setup(
     description='Python API client for OpenCTI.',
     long_description='This is the official Python client for the OpenCTI application',
     author='Luatix',
-    author_email='contact@luatix.org',
+    author_email='contact@opencti.io',
     maintainer='Luatix',
-    url='https://github.com/LuatixHQ/OpenCTI/opencti-clients/python',
+    url='https://github.com/OpenCTI-Platform/client-python',
     license='AGPL-V3',
     packages=['pycti'],
     classifiers=[
