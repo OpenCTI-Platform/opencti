@@ -4,6 +4,9 @@ import {
   findByEntity,
   reportsTimeSeries,
   reportsTimeSeriesByEntity,
+  reportsNumber,
+  reportsNumberByEntity,
+  reportsDistributionByEntity,
   findById,
   objectRefs,
   observableRefs,
@@ -37,6 +40,18 @@ const reportResolvers = {
         return reportsTimeSeriesByEntity(args);
       }
       return reportsTimeSeries(args);
+    },
+    reportsNumber: (_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return reportsNumberByEntity(args);
+      }
+      return reportsNumber(args);
+    },
+    reportsDistribution: (_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return reportsDistributionByEntity(args);
+      }
+      return reportsDistribution(args);
     }
   },
   Report: {

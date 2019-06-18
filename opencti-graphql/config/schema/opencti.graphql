@@ -344,8 +344,8 @@ type StixRelation implements GlobalObject & StixEntity {
   to: StixEntity
   toRole: String
   inferences: StixRelationConnection
-  created_at: DateTime!
-  updated_at: DateTime!
+  created_at: DateTime
+  updated_at: DateTime
 }
 input StixRelationAddInput {
   internal_id: String
@@ -2094,6 +2094,7 @@ type Query {
   stixRelationsDistribution(
     fromId: String
     relationType: String
+    inferred: Boolean
     resolveInferences: Boolean
     resolveRelationType: String
     resolveRelationRole: String
@@ -2108,7 +2109,7 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth
-  stixRelationsNumber(type: String, fromId: String, endDate: DateTime): Number @auth
+  stixRelationsNumber(type: String, fromId: String, endDate: DateTime, inferred: Boolean): Number @auth
   # Workspaces
   workspace(id: String!): Workspace @auth
   workspaces(
@@ -2343,6 +2344,8 @@ type Query {
     endDate: DateTime!
     interval: String!
   ): [TimeSeries] @auth
+  reportsNumber(reportClass: String, objectId: String, endDate: DateTime): Number @auth
+  reportsDistribution(objectId: String, field: String!, operation: StatsOperation!, limit: Int, order: String): [Distribution] @auth
 }
 
 ### SUBSCRIPTIONS

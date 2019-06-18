@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { DatePicker } from 'material-ui-pickers';
+import { DatePicker } from '@material-ui/pickers'
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListSubheader from '@material-ui/core/ListSubheader';

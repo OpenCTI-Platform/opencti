@@ -3,9 +3,12 @@ import PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
-import { BugReport, DeviceHub } from '@material-ui/icons';
+import MenuList from '@material-ui/core/MenuList';
+import MenuItem from '@material-ui/core/MenuItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import { BugReport } from '@material-ui/icons';
 import {
   LockPattern,
   Application,
@@ -13,55 +16,23 @@ import {
   Fire,
   SourcePull,
   Biohazard,
+  Gauge,
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
-  drawerPaper: {
+  drawer: {
     minHeight: '100vh',
     width: 260,
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: '#303030',
     padding: 0,
+    backgroundColor: theme.palette.background.navLight,
   },
-  paper: {
-    width: '90%',
-    height: 60,
-    margin: '0 auto',
-    marginTop: 15,
-    padding: 10,
-    transition: 'all 0.3s',
-    borderRadius: 6,
-    '&:hover': {
-      backgroundColor: theme.palette.background.paperLight,
-    },
-  },
-  paperActive: {
-    width: '90%',
-    height: 60,
-    margin: '0 auto',
-    marginTop: 15,
-    padding: 10,
-    backgroundColor: theme.palette.background.paperLight,
-    borderRadius: 6,
+  item: {
+    padding: '0 0 0 15px',
   },
   toolbar: theme.mixins.toolbar,
-  icon: {
-    float: 'left',
-    paddingTop: 7,
-  },
-  content: {
-    float: 'left',
-    padding: '0 0 0 16px',
-  },
-  title: {
-    fontSize: 15,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: '#d3d3d3',
-  },
 });
 
 class CampaignKnowledgeBar extends Component {
@@ -73,191 +44,152 @@ class CampaignKnowledgeBar extends Component {
       <Drawer
         variant="permanent"
         anchor="right"
-        classes={{ paper: classes.drawerPaper }}
+        classes={{ paper: classes.drawer }}
       >
         <div className={classes.toolbar} />
-        <Paper
-          classes={{
-            root:
+        <MenuList component="nav">
+          <MenuItem
+            component={Link}
+            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/overview`}
+            selected={
               location.pathname
               === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/overview`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/overview`}
-        >
-          <div className={classes.icon}>
-            <DeviceHub fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Overview')}</span>
-            <br />
-            <span className={classes.subtitle}>{t('Knowledge graph')}</span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Gauge />
+            </ListItemIcon>
+            <ListItemText primary={t('Overview')} secondary={t('Statistics')} />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/attribution`}
+            selected={
               location.pathname
               === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/attribution`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/attribution`}
-        >
-          <div className={classes.icon}>
-            <SourcePull fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Attribution')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Origins of this campaign')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <SourcePull />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Attribution')}
+              secondary={t('Origins of this campaign')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/victimology`}
+            selected={
               location.pathname
               === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/victimology`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/victimology`}
-        >
-          <div className={classes.icon}>
-            <Target fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Victimology')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Targeted in this campaign')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Target />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Victimology')}
+              secondary={t('Targeted in this campaign')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/incidents`}
+            selected={
               location.pathname
               === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/incidents`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/incidents`}
-        >
-          <div className={classes.icon}>
-            <Fire fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Incidents')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Attributed to this campaign')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Fire />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Incidents')}
+              secondary={t('Attributed to this campaign')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/malwares`}
+            selected={
               location.pathname
               === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/malwares`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/malwares`}
-        >
-          <div className={classes.icon}>
-            <Biohazard fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Malwares')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Used in this campaign')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Biohazard />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Malwares')}
+              secondary={t('Used in this campaign')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/ttp`}
+            selected={
               location.pathname
               === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/ttp`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/ttp`}
-        >
-          <div className={classes.icon}>
-            <LockPattern fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Tactics')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Used in this campaign')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <LockPattern />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Tactics')}
+              secondary={t('Used in this campaign')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/tools`}
+            selected={
               location.pathname
               === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/tools`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/tools`}
-        >
-          <div className={classes.icon}>
-            <Application fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Tools')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Used in this campaign')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Application />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Tools')}
+              secondary={t('Used in this campaign')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/vulnerabilities`}
+            selected={
               location.pathname
               === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/vulnerabilities`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/vulnerabilities`}
-        >
-          <div className={classes.icon}>
-            <BugReport fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Vulnerabilities')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Targeted in this campaign')}
-            </span>
-          </div>
-        </Paper>
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <BugReport />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Vulnerabilities')}
+              secondary={t('Targeted in this campaign')}
+            />
+          </MenuItem>
+        </MenuList>
       </Drawer>
     );
   }

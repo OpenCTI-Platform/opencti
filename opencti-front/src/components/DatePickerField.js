@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { InlineDatePicker } from 'material-ui-pickers';
+import { DatePicker } from '@material-ui/pickers'
 import { dateFormat } from '../utils/Time';
 import inject18n from './i18n';
 
@@ -23,8 +23,9 @@ class DatePickerField extends Component {
     } = this.props;
     const currentError = form.errors[field.name];
     return (
-      <InlineDatePicker
-        onlyCalendar={true}
+      <DatePicker
+        variant='inline'
+        disableToolbar={true}
         autoOk={true}
         keyboard={true}
         allowKeyboardControl={true}

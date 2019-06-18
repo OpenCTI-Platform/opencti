@@ -3,58 +3,30 @@ import PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
-import { DeviceHub, AccountBalance } from '@material-ui/icons';
-import { TargetVariant, SourceFork, CityVariant } from 'mdi-material-ui';
+import MenuList from '@material-ui/core/MenuList';
+import MenuItem from '@material-ui/core/MenuItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import { AccountBalance } from '@material-ui/icons';
+import {
+  Gauge, TargetVariant, SourceFork, CityVariant,
+} from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
-  drawerPaper: {
+  drawer: {
     minHeight: '100vh',
     width: 260,
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: '#303030',
     padding: 0,
+    backgroundColor: theme.palette.background.navLight,
   },
-  paper: {
-    width: '90%',
-    height: 60,
-    margin: '0 auto',
-    marginTop: 15,
-    padding: 10,
-    transition: 'all 0.3s',
-    borderRadius: 6,
-    '&:hover': {
-      backgroundColor: theme.palette.background.paperLight,
-    },
-  },
-  paperActive: {
-    width: '90%',
-    height: 60,
-    margin: '0 auto',
-    marginTop: 15,
-    padding: 10,
-    backgroundColor: theme.palette.background.paperLight,
-    borderRadius: 6,
+  item: {
+    padding: '0 0 0 15px',
   },
   toolbar: theme.mixins.toolbar,
-  icon: {
-    float: 'left',
-    paddingTop: 7,
-  },
-  content: {
-    float: 'left',
-    padding: '0 0 0 16px',
-  },
-  title: {
-    fontSize: 15,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: '#d3d3d3',
-  },
 });
 
 class CountryKnowledgeBar extends Component {
@@ -66,122 +38,98 @@ class CountryKnowledgeBar extends Component {
       <Drawer
         variant="permanent"
         anchor="right"
-        classes={{ paper: classes.drawerPaper }}
+        classes={{ paper: classes.drawer }}
       >
         <div className={classes.toolbar} />
-        <Paper
-          classes={{
-            root:
+        <MenuList component="nav">
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/countries/${countryId}/knowledge/overview`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/countries/${countryId}/knowledge/overview`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/countries/${countryId}/knowledge/overview`}
-        >
-          <div className={classes.icon}>
-            <DeviceHub fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Overview')}</span>
-            <br />
-            <span className={classes.subtitle}>{t('Knowledge graph')}</span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Gauge />
+            </ListItemIcon>
+            <ListItemText primary={t('Overview')} secondary={t('Statistics')} />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/countries/${countryId}/knowledge/cities`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/countries/${countryId}/knowledge/cities`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/countries/${countryId}/knowledge/cities`}
-        >
-          <div className={classes.icon}>
-            <CityVariant fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Cities')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Localized in this country')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <CityVariant />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Cities')}
+              secondary={t('Localized in this country')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/countries/${countryId}/knowledge/organizations`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/countries/${countryId}/knowledge/organizations`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/countries/${countryId}/knowledge/organizations`}
-        >
-          <div className={classes.icon}>
-            <AccountBalance fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Organizations')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Localized in this country')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <AccountBalance />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Organizations')}
+              secondary={t('Localized in this country')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/countries/${countryId}/knowledge/threats`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/countries/${countryId}/knowledge/threats`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/countries/${countryId}/knowledge/threats`}
-        >
-          <div className={classes.icon}>
-            <TargetVariant fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Threats')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Targeting this country')}
-            </span>
-          </div>
-        </Paper>
-        <Paper
-          classes={{
-            root:
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <TargetVariant />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Threats')}
+              secondary={t('Targeting this country')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/catalogs/countries/${countryId}/knowledge/entities`}
+            selected={
               location.pathname
               === `/dashboard/catalogs/countries/${countryId}/knowledge/entities`
-                ? classes.paperActive
-                : classes.paper,
-          }}
-          elevation={2}
-          component={Link}
-          to={`/dashboard/catalogs/countries/${countryId}/knowledge/entities`}
-        >
-          <div className={classes.icon}>
-            <SourceFork fontSize="default" />
-          </div>
-          <div className={classes.content}>
-            <span className={classes.title}>{t('Entities')}</span>
-            <br />
-            <span className={classes.subtitle}>
-              {t('Related to this country')}
-            </span>
-          </div>
-        </Paper>
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <SourceFork />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Entities')}
+              secondary={t('Related to this country')}
+            />
+          </MenuItem>
+        </MenuList>
       </Drawer>
     );
   }

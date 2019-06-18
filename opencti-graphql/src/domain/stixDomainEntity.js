@@ -69,12 +69,12 @@ export const stixDomainEntitiesNumber = args => ({
     $date < ${prepareDate(args.endDate)};`
         : ''
     }
-    get;
+    get $x;
     count;`
   ),
   total: getSingleValueNumber(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
-    get;
+    get $x;
     count;`
   )
 });

@@ -212,7 +212,10 @@ class Dashboard extends Component {
                     return (
                       <CardContent>
                         <div className={classes.number}>{total}</div>
-                        <ItemNumberDifference difference={difference} />
+                        <ItemNumberDifference
+                          difference={difference}
+                          description="last 24h"
+                        />
                         <div className="clearfix" />
                         <div className={classes.title}>
                           {t('Total entities')}
@@ -246,7 +249,10 @@ class Dashboard extends Component {
                     return (
                       <CardContent>
                         <div className={classes.number}>{total}</div>
-                        <ItemNumberDifference difference={difference} />
+                        <ItemNumberDifference
+                          difference={difference}
+                          description="last 24h"
+                        />
                         <div className="clearfix" />
                         <div className={classes.title}>
                           {t('Total reports')}
@@ -282,7 +288,10 @@ class Dashboard extends Component {
                     return (
                       <CardContent>
                         <div className={classes.number}>{total}</div>
-                        <ItemNumberDifference difference={difference} />
+                        <ItemNumberDifference
+                          difference={difference}
+                          description="last 24h"
+                        />
                         <div className="clearfix" />
                         <div className={classes.title}>
                           {t('Total observables')}
@@ -316,7 +325,10 @@ class Dashboard extends Component {
                     return (
                       <CardContent>
                         <div className={classes.number}>{total}</div>
-                        <ItemNumberDifference difference={difference} />
+                        <ItemNumberDifference
+                          difference={difference}
+                          description="last 24h"
+                        />
                         <div className="clearfix" />
                         <div className={classes.title}>
                           {t('Total investigations')}
@@ -510,9 +522,7 @@ class Dashboard extends Component {
                               classes={{ root: classes.item }}
                               divider={true}
                               component={Link}
-                              to={`/dashboard/observables/all/${
-                                stixObservable.id
-                              }`}
+                              to={`/dashboard/observables/all/${stixObservable.id}`}
                             >
                               <ListItemIcon
                                 classes={{ root: classes.itemIcon }}

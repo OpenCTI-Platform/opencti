@@ -9,6 +9,13 @@ $ git clone https://github.com/LuatixHQ/opencti.git
 $ cd opencti/docker
 ```
 
+Before running the docker-compose command, please change the secret key of the application in the file *docker-compose.yml*
+```bash
+$ docker-compose up
+```
+
+
+
 *Run*:
 ```bash
 $ docker-compose up

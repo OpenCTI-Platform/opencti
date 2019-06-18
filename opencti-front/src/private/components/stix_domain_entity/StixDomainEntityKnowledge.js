@@ -1,248 +1,212 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, head, map } from 'ramda';
+import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { DiagramEngine } from 'storm-react-diagrams';
-import Drawer from '@material-ui/core/Drawer';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
-import Select from '@material-ui/core/Select';
-import Chip from '@material-ui/core/Chip';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
 import { withStyles } from '@material-ui/core/styles';
-import { QueryRenderer, fetchQuery } from '../../../relay/environment';
-import { currentYear, parse, yearFormat } from '../../../utils/Time';
+import { Assignment, DeviceHub } from '@material-ui/icons';
+import { QueryRenderer } from '../../../relay/environment';
+import { monthsAgo } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
-import EntityLabelFactory from '../../../components/graph_node/EntityLabelFactory';
-import EntityLinkFactory from '../../../components/graph_node/EntityLinkFactory';
-import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
-import EntityPortFactory from '../../../components/graph_node/EntityPortFactory';
-import StixDomainEntityKnowledgeGraph from './StixDomainEntityKnowledgeGraph';
+import ItemNumberDifference from '../../../components/ItemNumberDifference';
+import EntityReportsPie from '../report/EntityReportsPie';
+import EntityStixRelationsDonut from '../stix_relation/EntityStixRelationsDonut';
+import EntityStixRelationsChart from '../stix_relation/EntityStixRelationsChart';
 
 const styles = theme => ({
-  container: {
+  card: {
     width: '100%',
-    height: '100%',
-    margin: 0,
-    padding: 0,
+    marginBottom: 20,
+    borderRadius: 6,
     position: 'relative',
   },
-  bottomNav: {
-    zIndex: 1000,
-    padding: '10px 274px 10px 84px',
-    backgroundColor: theme.palette.navBottom.background,
-    display: 'flex',
+  item: {
+    height: 60,
+    minHeight: 60,
+    maxHeight: 60,
+    transition: 'background-color 0.1s ease',
+    paddingRight: 0,
+    cursor: 'pointer',
+    '&:hover': {
+      background: 'rgba(0, 0, 0, 0.1)',
+    },
   },
-  chips: {
-    display: 'flex',
-    flexWrap: 'wrap',
+  itemIcon: {
+    color: theme.palette.primary.main,
   },
-  chip: {
-    margin: theme.spacing(1) / 4,
+  itemIconSecondary: {
+    marginRight: 0,
+    color: theme.palette.secondary.main,
+  },
+  number: {
+    float: 'left',
+    color: theme.palette.primary.main,
+    fontSize: 40,
+  },
+  title: {
+    marginTop: 5,
+    textTransform: 'uppercase',
+    fontSize: 12,
+  },
+  icon: {
+    position: 'absolute',
+    top: 30,
+    right: 20,
+  },
+  graphContainer: {
+    width: '100%',
+    margin: '20px 0 0 -30px',
   },
 });
 
-const firstStixRelationQuery = graphql`
-  query StixDomainEntityKnowledgeFirstStixRelationQuery(
-    $fromId: String
-    $first: Int
-    $orderBy: StixRelationsOrdering
-    $orderMode: OrderingMode
+const stixDomainEntityKnowledgeReportsNumberQuery = graphql`
+  query StixDomainEntityKnowledgeReportsNumberQuery(
+  $objectId: String
+  $endDate: DateTime
   ) {
-    stixRelations(
-      fromId: $fromId
-      first: $first
-      orderBy: $orderBy
-      orderMode: $orderMode
-    ) {
-      edges {
-        node {
-          id
-          first_seen
-        }
-      }
+    reportsNumber(objectId: $objectId, endDate: $endDate) {
+      total
+      count
     }
   }
 `;
 
-const stixDomainEntityKnowledgeQuery = graphql`
-  query StixDomainEntityKnowledgeQuery(
-    $id: String!
-    $count: Int
-    $inferred: Boolean
-    $toTypes: [String]
-    $firstSeenStart: DateTime
-    $firstSeenStop: DateTime
-    $lastSeenStart: DateTime
-    $lastSeenStop: DateTime
-    $weights: [Int]
+const stixDomainEntityKnowledgeStixRelationsNumberQuery = graphql`
+  query StixDomainEntityKnowledgeStixRelationsNumberQuery(
+  $type: String
+  $fromId: String
+  $endDate: DateTime
+  $inferred: Boolean
   ) {
-    stixDomainEntity(id: $id) {
-      ...StixDomainEntityKnowledgeGraph_stixDomainEntity
-        @arguments(
-          toTypes: $toTypes
-          inferred: $inferred
-          firstSeenStart: $firstSeenStart
-          firstSeenStop: $firstSeenStop
-          lastSeenStart: $lastSeenStart
-          lastSeenStop: $lastSeenStop
-          weights: $weights
-          count: $count
-        )
+    stixRelationsNumber(
+      type: $type
+      fromId: $fromId
+      endDate: $endDate
+      inferred: $inferred
+    ) {
+      total
+      count
     }
   }
 `;
 
 class StixDomainEntityKnowledge extends Component {
-  constructor(props) {
-    super(props);
-    const engine = new DiagramEngine();
-    engine.installDefaultFactories();
-    engine.registerPortFactory(new EntityPortFactory());
-    engine.registerNodeFactory(new EntityNodeFactory());
-    engine.registerLinkFactory(new EntityLinkFactory());
-    engine.registerLabelFactory(new EntityLabelFactory());
-    this.state = {
-      engine,
-      inferred: true,
-      firstSeen: 'All years',
-      firstSeenFirstYear: currentYear(),
-      firstSeenStart: null,
-      firstSeenStop: null,
-    };
-  }
-
-  componentDidMount() {
-    const { stixDomainEntityId } = this.props;
-    fetchQuery(firstStixRelationQuery, {
-      inferred: true,
-      fromId: stixDomainEntityId,
-      first: 1,
-      orderBy: 'first_seen',
-      orderMode: 'asc',
-    }).then((data) => {
-      if (data.stixRelations.edges && data.stixRelations.edges.length > 0) {
-        this.setState({
-          firstSeenFirstYear: yearFormat(
-            head(data.stixRelations.edges).node.first_seen,
-          ),
-        });
-      }
-    });
-  }
-
-  handleChangeYear(event) {
-    const { value } = event.target;
-    if (value !== 'All years') {
-      const startDate = `${value}-01-01`;
-      const endDate = `${value}-12-31`;
-      this.setState({
-        firstSeen: value,
-        firstSeenStart: parse(startDate).format(),
-        firstSeenStop: parse(endDate).format(),
-      });
-    } else {
-      this.setState({
-        firstSeen: value,
-        firstSeenStart: null,
-        firstSeenStop: null,
-      });
-    }
-  }
-
-  handleChangeInferred() {
-    this.setState({ inferred: !this.state.inferred });
-  }
-
   render() {
     const { t, classes, stixDomainEntityId } = this.props;
-    const startYear = this.state.firstSeenFirstYear === currentYear()
-      ? this.state.firstSeenFirstYear - 1
-      : this.state.firstSeenFirstYear;
-    const yearsList = [];
-    for (let i = startYear; i <= currentYear(); i++) {
-      yearsList.push(i);
-    }
-    const variables = {
-      id: stixDomainEntityId,
-      count: 100,
-      inferred: this.state.inferred,
-      toTypes: ['Stix-Domain-Entity'],
-      firstSeenStart: null,
-      firstSeenStop: null,
-    };
-
     return (
-      <div className={classes.container}>
-        <Drawer
-          anchor="bottom"
-          variant="permanent"
-          classes={{ paper: classes.bottomNav }}
-        >
-          <Grid container={true} spacing={1}>
-            <Grid item={true} xs="auto">
-              <Select
-                style={{ width: 170, height: 50 }}
-                value={this.state.firstSeen}
-                onChange={this.handleChangeYear.bind(this)}
-                renderValue={selected => (
-                  <div className={classes.chips}>
-                    <Chip
-                      key={selected}
-                      label={t(selected)}
-                      className={classes.chip}
-                    />
-                  </div>
-                )}
-              >
-                <MenuItem value="All years">{t('All years')}</MenuItem>
-                {map(
-                  year => (
-                    <MenuItem key={year} value={year}>
-                      {year}
-                    </MenuItem>
-                  ),
-                  yearsList,
-                )}
-              </Select>
-            </Grid>
-            <Grid item={true} xs="auto">
-              <FormControlLabel
-                style={{ paddingTop: 5, marginLeft: 20 }}
-                control={
-                  <Switch
-                    checked={this.state.inferred}
-                    onChange={this.handleChangeInferred.bind(this)}
-                    color="primary"
-                  />
-                }
-                label={t('Inferences')}
-              />
-            </Grid>
-          </Grid>
-        </Drawer>
-        <QueryRenderer
-          query={stixDomainEntityKnowledgeQuery}
-          variables={variables}
-          render={({ props }) => {
-            if (props && props.stixDomainEntity) {
-              return (
-                <StixDomainEntityKnowledgeGraph
-                  engine={this.state.engine}
-                  variables={variables}
-                  stixDomainEntity={props.stixDomainEntity}
-                  firstSeenYear={
-                    this.state.firstSeenStart
-                      ? yearFormat(this.state.firstSeenStart)
-                      : 'all'
+      <div>
+        <Grid container={true} spacing={2}>
+          <Grid item={true} xs={6}>
+            <Card
+              raised={true}
+              classes={{ root: classes.card }}
+              style={{ height: 120 }}
+            >
+              <QueryRenderer
+                query={stixDomainEntityKnowledgeReportsNumberQuery}
+                variables={{
+                  objectId: stixDomainEntityId,
+                  endDate: monthsAgo(1),
+                }}
+                render={({ props }) => {
+                  if (props && props.reportsNumber) {
+                    const { total } = props.reportsNumber;
+                    const difference = total - props.reportsNumber.count;
+                    return (
+                      <CardContent>
+                        <div className={classes.number}>{total}</div>
+                        <ItemNumberDifference
+                          difference={difference}
+                          description="last month"
+                        />
+                        <div className="clearfix"/>
+                        <div className={classes.title}>
+                          {t('Total reports')}
+                        </div>
+                        <div className={classes.icon}>
+                          <Assignment color="inherit" fontSize="large"/>
+                        </div>
+                      </CardContent>
+                    );
                   }
-                />
-              );
-            }
-            return <div> &nbsp; </div>;
-          }}
-        />
+                  return (
+                    <div style={{ textAlign: 'center', paddingTop: 35 }}>
+                      <CircularProgress size={40} thickness={2}/>
+                    </div>
+                  );
+                }}
+              />
+            </Card>
+          </Grid>
+          <Grid item={true} xs={6}>
+            <Card
+              raised={true}
+              classes={{ root: classes.card }}
+              style={{ height: 120 }}
+            >
+              <QueryRenderer
+                query={stixDomainEntityKnowledgeStixRelationsNumberQuery}
+                variables={{
+                  fromId: stixDomainEntityId,
+                  endDate: monthsAgo(1),
+                  inferred: false,
+                }}
+                render={({ props }) => {
+                  if (props && props.stixRelationsNumber) {
+                    const { total } = props.stixRelationsNumber;
+                    const difference = total - props.stixRelationsNumber.count;
+                    return (
+                      <CardContent>
+                        <div className={classes.number}>{total}</div>
+                        <ItemNumberDifference
+                          difference={difference}
+                          description="last month"
+                        />
+                        <div className="clearfix"/>
+                        <div className={classes.title}>
+                          {t('Total direct relations')}
+                        </div>
+                        <div className={classes.icon}>
+                          <DeviceHub color="inherit" fontSize="large"/>
+                        </div>
+                      </CardContent>
+                    );
+                  }
+                  return (
+                    <div style={{ textAlign: 'center', paddingTop: 35 }}>
+                      <CircularProgress size={40} thickness={2}/>
+                    </div>
+                  );
+                }}
+              />
+            </Card>
+          </Grid>
+        </Grid>
+        <Grid container={true} spacing={2}>
+          <Grid item={true} xs={6}>
+            <EntityReportsPie entityId={stixDomainEntityId}/>
+          </Grid>
+          <Grid item={true} xs={6}>
+            <EntityStixRelationsDonut
+              entityId={stixDomainEntityId}
+              entityType="Stix-Domain-Entity"
+              title={t('Distribution of relations (including inferred)')}
+              field="entity_type"
+              inferred={true}
+            />
+          </Grid>
+        </Grid>
+        <div style={{ margin: '60px 0 60px 0', height: 300 }}>
+          <EntityStixRelationsChart
+            entityId={stixDomainEntityId}
+            entityType="Stix-Domain-Entity"
+            title={t('Direct relations creations')}
+            field='created_at'
+          />
+        </div>
       </div>
     );
   }

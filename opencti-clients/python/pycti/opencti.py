@@ -204,7 +204,6 @@ class OpenCTI:
 
     def search_stix_domain_entity_by_name(self, name_or_alias, type='Stix-Domain-Entity'):
         result = self.search_stix_domain_entities_by_name(name_or_alias, type)
-        print(result)
         if len(result) > 0:
             return result[0]
         else:
@@ -862,7 +861,6 @@ class OpenCTI:
 
     def create_identity_if_not_exists(self, type, name, description, id=None, stix_id=None, created=None, modified=None):
         object_result = self.check_existing_stix_domain_entity(stix_id, name, type)
-        print(object_result)
         if object_result is not None:
             return object_result
         else:

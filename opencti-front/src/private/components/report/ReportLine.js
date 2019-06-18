@@ -211,7 +211,7 @@ class ReportLineDummyComponent extends Component {
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>
               <div className={classes.bodyItem} style={inlineStyles.published}>
-                <div className="fakeItem" style={{ width: 140 }} />
+                <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
@@ -220,7 +220,7 @@ class ReportLineDummyComponent extends Component {
                 <div className="fakeItem" style={{ width: '60%' }} />
               </div>
               <div className={classes.bodyItem} style={inlineStyles.marking}>
-                <div className="fakeItem" style={{ width: 100 }} />
+                <div className="fakeItem" style={{ width: '80%' }} />
               </div>
             </div>
           }

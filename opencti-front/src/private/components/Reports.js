@@ -78,6 +78,7 @@ const inlineStyles = {
     fontWeight: '700',
   },
   object_status: {
+    minWidth: 90,
     float: 'left',
     width: '10%',
     fontSize: 12,
@@ -85,6 +86,7 @@ const inlineStyles = {
     cursor: 'default',
   },
   marking: {
+    minWidth: 90,
     float: 'left',
     fontSize: 12,
     fontWeight: '700',

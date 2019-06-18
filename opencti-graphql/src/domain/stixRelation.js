@@ -360,6 +360,7 @@ export const stixRelationsDistribution = args => {
     return take(limit, sortWith([descend(prop('value'))])(result));
   });
 };
+
 export const stixRelationsDistributionWithInferences = async args => {
   const { limit = 10 } = args;
   const entities = await getObjects(
@@ -502,14 +503,16 @@ export const stixRelationsNumber = args => ({
         : ''
     }
     ${args.fromId ? `$y has internal_id "${escapeString(args.fromId)}";` : ''}
-    get;
-    count;`
+    get $x;
+    count;`,
+    args.inferred ? args.inferred : false
   ),
   total: getSingleValueNumber(
-    `match $x isa ${args.type ? escape(args.type) : 'stix_relation'};
+    `match $x($y, $z) isa ${args.type ? escape(args.type) : 'stix_relation'};
     ${args.fromId ? `$y has internal_id "${escapeString(args.fromId)}";` : ''}
-    get;
-    count;`
+    get $x;
+    count;`,
+    args.inferred ? args.inferred : false
   )
 });
 

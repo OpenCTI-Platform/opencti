@@ -2,16 +2,8 @@
 // TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import {
-  compose,
-  head,
-  map,
-  includes,
-  pipe,
-  assoc,
-  omit,
-  mergeRight,
+  compose, map, includes, pipe, assoc, omit, mergeRight,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { CSVLink } from 'react-csv';
@@ -43,15 +35,9 @@ import {
   ArrowDropUp,
   TableChart,
   SaveAlt,
-  Explore,
 } from '@material-ui/icons';
 import { QueryRenderer, fetchQuery } from '../../../relay/environment';
-import {
-  currentYear,
-  parse,
-  yearFormat,
-  dateFormat,
-} from '../../../utils/Time';
+import { dateFormat } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import EntityStixRelationsLines, {
   entityStixRelationsLinesQuery,
@@ -150,45 +136,6 @@ const inlineStyles = {
   },
 };
 
-const firstStixRelationQuery = graphql`
-  query EntityStixRelationsFirstStixRelationQuery(
-    $toTypes: [String]
-    $fromId: String
-    $relationType: String
-    $inferred: Boolean
-    $resolveInferences: Boolean
-    $resolveRelationType: String
-    $resolveRelationRole: String
-    $resolveRelationToTypes: [String]
-    $resolveViaTypes: [EntityRelation]
-    $first: Int
-    $orderBy: StixRelationsOrdering
-    $orderMode: OrderingMode
-  ) {
-    stixRelations(
-      toTypes: $toTypes
-      fromId: $fromId
-      relationType: $relationType
-      inferred: $inferred
-      resolveInferences: $resolveInferences
-      resolveRelationType: $resolveRelationType
-      resolveRelationRole: $resolveRelationRole
-      resolveRelationToTypes: $resolveRelationToTypes
-      resolveViaTypes: $resolveViaTypes
-      first: $first
-      orderBy: $orderBy
-      orderMode: $orderMode
-    ) {
-      edges {
-        node {
-          id
-          first_seen
-        }
-      }
-    }
-  }
-`;
-
 const exportStixRelationQuery = graphql`
   query EntityStixRelationsExportStixRelationsQuery(
     $fromId: String
@@ -258,10 +205,6 @@ class EntityStixRelations extends Component {
     this.state = {
       sortBy: 'first_seen',
       orderAsc: false,
-      firstSeen: 'All years',
-      firstSeenFirstYear: currentYear(),
-      firstSeenStart: null,
-      firstSeenStop: null,
       openToType: false,
       toType: 'All',
       inferred: true,
@@ -271,40 +214,6 @@ class EntityStixRelations extends Component {
       exportCsvOpen: false,
       exportCsvData: null,
     };
-  }
-
-  componentDidMount() {
-    const {
-      entityId,
-      relationType,
-      targetEntityTypes,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
-    } = this.props;
-    fetchQuery(firstStixRelationQuery, {
-      resolveInferences: true,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
-      toTypes: targetEntityTypes || null,
-      fromId: entityId,
-      relationType,
-      first: 1,
-      orderBy: 'first_seen',
-      orderMode: 'asc',
-      inferred: true,
-    }).then((data) => {
-      if (data.stixRelations.edges && data.stixRelations.edges.length > 0) {
-        this.setState({
-          firstSeenFirstYear: yearFormat(
-            head(data.stixRelations.edges).node.first_seen,
-          ),
-        });
-      }
-    });
   }
 
   handleChangeView(mode) {
@@ -361,27 +270,6 @@ class EntityStixRelations extends Component {
       });
     }
     return this.setState({ openToType: false, toType: value });
-  }
-
-  handleChangeYear(event) {
-    const { value } = event.target;
-    if (value !== 'All years') {
-      const startDate = `${value}-01-01`;
-      const endDate = `${value}-12-31`;
-      this.setState({
-        firstSeen: value,
-        firstSeenStart: parse(startDate).format(),
-        firstSeenStop: parse(endDate).format(),
-        resolveInferences: true,
-        inferred: true,
-      });
-    } else {
-      this.setState({
-        firstSeen: value,
-        firstSeenStart: null,
-        firstSeenStop: null,
-      });
-    }
   }
 
   handleChangeInferred() {
@@ -479,8 +367,6 @@ class EntityStixRelations extends Component {
         this.state.toType === 'All' ? targetEntityTypes : [this.state.toType],
       fromId: entityId,
       relationType,
-      firstSeenStart: this.state.firstSeenStart || null,
-      firstSeenStop: this.state.firstSeenStop || null,
       orderBy: this.state.resolveInferences ? this.state.sortBy : null,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
@@ -552,230 +438,174 @@ class EntityStixRelations extends Component {
       entityId,
       relationType,
       resolveRelationType,
-      exploreLink,
     } = this.props;
-    const startYear = this.state.firstSeenFirstYear === currentYear()
-      ? this.state.firstSeenFirstYear - 1
-      : this.state.firstSeenFirstYear;
-    const yearsList = [];
-    for (let i = startYear; i <= currentYear(); i++) {
-      yearsList.push(i);
-    }
 
+    const displayTypes = targetEntityTypes.length > 1;
+    const displayInferences = resolveRelationType;
+    const displayDetails = this.state.inferred
+      && resolveRelationType
+      && (this.state.toType !== 'All' || targetEntityTypes.length === 1);
     return (
       <div className={classes.container}>
-        <Drawer
-          anchor="bottom"
-          variant="permanent"
-          classes={{ paper: classes.bottomNav }}
-        >
-          <Grid container={true} spacing={1}>
-            {targetEntityTypes.length > 1 ? (
-              <Grid item={true} xs="auto">
-                <Select
-                  style={{ height: 50, marginRight: 15 }}
-                  value={this.state.toType}
-                  open={this.state.openToType}
-                  onClose={this.handleCloseToType.bind(this)}
-                  onOpen={this.handleOpenToType.bind(this)}
-                  onChange={this.handleChangeEntities.bind(this)}
-                  input={<Input id="entities" />}
-                  renderValue={selected => (
-                    <div className={classes.chips}>
-                      <Chip
-                        key={selected}
-                        label={t(`entity_${selected.toLowerCase()}`)}
-                        className={classes.chip}
-                      />
-                    </div>
-                  )}
-                >
-                  <MenuItem value="All">{t('All entities')}</MenuItem>
-                  {includes('Region', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="Region">{t('Region')}</MenuItem>
-                    ) : (
-                      ''
+        {displayTypes || displayInferences || displayDetails ? (
+          <Drawer
+            anchor="bottom"
+            variant="permanent"
+            classes={{ paper: classes.bottomNav }}
+          >
+            <Grid container={true} spacing={1}>
+              {displayTypes ? (
+                <Grid item={true} xs="auto">
+                  <Select
+                    style={{ height: 50, marginRight: 15 }}
+                    value={this.state.toType}
+                    open={this.state.openToType}
+                    onClose={this.handleCloseToType.bind(this)}
+                    onOpen={this.handleOpenToType.bind(this)}
+                    onChange={this.handleChangeEntities.bind(this)}
+                    input={<Input id="entities" />}
+                    renderValue={selected => (
+                      <div className={classes.chips}>
+                        <Chip
+                          key={selected}
+                          label={t(`entity_${selected.toLowerCase()}`)}
+                          className={classes.chip}
+                        />
+                      </div>
                     )}
-                  {includes('Country', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="Country">{t('Country')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                  {includes('City', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="City">{t('City')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                  {includes('Sector', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="Sector">{t('Sector')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                  {includes('Organization', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="Organization">
-                      {t('Organization')}
-                    </MenuItem>
-                    ) : (
-                      ''
-                    )}
-                  {includes('User', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="User">{t('Person')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                  {includes('Threat-Actor', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="Threat-Actor">
-                      {t('Threat actor')}
-                    </MenuItem>
-                    ) : (
-                      ''
-                    )}
-                  {includes('Intrusion-Set', targetEntityTypes) ? (
-                    <MenuItem value="Intrusion-Set">
-                      {t('Intrusion set')}
-                    </MenuItem>
-                  ) : (
-                    ''
-                  )}
-                  {includes('Campaign', targetEntityTypes) ? (
-                    <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
-                  ) : (
-                    ''
-                  )}
-                  {includes('Incident', targetEntityTypes) ? (
-                    <MenuItem value="Incident">{t('Incident')}</MenuItem>
-                  ) : (
-                    ''
-                  )}
-                  {includes('Malware', targetEntityTypes) ? (
-                    <MenuItem value="Malware">{t('Malware')}</MenuItem>
-                  ) : (
-                    ''
-                  )}
-                  {includes('Tool', targetEntityTypes) ? (
-                    <MenuItem value="Tool">{t('Tool')}</MenuItem>
-                  ) : (
-                    ''
-                  )}
-                  {includes('Vulnerability', targetEntityTypes) ? (
-                    <MenuItem value="Vulnerability">
-                      {t('Vulnerability')}
-                    </MenuItem>
-                  ) : (
-                    ''
-                  )}
-                  {includes('Attack-Pattern', targetEntityTypes) ? (
-                    <MenuItem value="Attack-Pattern">
-                      {t('Attack pattern')}
-                    </MenuItem>
-                  ) : (
-                    ''
-                  )}
-                </Select>
-              </Grid>
-            ) : (
-              ''
-            )}
-            {this.state.toType !== 'All' || targetEntityTypes.length === 1 ? (
-              <Grid item={true} xs="auto">
-                <Select
-                  style={{ width: 170, height: 50, marginRight: 15 }}
-                  value={this.state.firstSeen}
-                  onChange={this.handleChangeYear.bind(this)}
-                  renderValue={selected => (
-                    <div className={classes.chips}>
-                      <Chip
-                        key={selected}
-                        label={t(selected)}
-                        className={classes.chip}
-                      />
-                    </div>
-                  )}
-                >
-                  <MenuItem value="All years">{t('All years')}</MenuItem>
-                  {map(
-                    year => (
-                      <MenuItem key={year} value={year}>
-                        {year}
+                  >
+                    <MenuItem value="All">{t('All entities')}</MenuItem>
+                    {includes('Region', targetEntityTypes)
+                    || includes('Identity', targetEntityTypes) ? (
+                      <MenuItem value="Region">{t('Region')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Country', targetEntityTypes)
+                    || includes('Identity', targetEntityTypes) ? (
+                      <MenuItem value="Country">{t('Country')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('City', targetEntityTypes)
+                    || includes('Identity', targetEntityTypes) ? (
+                      <MenuItem value="City">{t('City')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Sector', targetEntityTypes)
+                    || includes('Identity', targetEntityTypes) ? (
+                      <MenuItem value="Sector">{t('Sector')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Organization', targetEntityTypes)
+                    || includes('Identity', targetEntityTypes) ? (
+                      <MenuItem value="Organization">
+                        {t('Organization')}
                       </MenuItem>
-                    ),
-                    yearsList,
-                  )}
-                </Select>
-              </Grid>
-            ) : (
-              ''
-            )}
-            {resolveRelationType ? (
-              <Grid item={true} xs="auto">
-                <FormControlLabel
-                  style={{ paddingTop: 5, marginRight: 15 }}
-                  control={
-                    <Switch
-                      checked={this.state.inferred}
-                      onChange={this.handleChangeInferred.bind(this)}
-                      color="primary"
-                    />
-                  }
-                  label={t('Inferences')}
-                />
-              </Grid>
-            ) : (
-              ''
-            )}
-            {this.state.inferred
-            && resolveRelationType
-            && (this.state.toType !== 'All' || targetEntityTypes.length === 1) ? (
-              <Grid item={true} xs="auto">
-                <FormControlLabel
-                  style={{ paddingTop: 5, marginRight: 15 }}
-                  control={
-                    <Switch
-                      checked={this.state.resolveInferences}
-                      onChange={this.handleChangeResolveInferences.bind(this)}
-                      color="primary"
-                    />
-                  }
-                  label={t('Details')}
-                />
-              </Grid>
+                      ) : (
+                        ''
+                      )}
+                    {includes('User', targetEntityTypes)
+                    || includes('Identity', targetEntityTypes) ? (
+                      <MenuItem value="User">{t('Person')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Threat-Actor', targetEntityTypes)
+                    || includes('Identity', targetEntityTypes) ? (
+                      <MenuItem value="Threat-Actor">
+                        {t('Threat actor')}
+                      </MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Intrusion-Set', targetEntityTypes) ? (
+                      <MenuItem value="Intrusion-Set">
+                        {t('Intrusion set')}
+                      </MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Campaign', targetEntityTypes) ? (
+                      <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Incident', targetEntityTypes) ? (
+                      <MenuItem value="Incident">{t('Incident')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Malware', targetEntityTypes) ? (
+                      <MenuItem value="Malware">{t('Malware')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Tool', targetEntityTypes) ? (
+                      <MenuItem value="Tool">{t('Tool')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Vulnerability', targetEntityTypes) ? (
+                      <MenuItem value="Vulnerability">
+                        {t('Vulnerability')}
+                      </MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Attack-Pattern', targetEntityTypes) ? (
+                      <MenuItem value="Attack-Pattern">
+                        {t('Attack pattern')}
+                      </MenuItem>
+                    ) : (
+                      ''
+                    )}
+                  </Select>
+                </Grid>
               ) : (
                 ''
               )}
-          </Grid>
-          {exploreLink ? (
-            <div
-              style={{
-                position: 'absolute',
-                top: 22,
-                right: 285,
-                color: '#ffffff',
-              }}
-            >
-              <Button
-                variant="contained"
-                size="small"
-                color="primary"
-                component={Link}
-                to={exploreLink}
-                className={classes.button}
-                disabled={!entityId}
-              >
-                <Explore className={classes.icon} />
-                {t('Explore')}
-              </Button>
-            </div>
-          ) : (
-            ''
-          )}
-        </Drawer>
+              {displayInferences ? (
+                <Grid item={true} xs="auto">
+                  <FormControlLabel
+                    style={{ paddingTop: 5, marginRight: 15 }}
+                    control={
+                      <Switch
+                        checked={this.state.inferred}
+                        onChange={this.handleChangeInferred.bind(this)}
+                        color="primary"
+                      />
+                    }
+                    label={t('Inferences')}
+                  />
+                </Grid>
+              ) : (
+                ''
+              )}
+              {displayDetails ? (
+                <Grid item={true} xs="auto">
+                  <FormControlLabel
+                    style={{ paddingTop: 5, marginRight: 15 }}
+                    control={
+                      <Switch
+                        checked={this.state.resolveInferences}
+                        onChange={this.handleChangeResolveInferences.bind(this)}
+                        color="primary"
+                      />
+                    }
+                    label={t('Details')}
+                  />
+                </Grid>
+              ) : (
+                ''
+              )}
+            </Grid>
+          </Drawer>
+        ) : (
+          ''
+        )}
         <div className={classes.views}>
           <IconButton
             color={this.state.view === 'lines' ? 'secondary' : 'primary'}

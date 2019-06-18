@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import MomentUtils from '@date-io/moment';
 import { Formik, Field, Form } from 'formik';
-import { MuiPickersUtilsProvider } from 'material-ui-pickers';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -222,52 +220,50 @@ class WorkspaceCreation extends Component {
                 setFieldValue,
               }) => (
                 <div>
-                  <MuiPickersUtilsProvider utils={MomentUtils}>
-                    <Form style={{ margin: '20px 0 20px 0' }}>
-                      <Field
-                        name="name"
-                        component={TextField}
-                        label={t('Name')}
-                        fullWidth={true}
-                      />
-                      <Field
-                        name="description"
-                        component={TextField}
-                        label={t('Description')}
-                        fullWidth={true}
-                        multiline={true}
-                        rows="4"
-                        style={{ marginTop: 20 }}
-                      />
-                      <Field
-                        name="markingDefinitions"
-                        component={Autocomplete}
-                        multiple={true}
-                        label={t('Marking')}
-                        options={this.state.markingDefinitions}
-                        onInputChange={this.searchMarkingDefinitions.bind(this)}
-                      />
-                      <div className={classes.buttons}>
-                        <Button
-                          variant="contained"
-                          onClick={handleReset}
-                          disabled={isSubmitting}
-                          classes={{ root: classes.button }}
-                        >
-                          {t('Cancel')}
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={submitForm}
-                          disabled={isSubmitting}
-                          classes={{ root: classes.button }}
-                        >
-                          {t('Create')}
-                        </Button>
-                      </div>
-                    </Form>
-                  </MuiPickersUtilsProvider>
+                  <Form style={{ margin: '20px 0 20px 0' }}>
+                    <Field
+                      name="name"
+                      component={TextField}
+                      label={t('Name')}
+                      fullWidth={true}
+                    />
+                    <Field
+                      name="description"
+                      component={TextField}
+                      label={t('Description')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      style={{ marginTop: 20 }}
+                    />
+                    <Field
+                      name="markingDefinitions"
+                      component={Autocomplete}
+                      multiple={true}
+                      label={t('Marking')}
+                      options={this.state.markingDefinitions}
+                      onInputChange={this.searchMarkingDefinitions.bind(this)}
+                    />
+                    <div className={classes.buttons}>
+                      <Button
+                        variant="contained"
+                        onClick={handleReset}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Create')}
+                      </Button>
+                    </div>
+                  </Form>
                   <IdentityCreation
                     contextual={true}
                     inputValue={this.state.identityInput}

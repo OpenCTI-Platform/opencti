@@ -104,6 +104,8 @@ class EntityStixRelationsChart extends Component {
       relationType,
       title,
       md,
+      field,
+      inferred,
       resolveInferences,
       entityTypes,
       resolveRelationType,
@@ -116,11 +118,12 @@ class EntityStixRelationsChart extends Component {
       entityTypes: entityTypes || null,
       relationType,
       toTypes: toTypes || null,
-      field: 'first_seen',
+      field: field || 'first_seen',
       operation: 'count',
       startDate: monthsAgo(this.state.period),
       endDate: now(),
       interval: 'month',
+      inferred,
       resolveInferences,
       resolveRelationType,
       resolveRelationRole,
@@ -130,7 +133,7 @@ class EntityStixRelationsChart extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {title ? t(title) : t('Entity usage')}
+          {title || t('Entity usage')}
         </Typography>
         <div style={{ float: 'right', marginTop: -6 }}>
           <Chip
@@ -241,6 +244,8 @@ class EntityStixRelationsChart extends Component {
 EntityStixRelationsChart.propTypes = {
   entityId: PropTypes.string,
   relationType: PropTypes.string,
+  field: PropTypes.string,
+  inferred: PropTypes.bool,
   resolveInferences: PropTypes.bool,
   resolveRelationType: PropTypes.string,
   resolveRelationRole: PropTypes.string,

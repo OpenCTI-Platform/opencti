@@ -1,4 +1,4 @@
-import { map, assoc } from 'ramda';
+import { map, assoc, sortWith, take, ascend, descend, prop } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   escape,
@@ -13,7 +13,9 @@ import {
   monthFormat,
   yearFormat,
   takeWriteTx,
-  timeSeries
+  timeSeries,
+  getSingleValueNumber,
+  distribution
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -57,6 +59,36 @@ export const reportsTimeSeries = args =>
     }`,
     args
   );
+
+export const reportsNumber = args => ({
+  count: getSingleValueNumber(
+    `match $x isa Report;
+   ${
+     args.reportClass
+       ? `; 
+    $x has report_class "${escapeString(args.reportClass)}"`
+       : ''
+   } ${
+      args.endDate
+        ? `$x has created_at $date;
+    $date < ${prepareDate(args.endDate)};`
+        : ''
+    }
+    get;
+    count;`
+  ),
+  total: getSingleValueNumber(
+    `match $x isa Report;
+    ${
+      args.reportClass
+        ? `; 
+    $x has report_class "${escapeString(args.reportClass)}"`
+        : ''
+    }
+    get;
+    count;`
+  )
+});
 
 export const findByEntity = args => {
   if (args.orderBy === 'createdByRef') {
@@ -105,6 +137,54 @@ export const reportsTimeSeriesByEntity = args =>
     }`,
     args
   );
+
+export const reportsNumberByEntity = args => ({
+  count: getSingleValueNumber(
+    `match $x isa Report;
+    $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
+    $so has internal_id "${escapeString(args.objectId)}" ${
+      args.reportClass
+        ? `; 
+    $x has report_class "${escapeString(args.reportClass)}"`
+        : ''
+    } ${
+      args.endDate
+        ? `; 
+    $x has created_at $date;
+    $date < ${prepareDate(args.endDate)};`
+        : ''
+    }
+    get $x;
+    count;`
+  ),
+  total: getSingleValueNumber(
+    `match $x isa Report;
+    $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
+    $so has internal_id "${escapeString(args.objectId)}" ${
+      args.reportClass
+        ? `; 
+    $x has report_class "${escapeString(args.reportClass)}"`
+        : ';'
+    }
+    get $x;
+    count;`
+  )
+});
+
+export const reportsDistributionByEntity = args => {
+  const { limit = 10 } = args;
+  return distribution(
+    `match $x isa Report; 
+      $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
+      $so has internal_id "${escapeString(args.objectId)}"`,
+    args
+  ).then(result => {
+    if (args.order === 'asc') {
+      return take(limit, sortWith([ascend(prop('value'))])(result));
+    }
+    return take(limit, sortWith([descend(prop('value'))])(result));
+  });
+};
 
 export const findById = reportId => getById(reportId);
 

@@ -86,14 +86,14 @@ class GraknDumper:
                     relation_from_id = self.entities[relation_from.id]
                 else:
                     relation_from_attributes = self.get_attributes(relation_from)
-                    relation_from_id = relation_from_attributes['internal_id']
+                    relation_from_id = '"' + relation_from_attributes['internal_id'] + '"'
                 if relation_to.id in self.entities:
                     relation_to_id = self.entities[relation_to.id]
                 else:
                     relation_to_attributes = self.get_attributes(relation_to)
-                    relation_to_id = relation_to_attributes['internal_id']
+                    relation_to_id = '"' + relation_to_attributes['internal_id'] + '"'
 
-                relation_dump = 'match $from has internal_id "' + relation_from_id + '"; $to has internal_id "' + relation_to_id + '"; insert $' + relation_id + '(' + relation_from_role + ': $from, ' + relation_to_role + ': $to) isa ' + relation_type + '\n'
+                relation_dump = 'match $from has internal_id ' + relation_from_id + '; $to has internal_id ' + relation_to_id + '; insert $' + relation_id + '(' + relation_from_role + ': $from, ' + relation_to_role + ': $to) isa ' + relation_type + '\n'
                 for key, value in relation_attributes.items():
                     if isinstance(value, list):
                         for val in value:
@@ -123,14 +123,14 @@ class GraknDumper:
                     relation_from_id = self.entities[relation_from.id]
                 else:
                     relation_from_attributes = self.get_attributes(relation_from)
-                    relation_from_id = relation_from_attributes['internal_id']
+                    relation_from_id = '"' + relation_from_attributes['internal_id'] + '"'
                 if relation_to.id in self.relations:
                     relation_to_id = self.relations[relation_to.id]
                 else:
                     relation_to_attributes = self.get_attributes(relation_to)
-                    relation_to_id = relation_to_attributes['internal_id']
+                    relation_to_id = '"' + relation_to_attributes['internal_id'] + '"'
 
-                relation_dump = 'match $from has internal_id "' + relation_from_id + '"; $to has internal_id "' + relation_to_id + '"; insert $' + relation_id + '(' + relation_from_role + ': $from, ' + relation_to_role + ': $to) isa ' + relation_type + '\n'
+                relation_dump = 'match $from has internal_id ' + relation_from_id + '; $to has internal_id ' + relation_to_id + '; insert $' + relation_id + '(' + relation_from_role + ': $from, ' + relation_to_role + ': $to) isa ' + relation_type + '\n'
                 for key, value in relation_attributes.items():
                     if isinstance(value, list):
                         for val in value:

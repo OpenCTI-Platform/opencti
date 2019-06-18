@@ -51,30 +51,14 @@ const renderCustomizedLabel = ({
   );
 };
 
-const entityStixRelationsPieStixRelationDistributionQuery = graphql`
-  query EntityStixRelationsPieStixRelationDistributionQuery(
-    $fromId: String
-    $toTypes: [String]
-    $entityTypes: [String]
-    $relationType: String
-    $resolveInferences: Boolean
-    $resolveRelationType: String
-    $resolveRelationRole: String
-    $resolveRelationToTypes: [String]
-    $resolveViaTypes: [EntityRelation]
+const entityReportsPieReportsDistributionQuery = graphql`
+  query EntityReportsPieReportsDistributionQuery(
+    $objectId: String
     $field: String!
     $operation: StatsOperation!
   ) {
-    stixRelationsDistribution(
-      fromId: $fromId
-      toTypes: $toTypes
-      entityTypes: $entityTypes
-      relationType: $relationType
-      resolveInferences: $resolveInferences
-      resolveRelationType: $resolveRelationType
-      resolveRelationRole: $resolveRelationRole
-      resolveRelationToTypes: $resolveRelationToTypes
-      resolveViaTypes: $resolveViaTypes
+    reportsDistribution(
+      objectId: $objectId
       field: $field
       operation: $operation
     ) {
@@ -84,49 +68,28 @@ const entityStixRelationsPieStixRelationDistributionQuery = graphql`
   }
 `;
 
-class EntityStixRelationsPie extends Component {
+class EntityReportsPie extends Component {
   render() {
-    const {
-      t,
-      classes,
-      entityId,
-      entityType,
-      relationType,
-      field,
-      entityTypes,
-      resolveInferences,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
-    } = this.props;
-    const stixRelationsDistributionVariables = {
-      fromId: entityId,
-      toTypes: entityType ? [entityType] : null,
-      entityTypes: entityTypes || null,
-      resolveInferences,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
-      relationType,
-      field,
+    const { t, classes, entityId } = this.props;
+    const reportsDistributionVariables = {
+      objectId: entityId,
+      field: 'report_class',
       operation: 'count',
     };
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Distribution:')} {t(`entity_${entityType}`)}
+          {t('Reports distribution')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
-            query={entityStixRelationsPieStixRelationDistributionQuery}
-            variables={stixRelationsDistributionVariables}
+            query={entityReportsPieReportsDistributionQuery}
+            variables={reportsDistributionVariables}
             render={({ props }) => {
               if (
                 props
-                && props.stixRelationsDistribution
-                && props.stixRelationsDistribution.length > 0
+                && props.reportsDistribution
+                && props.reportsDistribution.length > 0
               ) {
                 return (
                   <ResponsiveContainer height={300} width="100%">
@@ -139,7 +102,7 @@ class EntityStixRelationsPie extends Component {
                       }}
                     >
                       <Pie
-                        data={props.stixRelationsDistribution}
+                        data={props.reportsDistribution}
                         dataKey="value"
                         nameKey="label"
                         cx="50%"
@@ -149,7 +112,7 @@ class EntityStixRelationsPie extends Component {
                         label={renderCustomizedLabel}
                         labelLine={false}
                       >
-                        {props.stixRelationsDistribution.map((entry, index) => (
+                        {props.reportsDistribution.map((entry, index) => (
                           <Cell key={index} fill={itemColor(entry.label)} />
                         ))}
                       </Pie>
@@ -201,17 +164,8 @@ class EntityStixRelationsPie extends Component {
   }
 }
 
-EntityStixRelationsPie.propTypes = {
+EntityReportsPie.propTypes = {
   entityId: PropTypes.string,
-  relationType: PropTypes.string,
-  entityType: PropTypes.string,
-  resolveInferences: PropTypes.bool,
-  resolveRelationType: PropTypes.string,
-  resolveRelationRole: PropTypes.string,
-  resolveRelationToTypes: PropTypes.array,
-  resolveViaTypes: PropTypes.array,
-  entityTypes: PropTypes.array,
-  field: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
@@ -220,4 +174,4 @@ EntityStixRelationsPie.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityStixRelationsPie);
+)(EntityReportsPie);

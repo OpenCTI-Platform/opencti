@@ -24,7 +24,7 @@
     ]
   },
   "engines": {
-    "node": ">= 10.* || 8.10.0"
+    "node": ">= 10.* || 8.*"
   },
   "dependencies": {
     "@babel/core": "^7.4.5",

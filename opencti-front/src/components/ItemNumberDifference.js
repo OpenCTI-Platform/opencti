@@ -39,8 +39,7 @@ const inlineStyles = {
 
 class ItemNumberDifference extends Component {
   render() {
-    const { t, difference, classes } = this.props;
-
+    const { t, difference, classes, description } = this.props;
     if (difference < 0) {
       return (
         <div className={classes.diff}>
@@ -52,7 +51,7 @@ class ItemNumberDifference extends Component {
           <div className={classes.diffNumber} style={inlineStyles.red}>
             {difference}
           </div>
-          <div className={classes.diffDescription}>({t('last 24h')})</div>
+          <div className={classes.diffDescription}>({t(description)})</div>
         </div>
       );
     }
@@ -67,7 +66,7 @@ class ItemNumberDifference extends Component {
           <div className={classes.diffNumber} style={inlineStyles.blueGrey}>
             {difference}
           </div>
-          <div className={classes.diffDescription}>({t('last 24h')})</div>
+          <div className={classes.diffDescription}>({t(description)})</div>
         </div>
       );
     }
@@ -81,7 +80,7 @@ class ItemNumberDifference extends Component {
         <div className={classes.diffNumber} style={inlineStyles.green}>
           {difference}
         </div>
-        <div className={classes.diffDescription}>({t('last 24h')})</div>
+        <div className={classes.diffDescription}>({t(description)})</div>
       </div>
     );
   }
@@ -91,6 +90,7 @@ ItemNumberDifference.propTypes = {
   classes: PropTypes.object.isRequired,
   t: PropTypes.func,
   difference: PropTypes.number,
+  description: PropTypes.string.isRequired,
 };
 
 export default compose(

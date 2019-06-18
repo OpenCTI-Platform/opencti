@@ -28,6 +28,7 @@ const entityStixRelationsDonutStixRelationDistributionQuery = graphql`
     $fromId: String
     $toTypes: [String]
     $relationType: String
+    $inferred: Boolean
     $resolveInferences: Boolean
     $resolveRelationType: String
     $resolveRelationRole: String
@@ -40,6 +41,7 @@ const entityStixRelationsDonutStixRelationDistributionQuery = graphql`
       fromId: $fromId
       toTypes: $toTypes
       relationType: $relationType
+      inferred: $inferred
       resolveInferences: $resolveInferences
       resolveRelationType: $resolveRelationType
       resolveRelationRole: $resolveRelationRole
@@ -118,10 +120,12 @@ class EntityStixRelationsDonut extends Component {
     const {
       t,
       classes,
+      title,
       entityId,
       entityType,
       relationType,
       field,
+      inferred,
       resolveInferences,
       resolveRelationType,
       resolveRelationRole,
@@ -129,6 +133,7 @@ class EntityStixRelationsDonut extends Component {
       resolveViaTypes,
     } = this.props;
     const stixRelationsDistributionVariables = {
+      inferred,
       resolveInferences,
       resolveRelationType,
       resolveRelationRole,
@@ -143,7 +148,7 @@ class EntityStixRelationsDonut extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Distribution:')} {t(`entity_${entityType}`)}
+          {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
@@ -227,8 +232,10 @@ class EntityStixRelationsDonut extends Component {
 
 EntityStixRelationsDonut.propTypes = {
   entityId: PropTypes.string,
+  title: PropTypes.string,
   relationType: PropTypes.string,
   entityType: PropTypes.string,
+  inferred: PropTypes.bool,
   resolveInferences: PropTypes.bool,
   resolveRelationType: PropTypes.string,
   resolveRelationRole: PropTypes.string,

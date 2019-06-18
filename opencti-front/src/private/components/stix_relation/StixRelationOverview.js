@@ -7,6 +7,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { DiagramEngine } from 'storm-react-diagrams';
 import { createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
+import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Fab from '@material-ui/core/Fab';
@@ -67,6 +68,7 @@ const styles = theme => ({
   },
   content: {
     width: '100%',
+    padding: '0 10px 0 10px',
     height: 40,
     maxHeight: 40,
     lineHeight: '40px',
@@ -86,19 +88,6 @@ const styles = theme => ({
     width: 200,
     textAlign: 'center',
     color: '#ffffff',
-  },
-  data: {
-    width: '100%',
-    margin: '30px 0 30px 0',
-  },
-  information: {
-    float: 'left',
-    marginRight: 20,
-    width: 400,
-  },
-  reports: {
-    width: 'auto',
-    overflow: 'hidden',
   },
   paper: {
     minHeight: '100%',
@@ -289,9 +278,9 @@ class StixRelationContainer extends Component {
             </div>
           </div>
         </Link>
-        <div className="clearfix" />
-        <div className={classes.data}>
-          <div className={classes.information}>
+        <div className="clearfix" style={{ height: 20 }} />
+        <Grid container={true} spacing={2}>
+          <Grid item={true} xs={6}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Information')}
             </Typography>
@@ -305,6 +294,35 @@ class StixRelationContainer extends Component {
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
+                {t('Creation date')}
+              </Typography>
+              {stixRelation.inferred ? '-' : fld(stixRelation.created_at)}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Modification date')}
+              </Typography>
+              {stixRelation.inferred ? '-' : fld(stixRelation.updated_at)}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Confidence level')}
+              </Typography>
+              <ItemConfidenceLevel
+                level={stixRelation.inferred ? 99 : stixRelation.weight}
+              />
+            </Paper>
+          </Grid>
+          <Grid item={true} xs={6}>
+            <Typography variant="h4" gutterBottom={true}>
+              {t('Information')}
+            </Typography>
+            <Paper classes={{ root: classes.paper }} elevation={2}>
+              <Typography variant="h3" gutterBottom={true}>
                 {t('First seen')}
               </Typography>
               {stixRelation.inferred ? '-' : fld(stixRelation.first_seen)}
@@ -321,16 +339,6 @@ class StixRelationContainer extends Component {
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('Confidence level')}
-              </Typography>
-              <ItemConfidenceLevel
-                level={stixRelation.inferred ? 99 : stixRelation.weight}
-              />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
                 {t('Description')}
               </Typography>
               <Markdown
@@ -338,9 +346,11 @@ class StixRelationContainer extends Component {
                 source={stixRelation.description}
               />
             </Paper>
-          </div>
+          </Grid>
+        </Grid>
+        <div style={{ margin: '50px 0 60px 0' }}>
           {stixRelation.inferred ? (
-            <div className={classes.reports}>
+            <div>
               <Typography variant="h4" gutterBottom={true}>
                 {t('Inference explanation')}
               </Typography>
@@ -358,7 +368,7 @@ class StixRelationContainer extends Component {
               </Paper>
             </div>
           ) : (
-            <div className={classes.reports}>
+            <div>
               <Typography variant="h4" gutterBottom={true}>
                 {t('Reports')}
               </Typography>
@@ -422,6 +432,8 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
       role_played
       fromRole
       toRole
+      created_at
+      updated_at
       inferences {
         edges {
           node {

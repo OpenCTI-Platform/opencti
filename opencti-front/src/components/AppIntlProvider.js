@@ -4,7 +4,7 @@ import { addLocaleData, IntlProvider } from 'react-intl';
 import MomentUtils from '@date-io/moment';
 import 'moment/locale/fr';
 import moment from 'moment';
-import { MuiPickersUtilsProvider } from 'material-ui-pickers';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import enLocaleData from 'react-intl/locale-data/en';
 import frLocaleData from 'react-intl/locale-data/fr';
 import graphql from 'babel-plugin-relay/macro';
