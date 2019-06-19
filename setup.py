@@ -12,7 +12,7 @@ except ImportError:
     print("warning: pypandoc module not found, could not convert Markdown to RST")
     read_md = lambda f: open(f, 'r').read()
 
-VERSION = "1.0.6"
+VERSION = "1.0.7"
 
 class VerifyVersionCommand(install):
     description = 'verify that the git tag matches our version'
@@ -27,7 +27,7 @@ class VerifyVersionCommand(install):
 
 setup(
     name='pycti',
-    version='1.0.6',
+    version=VERSION,
     description='Python API client for OpenCTI.',
     long_description='Official Python client for the OpenCTI platform.',
     author='OpenCTI',
