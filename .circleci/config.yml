@@ -14,16 +14,17 @@ jobs:
           name: build
           command: python3 setup.py sdist
       - persist_to_workspace:
-          root: ~/
+          root: ~/opencti-client
           paths:
-            - opencti-client
+            - dist
   deploy:
     working_directory: ~/opencti-client
     docker:
       - image: circleci/python:3.6
     steps:
+      - checkout
       - attach_workspace:
-          at: ~/*
+          at: ~/opencti-client
       - run:
           name: install dependencies
           command: pip3 install -r requirements.txt --user    
