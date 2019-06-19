@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # coding: utf-8
-
+import os
+import sys
 from setuptools import setup
 
 try:
@@ -10,14 +11,25 @@ except ImportError:
     print("warning: pypandoc module not found, could not convert Markdown to RST")
     read_md = lambda f: open(f, 'r').read()
 
+class VerifyVersionCommand(install):
+    description = 'verify that the git tag matches our version'
+
+    def run(self):
+        tag = os.getenv('CIRCLE_TAG')
+        if tag != VERSION:
+            info = "Git tag: {0} does not match the version of this app: {1}".format(
+                tag, VERSION
+            )
+            sys.exit(info)
+
 setup(
     name='pycti',
-    version='1.0.2',
+    version='1.0.4',
     description='Python API client for OpenCTI.',
-    long_description='This is the official Python client for the OpenCTI application',
-    author='Luatix',
+    long_description='Official Python client for the OpenCTI platform.',
+    author='OpenCTI',
     author_email='contact@opencti.io',
-    maintainer='Luatix',
+    maintainer='OpenCTI',
     url='https://github.com/OpenCTI-Platform/client-python',
     license='AGPL-V3',
     packages=['pycti'],
@@ -35,5 +47,8 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     include_package_data=True,
-    install_requires=['requests']
+    install_requires=['requests', 'PyYAML', 'python-dateutil'],
+    cmdclass={
+        'verify': VerifyVersionCommand,
+    }
 )

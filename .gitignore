@@ -1,0 +1,7 @@
+config.yml
+__pycache__
+exports
+build
+dist
+pycti.egg-info
+logs
