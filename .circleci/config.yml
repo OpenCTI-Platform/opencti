@@ -1,0 +1,54 @@
+version: 2.1
+
+jobs:
+  build:
+    working_directory: ~/opencti-client
+    docker:
+      - image: circleci/python:3.6
+    steps:
+      - checkout
+      - run:
+          name: build
+          command: python3 setup.py sdist
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - opencti-client
+  deploy:
+    working_directory: ~/opencti-client
+    docker:
+      - image: circleci/python:3.6
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: verify git tag vs. version
+          command: python3 setup.py verify
+      - run:
+          name: install twine
+          command: pip3 install twine
+      - run:
+          name: init .pypirc
+          command: |
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username = opencti" >> ~/.pypirc
+            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+      - run:
+          name: upload to pypi
+          command: twine upload dist/*
+
+workflows:
+  opencti_client_python:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+      - deploy:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
