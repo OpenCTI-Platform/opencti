@@ -25,7 +25,7 @@ class VerifyVersionCommand(install):
 
 setup(
     name='pycti',
-    version='1.0.4',
+    version='1.0.5',
     description='Python API client for OpenCTI.',
     long_description='Official Python client for the OpenCTI platform.',
     author='OpenCTI',
