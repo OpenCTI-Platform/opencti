@@ -29,6 +29,9 @@ define
   platform_url sub attribute, datatype string;
   platform_external_auth sub attribute, datatype boolean;
   platform_registration sub attribute, datatype boolean;
+  connector_type sub attribute, datatype string;
+  connector_name sub attribute, datatype string;
+  connector_config sub attribute, datatype string;
   graph_data sub attribute, datatype string;
   workspace_data sub attribute, datatype string;
   workspace_type sub attribute, datatype string;
@@ -412,6 +415,15 @@ define
     has created_at_month,
     has created_at_year,
     has updated_at;
+
+  Connector sub entity,
+    has internal_id,
+    has entity_type,
+    has name,
+    has description,
+    has connector_type,
+    has connector_name,
+    has connector_config;
 
   Export sub entity,
     has internal_id,

@@ -8,7 +8,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y upgrade && apt-g
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install python3 python3-pip curl sudo rsyslog wget netcat locales
 
 # Download archive
-RUN wget -O /opt/opencti.tar.gz https://releases.opencti.io/opencti-20190422.tar.gz
+RUN wget -O /opt/opencti.tar.gz https://releases.opencti.io/opencti-20190619.tar.gz
 RUN cd /opt && tar xvfz opencti.tar.gz
 
 # Set the locale
