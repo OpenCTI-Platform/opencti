@@ -12,6 +12,8 @@ except ImportError:
     print("warning: pypandoc module not found, could not convert Markdown to RST")
     read_md = lambda f: open(f, 'r').read()
 
+VERSION = "1.0.6"
+
 class VerifyVersionCommand(install):
     description = 'verify that the git tag matches our version'
 

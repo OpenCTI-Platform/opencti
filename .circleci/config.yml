@@ -47,15 +47,7 @@ jobs:
 workflows:
   opencti_client_python:
     jobs:
-      - build:
-          filters:
-            tags:
-              only: /.*/
+      - build
       - deploy:
           requires:
             - build
-          filters:
-            tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
-            branches:
-              ignore: /.*/
