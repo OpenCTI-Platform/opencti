@@ -66,7 +66,7 @@ jobs:
       - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push opencti master
       - run: mkdir release
       - run: cp -a opencti-graphql release/opencti
-      - run: cp -a opencti-worker release/opencti/workerh
+      - run: cp -a opencti-worker release/opencti/worker
       - run: 
           working_directory: ~/opencti/release
           command: tar -zcvf "opencti-$(date '+%Y%m%d').tar.gz" opencti
