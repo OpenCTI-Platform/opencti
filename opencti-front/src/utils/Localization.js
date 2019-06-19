@@ -432,7 +432,7 @@ const i18n = {
       'Total entities': "Nombre d'entités",
       'Total observables': "Nombre d'observables",
       'Total reports': 'Nombre de rapports',
-      'Total investigations': "Nombre d'investigations",
+      'Total workspaces': "Nombre d'espaces de travail",
       'Total relations': 'Nombre de relations',
       'Total direct relations': 'Nombre de relations directes',
       'Distribution of relations (including inferred)':

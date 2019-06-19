@@ -334,7 +334,7 @@ class Dashboard extends Component {
                         />
                         <div className="clearfix" />
                         <div className={classes.title}>
-                          {t('Total investigations')}
+                          {t('Total workspaces')}
                         </div>
                         <div className={classes.icon}>
                           <DeviceHub color="inherit" fontSize="large" />

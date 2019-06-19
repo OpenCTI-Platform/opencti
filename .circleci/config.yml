@@ -66,8 +66,7 @@ jobs:
       - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push opencti master
       - run: mkdir release
       - run: cp -a opencti-graphql release/opencti
-      - run: cp -a opencti-worker release/opencti/worker
-      - run: cp -a opencti-clients release/opencti/clients
+      - run: cp -a opencti-worker release/opencti/workerh
       - run: 
           working_directory: ~/opencti/release
           command: tar -zcvf "opencti-$(date '+%Y%m%d').tar.gz" opencti
@@ -75,7 +74,7 @@ jobs:
           working_directory: ~/opencti/release
           command: scp "opencti-$(date '+%Y%m%d').tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
 
-  deploy_community:
+  deploy_demo:
     working_directory: ~/opencti
     docker:
       - image: circleci/node:11-stretch
@@ -103,7 +102,7 @@ jobs:
           working_directory: ~/opencti/deploy
           command: git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
-  deploy_demo:
+  deploy_reference:
     working_directory: ~/opencti
     docker:
       - image: circleci/node:11-stretch
@@ -142,11 +141,11 @@ workflows:
           requires:
             - build
             - test
-      - deploy_community:
+      - deploy_demo:
           requires:
             - build
             - test
-      - deploy_demo:
+      - deploy_reference:
           requires:
             - build
             - test

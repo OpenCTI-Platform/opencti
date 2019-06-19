@@ -10,3 +10,4 @@ config/test.json
 config/local.json
 coverage
 logs
+yarn-error.log

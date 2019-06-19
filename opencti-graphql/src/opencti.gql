@@ -693,7 +693,7 @@ define
     has entity_type,
     has name,
     has description,
-    has observable_value,
+    key observable_value,
     has created_at,
     has created_at_day,
     has created_at_month,
