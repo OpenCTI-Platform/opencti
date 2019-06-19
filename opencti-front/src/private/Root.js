@@ -11,9 +11,7 @@ import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
 import StixDomainEntities from './components/StixDomainEntities';
-import ExploreVictimology from './components/explore/Victimology';
-import ExploreAttackPatterns from './components/explore/AttackPatterns';
-// import Workspaces from './components/Workspaces';
+import Workspaces from './components/Workspaces';
 import StixObservables from './components/StixObservables';
 import RootStixObservable from './components/stix_observable/Root';
 import RootWorkspace from './components/workspace/Root';
@@ -340,27 +338,16 @@ class Root extends Component {
                         <BoundaryRoute
                           exact
                           path="/dashboard/explore"
-                          render={() => (
-                            <Redirect to="/dashboard/explore/victimology" />
+                          render={routeProps => (
+                            <Workspaces {...routeProps} workspaceType="explore" />
                           )}
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/explore/victimology"
-                          component={ExploreVictimology}
-                        />
-                        <BoundaryRoute
-                          path="/dashboard/explore/victimology/:stixDomainEntityId"
-                          component={ExploreVictimology}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/explore/attack_patterns"
-                          component={ExploreAttackPatterns}
-                        />
-                        <BoundaryRoute
-                          path="/dashboard/explore/attack_patterns/:stixDomainEntityId"
-                          component={ExploreAttackPatterns}
+                          path="/dashboard/explore/:workspaceId"
+                          render={routeProps => (
+                            <RootWorkspace {...routeProps} workspaceType="explore" />
+                          )}
                         />
                         {/* <BoundaryRoute
                           exact
@@ -370,7 +357,9 @@ class Root extends Component {
                         <BoundaryRoute
                           exact
                           path="/dashboard/investigate/:workspaceId"
-                          component={RootWorkspace}
+                          render={routeProps => (
+                            <RootWorkspace {...routeProps} workspaceType="investigate" />
+                          )}
                         />
                         <BoundaryRoute
                           exact

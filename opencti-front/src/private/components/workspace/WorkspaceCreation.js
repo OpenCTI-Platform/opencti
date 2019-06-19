@@ -144,6 +144,7 @@ class WorkspaceCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
+      assoc('workspace_type', this.props.workspaceType),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
     )(values);
     commitMutation({
@@ -287,6 +288,7 @@ class WorkspaceCreation extends Component {
 }
 
 WorkspaceCreation.propTypes = {
+  workspaceType: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,

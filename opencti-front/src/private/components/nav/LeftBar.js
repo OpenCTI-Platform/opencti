@@ -20,9 +20,7 @@ import {
   ListAlt,
   GroupWork,
 } from '@material-ui/icons';
-import {
-  Settings, ClipboardArrowDown, Database,
-} from 'mdi-material-ui';
+import { Settings, ClipboardArrowDown, Database } from 'mdi-material-ui';
 import { compose, includes, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -276,6 +274,7 @@ class LeftBar extends Component {
                   onClick={this.handleClickAway.bind(this)}
                   selected={location.pathname.includes('/dashboard/settings')}
                   dense={false}
+                  style={{ marginBottom: 50 }}
                 >
                   <ListItemIcon>
                     <Settings />

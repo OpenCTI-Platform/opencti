@@ -387,9 +387,11 @@ type Workspace implements GlobalObject {
   id: ID!
   internal_id: String!
   entity_type: String!
+  workspace_type: String!
   name: String!
   description: String
   graph_data: String
+  workspace_data: String
   editContext: [EditUserContext]
   ownedBy: ownedBy
   markingDefinitions: MarkingDefinitionConnection
@@ -399,6 +401,7 @@ type Workspace implements GlobalObject {
 }
 input WorkspaceAddInput {
   name: String!
+  workspace_type: String!
   internal_id: String
   description: String
   markingDefinitions: [String]
@@ -2118,6 +2121,7 @@ type Query {
     orderBy: WorkspacesOrdering
     orderMode: OrderingMode
     search: String
+    workspaceType: String
   ): WorkspaceConnection @auth
   # Identities
   identity(id: String!): Identity @auth

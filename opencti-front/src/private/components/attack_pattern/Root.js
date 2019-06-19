@@ -15,7 +15,6 @@ const subscription = graphql`
         ...AttackPattern_attackPattern
         ...AttackPatternEditionContainer_attackPattern
       }
-      ...StixDomainEntityKnowledgeGraph_stixDomainEntity
     }
   }
 `;

@@ -53,6 +53,13 @@ export default {
       fontWeight: 400,
       fontSize: 13,
     },
+    h5: {
+      color: '#ffffff',
+      fontWeight: 400,
+      fontSize: 13,
+      textTransform: 'uppercase',
+      marginTop: -4,
+    },
     h6: {
       color: '#ffffff',
       fontWeight: 400,

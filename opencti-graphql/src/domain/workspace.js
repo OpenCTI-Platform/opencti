@@ -2,7 +2,6 @@ import uuid from 'uuid/v4';
 import { map } from 'ramda';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
-  escape,
   escapeString,
   createRelation,
   deleteEntityById,
@@ -20,7 +19,17 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $w isa Workspace', args);
+export const findAll = args => {
+  return paginate(
+    `match $w isa Workspace${
+      args.workspaceType
+        ? `; 
+    $w has workspace_type "${escapeString(args.workspaceType)}"`
+        : ''
+    }`,
+    args
+  );
+};
 
 export const findById = workspaceId => getById(workspaceId);
 
@@ -55,10 +64,13 @@ export const objectRefs = (workspaceId, args) =>
 
 export const addWorkspace = async (user, workspace) => {
   const wTx = await takeWriteTx();
-  const internalId =  workspace.internal_id ? escapeString(workspace.internal_id) : uuid()
+  const internalId = workspace.internal_id
+    ? escapeString(workspace.internal_id)
+    : uuid();
   const workspaceIterator = await wTx.query(`insert $workspace isa Workspace,
     has internal_id "${internalId}",
     has entity_type "workspace",
+    has workspace_type "${escapeString(workspace.workspace_type)}",
     has name "${escapeString(workspace.name)}",
     has description "${escapeString(workspace.description)}",
     has created_at ${now()},
@@ -70,8 +82,8 @@ export const addWorkspace = async (user, workspace) => {
   const createdWorkspace = await workspaceIterator.next();
   const createdWorkspaceId = await createdWorkspace.map().get('workspace').id;
 
-  await wTx.query(`match $from id "${createdWorkspaceId}";
-         $to has internal_id ${user.id};
+  await wTx.query(`match $from id ${createdWorkspaceId};
+         $to has internal_id "${user.id}";
          insert (to: $from, owner: $to)
          isa owned_by, has internal_id "${uuid()}";`);
 

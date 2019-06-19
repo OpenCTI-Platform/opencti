@@ -17,12 +17,13 @@ import { QueryRenderer } from '../../../relay/environment';
 import { monthsAgo, now } from '../../../utils/Time';
 import Theme from '../../../components/Theme';
 import inject18n from '../../../components/i18n';
+import ExploreUpdateWidget from '../explore/ExploreUpdateWidget';
 
-const styles = theme => ({
+const styles = () => ({
   paper: {
     minHeight: 300,
     height: '100%',
-    margin: '4px 0 0 0',
+    margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
   },
@@ -82,7 +83,15 @@ class EntityCampaignsChart extends Component {
 
   render() {
     const {
-      t, md, classes, entityId,
+      t,
+      md,
+      classes,
+      variant,
+      title,
+      entityId,
+      configuration,
+      onUpdate,
+      onDelete,
     } = this.props;
     const campaignsTimeSeriesVariables = {
       objectId: entityId,
@@ -95,9 +104,18 @@ class EntityCampaignsChart extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Campaigns')}
+          {title || t('Campaigns')}
         </Typography>
-        <div style={{ float: 'right', marginTop: -6 }}>
+        {variant === 'explore' ? (
+          <ExploreUpdateWidget
+            configuration={configuration}
+            onUpdate={onUpdate.bind(this)}
+            onDelete={onDelete.bind(this)}
+          />
+        ) : (
+          ''
+        )}
+        <div style={{ float: 'right', marginTop: -5 }}>
           <Chip
             classes={{ root: classes.chip }}
             style={{
@@ -204,11 +222,16 @@ class EntityCampaignsChart extends Component {
 }
 
 EntityCampaignsChart.propTypes = {
+  variant: PropTypes.string,
+  title: PropTypes.string,
   entityId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
   md: PropTypes.func,
+  onUpdate: PropTypes.func,
+  onDelete: PropTypes.func,
+  configuration: PropTypes.object,
 };
 
 export default compose(

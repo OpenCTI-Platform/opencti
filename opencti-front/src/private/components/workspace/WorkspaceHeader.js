@@ -44,7 +44,7 @@ class WorkspaceHeaderComponent extends Component {
           {workspace.name}
         </Typography>
         <div className={classes.popover}>
-          <WorkspacePopover workspaceId={workspace.id} />
+          <WorkspacePopover workspaceId={workspace.id} workspaceType={workspace.workspace_type} />
         </div>
         <div className={classes.marking}>
           {pathOr([], ['markingDefinitions', 'edges'], workspace).map(
@@ -73,6 +73,7 @@ const WorkspaceHeader = createFragmentContainer(WorkspaceHeaderComponent, {
   workspace: graphql`
     fragment WorkspaceHeader_workspace on Workspace {
       id
+      workspace_type
       name
       markingDefinitions {
         edges {

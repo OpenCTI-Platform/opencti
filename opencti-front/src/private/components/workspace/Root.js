@@ -4,13 +4,12 @@ import { Route, withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
-import Workspace from './Workspace';
+import WorkspaceExplore from '../explore/WorkspaceExplore';
 
 const subscription = graphql`
   subscription RootWorkspaceSubscription($id: ID!) {
     workspace(id: $id) {
-      ...Workspace_workspace
-      ...WorkspaceGraph_workspace
+      ...WorkspaceExplore_workspace
       ...WorkspaceEditionContainer_workspace
     }
   }
@@ -19,7 +18,7 @@ const subscription = graphql`
 const workspaceQuery = graphql`
   query RootWorkspaceQuery($id: String!) {
     workspace(id: $id) {
-      ...Workspace_workspace
+      ...WorkspaceExplore_workspace
       ...WorkspaceHeader_workspace
     }
   }
@@ -62,9 +61,16 @@ class RootWorkspace extends Component {
                 <div>
                   <Route
                     exact
+                    path="/dashboard/explore/:workspaceId"
+                    render={routeProps => (
+                      <WorkspaceExplore {...routeProps} workspace={props.workspace} />
+                    )}
+                  />
+                  <Route
+                    exact
                     path="/dashboard/investigate/:workspaceId"
                     render={routeProps => (
-                      <Workspace {...routeProps} workspace={props.workspace} />
+                      <WorkspaceExplore {...routeProps} workspace={props.workspace} />
                     )}
                   />
                 </div>
@@ -79,6 +85,7 @@ class RootWorkspace extends Component {
 }
 
 RootWorkspace.propTypes = {
+  workspaceType: PropTypes.string,
   children: PropTypes.node,
   match: PropTypes.object,
   me: PropTypes.object,

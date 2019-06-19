@@ -86,7 +86,7 @@ class WorkspaceLineComponent extends Component {
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/investigate/${workspace.id}`}
+        to={`/dashboard/${workspace.workspace_type}/${workspace.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Work />
@@ -136,6 +136,7 @@ const WorkspaceLineFragment = createFragmentContainer(WorkspaceLineComponent, {
   workspace: graphql`
     fragment WorkspaceLine_workspace on Workspace {
       id
+      workspace_type
       name
       ownedBy {
         node {

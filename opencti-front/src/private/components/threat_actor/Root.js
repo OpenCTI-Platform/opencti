@@ -16,7 +16,6 @@ const subscription = graphql`
         ...ThreatActor_threatActor
         ...ThreatActorEditionContainer_threatActor
       }
-      ...StixDomainEntityKnowledgeGraph_stixDomainEntity
     }
   }
 `;

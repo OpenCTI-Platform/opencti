@@ -50,6 +50,7 @@
     "storm-react-diagrams": "^5.2.1",
     "subscriptions-transport-ws": "^0.9.16",
     "typeface-roboto": "^0.0.54",
+    "uuid": "^3.3.2",
     "yup": "^0.27.0"
   },
   "devDependencies": {

@@ -16,7 +16,6 @@ const subscription = graphql`
         ...IntrusionSet_intrusionSet
         ...IntrusionSetEditionContainer_intrusionSet
       }
-      ...StixDomainEntityKnowledgeGraph_stixDomainEntity
     }
   }
 `;

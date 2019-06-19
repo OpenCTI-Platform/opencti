@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import EntityStixRelationsPie from '../stix_relation/EntityStixRelationsPie';
+import EntityStixRelationsRadar from '../stix_relation/EntityStixRelationsRadar';
+import EntityStixRelationsDonut from '../stix_relation/EntityStixRelationsDonut';
 import EntityStixRelationsTable from '../stix_relation/EntityStixRelationsTable';
 
 const styles = () => ({
@@ -15,21 +17,22 @@ const styles = () => ({
 
 class VictimologyDistribution extends Component {
   render() {
-    const { classes, stixDomainEntity, inferred } = this.props;
-    return (
-      <div className={classes.container}>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-        >
-          <Grid item={true} xs={4}>
+    const { configuration, onUpdate, onDelete } = this.props;
+    switch (configuration.graph_type) {
+      case 'table':
+        return (
+          <Grid item={true} xs={Number(propOr(4, 'size', configuration))} style={{ marginBottom: 30 }}>
             <EntityStixRelationsTable
-              entityId={stixDomainEntity.id}
-              entityType="Sector"
+              variant="explore"
+              configuration={configuration}
+              onUpdate={onUpdate.bind(this)}
+              onDelete={onDelete.bind(this)}
+              title={propOr('Widget', 'title', configuration)}
+              entityId={pathOr(null, ['entity', 'id'], configuration)}
+              entityType={propOr('Sector', 'entity_type', configuration)}
               relationType="targets"
               field="name"
-              resolveInferences={inferred}
+              resolveInferences={true}
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
               resolveViaTypes={[
@@ -41,56 +44,21 @@ class VictimologyDistribution extends Component {
               ]}
             />
           </Grid>
-          <Grid item={true} xs={4}>
-            <EntityStixRelationsTable
-              entityId={stixDomainEntity.id}
-              entityType="Region"
+        );
+      case 'radar':
+        return (
+          <Grid item={true} xs={Number(propOr(4, 'size', configuration))} style={{ marginBottom: 30 }}>
+            <EntityStixRelationsRadar
+              variant="explore"
+              configuration={configuration}
+              onUpdate={onUpdate.bind(this)}
+              onDelete={onDelete.bind(this)}
+              title={propOr('Widget', 'title', configuration)}
+              entityId={pathOr(null, ['entity', 'id'], configuration)}
+              entityType={propOr('Sector', 'entity_type', configuration)}
               relationType="targets"
               field="name"
-              resolveInferences={inferred}
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              resolveViaTypes={[
-                {
-                  entityType: 'Organization',
-                  relationType: 'localization',
-                  relationRole: 'localized',
-                },
-                {
-                  entityType: 'Country',
-                  relationType: 'localization',
-                  relationRole: 'localized',
-                },
-              ]}
-            />
-          </Grid>
-          <Grid item={true} xs={4}>
-            <EntityStixRelationsTable
-              entityId={stixDomainEntity.id}
-              entityType="Country"
-              relationType="targets"
-              field="name"
-              resolveInferences={inferred}
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              resolveViaTypes={[
-                {
-                  entityType: 'Organization',
-                  relationType: 'localization',
-                  relationRole: 'localized',
-                },
-              ]}
-            />
-          </Grid>
-        </Grid>
-        <Grid container={true} spacing={3} style={{ marginTop: 30 }}>
-          <Grid item={true} xs={4}>
-            <EntityStixRelationsPie
-              entityId={stixDomainEntity.id}
-              entityType="Sector"
-              relationType="targets"
-              field="name"
-              resolveInferences={inferred}
+              resolveInferences={true}
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
               resolveViaTypes={[
@@ -102,51 +70,67 @@ class VictimologyDistribution extends Component {
               ]}
             />
           </Grid>
-          <Grid item={true} xs={4}>
-            <EntityStixRelationsPie
-              entityId={stixDomainEntity.id}
-              entityType="Region"
+        );
+      case 'donut':
+        return (
+          <Grid item={true} xs={Number(propOr(4, 'size', configuration))} style={{ marginBottom: 30 }}>
+            <EntityStixRelationsDonut
+              variant="explore"
+              configuration={configuration}
+              onUpdate={onUpdate.bind(this)}
+              onDelete={onDelete.bind(this)}
+              title={propOr('Widget', 'title', configuration)}
+              entityId={pathOr(null, ['entity', 'id'], configuration)}
+              entityType={propOr('Sector', 'entity_type', configuration)}
               relationType="targets"
               field="name"
-              resolveInferences={inferred}
+              resolveInferences={true}
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
               resolveViaTypes={[
                 {
                   entityType: 'Organization',
-                  relationType: 'localization',
-                  relationRole: 'localized',
+                  relationType: 'gathering',
+                  relationRole: 'part_of',
                 },
               ]}
             />
           </Grid>
-          <Grid item={true} xs={4}>
+        );
+      default:
+        return (
+          <Grid item={true} xs={Number(propOr(4, 'size', configuration))} style={{ marginBottom: 30 }}>
             <EntityStixRelationsPie
-              entityId={stixDomainEntity.id}
-              entityType="Country"
+              variant="explore"
+              configuration={configuration}
+              onUpdate={onUpdate.bind(this)}
+              onDelete={onDelete.bind(this)}
+              title={propOr('Widget', 'title', configuration)}
+              entityId={pathOr(null, ['entity', 'id'], configuration)}
+              entityType={propOr('Sector', 'entity_type', configuration)}
               relationType="targets"
               field="name"
-              resolveInferences={inferred}
+              resolveInferences={true}
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
               resolveViaTypes={[
                 {
                   entityType: 'Organization',
-                  relationType: 'localization',
-                  relationRole: 'localized',
+                  relationType: 'gathering',
+                  relationRole: 'part_of',
                 },
               ]}
             />
           </Grid>
-        </Grid>
-      </div>
-    );
+        );
+    }
   }
 }
 
 VictimologyDistribution.propTypes = {
-  stixDomainEntity: PropTypes.object,
-  inferred: PropTypes.bool,
+  configuration: PropTypes.object,
+  onUpdate: PropTypes.func,
+  onDelete: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

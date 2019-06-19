@@ -207,6 +207,20 @@ export const stixDomainEntitiesLinesQuery = graphql`
   }
 `;
 
+export const stixDomainEntitiesLinesSearchQuery = graphql`
+  query StixDomainEntitiesLinesSearchQuery($search: String) {
+    stixDomainEntities(search: $search) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+
 const StixDomainEntitiesLines = createPaginationContainer(
   StixDomainEntitiesContainer,
   {

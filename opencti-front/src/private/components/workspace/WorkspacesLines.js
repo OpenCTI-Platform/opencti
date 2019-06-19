@@ -170,6 +170,7 @@ WorkspacesLines.propTypes = {
 
 export const workspacesLinesQuery = graphql`
   query WorkspacesLinesPaginationQuery(
+    $workspaceType: String
     $count: Int!
     $cursor: ID
     $orderBy: WorkspacesOrdering
@@ -177,6 +178,7 @@ export const workspacesLinesQuery = graphql`
   ) {
     ...WorkspacesLines_data
       @arguments(
+        workspaceType: $workspaceType
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -207,12 +209,14 @@ export default withStyles(styles)(
       data: graphql`
         fragment WorkspacesLines_data on Query
           @argumentDefinitions(
+            workspaceType: { type: "String" }
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
             orderBy: { type: "WorkspacesOrdering", defaultValue: "name" }
             orderMode: { type: "OrderingMode", defaultValue: "asc" }
           ) {
           workspaces(
+            workspaceType: $workspaceType
             first: $count
             after: $cursor
             orderBy: $orderBy
@@ -240,8 +244,7 @@ export default withStyles(styles)(
       },
       getVariables(props, { count, cursor }, fragmentVariables) {
         return {
-          objectId: fragmentVariables.objectId,
-          workspaceClass: fragmentVariables.workspaceClass,
+          workspaceType: fragmentVariables.workspaceType,
           count,
           cursor,
           orderBy: fragmentVariables.orderBy,

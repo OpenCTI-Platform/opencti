@@ -1,1 +1,0 @@
-from .opencti import OpenCTI

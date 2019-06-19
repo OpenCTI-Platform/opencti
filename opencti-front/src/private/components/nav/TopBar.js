@@ -17,8 +17,9 @@ import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
 import TopMenuSearch from './TopMenuSearch';
 import TopMenuExplore from './TopMenuExplore';
-import TopMenuWorkspaces from './TopMenuWorkspaces';
-import TopMenuWorkspace from './TopMenuWorkspace';
+import TopMenuExploreWorkspace from './TopMenuExploreWorkspace';
+import TopMenuInvestigate from './TopMenuInvestigate';
+import TopMenuInvestigateWorkspace from './TopMenuInvestigateWorkspace';
 import TopMenuKnowledge from './TopMenuKnowledge';
 import TopMenuThreatActor from './TopMenuThreatActor';
 import TopMenuSector from './TopMenuSector';
@@ -146,18 +147,23 @@ class TopBar extends Component {
             ) : (
               ''
             )}
-            {location.pathname.includes('/dashboard/explore') ? (
+            {location.pathname === '/dashboard/explore' ? (
               <TopMenuExplore />
             ) : (
               ''
             )}
+            {location.pathname.includes('/dashboard/explore/') ? (
+              <TopMenuExploreWorkspace />
+            ) : (
+              ''
+            )}
             {location.pathname === '/dashboard/investigate' ? (
-              <TopMenuWorkspaces />
+              <TopMenuInvestigate />
             ) : (
               ''
             )}
             {location.pathname.includes('/dashboard/investigate/') ? (
-              <TopMenuWorkspace />
+              <TopMenuInvestigateWorkspace />
             ) : (
               ''
             )}

@@ -15,7 +15,6 @@ const subscription = graphql`
         ...Country_country
         ...CountryEditionContainer_country
       }
-      ...StixDomainEntityKnowledgeGraph_stixDomainEntity
     }
   }
 `;

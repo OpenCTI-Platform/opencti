@@ -13,8 +13,9 @@ import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { itemColor } from '../../../utils/Colors';
+import ExploreUpdateWidget from '../explore/ExploreUpdateWidget';
 
-const styles = theme => ({
+const styles = () => ({
   paper: {
     minHeight: 300,
     height: '100%',
@@ -120,6 +121,7 @@ class EntityStixRelationsDonut extends Component {
     const {
       t,
       classes,
+      variant,
       title,
       entityId,
       entityType,
@@ -131,6 +133,9 @@ class EntityStixRelationsDonut extends Component {
       resolveRelationRole,
       resolveRelationToTypes,
       resolveViaTypes,
+      configuration,
+      onUpdate,
+      onDelete,
     } = this.props;
     const stixRelationsDistributionVariables = {
       inferred,
@@ -147,9 +152,19 @@ class EntityStixRelationsDonut extends Component {
     };
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
         </Typography>
+        {variant === 'explore' ? (
+          <ExploreUpdateWidget
+            configuration={configuration}
+            onUpdate={onUpdate.bind(this)}
+            onDelete={onDelete.bind(this)}
+          />
+        ) : (
+          ''
+        )}
+        <div className='clearfix'/>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
             query={entityStixRelationsDonutStixRelationDistributionQuery}
@@ -231,8 +246,9 @@ class EntityStixRelationsDonut extends Component {
 }
 
 EntityStixRelationsDonut.propTypes = {
-  entityId: PropTypes.string,
+  variant: PropTypes.string,
   title: PropTypes.string,
+  entityId: PropTypes.string,
   relationType: PropTypes.string,
   entityType: PropTypes.string,
   inferred: PropTypes.bool,
@@ -245,6 +261,9 @@ EntityStixRelationsDonut.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  onUpdate: PropTypes.func,
+  onDelete: PropTypes.func,
+  configuration: PropTypes.object,
 };
 
 export default compose(

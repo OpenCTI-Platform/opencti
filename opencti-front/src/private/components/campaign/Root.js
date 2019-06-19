@@ -16,7 +16,6 @@ const subscription = graphql`
         ...Campaign_campaign
         ...CampaignEditionContainer_campaign
       }
-      ...StixDomainEntityKnowledgeGraph_stixDomainEntity
     }
   }
 `;

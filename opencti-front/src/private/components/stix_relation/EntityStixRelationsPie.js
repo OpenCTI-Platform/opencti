@@ -14,6 +14,7 @@ import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { itemColor } from '../../../utils/Colors';
+import ExploreUpdateWidget from '../explore/ExploreUpdateWidget';
 
 const styles = () => ({
   paper: {
@@ -89,6 +90,8 @@ class EntityStixRelationsPie extends Component {
     const {
       t,
       classes,
+      variant,
+      title,
       entityId,
       entityType,
       relationType,
@@ -99,6 +102,9 @@ class EntityStixRelationsPie extends Component {
       resolveRelationRole,
       resolveRelationToTypes,
       resolveViaTypes,
+      configuration,
+      onUpdate,
+      onDelete,
     } = this.props;
     const stixRelationsDistributionVariables = {
       fromId: entityId,
@@ -115,9 +121,19 @@ class EntityStixRelationsPie extends Component {
     };
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Distribution:')} {t(`entity_${entityType}`)}
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+          {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
         </Typography>
+        {variant === 'explore' ? (
+          <ExploreUpdateWidget
+            configuration={configuration}
+            onUpdate={onUpdate.bind(this)}
+            onDelete={onDelete.bind(this)}
+          />
+        ) : (
+          ''
+        )}
+        <div className='clearfix'/>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
             query={entityStixRelationsPieStixRelationDistributionQuery}
@@ -202,6 +218,8 @@ class EntityStixRelationsPie extends Component {
 }
 
 EntityStixRelationsPie.propTypes = {
+  variant: PropTypes.string,
+  title: PropTypes.string,
   entityId: PropTypes.string,
   relationType: PropTypes.string,
   entityType: PropTypes.string,
@@ -215,6 +233,9 @@ EntityStixRelationsPie.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  onUpdate: PropTypes.func,
+  onDelete: PropTypes.func,
+  configuration: PropTypes.object,
 };
 
 export default compose(

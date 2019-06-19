@@ -4,4 +4,4 @@ grakn-client==1.5.3
 elasticsearch
 pika
 python-dateutil
-#pycti
+pycti

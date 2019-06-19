@@ -99,8 +99,9 @@ class Workspaces extends Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, workspaceType } = this.props;
     const paginationOptions = {
+      workspaceType,
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
@@ -150,7 +151,10 @@ class Workspaces extends Component {
             }}
           />
         </List>
-        <WorkspaceCreation paginationOptions={paginationOptions} />
+        <WorkspaceCreation
+          paginationOptions={paginationOptions}
+          workspaceType={workspaceType}
+        />
       </div>
     );
   }
@@ -158,6 +162,7 @@ class Workspaces extends Component {
 
 Workspaces.propTypes = {
   classes: PropTypes.object,
+  workspaceType: PropTypes.string,
   t: PropTypes.func,
   history: PropTypes.object,
 };

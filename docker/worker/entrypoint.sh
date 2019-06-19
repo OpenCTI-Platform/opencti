@@ -7,10 +7,6 @@
 cd /opt/opencti/worker
 sudo -H -u ${RUN_USER} pip3 install -r requirements.txt
 
-# Install PyCTI
-cd /opt/opencti/clients/python
-sudo -H -u ${RUN_USER} python3 setup.py install --user --force
-
 # Check configuration
 while [ ! -f /opt/opencti/shared_config/token ]
 do
