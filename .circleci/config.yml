@@ -8,6 +8,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: install dependencies
+          command: pip3 install -r requirements.txt
+      - run:
           name: build
           command: python3 setup.py sdist
       - persist_to_workspace:
@@ -20,7 +23,10 @@ jobs:
       - image: circleci/python:3.6
     steps:
       - attach_workspace:
-          at: ~/
+          at: ~/*
+      - run:
+          name: install dependencies
+          command: pip3 install -r requirements.txt          
       - run:
           name: verify git tag vs. version
           command: python3 setup.py verify
