@@ -33,7 +33,7 @@ jobs:
           command: python3 setup.py verify
       - run:
           name: install twine
-          command: pip3 install twine --user
+          command: sudo pip3 install twine
       - run:
           name: init .pypirc
           command: |
