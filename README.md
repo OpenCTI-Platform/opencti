@@ -38,7 +38,7 @@ Currently OpenCTI is under heavy development, if you wish to report bugs or ask 
 
 ### Discussion
 
-If you need support or you wish to engage a discussion about the OpenCTI platform, feel free to join us on our [Slack channel](https://slack.luatix.org).
+If you need support or you wish to engage a discussion about the OpenCTI platform, feel free to join us on our [Slack channel](https://slack.luatix.org). You can also send us an email at contact@opencti.io.
 
 ### About
 
