@@ -42,4 +42,4 @@ If you need support or you wish to engage a discussion about the OpenCTI platfor
 
 ### About
 
-OpenCTI is a product powered by the collaboration of the [Luatix](https://www.luatix.org) non-profit organization, the [French national cybersecurity agency (ANSSI)](https://ssi.gouv.fr) and the [CERT-EU](https://cert.europa.eu).
+OpenCTI is a product powered by the collaboration of the [French national cybersecurity agency (ANSSI)](https://ssi.gouv.fr), the [CERT-EU](https://cert.europa.eu) and the [Luatix](https://www.luatix.org) non-profit organization.

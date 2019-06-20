@@ -21,7 +21,8 @@ import {
   getSingleValueNumber,
   prepareDate,
   queryOne,
-  getId
+  getId,
+  commitWriteTx
 } from '../database/grakn';
 import {
   deleteEntity,
@@ -210,15 +211,15 @@ export const stixDomainEntityRefreshExport = async (
   has created_at_month "${monthFormat(now())}",
   has created_at_year "${yearFormat(now())}",
   has updated_at ${now()};`;
-  const exportIterator = await wTx.query(query);
+  const exportIterator = await wTx.tx.query(query);
   const createdExport = await exportIterator.next();
   const createdExportId = await createdExport.map().get('export').id;
-  await wTx.query(
+  await wTx.tx.query(
     `match $from id ${createdExportId}; $to has internal_id "${escapeString(
       stixDomainEntityId
     )}"; insert (export: $from, exported: $to) isa exports, has internal_id "${uuid()}";`
   );
-  await wTx.commit();
+  await commitWriteTx(wTx);
   send(
     'opencti',
     type,
@@ -251,9 +252,8 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   const internalId = stixDomainEntity.internal_id
     ? escapeString(stixDomainEntity.internal_id)
     : uuid();
-  const stixDomainEntityIterator = await wTx.query(`insert $stixDomainEntity isa ${escape(
-    stixDomainEntity.type
-  )},
+  const stixDomainEntityIterator = await wTx.tx
+    .query(`insert $stixDomainEntity isa ${escape(stixDomainEntity.type)},
     has internal_id "${internalId}",
     has entity_type "${escapeString(stixDomainEntity.type.toLowerCase())}",
     has stix_id "${
@@ -284,7 +284,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     .get('stixDomainEntity').id;
 
   if (stixDomainEntity.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdStixDomainEntityId};
       $to has internal_id "${escapeString(stixDomainEntity.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -294,7 +294,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
 
   if (stixDomainEntity.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from has id ${createdStixDomainEntityId}; 
         $to has internal_id "${escapeString(markingDefinition)}"; 
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -306,7 +306,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);

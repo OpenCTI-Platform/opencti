@@ -8,7 +8,7 @@ import {
   getObject,
   notify,
   now,
-  takeWriteTx
+  takeWriteTx, commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, setEditContext } from '../database/redis';
@@ -26,7 +26,7 @@ export const addSettings = async (user, settings) => {
   const internalId = settings.internal_id
     ? escapeString(settings.internal_id)
     : uuid();
-  const settingsIterator = await wTx.query(`insert $settings isa Settings,
+  await wTx.tx.query(`insert $settings isa Settings,
     has internal_id "${internalId}",
     has entity_type "settings",
     has platform_title "${escapeString(settings.platform_title)}",
@@ -38,10 +38,8 @@ export const addSettings = async (user, settings) => {
     has created_at ${now()},
     has updated_at ${now()};
   `);
-  const createSettings = await settingsIterator.next();
-  const createdSettingsId = await createSettings.map().get('settings').id;
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created =>
     notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user)

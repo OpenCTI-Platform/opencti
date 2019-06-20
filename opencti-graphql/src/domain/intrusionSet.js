@@ -1,7 +1,6 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escape,
   escapeString,
   takeWriteTx,
   getById,
@@ -10,7 +9,8 @@ import {
   yearFormat,
   prepareDate,
   notify,
-  now
+  now,
+  commitWriteTx
 } from '../database/grakn';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
 import { BUS_TOPICS, logger } from '../config/conf';
@@ -109,14 +109,14 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     has updated_at ${now()};
   `;
   logger.debug(`[GRAKN - infer: false] ${query}`);
-  const intrusionSetIterator = await wTx.query(query);
+  const intrusionSetIterator = await wTx.tx.query(query);
   const createIntrusionSet = await intrusionSetIterator.next();
   const createdIntrusionSetId = await createIntrusionSet
     .map()
     .get('intrusionSet').id;
 
   if (intrusionSet.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdIntrusionSetId};
       $to has internal_id "${escapeString(intrusionSet.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -126,7 +126,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
 
   if (intrusionSet.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdIntrusionSetId}; 
         $to has internal_id "${escapeString(markingDefinition)}"; 
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -138,7 +138,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);

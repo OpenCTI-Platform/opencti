@@ -1,7 +1,6 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escape,
   escapeString,
   takeWriteTx,
   getById,
@@ -10,7 +9,8 @@ import {
   prepareDate,
   dayFormat,
   monthFormat,
-  yearFormat
+  yearFormat,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -37,8 +37,11 @@ export const findById = threatActorId => getById(threatActorId);
 
 export const addThreatActor = async (user, threatActor) => {
   const wTx = await takeWriteTx();
-  const internalId = threatActor.internal_id ? escapeString(threatActor.internal_id) : uuid()
-  const threatActorIterator = await wTx.query(`insert $threatActor isa Threat-Actor,
+  const internalId = threatActor.internal_id
+    ? escapeString(threatActor.internal_id)
+    : uuid();
+  const threatActorIterator = await wTx.tx
+    .query(`insert $threatActor isa Threat-Actor,
     has internal_id "${internalId}",
     has entity_type "threat-actor",
     has stix_id "${
@@ -76,7 +79,7 @@ export const addThreatActor = async (user, threatActor) => {
     .id;
 
   if (threatActor.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createThreatActorId};
       $to has internal_id "${escapeString(threatActor.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -86,7 +89,7 @@ export const addThreatActor = async (user, threatActor) => {
 
   if (threatActor.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createThreatActorId};
         $to has internal_id "${escapeString(markingDefinition)}";
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -98,7 +101,7 @@ export const addThreatActor = async (user, threatActor) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);

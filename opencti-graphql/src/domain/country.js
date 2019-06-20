@@ -1,7 +1,6 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escape,
   escapeString,
   getById,
   prepareDate,
@@ -10,7 +9,8 @@ import {
   yearFormat,
   notify,
   now,
-  takeWriteTx
+  takeWriteTx,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -23,8 +23,10 @@ export const findById = countryId => getById(countryId);
 
 export const addCountry = async (user, country) => {
   const wTx = await takeWriteTx();
-  const internalId = country.internal_id ? escapeString(country.internal_id) : uuid()
-  const countryIterator = await wTx.query(`insert $country isa Country,
+  const internalId = country.internal_id
+    ? escapeString(country.internal_id)
+    : uuid();
+  const countryIterator = await wTx.tx.query(`insert $country isa Country,
     has internal_id "${internalId}",
     has entity_type "country",
     has stix_id "${
@@ -47,7 +49,7 @@ export const addCountry = async (user, country) => {
   const createdCountryId = await createCountry.map().get('country').id;
 
   if (country.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdCountryId};
       $to has internal_id "${escapeString(country.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -57,7 +59,7 @@ export const addCountry = async (user, country) => {
 
   if (country.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdCountryId};
          $to has internal_id "${escapeString(markingDefinition)}"; 
          insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -69,7 +71,7 @@ export const addCountry = async (user, country) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);

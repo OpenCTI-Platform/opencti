@@ -1,7 +1,6 @@
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
-  escape,
   escapeString,
   createRelation,
   deleteEntityById,
@@ -15,7 +14,7 @@ import {
   notify,
   now,
   paginate,
-  takeWriteTx
+  takeWriteTx, commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -54,7 +53,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   const internalId = markingDefinition.internal_id
     ? escapeString(markingDefinition.internal_id)
     : uuid();
-  const markingDefinitionIterator = await wTx.query(`insert $markingDefinition isa Marking-Definition,
+  const markingDefinitionIterator = await wTx.tx.query(`insert $markingDefinition isa Marking-Definition,
     has internal_id "${internalId}",
     has entity_type "marking-definition",
     has stix_id "${
@@ -87,7 +86,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
     .get('markingDefinition').id;
 
   if (markingDefinition.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdMarkingDefinitionId};
       $to has internal_id "${escapeString(markingDefinition.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -95,7 +94,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
     );
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created =>
     notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created, user)

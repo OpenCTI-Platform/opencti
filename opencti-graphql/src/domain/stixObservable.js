@@ -18,7 +18,8 @@ import {
   takeWriteTx,
   timeSeries,
   getObject,
-  getId
+  getId,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import {
@@ -82,7 +83,7 @@ export const findById = stixObservableId => getById(stixObservableId);
 export const findByValue = args =>
   paginate(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
-    $x has observable_value "${escapeString(args.observable_value)}"`,
+    $x has observable_value "${escapeString(args.observableValue)}"`,
     args,
     false
   );
@@ -168,14 +169,14 @@ export const addStixObservable = async (user, stixObservable) => {
     has updated_at ${now()};
   `;
   logger.debug(`[GRAKN - infer: false] ${query}`);
-  const stixObservableIterator = await wTx.query(query);
+  const stixObservableIterator = await wTx.tx.query(query);
   const createStixObservable = await stixObservableIterator.next();
   const createdStixObservableId = await createStixObservable
     .map()
     .get('stixObservable').id;
 
   if (stixObservable.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdStixObservableId};
       $to has internal_id "${escapeString(stixObservable.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -185,7 +186,7 @@ export const addStixObservable = async (user, stixObservable) => {
 
   if (stixObservable.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdStixObservableId}; 
         $to has internal_id "${escapeString(markingDefinition)}"; 
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -197,7 +198,7 @@ export const addStixObservable = async (user, stixObservable) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-observables', 'stix_observable', created);

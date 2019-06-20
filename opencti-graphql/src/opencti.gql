@@ -39,6 +39,7 @@ define
   export_type sub attribute, datatype string;
   export_mode sub attribute, datatype string;
   raw_data sub attribute, datatype string;
+  score sub attribute, datatype long;
 
   # STIX common properties
   stix_id sub attribute, datatype string;
@@ -55,6 +56,10 @@ define
   last_seen_day sub attribute, datatype string;
   last_seen_month sub attribute, datatype string;
   last_seen_year sub attribute, datatype string;
+  expiration sub attribute, datatype date;
+  expiration_day sub attribute, datatype string;
+  expiration_month sub attribute, datatype string;
+  expiration_year sub attribute, datatype string;
   name sub attribute, datatype string;
   description sub attribute, datatype string;
 
@@ -182,6 +187,9 @@ define
   gather sub role;
   part_of sub role;
 
+  # sighting
+  sighting_of sub role;
+  sighted_in sub role;
 
   ## RELATIONSHIPS
 
@@ -298,8 +306,7 @@ define
     relates belongs_to;
 
   # STIX SRO relationships
-  stix_relation sub relation,
-    abstract,
+  stix_sighting sub relation,
     has internal_id,
     has stix_id,
     has created,
@@ -316,6 +323,32 @@ define
     has last_seen_day,
     has last_seen_month,
     has last_seen_year,
+    plays sighted_in,
+    plays sighting_of;
+
+  stix_relation sub relation,
+    abstract,
+    has internal_id,
+    has stix_id,
+    has created,
+    has modified,
+    has revoked,
+    has entity_type,
+    has relationship_type,
+    has weight,
+    has score,
+    has first_seen,
+    has first_seen_day,
+    has first_seen_month,
+    has first_seen_year,
+    has last_seen,
+    has last_seen_day,
+    has last_seen_month,
+    has last_seen_year,
+    has expiration,
+    has expiration_day,
+    has expiration_month,
+    has expiration_year,
     has name,
     has description,
     has role_played,

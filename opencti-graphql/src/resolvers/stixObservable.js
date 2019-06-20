@@ -28,7 +28,7 @@ const stixObservableResolvers = {
       if (args.search && args.search.length > 0) {
         return search(args);
       }
-      if (args.observable_value && args.observable_value.length > 0) {
+      if (args.observableValue && args.observableValue.length > 0) {
         return findByValue(args);
       }
       return findAll(args);

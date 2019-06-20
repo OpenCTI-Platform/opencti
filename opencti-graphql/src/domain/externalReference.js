@@ -16,7 +16,8 @@ import {
   now,
   paginate,
   takeWriteTx,
-  getId
+  getId,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import {
@@ -88,14 +89,14 @@ export const addExternalReference = async (user, externalReference) => {
     has updated_at ${now()};
   `;
   logger.debug(`[GRAKN - infer: false] ${query}`);
-  const externalReferenceIterator = await wTx.query(query);
+  const externalReferenceIterator = await wTx.tx.query(query);
   const createExternalReference = await externalReferenceIterator.next();
   const createdExternalReferenceId = await createExternalReference
     .map()
     .get('externalReference').id;
 
   if (externalReference.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdExternalReferenceId};
       $to has internal_id "${escapeString(externalReference.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -105,7 +106,7 @@ export const addExternalReference = async (user, externalReference) => {
 
   if (externalReference.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdExternalReferenceId}; 
         $to has internal_id "${escapeString(markingDefinition)}"; 
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -117,7 +118,7 @@ export const addExternalReference = async (user, externalReference) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('external-references', 'external_reference', created);

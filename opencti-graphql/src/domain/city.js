@@ -1,7 +1,6 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escape,
   escapeString,
   getById,
   prepareDate,
@@ -10,7 +9,8 @@ import {
   yearFormat,
   notify,
   now,
-  takeWriteTx
+  takeWriteTx,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -24,7 +24,7 @@ export const findById = cityId => getById(cityId);
 export const addCity = async (user, city) => {
   const wTx = await takeWriteTx();
   const internalId = city.internal_id ? escapeString(city.internal_id) : uuid();
-  const cityIterator = await wTx.query(`insert $city isa City,
+  const cityIterator = await wTx.tx.query(`insert $city isa City,
     has internal_id "${internalId}",
     has entity_type "city",
     has stix_id "${
@@ -47,7 +47,7 @@ export const addCity = async (user, city) => {
   const createdCityId = await createCity.map().get('city').id;
 
   if (city.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdCityId};
       $to has internal_id "${escapeString(city.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -57,7 +57,7 @@ export const addCity = async (user, city) => {
 
   if (city.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdCityId}; 
         $to has internal_id "${escapeString(markingDefinition)}"; 
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -69,7 +69,7 @@ export const addCity = async (user, city) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);

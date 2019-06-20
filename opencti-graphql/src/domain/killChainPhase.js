@@ -15,7 +15,8 @@ import {
   notify,
   now,
   paginate,
-  takeWriteTx
+  takeWriteTx,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -52,7 +53,8 @@ export const addKillChainPhase = async (user, killChainPhase) => {
   const internalId = killChainPhase.internal_id
     ? escapeString(killChainPhase.internal_id)
     : uuid();
-  const killChainPhaseIterator = await wTx.query(`insert $killChainPhase isa Kill-Chain-Phase,
+  const killChainPhaseIterator = await wTx.tx
+    .query(`insert $killChainPhase isa Kill-Chain-Phase,
     has internal_id "${internalId}",
     has entity_type "kill-chain-phase",
     has stix_id "${
@@ -82,7 +84,7 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     .get('killChainPhase').id;
 
   if (killChainPhase.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdKillChainPhaseId};
       $to has internal_id "${escapeString(killChainPhase.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -90,7 +92,7 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     );
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created =>
     notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created, user)

@@ -15,7 +15,8 @@ import {
   takeWriteTx,
   timeSeries,
   getSingleValueNumber,
-  distribution
+  distribution,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -220,7 +221,7 @@ export const addReport = async (user, report) => {
   const internalId = report.internal_id
     ? escapeString(report.internal_id)
     : uuid();
-  const reportIterator = await wTx.query(`insert $report isa Report,
+  const reportIterator = await wTx.tx.query(`insert $report isa Report,
     has internal_id "${internalId}",
     has entity_type "report",
     has stix_id "${
@@ -255,7 +256,7 @@ export const addReport = async (user, report) => {
   const createdReportId = await createdReport.map().get('report').id;
 
   if (report.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdReportId};
       $to has internal_id "${escapeString(report.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -265,7 +266,7 @@ export const addReport = async (user, report) => {
 
   if (report.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdReportId}; 
         $to has internal_id "${escapeString(markingDefinition)}"; 
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -277,7 +278,7 @@ export const addReport = async (user, report) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);

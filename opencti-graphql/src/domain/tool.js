@@ -1,7 +1,6 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escape,
   escapeString,
   getById,
   prepareDate,
@@ -10,7 +9,8 @@ import {
   yearFormat,
   notify,
   now,
-  takeWriteTx
+  takeWriteTx,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -23,8 +23,8 @@ export const findById = toolId => getById(toolId);
 
 export const addTool = async (user, tool) => {
   const wTx = await takeWriteTx();
-  const internalId = tool.internal_id ? escapeString(tool.internal_id) : uuid()
-  const toolIterator = await wTx.query(`insert $tool isa Tool,
+  const internalId = tool.internal_id ? escapeString(tool.internal_id) : uuid();
+  const toolIterator = await wTx.tx.query(`insert $tool isa Tool,
     has internal_id "${internalId}",
     has entity_type "tool",
     has stix_id "${
@@ -47,7 +47,7 @@ export const addTool = async (user, tool) => {
   const createdToolId = await createTool.map().get('tool').id;
 
   if (tool.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdToolId};
       $to has internal_id "${escapeString(tool.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -57,7 +57,7 @@ export const addTool = async (user, tool) => {
 
   if (tool.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdToolId}; 
         $to has internal_id "${escapeString(markingDefinition)}"; 
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -71,7 +71,7 @@ export const addTool = async (user, tool) => {
 
   if (tool.killChainPhases) {
     const createKillChainPhase = killChainPhase =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdToolId}; 
         $to has internal_id "${escapeString(killChainPhase)}"; 
         insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id "${uuid()}";`
@@ -83,7 +83,7 @@ export const addTool = async (user, tool) => {
     await Promise.all(killChainPhasesPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);

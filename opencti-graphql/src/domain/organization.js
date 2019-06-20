@@ -9,7 +9,8 @@ import {
   yearFormat,
   notify,
   now,
-  takeWriteTx
+  takeWriteTx,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -25,7 +26,8 @@ export const addOrganization = async (user, organization) => {
   const internalId = organization.internal_id
     ? escapeString(organization.internal_id)
     : uuid();
-  const organizationIterator = await wTx.query(`insert $organization isa Organization,
+  const organizationIterator = await wTx.tx
+    .query(`insert $organization isa Organization,
     has internal_id "${internalId}",
     has entity_type "organization",
     has stix_id "${
@@ -56,7 +58,7 @@ export const addOrganization = async (user, organization) => {
     .get('organization').id;
 
   if (organization.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdOrganizationId};
       $to has internal_id "${escapeString(organization.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -66,7 +68,7 @@ export const addOrganization = async (user, organization) => {
 
   if (organization.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdOrganizationId}; 
         $to has internal_id "${escapeString(markingDefinition)}"; 
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -78,7 +80,7 @@ export const addOrganization = async (user, organization) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);

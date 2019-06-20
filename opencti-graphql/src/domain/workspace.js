@@ -15,7 +15,8 @@ import {
   now,
   paginate,
   getObject,
-  takeWriteTx
+  takeWriteTx,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -67,7 +68,7 @@ export const addWorkspace = async (user, workspace) => {
   const internalId = workspace.internal_id
     ? escapeString(workspace.internal_id)
     : uuid();
-  const workspaceIterator = await wTx.query(`insert $workspace isa Workspace,
+  const workspaceIterator = await wTx.tx.query(`insert $workspace isa Workspace,
     has internal_id "${internalId}",
     has entity_type "workspace",
     has workspace_type "${escapeString(workspace.workspace_type)}",
@@ -82,14 +83,14 @@ export const addWorkspace = async (user, workspace) => {
   const createdWorkspace = await workspaceIterator.next();
   const createdWorkspaceId = await createdWorkspace.map().get('workspace').id;
 
-  await wTx.query(`match $from id ${createdWorkspaceId};
+  await wTx.tx.query(`match $from id ${createdWorkspaceId};
          $to has internal_id "${user.id}";
          insert (to: $from, owner: $to)
          isa owned_by, has internal_id "${uuid()}";`);
 
   if (workspace.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdWorkspaceId}; 
         $to has internal_id "${escapeString(markingDefinition)}"; 
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -101,7 +102,7 @@ export const addWorkspace = async (user, workspace) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created =>
     notify(BUS_TOPICS.Workspace.ADDED_TOPIC, created, user)
@@ -129,7 +130,7 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
 
   const wTx = await takeWriteTx();
   const createRelationPromise = relationInput =>
-    wTx.query(`match $from has internal_id ${workspaceId}; 
+    wTx.tx.query(`match $from has internal_id ${workspaceId}; 
          $to has internal_id ${relationInput.toId}; 
          insert $rel(${relationInput.fromRole}: $from, ${
       relationInput.toRole
@@ -139,7 +140,7 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
   const relationsPromises = map(createRelationPromise, finalInput);
   await Promise.all(relationsPromises);
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(workspaceId).then(workspace =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)

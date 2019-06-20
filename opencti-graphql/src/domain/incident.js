@@ -11,7 +11,8 @@ import {
   now,
   paginate,
   takeWriteTx,
-  timeSeries
+  timeSeries,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -92,12 +93,12 @@ export const addIncident = async (user, incident) => {
     has updated_at ${now()};
   `;
   logger.debug(`[GRAKN - infer: false] ${query}`);
-  const incidentIterator = await wTx.query(query);
+  const incidentIterator = await wTx.tx.query(query);
   const createIncident = await incidentIterator.next();
   const createdIncidentId = await createIncident.map().get('incident').id;
 
   if (incident.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdIncidentId};
       $to has internal_id "${escapeString(incident.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -107,7 +108,7 @@ export const addIncident = async (user, incident) => {
 
   if (incident.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdIncidentId}; 
         $to has internal_id "${escapeString(markingDefinition)}"; 
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -119,7 +120,7 @@ export const addIncident = async (user, incident) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);

@@ -15,7 +15,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import CardContent from '@material-ui/core/CardContent';
 import {
-  Assignment, Layers, DeviceHub, Description,
+  Assignment, Layers, Work, Description,
 } from '@material-ui/icons';
 import { Database, Tag } from 'mdi-material-ui';
 import BarChart from 'recharts/lib/chart/BarChart';
@@ -337,7 +337,7 @@ class Dashboard extends Component {
                           {t('Total workspaces')}
                         </div>
                         <div className={classes.icon}>
-                          <DeviceHub color="inherit" fontSize="large" />
+                          <Work color="inherit" fontSize="large" />
                         </div>
                       </CardContent>
                     );
@@ -423,8 +423,8 @@ class Dashboard extends Component {
             </Card>
           </Grid>
         </Grid>
-        <Grid container={true} spacing={2} style={{ marginTop: 20 }}>
-          <Grid item={true} lg={6} xs={12}>
+        <Grid container={true} spacing={2}>
+          <Grid item={true} lg={6} xs={12} style={{ marginBottom: 30 }}>
             <Typography variant="h2" gutterBottom={true}>
               {t('Last reports')}
             </Typography>
@@ -493,7 +493,7 @@ class Dashboard extends Component {
               />
             </Paper>
           </Grid>
-          <Grid item={true} lg={6} xs={12}>
+          <Grid item={true} lg={6} xs={12} style={{ marginBottom: 30 }}>
             <Typography variant="h2" gutterBottom={true}>
               {t('Last observables')}
             </Typography>

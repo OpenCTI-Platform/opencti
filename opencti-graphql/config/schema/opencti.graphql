@@ -327,9 +327,11 @@ type StixRelation implements GlobalObject & StixEntity {
   relationship_type: String
   inferred: Boolean
   weight: Int
+  score: Int
   description: String
   first_seen: DateTime
   last_seen: DateTime
+  expiration: DateTime
   created: DateTime!
   modified: DateTime!
   graph_data: String
@@ -344,6 +346,31 @@ type StixRelation implements GlobalObject & StixEntity {
   to: StixEntity
   toRole: String
   inferences: StixRelationConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    resolveInferences: Boolean
+    resolveRelationType: String
+    resolveRelationRole: String
+    resolveRelationToTypes: [String]
+    resolveViaTypes: [EntityRelation]
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    infrastructure: Boolean
+  ): StixRelationConnection
   created_at: DateTime
   updated_at: DateTime
 }
@@ -2042,7 +2069,7 @@ type Query {
     orderBy: StixObservablesOrdering
     orderMode: OrderingMode
     types: [String]
-    observable_value: String
+    observableValue: String
     search: String
     firstSeenStart: DateTime
     firstSeenStop: DateTime

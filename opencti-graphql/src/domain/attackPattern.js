@@ -1,7 +1,6 @@
 import { assoc, map, join } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escape,
   escapeString,
   getById,
   prepareDate,
@@ -11,7 +10,8 @@ import {
   notify,
   now,
   paginate,
-  takeWriteTx
+  takeWriteTx,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -92,14 +92,14 @@ export const addAttackPattern = async (user, attackPattern) => {
     has updated_at ${now()};
   `;
   logger.debug(`[GRAKN - infer: false] ${query}`);
-  const attackPatternIterator = await wTx.query(query);
+  const attackPatternIterator = await wTx.tx.query(query);
   const createAttackPattern = await attackPatternIterator.next();
   const createdAttackPatternId = await createAttackPattern
     .map()
     .get('attackPattern').id;
 
   if (attackPattern.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdAttackPatternId};
       $to has internal_id "${escapeString(attackPattern.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -109,7 +109,7 @@ export const addAttackPattern = async (user, attackPattern) => {
 
   if (attackPattern.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdAttackPatternId}; 
         $to has internal_id "${escapeString(markingDefinition)}"; 
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -123,7 +123,7 @@ export const addAttackPattern = async (user, attackPattern) => {
 
   if (attackPattern.killChainPhases) {
     const createKillChainPhase = killChainPhase =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdAttackPatternId}; 
         $to has internal_id "${escapeString(killChainPhase)}";
         insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id "${uuid()}";`
@@ -135,7 +135,7 @@ export const addAttackPattern = async (user, attackPattern) => {
     await Promise.all(killChainPhasesPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);

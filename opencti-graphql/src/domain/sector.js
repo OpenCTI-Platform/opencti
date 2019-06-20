@@ -1,7 +1,6 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escape,
   escapeString,
   getById,
   prepareDate,
@@ -11,7 +10,8 @@ import {
   notify,
   now,
   paginate,
-  takeWriteTx
+  takeWriteTx,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -43,7 +43,7 @@ export const addSector = async (user, sector) => {
   const internalId = sector.internal_id
     ? escapeString(sector.internal_id)
     : uuid();
-  const sectorIterator = await wTx.query(`insert $sector isa Sector,
+  const sectorIterator = await wTx.tx.query(`insert $sector isa Sector,
     has internal_id "${internalId}",
     has entity_type "sector",
     has stix_id "${
@@ -66,7 +66,7 @@ export const addSector = async (user, sector) => {
   const createdSectorId = await createSector.map().get('sector').id;
 
   if (sector.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdSectorId};
       $to has internal_id "${escapeString(sector.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -76,7 +76,7 @@ export const addSector = async (user, sector) => {
 
   if (sector.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdSectorId}; 
         $to has internal_id "${escapeString(markingDefinition)}";
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -88,7 +88,7 @@ export const addSector = async (user, sector) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);

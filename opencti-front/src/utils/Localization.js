@@ -277,6 +277,8 @@ const i18n = {
       'Used in this incident': 'Utilisé dans cet incident',
       Usage: 'Utilisation',
       'Threats using this malware': 'Menaces utilisant ce code',
+      Variants: 'Variantes',
+      'Variants of this malware': 'Variantes de ce code',
       'Targeted by this malware': 'Ciblé par ce code',
       'Used by this malware': 'Utilisé par ce code',
       'This malware has been used': 'Ce code a été utilisé',

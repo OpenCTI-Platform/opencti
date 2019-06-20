@@ -1,7 +1,6 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escape,
   escapeString,
   getById,
   prepareDate,
@@ -10,7 +9,8 @@ import {
   yearFormat,
   notify,
   now,
-  takeWriteTx
+  takeWriteTx,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -26,7 +26,8 @@ export const addCourseOfAction = async (user, courseOfAction) => {
   const internalId = courseOfAction.internal_id
     ? escapeString(courseOfAction.internal_id)
     : uuid();
-  const courseOfActionIterator = await wTx.query(`insert $courseOfAction isa Course-Of-Action,
+  const courseOfActionIterator = await wTx.tx
+    .query(`insert $courseOfAction isa Course-Of-Action,
     has internal_id "${internalId}",
     has entity_type "course-of-action",
     has stix_id "${
@@ -57,7 +58,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     .get('courseOfAction').id;
 
   if (courseOfAction.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdCourseOfActionId};
       $to has internal_id "${escapeString(courseOfAction.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -67,7 +68,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
 
   if (courseOfAction.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdCourseOfActionId}; 
         $to has internal_id "${escapeString(markingDefinition)}"; 
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -81,7 +82,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
 
   if (courseOfAction.killChainPhases) {
     const createKillChainPhase = killChainPhase =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdCourseOfActionId};
          $to has internal_id "${escapeString(killChainPhase)}"; 
          insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id "${uuid()}";`
@@ -93,7 +94,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     await Promise.all(killChainPhasesPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);

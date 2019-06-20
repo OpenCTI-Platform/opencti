@@ -16,7 +16,6 @@ import conf, {
 import {
   escapeString,
   getObject,
-  deleteEntityById,
   getById,
   notify,
   now,
@@ -27,9 +26,10 @@ import {
   dayFormat,
   monthFormat,
   yearFormat,
-  queryOne
+  queryOne,
+  commitWriteTx
 } from '../database/grakn';
-import { deleteEntity, index } from '../database/elasticSearch';
+import { index } from '../database/elasticSearch';
 
 // Security related
 export const generateOpenCTIWebToken = () => ({
@@ -112,18 +112,18 @@ export const addPerson = async (user, newUser) => {
     has updated_at ${now()};
   `;
   logger.debug(`[GRAKN - infer: false] ${query}`);
-  const userIterator = await wTx.query(query);
+  const userIterator = await wTx.tx.query(query);
   const createUser = await userIterator.next();
   const createdUserId = await createUser.map().get('user').id;
 
   if (user.createdByRef) {
-    await wTx.query(`match $from id ${createdUserId};
+    await wTx.tx.query(`match $from id ${createdUserId};
          $to has internal_id "${escapeString(user.createdByRef)}";
          insert (so: $from, creator: $to)
          isa created_by_ref, has internal_id "${uuid()}";`);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
@@ -178,19 +178,19 @@ export const addUser = async (user, newUser, displayToken = false) => {
     has updated_at ${now()};
   `;
   logger.debug(`[GRAKN - infer: false] ${query}`);
-  const userIterator = await wTx.query(query);
+  const userIterator = await wTx.tx.query(query);
 
   const createUser = await userIterator.next();
   const createdUserId = await createUser.map().get('user').id;
 
   if (user.createdByRef) {
-    await wTx.query(`match $from id ${createdUserId};
+    await wTx.tx.query(`match $from id ${createdUserId};
          $to has internal_id "${escapeString(user.createdByRef)}";
          insert (so: $from, creator: $to)
          isa created_by_ref, has internal_id "${uuid()}";`);
   }
 
-  const tokenIterator = await wTx.query(`insert $token isa Token,
+  const tokenIterator = await wTx.tx.query(`insert $token isa Token,
     has internal_id "${uuid()}",
     has entity_type "token",
     has uuid "${newToken.uuid}",
@@ -205,10 +205,10 @@ export const addUser = async (user, newUser, displayToken = false) => {
 
   const createdToken = await tokenIterator.next();
   await createdToken.map().get('token').id;
-  await wTx.query(`match $user isa User, has email "${newUser.email}"; 
+  await wTx.tx.query(`match $user isa User, has email "${newUser.email}"; 
                    $token isa Token, has uuid "${newToken.uuid}"; 
                    insert (client: $user, authorization: $token) isa authorize, has internal_id "${uuid()}";`);
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   if (displayToken) {
     // eslint-disable-next-line
@@ -272,13 +272,13 @@ export const logout = async (user, res) => {
 
 export const userRenewToken = async (user, userId) => {
   const wTx = await takeWriteTx();
-  await wTx.query(
+  await wTx.tx.query(
     `match $user has internal_id "${escapeString(userId)}";
     $rel(authorization:$token, client:$user);
     delete $rel, $token;`
   );
   const newToken = generateOpenCTIWebToken();
-  const tokenIterator = await wTx.query(`insert $token isa Token,
+  const tokenIterator = await wTx.tx.query(`insert $token isa Token,
     has internal_id "${uuid()}",
     has entity_type "token",
     has uuid "${newToken.uuid}",
@@ -292,13 +292,13 @@ export const userRenewToken = async (user, userId) => {
   `);
   const createdToken = await tokenIterator.next();
   await createdToken.map().get('token').id;
-  await wTx.query(
+  await wTx.tx.query(
     `match $user has internal_id "${escapeString(userId)}"";
     $token isa Token,
     has uuid "${newToken.uuid}";
     insert (client: $user, authorization: $token) isa authorize, has internal_id "${uuid()}";`
   );
-  await wTx.commit();
+  await commitWriteTx(wTx);
   return getById(userId);
 };
 

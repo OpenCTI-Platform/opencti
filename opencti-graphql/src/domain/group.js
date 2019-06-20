@@ -1,7 +1,6 @@
 import uuid from 'uuid/v4';
 import { map } from 'ramda';
 import {
-  escape,
   escapeString,
   deleteEntityById,
   getById,
@@ -11,7 +10,8 @@ import {
   notify,
   now,
   paginate,
-  takeWriteTx
+  takeWriteTx,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -40,7 +40,7 @@ export const addGroup = async (user, group) => {
   const internalId = group.internal_id
     ? escapeString(group.internal_id)
     : uuid();
-  const groupIterator = await wTx.query(`insert $group isa Group,
+  const groupIterator = await wTx.tx.query(`insert $group isa Group,
     has internal_id "${internalId}",
     has entity_type "group",
     has name "${escapeString(group.name)}",
@@ -55,7 +55,7 @@ export const addGroup = async (user, group) => {
   const createdGroupId = await createGroup.map().get('group').id;
 
   if (group.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdGroupId};
       $to has internal_id "${escapeString(group.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -65,7 +65,7 @@ export const addGroup = async (user, group) => {
 
   if (group.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdGroupId}; 
         $to has internal_id "${escapeString(markingDefinition)}";
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -77,7 +77,7 @@ export const addGroup = async (user, group) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)

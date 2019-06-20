@@ -1,7 +1,6 @@
 import { map, assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escape,
   escapeString,
   getById,
   prepareDate,
@@ -11,7 +10,8 @@ import {
   notify,
   now,
   paginate,
-  takeWriteTx
+  takeWriteTx,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -63,13 +63,13 @@ export const addIdentity = async (user, identity) => {
     has created_at_year "${yearFormat(now())}", 
     has updated_at ${now()};
   `;
-  const identityIterator = await wTx.query(query);
+  const identityIterator = await wTx.tx.query(query);
   logger.debug(`[GRAKN - infer: false] ${query}`);
   const createIdentity = await identityIterator.next();
   const createdIdentityId = await createIdentity.map().get('identity').id;
 
   if (identity.createdByRef) {
-    await wTx.query(
+    await wTx.tx.query(
       `match $from id ${createdIdentityId};
       $to has internal_id "${escapeString(identity.createdByRef)}";
       insert (so: $from, creator: $to)
@@ -79,7 +79,7 @@ export const addIdentity = async (user, identity) => {
 
   if (identity.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdIdentityId}; 
         $to has internal_id "${escapeString(markingDefinition)}"; 
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -91,7 +91,7 @@ export const addIdentity = async (user, identity) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);

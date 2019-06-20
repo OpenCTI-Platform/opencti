@@ -48,7 +48,8 @@ import {
   takeWriteTx,
   getObjects,
   getId,
-  getSingleValueNumber
+  getSingleValueNumber,
+  commitWriteTx
 } from '../database/grakn';
 import { buildPagination } from '../database/utils';
 import { BUS_TOPICS, logger } from '../config/conf';
@@ -594,7 +595,7 @@ export const addStixRelation = async (user, stixRelation) => {
     has updated_at ${now()};
   `;
   logger.debug(`[GRAKN - infer: false] ${query}`);
-  const stixRelationIterator = await wTx.query(query);
+  const stixRelationIterator = await wTx.tx.query(query);
   const createStixRelation = await stixRelationIterator.next();
   const createdStixRelationId = await createStixRelation
     .map()
@@ -602,7 +603,7 @@ export const addStixRelation = async (user, stixRelation) => {
 
   if (stixRelation.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdStixRelationId}; $x
         $to has internal_id "${escapeString(markingDefinition)}";
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
@@ -616,7 +617,7 @@ export const addStixRelation = async (user, stixRelation) => {
 
   if (stixRelation.locations) {
     const createLocation = location =>
-      wTx.query(
+      wTx.tx.query(
         `match $from id ${createdStixRelationId};
         $to has internal_id "${escapeString(location)}";
         insert $rel(localized: $from, location: $to) isa localization, has internal_id "${uuid()}", has stix_id "relationship--${uuid()}", has relationship_type 'localization', has first_seen ${now()}, has last_seen ${now()}, has weight 3;`
@@ -625,7 +626,7 @@ export const addStixRelation = async (user, stixRelation) => {
     await Promise.all(locationsPromises);
   }
 
-  await wTx.commit();
+  await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
     index('stix-relations', 'stix_relation', created);
