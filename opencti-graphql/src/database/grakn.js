@@ -69,32 +69,55 @@ export const statsDateAttributes = [
 const client = new Grakn(
   `${conf.get('grakn:hostname')}:${conf.get('grakn:port')}`
 );
+let session = null;
 
-export const takeReadTx = async () => {
-  const session = await client.session('grakn');
-  const tx = await session.transaction().read();
-  return { session, tx };
+export const takeReadTx = async (retry = false) => {
+  if (session === null) {
+    session = await client.session('grakn');
+  }
+  try {
+    const tx = await session.transaction().read();
+    return { session, tx };
+  } catch (err) {
+    logger.error(err);
+    if (retry === false) {
+      session = null;
+      return takeReadTx(true);
+    }
+    return null;
+  }
 };
 
 export const closeReadTx = async rTx => {
   try {
     await rTx.tx.close();
-    await rTx.session.close();
+    // await rTx.session.close();
   } catch (err) {
     logger.error(err);
   }
 };
 
-export const takeWriteTx = async () => {
-  const session = await client.session('grakn');
-  const tx = await session.transaction().write();
-  return { session, tx };
+export const takeWriteTx = async (retry = false) => {
+  if (session === null) {
+    session = await client.session('grakn');
+  }
+  try {
+    const tx = await session.transaction().write();
+    return { session, tx };
+  } catch (err) {
+    logger.error(err);
+    if (retry === false) {
+      session = null;
+      return takeWriteTx(true);
+    }
+    return null;
+  }
 };
 
 export const commitWriteTx = async wTx => {
   try {
     await wTx.tx.commit();
-    await wTx.session.close();
+    // await wTx.session.close();
   } catch (err) {
     logger.error(err);
   }
@@ -103,7 +126,7 @@ export const commitWriteTx = async wTx => {
 export const closeWriteTx = async wTx => {
   try {
     await wTx.tx.close();
-    await wTx.session.close();
+    // await wTx.session.close();
   } catch (err) {
     logger.error(err);
   }

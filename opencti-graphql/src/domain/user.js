@@ -208,6 +208,7 @@ export const addUser = async (user, newUser, displayToken = false) => {
   await wTx.tx.query(`match $user isa User, has email "${newUser.email}"; 
                    $token isa Token, has uuid "${newToken.uuid}"; 
                    insert (client: $user, authorization: $token) isa authorize, has internal_id "${uuid()}";`);
+
   await commitWriteTx(wTx);
 
   if (displayToken) {
@@ -336,7 +337,7 @@ export const findByTokenId = async tokenId => {
     (authorization:$token, client:$client); get;`,
     ['client', 'token']
   );
-  if (isEmpty(result)) {
+  if (result === null || isEmpty(result)) {
     return undefined;
   }
   const { created } = result.token;
