@@ -31,7 +31,7 @@ jobs:
           APP__REACTIVE: false
           GRAKN__HOSTNAME: 127.0.0.1
           ELASTICSEARCH__HOSTNAME: 127.0.0.1
-      - image: graknlabs/grakn:1.5.2
+      - image: graknlabs/grakn:1.5.5
       - image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
         environment:
           - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
