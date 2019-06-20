@@ -19,9 +19,9 @@ import {
   Layers,
   ListAlt,
   GroupWork,
-  Extension
+  Extension,
 } from '@material-ui/icons';
-import { Settings, ClipboardArrowDown, Database } from 'mdi-material-ui';
+import { Settings, Database } from 'mdi-material-ui';
 import { compose, includes, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -252,17 +252,17 @@ class LeftBar extends Component {
               <MenuList component="nav">
                 <MenuItem
                   component={Link}
-                  to="/dashboard/sources"
+                  to="/dashboard/connectors"
                   onClick={this.handleClickAway.bind(this)}
-                  selected={location.pathname.includes('/dashboard/sources')}
+                  selected={location.pathname.includes('/dashboard/connectors')}
                   dense={false}
                 >
                   <ListItemIcon>
-                    <ClipboardArrowDown />
+                    <Extension />
                   </ListItemIcon>
                   {this.state.open ? (
                     <ListItemText
-                      primary={t('Sources')}
+                      primary={t('Connectors')}
                       classes={{ root: classes.listText }}
                     />
                   ) : (

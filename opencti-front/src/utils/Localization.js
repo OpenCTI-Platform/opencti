@@ -180,7 +180,7 @@ const i18n = {
       Explore: 'Explorer',
       Investigate: 'Investiguer',
       Correlate: 'Corréler',
-      Sources: 'Sources',
+      Connectors: 'Connecteurs',
       Catalogs: 'Catalogues',
       Settings: 'Paramètres',
       'Threat actors': 'Acteurs',
