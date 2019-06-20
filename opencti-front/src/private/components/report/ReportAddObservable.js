@@ -125,8 +125,8 @@ const reportAddObservableThreatsSearchQuery = graphql`
 `;
 
 const reportAddObservableObservableSearchQuery = graphql`
-  query ReportAddObservableObservableSearchQuery($observable_value: String) {
-    stixObservables(observable_value: $observable_value) {
+  query ReportAddObservableObservableSearchQuery($observableValue: String) {
+    stixObservables(observableValue: $observableValue) {
       edges {
         node {
           id
@@ -307,7 +307,7 @@ class ReportAddObservable extends Component {
     )(values);
     setSubmitting(true);
     fetchQuery(reportAddObservableObservableSearchQuery, {
-      observable_value: finalValues.observable_value,
+      observableValue: finalValues.observable_value,
     }).then((data) => {
       if (data.stixObservables.edges.length === 0) {
         commitMutation({
