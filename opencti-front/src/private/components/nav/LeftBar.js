@@ -19,6 +19,7 @@ import {
   Layers,
   ListAlt,
   GroupWork,
+  Extension
 } from '@material-ui/icons';
 import { Settings, ClipboardArrowDown, Database } from 'mdi-material-ui';
 import { compose, includes, propOr } from 'ramda';

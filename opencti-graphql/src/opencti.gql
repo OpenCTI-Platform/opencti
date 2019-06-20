@@ -323,8 +323,8 @@ define
     has last_seen_day,
     has last_seen_month,
     has last_seen_year,
-    plays sighted_in,
-    plays sighting_of;
+    relates sighted_in,
+    relates sighting_of;
 
   stix_relation sub relation,
     abstract,
