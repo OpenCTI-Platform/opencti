@@ -91,7 +91,6 @@ export const takeReadTx = async (retry = false) => {
 export const closeReadTx = async rTx => {
   try {
     await rTx.tx.close();
-    // await rTx.session.close();
   } catch (err) {
     logger.error(err);
   }
@@ -117,7 +116,6 @@ export const takeWriteTx = async (retry = false) => {
 export const commitWriteTx = async wTx => {
   try {
     await wTx.tx.commit();
-    // await wTx.session.close();
   } catch (err) {
     logger.error(err);
   }
@@ -126,7 +124,6 @@ export const commitWriteTx = async wTx => {
 export const closeWriteTx = async wTx => {
   try {
     await wTx.tx.close();
-    // await wTx.session.close();
   } catch (err) {
     logger.error(err);
   }
@@ -151,10 +148,11 @@ export const write = async query => {
   const wTx = await takeWriteTx();
   try {
     await wTx.tx.query(query);
+    await commitWriteTx(wTx);
   } catch (err) {
     logger.error(err);
+    await closeWriteTx(wTx);
   }
-  await commitWriteTx(wTx);
 };
 
 /**
@@ -318,7 +316,9 @@ export const getById = async (id, tx = null, graknAttributes = false) => {
     return result;
   } catch (err) {
     logger.error(err);
-    await closeReadTx(rTx);
+    if (tx === null) {
+      await closeReadTx(rTx);
+    }
     return Promise.resolve(null);
   }
 };
@@ -379,7 +379,7 @@ export const queryMultiple = async (query, entities) => {
   } catch (err) {
     logger.error(err);
     await closeReadTx(rTx);
-    return Promise.resolve(null);
+    return Promise.resolve([]);
   }
 };
 
@@ -723,7 +723,7 @@ export const getObjects = async (
   } catch (err) {
     logger.error(err);
     await closeReadTx(rTx);
-    return Promise.resolve(null);
+    return Promise.resolve([]);
   }
 };
 
@@ -788,6 +788,7 @@ export const paginate = (
     });
   } catch (err) {
     logger.error(err);
+    return Promise.resolve(null);
   }
 };
 
@@ -1062,7 +1063,6 @@ export const createRelation = async (id, input) => {
  * @returns the complete instance
  */
 export const updateAttribute = async (id, input, tx = null) => {
-  // 00. If the transaction already exist, just continue the process
   let wTx = null;
   if (tx === null) {
     wTx = await takeWriteTx();
@@ -1072,7 +1072,6 @@ export const updateAttribute = async (id, input, tx = null) => {
   try {
     const { key, value } = input; // value can be multi valued
     const escapedKey = escape(key);
-    // 01. We need to fetch the type to quote the string if needed.
     const labelTypeQuery = `match $x type ${escapedKey}; get;`;
     const labelIterator = await wTx.tx.query(labelTypeQuery);
     const labelAnswer = await labelIterator.next();
@@ -1086,7 +1085,6 @@ export const updateAttribute = async (id, input, tx = null) => {
     )}", has ${escapedKey} $del via $d; delete $d;`;
     logger.debug(`[GRAKN - infer: false] ${deleteQuery}`);
     await wTx.tx.query(deleteQuery);
-    // Setup the new attribute
     let typedValues = map(
       v => (attrType === String ? `"${escapeString(v)}"` : escape(v)),
       value
@@ -1106,77 +1104,10 @@ export const updateAttribute = async (id, input, tx = null) => {
     const createQuery = `match $m has internal_id "${escapeString(
       id
     )}"; insert $m ${graknValues};`;
+
     logger.debug(`[GRAKN - infer: false] ${createQuery}`);
     await wTx.tx.query(createQuery);
 
-    /* // 02. For each old values
-    const getOldValueQuery = `match $x has internal_id "${escapeString(
-      id
-    )}"; $x has ${escapedKey} $old; get $old;`;
-    logger.debug(`[GRAKN - infer: false] ${getOldValueQuery}`);
-    const oldValIterator = await wTx.query(getOldValueQuery);
-    const oldValuesConcept = await oldValIterator.collectConcepts();
-    for (let i = 0; i < oldValuesConcept.length; i += 1) {
-      const oldValue = await oldValuesConcept[i].value();
-      const typedOldValue =
-        attrType === String
-          ? `"${escapeString(
-              oldValue.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
-            )}"`
-          : attrType === Date
-          ? prepareDate(oldValue)
-          : oldValue;
-      // If the attribute is alone we can delete it, if not we need to remove the relation to it (via)
-      const countRemainQuery = `match $x isa ${escapedKey}; $x == ${typedOldValue}; $rel($x); get; count;`;
-      logger.debug(`[GRAKN - infer: false] ${countRemainQuery}`);
-      const countRemainIterator = await wTx.query(countRemainQuery);
-      const countRemain = await countRemainIterator.next();
-      const oldNumOfRef = await countRemain.number();
-      // Start the delete phase
-      let deleteQuery = null;
-      if (oldNumOfRef > 1) {
-        // In this case we need to remove the reference to the value
-        deleteQuery = `match $x has internal_id "${escapeString(
-          id
-        )}"; $x has ${escapedKey} $del via $d; $del == ${typedOldValue}; delete $d;`;
-      } else {
-        // In this case the instance of the attribute can be removed
-        const attrGetQuery = `match $x isa ${escapedKey}; $x == ${typedOldValue}; $rel($x); get $x;`;
-        const attrIterator = await wTx.query(attrGetQuery);
-        const attrAnswer = await attrIterator.next();
-        if (attrAnswer) {
-          const attrId = await attrAnswer.map().get('x').id;
-          deleteQuery = `match $attr id ${attrId}; delete $attr;`;
-        }
-      }
-      if (deleteQuery) {
-        logger.debug(`[GRAKN - infer: false] ${deleteQuery}`);
-        await wTx.query(deleteQuery);
-      }
-    }
-    // Setup the new attribute
-    let typedValues = map(
-      v => (attrType === String ? `"${escapeString(v)}"` : escape(v)),
-      value
-    );
-    if (typedValues.length === 0) {
-      typedValues = [attrType === String ? '""' : ''];
-    }
-    let graknValues;
-    if (typedValues.length === 1) {
-      graknValues = `has ${escapedKey} ${head(typedValues)}`;
-    } else {
-      graknValues = `${join(
-        ' ',
-        map(val => `has ${escapedKey} ${val},`, tail(typedValues))
-      )} has ${escapedKey} ${head(typedValues)}`;
-    }
-    const createQuery = `match $m has internal_id "${escapeString(
-      id
-    )}"; insert $m ${graknValues};`;
-    logger.debug(`[GRAKN - infer: false] ${createQuery}`);
-    await wTx.query(createQuery);
-    */
     if (includes(key, statsDateAttributes)) {
       const dayValue = dayFormat(head(value));
       const monthValue = monthFormat(head(value));

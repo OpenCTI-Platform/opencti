@@ -1,5 +1,5 @@
 import uuid from 'uuid/v4';
-import { isEmpty, head, map, filter } from 'ramda';
+import { isNil, isEmpty, head, map, filter } from 'ramda';
 import migrate from 'migrate';
 import { queryOne, queryMultiple, write } from './grakn';
 import { logger } from '../config/conf';
@@ -41,7 +41,7 @@ const graknStateStorage = {
       `match $x isa MigrationStatus; get;`,
       ['x']
     );
-    if (!isEmpty(migrationStatus)) {
+    if (!isNil(migrationStatus)) {
       await write(
         `match $x isa MigrationStatus, 
         has lastRun $run; 

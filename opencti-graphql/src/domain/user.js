@@ -1,4 +1,4 @@
-import { head, isEmpty, join, map } from 'ramda';
+import { head, isNil, join, map } from 'ramda';
 import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
@@ -235,7 +235,7 @@ export const loginFromProvider = async (email, name) => {
     )}"; (authorization:$token, client:$client); get;`,
     ['client', 'token']
   );
-  if (isEmpty(result)) {
+  if (isNil(result)) {
     const newUser = {
       name,
       email,
@@ -254,7 +254,7 @@ export const login = async (email, password) => {
     )}"; (authorization:$token, client:$client); get;`,
     ['client', 'token']
   );
-  if (isEmpty(result)) {
+  if (isNil(result)) {
     throw new AuthenticationFailure();
   }
   const dbPassword = result.client.password;
@@ -337,7 +337,7 @@ export const findByTokenId = async tokenId => {
     (authorization:$token, client:$client); get;`,
     ['client', 'token']
   );
-  if (result === null || isEmpty(result)) {
+  if (isNil(result)) {
     return undefined;
   }
   const { created } = result.token;
