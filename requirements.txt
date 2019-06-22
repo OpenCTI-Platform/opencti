@@ -3,3 +3,4 @@ PyYAML
 setuptools
 pypandoc
 python-dateutil
+datefinder

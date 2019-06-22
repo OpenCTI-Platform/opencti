@@ -16,29 +16,37 @@ class OpenCTI:
         :param url: OpenCTI URL
         :param key: The API key
         :param verbose: Log all requests. Defaults to None
+        :param stdout: Display log to stdout. Defaults to None
     """
 
-    def __init__(self, url, key, log_file='', verbose=True):
+    def __init__(self, url, key, log_file='', verbose=True, stdout=True):
         self.api_url = url + '/graphql'
         self.log_file = log_file
         self.verbose = verbose
+        self.stdout = stdout
         self.request_headers = {
             'Authorization': 'Bearer ' + key,
             'Content-Type': 'application/json'
         }
 
     def log(self, message):
+        if self.stdout:
+            print(message)
         if self.verbose and len(self.log_file) > 0:
             file = open(self.log_file, 'a')
             file.write('[' + datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S') + '] ' + message + "\n")
             file.close()
 
-    def query(self, query, variables):
+    def query(self, query, variables = {}):
         r = requests.post(self.api_url, json={'query': query, 'variables': variables}, headers=self.request_headers)
         if r.status_code == requests.codes.ok:
-            return r.json()
+            result = r.json()
+            if 'errors' in result:
+                self.log(result['errors'][0]['message'])
+            else:
+                return result
         else:
-            print(r.text)
+            self.log(r.text)
 
     def parse_multiple(self, data):
         result = []
@@ -90,6 +98,19 @@ class OpenCTI:
             }
         })
 
+    def get_connectors(self):
+        query = """
+            query Connectors {
+                connectors {
+                    identifier
+                    config_template
+                    config
+               }
+            }
+           """
+        result = self.query(query)
+        return result['data']['connectors']
+
     def get_stix_domain_entity(self, id):
         """
             :param id: StixDomain entity identifier
@@ -109,6 +130,11 @@ class OpenCTI:
         return result['data']['stixDomainEntity']
 
     def get_stix_domain_entity_by_external_reference(self, id, type):
+        """
+            :param id: ExternalReference identifier
+            :param type: StixDomain entity type
+            :return: StixDomainEntity
+        """
         query = """
             query StixDomainEntities($externalReferenceId: String, $type: String) {
                 stixDomainEntities(externalReferenceId: $externalReferenceId, type: $type) {
@@ -214,6 +240,27 @@ class OpenCTI:
         query = """
             mutation StixDomainEntityEdit($id: ID!, $input: EditInput!) {
                 stixDomainEntityEdit(id: $id) {
+                    fieldPatch(input: $input) {
+                        id
+                        entity_type
+                        alias
+                    }
+                }
+            }
+        """
+        self.query(query, {
+            'id': id,
+            'input': {
+                'key': key,
+                'value': value
+            }
+        })
+
+    def update_stix_relation_field(self, id, key, value):
+        self.log('Updating field ' + key + ' of ' + id + '...')
+        query = """
+            mutation StixRelationEdit($id: ID!, $input: EditInput!) {
+                stixRelationEdit(id: $id) {
                     fieldPatch(input: $input) {
                         id
                         entity_type
@@ -428,13 +475,13 @@ class OpenCTI:
         stix_relation_result = None
         if stix_id is not None:
             stix_relation_result = self.get_stix_relation_by_stix_id(stix_id)
-            if stix_relation_result is None:
-                stix_relation_result = self.get_stix_relation(
-                    from_id,
-                    to_id,
-                    type,
-                    first_seen,
-                    last_seen)
+        if stix_relation_result is None:
+            stix_relation_result = self.get_stix_relation(
+                from_id,
+                to_id,
+                type,
+                first_seen,
+                last_seen)
         if stix_relation_result is not None:
             return stix_relation_result
         else:
@@ -859,7 +906,8 @@ class OpenCTI:
         })
         return result['data']['identityAdd']
 
-    def create_identity_if_not_exists(self, type, name, description, id=None, stix_id=None, created=None, modified=None):
+    def create_identity_if_not_exists(self, type, name, description, id=None, stix_id=None, created=None,
+                                      modified=None):
         object_result = self.check_existing_stix_domain_entity(stix_id, name, type)
         if object_result is not None:
             return object_result
@@ -1227,6 +1275,7 @@ class OpenCTI:
                                            resource_level=None,
                                            primary_motivation=None,
                                            secondary_motivation=None,
+                                           id=None,
                                            stix_id=None,
                                            created=None,
                                            modified=None
@@ -2232,13 +2281,6 @@ class OpenCTI:
                                             modified=None):
         object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Attack-Pattern')
         if object_result is not None:
-            self.update_stix_domain_entity_field(object_result['id'], 'name', name)
-            description is not None and self.update_stix_domain_entity_field(object_result['id'], 'description',
-                                                                             description)
-            platform is not None and self.update_stix_domain_entity_field(object_result['id'], 'platform', platform)
-            required_permission is not None and self.update_stix_domain_entity_field(object_result['id'],
-                                                                                     'required_permission',
-                                                                                     required_permission)
             return object_result
         else:
             return self.create_attack_pattern(
@@ -2373,7 +2415,8 @@ class OpenCTI:
         })
         return result['data']['courseOfActionAdd']
 
-    def create_course_of_action_if_not_exists(self, name, description, id=None, stix_id=None, created=None, modified=None):
+    def create_course_of_action_if_not_exists(self, name, description, id=None, stix_id=None, created=None,
+                                              modified=None):
         object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Course-Of-Action')
         if object_result is not None:
             return object_result
@@ -2661,7 +2704,7 @@ class OpenCTI:
         if object_result is not None:
             return object_result
         else:
-            return self.create_report(
+            report = self.create_report(
                 name,
                 description,
                 published,
@@ -2669,6 +2712,270 @@ class OpenCTI:
                 object_status,
                 source_confidence_level,
                 graph_data,
+                id,
+                stix_id,
+                created,
+                modified
+            )
+            self.add_external_reference_if_not_exists(report['id'], external_reference_id)
+            return report
+
+    def get_stix_observable(self, id):
+        self.log('Getting observable ' + id + '...')
+        query = """
+            query StixObservable($id: String!) {
+                stixObservable(id: $id) {
+                    id
+                    stix_id
+                    entity_type
+                    name
+                    observable_value
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                    }
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                        }
+                    }
+                    externalReferences {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id
+                                source_name
+                                description
+                                url
+                                hash
+                                external_id
+                                created
+                                modified
+                            }
+                        }
+                    }
+                    stixRelations {
+                        edges {
+                            node {
+                                id
+                                stix_id
+                                entity_type
+                                relationship_type
+                                description
+                                first_seen
+                                last_seen
+                                role_played
+                                expiration
+                                score
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'id': id})
+        return result['data']['stixObservable']
+
+    def get_stix_observable_by_value(self, observable_value):
+        self.log('Getting observable ' + observable_value + '...')
+        query = """
+            query StixObservables($observableValue: String!) {
+                stixObservables(observableValue: $observableValue) {
+                    edges {
+                        node {
+                           id
+                            stix_id
+                            entity_type
+                            name
+                            observable_value
+                            createdByRef {
+                                node {
+                                    id
+                                    entity_type
+                                    stix_id
+                                    stix_label
+                                    name
+                                    alias
+                                    description
+                                    created
+                                    modified
+                                }
+                            }
+                            markingDefinitions {
+                                edges {
+                                    node {
+                                        id
+                                        entity_type
+                                        stix_id
+                                        definition_type
+                                        definition
+                                        level
+                                        color
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                            stixRelations {
+                                edges {
+                                    node {
+                                        id
+                                        stix_id
+                                        entity_type
+                                        relationship_type
+                                        description
+                                        first_seen
+                                        last_seen
+                                        role_played
+                                        expiration
+                                        score
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'observableValue': observable_value})
+        if len(result['data']['stixObservables']['edges']) > 0:
+            return result['data']['stixObservables']['edges'][0]['node']
+        else:
+            return None
+
+    def get_stix_observables(self, limit=10000):
+        self.log('Getting observables...')
+        query = """
+            query StixObservables($first: Int) {
+                stixObservables(first: $first) {
+                    edges {
+                        node {
+                           id
+                            stix_id
+                            entity_type
+                            name
+                            observable_value
+                            createdByRef {
+                                node {
+                                    id
+                                    entity_type
+                                    stix_id
+                                    stix_label
+                                    name
+                                    alias
+                                    description
+                                    created
+                                    modified
+                                }
+                            }
+                            markingDefinitions {
+                                edges {
+                                    node {
+                                        id
+                                        entity_type
+                                        stix_id
+                                        definition_type
+                                        definition
+                                        level
+                                        color
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                            stixRelations {
+                                edges {
+                                    node {
+                                        id
+                                        stix_id
+                                        entity_type
+                                        relationship_type
+                                        description
+                                        first_seen
+                                        last_seen
+                                        role_played
+                                        expiration
+                                        score
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'first': limit})
+        return self.parse_multiple(result['data']['stixObservables'])
+
+    def create_stix_observable(self,
+                          type,
+                          observable_value,
+                          description,
+                          id=None,
+                          stix_id=None,
+                          created=None,
+                          modified=None
+                          ):
+        self.log('Creating observable ' + observable_value + '...')
+        query = """
+           mutation StixObservableAdd($input: StixObservableAddInput) {
+               stixObservableAdd(input: $input) {
+                   id
+                   entity_type
+                   observable_value
+               }
+           }
+        """
+        result = self.query(query, {
+            'input': {
+                'type': type,
+                'observable_value': observable_value,
+                'description': description,
+                'internal_id': id,
+                'stix_id': stix_id,
+                'created': created,
+                'modified': modified
+            }
+        })
+        return result['data']['stixObservableAdd']
+
+    def create_stix_observable_if_not_exists(self,
+                                        type,
+                                        observable_value,
+                                        description,
+                                        id=None,
+                                        stix_id=None,
+                                        created=None,
+                                        modified=None
+                                        ):
+        object_result = self.get_stix_observable_by_value(observable_value)
+        if object_result is not None:
+            return object_result
+        else:
+            return self.create_stix_observable(
+                type,
+                observable_value,
+                description,
                 id,
                 stix_id,
                 created,
@@ -2717,6 +3024,67 @@ class OpenCTI:
             query = """
                mutation StixDomainEntityEdit($id: ID!, $input: RelationAddInput) {
                    stixDomainEntityEdit(id: $id) {
+                        relationAdd(input: $input) {
+                            node {
+                                id
+                            }
+                        }
+                   }
+               }
+            """
+            variables = {
+                'id': object_id,
+                'input': {
+                    'fromRole': 'so',
+                    'toId': identity_id,
+                    'toRole': 'creator',
+                    'through': 'created_by_ref'
+                }
+            }
+            self.query(query, variables)
+
+    def update_stix_observable_created_by_ref(self, object_id, identity_id):
+        query = """
+            query StixObservable($id: String!) {
+                stixObservable(id: $id) {
+                    id
+                    createdByRef {
+                        node {
+                            id
+                        }
+                        relation {
+                            id
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'id': object_id})
+        current_identity_id = None
+        current_relation_id = None
+        if result['data']['stixObservable']['createdByRef'] is not None:
+            current_identity_id = result['data']['stixObservable']['createdByRef']['node']['id']
+            current_relation_id = result['data']['stixObservable']['createdByRef']['relation']['id']
+
+        if current_identity_id == identity_id:
+            return identity_id
+        else:
+            if current_relation_id is not None:
+                query = """
+                   mutation StixObservableEdit($id: ID!, $relationId: ID!) {
+                       stixObservableEdit(id: $id) {
+                            relationDelete(relationId: $relationId) {
+                                node {
+                                    id
+                                }
+                            }
+                       }
+                   }
+                """
+                self.query(query, {'id': object_id, 'relationId': current_relation_id})
+            query = """
+               mutation StixObservableEdit($id: ID!, $input: RelationAddInput) {
+                   stixObservableEdit(id: $id) {
                         relationAdd(input: $input) {
                             node {
                                 id
@@ -2874,6 +3242,13 @@ class OpenCTI:
                             }
                         }
                     }
+                    observableRefs {
+                        edges {
+                            node {
+                                id
+                            }
+                        }
+                    }
                     relationRefs {
                         edges {
                             node {
@@ -2887,6 +3262,8 @@ class OpenCTI:
         result = self.query(query, {'id': report_id})
         refs_ids = []
         for ref in result['data']['report']['objectRefs']['edges']:
+            refs_ids.append(ref['node']['id'])
+        for ref in result['data']['report']['observableRefs']['edges']:
             refs_ids.append(ref['node']['id'])
         for ref in result['data']['report']['relationRefs']['edges']:
             refs_ids.append(ref['node']['id'])
@@ -2947,6 +3324,14 @@ class OpenCTI:
                 },
                 'tool': {
                     'attack-pattern': {'from_role': 'user', 'to_role': 'usage'}
+                },
+            },
+            'variants-of': {
+                'malware': {
+                    'malware': {'from_role': 'original', 'to_role': 'variation'},
+                },
+                'tool': {
+                    'tool': {'from_role': 'original', 'to_role': 'variation'},
                 },
             },
             'targets': {
@@ -3030,6 +3415,15 @@ class OpenCTI:
                     'country': {'from_role': 'localized', 'to_role': 'location'}
                 }
             },
+            'indicates': {
+                'observable': {
+                    'threat-actor': {'from_role': 'indicator', 'to_role': 'characterize'},
+                    'intrusion-set': {'from_role': 'indicator', 'to_role': 'characterize'},
+                    'campaign': {'from_role': 'indicator', 'to_role': 'characterize'},
+                    'malware': {'from_role': 'indicator', 'to_role': 'characterize'},
+                    'tool': {'from_role': 'indicator', 'to_role': 'characterize'},
+                }
+            }
         }
         if relation_type in mapping and from_type in mapping[relation_type] and to_type in mapping[relation_type][
             from_type]:
@@ -3037,7 +3431,7 @@ class OpenCTI:
         else:
             return None
 
-    def stix2_import_bundle_from_file(self, file_path, types=[]):
+    def stix2_import_bundle_from_file(self, file_path, update=False, types=[]):
         if not os.path.isfile(file_path):
             self.log('The bundle file does not exists')
             return None
@@ -3046,12 +3440,12 @@ class OpenCTI:
             data = json.load(file)
 
         stix2 = Stix2(self)
-        stix2.import_bundle(data, types)
+        stix2.import_bundle(data, update, types)
 
-    def stix2_import_bundle(self, json_data, types=[]):
+    def stix2_import_bundle(self, json_data, update=False, types=[]):
         data = json.loads(json_data)
         stix2 = Stix2(self)
-        stix2.import_bundle(data, types)
+        stix2.import_bundle(data, update, types)
 
     def stix2_export_entity(self, entity_type, entity_id, mode='simple'):
         stix2 = Stix2(self)

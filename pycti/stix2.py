@@ -2,6 +2,9 @@
 
 import time
 import datetime
+import datefinder
+
+datefinder.ValueError = ValueError, OverflowError
 
 
 class Stix2:
@@ -81,7 +84,7 @@ class Stix2:
                     'id': entity_kill_chain_phase['stix_id'],
                     'kill_chain_name': entity_kill_chain_phase['kill_chain_name'],
                     'phase_name': entity_kill_chain_phase['phase_name'],
-                    'x_opencti_id':  entity_kill_chain_phase['id'],
+                    'x_opencti_id': entity_kill_chain_phase['id'],
                     'x_opencti_phase_order': entity_kill_chain_phase['phase_order'],
                     'x_opencti_created': entity_kill_chain_phase['created'],
                     'x_opencti_modified': entity_kill_chain_phase['modified'],
@@ -243,7 +246,9 @@ class Stix2:
 
         return result
 
-    def import_object(self, stix_object):
+    def import_object(self, stix_object, update=False):
+        # Reports
+        reports = {}
         # Created By Ref
         created_by_ref_id = None
         if 'created_by_ref' in stix_object:
@@ -293,6 +298,42 @@ class Stix2:
                     )['id']
                 self.mapping_cache[url] = {'id': external_reference_id}
                 external_references_ids.append(external_reference_id)
+
+                if stix_object['type'] in ['threat-actor', 'intrusion-set', 'campaign', 'incident', 'malware']:
+                    # Add a corresponding report
+                    # Extract date
+                    if 'description' in external_reference:
+                        matches = list(datefinder.find_dates(external_reference['description']))
+                    else:
+                        matches = list(datefinder.find_dates(source_name))
+                    if len(matches) > 0:
+                        published = list(matches)[0].strftime('%Y-%m-%dT%H:%M:%SZ')
+                    else:
+                        published = datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
+
+                    title = source_name
+                    if 'external_id' in external_reference:
+                        title = title + ' (' + external_reference['external_id'] + ')'
+                    report_id = self.opencti.create_report_if_not_exists_from_external_reference(
+                        external_reference_id,
+                        title,
+                        external_reference['description'] if 'description' in external_reference else None,
+                        published,
+                        'external'
+                    )['id']
+
+                    # Add marking
+                    if 'marking_tlpwhite' in self.mapping_cache:
+                        object_marking_ref_result = self.mapping_cache['marking_tlpwhite']
+                    else:
+                        object_marking_ref_result = self.opencti.get_marking_definition_by_definition('TLP', 'TLP:WHITE')
+                    if object_marking_ref_result is not None:
+                        self.mapping_cache['marking_tlpwhite'] = {'id': object_marking_ref_result['id']}
+                        self.opencti.add_marking_definition_if_not_exists(report_id, object_marking_ref_result['id'])
+                    # Add external reference to report
+                    self.opencti.add_external_reference_if_not_exists(report_id, external_reference_id)
+                    reports[external_reference_id] = report_id
+
         # Kill Chain Phases
         kill_chain_phases_ids = []
         if 'kill_chain_phases' in stix_object:
@@ -342,7 +383,7 @@ class Stix2:
             'report': self.create_report,
         }
         do_import = importer.get(stix_object['type'], lambda stix_object: self.unknown_type(stix_object))
-        stix_object_result = do_import(stix_object)
+        stix_object_result = do_import(stix_object, update)
 
         # Add embedded relationships
         if stix_object_result is not None:
@@ -370,6 +411,9 @@ class Stix2:
             # Add external references
             for external_reference_id in external_references_ids:
                 self.opencti.add_external_reference_if_not_exists(stix_object_result['id'], external_reference_id)
+                if external_reference_id in reports:
+                    self.opencti.add_object_ref_to_report_if_not_exists(reports[external_reference_id], stix_object_result['id'])
+
             # Add kill chain phases
             for kill_chain_phase_id in kill_chain_phases_ids:
                 self.opencti.add_kill_chain_phase_if_not_exists(stix_object_result['id'], kill_chain_phase_id)
@@ -379,7 +423,7 @@ class Stix2:
 
         return stix_object_result
 
-    def create_marking_definition(self, stix_object):
+    def create_marking_definition(self, stix_object, update=False):
         return self.opencti.create_marking_definition_if_not_exists(
             stix_object['definition_type'],
             stix_object['definition'][stix_object['definition_type']],
@@ -413,7 +457,7 @@ class Stix2:
         }
         return self.prepare_export(entity, identity)
 
-    def create_identity(self, stix_object):
+    def create_identity(self, stix_object, update=False):
         if stix_object['identity_class'] == 'individual':
             type = 'User'
         elif stix_object['identity_class'] == 'organization':
@@ -460,7 +504,7 @@ class Stix2:
         }
         return self.prepare_export(entity, threat_actor)
 
-    def create_threat_actor(self, stix_object):
+    def create_threat_actor(self, stix_object, update=False):
         return self.opencti.create_threat_actor_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
@@ -497,7 +541,7 @@ class Stix2:
         }
         return self.prepare_export(entity, intrusion_set)
 
-    def create_intrusion_set(self, stix_object):
+    def create_intrusion_set(self, stix_object, update=False):
         return self.opencti.create_intrusion_set_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
@@ -531,7 +575,7 @@ class Stix2:
         }
         return self.prepare_export(entity, campaign)
 
-    def create_campaign(self, stix_object):
+    def create_campaign(self, stix_object, update=False):
         return self.opencti.create_campaign_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
@@ -561,7 +605,7 @@ class Stix2:
         }
         return self.prepare_export(entity, incident)
 
-    def create_incident(self, stix_object):
+    def create_incident(self, stix_object, update=False):
         return self.opencti.create_incident_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
@@ -588,7 +632,7 @@ class Stix2:
         }
         return self.prepare_export(entity, malware)
 
-    def create_malware(self, stix_object):
+    def create_malware(self, stix_object, update=False):
         return self.opencti.create_malware_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
@@ -637,7 +681,7 @@ class Stix2:
         }
         return self.prepare_export(entity, vulnerability)
 
-    def create_vulnerability(self, stix_object):
+    def create_vulnerability(self, stix_object, update=False):
         return self.opencti.create_vulnerability_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
@@ -663,8 +707,8 @@ class Stix2:
         }
         return self.prepare_export(entity, attack_pattern)
 
-    def create_attack_pattern(self, stix_object):
-        return self.opencti.create_attack_pattern_if_not_exists(
+    def create_attack_pattern(self, stix_object, update=False):
+        attack_pattern = self.opencti.create_attack_pattern_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['x_mitre_platforms'] if 'x_mitre_platforms' in stix_object else None,
@@ -674,6 +718,15 @@ class Stix2:
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
         )
+        if update:
+            self.opencti.update_stix_domain_entity_field(attack_pattern['id'], 'name', stix_object['name'])
+            if 'description' in stix_object:
+                self.opencti.update_stix_domain_entity_field(attack_pattern['id'], 'description', stix_object['description'])
+            if 'x_mitre_platforms' in stix_object:
+                self.opencti.update_stix_domain_entity_field(attack_pattern['id'], 'platform', stix_object['x_mitre_platforms'])
+            if 'x_mitre_permissions_required' in stix_object:
+                self.opencti.update_stix_domain_entity_field(attack_pattern['id'], 'required_permission',  stix_object['x_mitre_permissions_required'])
+        return attack_pattern
 
     def export_course_of_action(self, entity):
         course_of_action = {
@@ -689,7 +742,7 @@ class Stix2:
         }
         return self.prepare_export(entity, course_of_action)
 
-    def create_course_of_action(self, stix_object):
+    def create_course_of_action(self, stix_object, update=False):
         return self.opencti.create_course_of_action_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
@@ -718,7 +771,7 @@ class Stix2:
         }
         return self.prepare_export(entity, report, mode)
 
-    def create_report(self, stix_object):
+    def create_report(self, stix_object, update=False):
         return self.opencti.create_report_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
@@ -791,7 +844,7 @@ class Stix2:
                 self.opencti.log('Target ref of the relationship not found, doing nothing...')
                 return None
 
-        self.opencti.create_relation_if_not_exists(
+        stix_relation_id = self.opencti.create_relation_if_not_exists(
             source_id,
             source_type,
             target_id,
@@ -810,9 +863,74 @@ class Stix2:
             stix_relation['id'] if 'id' in stix_relation else None,
             stix_relation['created'] if 'created' in stix_relation else None,
             stix_relation['modified'] if 'modified' in stix_relation else None,
-        )
+        )['id']
 
-    def import_bundle(self, stix_bundle, types=[]):
+        # External References
+        external_references_ids = []
+        if 'external_references' in stix_relation:
+            for external_reference in stix_relation['external_references']:
+                if 'url' in external_reference and 'source_name' in external_reference:
+                    url = external_reference['url']
+                    source_name = external_reference['source_name']
+                else:
+                    continue
+                if url in self.mapping_cache:
+                    external_reference_id = self.mapping_cache[url]['id']
+                else:
+                    external_reference_id = self.opencti.create_external_reference_if_not_exists(
+                        source_name,
+                        url,
+                        external_reference['external_id'] if 'external_id' in external_reference else None,
+                        external_reference['description'] if 'description' in external_reference else None,
+                        external_reference['id'] if 'id' in external_reference else None,
+                        external_reference['x_opencti_id'] if 'x_opencti_id' in external_reference else None,
+                        external_reference['x_opencti_created'] if 'x_opencti_created' in external_reference else None,
+                        external_reference[
+                            'x_opencti_modified'] if 'x_opencti_modified' in external_reference else None,
+                    )['id']
+                self.mapping_cache[url] = {'id': external_reference_id}
+                external_references_ids.append(external_reference_id)
+
+                # Add a corresponding report
+                # Extract date
+                if 'description' in external_reference:
+                    matches = list(datefinder.find_dates(external_reference['description']))
+                else:
+                    matches = list(datefinder.find_dates(source_name))
+                if len(matches) > 0:
+                    published = matches[0].strftime('%Y-%m-%dT%H:%M:%SZ')
+                else:
+                    published = datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
+
+                title = source_name
+                if 'external_id' in external_reference:
+                    title = title + ' (' + external_reference['external_id'] + ')'
+                report_id = self.opencti.create_report_if_not_exists_from_external_reference(
+                    external_reference_id,
+                    title,
+                    external_reference['description'] if 'description' in external_reference else None,
+                    published,
+                    'external'
+                )['id']
+
+                # Add marking
+                if 'marking_tlpwhite' in self.mapping_cache:
+                    object_marking_ref_result = self.mapping_cache['marking_tlpwhite']
+                else:
+                    object_marking_ref_result = self.opencti.get_marking_definition_by_definition('TLP', 'TLP:WHITE')
+                if object_marking_ref_result is not None:
+                    self.mapping_cache['marking_tlpwhite'] = {'id': object_marking_ref_result['id']}
+                    self.opencti.add_marking_definition_if_not_exists(report_id, object_marking_ref_result['id'])
+
+                # Add external reference to report
+                self.opencti.add_external_reference_if_not_exists(report_id, external_reference_id)
+
+                # Add refs to report
+                self.opencti.add_object_ref_to_report_if_not_exists(report_id, source_id)
+                self.opencti.add_object_ref_to_report_if_not_exists(report_id, target_id)
+                self.opencti.add_object_ref_to_report_if_not_exists(report_id, stix_relation_id)
+
+    def import_bundle(self, stix_bundle, update=False, types=[]):
         # Check if the bundle is correctly formated
         if 'type' not in stix_bundle or stix_bundle['type'] != 'bundle':
             self.opencti.log('JSON data type is not a STIX2 bundle')
@@ -824,14 +942,14 @@ class Stix2:
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'marking-definition':
-                self.import_object(item)
+                self.import_object(item, update)
         end_time = time.time()
         self.opencti.log("Marking definitions imported in: %ssecs" % round(end_time - start_time))
 
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'identity' and (len(types) == 0 or 'identity' in types):
-                self.import_object(item)
+                self.import_object(item, update)
         end_time = time.time()
         self.opencti.log("Identities imported in: %ssecs" % round(end_time - start_time))
 
@@ -839,20 +957,20 @@ class Stix2:
         for item in stix_bundle['objects']:
             if item['type'] != 'relationship' and item['type'] != 'report' and (
                     len(types) == 0 or item['type'] in types):
-                self.import_object(item)
+                self.import_object(item, update)
         end_time = time.time()
         self.opencti.log("Objects imported in: %ssecs" % round(end_time - start_time))
 
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'relationship':
-                self.import_relationship(item)
+                self.import_relationship(item, update)
         end_time = time.time()
         self.opencti.log("Relationships imported in: %ssecs" % round(end_time - start_time))
 
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'report' and (len(types) == 0 or 'report' in types):
-                self.import_object(item)
+                self.import_object(item, update)
         end_time = time.time()
         self.opencti.log("Reports imported in: %ssecs" % round(end_time - start_time))
