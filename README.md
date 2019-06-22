@@ -21,7 +21,7 @@ To learn about how to use the OpenCTI Python client and read some examples and c
 
 ### API reference
 
-To learn about the methods available for executing queries and retrieving their answers using the OpenCTI Python client, refer to [the client API Reference](http://xxxxx).
+To learn about the methods available for executing queries and retrieving their answers, refer to [the client API Reference](http://xxxxx).
 
 ## About
 
