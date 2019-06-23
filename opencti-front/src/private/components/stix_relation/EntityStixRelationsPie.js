@@ -24,6 +24,12 @@ const styles = () => ({
     padding: 0,
     borderRadius: 6,
   },
+  paperExplore: {
+    height: '100%',
+    margin: 0,
+    padding: 0,
+    borderRadius: 6,
+  },
 });
 const RADIAN = Math.PI / 180;
 const renderCustomizedLabel = ({
@@ -86,25 +92,20 @@ const entityStixRelationsPieStixRelationDistributionQuery = graphql`
 `;
 
 class EntityStixRelationsPie extends Component {
-  render() {
+  renderContent() {
     const {
       t,
-      classes,
-      variant,
-      title,
       entityId,
       entityType,
       relationType,
       field,
+      variant,
       entityTypes,
       resolveInferences,
       resolveRelationType,
       resolveRelationRole,
       resolveRelationToTypes,
       resolveViaTypes,
-      configuration,
-      onUpdate,
-      onDelete,
     } = this.props;
     const stixRelationsDistributionVariables = {
       fromId: entityId,
@@ -120,97 +121,122 @@ class EntityStixRelationsPie extends Component {
       operation: 'count',
     };
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
-        </Typography>
-        {variant === 'explore' ? (
+      <QueryRenderer
+        query={entityStixRelationsPieStixRelationDistributionQuery}
+        variables={stixRelationsDistributionVariables}
+        render={({ props }) => {
+          if (
+            props
+            && props.stixRelationsDistribution
+            && props.stixRelationsDistribution.length > 0
+          ) {
+            return (
+              <ResponsiveContainer
+                height={variant === 'explore' ? '90%' : 300}
+                width="100%"
+              >
+                <PieChart
+                  margin={{
+                    top: 50,
+                    right: 12,
+                    bottom: 25,
+                    left: 0,
+                  }}
+                >
+                  <Pie
+                    data={props.stixRelationsDistribution}
+                    dataKey="value"
+                    nameKey="label"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    fill="#82ca9d"
+                    label={renderCustomizedLabel}
+                    labelLine={false}
+                  >
+                    {props.stixRelationsDistribution.map((entry, index) => (
+                      <Cell key={index} fill={itemColor(entry.label)} />
+                    ))}
+                  </Pie>
+                  <Legend
+                    verticalAlign="bottom"
+                    wrapperStyle={{ paddingTop: 20 }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            );
+          }
+          if (props) {
+            return (
+              <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                <span
+                  style={{
+                    display: 'table-cell',
+                    verticalAlign: 'middle',
+                    textAlign: 'center',
+                  }}
+                >
+                  {t('No entities of this type has been found.')}
+                </span>
+              </div>
+            );
+          }
+          return (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                <CircularProgress size={40} thickness={2} />
+              </span>
+            </div>
+          );
+        }}
+      />
+    );
+  }
+
+  render() {
+    const {
+      t,
+      classes,
+      variant,
+      title,
+      entityType,
+      configuration,
+      onUpdate,
+      onDelete,
+    } = this.props;
+    if (variant === 'explore') {
+      return (
+        <Paper classes={{ root: classes.paperExplore }} elevation={2}>
+          <Typography
+            variant="h4"
+            gutterBottom={true}
+            style={{ float: 'left', padding: '10px 0 0 10px' }}
+          >
+            {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
+          </Typography>
           <ExploreUpdateWidget
             configuration={configuration}
             onUpdate={onUpdate.bind(this)}
             onDelete={onDelete.bind(this)}
           />
-        ) : (
-          ''
-        )}
-        <div className='clearfix'/>
+          <div className="clearfix" />
+          {this.renderContent()}
+        </Paper>
+      );
+    }
+    return (
+      <div style={{ height: '100%' }}>
+        <Typography variant="h4" gutterBottom={true}>
+          {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
+        </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <QueryRenderer
-            query={entityStixRelationsPieStixRelationDistributionQuery}
-            variables={stixRelationsDistributionVariables}
-            render={({ props }) => {
-              if (
-                props
-                && props.stixRelationsDistribution
-                && props.stixRelationsDistribution.length > 0
-              ) {
-                return (
-                  <ResponsiveContainer height={300} width="100%">
-                    <PieChart
-                      margin={{
-                        top: 50,
-                        right: 12,
-                        bottom: 25,
-                        left: 0,
-                      }}
-                    >
-                      <Pie
-                        data={props.stixRelationsDistribution}
-                        dataKey="value"
-                        nameKey="label"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        fill="#82ca9d"
-                        label={renderCustomizedLabel}
-                        labelLine={false}
-                      >
-                        {props.stixRelationsDistribution.map((entry, index) => (
-                          <Cell key={index} fill={itemColor(entry.label)} />
-                        ))}
-                      </Pie>
-                      <Legend
-                        verticalAlign="bottom"
-                        wrapperStyle={{ paddingTop: 20 }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                );
-              }
-              if (props) {
-                return (
-                  <div
-                    style={{ display: 'table', height: '100%', width: '100%' }}
-                  >
-                    <span
-                      style={{
-                        display: 'table-cell',
-                        verticalAlign: 'middle',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {t('No entities of this type has been found.')}
-                    </span>
-                  </div>
-                );
-              }
-              return (
-                <div
-                  style={{ display: 'table', height: '100%', width: '100%' }}
-                >
-                  <span
-                    style={{
-                      display: 'table-cell',
-                      verticalAlign: 'middle',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <CircularProgress size={40} thickness={2} />
-                  </span>
-                </div>
-              );
-            }}
-          />
+          {this.renderContent()}
         </Paper>
       </div>
     );

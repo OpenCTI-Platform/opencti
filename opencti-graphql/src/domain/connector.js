@@ -8,12 +8,10 @@ import {
   takeWriteTx,
   updateAttribute
 } from '../database/grakn';
-import { logger, DEV_MODE } from '../config/conf';
+import conf, { logger } from '../config/conf';
 
 export const getConnectors = async () => {
-  const path = DEV_MODE
-    ? '../opencti-integration/connectors'
-    : '../integration/connectors';
+  const path = conf.get('app:connectors');
   const isDirectory = source => lstatSync(source).isDirectory();
   const getDirectories = source =>
     readdirSync(source)

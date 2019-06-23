@@ -33,7 +33,7 @@ const styles = theme => ({
   },
   updateButton: {
     float: 'right',
-    margin: '-5px 0 0 10px',
+    margin: '7px 10px 0 0',
   },
   buttons: {
     marginTop: 20,
@@ -64,7 +64,6 @@ const styles = theme => ({
 const widgetValidation = t => Yup.object().shape({
   title: Yup.string().required(t('This field is required')),
   entity: Yup.string().required(t('This field is required')),
-  size: Yup.number(),
 });
 
 class ExploreUpdateWidget extends Component {
@@ -215,21 +214,6 @@ class ExploreUpdateWidget extends Component {
                       options={this.state.entities}
                       onInputChange={this.searchEntities.bind(this)}
                     />
-                    <Field
-                      name="size"
-                      component={Select}
-                      label={t('Size')}
-                      fullWidth={true}
-                      inputProps={{
-                        name: 'size',
-                        id: 'size',
-                      }}
-                      containerstyle={{ marginTop: 20, width: '100%' }}
-                    >
-                      <MenuItem value="3">1/4</MenuItem>
-                      <MenuItem value="4">1/3</MenuItem>
-                      <MenuItem value="6">1/2</MenuItem>
-                    </Field>
                     {victimology ? (
                       <Field
                         name="entity_type"
@@ -291,13 +275,6 @@ class ExploreUpdateWidget extends Component {
                     ) : (
                       ''
                     )}
-                    <Field
-                      name="order"
-                      component={TextField}
-                      label={t('Order')}
-                      fullWidth={true}
-                      style={{ marginTop: 20 }}
-                    />
                     <div className={classes.buttons}>
                       <Button
                         variant="contained"

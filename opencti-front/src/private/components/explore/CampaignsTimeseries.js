@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import EntityCampaignsChart from '../campaign/EntityCampaignsChart';
 
@@ -18,7 +17,6 @@ class CampaignsTimeseries extends Component {
     switch (configuration.graph_type) {
       case 'chart':
         return (
-          <Grid item={true} xs={Number(propOr(4, 'size', configuration))} style={{ marginBottom: 30 }}>
             <EntityCampaignsChart
               variant="explore"
               configuration={configuration}
@@ -27,11 +25,9 @@ class CampaignsTimeseries extends Component {
               title={propOr('Widget', 'title', configuration)}
               entityId={pathOr(null, ['entity', 'id'], configuration)}
             />
-          </Grid>
         );
       default:
         return (
-          <Grid item={true} xs={Number(propOr(4, 'size', configuration))} style={{ marginBottom: 30 }}>
             <EntityCampaignsChart
               variant="explore"
               configuration={configuration}
@@ -40,7 +36,6 @@ class CampaignsTimeseries extends Component {
               title={propOr('Widget', 'title', configuration)}
               entityId={pathOr(null, ['entity', 'id'], configuration)}
             />
-          </Grid>
         );
     }
   }

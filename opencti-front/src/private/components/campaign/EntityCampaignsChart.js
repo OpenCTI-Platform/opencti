@@ -27,6 +27,12 @@ const styles = () => ({
     padding: 0,
     borderRadius: 6,
   },
+  paperExplore: {
+    height: '100%',
+    margin: 0,
+    padding: 0,
+    borderRadius: 6,
+  },
   chip: {
     fontSize: 10,
     height: 20,
@@ -81,18 +87,8 @@ class EntityCampaignsChart extends Component {
     this.setState({ period, interval });
   }
 
-  render() {
-    const {
-      t,
-      md,
-      classes,
-      variant,
-      title,
-      entityId,
-      configuration,
-      onUpdate,
-      onDelete,
-    } = this.props;
+  renderContent() {
+    const { t, md, entityId, variant } = this.props;
     const campaignsTimeSeriesVariables = {
       objectId: entityId,
       field: 'first_seen',
@@ -102,19 +98,109 @@ class EntityCampaignsChart extends Component {
       interval: 'month',
     };
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {title || t('Campaigns')}
-        </Typography>
-        {variant === 'explore' ? (
+      <QueryRenderer
+        query={entityCampaignsChartCampaignsTimeSeriesQuery}
+        variables={campaignsTimeSeriesVariables}
+        render={({ props }) => {
+          if (props && props.campaignsTimeSeries) {
+            return (
+              <ResponsiveContainer height={variant === 'explore' ? '90%' : 330} width="100%">
+                <LineChart
+                  data={props.campaignsTimeSeries}
+                  margin={{
+                    top: 20,
+                    right: 50,
+                    bottom: 20,
+                    left: -10,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
+                  <XAxis
+                    dataKey="date"
+                    stroke="#ffffff"
+                    interval={this.state.interval}
+                    angle={-45}
+                    textAnchor="end"
+                    tickFormatter={md}
+                  />
+                  <YAxis stroke="#ffffff" />
+                  <Line
+                    type="monotone"
+                    stroke={Theme.palette.primary.main}
+                    dataKey="value"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            );
+          }
+          if (props) {
+            return (
+              <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                <span
+                  style={{
+                    display: 'table-cell',
+                    verticalAlign: 'middle',
+                    textAlign: 'center',
+                  }}
+                >
+                  {t('No entities of this type has been found.')}
+                </span>
+              </div>
+            );
+          }
+          return (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                <CircularProgress size={40} thickness={2} />
+              </span>
+            </div>
+          );
+        }}
+      />
+    );
+  }
+
+  render() {
+    const {
+      t,
+      classes,
+      variant,
+      title,
+      configuration,
+      onUpdate,
+      onDelete,
+    } = this.props;
+    if (variant === 'explore') {
+      return (
+        <Paper classes={{ root: classes.paperExplore }} elevation={2}>
+          <Typography
+            variant="h4"
+            gutterBottom={true}
+            style={{ float: 'left', padding: '10px 0 0 10px' }}
+          >
+            {title || t('Campaigns')}
+          </Typography>
           <ExploreUpdateWidget
             configuration={configuration}
             onUpdate={onUpdate.bind(this)}
             onDelete={onDelete.bind(this)}
           />
-        ) : (
-          ''
-        )}
+          <div className="clearfix" />
+          {this.renderContent()}
+        </Paper>
+      );
+    }
+    return (
+      <div style={{ height: '100%' }}>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+          {title || t('Campaigns')}
+        </Typography>
         <div style={{ float: 'right', marginTop: -5 }}>
           <Chip
             classes={{ root: classes.chip }}
@@ -146,75 +232,7 @@ class EntityCampaignsChart extends Component {
         </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <QueryRenderer
-            query={entityCampaignsChartCampaignsTimeSeriesQuery}
-            variables={campaignsTimeSeriesVariables}
-            render={({ props }) => {
-              if (props && props.campaignsTimeSeries) {
-                return (
-                  <ResponsiveContainer height={330} width="100%">
-                    <LineChart
-                      data={props.campaignsTimeSeries}
-                      margin={{
-                        top: 20,
-                        right: 50,
-                        bottom: 20,
-                        left: -10,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
-                      <XAxis
-                        dataKey="date"
-                        stroke="#ffffff"
-                        interval={this.state.interval}
-                        angle={-45}
-                        textAnchor="end"
-                        tickFormatter={md}
-                      />
-                      <YAxis stroke="#ffffff" />
-                      <Line
-                        type="monotone"
-                        stroke={Theme.palette.primary.main}
-                        dataKey="value"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                );
-              }
-              if (props) {
-                return (
-                  <div
-                    style={{ display: 'table', height: '100%', width: '100%' }}
-                  >
-                    <span
-                      style={{
-                        display: 'table-cell',
-                        verticalAlign: 'middle',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {t('No entities of this type has been found.')}
-                    </span>
-                  </div>
-                );
-              }
-              return (
-                <div
-                  style={{ display: 'table', height: '100%', width: '100%' }}
-                >
-                  <span
-                    style={{
-                      display: 'table-cell',
-                      verticalAlign: 'middle',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <CircularProgress size={40} thickness={2} />
-                  </span>
-                </div>
-              );
-            }}
-          />
+          {this.renderContent()}
         </Paper>
       </div>
     );
