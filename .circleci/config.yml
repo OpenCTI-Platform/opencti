@@ -7,6 +7,11 @@ jobs:
       - image: circleci/node:11-stretch
     steps:
       - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule init
+            git submodule update --remote
       - run: 
           working_directory: ~/opencti/opencti-front
           command: yarn install
@@ -66,6 +71,7 @@ jobs:
       - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push opencti master
       - run: mkdir release
       - run: cp -a opencti-graphql release/opencti
+      - run: cp -a opencti-integration release/opencti/integration
       - run: cp -a opencti-worker release/opencti/worker
       - run: 
           working_directory: ~/opencti/release

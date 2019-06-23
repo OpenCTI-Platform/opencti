@@ -10,7 +10,7 @@ import { ConnectedDocumentTitle } from '../components/AppDocumentTitle';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
-import StixDomainEntities from './components/StixDomainEntities';
+import Search from './components/Search';
 import Workspaces from './components/Workspaces';
 import StixObservables from './components/StixObservables';
 import RootStixObservable from './components/stix_observable/Root';
@@ -44,6 +44,7 @@ import Cities from './components/Cities';
 import Organizations from './components/Organizations';
 import RootOrganization from './components/organization/Root';
 import Persons from './components/Persons';
+import Connectors from './components/Connectors';
 import Settings from './components/Settings';
 import Users from './components/Users';
 import Groups from './components/Groups';
@@ -118,7 +119,7 @@ class Root extends Component {
                           exact
                           path="/dashboard/search/:keyword"
                           render={routeProps => (
-                            <StixDomainEntities {...routeProps} me={props.me} />
+                            <Search {...routeProps} me={props.me} />
                           )}
                         />
                         <BoundaryRoute
@@ -359,6 +360,13 @@ class Root extends Component {
                           path="/dashboard/investigate/:workspaceId"
                           render={routeProps => (
                             <RootWorkspace {...routeProps} workspaceType="investigate" />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/connectors"
+                          render={routeProps => (
+                            <Connectors {...routeProps} type="importer" />
                           )}
                         />
                         <BoundaryRoute

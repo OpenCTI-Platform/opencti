@@ -1,6 +1,6 @@
 requests
 PyYAML
-grakn-client==1.5.3
+grakn-client
 elasticsearch
 pika
 python-dateutil

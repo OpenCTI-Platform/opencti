@@ -22,7 +22,7 @@ $ sudo apt-get update && sudo apt-get install yarn
 *Download the application files*:
 ```bash
 $ mkdir /path/to/your/app && cd /path/to/your/app
-$ git clone https://github.com/Luatix/opencti.git
+$ git clone --recursive https://github.com/Luatix/opencti.git
 $ cd opencti
 ```
 

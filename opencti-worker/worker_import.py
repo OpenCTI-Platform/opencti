@@ -5,9 +5,9 @@ import yaml
 import pika
 import json
 import base64
-
-from pycti import OpenCTI
+import time
 from logger import Logger
+from pycti import OpenCTI
 
 
 class WorkerImport:
@@ -55,5 +55,10 @@ class WorkerImport:
 
 
 if __name__ == '__main__':
-    worker_import = WorkerImport()
-    worker_import.consume()
+    while True:
+        try:
+            worker_import = WorkerImport()
+            worker_import.consume()
+        except Exception as e:
+            print(e)
+            time.sleep(5)

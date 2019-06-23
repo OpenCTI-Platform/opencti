@@ -1,0 +1,4 @@
+requests
+pycti
+schedule
+python-dateutil

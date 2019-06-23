@@ -63,7 +63,6 @@ const relationsTypesMapping = {
   user_organization: ['gathering'],
   user_country: ['localization'],
   user_city: ['localization'],
-  'attack-pattern_attack-pattern': ['comes-after'],
 };
 
 export const resolveRelationsTypes = (fromType, toType) => (relationsTypesMapping[`${fromType}_${toType}`]

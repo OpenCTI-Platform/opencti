@@ -58,7 +58,7 @@ const styles = theme => ({
   },
 });
 
-class StixDomainEntitiesContainer extends Component {
+class StixObservablesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedPanels: {} };
@@ -85,22 +85,19 @@ class StixDomainEntitiesContainer extends Component {
 
   render() {
     const { t, classes, data } = this.props;
-    const stixDomainEntitiesNodes = map(
-      n => n.node,
-      data.stixDomainEntities.edges,
-    );
-    const byType = groupBy(stixDomainEntity => stixDomainEntity.entity_type);
-    const stixDomainEntities = byType(stixDomainEntitiesNodes);
-    const stixDomainEntitiesTypes = keys(stixDomainEntities);
+    const stixObservablesNodes = map(n => n.node, data.stixObservables.edges);
+    const byType = groupBy(stixObservable => stixObservable.entity_type);
+    const stixObservables = byType(stixObservablesNodes);
+    const stixObservablesTypes = keys(stixObservables);
     return (
       <div className={classes.container}>
-        {stixDomainEntitiesTypes.map(type => (
+        {stixObservablesTypes.map(type => (
           <ExpansionPanel
             key={type}
             expanded={this.isExpanded(
               type,
-              stixDomainEntities[type].length,
-              stixDomainEntitiesTypes.length,
+              stixObservables[type].length,
+              stixObservablesTypes.length,
             )}
             onChange={this.handleChangePanel.bind(this, type)}
             classes={{ root: classes.expansionPanel }}
@@ -110,63 +107,39 @@ class StixDomainEntitiesContainer extends Component {
               className={classes.summary}
             >
               <Typography className={classes.heading}>
-                {t(`entity_${type}`)}
+                {t(`observable_${type}`)}
               </Typography>
               <Typography classes={{ root: classes.secondaryHeading }}>
-                {stixDomainEntities[type].length} {stixDomainEntities[type].length < 2 ? t('entity') : t('entities')}
+                {stixObservables[type].length} {t('observable(s)')}
               </Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails
               classes={{ root: classes.expansionPanelContent }}
             >
               <List classes={{ root: classes.list }}>
-                {stixDomainEntities[type].map((stixDomainEntity) => {
-                  const link = resolveLink(stixDomainEntity.entity_type);
-                  if (link) {
-                    return (
-                      <ListItem
-                        key={stixDomainEntity.id}
-                        classes={{ root: classes.menuItem }}
-                        divider={true}
-                        button={true}
-                        component={Link}
-                        to={`${link}/${stixDomainEntity.id}`}
-                      >
-                        <ListItemIcon classes={{ root: classes.itemIcon }}>
-                          <ItemIcon type={type} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={stixDomainEntity.name}
-                          secondary={truncate(
-                            stixDomainEntity.description,
-                            200,
-                          )}
-                        />
-                      </ListItem>
-                    );
-                  }
-                  return (
-                    <ListItem
-                      key={stixDomainEntity.id}
-                      classes={{ root: classes.menuItem }}
-                      divider={true}
-                      button={false}
-                    >
-                      <ListItemIcon classes={{ root: classes.itemIcon }}>
-                        <ItemIcon type={type} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={stixDomainEntity.name}
-                        secondary={truncate(stixDomainEntity.description, 200)}
-                      />
-                    </ListItem>
-                  );
-                })}
+                {stixObservables[type].map(stixObservable => (
+                  <ListItem
+                    key={stixObservable.id}
+                    classes={{ root: classes.menuItem }}
+                    divider={true}
+                    button={true}
+                    component={Link}
+                    to={`/dashboard/observables/all/${stixObservable.id}`}
+                  >
+                    <ListItemIcon classes={{ root: classes.itemIcon }}>
+                      <ItemIcon type={type} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={stixObservable.observable_value}
+                      secondary={truncate(stixObservable.description, 200)}
+                    />
+                  </ListItem>
+                ))}
               </List>
             </ExpansionPanelDetails>
           </ExpansionPanel>
         ))}
-        {stixDomainEntitiesTypes.length === 0 ? (
+        {stixObservablesTypes.length === 0 ? (
           <div className={classes.noResult}>
             {t('No entity was found for this search.')}
           </div>
@@ -178,7 +151,7 @@ class StixDomainEntitiesContainer extends Component {
   }
 }
 
-StixDomainEntitiesContainer.propTypes = {
+StixObservablesContainer.propTypes = {
   reportId: PropTypes.string,
   reportObjectRefs: PropTypes.array,
   data: PropTypes.object,
@@ -188,15 +161,15 @@ StixDomainEntitiesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const stixDomainEntitiesLinesQuery = graphql`
-  query StixDomainEntitiesLinesQuery(
+export const stixObservablesSearchLinesQuery = graphql`
+  query StixObservablesSearchLinesQuery(
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: StixDomainEntitiesOrdering
+    $orderBy: StixObservablesOrdering
     $orderMode: OrderingMode
   ) {
-    ...StixDomainEntitiesLines_data
+    ...StixObservablesSearchLines_data
       @arguments(
         search: $search
         count: $count
@@ -207,45 +180,30 @@ export const stixDomainEntitiesLinesQuery = graphql`
   }
 `;
 
-export const stixDomainEntitiesLinesSearchQuery = graphql`
-  query StixDomainEntitiesLinesSearchQuery($search: String) {
-    stixDomainEntities(search: $search) {
-      edges {
-        node {
-          id
-          name
-        }
-      }
-    }
-  }
-`;
-
-
-const StixDomainEntitiesLines = createPaginationContainer(
-  StixDomainEntitiesContainer,
+const StixObservablesSearchLines = createPaginationContainer(
+  StixObservablesContainer,
   {
     data: graphql`
-      fragment StixDomainEntitiesLines_data on Query
+      fragment StixObservablesSearchLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixDomainEntitiesOrdering", defaultValue: "name" }
+          orderBy: { type: "StixObservablesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
-        stixDomainEntities(
+        stixObservables(
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_stixDomainEntities") {
+        ) @connection(key: "Pagination_stixObservables") {
           edges {
             node {
               id
               entity_type
-              name
-              description
+              observable_value
             }
           }
         }
@@ -255,7 +213,7 @@ const StixDomainEntitiesLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixDomainEntities;
+      return props.data && props.data.stixObservables;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -271,11 +229,11 @@ const StixDomainEntitiesLines = createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: stixDomainEntitiesLinesQuery,
+    query: stixObservablesSearchLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixDomainEntitiesLines);
+)(StixObservablesSearchLines);
