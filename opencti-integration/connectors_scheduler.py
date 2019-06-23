@@ -57,7 +57,7 @@ class ConnectorsScheduler:
 
     def run_connector(self, identifier):
         try:
-            if 'enable' in self.connectors[identifier]['config'] and self.connectors[identifier]['config']['enable'] is True:
+            if 'active' in self.connectors[identifier]['config'][identifier] and self.connectors[identifier]['config'][identifier]['active'] is True:
                 self.logger.log('Running ' + identifier)
                 self.connectors[identifier]['instance'].run()
         except Exception as e:
