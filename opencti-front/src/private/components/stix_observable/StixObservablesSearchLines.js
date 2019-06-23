@@ -17,13 +17,12 @@ import Typography from '@material-ui/core/Typography';
 import { ExpandMore } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
 import { truncate } from '../../../utils/String';
-import { resolveLink } from '../../../utils/Entity';
 import ItemIcon from '../../../components/ItemIcon';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
   container: {
-    padding: '20px 0 20px 0',
+    padding: '0 0 20px 0',
   },
   expansionPanel: {
     backgroundColor: '#444444',
@@ -51,10 +50,6 @@ const styles = theme => ({
   },
   icon: {
     color: theme.palette.primary.main,
-  },
-  noResult: {
-    color: '#ffffff',
-    fontSize: 15,
   },
 });
 
@@ -139,13 +134,6 @@ class StixObservablesContainer extends Component {
             </ExpansionPanelDetails>
           </ExpansionPanel>
         ))}
-        {stixObservablesTypes.length === 0 ? (
-          <div className={classes.noResult}>
-            {t('No entity was found for this search.')}
-          </div>
-        ) : (
-          ''
-        )}
       </div>
     );
   }

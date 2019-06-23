@@ -34,7 +34,7 @@ class Search extends Component {
     return (
       <div>
         <TopBar me={me || null} keyword={keyword} />
-        <Typography variant="h1" gutterBottom={true}>
+        <Typography variant="h1" gutterBottom={true} style={{ marginBottom: 20 }}>
           {t('Search for an entity')}
         </Typography>
         <QueryRenderer
