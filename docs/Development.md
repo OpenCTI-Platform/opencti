@@ -2,14 +2,12 @@
 
 ### Development start
 
-*Prerequisites*:
+#### Prerequisites
 
+- Docker
 - Node.JS (>= 10)
 - Python (>= 3)
-- Grakn (>= 1.5.2)
-- Redis (>= 3.0)
-- ElasticSearch (>= 6)
-- RabbitMQ (>= 3.7)
+- Yarn (>= 1.16)
 
 *Installation of dependencies (Ubuntu 18.04)*:
 ```bash
@@ -19,30 +17,28 @@ $ sudo echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt
 $ sudo apt-get update && sudo apt-get install yarn
 ```
 
+*Docker stack*:
+* Grakn (Database) - *localhost/48555*
+* Elastic search (Index and search) - *localhost/9200*
+* Redis (Distribution cache for websocket events) - *localhost/6379*
+* RabbitMQ (Message broker for background tasks) - *localhost/5672*
+
+*Run the stack*:
+```bash
+$ docker-compose -f ./docker/docker-compose-dev.yml up -d
+```
+
 *Download the application files*:
 ```bash
 $ mkdir /path/to/your/app && cd /path/to/your/app
 $ git clone --recursive https://github.com/Luatix/opencti.git
 $ cd opencti
 ```
-
+#### Application dependencies
 *Install the API dependencies*:
 ```bash
 $ cd opencti-graphql
 $ yarn install
-```
-
-*Configure the API*:
-```bash
-$ cp config/default.json config/development.json
-```
-
-Change the *config/development.json* file according to your configuration of Grakn, Redis, ElasticSearch, RabbitMQ and keys.
-
-*Create the database schema and initial data*:
-```bash
-$ yarn schema
-$ yarn migrate
 ```
 
 *Install the frontend dependencies*:
@@ -51,29 +47,67 @@ $ cd ../opencti-front
 $ yarn install
 ```
 
-*Start the application*:
+*Install the worker dependencies*:
+```bash
+$ pip3 install -r requirements.txt
+```
+
+*Install the integration dependencies*:
+```bash
+$ pip3 install -r requirements.txt
+```
+
+#### Config and run
+
+*Configure the API*:
+```bash
+$ cp config/default.json config/development.json
+```
+By default the configuration match the docker stack configuration.
+
+*Start the API*:
 ```bash
 $ cd opencti-graphql
-$ yarn start &
-$ cd opencti-frontend
 $ yarn start
 ```
 
-The default username is *admin@opencti.io* and the password is *admin*. Login and get the administrator token in your profile.
+The first execution will create and migrate the schema. The admin token will be generated and printed in the console. You need to copy this token for configuration of the worker / integration.
+```bash
+Token for user admin: <OpenCTI token>
+```
 
 *Configure the worker*:
 ```bash
-$ cd worker
+$ cd opencti-worker
 $ cp config.yml.sample config.yml
 ```
-
-Change the *config.yml* file according to your OpenCTI token, ElasticSearch, Grakn and RabbitMQ configuration.
+Change the *config.yml* file according to your <OpenCTI token>
 
 *Start the workers*:
 ```bash
 $ python3 worker_export.py &
 $ python3 worker_import.py &
 ```
+
+*Configure the integration*:
+```bash
+$ cd opencti-integration
+$ cp config.yml.sample config.yml
+```
+Change the *config.yml* file according to your <OpenCTI token>
+
+*Start the integration*:
+```bash
+$ python3 connectors_scheduler.py
+```
+
+*Start the frontend*:
+```bash
+$ cd opencti-frontend
+$ yarn start
+```
+
+The default username is *admin@opencti.io* and the password is *admin*. Login and get the administrator token in your profile.
 
 ### Build for production use
 
