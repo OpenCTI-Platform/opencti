@@ -32,7 +32,7 @@ class ConnectorsScheduler:
         )
 
     def init_connectors(self):
-        self.logger.log('Initializing connectors')
+        self.logger.log('Configuring connectors')
         connectors = self.opencti.get_connectors()
         for connector in connectors:
             if connector['config'] is not None:
