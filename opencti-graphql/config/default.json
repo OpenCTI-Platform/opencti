@@ -7,20 +7,20 @@
     "cookie_secure": false
   },
   "grakn": {
-    "hostname": "grakn",
+    "hostname": "localhost",
     "port": 48555,
     "timeout": 30000
   },
   "redis": {
-    "hostname": "redis",
+    "hostname": "localhost",
     "port": 6379
   },
   "elasticsearch": {
-    "hostname": "elasticsearch",
+    "hostname": "localhost",
     "port": 9200
   },
   "rabbitmq": {
-    "hostname": "rabbitmq",
+    "hostname": "localhost",
     "port": 5672,
     "username": "guest",
     "password": "guest"
