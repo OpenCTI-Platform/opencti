@@ -6,6 +6,7 @@ import datetime
 import dateutil.parser
 import json
 import uuid
+import base64
 
 from .stix2 import Stix2
 
@@ -37,7 +38,7 @@ class OpenCTI:
             file.write('[' + datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S') + '] ' + message + "\n")
             file.close()
 
-    def query(self, query, variables = {}):
+    def query(self, query, variables={}):
         r = requests.post(self.api_url, json={'query': query, 'variables': variables}, headers=self.request_headers)
         if r.status_code == requests.codes.ok:
             result = r.json()
@@ -110,6 +111,18 @@ class OpenCTI:
            """
         result = self.query(query)
         return result['data']['connectors']
+
+    def update_connector_config(self, identifier, config):
+        self.log('Updating connector config of ' + identifier + '...')
+        query = """
+            mutation ConnectorConfig($identifier: String!, $config: String!) {
+                connectorConfig(identifier: $identifier, config: $config)
+            }
+        """
+        self.query(query, {
+            'identifier': identifier,
+            'config': base64.b64encode(json.dumps(config).encode('ascii'))
+        })
 
     def get_stix_domain_entity(self, id):
         """
@@ -2928,14 +2941,14 @@ class OpenCTI:
         return self.parse_multiple(result['data']['stixObservables'])
 
     def create_stix_observable(self,
-                          type,
-                          observable_value,
-                          description,
-                          id=None,
-                          stix_id=None,
-                          created=None,
-                          modified=None
-                          ):
+                               type,
+                               observable_value,
+                               description,
+                               id=None,
+                               stix_id=None,
+                               created=None,
+                               modified=None
+                               ):
         self.log('Creating observable ' + observable_value + '...')
         query = """
            mutation StixObservableAdd($input: StixObservableAddInput) {
@@ -2960,14 +2973,14 @@ class OpenCTI:
         return result['data']['stixObservableAdd']
 
     def create_stix_observable_if_not_exists(self,
-                                        type,
-                                        observable_value,
-                                        description,
-                                        id=None,
-                                        stix_id=None,
-                                        created=None,
-                                        modified=None
-                                        ):
+                                             type,
+                                             observable_value,
+                                             description,
+                                             id=None,
+                                             stix_id=None,
+                                             created=None,
+                                             modified=None
+                                             ):
         object_result = self.get_stix_observable_by_value(observable_value)
         if object_result is not None:
             return object_result
