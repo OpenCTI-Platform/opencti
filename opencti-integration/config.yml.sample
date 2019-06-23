@@ -1,4 +1,4 @@
 opencti:
-  api_url: 'http://opencti:8080'
+  api_url: 'http://localhost:8080'
   api_key: 'REPLACE_API_KEY'
   verbose: true

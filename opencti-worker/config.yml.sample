@@ -2,20 +2,20 @@ dumper:
   file: './dump.gql'
 
 opencti:
-  api_url: 'http://opencti:8080'
+  api_url: 'http://localhost:8080'
   api_key: 'REPLACE_API_KEY'
   verbose: true
 
 grakn:
-  hostname: 'grakn'
+  hostname: 'localhost'
   port: 48555
 
 elasticsearch:
-  hostname: 'elasticsearch'
+  hostname: 'localhost'
   port: 9200
 
 rabbitmq:
-  hostname: 'rabbitmq'
+  hostname: 'localhost'
   port: 5672
   username: 'guest'
   password: 'guest'

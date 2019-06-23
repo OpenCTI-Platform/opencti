@@ -75,7 +75,7 @@
     "node": ">= 10.* || 8.*"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "yarn relay && react-scripts start",
     "build": "yarn relay && react-scripts build && node src/setupBuild.js",
     "lint": "eslint .",
     "test": "react-scripts test",

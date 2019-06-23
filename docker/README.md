@@ -1,5 +1,14 @@
-## Docker installation
+# Docker installation
 
+## Development
+The technical stack needed to develop openCTI can be easily deployed with *docker-compose*.
+
+*Run*:
+```bash
+$ docker-compose -f ./docker-compose-dev.yml up -d
+```
+
+## Staging
 OpenCTI could be deployed using the *docker-compose* command.
 
 *Clone the repository*:
