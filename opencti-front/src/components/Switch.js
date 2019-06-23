@@ -11,7 +11,7 @@ const Switch = props => (
           {...fieldToSwitch(props)}
           onChange={(event) => {
             const value = event.target.checked ? 'true' : 'false';
-            props.form.setFieldValue(event.target.checked, value);
+            props.form.setFieldValue(props.field.name, event.target.checked);
             if (typeof props.onChange === 'function') {
               props.onChange(props.field.name, value);
             }

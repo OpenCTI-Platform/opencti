@@ -23,7 +23,7 @@ import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
   container: {
-    padding: '20px 0 20px 0',
+    padding: '0 0 20px 0',
   },
   expansionPanel: {
     backgroundColor: '#444444',
@@ -53,8 +53,15 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   noResult: {
+    top: 180,
+    left: 50,
+    right: 0,
+    textAlign: 'center',
+    position: 'absolute',
     color: '#ffffff',
     fontSize: 15,
+    zIndex: -5,
+    backgroundColor: '#303030',
   },
 });
 
@@ -92,45 +99,69 @@ class StixDomainEntitiesContainer extends Component {
     const byType = groupBy(stixDomainEntity => stixDomainEntity.entity_type);
     const stixDomainEntities = byType(stixDomainEntitiesNodes);
     const stixDomainEntitiesTypes = keys(stixDomainEntities);
-    return (
-      <div className={classes.container}>
-        {stixDomainEntitiesTypes.map(type => (
-          <ExpansionPanel
-            key={type}
-            expanded={this.isExpanded(
-              type,
-              stixDomainEntities[type].length,
-              stixDomainEntitiesTypes.length,
-            )}
-            onChange={this.handleChangePanel.bind(this, type)}
-            classes={{ root: classes.expansionPanel }}
-          >
-            <ExpansionPanelSummary
-              expandIcon={<ExpandMore />}
-              className={classes.summary}
+    if (stixDomainEntitiesTypes.length !== 0) {
+      return (
+        <div className={classes.container}>
+          {stixDomainEntitiesTypes.map(type => (
+            <ExpansionPanel
+              key={type}
+              expanded={this.isExpanded(
+                type,
+                stixDomainEntities[type].length,
+                stixDomainEntitiesTypes.length,
+              )}
+              onChange={this.handleChangePanel.bind(this, type)}
+              classes={{ root: classes.expansionPanel }}
             >
-              <Typography className={classes.heading}>
-                {t(`entity_${type}`)}
-              </Typography>
-              <Typography classes={{ root: classes.secondaryHeading }}>
-                {stixDomainEntities[type].length} {stixDomainEntities[type].length < 2 ? t('entity') : t('entities')}
-              </Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails
-              classes={{ root: classes.expansionPanelContent }}
-            >
-              <List classes={{ root: classes.list }}>
-                {stixDomainEntities[type].map((stixDomainEntity) => {
-                  const link = resolveLink(stixDomainEntity.entity_type);
-                  if (link) {
+              <ExpansionPanelSummary
+                expandIcon={<ExpandMore />}
+                className={classes.summary}
+              >
+                <Typography className={classes.heading}>
+                  {t(`entity_${type}`)}
+                </Typography>
+                <Typography classes={{ root: classes.secondaryHeading }}>
+                  {stixDomainEntities[type].length}{' '}
+                  {stixDomainEntities[type].length < 2
+                    ? t('entity')
+                    : t('entities')}
+                </Typography>
+              </ExpansionPanelSummary>
+              <ExpansionPanelDetails
+                classes={{ root: classes.expansionPanelContent }}
+              >
+                <List classes={{ root: classes.list }}>
+                  {stixDomainEntities[type].map((stixDomainEntity) => {
+                    const link = resolveLink(stixDomainEntity.entity_type);
+                    if (link) {
+                      return (
+                        <ListItem
+                          key={stixDomainEntity.id}
+                          classes={{ root: classes.menuItem }}
+                          divider={true}
+                          button={true}
+                          component={Link}
+                          to={`${link}/${stixDomainEntity.id}`}
+                        >
+                          <ListItemIcon classes={{ root: classes.itemIcon }}>
+                            <ItemIcon type={type} />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={stixDomainEntity.name}
+                            secondary={truncate(
+                              stixDomainEntity.description,
+                              200,
+                            )}
+                          />
+                        </ListItem>
+                      );
+                    }
                     return (
                       <ListItem
                         key={stixDomainEntity.id}
                         classes={{ root: classes.menuItem }}
                         divider={true}
-                        button={true}
-                        component={Link}
-                        to={`${link}/${stixDomainEntity.id}`}
+                        button={false}
                       >
                         <ListItemIcon classes={{ root: classes.itemIcon }}>
                           <ItemIcon type={type} />
@@ -144,36 +175,18 @@ class StixDomainEntitiesContainer extends Component {
                         />
                       </ListItem>
                     );
-                  }
-                  return (
-                    <ListItem
-                      key={stixDomainEntity.id}
-                      classes={{ root: classes.menuItem }}
-                      divider={true}
-                      button={false}
-                    >
-                      <ListItemIcon classes={{ root: classes.itemIcon }}>
-                        <ItemIcon type={type} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={stixDomainEntity.name}
-                        secondary={truncate(stixDomainEntity.description, 200)}
-                      />
-                    </ListItem>
-                  );
-                })}
-              </List>
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-        ))}
-        {stixDomainEntitiesTypes.length === 0 ? (
-          <div className={classes.noResult}>
-            {t('No entity was found for this search.')}
-          </div>
-        ) : (
-          ''
-        )}
-      </div>
+                  })}
+                </List>
+              </ExpansionPanelDetails>
+            </ExpansionPanel>
+          ))}
+        </div>
+      );
+    }
+    return (
+        <div className={classes.noResult}>
+         {t('No entities were found for this search.')}
+        </div>
     );
   }
 }
@@ -219,7 +232,6 @@ export const stixDomainEntitiesLinesSearchQuery = graphql`
     }
   }
 `;
-
 
 const StixDomainEntitiesLines = createPaginationContainer(
   StixDomainEntitiesContainer,

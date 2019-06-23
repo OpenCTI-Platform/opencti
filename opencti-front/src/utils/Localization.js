@@ -314,6 +314,8 @@ const i18n = {
       'STIX2 - Full export': 'STIX2 - Export complet',
       Download: 'Télécharger',
       'Inference explanation': "Explication de l'inférence",
+      entity: 'entité',
+      entities: 'entités',
       Relation: 'Relation',
       // User
       'Sign in': "S'identifier",
@@ -446,7 +448,7 @@ const i18n = {
       'Ingested entities': 'Entités stockées',
       'last 24h': 'dernières 24h',
       'last month': 'dernier mois',
-      'No entity was found for this search.':
+      'No entities were found for this search.':
         "Aucune entité n'a été trouvée pour cette recherche.",
       'API access': "Accès à l'API",
       Example: 'Exemple',

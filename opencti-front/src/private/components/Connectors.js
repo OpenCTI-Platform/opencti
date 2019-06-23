@@ -18,6 +18,7 @@ import {
 import inject18n from '../../components/i18n';
 import TextField from '../../components/TextField';
 import Select from '../../components/Select';
+import Switch from '../../components/Switch';
 
 const styles = () => ({
   container: {
@@ -54,6 +55,7 @@ const connectorsMutationFieldPatch = graphql`
 
 class Connectors extends Component {
   handleSubmit(identifier, configValues, { setSubmitting }) {
+    console.log(configValues);
     const JSONValues = JSON.stringify(configValues);
     commitMutation({
       mutation: connectorsMutationFieldPatch,
@@ -174,6 +176,20 @@ class Connectors extends Component {
                                       </MenuItem>
                                   ))}
                                 </Field>
+                              );
+                            }
+                            if (field.type === 'switch') {
+                              return (
+                                <Field
+                                  key={field.name}
+                                  name={field.name}
+                                  component={Switch}
+                                  label={field.description}
+                                  containerstyle={{
+                                    marginTop: 20,
+                                    width: '100%',
+                                  }}
+                                />
                               );
                             }
                             return (

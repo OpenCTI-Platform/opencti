@@ -106,7 +106,10 @@ jobs:
           command: rsync -av --delete ~/opencti/opencti-graphql/dist/ ./opencti-graphql/dist/
       - run:
           working_directory: ~/opencti/deploy
-          command: git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
+          command: git add -A
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
   deploy_reference:
     working_directory: ~/opencti
@@ -134,7 +137,10 @@ jobs:
           command: rsync -av --delete ~/opencti/opencti-graphql/dist/ ./opencti-graphql/dist/
       - run:
           working_directory: ~/opencti/deploy
-          command: git add * && git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
+          command: git add -A
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
 workflows:
   opencti:
@@ -147,11 +153,23 @@ workflows:
           requires:
             - build
             - test
+          filters:
+            branches:
+              only:
+                - master
       - deploy_demo:
           requires:
             - build
             - test
+          filters:
+            branches:
+              only:
+                - master
       - deploy_reference:
           requires:
             - build
             - test
+          filters:
+            branches:
+              only:
+                - master

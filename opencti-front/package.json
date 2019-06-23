@@ -33,6 +33,7 @@
     "react-csv": "^1.1.1",
     "react-document-title": "^2.0.3",
     "react-dom": "^16.8.6",
+    "react-grid-layout": "^0.16.6",
     "react-intl": "^2.9.0",
     "react-markdown": "^4.0.8",
     "react-particles-js": "^2.6.0",

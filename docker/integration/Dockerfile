@@ -18,7 +18,7 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8 
 
 # Prepare configuration
-RUN cd /opt/opencti/integration && ln -s /opt/opencti/shared_config/config.yml .
+RUN cd /opt/opencti/integration && rm -f config.yml && ln -s /opt/opencti/shared_config/config.yml .
 
 # Expose and entrypoint
 COPY entrypoint.sh /

@@ -38,6 +38,7 @@ services:
       - RUN_USER=root
       - APP__PORT=4000
       - APP__LOGS=./logs
+      - APP__CONNECTORS=./integration/connectors
       - APP__SECRET=ChangeMe
       - APP__REACTIVE=true
       - APP__COOKIE_SECURE=false

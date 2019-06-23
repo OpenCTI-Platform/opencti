@@ -23,6 +23,12 @@ const styles = () => ({
     padding: 0,
     borderRadius: 6,
   },
+  paperExplore: {
+    height: '100%',
+    margin: 0,
+    padding: 0,
+    borderRadius: 6,
+  },
   tableHead: {
     textTransform: 'uppercase',
     height: 40,
@@ -71,12 +77,10 @@ const entityStixRelationsTableStixRelationDistributionQuery = graphql`
 `;
 
 class EntityStixRelationsTable extends Component {
-  render() {
+  renderContent() {
     const {
       t,
       classes,
-      variant,
-      title,
       entityId,
       entityType,
       relationType,
@@ -89,9 +93,6 @@ class EntityStixRelationsTable extends Component {
       resolveViaTypes,
       startDate,
       endDate,
-      configuration,
-      onUpdate,
-      onDelete,
     } = this.props;
     const stixRelationsDistributionVariables = {
       fromId: entityId,
@@ -109,98 +110,120 @@ class EntityStixRelationsTable extends Component {
       operation: 'count',
     };
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {title || `${t('Top 10:')} ${t(`entity_${entityType}`)}`}
-        </Typography>
-        {variant === 'explore' ? (
+      <QueryRenderer
+        query={entityStixRelationsTableStixRelationDistributionQuery}
+        variables={stixRelationsDistributionVariables}
+        render={({ props }) => {
+          if (
+            props
+            && props.stixRelationsDistribution
+            && props.stixRelationsDistribution.length > 0
+          ) {
+            return (
+              <Table className={classes.table}>
+                <TableHead>
+                  <TableRow className={classes.tableHead}>
+                    <TableCell>
+                      {t(`entity_${entityType.toLowerCase()}`)}
+                    </TableCell>
+                    <TableCell align="right">{t('Number')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {props.stixRelationsDistribution.map(row => (
+                    <TableRow key={row.label} hover={true}>
+                      <TableCell
+                        component="th"
+                        scope="row"
+                        padding="default"
+                        className={classes.tableBody}
+                      >
+                        {row.label}
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        padding="default"
+                        className={classes.tableBody}
+                      >
+                        {row.value}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            );
+          }
+          if (props) {
+            return (
+              <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                <span
+                  style={{
+                    display: 'table-cell',
+                    verticalAlign: 'middle',
+                    textAlign: 'center',
+                  }}
+                >
+                  {t('No entities of this type has been found.')}
+                </span>
+              </div>
+            );
+          }
+          return (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                <CircularProgress size={40} thickness={2} />
+              </span>
+            </div>
+          );
+        }}
+      />
+    );
+  }
+
+  render() {
+    const {
+      t,
+      classes,
+      variant,
+      title,
+      entityType,
+      configuration,
+      onUpdate,
+      onDelete,
+    } = this.props;
+    if (variant === 'explore') {
+      return (
+        <Paper classes={{ root: classes.paperExplore }} elevation={2}>
+          <Typography
+            variant="h4"
+            gutterBottom={true}
+            style={{ float: 'left', padding: '10px 0 0 10px' }}
+          >
+            {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
+          </Typography>
           <ExploreUpdateWidget
             configuration={configuration}
             onUpdate={onUpdate.bind(this)}
             onDelete={onDelete.bind(this)}
           />
-        ) : (
-          ''
-        )}
-        <div className='clearfix'/>
+          <div className="clearfix" />
+          {this.renderContent()}
+        </Paper>
+      );
+    }
+    return (
+      <div style={{ height: '100%' }}>
+        <Typography variant="h4" gutterBottom={true}>
+          {title || `${t('Top 10:')} ${t(`entity_${entityType}`)}`}
+        </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <QueryRenderer
-            query={entityStixRelationsTableStixRelationDistributionQuery}
-            variables={stixRelationsDistributionVariables}
-            render={({ props }) => {
-              if (
-                props
-                && props.stixRelationsDistribution
-                && props.stixRelationsDistribution.length > 0
-              ) {
-                return (
-                  <Table className={classes.table}>
-                    <TableHead>
-                      <TableRow className={classes.tableHead}>
-                        <TableCell>
-                          {t(`entity_${entityType.toLowerCase()}`)}
-                        </TableCell>
-                        <TableCell align="right">{t('Number')}</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {props.stixRelationsDistribution.map(row => (
-                        <TableRow key={row.label} hover={true}>
-                          <TableCell
-                            component="th"
-                            scope="row"
-                            padding="dense"
-                            className={classes.tableBody}
-                          >
-                            {row.label}
-                          </TableCell>
-                          <TableCell
-                            align="right"
-                            padding="dense"
-                            className={classes.tableBody}
-                          >
-                            {row.value}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                );
-              }
-              if (props) {
-                return (
-                  <div
-                    style={{ display: 'table', height: '100%', width: '100%' }}
-                  >
-                    <span
-                      style={{
-                        display: 'table-cell',
-                        verticalAlign: 'middle',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {t('No entities of this type has been found.')}
-                    </span>
-                  </div>
-                );
-              }
-              return (
-                <div
-                  style={{ display: 'table', height: '100%', width: '100%' }}
-                >
-                  <span
-                    style={{
-                      display: 'table-cell',
-                      verticalAlign: 'middle',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <CircularProgress size={40} thickness={2} />
-                  </span>
-                </div>
-              );
-            }}
-          />
+          {this.renderContent()}
         </Paper>
       </div>
     );

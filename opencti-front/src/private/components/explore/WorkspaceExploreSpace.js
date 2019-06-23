@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, map, values, sortWith, ascend, prop,
+  compose, map, values, assoc, dissoc, indexBy, prop,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
+import { WidthProvider, Responsive } from 'react-grid-layout';
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../workspace/WorkspaceEditionOverview';
@@ -20,6 +20,8 @@ const styles = () => ({
     padding: 0,
   },
 });
+
+const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 class WorkspaceExploreSpaceComponent extends Component {
   saveWorkspace(workspaceData) {
@@ -36,7 +38,7 @@ class WorkspaceExploreSpaceComponent extends Component {
     });
   }
 
-  onActionWidget(newValues) {
+  decodeWorkspaceData() {
     const { workspace } = this.props;
     let workspaceData = {};
     if (workspace.workspace_data && workspace.workspace_data.length > 0) {
@@ -44,66 +46,94 @@ class WorkspaceExploreSpaceComponent extends Component {
         Buffer.from(workspace.workspace_data, 'base64').toString('ascii'),
       );
     }
-    workspaceData[newValues.id] = newValues;
-    this.saveWorkspace(workspaceData);
+    return workspaceData;
   }
 
-  onDeleteWidget(widgetId) {
-    const { workspace } = this.props;
-    let workspaceData = {};
-    if (workspace.workspace_data && workspace.workspace_data.length > 0) {
-      workspaceData = JSON.parse(
-        Buffer.from(workspace.workspace_data, 'base64').toString('ascii'),
-      );
-    }
-    delete workspaceData[widgetId];
-    this.saveWorkspace(workspaceData);
+  handleActionWidget(newValues) {
+    const workspaceData = this.decodeWorkspaceData();
+    const finalWorkspaceData = assoc(
+      newValues.id,
+      assoc(
+        'layout',
+        {
+          i: newValues.id,
+          x: 0,
+          y: 0,
+          w: 4,
+          h: 4,
+          minW: 2,
+          minH: 2,
+        },
+        newValues,
+      ),
+      workspaceData,
+    );
+    this.saveWorkspace(finalWorkspaceData);
+  }
+
+  handleDeleteWidget(widgetId) {
+    const workspaceData = this.decodeWorkspaceData();
+    const finalWorkspaceData = dissoc(widgetId, workspaceData);
+    this.saveWorkspace(finalWorkspaceData);
+  }
+
+  onLayoutChange(layouts) {
+    const workspaceData = this.decodeWorkspaceData();
+    const layoutsObject = indexBy(prop('i'), layouts);
+    const finalWorkspaceData = map(n => assoc('layout', layoutsObject[n.id], n), workspaceData);
+    this.saveWorkspace(finalWorkspaceData);
   }
 
   render() {
-    const { classes, t, workspace } = this.props;
+    const { classes, workspace } = this.props;
     let workspaceData = {};
     if (workspace.workspace_data && workspace.workspace_data.length > 0) {
       workspaceData = JSON.parse(
         Buffer.from(workspace.workspace_data, 'base64').toString('ascii'),
       );
     }
-    const sort = sortWith([ascend(prop('order'))]);
     return (
       <div className={classes.container}>
-        <Grid container={true} spacing={3}>
+        <ResponsiveReactGridLayout
+          className="layout"
+          cols={{
+            lg: 12,
+            md: 10,
+            sm: 6,
+            xs: 4,
+            xxs: 2,
+          }}
+          rowHeight={100}
+          onLayoutChange={this.onLayoutChange.bind(this)}
+        >
           {map((widget) => {
             switch (widget.widget) {
               case 'VictimologyDistribution':
                 return (
-                  <VictimologyDistribution
-                    onUpdate={this.onActionWidget.bind(this)}
-                    onDelete={this.onDeleteWidget.bind(this)}
-                    key={widget.id}
-                    configuration={widget}
-                  />
+                  <div key={widget.id} data-grid={widget.layout}>
+                    <VictimologyDistribution
+                      configuration={widget}
+                      onUpdate={this.handleActionWidget.bind(this)}
+                      onDelete={this.handleDeleteWidget.bind(this)}
+                    />
+                  </div>
                 );
               case 'CampaignsTimeseries':
                 return (
-                  <CampaignsTimeseries
-                    onUpdate={this.onActionWidget.bind(this)}
-                    onDelete={this.onDeleteWidget.bind(this)}
-                    key={widget.id}
-                    configuration={widget}
-                  />
+                  <div key={widget.id} data-grid={widget.layout}>
+                    <CampaignsTimeseries
+                      configuration={widget}
+                      onUpdate={this.handleActionWidget.bind(this)}
+                      onDelete={this.handleDeleteWidget.bind(this)}
+                    />
+                  </div>
                 );
               default:
-                return (
-                  <Grid item={true} xs={3}>
-                    <div style={{ margin: 50, textAlign: 'center' }}>
-                      {t('Unknown widget')}
-                    </div>
-                  </Grid>
-                );
+                return <div />;
             }
-          }, sort(values(workspaceData)))}
-        </Grid>
-        <ExploreAddWidget onAdd={this.onActionWidget.bind(this)} />
+          }, values(workspaceData))}
+        </ResponsiveReactGridLayout>
+        <ExploreAddWidget onAdd={this.handleActionWidget.bind(this)} />
       </div>
     );
   }
