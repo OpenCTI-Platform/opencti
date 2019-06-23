@@ -41,6 +41,7 @@ import TopMenuCity from './TopMenuCity';
 import TopMenuOrganization from './TopMenuOrganization';
 import TopMenuPerson from './TopMenuPerson';
 import TopMenuSources from './TopMenuSources';
+import TopMenuConnectors from './TopMenuConnectors';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
 import { commitMutation } from '../../../relay/environment';
@@ -284,6 +285,12 @@ class TopBar extends Component {
             {location.pathname === '/dashboard/sources'
             || location.pathname.match('/dashboard/sources/[a-z_]+$') ? (
               <TopMenuSources />
+              ) : (
+                ''
+              )}
+            {location.pathname === '/dashboard/connectors'
+            || location.pathname.match('/dashboard/connectors/[a-z_]+$') ? (
+              <TopMenuConnectors />
               ) : (
                 ''
               )}

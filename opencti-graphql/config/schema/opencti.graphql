@@ -124,6 +124,14 @@ input SettingsAddInput {
   platform_registration: Boolean
 }
 
+### Connectors
+type Connector {
+  identifier: String
+  config_template: String
+  config: String
+  editContext: [EditUserContext]
+}
+
 ### Export
 type Export {
   id: ID!
@@ -289,6 +297,7 @@ input StixObservableAddInput {
   stix_id: String
   type: String!
   observable_value: String!
+  description: String
   createdByRef: String
   markingDefinitions: [String]
   clientMutationId: String
@@ -2038,6 +2047,8 @@ input RelationsAddInput {
 type Query {
   # Settings
   settings: Settings
+  # Connectors
+  connectors: [Connector] @auth(for: ROLE_ADMIN)
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(
@@ -2661,6 +2672,8 @@ type Mutation {
   # Settings
   settingsAdd(input: SettingsAddInput): Settings @auth(for: ROLE_ADMIN)
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: ROLE_ADMIN)
+  # Connector
+  connectorConfig(identifier: String!, config: String!): Boolean @auth(for: ROLE_ADMIN)
   # Import data
   importData(type: String!, file: Upload!): Boolean @auth
   # StixDomainEntity

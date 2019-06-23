@@ -11,6 +11,9 @@ import Loader from '../Loader';
 import StixDomainEntitiesLines, {
   stixDomainEntitiesLinesQuery,
 } from './stix_domain_entity/StixDomainEntitiesLines';
+import StixObservableSearchLines, {
+  stixObservablesSearchLinesQuery,
+} from './stix_observable/StixObservablesSearchLines';
 
 const styles = () => ({
   linesContainer: {
@@ -19,7 +22,7 @@ const styles = () => ({
   },
 });
 
-class StixDomainEntities extends Component {
+class Search extends Component {
   render() {
     const {
       t,
@@ -49,12 +52,27 @@ class StixDomainEntities extends Component {
             return <Loader variant="inside" />;
           }}
         />
+        <QueryRenderer
+          query={stixObservablesSearchLinesQuery}
+          variables={{
+            search: keyword,
+            count: 200,
+            orderBy: 'created_at',
+            orderMode: 'desc',
+          }}
+          render={({ props }) => {
+            if (props) {
+              return <StixObservableSearchLines data={props} />;
+            }
+            return <div />;
+          }}
+        />
       </div>
     );
   }
 }
 
-StixDomainEntities.propTypes = {
+Search.propTypes = {
   keyword: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -67,4 +85,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(StixDomainEntities);
+)(Search);

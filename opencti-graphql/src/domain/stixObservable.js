@@ -160,7 +160,7 @@ export const addStixObservable = async (user, stixObservable) => {
     }",
     has entity_type "${escapeString(stixObservable.type.toLowerCase())}",
     has name "",
-    has description "",
+    has description "${escapeString(stixObservable.description)}",
     has observable_value "${escapeString(stixObservable.observable_value)}",
     has created_at ${now()},
     has created_at_day "${dayFormat(now())}",

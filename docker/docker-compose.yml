@@ -21,6 +21,15 @@ services:
     volumes:
       - "./config:/opt/opencti/shared_config:rw"
     restart: always
+  integration:
+    image: luatix/opencti-integration
+    build:
+     context: ./integration
+    environment:
+      - RUN_USER=root
+    volumes:
+      - "./config:/opt/opencti/shared_config:rw"
+    restart: always    
   opencti:
     image: luatix/opencti
     build:

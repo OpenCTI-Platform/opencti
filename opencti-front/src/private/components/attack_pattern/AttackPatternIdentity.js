@@ -13,7 +13,7 @@ import Typography from '@material-ui/core/Typography';
 import { Launch, SettingsApplications, PermIdentity } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = () => ({
   paper: {
     minHeight: '100%',
     margin: '10px 0 0 0',
@@ -35,7 +35,7 @@ class AttackPatternIdentityComponent extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Identity')}
+          {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant="h3" gutterBottom={true}>

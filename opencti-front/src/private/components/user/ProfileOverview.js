@@ -15,7 +15,7 @@ import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 
-const styles = theme => ({
+const styles = () => ({
   panel: {
     width: '50%',
     margin: '0 auto',

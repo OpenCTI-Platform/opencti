@@ -78,6 +78,9 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'email-address':
     case 'mutex':
     case 'file':
+    case 'file-md5':
+    case 'file-sha1':
+    case 'file-sha256':
       return <Tag style={style} fontSize={fontSize} />;
     default:
       return <Help style={style} fontSize={fontSize} />;
