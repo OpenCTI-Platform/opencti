@@ -37,13 +37,19 @@ class ConnectorsScheduler:
         for connector in connectors:
             if connector['config'] is not None:
                 connector_config = json.loads(base64.b64decode(connector['config']))
+                config = self.config
+                config[connector['identifier']] = connector_config
+
                 if connector['identifier'] not in self.connectors:
                     connector_module = importlib.import_module('connectors.' + connector['identifier'] + '.' + connector['identifier'])
                     connector_class = getattr(connector_module, connector['identifier'].capitalize())
-                    config = self.config
-                    config[connector['identifier']] = connector_config
-                    self.connectors[connector['identifier']] = connector_class(config)
+                    self.connectors[connector['identifier']] = {"config": config, "instance": connector_class(config)}
                     self.logger.log('Connector ' + connector['identifier'] + ' initialized')
+                else:
+                    self.connectors[connector['identifier']]['instance'].set_config(config)
+                    self.connectors[connector['identifier']]['config'] = config
+                    self.logger.log('Connector ' + connector['identifier'] + ' configured')
+
                 if 'triggered' in connector_config and connector_config['triggered'] is True:
                     connector_config['triggered'] = False
                     self.opencti.update_connector_config(connector['identifier'], connector_config)
@@ -51,8 +57,9 @@ class ConnectorsScheduler:
 
     def run_connector(self, identifier):
         try:
-            self.logger.log('Running ' + identifier)
-            self.connectors[identifier].run()
+            if 'enable' in self.connectors[identifier]['config'] and self.connectors[identifier]['config']['enable'] is True:
+                self.logger.log('Running ' + identifier)
+                self.connectors[identifier]['instance'].run()
         except Exception as e:
             self.logger.log('Unable to run ' + identifier + ': {' + str(e) + '}')
 
@@ -60,7 +67,7 @@ class ConnectorsScheduler:
         self.logger.log('Starting connectors')
         schedule.every(1).minutes.do(self.init_connectors)
         for identifier, connector in self.connectors.items():
-            connector_config = connector.get_config()
+            connector_config = connector['instance'].get_config()
             if connector_config['cron'] == 'realtime':
                 schedule.every(1).minutes.do(self.run_connector, identifier=identifier)
             elif connector_config['cron'] == 'daily':
