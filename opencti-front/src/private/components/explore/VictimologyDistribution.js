@@ -16,20 +16,28 @@ const styles = () => ({
 
 class VictimologyDistribution extends Component {
   render() {
-    const { configuration, onUpdate, onDelete } = this.props;
+    const {
+      configuration,
+      handleOpenConfig,
+      inferred,
+      startDate,
+      endDate,
+    } = this.props;
     switch (configuration.graph_type) {
       case 'table':
         return (
           <EntityStixRelationsTable
             variant="explore"
             configuration={configuration}
-            onUpdate={onUpdate.bind(this)}
-            onDelete={onDelete.bind(this)}
+            handleOpenConfig={handleOpenConfig.bind(this)}
             title={propOr('Widget', 'title', configuration)}
             entityId={pathOr(null, ['entity', 'id'], configuration)}
             entityType={propOr('Sector', 'entity_type', configuration)}
             relationType="targets"
             field="name"
+            inferred={inferred}
+            startDate={startDate}
+            endDate={endDate}
             resolveInferences={true}
             resolveRelationType="attributed-to"
             resolveRelationRole="origin"
@@ -47,13 +55,15 @@ class VictimologyDistribution extends Component {
           <EntityStixRelationsRadar
             variant="explore"
             configuration={configuration}
-            onUpdate={onUpdate.bind(this)}
-            onDelete={onDelete.bind(this)}
+            handleOpenConfig={handleOpenConfig.bind(this)}
             title={propOr('Widget', 'title', configuration)}
             entityId={pathOr(null, ['entity', 'id'], configuration)}
             entityType={propOr('Sector', 'entity_type', configuration)}
             relationType="targets"
             field="name"
+            inferred={inferred}
+            startDate={startDate}
+            endDate={endDate}
             resolveInferences={true}
             resolveRelationType="attributed-to"
             resolveRelationRole="origin"
@@ -71,13 +81,15 @@ class VictimologyDistribution extends Component {
           <EntityStixRelationsDonut
             variant="explore"
             configuration={configuration}
-            onUpdate={onUpdate.bind(this)}
-            onDelete={onDelete.bind(this)}
+            handleOpenConfig={handleOpenConfig.bind(this)}
             title={propOr('Widget', 'title', configuration)}
             entityId={pathOr(null, ['entity', 'id'], configuration)}
             entityType={propOr('Sector', 'entity_type', configuration)}
             relationType="targets"
             field="name"
+            inferred={inferred}
+            startDate={startDate}
+            endDate={endDate}
             resolveInferences={true}
             resolveRelationType="attributed-to"
             resolveRelationRole="origin"
@@ -95,13 +107,15 @@ class VictimologyDistribution extends Component {
           <EntityStixRelationsPie
             variant="explore"
             configuration={configuration}
-            onUpdate={onUpdate.bind(this)}
-            onDelete={onDelete.bind(this)}
+            handleOpenConfig={handleOpenConfig.bind(this)}
             title={propOr('Widget', 'title', configuration)}
             entityId={pathOr(null, ['entity', 'id'], configuration)}
             entityType={propOr('Sector', 'entity_type', configuration)}
             relationType="targets"
             field="name"
+            inferred={inferred}
+            startDate={startDate}
+            endDate={endDate}
             resolveInferences={true}
             resolveRelationType="attributed-to"
             resolveRelationRole="origin"
@@ -120,8 +134,10 @@ class VictimologyDistribution extends Component {
 
 VictimologyDistribution.propTypes = {
   configuration: PropTypes.object,
-  onUpdate: PropTypes.func,
-  onDelete: PropTypes.func,
+  handleOpenConfig: PropTypes.func,
+  inferred: PropTypes.bool,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

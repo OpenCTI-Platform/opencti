@@ -11,9 +11,10 @@ import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import { SettingsInputComponent } from '@material-ui/icons';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
-import ExploreUpdateWidget from '../explore/ExploreUpdateWidget';
 
 const styles = () => ({
   paper: {
@@ -37,6 +38,10 @@ const styles = () => ({
   tableBody: {
     fontSize: 15,
   },
+  updateButton: {
+    float: 'right',
+    margin: '7px 10px 0 0',
+  },
 });
 
 const entityStixRelationsTableStixRelationDistributionQuery = graphql`
@@ -45,6 +50,7 @@ const entityStixRelationsTableStixRelationDistributionQuery = graphql`
     $toTypes: [String]
     $entityTypes: [String]
     $relationType: String
+    $inferred: Boolean
     $startDate: DateTime
     $endDate: DateTime
     $resolveInferences: Boolean
@@ -60,6 +66,7 @@ const entityStixRelationsTableStixRelationDistributionQuery = graphql`
       toTypes: $toTypes
       entityTypes: $entityTypes
       relationType: $relationType
+      inferred: $inferred
       startDate: $startDate
       endDate: $endDate
       resolveInferences: $resolveInferences
@@ -86,18 +93,20 @@ class EntityStixRelationsTable extends Component {
       relationType,
       field,
       entityTypes,
+      inferred,
+      startDate,
+      endDate,
       resolveInferences,
       resolveRelationType,
       resolveRelationRole,
       resolveRelationToTypes,
       resolveViaTypes,
-      startDate,
-      endDate,
     } = this.props;
     const stixRelationsDistributionVariables = {
       fromId: entityId,
       toTypes: entityType ? [entityType] : null,
       entityTypes: entityTypes || null,
+      inferred: inferred || true,
       startDate: startDate || null,
       endDate: endDate || null,
       resolveInferences,
@@ -194,8 +203,7 @@ class EntityStixRelationsTable extends Component {
       title,
       entityType,
       configuration,
-      onUpdate,
-      onDelete,
+      handleOpenConfig,
     } = this.props;
     if (variant === 'explore') {
       return (
@@ -207,11 +215,15 @@ class EntityStixRelationsTable extends Component {
           >
             {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
           </Typography>
-          <ExploreUpdateWidget
-            configuration={configuration}
-            onUpdate={onUpdate.bind(this)}
-            onDelete={onDelete.bind(this)}
-          />
+          <IconButton
+            color="secondary"
+            aria-label="Update"
+            size="small"
+            classes={{ root: classes.updateButton }}
+            onClick={handleOpenConfig.bind(this, configuration)}
+          >
+            <SettingsInputComponent fontSize="inherit" />
+          </IconButton>
           <div className="clearfix" />
           {this.renderContent()}
         </Paper>
@@ -236,6 +248,7 @@ EntityStixRelationsTable.propTypes = {
   entityId: PropTypes.string,
   relationType: PropTypes.string,
   entityType: PropTypes.string,
+  inferred: PropTypes.bool,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   resolveInferences: PropTypes.bool,
@@ -248,9 +261,8 @@ EntityStixRelationsTable.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
-  onUpdate: PropTypes.func,
-  onDelete: PropTypes.func,
   configuration: PropTypes.object,
+  handleOpenConfig: PropTypes.func,
 };
 
 export default compose(

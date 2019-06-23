@@ -1,29 +1,54 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, map, values, assoc, dissoc, indexBy, prop,
+  compose,
+  map,
+  values,
+  assoc,
+  dissoc,
+  indexBy,
+  prop,
+  propOr,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { WidthProvider, Responsive } from 'react-grid-layout';
 import { withStyles } from '@material-ui/core/styles';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
+import Drawer from '@material-ui/core/Drawer';
+import Grid from '@material-ui/core/Grid';
+import { DatePicker } from '@material-ui/pickers';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
+import { parse } from '../../../utils/Time';
 import { workspaceMutationFieldPatch } from '../workspace/WorkspaceEditionOverview';
 import ExploreAddWidget from './ExploreAddWidget';
+import ExploreUpdateWidget from './ExploreUpdateWidget';
 import VictimologyDistribution from './VictimologyDistribution';
 import CampaignsTimeseries from './CampaignsTimeseries';
 
-const styles = () => ({
+const styles = theme => ({
   container: {
     margin: 0,
     padding: 0,
+  },
+  bottomNav: {
+    zIndex: 1000,
+    padding: '10px 274px 10px 84px',
+    backgroundColor: theme.palette.navBottom.background,
+    display: 'flex',
   },
 });
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 class WorkspaceExploreSpaceComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { openConfig: false, currentWidget: {} };
+  }
+
   saveWorkspace(workspaceData) {
     const JSONData = JSON.stringify(workspaceData);
     commitMutation({
@@ -40,7 +65,7 @@ class WorkspaceExploreSpaceComponent extends Component {
 
   decodeWorkspaceData() {
     const { workspace } = this.props;
-    let workspaceData = {};
+    let workspaceData = { widgets: {}, config: { inferred: true } };
     if (workspace.workspace_data && workspace.workspace_data.length > 0) {
       workspaceData = JSON.parse(
         Buffer.from(workspace.workspace_data, 'base64').toString('ascii'),
@@ -49,22 +74,40 @@ class WorkspaceExploreSpaceComponent extends Component {
     return workspaceData;
   }
 
-  handleActionWidget(newValues) {
+  handleAddWidget(newValues) {
     const workspaceData = this.decodeWorkspaceData();
     const finalWorkspaceData = assoc(
-      newValues.id,
+      'widgets',
       assoc(
-        'layout',
-        {
-          i: newValues.id,
-          x: 0,
-          y: 0,
-          w: 4,
-          h: 4,
-          minW: 2,
-          minH: 2,
-        },
+        newValues.id,
+        assoc(
+          'layout',
+          {
+            i: newValues.id,
+            x: 0,
+            y: 0,
+            w: 4,
+            h: 4,
+            minW: 2,
+            minH: 2,
+          },
+          newValues,
+        ),
+        workspaceData.widgets,
+      ),
+      workspaceData,
+    );
+    this.saveWorkspace(finalWorkspaceData);
+  }
+
+  handleUpdateWidget(newValues) {
+    const workspaceData = this.decodeWorkspaceData();
+    const finalWorkspaceData = assoc(
+      'widgets',
+      assoc(
+        newValues.id,
         newValues,
+        workspaceData.widgets,
       ),
       workspaceData,
     );
@@ -73,27 +116,104 @@ class WorkspaceExploreSpaceComponent extends Component {
 
   handleDeleteWidget(widgetId) {
     const workspaceData = this.decodeWorkspaceData();
-    const finalWorkspaceData = dissoc(widgetId, workspaceData);
+    const finalWorkspaceData = assoc(
+      'widgets',
+      dissoc(widgetId, workspaceData.widgets),
+      workspaceData,
+    );
     this.saveWorkspace(finalWorkspaceData);
   }
 
   onLayoutChange(layouts) {
     const workspaceData = this.decodeWorkspaceData();
     const layoutsObject = indexBy(prop('i'), layouts);
-    const finalWorkspaceData = map(n => assoc('layout', layoutsObject[n.id], n), workspaceData);
+    const finalWorkspaceData = assoc(
+      'widgets',
+      map(n => assoc('layout', layoutsObject[n.id], n), workspaceData.widgets),
+      workspaceData,
+    );
     this.saveWorkspace(finalWorkspaceData);
   }
 
+  handleDateChange(type, value) {
+    const workspaceData = this.decodeWorkspaceData();
+    const finalWorkspaceData = assoc(
+      'config',
+      assoc(type, value ? parse(value).format() : null, workspaceData.config),
+      workspaceData,
+    );
+    this.saveWorkspace(finalWorkspaceData);
+  }
+
+  handleChangeInferred() {
+    const workspaceData = this.decodeWorkspaceData();
+    const finalWorkspaceData = assoc(
+      'config',
+      assoc('inferred', !workspaceData.config.inferred, workspaceData.config),
+      workspaceData,
+    );
+    this.saveWorkspace(finalWorkspaceData);
+  }
+
+  handleOpenConfig(config) {
+    this.setState({ openConfig: true, currentWidget: config });
+  }
+
+  handleCloseConfig() {
+    this.setState({ openConfig: false, currentWidget: {} });
+  }
+
   render() {
-    const { classes, workspace } = this.props;
-    let workspaceData = {};
-    if (workspace.workspace_data && workspace.workspace_data.length > 0) {
-      workspaceData = JSON.parse(
-        Buffer.from(workspace.workspace_data, 'base64').toString('ascii'),
-      );
-    }
+    const { classes, t } = this.props;
+    const workspaceData = this.decodeWorkspaceData();
+
     return (
       <div className={classes.container}>
+        <Drawer
+          anchor="bottom"
+          variant="permanent"
+          classes={{ paper: classes.bottomNav }}
+        >
+          <Grid container={true} spacing={1}>
+            <Grid item={true} xs="auto">
+              <DatePicker
+                value={propOr(null, 'startDate', workspaceData.config)}
+                disableToolbar={true}
+                format="YYYY-MM-DD"
+                autoOk={true}
+                label={t('Start date')}
+                clearable={true}
+                disableFuture={true}
+                onChange={this.handleDateChange.bind(this, 'startDate')}
+              />
+            </Grid>
+            <Grid item={true} xs="auto">
+              <DatePicker
+                value={propOr(null, 'endDate', workspaceData.config)}
+                disableToolbar={true}
+                format="YYYY-MM-DD"
+                autoOk={true}
+                label={t('End date')}
+                clearable={true}
+                disableFuture={true}
+                onChange={this.handleDateChange.bind(this, 'endDate')}
+              />
+            </Grid>
+            <Grid item={true} xs="auto">
+              <FormControlLabel
+                style={{ paddingTop: 5, marginRight: 15 }}
+                control={
+                  <Switch
+                    checked={propOr(false, 'inferred', workspaceData.config)}
+                    onChange={this.handleChangeInferred.bind(this)}
+                    color="primary"
+                  />
+                }
+                label={t('Inferences')}
+              />
+            </Grid>
+          </Grid>
+        </Drawer>
         <ResponsiveReactGridLayout
           className="layout"
           cols={{
@@ -113,8 +233,10 @@ class WorkspaceExploreSpaceComponent extends Component {
                   <div key={widget.id} data-grid={widget.layout}>
                     <VictimologyDistribution
                       configuration={widget}
-                      onUpdate={this.handleActionWidget.bind(this)}
-                      onDelete={this.handleDeleteWidget.bind(this)}
+                      handleOpenConfig={this.handleOpenConfig.bind(this)}
+                      inferred={workspaceData.config.inferred}
+                      startDate={workspaceData.config.startDate}
+                      endDate={workspaceData.config.endDate}
                     />
                   </div>
                 );
@@ -123,17 +245,26 @@ class WorkspaceExploreSpaceComponent extends Component {
                   <div key={widget.id} data-grid={widget.layout}>
                     <CampaignsTimeseries
                       configuration={widget}
-                      onUpdate={this.handleActionWidget.bind(this)}
-                      onDelete={this.handleDeleteWidget.bind(this)}
+                      handleOpenConfig={this.handleOpenConfig.bind(this)}
+                      inferred={workspaceData.config.inferred}
+                      startDate={workspaceData.config.startDate}
+                      endDate={workspaceData.config.endDate}
                     />
                   </div>
                 );
               default:
                 return <div />;
             }
-          }, values(workspaceData))}
+          }, values(workspaceData.widgets))}
         </ResponsiveReactGridLayout>
-        <ExploreAddWidget onAdd={this.handleActionWidget.bind(this)} />
+        <ExploreUpdateWidget
+          open={this.state.openConfig}
+          configuration={this.state.currentWidget}
+          handleClose={this.handleCloseConfig.bind(this)}
+          handleUpdate={this.handleUpdateWidget.bind(this)}
+          handleDelete={this.handleDeleteWidget.bind(this)}
+        />
+        <ExploreAddWidget onAdd={this.handleAddWidget.bind(this)} />
       </div>
     );
   }

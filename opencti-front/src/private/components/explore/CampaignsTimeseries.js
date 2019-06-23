@@ -13,15 +13,14 @@ const styles = () => ({
 
 class CampaignsTimeseries extends Component {
   render() {
-    const { configuration, onUpdate, onDelete } = this.props;
+    const { configuration, handleOpenConfig } = this.props;
     switch (configuration.graph_type) {
       case 'chart':
         return (
             <EntityCampaignsChart
               variant="explore"
               configuration={configuration}
-              onUpdate={onUpdate.bind(this)}
-              onDelete={onDelete.bind(this)}
+              handleOpenConfig={handleOpenConfig.bind(this)}
               title={propOr('Widget', 'title', configuration)}
               entityId={pathOr(null, ['entity', 'id'], configuration)}
             />
@@ -31,8 +30,7 @@ class CampaignsTimeseries extends Component {
             <EntityCampaignsChart
               variant="explore"
               configuration={configuration}
-              onUpdate={onUpdate.bind(this)}
-              onDelete={onDelete.bind(this)}
+              handleOpenConfig={handleOpenConfig.bind(this)}
               title={propOr('Widget', 'title', configuration)}
               entityId={pathOr(null, ['entity', 'id'], configuration)}
             />
@@ -43,8 +41,10 @@ class CampaignsTimeseries extends Component {
 
 CampaignsTimeseries.propTypes = {
   configuration: PropTypes.object,
-  onUpdate: PropTypes.func,
-  onDelete: PropTypes.func,
+  handleOpenConfig: PropTypes.func,
+  inferred: PropTypes.bool,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

@@ -10,7 +10,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
-import { SettingsInputComponent, Close } from '@material-ui/icons';
+import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
@@ -70,18 +70,9 @@ class ExploreUpdateWidget extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      open: false,
       entities: [],
       currentWidget: null,
     };
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    this.setState({ open: false });
   }
 
   searchEntities(event) {
@@ -102,23 +93,25 @@ class ExploreUpdateWidget extends Component {
       assoc('id', this.props.configuration.id),
       assoc('entity', { id: values.entity.value, name: values.entity.label }),
     )(values);
-    this.props.onUpdate(finalValues);
+    this.props.handleUpdate(finalValues);
     setSubmitting(false);
     resetForm();
-    this.handleClose();
+    this.props.handleClose();
   }
 
   onReset() {
-    this.handleClose();
+    this.props.handleClose();
   }
 
   deleteWidget() {
-    this.handleClose();
-    this.props.onDelete(this.props.configuration.id);
+    this.props.handleClose();
+    this.props.handleDelete(this.props.configuration.id);
   }
 
   render() {
-    const { t, classes, configuration } = this.props;
+    const {
+      t, classes, configuration, open, handleClose,
+    } = this.props;
     const initialValues = pipe(
       assoc('entity', {
         label: pathOr('', ['entity', 'name'], configuration),
@@ -132,190 +125,182 @@ class ExploreUpdateWidget extends Component {
       victimology = this.state.currentWidget.includes('Victimology');
       distribution = this.state.currentWidget.includes('Distribution');
       timeseries = this.state.currentWidget.includes('Timeseries');
-    } else {
+    } else if (initialValues.widget !== undefined) {
       victimology = initialValues.widget.includes('Victimology');
       distribution = initialValues.widget.includes('Distribution');
       timeseries = initialValues.widget.includes('Timeseries');
     }
     return (
-      <div>
-        <IconButton
-          color='secondary'
-          aria-label="Update"
-          size="small"
-          classes={{ root: classes.updateButton }}
-          onClick={this.handleOpen.bind(this)}
-        >
-          <SettingsInputComponent fontSize="inherit" />
-        </IconButton>
-        <Drawer
-          open={this.state.open}
-          anchor="right"
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-            >
-              <Close fontSize="small" />
-            </IconButton>
-            <Typography variant="h6">{t('Add a widget')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <Formik
-              initialValues={initialValues}
-              validationSchema={widgetValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
-              render={({ submitForm, handleReset, isSubmitting }) => (
-                <div>
-                  <Form style={{ margin: '20px 0 20px 0' }}>
+      <Drawer
+        open={open}
+        anchor="right"
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose.bind(this)}
+      >
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
+          </IconButton>
+          <Typography variant="h6">{t('Update a widget')}</Typography>
+        </div>
+        <div className={classes.container}>
+          <Formik
+            enableReinitialize={true}
+            initialValues={initialValues}
+            validationSchema={widgetValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={this.onReset.bind(this)}
+            render={({ submitForm, handleReset, isSubmitting }) => (
+              <div>
+                <Form style={{ margin: '20px 0 20px 0' }}>
+                  <Field
+                    name="title"
+                    component={TextField}
+                    label={t('Title')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    name="widget"
+                    component={Select}
+                    label={t('Widget')}
+                    fullWidth={true}
+                    inputProps={{
+                      name: 'widget',
+                      id: 'widget',
+                    }}
+                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    onChange={(name, value) => {
+                      this.setState({ currentWidget: value });
+                    }}
+                  >
+                    <MenuItem value="VictimologyDistribution">
+                      {t('Victimology distribution')}
+                    </MenuItem>
+                    <MenuItem value="VictimologyTimeseries">
+                      {t('Victimology timeseries')}
+                    </MenuItem>
+                    <MenuItem value="CampaignsTimeseries">
+                      {t('Campaigns timeseries')}
+                    </MenuItem>
+                    <MenuItem value="Killchains">{t('Killchains')}</MenuItem>
+                  </Field>
+                  <Field
+                    name="entity"
+                    component={Autocomplete}
+                    multiple={false}
+                    label={t('Entity')}
+                    options={this.state.entities}
+                    onInputChange={this.searchEntities.bind(this)}
+                  />
+                  {victimology ? (
                     <Field
-                      name="title"
-                      component={TextField}
-                      label={t('Title')}
-                      fullWidth={true}
-                    />
-                    <Field
-                      name="widget"
+                      name="entity_type"
                       component={Select}
-                      label={t('Widget')}
+                      label={t('Entity type')}
                       fullWidth={true}
                       inputProps={{
-                        name: 'widget',
-                        id: 'widget',
+                        name: 'entity_type',
+                        id: 'entity_type',
                       }}
                       containerstyle={{ marginTop: 20, width: '100%' }}
-                      onChange={(name, value) => {
-                        this.setState({ currentWidget: value });
-                      }}
                     >
-                      <MenuItem value="VictimologyDistribution">
-                        {t('Victimology distribution')}
+                      <MenuItem value="Sector">{t('Sector')}</MenuItem>
+                      <MenuItem value="Organization">
+                        {t('Organization')}
                       </MenuItem>
-                      <MenuItem value="VictimologyTimeseries">
-                        {t('Victimology timeseries')}
-                      </MenuItem>
-                      <MenuItem value="CampaignsTimeseries">
-                        {t('Campaigns timeseries')}
-                      </MenuItem>
-                      <MenuItem value="Killchains">
-                        {t('Killchains')}
+                      <MenuItem value="Country">{t('Country')}</MenuItem>
+                      <MenuItem value="Region">{t('Region')}</MenuItem>
+                    </Field>
+                  ) : (
+                    ''
+                  )}
+                  {distribution ? (
+                    <Field
+                      name="graph_type"
+                      component={Select}
+                      label={t('Graph type')}
+                      fullWidth={true}
+                      inputProps={{
+                        name: 'graph_type',
+                        id: 'graph_type',
+                      }}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
+                    >
+                      <MenuItem value="table">{t('Table (top 10)')}</MenuItem>
+                      <MenuItem value="pie">{t('Pie chart')}</MenuItem>
+                      <MenuItem value="donut">{t('Donut chart')}</MenuItem>
+                      <MenuItem value="radar">{t('Radar chart')}</MenuItem>
+                    </Field>
+                  ) : (
+                    ''
+                  )}
+                  {timeseries ? (
+                    <Field
+                      name="graph_type"
+                      component={Select}
+                      label={t('Graph type')}
+                      fullWidth={true}
+                      inputProps={{
+                        name: 'graph_type',
+                        id: 'graph_type',
+                      }}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
+                    >
+                      <MenuItem value="table">{t('Table')}</MenuItem>
+                      <MenuItem value="chart">{t('Lines chart')}</MenuItem>
+                      <MenuItem value="timeline">
+                        {t('Timeline chart')}
                       </MenuItem>
                     </Field>
-                    <Field
-                      name="entity"
-                      component={Autocomplete}
-                      multiple={false}
-                      label={t('Entity')}
-                      options={this.state.entities}
-                      onInputChange={this.searchEntities.bind(this)}
-                    />
-                    {victimology ? (
-                      <Field
-                        name="entity_type"
-                        component={Select}
-                        label={t('Entity type')}
-                        fullWidth={true}
-                        inputProps={{
-                          name: 'entity_type',
-                          id: 'entity_type',
-                        }}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                      >
-                        <MenuItem value="Sector">{t('Sector')}</MenuItem>
-                        <MenuItem value="Organization">
-                          {t('Organization')}
-                        </MenuItem>
-                        <MenuItem value="Country">{t('Country')}</MenuItem>
-                        <MenuItem value="Region">{t('Region')}</MenuItem>
-                      </Field>
-                    ) : (
-                      ''
-                    )}
-                    {distribution ? (
-                      <Field
-                        name="graph_type"
-                        component={Select}
-                        label={t('Graph type')}
-                        fullWidth={true}
-                        inputProps={{
-                          name: 'graph_type',
-                          id: 'graph_type',
-                        }}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                      >
-                        <MenuItem value="table">{t('Table (top 10)')}</MenuItem>
-                        <MenuItem value="pie">{t('Pie chart')}</MenuItem>
-                        <MenuItem value="donut">{t('Donut chart')}</MenuItem>
-                        <MenuItem value="radar">{t('Radar chart')}</MenuItem>
-                      </Field>
-                    ) : (
-                      ''
-                    )}
-                    {timeseries ? (
-                      <Field
-                        name="graph_type"
-                        component={Select}
-                        label={t('Graph type')}
-                        fullWidth={true}
-                        inputProps={{
-                          name: 'graph_type',
-                          id: 'graph_type',
-                        }}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                      >
-                        <MenuItem value="table">{t('Table')}</MenuItem>
-                        <MenuItem value="chart">{t('Lines chart')}</MenuItem>
-                        <MenuItem value="timeline">{t('Timeline chart')}</MenuItem>
-                      </Field>
-                    ) : (
-                      ''
-                    )}
-                    <div className={classes.buttons}>
-                      <Button
-                        variant="contained"
-                        onClick={handleReset}
-                        disabled={isSubmitting}
-                        classes={{ root: classes.button }}
-                      >
-                        {t('Cancel')}
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={this.deleteWidget.bind(this)}
-                        classes={{ root: classes.button }}
-                      >
-                        {t('Delete')}
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={submitForm}
-                        disabled={isSubmitting}
-                        classes={{ root: classes.button }}
-                      >
-                        {t('Update')}
-                      </Button>
-                    </div>
-                  </Form>
-                </div>
-              )}
-            />
-          </div>
-        </Drawer>
-      </div>
+                  ) : (
+                    ''
+                  )}
+                  <div className={classes.buttons}>
+                    <Button
+                      variant="contained"
+                      onClick={handleReset}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Cancel')}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={this.deleteWidget.bind(this)}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Delete')}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Update')}
+                    </Button>
+                  </div>
+                </Form>
+              </div>
+            )}
+          />
+        </div>
+      </Drawer>
     );
   }
 }
 
 ExploreUpdateWidget.propTypes = {
-  onUpdate: PropTypes.func,
-  onDelete: PropTypes.func,
+  open: PropTypes.bool,
+  handleClose: PropTypes.func,
+  handleUpdate: PropTypes.func,
+  handleDelete: PropTypes.func,
   configuration: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,

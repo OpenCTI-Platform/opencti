@@ -13,11 +13,12 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Chip from '@material-ui/core/Chip';
 import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import { SettingsInputComponent } from '@material-ui/icons';
 import { QueryRenderer } from '../../../relay/environment';
 import { monthsAgo, now } from '../../../utils/Time';
 import Theme from '../../../components/Theme';
 import inject18n from '../../../components/i18n';
-import ExploreUpdateWidget from '../explore/ExploreUpdateWidget';
 
 const styles = () => ({
   paper: {
@@ -37,6 +38,10 @@ const styles = () => ({
     fontSize: 10,
     height: 20,
     marginLeft: 10,
+  },
+  updateButton: {
+    float: 'right',
+    margin: '7px 10px 0 0',
   },
 });
 
@@ -173,8 +178,7 @@ class EntityCampaignsChart extends Component {
       variant,
       title,
       configuration,
-      onUpdate,
-      onDelete,
+      handleOpenConfig,
     } = this.props;
     if (variant === 'explore') {
       return (
@@ -186,11 +190,15 @@ class EntityCampaignsChart extends Component {
           >
             {title || t('Campaigns')}
           </Typography>
-          <ExploreUpdateWidget
-            configuration={configuration}
-            onUpdate={onUpdate.bind(this)}
-            onDelete={onDelete.bind(this)}
-          />
+          <IconButton
+            color="secondary"
+            aria-label="Update"
+            size="small"
+            classes={{ root: classes.updateButton }}
+            onClick={handleOpenConfig.bind(this, configuration)}
+          >
+            <SettingsInputComponent fontSize="inherit" />
+          </IconButton>
           <div className="clearfix" />
           {this.renderContent()}
         </Paper>
@@ -247,9 +255,8 @@ EntityCampaignsChart.propTypes = {
   t: PropTypes.func,
   fld: PropTypes.func,
   md: PropTypes.func,
-  onUpdate: PropTypes.func,
-  onDelete: PropTypes.func,
   configuration: PropTypes.object,
+  handleOpenConfig: PropTypes.func,
 };
 
 export default compose(

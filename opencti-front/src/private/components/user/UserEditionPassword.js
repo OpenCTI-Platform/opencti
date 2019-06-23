@@ -74,7 +74,7 @@ class UserEditionPasswordComponent extends Component {
     return (
       <div>
         <Formik
-          enableReinitialize
+          enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={userValidation(t)}
           onSubmit={this.onSubmit.bind(this)}

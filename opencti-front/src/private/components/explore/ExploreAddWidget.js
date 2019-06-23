@@ -37,6 +37,7 @@ const styles = theme => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
+    zIndex: 1001,
   },
   buttons: {
     marginTop: 20,
@@ -149,8 +150,6 @@ class ExploreAddWidget extends Component {
                 title: '',
                 entity: '',
                 widget: '',
-                size: '',
-                order: '',
               }}
               validationSchema={widgetValidation(t)}
               onSubmit={this.onSubmit.bind(this)}

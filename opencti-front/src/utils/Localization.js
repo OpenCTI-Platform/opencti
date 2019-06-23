@@ -117,6 +117,7 @@ const i18n = {
       'Create a workspace': 'Créer un espace de travail',
       'Update a workspace': 'Modifier un espace de travail',
       'Add a widget': 'Ajouter un widget',
+      'Update a widget': 'Modifier un widget',
       'Create a user': 'Créer un utilisateur',
       'Update a user': 'Modifier un utilisateur',
       'Create a group': 'Créer un groupe',

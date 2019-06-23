@@ -10,10 +10,11 @@ import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import { SettingsInputComponent } from '@material-ui/icons';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import { itemColor } from '../../../utils/Colors';
-import ExploreUpdateWidget from '../explore/ExploreUpdateWidget';
 
 const styles = () => ({
   paper: {
@@ -28,14 +29,21 @@ const styles = () => ({
     padding: 0,
     borderRadius: 6,
   },
+  updateButton: {
+    float: 'right',
+    margin: '7px 10px 0 0',
+  },
 });
 
 const entityStixRelationsDonutStixRelationDistributionQuery = graphql`
   query EntityStixRelationsDonutStixRelationDistributionQuery(
     $fromId: String
     $toTypes: [String]
+    $entityTypes: [String]
     $relationType: String
     $inferred: Boolean
+    $startDate: DateTime
+    $endDate: DateTime
     $resolveInferences: Boolean
     $resolveRelationType: String
     $resolveRelationRole: String
@@ -47,8 +55,11 @@ const entityStixRelationsDonutStixRelationDistributionQuery = graphql`
     stixRelationsDistribution(
       fromId: $fromId
       toTypes: $toTypes
+      entityTypes: $entityTypes
       relationType: $relationType
       inferred: $inferred
+      startDate: $startDate
+      endDate: $endDate
       resolveInferences: $resolveInferences
       resolveRelationType: $resolveRelationType
       resolveRelationRole: $resolveRelationRole
@@ -131,7 +142,10 @@ class EntityStixRelationsDonut extends Component {
       relationType,
       field,
       variant,
+      entityTypes,
       inferred,
+      startDate,
+      endDate,
       resolveInferences,
       resolveRelationType,
       resolveRelationRole,
@@ -139,14 +153,17 @@ class EntityStixRelationsDonut extends Component {
       resolveViaTypes,
     } = this.props;
     const stixRelationsDistributionVariables = {
-      inferred,
+      fromId: entityId,
+      toTypes: entityType ? [entityType] : null,
+      entityTypes: entityTypes || null,
+      inferred: inferred || true,
+      startDate: startDate || null,
+      endDate: endDate || null,
       resolveInferences,
       resolveRelationType,
       resolveRelationRole,
       resolveRelationToTypes,
       resolveViaTypes,
-      fromId: entityId,
-      toTypes: entityType ? [entityType] : null,
       relationType,
       field,
       operation: 'count',
@@ -236,8 +253,7 @@ class EntityStixRelationsDonut extends Component {
       title,
       entityType,
       configuration,
-      onUpdate,
-      onDelete,
+      handleOpenConfig,
     } = this.props;
     if (variant === 'explore') {
       return (
@@ -249,11 +265,15 @@ class EntityStixRelationsDonut extends Component {
           >
             {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
           </Typography>
-          <ExploreUpdateWidget
-            configuration={configuration}
-            onUpdate={onUpdate.bind(this)}
-            onDelete={onDelete.bind(this)}
-          />
+          <IconButton
+            color="secondary"
+            aria-label="Update"
+            size="small"
+            classes={{ root: classes.updateButton }}
+            onClick={handleOpenConfig.bind(this, configuration)}
+          >
+            <SettingsInputComponent fontSize="inherit" />
+          </IconButton>
           <div className="clearfix" />
           {this.renderContent()}
         </Paper>
@@ -279,18 +299,20 @@ EntityStixRelationsDonut.propTypes = {
   relationType: PropTypes.string,
   entityType: PropTypes.string,
   inferred: PropTypes.bool,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
   resolveInferences: PropTypes.bool,
   resolveRelationType: PropTypes.string,
   resolveRelationRole: PropTypes.string,
   resolveRelationToTypes: PropTypes.array,
   resolveViaTypes: PropTypes.array,
+  entityTypes: PropTypes.array,
   field: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
-  onUpdate: PropTypes.func,
-  onDelete: PropTypes.func,
   configuration: PropTypes.object,
+  handleOpenConfig: PropTypes.func,
 };
 
 export default compose(

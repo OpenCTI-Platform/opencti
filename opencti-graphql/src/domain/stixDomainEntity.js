@@ -1,4 +1,4 @@
-import { assoc, isNil, map, filter } from 'ramda';
+import { assoc, isNil, map, filter, propOr } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
@@ -185,7 +185,7 @@ export const exports = (stixDomainEntityId, args) => {
         stixDomainEntityId
       )}"; get $e, $c; sort $c desc;`;
       return queryOne(query, ['e']).then(data => {
-        return data.e;
+        return propOr(null, 'e', data);
       });
     })
   );
