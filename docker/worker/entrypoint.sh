@@ -19,7 +19,9 @@ sed -i -e "s/REPLACE_API_KEY/$(cat /opt/opencti/shared_config/token)/g" /opt/ope
 cp /opt/opencti/worker/config.yml.docker.sample /opt/opencti/shared_config/config.yml
 
 # Chown the application
-chown -R ${RUN_USER} /opt/opencti
+if [ $RUN_USER != "root" ]; then
+  chown -R ${RUN_USER} /opt/opencti
+fi
 
 # Start
 cd /opt/opencti/worker
