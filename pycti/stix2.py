@@ -311,7 +311,11 @@ class Stix2:
                     else:
                         published = datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
 
-                    title = source_name
+                    if 'mitre-attack (' in source_name and 'name' in stix_object:
+                        title = '[MITRE ATT&CK] ' + stix_object['name']
+                    else:
+                        title = source_name
+
                     if 'external_id' in external_reference:
                         title = title + ' (' + external_reference['external_id'] + ')'
                     report_id = self.opencti.create_report_if_not_exists_from_external_reference(
@@ -319,8 +323,14 @@ class Stix2:
                         title,
                         external_reference['description'] if 'description' in external_reference else None,
                         published,
-                        'external'
+                        'external',
+                        2
                     )['id']
+
+                    # Resolve author
+                    author_id = self.resolve_author(title)
+                    if author_id is not None:
+                        self.opencti.update_stix_domain_entity_created_by_ref(report_id, author_id)
 
                     # Add marking
                     if 'marking_tlpwhite' in self.mapping_cache:
@@ -910,8 +920,14 @@ class Stix2:
                     title,
                     external_reference['description'] if 'description' in external_reference else None,
                     published,
-                    'external'
+                    'external',
+                    2
                 )['id']
+
+                # Resolve author
+                author_id = self.resolve_author(title)
+                if author_id is not None:
+                    self.opencti.update_stix_domain_entity_created_by_ref(report_id, author_id)
 
                 # Add marking
                 if 'marking_tlpwhite' in self.mapping_cache:
@@ -929,6 +945,65 @@ class Stix2:
                 self.opencti.add_object_ref_to_report_if_not_exists(report_id, source_id)
                 self.opencti.add_object_ref_to_report_if_not_exists(report_id, target_id)
                 self.opencti.add_object_ref_to_report_if_not_exists(report_id, stix_relation_id)
+
+    def resolve_author(self, title):
+        if 'fireeye' in title.lower():
+            if 'FireEye' in self.mapping_cache:
+                return self.mapping_cache['FireEye']
+            else:
+                author_id = self.opencti.create_identity_if_not_exists('Organization', 'FireEye', '')['id']
+                self.mapping_cache['FireEye'] = author_id
+                return author_id
+        if 'eset' in title.lower():
+            if 'ESET' in self.mapping_cache:
+                return self.mapping_cache['ESET']
+            else:
+                author_id = self.opencti.create_identity_if_not_exists('Organization', 'ESET', '')['id']
+                self.mapping_cache['ESET'] = author_id
+                return author_id
+        if 'unit 42' in title.lower():
+            if 'PaloAlto' in self.mapping_cache:
+                return self.mapping_cache['PaloAlto']
+            else:
+                author_id = self.opencti.create_identity_if_not_exists('Organization', 'Palo Alto Networks', '')['id']
+                self.mapping_cache['PaloAlto'] = author_id
+                return author_id
+        if 'accenture' in title.lower():
+            if 'Accenture' in self.mapping_cache:
+                return self.mapping_cache['Accenture']
+            else:
+                author_id = self.opencti.create_identity_if_not_exists('Organization', 'Accenture', '')['id']
+                self.mapping_cache['Accenture'] = author_id
+                return author_id
+        if 'symantec' in title.lower():
+            if 'Symantec' in self.mapping_cache:
+                return self.mapping_cache['Symantec']
+            else:
+                author_id = self.opencti.create_identity_if_not_exists('Organization', 'Symantec', '')['id']
+                self.mapping_cache['Symantec'] = author_id
+                return author_id
+        if 'mcafee' in title.lower():
+            if 'McAfee' in self.mapping_cache:
+                return self.mapping_cache['McAfee']
+            else:
+                author_id = self.opencti.create_identity_if_not_exists('Organization', 'McAfee', '')['id']
+                self.mapping_cache['McAfee'] = author_id
+                return author_id
+        if 'crowdstrike' in title.lower():
+            if 'CrowdStrike' in self.mapping_cache:
+                return self.mapping_cache['CrowdStrike']
+            else:
+                author_id = self.opencti.create_identity_if_not_exists('Organization', 'CrowdStrike', '')['id']
+                self.mapping_cache['CrowdStrike'] = author_id
+                return author_id
+        if 'mitre atta&ck' in title.lower():
+            if 'Mitre' in self.mapping_cache:
+                return self.mapping_cache['Mitre']
+            else:
+                author_id = self.opencti.create_identity_if_not_exists('Organization', 'The MITRE Corporation', '')['id']
+                self.mapping_cache['Mitre'] = author_id
+                return author_id
+        return None
 
     def import_bundle(self, stix_bundle, update=False, types=[]):
         # Check if the bundle is correctly formated

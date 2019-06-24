@@ -121,7 +121,7 @@ class OpenCTI:
         """
         self.query(query, {
             'identifier': identifier,
-            'config': base64.b64encode(json.dumps(config).encode('ascii'))
+            'config': base64.b64encode(json.dumps(config).encode('ascii')).decode('ascii')
         })
 
     def get_stix_domain_entity(self, id):
@@ -3470,6 +3470,9 @@ class OpenCTI:
         }
         if entity_type == 'report':
             bundle['objects'] = stix2.export_report(self.parse_stix(self.get_report(entity_id)), mode)
+        if entity_type == 'threat-actor':
+            bundle['objects'] = stix2.export_threat_actor(self.parse_stix(self.get_threat_actor(entity_id)))
+
         return bundle
 
     def stix2_export_bundle(self, types=[]):
