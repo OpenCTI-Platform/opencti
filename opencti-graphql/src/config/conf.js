@@ -49,7 +49,7 @@ export const BUS_TOPICS = {
 };
 
 // Environment from NODE_ENV environment variable
-nconf.env({ separator: '__', lowerCase: true });
+nconf.env({ separator: '__', lowerCase: true,  parseValues: true });
 
 // Environment from "-e" command line parameter
 nconf.add('argv', {
