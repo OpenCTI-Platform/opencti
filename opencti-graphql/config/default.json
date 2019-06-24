@@ -5,7 +5,8 @@
     "connectors": "./integration/connectors",
     "secret": "define your secret",
     "reactive": true,
-    "cookie_secure": false
+    "cookie_secure": false,
+    "default_roles": []
   },
   "grakn": {
     "hostname": "localhost",

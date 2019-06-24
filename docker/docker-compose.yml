@@ -2,6 +2,8 @@ version: '3'
 services:
   grakn:
     image: graknlabs/grakn:1.5.5
+    ports:
+      - 48555:48555 
     restart: always
   redis:
     image: redis
@@ -20,6 +22,8 @@ services:
       - RUN_USER=root
     volumes:
       - "./config:/opt/opencti/shared_config:rw"
+    links:
+      - opencti:opencti
     restart: always
   integration:
     image: luatix/opencti-integration
@@ -29,6 +33,8 @@ services:
       - RUN_USER=root
     volumes:
       - "./config:/opt/opencti/shared_config:rw"
+    links:
+      - opencti:opencti
     restart: always    
   opencti:
     image: luatix/opencti
@@ -36,7 +42,7 @@ services:
       context: ./opencti
     environment:
       - RUN_USER=root
-      - APP__PORT=4000
+      - APP__PORT=8080
       - APP__LOGS=./logs
       - APP__CONNECTORS=./integration/connectors
       - APP__SECRET=ChangeMe
@@ -52,7 +58,7 @@ services:
       - RABBITMQ__HOSTNAME=rabbitmq
       - RABBITMQ__PORT=5672
     ports:
-      - "8080:4000"
+      - "8080:8080"
     volumes:
       - "./config:/opt/opencti/shared_config:rw"
     depends_on:

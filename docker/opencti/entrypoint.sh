@@ -14,13 +14,13 @@ while ! nc -z grakn 48555; do
 done
 
 # Chown the application
-#chown -R ${RUN_USER} /opt/opencti
+chown -R ${RUN_USER} /opt/opencti
 
 # Upgrade schema & do migrations
 cd /opt/opencti
-sudo -H -u ${RUN_USER} npm run schema
-TOKEN=`sudo -H -u ${RUN_USER} npm run migrate | grep "Token for user admin:" | awk '{split($0,a,": "); print a[2]}'`
+sudo -E -H -u ${RUN_USER} npm run schema
+TOKEN=`sudo -E -H -u ${RUN_USER} npm run migrate | grep "Token for user admin:" | awk '{split($0,a,": "); print a[2]}'`
 [ -n "$TOKEN" ] && echo $TOKEN > /opt/opencti/shared_config/token
 
 # Start
-sudo -H -u ${RUN_USER} node dist/server.js
+sudo -E -H -u ${RUN_USER} node dist/server.js

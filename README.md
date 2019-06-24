@@ -9,6 +9,10 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
 
 ![Screenshot](docs/screenshot.png "OpenCTI")
 
+## Demonstration
+
+If you wish to discover how the OpenCTI platform is working, a [demonstration instance](https://demo.opencti.io) is available and open to everyone. This instance is reset every nights and based on reference data maintened by the OpenCTI developers.
+
 ## Releases download
 
 The releases are available on the [Github releases page](https://github.com/OpenCTI-Platform/opencti/releases). You can also access to the [rolling release package](https://releases.opencti.io) generated from the mater branch of the repository.

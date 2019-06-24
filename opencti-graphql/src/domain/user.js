@@ -240,7 +240,8 @@ export const loginFromProvider = async (email, name) => {
       name,
       email,
       created: now(),
-      password: null
+      password: null,
+      grant: conf.get('app:default_roles')
     };
     return addUser({}, newUser).then(() => loginFromProvider(email, name));
   }

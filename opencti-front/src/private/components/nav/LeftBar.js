@@ -209,6 +209,7 @@ class LeftBar extends Component {
             </MenuItem>
             <MenuItem
               component={Link}
+              disabled={true}
               to="/dashboard/investigate"
               onClick={this.handleClickAway.bind(this)}
               selected={location.pathname.includes('/dashboard/investigate')}
@@ -228,6 +229,7 @@ class LeftBar extends Component {
             </MenuItem>
             <MenuItem
               component={Link}
+              disabled={true}
               to="/dashboard/correlate"
               onClick={this.handleClickAway.bind(this)}
               selected={location.pathname.includes('/dashboard/correlate')}
