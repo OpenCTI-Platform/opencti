@@ -86,7 +86,7 @@ class OrganizationPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/catalogs/organizations');
+        this.props.history.push('/dashboard/entities/organizations');
       },
     });
   }

@@ -46,7 +46,7 @@ class TopMenuIntrusionSet extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/knowledge/intrusion_sets"
+          to="/dashboard/threats/intrusion_sets"
           variant="contained"
           size="small"
           color="inherit"
@@ -58,17 +58,17 @@ class TopMenuIntrusionSet extends Component {
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
-          to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}`}
+          to={`/dashboard/threats/intrusion_sets/${intrusionSetId}`}
           variant={
             location.pathname
-            === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}`
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}`
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}`
               ? 'primary'
               : 'inherit'
           }
@@ -78,17 +78,17 @@ class TopMenuIntrusionSet extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/reports`}
+          to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/reports`}
           variant={
             location.pathname
-            === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/reports`
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/reports`
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -98,10 +98,10 @@ class TopMenuIntrusionSet extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge`}
+          to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge`,
+              `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -109,7 +109,7 @@ class TopMenuIntrusionSet extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge`,
+              `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'
@@ -120,10 +120,10 @@ class TopMenuIntrusionSet extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/observables`}
+          to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/observables`}
           variant={
             location.pathname.includes(
-              `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/observables`,
+              `/dashboard/threats/intrusion_sets/${intrusionSetId}/observables`,
             )
               ? 'contained'
               : 'text'
@@ -131,7 +131,7 @@ class TopMenuIntrusionSet extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/observables`,
+              `/dashboard/threats/intrusion_sets/${intrusionSetId}/observables`,
             )
               ? 'primary'
               : 'inherit'

@@ -31,14 +31,14 @@ const styles = theme => ({
 class IntrusionSetObservablesComponent extends Component {
   render() {
     const { classes, intrusionSet, location } = this.props;
-    const link = `/dashboard/knowledge/intrusion_sets/${
+    const link = `/dashboard/threats/intrusion_sets/${
       intrusionSet.id
     }/observables`;
     return (
       <div
         className={
           location.pathname.includes(
-            `/dashboard/knowledge/intrusion_sets/${
+            `/dashboard/threats/intrusion_sets/${
               intrusionSet.id
             }/observables/relations/`,
           )
@@ -49,7 +49,7 @@ class IntrusionSetObservablesComponent extends Component {
         <IntrusionSetHeader intrusionSet={intrusionSet} variant="noalias" />
         <Route
           exact
-          path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/observables/relations/:relationId"
+          path="/dashboard/threats/intrusion_sets/:intrusionSetId/observables/relations/:relationId"
           render={routeProps => (
             <StixRelation
               entityId={intrusionSet.id}
@@ -61,7 +61,7 @@ class IntrusionSetObservablesComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/observables"
+          path="/dashboard/threats/intrusion_sets/:intrusionSetId/observables"
           render={routeProps => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityStixObservables

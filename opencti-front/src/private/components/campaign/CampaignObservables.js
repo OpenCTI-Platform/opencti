@@ -31,12 +31,12 @@ const styles = theme => ({
 class CampaignObservablesComponent extends Component {
   render() {
     const { classes, campaign, location } = this.props;
-    const link = `/dashboard/knowledge/campaigns/${campaign.id}/observables`;
+    const link = `/dashboard/threats/campaigns/${campaign.id}/observables`;
     return (
       <div
         className={
           location.pathname.includes(
-            `/dashboard/knowledge/campaigns/${
+            `/dashboard/threats/campaigns/${
               campaign.id
             }/observables/relations/`,
           )
@@ -47,7 +47,7 @@ class CampaignObservablesComponent extends Component {
         <CampaignHeader campaign={campaign} variant="noalias" />
         <Route
           exact
-          path="/dashboard/knowledge/campaigns/:campaignId/observables/relations/:relationId"
+          path="/dashboard/threats/campaigns/:campaignId/observables/relations/:relationId"
           render={routeProps => (
             <StixRelation
               entityId={campaign.id}
@@ -59,7 +59,7 @@ class CampaignObservablesComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/knowledge/campaigns/:campaignId/observables"
+          path="/dashboard/threats/campaigns/:campaignId/observables"
           render={routeProps => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityStixObservables

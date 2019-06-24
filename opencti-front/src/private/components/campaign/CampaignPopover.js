@@ -86,7 +86,7 @@ class CampaignPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/knowledge/campaigns');
+        this.props.history.push('/dashboard/threats/campaigns');
       },
     });
   }

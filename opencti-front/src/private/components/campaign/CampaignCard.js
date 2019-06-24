@@ -79,7 +79,7 @@ class CampaignCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/knowledge/campaigns/${campaign.id}`}
+          to={`/dashboard/threats/campaigns/${campaign.id}`}
         >
           <CardHeader
             classes={{ root: classes.header }}

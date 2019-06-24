@@ -32,6 +32,8 @@ import RootReport from './components/report/Root';
 import ExternalReferences from './components/ExternalReferences';
 import AttackPatterns from './components/AttackPatterns';
 import RootAttackPattern from './components/attack_pattern/Root';
+import CoursesOfAction from './components/CoursesOfAction';
+import RootCourseOfAction from './components/course_of_action/Root';
 import Tools from './components/Tools';
 import RootTool from './components/tool/Root';
 import Vulnerabilities from './components/Vulnerabilities';
@@ -124,75 +126,118 @@ class Root extends Component {
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/knowledge"
+                          path="/dashboard/threats"
                           render={() => (
-                            <Redirect to="/dashboard/knowledge/threat_actors" />
+                            <Redirect to="/dashboard/threats/threat_actors" />
                           )}
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/knowledge/threat_actors"
+                          path="/dashboard/threats/threat_actors"
                           component={ThreatActors}
                         />
                         <BoundaryRoute
-                          path="/dashboard/knowledge/threat_actors/:threatActorId"
+                          path="/dashboard/threats/threat_actors/:threatActorId"
                           render={routeProps => (
                             <RootThreatActor {...routeProps} me={props.me} />
                           )}
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/knowledge/sectors"
-                          component={Sectors}
-                        />
-                        <BoundaryRoute
-                          path="/dashboard/knowledge/sectors/:sectorId"
-                          render={routeProps => (
-                            <RootSector {...routeProps} me={props.me} />
-                          )}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/knowledge/intrusion_sets"
+                          path="/dashboard/threats/intrusion_sets"
                           component={IntrusionSets}
                         />
                         <BoundaryRoute
-                          path="/dashboard/knowledge/intrusion_sets/:intrusionSetId"
+                          path="/dashboard/threats/intrusion_sets/:intrusionSetId"
                           render={routeProps => (
                             <RootIntrusionSet {...routeProps} me={props.me} />
                           )}
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/knowledge/campaigns"
+                          path="/dashboard/threats/campaigns"
                           component={Campaigns}
                         />
                         <BoundaryRoute
-                          path="/dashboard/knowledge/campaigns/:campaignId"
+                          path="/dashboard/threats/campaigns/:campaignId"
                           render={routeProps => (
                             <RootCampaign {...routeProps} me={props.me} />
                           )}
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/knowledge/incidents"
+                          path="/dashboard/threats/incidents"
                           component={Incidents}
                         />
                         <BoundaryRoute
-                          path="/dashboard/knowledge/incidents/:incidentId"
+                          path="/dashboard/threats/incidents/:incidentId"
                           render={routeProps => (
                             <RootIncident {...routeProps} me={props.me} />
                           )}
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/knowledge/malwares"
+                          path="/dashboard/threats/malwares"
                           component={Malwares}
                         />
                         <BoundaryRoute
-                          path="/dashboard/knowledge/malwares/:malwareId"
+                          path="/dashboard/threats/malwares/:malwareId"
                           render={routeProps => (
                             <RootMalware {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/techniques"
+                          render={() => (
+                            <Redirect to="/dashboard/techniques/attack_patterns" />
+                          )}
+                        />
+                        <BoundaryRoute
+                        exact
+                        path="/dashboard/techniques/attack_patterns"
+                        component={AttackPatterns}
+                      />
+                        <BoundaryRoute
+                          path="/dashboard/techniques/attack_patterns/:attackPatternId"
+                          render={routeProps => (
+                            <RootAttackPattern {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/techniques/courses_of_action"
+                          component={CoursesOfAction}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/techniques/courses_of_action/:courseOfActionId"
+                          render={routeProps => (
+                            <RootCourseOfAction {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/techniques/tools"
+                          component={Tools}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/techniques/tools/:toolId"
+                          render={routeProps => (
+                            <RootTool {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/techniques/vulnerabilities"
+                          component={Vulnerabilities}
+                        />
+                        <BoundaryRoute
+                          path="/dashboard/techniques/vulnerabilities/:vulnerabilityId"
+                          render={routeProps => (
+                            <RootVulnerabilities
+                              {...routeProps}
+                              me={props.me}
+                            />
                           )}
                         />
                         <BoundaryRoute
@@ -252,88 +297,63 @@ class Root extends Component {
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/catalogs"
+                          path="/dashboard/entities"
                           render={() => (
-                            <Redirect to="/dashboard/catalogs/attack_patterns" />
+                            <Redirect to="/dashboard/entities/sectors" />
                           )}
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/catalogs/attack_patterns"
-                          component={AttackPatterns}
+                          path="/dashboard/entities/sectors"
+                          component={Sectors}
                         />
                         <BoundaryRoute
-                          path="/dashboard/catalogs/attack_patterns/:attackPatternId"
+                          path="/dashboard/entities/sectors/:sectorId"
                           render={routeProps => (
-                            <RootAttackPattern {...routeProps} me={props.me} />
+                            <RootSector {...routeProps} me={props.me} />
                           )}
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/catalogs/tools"
-                          component={Tools}
-                        />
-                        <BoundaryRoute
-                          path="/dashboard/catalogs/tools/:toolId"
-                          render={routeProps => (
-                            <RootTool {...routeProps} me={props.me} />
-                          )}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/catalogs/vulnerabilities"
-                          component={Vulnerabilities}
-                        />
-                        <BoundaryRoute
-                          path="/dashboard/catalogs/vulnerabilities/:vulnerabilityId"
-                          render={routeProps => (
-                            <RootVulnerabilities
-                              {...routeProps}
-                              me={props.me}
-                            />
-                          )}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/catalogs/regions"
+                          path="/dashboard/entities/regions"
                           component={Regions}
                         />
                         <BoundaryRoute
-                          path="/dashboard/catalogs/regions/:regionId"
+                          path="/dashboard/entities/regions/:regionId"
                           render={routeProps => (
                             <RootRegion {...routeProps} me={props.me} />
                           )}
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/catalogs/countries"
+                          path="/dashboard/entities/countries"
                           component={Countries}
                         />
                         <BoundaryRoute
-                          path="/dashboard/catalogs/countries/:countryId"
+                          path="/dashboard/entities/countries/:countryId"
                           render={routeProps => (
                             <RootCountry {...routeProps} me={props.me} />
                           )}
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/catalogs/cities"
+                          path="/dashboard/entities/cities"
                           component={Cities}
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/catalogs/organizations"
+                          path="/dashboard/entities/organizations"
                           component={Organizations}
                         />
                         <BoundaryRoute
-                          path="/dashboard/catalogs/organizations/:organizationId"
+                          path="/dashboard/entities/organizations/:organizationId"
                           render={routeProps => (
                             <RootOrganization {...routeProps} me={props.me} />
                           )}
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/catalogs/persons"
+                          path="/dashboard/entities/persons"
                           component={Persons}
                         />
                         <BoundaryRoute

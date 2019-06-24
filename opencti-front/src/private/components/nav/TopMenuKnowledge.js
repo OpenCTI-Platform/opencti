@@ -5,7 +5,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { Public, Domain } from '@material-ui/icons';
+import { Public } from '@material-ui/icons';
 import {
   Biohazard, Diamond, Fire, ChessKnight,
 } from 'mdi-material-ui';
@@ -32,15 +32,15 @@ class TopMenuKnowledge extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/knowledge/threat_actors"
+          to="/dashboard/threats/threat_actors"
           variant={
-            location.pathname.includes('/dashboard/knowledge/threat_actors')
+            location.pathname.includes('/dashboard/threats/threat_actors')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/knowledge/threat_actors')
+            location.pathname.includes('/dashboard/threats/threat_actors')
               ? 'primary'
               : 'inherit'
           }
@@ -51,34 +51,15 @@ class TopMenuKnowledge extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/knowledge/sectors"
+          to="/dashboard/threats/intrusion_sets"
           variant={
-            location.pathname.includes('/dashboard/knowledge/sectors')
+            location.pathname.includes('/dashboard/threats/intrusion_sets')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/knowledge/sectors')
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          <Domain className={width > 950 ? classes.icon : ''} fontSize="small" />
-          {width > 950 ? t('Sectors') : ''}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/knowledge/intrusion_sets"
-          variant={
-            location.pathname.includes('/dashboard/knowledge/intrusion_sets')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/dashboard/knowledge/intrusion_sets')
+            location.pathname.includes('/dashboard/threats/intrusion_sets')
               ? 'primary'
               : 'inherit'
           }
@@ -89,15 +70,15 @@ class TopMenuKnowledge extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/knowledge/campaigns"
+          to="/dashboard/threats/campaigns"
           variant={
-            location.pathname.includes('/dashboard/knowledge/campaigns')
+            location.pathname.includes('/dashboard/threats/campaigns')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/knowledge/campaigns'
+            location.pathname === '/dashboard/threats/campaigns'
               ? 'primary'
               : 'inherit'
           }
@@ -108,15 +89,15 @@ class TopMenuKnowledge extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/knowledge/incidents"
+          to="/dashboard/threats/incidents"
           variant={
-            location.pathname.includes('/dashboard/knowledge/incidents')
+            location.pathname.includes('/dashboard/threats/incidents')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/knowledge/incidents')
+            location.pathname.includes('/dashboard/threats/incidents')
               ? 'primary'
               : 'inherit'
           }
@@ -127,15 +108,15 @@ class TopMenuKnowledge extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/knowledge/malwares"
+          to="/dashboard/threats/malwares"
           variant={
-            location.pathname.includes('/dashboard/knowledge/malwares')
+            location.pathname.includes('/dashboard/threats/malwares')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/knowledge/malwares')
+            location.pathname.includes('/dashboard/threats/malwares')
               ? 'primary'
               : 'inherit'
           }

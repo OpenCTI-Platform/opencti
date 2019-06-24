@@ -44,10 +44,10 @@ class CountryKnowledgeBar extends Component {
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/countries/${countryId}/knowledge/overview`}
+            to={`/dashboard/entities/countries/${countryId}/knowledge/overview`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/countries/${countryId}/knowledge/overview`
+              === `/dashboard/entities/countries/${countryId}/knowledge/overview`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -59,10 +59,10 @@ class CountryKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/countries/${countryId}/knowledge/cities`}
+            to={`/dashboard/entities/countries/${countryId}/knowledge/cities`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/countries/${countryId}/knowledge/cities`
+              === `/dashboard/entities/countries/${countryId}/knowledge/cities`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -77,10 +77,10 @@ class CountryKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/countries/${countryId}/knowledge/organizations`}
+            to={`/dashboard/entities/countries/${countryId}/knowledge/organizations`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/countries/${countryId}/knowledge/organizations`
+              === `/dashboard/entities/countries/${countryId}/knowledge/organizations`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -95,10 +95,10 @@ class CountryKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/countries/${countryId}/knowledge/threats`}
+            to={`/dashboard/entities/countries/${countryId}/knowledge/threats`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/countries/${countryId}/knowledge/threats`
+              === `/dashboard/entities/countries/${countryId}/knowledge/threats`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -113,10 +113,10 @@ class CountryKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/countries/${countryId}/knowledge/entities`}
+            to={`/dashboard/entities/countries/${countryId}/knowledge/entities`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/countries/${countryId}/knowledge/entities`
+              === `/dashboard/entities/countries/${countryId}/knowledge/entities`
             }
             dense={false}
             classes={{ root: classes.item }}

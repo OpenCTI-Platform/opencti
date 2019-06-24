@@ -26,7 +26,7 @@ const inversedRoles = ['usage'];
 class ToolKnowledgeComponent extends Component {
   render() {
     const { classes, tool } = this.props;
-    const link = `/dashboard/catalogs/tools/${tool.id}/knowledge`;
+    const link = `/dashboard/techniques/tools/${tool.id}/knowledge`;
     return (
       <div className={classes.container}>
         <ToolHeader tool={tool} variant="noalias" />
@@ -34,7 +34,7 @@ class ToolKnowledgeComponent extends Component {
         <div className={classes.content}>
           <Route
             exact
-            path="/dashboard/catalogs/tools/:toolId/knowledge/relations/:relationId"
+            path="/dashboard/techniques/tools/:toolId/knowledge/relations/:relationId"
             render={routeProps => (
               <StixRelation
                 entityId={tool.id}
@@ -45,7 +45,7 @@ class ToolKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/tools/:toolId/knowledge/overview"
+            path="/dashboard/techniques/tools/:toolId/knowledge/overview"
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={tool.id}
@@ -55,7 +55,7 @@ class ToolKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/tools/:toolId/knowledge/intrusion_sets"
+            path="/dashboard/techniques/tools/:toolId/knowledge/intrusion_sets"
             render={routeProps => (
               <EntityStixRelations
                 entityId={tool.id}
@@ -68,7 +68,7 @@ class ToolKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/tools/:toolId/knowledge/campaigns"
+            path="/dashboard/techniques/tools/:toolId/knowledge/campaigns"
             render={routeProps => (
               <EntityStixRelations
                 entityId={tool.id}
@@ -81,7 +81,7 @@ class ToolKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/tools/:toolId/knowledge/incidents"
+            path="/dashboard/techniques/tools/:toolId/knowledge/incidents"
             render={routeProps => (
               <EntityStixRelations
                 entityId={tool.id}
@@ -94,7 +94,7 @@ class ToolKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/tools/:toolId/knowledge/malwares"
+            path="/dashboard/techniques/tools/:toolId/knowledge/malwares"
             render={routeProps => (
               <EntityStixRelations
                 entityId={tool.id}

@@ -50,10 +50,10 @@ class CampaignKnowledgeBar extends Component {
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/overview`}
+            to={`/dashboard/threats/campaigns/${campaignId}/knowledge/overview`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/overview`
+              === `/dashboard/threats/campaigns/${campaignId}/knowledge/overview`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -65,10 +65,10 @@ class CampaignKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/attribution`}
+            to={`/dashboard/threats/campaigns/${campaignId}/knowledge/attribution`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/attribution`
+              === `/dashboard/threats/campaigns/${campaignId}/knowledge/attribution`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -83,10 +83,10 @@ class CampaignKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/victimology`}
+            to={`/dashboard/threats/campaigns/${campaignId}/knowledge/victimology`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/victimology`
+              === `/dashboard/threats/campaigns/${campaignId}/knowledge/victimology`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -101,10 +101,10 @@ class CampaignKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/incidents`}
+            to={`/dashboard/threats/campaigns/${campaignId}/knowledge/incidents`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/incidents`
+              === `/dashboard/threats/campaigns/${campaignId}/knowledge/incidents`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -119,10 +119,10 @@ class CampaignKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/malwares`}
+            to={`/dashboard/threats/campaigns/${campaignId}/knowledge/malwares`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/malwares`
+              === `/dashboard/threats/campaigns/${campaignId}/knowledge/malwares`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -137,10 +137,10 @@ class CampaignKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/ttp`}
+            to={`/dashboard/threats/campaigns/${campaignId}/knowledge/ttp`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/ttp`
+              === `/dashboard/threats/campaigns/${campaignId}/knowledge/ttp`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -155,10 +155,10 @@ class CampaignKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/tools`}
+            to={`/dashboard/threats/campaigns/${campaignId}/knowledge/tools`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/tools`
+              === `/dashboard/threats/campaigns/${campaignId}/knowledge/tools`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -173,10 +173,10 @@ class CampaignKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/vulnerabilities`}
+            to={`/dashboard/threats/campaigns/${campaignId}/knowledge/vulnerabilities`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/campaigns/${campaignId}/knowledge/vulnerabilities`
+              === `/dashboard/threats/campaigns/${campaignId}/knowledge/vulnerabilities`
             }
             dense={false}
             classes={{ root: classes.item }}

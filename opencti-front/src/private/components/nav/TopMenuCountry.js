@@ -45,7 +45,7 @@ class TopMenuCountry extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/catalogs/countries"
+          to="/dashboard/entities/countries"
           variant="contained"
           size="small"
           color="inherit"
@@ -57,15 +57,15 @@ class TopMenuCountry extends Component {
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
-          to={`/dashboard/catalogs/countries/${countryId}`}
+          to={`/dashboard/entities/countries/${countryId}`}
           variant={
-            location.pathname === `/dashboard/catalogs/countries/${countryId}`
+            location.pathname === `/dashboard/entities/countries/${countryId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/catalogs/countries/${countryId}`
+            location.pathname === `/dashboard/entities/countries/${countryId}`
               ? 'primary'
               : 'inherit'
           }
@@ -75,17 +75,17 @@ class TopMenuCountry extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/catalogs/countries/${countryId}/reports`}
+          to={`/dashboard/entities/countries/${countryId}/reports`}
           variant={
             location.pathname
-            === `/dashboard/catalogs/countries/${countryId}/reports`
+            === `/dashboard/entities/countries/${countryId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/catalogs/countries/${countryId}/reports`
+            === `/dashboard/entities/countries/${countryId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -95,10 +95,10 @@ class TopMenuCountry extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/catalogs/countries/${countryId}/knowledge`}
+          to={`/dashboard/entities/countries/${countryId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/catalogs/countries/${countryId}/knowledge`,
+              `/dashboard/entities/countries/${countryId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -106,7 +106,7 @@ class TopMenuCountry extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/catalogs/countries/${countryId}/knowledge`,
+              `/dashboard/entities/countries/${countryId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'

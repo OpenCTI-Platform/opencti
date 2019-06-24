@@ -71,14 +71,14 @@ class RootCampaign extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/knowledge/campaigns/:campaignId"
+                    path="/dashboard/threats/campaigns/:campaignId"
                     render={routeProps => (
                       <Campaign {...routeProps} campaign={props.campaign} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/knowledge/campaigns/:campaignId/reports"
+                    path="/dashboard/threats/campaigns/:campaignId/reports"
                     render={routeProps => (
                       <CampaignReports
                         {...routeProps}
@@ -88,15 +88,15 @@ class RootCampaign extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/knowledge/campaigns/:campaignId/knowledge"
+                    path="/dashboard/threats/campaigns/:campaignId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge/overview`}
+                        to={`/dashboard/threats/campaigns/${campaignId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/knowledge/campaigns/:campaignId/knowledge"
+                    path="/dashboard/threats/campaigns/:campaignId/knowledge"
                     render={routeProps => (
                       <CampaignKnowledge
                         {...routeProps}
@@ -105,7 +105,7 @@ class RootCampaign extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/knowledge/campaigns/:campaignId/observables"
+                    path="/dashboard/threats/campaigns/:campaignId/observables"
                     render={routeProps => (
                       <CampaignObservables
                         {...routeProps}

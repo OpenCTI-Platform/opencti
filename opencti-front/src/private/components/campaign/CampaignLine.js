@@ -71,7 +71,7 @@ class CampaignLineComponent extends Component {
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/knowledge/campaigns/${campaign.id}`}
+        to={`/dashboard/threats/campaigns/${campaign.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ChessKnight />

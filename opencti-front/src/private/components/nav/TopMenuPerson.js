@@ -45,7 +45,7 @@ class TopMenuPerson extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/catalogs/persons"
+          to="/dashboard/entities/persons"
           variant="contained"
           size="small"
           color="inherit"
@@ -57,15 +57,15 @@ class TopMenuPerson extends Component {
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
-          to={`/dashboard/catalogs/persons/${personId}`}
+          to={`/dashboard/entities/persons/${personId}`}
           variant={
-            location.pathname === `/dashboard/catalogs/persons/${personId}`
+            location.pathname === `/dashboard/entities/persons/${personId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/catalogs/persons/${personId}`
+            location.pathname === `/dashboard/entities/persons/${personId}`
               ? 'primary'
               : 'inherit'
           }
@@ -75,17 +75,17 @@ class TopMenuPerson extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/catalogs/persons/${personId}/reports`}
+          to={`/dashboard/entities/persons/${personId}/reports`}
           variant={
             location.pathname
-            === `/dashboard/catalogs/persons/${personId}/reports`
+            === `/dashboard/entities/persons/${personId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/catalogs/persons/${personId}/reports`
+            === `/dashboard/entities/persons/${personId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -95,10 +95,10 @@ class TopMenuPerson extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/catalogs/persons/${personId}/knowledge`}
+          to={`/dashboard/entities/persons/${personId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/catalogs/persons/${personId}/knowledge`,
+              `/dashboard/entities/persons/${personId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -106,7 +106,7 @@ class TopMenuPerson extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/catalogs/persons/${personId}/knowledge`,
+              `/dashboard/entities/persons/${personId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'

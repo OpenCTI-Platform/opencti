@@ -70,7 +70,7 @@ class OrganizationLineComponent extends Component {
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/catalogs/organizations/${organization.id}`}
+        to={`/dashboard/entities/organizations/${organization.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <AccountBalance />

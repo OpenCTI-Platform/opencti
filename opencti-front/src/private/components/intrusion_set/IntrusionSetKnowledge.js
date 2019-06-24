@@ -26,7 +26,7 @@ const inversedRoles = ['origin'];
 class IntrusionSetKnowledgeComponent extends Component {
   render() {
     const { classes, intrusionSet } = this.props;
-    const link = `/dashboard/knowledge/intrusion_sets/${
+    const link = `/dashboard/threats/intrusion_sets/${
       intrusionSet.id
     }/knowledge`;
     return (
@@ -36,7 +36,7 @@ class IntrusionSetKnowledgeComponent extends Component {
         <div className={classes.content}>
           <Route
             exact
-            path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge/relations/:relationId"
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/relations/:relationId"
             render={routeProps => (
               <StixRelation
                 entityId={intrusionSet.id}
@@ -47,7 +47,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge/overview"
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/overview"
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={intrusionSet.id}
@@ -57,7 +57,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge/attribution"
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/attribution"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="attributed-to"
@@ -72,7 +72,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge/campaigns"
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/campaigns"
             render={routeProps => (
               <EntityStixRelations
                 entityId={intrusionSet.id}
@@ -85,7 +85,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge/incidents"
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/incidents"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="attributed-to"
@@ -100,7 +100,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge/malwares"
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/malwares"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="attributed-to"
@@ -115,7 +115,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge/victimology"
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/victimology"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="attributed-to"
@@ -155,7 +155,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge/ttp"
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/ttp"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="attributed-to"
@@ -173,7 +173,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge/tools"
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/tools"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="attributed-to"
@@ -188,7 +188,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge/vulnerabilities"
+            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/vulnerabilities"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="attributed-to"

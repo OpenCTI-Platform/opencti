@@ -85,7 +85,7 @@ class IncidentCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/knowledge/incidents/${incident.id}`}
+          to={`/dashboard/threats/incidents/${incident.id}`}
         >
           <CardHeader
             classes={{ root: classes.header }}

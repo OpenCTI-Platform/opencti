@@ -46,7 +46,7 @@ class TopMenuAttackPattern extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/catalogs/attack_patterns"
+          to="/dashboard/techniques/attack_patterns"
           variant="contained"
           size="small"
           color="inherit"
@@ -58,17 +58,17 @@ class TopMenuAttackPattern extends Component {
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
-          to={`/dashboard/catalogs/attack_patterns/${attackPatternId}`}
+          to={`/dashboard/techniques/attack_patterns/${attackPatternId}`}
           variant={
             location.pathname
-            === `/dashboard/catalogs/attack_patterns/${attackPatternId}`
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/catalogs/attack_patterns/${attackPatternId}`
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}`
               ? 'primary'
               : 'inherit'
           }
@@ -78,17 +78,17 @@ class TopMenuAttackPattern extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/catalogs/attack_patterns/${attackPatternId}/reports`}
+          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/reports`}
           variant={
             location.pathname
-            === `/dashboard/catalogs/attack_patterns/${attackPatternId}/reports`
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/catalogs/attack_patterns/${attackPatternId}/reports`
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -98,10 +98,10 @@ class TopMenuAttackPattern extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge`}
+          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge`,
+              `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -109,7 +109,7 @@ class TopMenuAttackPattern extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/catalogs/attack_patterns/${attackPatternId}/knowledge`,
+              `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'

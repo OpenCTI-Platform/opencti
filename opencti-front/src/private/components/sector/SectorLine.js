@@ -75,7 +75,7 @@ class SectorLineComponent extends Component {
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/knowledge/sectors/${sector.id}`}
+        to={`/dashboard/entities/sectors/${sector.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Domain />

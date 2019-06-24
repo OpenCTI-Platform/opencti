@@ -71,7 +71,7 @@ class RootThreatActor extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/knowledge/threat_actors/:threatActorId"
+                    path="/dashboard/threats/threat_actors/:threatActorId"
                     render={routeProps => (
                       <ThreatActor
                         {...routeProps}
@@ -81,7 +81,7 @@ class RootThreatActor extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/knowledge/threat_actors/:threatActorId/reports"
+                    path="/dashboard/threats/threat_actors/:threatActorId/reports"
                     render={routeProps => (
                       <ThreatActorReports
                         {...routeProps}
@@ -91,15 +91,15 @@ class RootThreatActor extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/knowledge/threat_actors/:threatActorId/knowledge"
+                    path="/dashboard/threats/threat_actors/:threatActorId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/overview`}
+                        to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/knowledge/threat_actors/:threatActorId/knowledge"
+                    path="/dashboard/threats/threat_actors/:threatActorId/knowledge"
                     render={routeProps => (
                       <ThreatActorKnowledge
                         {...routeProps}
@@ -108,7 +108,7 @@ class RootThreatActor extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/knowledge/threat_actors/:threatActorId/observables"
+                    path="/dashboard/threats/threat_actors/:threatActorId/observables"
                     render={routeProps => (
                       <ThreatActorObservables
                         {...routeProps}

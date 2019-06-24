@@ -26,7 +26,7 @@ const inversedRoles = ['origin'];
 class CampaignKnowledgeComponent extends Component {
   render() {
     const { classes, campaign } = this.props;
-    const link = `/dashboard/knowledge/campaigns/${campaign.id}/knowledge`;
+    const link = `/dashboard/threats/campaigns/${campaign.id}/knowledge`;
     return (
       <div className={classes.container}>
         <CampaignHeader campaign={campaign} variant="noalias" />
@@ -34,7 +34,7 @@ class CampaignKnowledgeComponent extends Component {
         <div className={classes.content}>
           <Route
             exact
-            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/relations/:relationId"
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/relations/:relationId"
             render={routeProps => (
               <StixRelation
                 entityId={campaign.id}
@@ -45,7 +45,7 @@ class CampaignKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/overview"
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/overview"
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={campaign.id}
@@ -55,7 +55,7 @@ class CampaignKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/attribution"
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/attribution"
             render={routeProps => (
               <EntityStixRelations
                 entityId={campaign.id}
@@ -68,7 +68,7 @@ class CampaignKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/incidents"
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/incidents"
             render={routeProps => (
               <EntityStixRelations
                 entityId={campaign.id}
@@ -81,7 +81,7 @@ class CampaignKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/malwares"
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/malwares"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="attributed-to"
@@ -96,7 +96,7 @@ class CampaignKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/victimology"
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/victimology"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="attributed-to"
@@ -134,7 +134,7 @@ class CampaignKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/ttp"
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/ttp"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="attributed-to"
@@ -152,7 +152,7 @@ class CampaignKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/tools"
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/tools"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="attributed-to"
@@ -167,7 +167,7 @@ class CampaignKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/campaigns/:campaignId/knowledge/vulnerabilities"
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/vulnerabilities"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="attributed-to"

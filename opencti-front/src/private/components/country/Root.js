@@ -68,29 +68,29 @@ class RootCountry extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/catalogs/countries/:countryId"
+                    path="/dashboard/entities/countries/:countryId"
                     render={routeProps => (
                       <Country {...routeProps} country={props.country} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/catalogs/countries/:countryId/reports"
+                    path="/dashboard/entities/countries/:countryId/reports"
                     render={routeProps => (
                       <CountryReports {...routeProps} country={props.country} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/catalogs/countries/:countryId/knowledge"
+                    path="/dashboard/entities/countries/:countryId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/catalogs/countries/${countryId}/knowledge/overview`}
+                        to={`/dashboard/entities/countries/${countryId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/catalogs/countries/:countryId/knowledge"
+                    path="/dashboard/entities/countries/:countryId/knowledge"
                     render={routeProps => (
                       <CountryKnowledge
                         {...routeProps}

@@ -43,10 +43,10 @@ class ToolKnowledgeBar extends Component {
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/tools/${toolId}/knowledge/overview`}
+            to={`/dashboard/techniques/tools/${toolId}/knowledge/overview`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/tools/${toolId}/knowledge/overview`
+              === `/dashboard/techniques/tools/${toolId}/knowledge/overview`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -58,10 +58,10 @@ class ToolKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/tools/${toolId}/knowledge/intrusion_sets`}
+            to={`/dashboard/techniques/tools/${toolId}/knowledge/intrusion_sets`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/tools/${toolId}/knowledge/intrusion_sets`
+              === `/dashboard/techniques/tools/${toolId}/knowledge/intrusion_sets`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -76,10 +76,10 @@ class ToolKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/tools/${toolId}/knowledge/campaigns`}
+            to={`/dashboard/techniques/tools/${toolId}/knowledge/campaigns`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/tools/${toolId}/knowledge/campaigns`
+              === `/dashboard/techniques/tools/${toolId}/knowledge/campaigns`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -94,10 +94,10 @@ class ToolKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/tools/${toolId}/knowledge/incidents`}
+            to={`/dashboard/techniques/tools/${toolId}/knowledge/incidents`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/tools/${toolId}/knowledge/incidents`
+              === `/dashboard/techniques/tools/${toolId}/knowledge/incidents`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -112,10 +112,10 @@ class ToolKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/tools/${toolId}/knowledge/malwares`}
+            to={`/dashboard/techniques/tools/${toolId}/knowledge/malwares`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/tools/${toolId}/knowledge/malwares`
+              === `/dashboard/techniques/tools/${toolId}/knowledge/malwares`
             }
             dense={false}
             classes={{ root: classes.item }}

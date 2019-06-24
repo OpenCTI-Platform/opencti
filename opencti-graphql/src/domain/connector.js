@@ -13,12 +13,12 @@ import conf, { logger } from '../config/conf';
 export const getConnectors = async () => {
   const path = conf.get('app:connectors');
   const isDirectory = source => lstatSync(source).isDirectory();
-  const getConnectors = source =>
+  const getDirectories = source =>
     readdirSync(source)
       .map(name => join(source, name))
       .filter(isDirectory)
       .map(connector => basename(connector));
-  return getConnectors(path).map(async connector => {
+  return getDirectories(path).map(async connector => {
     const connectorConfigTemplate = readFileSync(
       `${path}/${connector}/config.json`
     );
@@ -48,8 +48,9 @@ export const updateConfig = async (identifier, config) => {
     logger.debug(`[GRAKN - infer: false] ${query}`);
     await wTx.tx.query(query);
     await commitWriteTx(wTx);
-  } else {
-    const { id } = connector.x;
-    await updateAttribute(id, { key: 'connector_config', value: [config] });
+    return Promise.resolve(true);
   }
+  const { id } = connector.x;
+  await updateAttribute(id, { key: 'connector_config', value: [config] });
+  return Promise.resolve(true);
 };

@@ -71,7 +71,7 @@ class RootIntrusionSet extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/knowledge/intrusion_sets/:intrusionSetId"
+                    path="/dashboard/threats/intrusion_sets/:intrusionSetId"
                     render={routeProps => (
                       <IntrusionSet
                         {...routeProps}
@@ -81,7 +81,7 @@ class RootIntrusionSet extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/reports"
+                    path="/dashboard/threats/intrusion_sets/:intrusionSetId/reports"
                     render={routeProps => (
                       <IntrusionSetReports
                         {...routeProps}
@@ -91,15 +91,15 @@ class RootIntrusionSet extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge"
+                    path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/overview`}
+                        to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/knowledge"
+                    path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge"
                     render={routeProps => (
                       <IntrusionSetKnowledge
                         {...routeProps}
@@ -108,7 +108,7 @@ class RootIntrusionSet extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/knowledge/intrusion_sets/:intrusionSetId/observables"
+                    path="/dashboard/threats/intrusion_sets/:intrusionSetId/observables"
                     render={routeProps => (
                       <IntrusionSetObservables
                         {...routeProps}

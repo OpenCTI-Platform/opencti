@@ -54,8 +54,12 @@ const connectorsMutationFieldPatch = graphql`
 `;
 
 class Connectors extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { refetch: false };
+  }
+
   handleSubmit(identifier, configValues, { setSubmitting }) {
-    console.log(configValues);
     const JSONValues = JSON.stringify(configValues);
     commitMutation({
       mutation: connectorsMutationFieldPatch,
@@ -66,6 +70,7 @@ class Connectors extends Component {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
+        this.setState({ refetch: !this.state.refetch });
         MESSAGING$.notifySuccess(
           'The connector configuration has been updated',
         );
@@ -83,9 +88,7 @@ class Connectors extends Component {
         config: Buffer.from(JSONValues).toString('base64'),
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess(
-          'The connector has been triggered',
-        );
+        MESSAGING$.notifySuccess('The connector has been triggered');
       },
     });
   }
@@ -96,6 +99,7 @@ class Connectors extends Component {
       <div className={classes.container}>
         <QueryRenderer
           query={connectorsQuery}
+          variables={{ refetch: this.state.refetch }}
           render={({ props }) => {
             if (props) {
               const { connectors } = props;
@@ -135,14 +139,22 @@ class Connectors extends Component {
                       )}
                       render={({ submitForm, isSubmitting }) => (
                         <Form style={{ margin: '0 0 20px 0' }}>
-                          <Typography variant="h1" gutterBottom={true} style={{ float: 'left' }}>
+                          <Typography
+                            variant="h1"
+                            gutterBottom={true}
+                            style={{ float: 'left' }}
+                          >
                             {connectorConfigTemplate.name}
                           </Typography>
                           <Button
                             variant="outlined"
                             type="button"
                             color="secondary"
-                            onClick={this.trigger.bind(this, connector.identifier, config)}
+                            onClick={this.trigger.bind(
+                              this,
+                              connector.identifier,
+                              config,
+                            )}
                             disabled={isSubmitting}
                             classes={{ root: classes.button }}
                             size="small"
@@ -150,7 +162,7 @@ class Connectors extends Component {
                           >
                             {t('Force now')}
                           </Button>
-                          <div className='clearfix'/>
+                          <div className="clearfix" />
                           {fields.map((field) => {
                             if (field.type === 'select') {
                               return (
@@ -159,7 +171,9 @@ class Connectors extends Component {
                                   name={field.name}
                                   component={Select}
                                   label={field.description}
-                                  multiple={field.multiple ? field.multiple : false}
+                                  multiple={
+                                    field.multiple ? field.multiple : false
+                                  }
                                   fullWidth={true}
                                   inputProps={{
                                     name: field.name,
@@ -171,9 +185,12 @@ class Connectors extends Component {
                                   }}
                                 >
                                   {field.options.map(option => (
-                                      <MenuItem key={option.key} value={option.key}>
-                                        {option.label}
-                                      </MenuItem>
+                                    <MenuItem
+                                      key={option.key}
+                                      value={option.key}
+                                    >
+                                      {option.label}
+                                    </MenuItem>
                                   ))}
                                 </Field>
                               );

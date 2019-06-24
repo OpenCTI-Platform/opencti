@@ -49,10 +49,10 @@ class IncidentKnowledgeBar extends Component {
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/overview`}
+            to={`/dashboard/threats/incidents/${incidentId}/knowledge/overview`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/incidents/${incidentId}/knowledge/overview`
+              === `/dashboard/threats/incidents/${incidentId}/knowledge/overview`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -64,10 +64,10 @@ class IncidentKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/attribution`}
+            to={`/dashboard/threats/incidents/${incidentId}/knowledge/attribution`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/incidents/${incidentId}/knowledge/attribution`
+              === `/dashboard/threats/incidents/${incidentId}/knowledge/attribution`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -82,10 +82,10 @@ class IncidentKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/victimology`}
+            to={`/dashboard/threats/incidents/${incidentId}/knowledge/victimology`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/incidents/${incidentId}/knowledge/victimology`
+              === `/dashboard/threats/incidents/${incidentId}/knowledge/victimology`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -100,10 +100,10 @@ class IncidentKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/malwares`}
+            to={`/dashboard/threats/incidents/${incidentId}/knowledge/malwares`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/incidents/${incidentId}/knowledge/malwares`
+              === `/dashboard/threats/incidents/${incidentId}/knowledge/malwares`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -118,10 +118,10 @@ class IncidentKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/ttp`}
+            to={`/dashboard/threats/incidents/${incidentId}/knowledge/ttp`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/incidents/${incidentId}/knowledge/ttp`
+              === `/dashboard/threats/incidents/${incidentId}/knowledge/ttp`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -136,10 +136,10 @@ class IncidentKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/tools`}
+            to={`/dashboard/threats/incidents/${incidentId}/knowledge/tools`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/incidents/${incidentId}/knowledge/tools`
+              === `/dashboard/threats/incidents/${incidentId}/knowledge/tools`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -154,10 +154,10 @@ class IncidentKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/vulnerabilities`}
+            to={`/dashboard/threats/incidents/${incidentId}/knowledge/vulnerabilities`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/incidents/${incidentId}/knowledge/vulnerabilities`
+              === `/dashboard/threats/incidents/${incidentId}/knowledge/vulnerabilities`
             }
             dense={false}
             classes={{ root: classes.item }}

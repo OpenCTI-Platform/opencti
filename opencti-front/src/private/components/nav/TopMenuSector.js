@@ -45,7 +45,7 @@ class TopMenuSector extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/knowledge/sectors"
+          to="/dashboard/entities/sectors"
           variant="contained"
           size="small"
           color="inherit"
@@ -57,15 +57,15 @@ class TopMenuSector extends Component {
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
-          to={`/dashboard/knowledge/sectors/${sectorId}`}
+          to={`/dashboard/entities/sectors/${sectorId}`}
           variant={
-            location.pathname === `/dashboard/knowledge/sectors/${sectorId}`
+            location.pathname === `/dashboard/entities/sectors/${sectorId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/knowledge/sectors/${sectorId}`
+            location.pathname === `/dashboard/entities/sectors/${sectorId}`
               ? 'primary'
               : 'inherit'
           }
@@ -75,17 +75,17 @@ class TopMenuSector extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/knowledge/sectors/${sectorId}/reports`}
+          to={`/dashboard/entities/sectors/${sectorId}/reports`}
           variant={
             location.pathname
-            === `/dashboard/knowledge/sectors/${sectorId}/reports`
+            === `/dashboard/entities/sectors/${sectorId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/knowledge/sectors/${sectorId}/reports`
+            === `/dashboard/entities/sectors/${sectorId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -95,10 +95,10 @@ class TopMenuSector extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/knowledge/sectors/${sectorId}/knowledge`}
+          to={`/dashboard/entities/sectors/${sectorId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/knowledge/sectors/${sectorId}/knowledge`,
+              `/dashboard/entities/sectors/${sectorId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -106,7 +106,7 @@ class TopMenuSector extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/knowledge/sectors/${sectorId}/knowledge`,
+              `/dashboard/entities/sectors/${sectorId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'

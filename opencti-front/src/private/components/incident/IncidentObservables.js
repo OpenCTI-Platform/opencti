@@ -31,12 +31,12 @@ const styles = theme => ({
 class IncidentObservablesComponent extends Component {
   render() {
     const { classes, incident, location } = this.props;
-    const link = `/dashboard/knowledge/incidents/${incident.id}/observables`;
+    const link = `/dashboard/threats/incidents/${incident.id}/observables`;
     return (
       <div
         className={
           location.pathname.includes(
-            `/dashboard/knowledge/incidents/${
+            `/dashboard/threats/incidents/${
               incident.id
             }/observables/relations/`,
           )
@@ -47,7 +47,7 @@ class IncidentObservablesComponent extends Component {
         <IncidentHeader incident={incident} variant="noalias" />
         <Route
           exact
-          path="/dashboard/knowledge/incidents/:incidentId/observables/relations/:relationId"
+          path="/dashboard/threats/incidents/:incidentId/observables/relations/:relationId"
           render={routeProps => (
             <StixRelation
               entityId={incident.id}
@@ -59,7 +59,7 @@ class IncidentObservablesComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/knowledge/incidents/:incidentId/observables"
+          path="/dashboard/threats/incidents/:incidentId/observables"
           render={routeProps => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityStixObservables

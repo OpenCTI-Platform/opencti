@@ -75,7 +75,7 @@ class ThreatActorLineComponent extends Component {
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/knowledge/threat_actors/${threatActor.id}`}
+        to={`/dashboard/threats/threat_actors/${threatActor.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Public />

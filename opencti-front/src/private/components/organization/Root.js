@@ -68,7 +68,7 @@ class RootOrganization extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/catalogs/organizations/:organizationId"
+                    path="/dashboard/entities/organizations/:organizationId"
                     render={routeProps => (
                       <Organization
                         {...routeProps}
@@ -78,7 +78,7 @@ class RootOrganization extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/catalogs/organizations/:organizationId/reports"
+                    path="/dashboard/entities/organizations/:organizationId/reports"
                     render={routeProps => (
                       <OrganizationReports
                         {...routeProps}
@@ -88,15 +88,15 @@ class RootOrganization extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/catalogs/organizations/:organizationId/knowledge"
+                    path="/dashboard/entities/organizations/:organizationId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/overview`}
+                        to={`/dashboard/entities/organizations/${organizationId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/catalogs/organizations/:organizationId/knowledge"
+                    path="/dashboard/entities/organizations/:organizationId/knowledge"
                     render={routeProps => (
                       <OrganizationKnowledge
                         {...routeProps}

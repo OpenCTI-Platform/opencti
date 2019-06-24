@@ -89,7 +89,7 @@ class AttackPatternLineComponent extends Component {
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/catalogs/attack_patterns/${attackPattern.id}`}
+        to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <LockPattern />

@@ -46,7 +46,7 @@ class TopMenuCampaign extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/knowledge/campaigns"
+          to="/dashboard/threats/campaigns"
           variant="contained"
           size="small"
           color="inherit"
@@ -58,15 +58,15 @@ class TopMenuCampaign extends Component {
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
-          to={`/dashboard/knowledge/campaigns/${campaignId}`}
+          to={`/dashboard/threats/campaigns/${campaignId}`}
           variant={
-            location.pathname === `/dashboard/knowledge/campaigns/${campaignId}`
+            location.pathname === `/dashboard/threats/campaigns/${campaignId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/knowledge/campaigns/${campaignId}`
+            location.pathname === `/dashboard/threats/campaigns/${campaignId}`
               ? 'primary'
               : 'inherit'
           }
@@ -76,17 +76,17 @@ class TopMenuCampaign extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/knowledge/campaigns/${campaignId}/reports`}
+          to={`/dashboard/threats/campaigns/${campaignId}/reports`}
           variant={
             location.pathname
-            === `/dashboard/knowledge/campaigns/${campaignId}/reports`
+            === `/dashboard/threats/campaigns/${campaignId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/knowledge/campaigns/${campaignId}/reports`
+            === `/dashboard/threats/campaigns/${campaignId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -96,10 +96,10 @@ class TopMenuCampaign extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/knowledge/campaigns/${campaignId}/knowledge`}
+          to={`/dashboard/threats/campaigns/${campaignId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/knowledge/campaigns/${campaignId}/knowledge`,
+              `/dashboard/threats/campaigns/${campaignId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -107,7 +107,7 @@ class TopMenuCampaign extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/knowledge/campaigns/${campaignId}/knowledge`,
+              `/dashboard/threats/campaigns/${campaignId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'
@@ -118,10 +118,10 @@ class TopMenuCampaign extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/knowledge/campaigns/${campaignId}/observables`}
+          to={`/dashboard/threats/campaigns/${campaignId}/observables`}
           variant={
             location.pathname.includes(
-              `/dashboard/knowledge/campaigns/${campaignId}/observables`,
+              `/dashboard/threats/campaigns/${campaignId}/observables`,
             )
               ? 'contained'
               : 'text'
@@ -129,7 +129,7 @@ class TopMenuCampaign extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/knowledge/campaigns/${campaignId}/observables`,
+              `/dashboard/threats/campaigns/${campaignId}/observables`,
             )
               ? 'primary'
               : 'inherit'

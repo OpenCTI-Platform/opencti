@@ -69,29 +69,29 @@ class RootSector extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/knowledge/sectors/:sectorId"
+                    path="/dashboard/entities/sectors/:sectorId"
                     render={routeProps => (
                       <Sector {...routeProps} sector={props.sector} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/knowledge/sectors/:sectorId/reports"
+                    path="/dashboard/entities/sectors/:sectorId/reports"
                     render={routeProps => (
                       <SectorReports {...routeProps} sector={props.sector} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/knowledge/sectors/:sectorId/knowledge"
+                    path="/dashboard/entities/sectors/:sectorId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/overview`}
+                        to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/knowledge/sectors/:sectorId/knowledge"
+                    path="/dashboard/entities/sectors/:sectorId/knowledge"
                     render={routeProps => (
                       <SectorKnowledge {...routeProps} sector={props.sector} />
                     )}

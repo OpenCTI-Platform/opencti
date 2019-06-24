@@ -46,7 +46,7 @@ class TopMenuCity extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/catalogs/cities"
+          to="/dashboard/entities/cities"
           variant="contained"
           size="small"
           color="inherit"
@@ -58,15 +58,15 @@ class TopMenuCity extends Component {
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
-          to={`/dashboard/catalogs/cities/${cityId}`}
+          to={`/dashboard/entities/cities/${cityId}`}
           variant={
-            location.pathname === `/dashboard/catalogs/cities/${cityId}`
+            location.pathname === `/dashboard/entities/cities/${cityId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/catalogs/cities/${cityId}`
+            location.pathname === `/dashboard/entities/cities/${cityId}`
               ? 'primary'
               : 'inherit'
           }
@@ -76,15 +76,15 @@ class TopMenuCity extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/catalogs/cities/${cityId}/reports`}
+          to={`/dashboard/entities/cities/${cityId}/reports`}
           variant={
-            location.pathname === `/dashboard/catalogs/cities/${cityId}/reports`
+            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/catalogs/cities/${cityId}/reports`
+            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -94,10 +94,10 @@ class TopMenuCity extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/catalogs/cities/${cityId}/knowledge`}
+          to={`/dashboard/entities/cities/${cityId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/catalogs/cities/${cityId}/knowledge`,
+              `/dashboard/entities/cities/${cityId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -105,7 +105,7 @@ class TopMenuCity extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/catalogs/cities/${cityId}/knowledge`,
+              `/dashboard/entities/cities/${cityId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'

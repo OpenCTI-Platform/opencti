@@ -50,7 +50,7 @@ class SectorSubsectorsComponent extends Component {
                   classes={{ root: classes.item }}
                   button={true}
                   component={Link}
-                  to={`/dashboard/knowledge/sectors/${subsector.id}`}
+                  to={`/dashboard/entities/sectors/${subsector.id}`}
                 >
                   <ListItemIcon classes={{ root: classes.itemIcon }}>
                     <Domain />

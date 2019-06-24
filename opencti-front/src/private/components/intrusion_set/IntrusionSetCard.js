@@ -84,7 +84,7 @@ class IntrusionSetCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/knowledge/intrusion_sets/${intrusionSet.id}`}
+          to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}`}
         >
           <CardHeader
             classes={{ root: classes.header }}

@@ -68,29 +68,29 @@ class RootTool extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/catalogs/tools/:toolId"
+                    path="/dashboard/techniques/tools/:toolId"
                     render={routeProps => (
                       <Tool {...routeProps} tool={props.tool} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/catalogs/tools/:toolId/reports"
+                    path="/dashboard/techniques/tools/:toolId/reports"
                     render={routeProps => (
                       <ToolReports {...routeProps} tool={props.tool} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/catalogs/tools/:toolId/knowledge"
+                    path="/dashboard/techniques/tools/:toolId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/catalogs/tools/${toolId}/knowledge/overview`}
+                        to={`/dashboard/techniques/tools/${toolId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/catalogs/tools/:toolId/knowledge"
+                    path="/dashboard/techniques/tools/:toolId/knowledge"
                     render={routeProps => (
                       <ToolKnowledge {...routeProps} tool={props.tool} />
                     )}

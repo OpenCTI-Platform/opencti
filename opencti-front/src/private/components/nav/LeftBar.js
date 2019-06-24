@@ -21,7 +21,7 @@ import {
   GroupWork,
   Extension,
 } from '@material-ui/icons';
-import { Settings, Database } from 'mdi-material-ui';
+import { Settings, Database, Binoculars } from 'mdi-material-ui';
 import { compose, includes, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -111,9 +111,9 @@ class LeftBar extends Component {
             </MenuItem>
             <MenuItem
               component={Link}
-              to="/dashboard/knowledge"
+              to="/dashboard/threats"
               onClick={this.handleClickAway.bind(this)}
-              selected={location.pathname.includes('/dashboard/knowledge')}
+              selected={location.pathname.includes('/dashboard/threats')}
               dense={false}
             >
               <ListItemIcon>
@@ -121,7 +121,26 @@ class LeftBar extends Component {
               </ListItemIcon>
               {this.state.open ? (
                 <ListItemText
-                  primary={t('Knowledge')}
+                  primary={t('Threats')}
+                  classes={{ root: classes.listText }}
+                />
+              ) : (
+                ''
+              )}
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              to="/dashboard/techniques"
+              onClick={this.handleClickAway.bind(this)}
+              selected={location.pathname.includes('/dashboard/techniques')}
+              dense={false}
+            >
+              <ListItemIcon>
+                <Layers />
+              </ListItemIcon>
+              {this.state.open ? (
+                <ListItemText
+                  primary={t('Techniques')}
                   classes={{ root: classes.listText }}
                 />
               ) : (
@@ -136,7 +155,7 @@ class LeftBar extends Component {
               dense={false}
             >
               <ListItemIcon>
-                <Layers />
+                <Binoculars />
               </ListItemIcon>
               {this.state.open ? (
                 <ListItemText
@@ -168,9 +187,9 @@ class LeftBar extends Component {
             </MenuItem>
             <MenuItem
               component={Link}
-              to="/dashboard/catalogs"
+              to="/dashboard/entities"
               onClick={this.handleClickAway.bind(this)}
-              selected={location.pathname.includes('/dashboard/catalogs')}
+              selected={location.pathname.includes('/dashboard/entities')}
               dense={false}
             >
               <ListItemIcon>
@@ -178,7 +197,7 @@ class LeftBar extends Component {
               </ListItemIcon>
               {this.state.open ? (
                 <ListItemText
-                  primary={t('Catalogs')}
+                  primary={t('Entities')}
                   classes={{ root: classes.listText }}
                 />
               ) : (

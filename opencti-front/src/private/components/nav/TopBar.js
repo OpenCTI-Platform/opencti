@@ -27,15 +27,17 @@ import TopMenuIntrusionSet from './TopMenuIntrusionSet';
 import TopMenuCampaign from './TopMenuCampaign';
 import TopMenuIncident from './TopMenuIncident';
 import TopMenuMalware from './TopMenuMalware';
+import TopMenuTechniques from './TopMenuTechniques';
+import TopMenuAttackPattern from './TopMenuAttackPattern';
+import TopMenuCourseOfAction from './TopMenuCourseOfAction';
+import TopMenuTool from './TopMenuTool';
+import TopMenuVulnerability from './TopMenuVulnerability';
+import TopMenuRegion from './TopMenuRegion';
 import TopMenuObservables from './TopMenuObservables';
 import TopMenuObservable from './TopMenuObservable';
 import TopMenuReports from './TopMenuReports';
 import TopMenuReport from './TopMenuReport';
-import TopMenuCatalogs from './TopMenuCatalogs';
-import TopMenuAttackPattern from './TopMenuAttackPattern';
-import TopMenuTool from './TopMenuTool';
-import TopMenuVulnerability from './TopMenuVulnerability';
-import TopMenuRegion from './TopMenuRegion';
+import TopMenuEntities from './TopMenuEntities';
 import TopMenuCountry from './TopMenuCountry';
 import TopMenuCity from './TopMenuCity';
 import TopMenuOrganization from './TopMenuOrganization';
@@ -168,46 +170,73 @@ class TopBar extends Component {
             ) : (
               ''
             )}
-            {location.pathname === '/dashboard/knowledge'
-            || location.pathname.match('/dashboard/knowledge/[a-z_]+$') ? (
+            {location.pathname === '/dashboard/threats'
+            || location.pathname.match('/dashboard/threats/[a-z_]+$') ? (
               <TopMenuKnowledge />
               ) : (
                 ''
               )}
             {location.pathname.includes(
-              '/dashboard/knowledge/threat_actors/',
+              '/dashboard/threats/threat_actors/',
             ) ? (
               <TopMenuThreatActor />
               ) : (
                 ''
               )}
-            {location.pathname.includes('/dashboard/knowledge/sectors/') ? (
-              <TopMenuSector />
-            ) : (
-              ''
-            )}
             {location.pathname.includes(
-              '/dashboard/knowledge/intrusion_sets/',
+              '/dashboard/threats/intrusion_sets/',
             ) ? (
               <TopMenuIntrusionSet />
               ) : (
                 ''
               )}
-            {location.pathname.includes('/dashboard/knowledge/campaigns/') ? (
+            {location.pathname.includes('/dashboard/threats/campaigns/') ? (
               <TopMenuCampaign />
             ) : (
               ''
             )}
-            {location.pathname.includes('/dashboard/knowledge/incidents/') ? (
+            {location.pathname.includes('/dashboard/threats/incidents/') ? (
               <TopMenuIncident />
             ) : (
               ''
             )}
-            {location.pathname.includes('/dashboard/knowledge/malwares/') ? (
+            {location.pathname.includes('/dashboard/threats/malwares/') ? (
               <TopMenuMalware />
             ) : (
               ''
             )}
+            {location.pathname === '/dashboard/techniques'
+            || location.pathname.match('/dashboard/techniques/[a-z_]+$') ? (
+              <TopMenuTechniques />
+              ) : (
+                ''
+              )}
+            {location.pathname.includes(
+              '/dashboard/techniques/attack_patterns/',
+            ) ? (
+              <TopMenuAttackPattern />
+              ) : (
+                ''
+              )}
+            {location.pathname.includes(
+              '/dashboard/techniques/courses_of_action/',
+            ) ? (
+              <TopMenuCourseOfAction />
+              ) : (
+                ''
+              )}
+            {location.pathname.includes('/dashboard/techniques/tools/') ? (
+              <TopMenuTool />
+            ) : (
+              ''
+            )}
+            {location.pathname.includes(
+              '/dashboard/techniques/vulnerabilities/',
+            ) ? (
+              <TopMenuVulnerability />
+              ) : (
+                ''
+              )}
             {location.pathname === '/dashboard/observables'
             || location.pathname.match('/dashboard/observables/[a-z1-9_]+$') ? (
               <TopMenuObservables />
@@ -230,54 +259,40 @@ class TopBar extends Component {
             ) : (
               ''
             )}
-            {location.pathname === '/dashboard/catalogs'
-            || location.pathname.match('/dashboard/catalogs/[a-z_]+$') ? (
-              <TopMenuCatalogs />
+            {location.pathname === '/dashboard/entities'
+            || location.pathname.match('/dashboard/entities/[a-z_]+$') ? (
+              <TopMenuEntities />
               ) : (
                 ''
               )}
-            {location.pathname.includes(
-              '/dashboard/catalogs/attack_patterns/',
-            ) ? (
-              <TopMenuAttackPattern />
-              ) : (
-                ''
-              )}
-            {location.pathname.includes('/dashboard/catalogs/tools/') ? (
-              <TopMenuTool />
+            {location.pathname.includes('/dashboard/entities/sectors/') ? (
+              <TopMenuSector />
             ) : (
               ''
             )}
-            {location.pathname.includes(
-              '/dashboard/catalogs/vulnerabilities/',
-            ) ? (
-              <TopMenuVulnerability />
-              ) : (
-                ''
-              )}
-            {location.pathname.includes('/dashboard/catalogs/regions/') ? (
+            {location.pathname.includes('/dashboard/entities/regions/') ? (
               <TopMenuRegion />
             ) : (
               ''
             )}
-            {location.pathname.includes('/dashboard/catalogs/countries/') ? (
+            {location.pathname.includes('/dashboard/entities/countries/') ? (
               <TopMenuCountry />
             ) : (
               ''
             )}
-            {location.pathname.includes('/dashboard/catalogs/cities/') ? (
+            {location.pathname.includes('/dashboard/entities/cities/') ? (
               <TopMenuCity />
             ) : (
               ''
             )}
             {location.pathname.includes(
-              '/dashboard/catalogs/organizations/',
+              '/dashboard/entities/organizations/',
             ) ? (
               <TopMenuOrganization />
               ) : (
                 ''
               )}
-            {location.pathname.includes('/dashboard/catalogs/persons/') ? (
+            {location.pathname.includes('/dashboard/entities/persons/') ? (
               <TopMenuPerson />
             ) : (
               ''

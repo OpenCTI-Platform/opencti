@@ -84,7 +84,7 @@ class SectorCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/knowledge/sectors/${sector.id}`}
+          to={`/dashboard/entities/sectors/${sector.id}`}
         >
           <CardHeader
             classes={{ root: classes.header }}

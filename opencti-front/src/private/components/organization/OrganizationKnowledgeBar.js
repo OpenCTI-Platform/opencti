@@ -42,10 +42,10 @@ class OrganizationKnowledgeBar extends Component {
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/overview`}
+            to={`/dashboard/entities/organizations/${organizationId}/knowledge/overview`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/organizations/${organizationId}/knowledge/overview`
+              === `/dashboard/entities/organizations/${organizationId}/knowledge/overview`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -57,10 +57,10 @@ class OrganizationKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/sectors`}
+            to={`/dashboard/entities/organizations/${organizationId}/entities/sectors`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/organizations/${organizationId}/knowledge/sectors`
+              === `/dashboard/entities/organizations/${organizationId}/entities/sectors`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -75,10 +75,10 @@ class OrganizationKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/persons`}
+            to={`/dashboard/entities/organizations/${organizationId}/knowledge/persons`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/organizations/${organizationId}/knowledge/persons`
+              === `/dashboard/entities/organizations/${organizationId}/knowledge/persons`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -93,10 +93,10 @@ class OrganizationKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/threats`}
+            to={`/dashboard/entities/organizations/${organizationId}/knowledge/threats`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/organizations/${organizationId}/knowledge/threats`
+              === `/dashboard/entities/organizations/${organizationId}/knowledge/threats`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -111,10 +111,10 @@ class OrganizationKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/organizations/${organizationId}/knowledge/entities`}
+            to={`/dashboard/entities/organizations/${organizationId}/knowledge/entities`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/organizations/${organizationId}/knowledge/entities`
+              === `/dashboard/entities/organizations/${organizationId}/knowledge/entities`
             }
             dense={false}
             classes={{ root: classes.item }}

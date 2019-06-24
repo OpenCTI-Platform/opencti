@@ -23,15 +23,15 @@ const users = [
 const siteConfig = {
   title: 'OpenCTI documentation', // Title for your website.
   tagline: 'Documentation of the OpenCTI platform.',
-  url: 'https://luatixhq.github.io', // Your website URL
-  baseUrl: '/opencti/', // Base URL for your project */
+  url: 'https://opencti-platform.github.io', // Your website URL
+  baseUrl: '/docs/', // Base URL for your project */
   // For github.io type URLs, you would set the url and baseUrl like:
   //   url: 'https://facebook.github.io',
   //   baseUrl: '/test-site/',
 
   // Used for publishing and more
-  projectName: 'opencti',
-  organizationName: 'LuatixHQ',
+  projectName: 'docs',
+  organizationName: 'OpenCTI-Platform',
   // For top-level user or org sites, the organization is still the same.
   // e.g., for the https://JoelMarcey.github.io site, it would be set like...
   //   organizationName: 'JoelMarcey'
@@ -40,7 +40,7 @@ const siteConfig = {
   headerLinks: [
     { doc: 'introduction', label: 'Documentation' },
     { href: 'https://slack.luatix.org', label: 'Help' },
-    { href: 'https://www.github.com/LuatixHQ/opencti', label: 'GitHub' },
+    { href: 'https://www.github.com/OpenCTI-Platform/opencti', label: 'GitHub' },
   ],
 
   // If you have users set above, you add it here:

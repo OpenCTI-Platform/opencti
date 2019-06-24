@@ -68,29 +68,29 @@ class RootRegion extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/catalogs/regions/:regionId"
+                    path="/dashboard/entities/regions/:regionId"
                     render={routeProps => (
                       <Region {...routeProps} region={props.region} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/catalogs/regions/:regionId/reports"
+                    path="/dashboard/entities/regions/:regionId/reports"
                     render={routeProps => (
                       <RegionReports {...routeProps} region={props.region} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/catalogs/regions/:regionId/knowledge"
+                    path="/dashboard/entities/regions/:regionId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/catalogs/regions/${regionId}/knowledge/overview`}
+                        to={`/dashboard/entities/regions/${regionId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/catalogs/regions/:regionId/knowledge"
+                    path="/dashboard/entities/regions/:regionId/knowledge"
                     render={routeProps => (
                       <RegionKnowledge {...routeProps} region={props.region} />
                     )}

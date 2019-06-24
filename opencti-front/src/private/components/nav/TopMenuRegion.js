@@ -45,7 +45,7 @@ class TopMenuRegion extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/catalogs/regions"
+          to="/dashboard/entities/regions"
           variant="contained"
           size="small"
           color="inherit"
@@ -57,15 +57,15 @@ class TopMenuRegion extends Component {
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
-          to={`/dashboard/catalogs/regions/${regionId}`}
+          to={`/dashboard/entities/regions/${regionId}`}
           variant={
-            location.pathname === `/dashboard/catalogs/regions/${regionId}`
+            location.pathname === `/dashboard/entities/regions/${regionId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/catalogs/regions/${regionId}`
+            location.pathname === `/dashboard/entities/regions/${regionId}`
               ? 'primary'
               : 'inherit'
           }
@@ -75,17 +75,17 @@ class TopMenuRegion extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/catalogs/regions/${regionId}/reports`}
+          to={`/dashboard/entities/regions/${regionId}/reports`}
           variant={
             location.pathname
-            === `/dashboard/catalogs/regions/${regionId}/reports`
+            === `/dashboard/entities/regions/${regionId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/catalogs/regions/${regionId}/reports`
+            === `/dashboard/entities/regions/${regionId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -95,10 +95,10 @@ class TopMenuRegion extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/catalogs/regions/${regionId}/knowledge`}
+          to={`/dashboard/entities/regions/${regionId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/catalogs/regions/${regionId}/knowledge`,
+              `/dashboard/entities/regions/${regionId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -106,7 +106,7 @@ class TopMenuRegion extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/catalogs/regions/${regionId}/knowledge`,
+              `/dashboard/entities/regions/${regionId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'

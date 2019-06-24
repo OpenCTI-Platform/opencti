@@ -51,10 +51,10 @@ class ThreatActorKnowledgeBar extends Component {
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/overview`}
+            to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge/overview`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/overview`
+              === `/dashboard/threats/threat_actors/${threatActorId}/knowledge/overview`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -66,10 +66,10 @@ class ThreatActorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/victimology`}
+            to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge/victimology`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/victimology`
+              === `/dashboard/threats/threat_actors/${threatActorId}/knowledge/victimology`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -84,10 +84,10 @@ class ThreatActorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/intrusion_sets`}
+            to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge/intrusion_sets`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/intrusion_sets`
+              === `/dashboard/threats/threat_actors/${threatActorId}/knowledge/intrusion_sets`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -102,10 +102,10 @@ class ThreatActorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/campaigns`}
+            to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge/campaigns`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/campaigns`
+              === `/dashboard/threats/threat_actors/${threatActorId}/knowledge/campaigns`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -120,10 +120,10 @@ class ThreatActorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/incidents`}
+            to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge/incidents`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/incidents`
+              === `/dashboard/threats/threat_actors/${threatActorId}/knowledge/incidents`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -138,10 +138,10 @@ class ThreatActorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/malwares`}
+            to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge/malwares`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/malwares`
+              === `/dashboard/threats/threat_actors/${threatActorId}/knowledge/malwares`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -156,10 +156,10 @@ class ThreatActorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/ttp`}
+            to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge/ttp`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/ttp`
+              === `/dashboard/threats/threat_actors/${threatActorId}/knowledge/ttp`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -174,10 +174,10 @@ class ThreatActorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/tools`}
+            to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge/tools`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/tools`
+              === `/dashboard/threats/threat_actors/${threatActorId}/knowledge/tools`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -192,10 +192,10 @@ class ThreatActorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/vulnerabilities`}
+            to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge/vulnerabilities`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/threat_actors/${threatActorId}/knowledge/vulnerabilities`
+              === `/dashboard/threats/threat_actors/${threatActorId}/knowledge/vulnerabilities`
             }
             dense={false}
             classes={{ root: classes.item }}

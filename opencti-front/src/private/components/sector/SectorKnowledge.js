@@ -26,7 +26,7 @@ const inversedRoles = ['target'];
 class SectorKnowledgeComponent extends Component {
   render() {
     const { classes, sector } = this.props;
-    const link = `/dashboard/knowledge/sectors/${sector.id}/knowledge`;
+    const link = `/dashboard/entities/sectors/${sector.id}/knowledge`;
     return (
       <div className={classes.container}>
         <SectorHeader sector={sector} variant="noalias" />
@@ -34,7 +34,7 @@ class SectorKnowledgeComponent extends Component {
         <div className={classes.content}>
           <Route
             exact
-            path="/dashboard/knowledge/sectors/:sectorId/knowledge/relations/:relationId"
+            path="/dashboard/entities/sectors/:sectorId/knowledge/relations/:relationId"
             render={routeProps => (
               <StixRelation
                 entityId={sector.id}
@@ -45,7 +45,7 @@ class SectorKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/sectors/:sectorId/knowledge/overview"
+            path="/dashboard/entities/sectors/:sectorId/knowledge/overview"
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={sector.id}
@@ -55,7 +55,7 @@ class SectorKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/sectors/:sectorId/knowledge/organizations"
+            path="/dashboard/entities/sectors/:sectorId/knowledge/organizations"
             render={routeProps => (
               <EntityStixRelations
                 entityId={sector.id}
@@ -68,7 +68,7 @@ class SectorKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/sectors/:sectorId/knowledge/intrusion_sets"
+            path="/dashboard/entities/sectors/:sectorId/knowledge/intrusion_sets"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="gathering"
@@ -100,7 +100,7 @@ class SectorKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/sectors/:sectorId/knowledge/campaigns"
+            path="/dashboard/entities/sectors/:sectorId/knowledge/campaigns"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="gathering"
@@ -127,7 +127,7 @@ class SectorKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/sectors/:sectorId/knowledge/incidents"
+            path="/dashboard/entities/sectors/:sectorId/knowledge/incidents"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="gathering"
@@ -149,7 +149,7 @@ class SectorKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/sectors/:sectorId/knowledge/malwares"
+            path="/dashboard/entities/sectors/:sectorId/knowledge/malwares"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="gathering"

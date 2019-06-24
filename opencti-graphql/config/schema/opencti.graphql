@@ -1272,7 +1272,7 @@ input AttackPatternAddInput {
 }
 
 ### CourseOfAction
-enum CourseOfActionsOrdering {
+enum CoursesOfActionOrdering {
   stix_id
   name
   created
@@ -2278,12 +2278,12 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): AttackPatternConnection @auth
-  # CourseOfActions
+  # CoursesOfAction
   courseOfAction(id: String!): CourseOfAction @auth
-  courseOfActions(
+  coursesOfAction(
     first: Int
     after: ID
-    orderBy: CourseOfActionsOrdering
+    orderBy: CoursesOfActionOrdering
     orderMode: OrderingMode
     search: String
   ): CourseOfActionConnection @auth

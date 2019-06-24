@@ -75,7 +75,7 @@ class CountryLineComponent extends Component {
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/catalogs/countries/${country.id}`}
+        to={`/dashboard/entities/countries/${country.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Flag />

@@ -26,7 +26,7 @@ const inversedRoles = ['location', 'target'];
 class RegionKnowledgeComponent extends Component {
   render() {
     const { classes, region } = this.props;
-    const link = `/dashboard/catalogs/regions/${region.id}/knowledge`;
+    const link = `/dashboard/entities/regions/${region.id}/knowledge`;
     return (
       <div className={classes.container}>
         <RegionHeader region={region} variant="noalias" />
@@ -34,7 +34,7 @@ class RegionKnowledgeComponent extends Component {
         <div className={classes.content}>
           <Route
             exact
-            path="/dashboard/catalogs/regions/:regionId/knowledge/relations/:relationId"
+            path="/dashboard/entities/regions/:regionId/knowledge/relations/:relationId"
             render={routeProps => (
               <StixRelation
                 entityId={region.id}
@@ -45,7 +45,7 @@ class RegionKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/regions/:regionId/knowledge/overview"
+            path="/dashboard/entities/regions/:regionId/knowledge/overview"
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={region.id}
@@ -55,7 +55,7 @@ class RegionKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/regions/:regionId/knowledge/countries"
+            path="/dashboard/entities/regions/:regionId/knowledge/countries"
             render={routeProps => (
               <EntityStixRelations
                 entityId={region.id}
@@ -68,7 +68,7 @@ class RegionKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/regions/:regionId/knowledge/threats"
+            path="/dashboard/entities/regions/:regionId/knowledge/threats"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="localization"
@@ -112,7 +112,7 @@ class RegionKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/regions/:regionId/knowledge/entities"
+            path="/dashboard/entities/regions/:regionId/knowledge/entities"
             render={routeProps => (
               <EntityStixRelations
                 entityId={region.id}

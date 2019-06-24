@@ -86,7 +86,7 @@ class IntrusionSetPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/knowledge/intrusion_sets');
+        this.props.history.push('/dashboard/threats/intrusion_sets');
       },
     });
   }

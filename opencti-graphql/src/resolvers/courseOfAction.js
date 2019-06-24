@@ -17,7 +17,7 @@ import { fetchEditContext } from '../database/redis';
 const courseOfActionResolvers = {
   Query: {
     courseOfAction: (_, { id }) => findById(id),
-    courseOfActions: (_, args) => findAll(args)
+    coursesOfAction: (_, args) => findAll(args)
   },
   CourseOfAction: {
     createdByRef: (courseOfAction, args) =>

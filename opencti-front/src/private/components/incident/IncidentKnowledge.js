@@ -26,7 +26,7 @@ const inversedRoles = [];
 class IncidentKnowledgeComponent extends Component {
   render() {
     const { classes, incident } = this.props;
-    const link = `/dashboard/knowledge/incidents/${incident.id}/knowledge`;
+    const link = `/dashboard/threats/incidents/${incident.id}/knowledge`;
     return (
       <div className={classes.container}>
         <IncidentHeader incident={incident} variant="noalias" />
@@ -34,7 +34,7 @@ class IncidentKnowledgeComponent extends Component {
         <div className={classes.content}>
           <Route
             exact
-            path="/dashboard/knowledge/incidents/:incidentId/knowledge/relations/:relationId"
+            path="/dashboard/threats/incidents/:incidentId/knowledge/relations/:relationId"
             render={routeProps => (
               <StixRelation
                 entityId={incident.id}
@@ -45,7 +45,7 @@ class IncidentKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/incidents/:incidentId/knowledge/overview"
+            path="/dashboard/threats/incidents/:incidentId/knowledge/overview"
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={incident.id}
@@ -55,7 +55,7 @@ class IncidentKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/incidents/:incidentId/knowledge/attribution"
+            path="/dashboard/threats/incidents/:incidentId/knowledge/attribution"
             render={routeProps => (
               <EntityStixRelations
                 entityId={incident.id}
@@ -72,7 +72,7 @@ class IncidentKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/incidents/:incidentId/knowledge/malwares"
+            path="/dashboard/threats/incidents/:incidentId/knowledge/malwares"
             render={routeProps => (
               <EntityStixRelations
                 entityId={incident.id}
@@ -85,7 +85,7 @@ class IncidentKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/incidents/:incidentId/knowledge/victimology"
+            path="/dashboard/threats/incidents/:incidentId/knowledge/victimology"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="attributed-to"
@@ -123,7 +123,7 @@ class IncidentKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/incidents/:incidentId/knowledge/ttp"
+            path="/dashboard/threats/incidents/:incidentId/knowledge/ttp"
             render={routeProps => (
               <EntityStixRelations
                 entityId={incident.id}
@@ -139,7 +139,7 @@ class IncidentKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/incidents/:incidentId/knowledge/tools"
+            path="/dashboard/threats/incidents/:incidentId/knowledge/tools"
             render={routeProps => (
               <EntityStixRelations
                 entityId={incident.id}
@@ -152,7 +152,7 @@ class IncidentKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/knowledge/incidents/:incidentId/knowledge/vulnerabilities"
+            path="/dashboard/threats/incidents/:incidentId/knowledge/vulnerabilities"
             render={routeProps => (
               <EntityStixRelations
                 entityId={incident.id}

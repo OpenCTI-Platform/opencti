@@ -51,10 +51,10 @@ class IntrusionSetKnowledgeBar extends Component {
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/overview`}
+            to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/overview`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/overview`
+              === `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/overview`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -66,10 +66,10 @@ class IntrusionSetKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/attribution`}
+            to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/attribution`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/attribution`
+              === `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/attribution`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -84,10 +84,10 @@ class IntrusionSetKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/victimology`}
+            to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/victimology`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/victimology`
+              === `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/victimology`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -102,10 +102,10 @@ class IntrusionSetKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/campaigns`}
+            to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/campaigns`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/campaigns`
+              === `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/campaigns`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -120,10 +120,10 @@ class IntrusionSetKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/incidents`}
+            to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/incidents`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/incidents`
+              === `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/incidents`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -138,10 +138,10 @@ class IntrusionSetKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/malwares`}
+            to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/malwares`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/malwares`
+              === `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/malwares`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -156,10 +156,10 @@ class IntrusionSetKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/ttp`}
+            to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/ttp`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/ttp`
+              === `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/ttp`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -174,10 +174,10 @@ class IntrusionSetKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/tools`}
+            to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/tools`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/tools`
+              === `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/tools`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -192,10 +192,10 @@ class IntrusionSetKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/vulnerabilities`}
+            to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/vulnerabilities`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/intrusion_sets/${intrusionSetId}/knowledge/vulnerabilities`
+              === `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/vulnerabilities`
             }
             dense={false}
             classes={{ root: classes.item }}

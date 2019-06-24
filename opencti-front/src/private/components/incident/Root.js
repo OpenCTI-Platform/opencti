@@ -71,14 +71,14 @@ class RootIncident extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/knowledge/incidents/:incidentId"
+                    path="/dashboard/threats/incidents/:incidentId"
                     render={routeProps => (
                       <Incident {...routeProps} incident={props.incident} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/knowledge/incidents/:incidentId/reports"
+                    path="/dashboard/threats/incidents/:incidentId/reports"
                     render={routeProps => (
                       <IncidentReports
                         {...routeProps}
@@ -88,15 +88,15 @@ class RootIncident extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/knowledge/incidents/:incidentId/knowledge"
+                    path="/dashboard/threats/incidents/:incidentId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/knowledge/incidents/${incidentId}/knowledge/overview`}
+                        to={`/dashboard/threats/incidents/${incidentId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/knowledge/incidents/:incidentId/knowledge"
+                    path="/dashboard/threats/incidents/:incidentId/knowledge"
                     render={routeProps => (
                       <IncidentKnowledge
                         {...routeProps}
@@ -105,7 +105,7 @@ class RootIncident extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/knowledge/incidents/:incidentId/observables"
+                    path="/dashboard/threats/incidents/:incidentId/observables"
                     render={routeProps => (
                       <IncidentObservables
                         {...routeProps}

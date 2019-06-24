@@ -42,10 +42,10 @@ class RegionKnowledgeBar extends Component {
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/regions/${regionId}/knowledge/overview`}
+            to={`/dashboard/entities/regions/${regionId}/knowledge/overview`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/regions/${regionId}/knowledge/overview`
+              === `/dashboard/entities/regions/${regionId}/knowledge/overview`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -57,10 +57,10 @@ class RegionKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/regions/${regionId}/knowledge/countries`}
+            to={`/dashboard/entities/regions/${regionId}/knowledge/countries`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/regions/${regionId}/knowledge/countries`
+              === `/dashboard/entities/regions/${regionId}/knowledge/countries`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -75,10 +75,10 @@ class RegionKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/regions/${regionId}/knowledge/threats`}
+            to={`/dashboard/entities/regions/${regionId}/knowledge/threats`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/regions/${regionId}/knowledge/threats`
+              === `/dashboard/entities/regions/${regionId}/knowledge/threats`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -93,10 +93,10 @@ class RegionKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/catalogs/regions/${regionId}/knowledge/entities`}
+            to={`/dashboard/entities/regions/${regionId}/knowledge/entities`}
             selected={
               location.pathname
-              === `/dashboard/catalogs/regions/${regionId}/knowledge/entities`
+              === `/dashboard/entities/regions/${regionId}/knowledge/entities`
             }
             dense={false}
             classes={{ root: classes.item }}

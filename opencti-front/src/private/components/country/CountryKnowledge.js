@@ -26,7 +26,7 @@ const inversedRoles = ['location', 'target'];
 class CountryKnowledgeComponent extends Component {
   render() {
     const { classes, country } = this.props;
-    const link = `/dashboard/catalogs/countries/${country.id}/knowledge`;
+    const link = `/dashboard/entities/countries/${country.id}/knowledge`;
     return (
       <div className={classes.container}>
         <CountryHeader country={country} variant="noalias" />
@@ -34,7 +34,7 @@ class CountryKnowledgeComponent extends Component {
         <div className={classes.content}>
           <Route
             exact
-            path="/dashboard/catalogs/countries/:countryId/knowledge/relations/:relationId"
+            path="/dashboard/entities/countries/:countryId/knowledge/relations/:relationId"
             render={routeProps => (
               <StixRelation
                 entityId={country.id}
@@ -45,7 +45,7 @@ class CountryKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/countries/:countryId/knowledge/overview"
+            path="/dashboard/entities/countries/:countryId/knowledge/overview"
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={country.id}
@@ -55,7 +55,7 @@ class CountryKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/countries/:countryId/knowledge/cities"
+            path="/dashboard/entities/countries/:countryId/knowledge/cities"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="localization"
@@ -70,7 +70,7 @@ class CountryKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/countries/:countryId/knowledge/organizations"
+            path="/dashboard/entities/countries/:countryId/knowledge/organizations"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="localization"
@@ -85,7 +85,7 @@ class CountryKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/countries/:countryId/knowledge/threats"
+            path="/dashboard/entities/countries/:countryId/knowledge/threats"
             render={routeProps => (
               <EntityStixRelations
                 resolveRelationType="localization"
@@ -129,7 +129,7 @@ class CountryKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/countries/:countryId/knowledge/entities"
+            path="/dashboard/entities/countries/:countryId/knowledge/entities"
             render={routeProps => (
               <EntityStixRelations
                 entityId={country.id}

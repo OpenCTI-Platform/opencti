@@ -75,7 +75,7 @@ class RegionLineComponent extends Component {
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/catalogs/regions/${region.id}`}
+        to={`/dashboard/entities/regions/${region.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Map />

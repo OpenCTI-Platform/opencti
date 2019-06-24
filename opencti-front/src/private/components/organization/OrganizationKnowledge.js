@@ -26,7 +26,7 @@ const inversedRoles = ['target'];
 class OrganizationKnowledgeComponent extends Component {
   render() {
     const { classes, organization } = this.props;
-    const link = `/dashboard/catalogs/organizations/${
+    const link = `/dashboard/entities/organizations/${
       organization.id
     }/knowledge`;
     return (
@@ -36,7 +36,7 @@ class OrganizationKnowledgeComponent extends Component {
         <div className={classes.content}>
           <Route
             exact
-            path="/dashboard/catalogs/organizations/:organizationId/knowledge/relations/:relationId"
+            path="/dashboard/entities/organizations/:organizationId/knowledge/relations/:relationId"
             render={routeProps => (
               <StixRelation
                 entityId={organization.id}
@@ -47,7 +47,7 @@ class OrganizationKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/organizations/:organizationId/knowledge/overview"
+            path="/dashboard/entities/organizations/:organizationId/knowledge/overview"
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={organization.id}
@@ -57,7 +57,7 @@ class OrganizationKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/organizations/:organizationId/knowledge/sectors"
+            path="/dashboard/entities/organizations/:organizationId/entities/sectors"
             render={routeProps => (
               <EntityStixRelations
                 entityId={organization.id}
@@ -70,7 +70,7 @@ class OrganizationKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/organizations/:organizationId/knowledge/persons"
+            path="/dashboard/entities/organizations/:organizationId/knowledge/persons"
             render={routeProps => (
               <EntityStixRelations
                 entityId={organization.id}
@@ -83,7 +83,7 @@ class OrganizationKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/organizations/:organizationId/knowledge/threats"
+            path="/dashboard/entities/organizations/:organizationId/knowledge/threats"
             render={routeProps => (
               <EntityStixRelations
                 entityId={organization.id}
@@ -127,7 +127,7 @@ class OrganizationKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/catalogs/organizations/:organizationId/knowledge/entities"
+            path="/dashboard/entities/organizations/:organizationId/knowledge/entities"
             render={routeProps => (
               <EntityStixRelations
                 entityId={organization.id}

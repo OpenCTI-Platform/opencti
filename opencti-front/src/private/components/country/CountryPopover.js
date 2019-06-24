@@ -86,7 +86,7 @@ class CountryPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/catalogs/countries');
+        this.props.history.push('/dashboard/entities/countries');
       },
     });
   }

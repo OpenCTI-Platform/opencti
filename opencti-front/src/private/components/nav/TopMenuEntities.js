@@ -5,13 +5,9 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import {
-  Person,
-  AccountBalance,
-  Flag,
-  BugReport,
-  Map,
+  Person, AccountBalance, Flag, Domain, Map,
 } from '@material-ui/icons';
-import { Application, CityVariant, LockPattern } from 'mdi-material-ui';
+import { CityVariant } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
@@ -26,80 +22,41 @@ const styles = theme => ({
   },
 });
 
-class TopMenuSources extends Component {
+class TopMenuTechniques extends Component {
   render() {
     const { t, location, classes } = this.props;
     return (
       <div>
         <Button
           component={Link}
-          to="/dashboard/catalogs/attack_patterns"
+          to="/dashboard/entities/sectors"
           variant={
-            location.pathname === '/dashboard/catalogs/attack_patterns'
+            location.pathname === '/dashboard/entities/sectors'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/catalogs/attack_patterns'
+            location.pathname === '/dashboard/entities/sectors'
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          <LockPattern className={classes.icon} fontSize="small" />
-          {t('TTPs')}
+          <Domain className={classes.icon} fontSize="small" />
+          {t('Sectors')}
         </Button>
         <Button
           component={Link}
-          to="/dashboard/catalogs/tools"
+          to="/dashboard/entities/regions"
           variant={
-            location.pathname === '/dashboard/catalogs/tools'
+            location.pathname === '/dashboard/entities/regions'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/catalogs/tools'
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          <Application className={classes.icon} fontSize="small" />
-          {t('Tools')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/catalogs/vulnerabilities"
-          variant={
-            location.pathname === '/dashboard/catalogs/vulnerabilities'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/catalogs/vulnerabilities'
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          <BugReport className={classes.icon} fontSize="small" />
-          {t('Vulnerabilities')}
-        </Button>
-        <div style={{ paddingRight: 20, display: 'inline-block' }}>|</div>
-        <Button
-          component={Link}
-          to="/dashboard/catalogs/regions"
-          variant={
-            location.pathname === '/dashboard/catalogs/regions'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/catalogs/regions'
+            location.pathname === '/dashboard/entities/regions'
               ? 'primary'
               : 'inherit'
           }
@@ -110,15 +67,15 @@ class TopMenuSources extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/catalogs/countries"
+          to="/dashboard/entities/countries"
           variant={
-            location.pathname === '/dashboard/catalogs/countries'
+            location.pathname === '/dashboard/entities/countries'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/catalogs/countries'
+            location.pathname === '/dashboard/entities/countries'
               ? 'primary'
               : 'inherit'
           }
@@ -129,15 +86,15 @@ class TopMenuSources extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/catalogs/cities"
+          to="/dashboard/entities/cities"
           variant={
-            location.pathname === '/dashboard/catalogs/cities'
+            location.pathname === '/dashboard/entities/cities'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/catalogs/cities'
+            location.pathname === '/dashboard/entities/cities'
               ? 'primary'
               : 'inherit'
           }
@@ -148,15 +105,15 @@ class TopMenuSources extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/catalogs/organizations"
+          to="/dashboard/entities/organizations"
           variant={
-            location.pathname === '/dashboard/catalogs/organizations'
+            location.pathname === '/dashboard/entities/organizations'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/catalogs/organizations'
+            location.pathname === '/dashboard/entities/organizations'
               ? 'primary'
               : 'inherit'
           }
@@ -167,15 +124,15 @@ class TopMenuSources extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/catalogs/persons"
+          to="/dashboard/entities/persons"
           variant={
-            location.pathname === '/dashboard/catalogs/persons'
+            location.pathname === '/dashboard/entities/persons'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/catalogs/persons'
+            location.pathname === '/dashboard/entities/persons'
               ? 'primary'
               : 'inherit'
           }
@@ -189,7 +146,7 @@ class TopMenuSources extends Component {
   }
 }
 
-TopMenuSources.propTypes = {
+TopMenuTechniques.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,
@@ -200,4 +157,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(TopMenuSources);
+)(TopMenuTechniques);

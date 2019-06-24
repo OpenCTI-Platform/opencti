@@ -76,7 +76,7 @@ class IncidentLineComponent extends Component {
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/knowledge/incidents/${incident.id}`}
+        to={`/dashboard/threats/incidents/${incident.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Fire />

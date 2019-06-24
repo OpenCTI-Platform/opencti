@@ -92,7 +92,7 @@ class ThreatActorPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/knowledge/threat_actors');
+        this.props.history.push('/dashboard/threats/threat_actors');
       },
     });
   }

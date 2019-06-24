@@ -86,7 +86,7 @@ class RegionPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/catalogs/regions');
+        this.props.history.push('/dashboard/entities/regions');
       },
     });
   }

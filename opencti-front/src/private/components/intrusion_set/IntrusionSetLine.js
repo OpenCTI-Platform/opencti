@@ -76,7 +76,7 @@ class IntrusionSetLineComponent extends Component {
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/knowledge/intrusion_sets/${intrusionSet.id}`}
+        to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Diamond />

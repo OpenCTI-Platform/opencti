@@ -44,10 +44,10 @@ class SectorKnowledgeBar extends Component {
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/overview`}
+            to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/sectors/${sectorId}/knowledge/overview`
+              === `/dashboard/entities/sectors/${sectorId}/knowledge/overview`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -59,10 +59,10 @@ class SectorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/organizations`}
+            to={`/dashboard/entities/sectors/${sectorId}/knowledge/organizations`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/sectors/${sectorId}/knowledge/organizations`
+              === `/dashboard/entities/sectors/${sectorId}/knowledge/organizations`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -77,10 +77,10 @@ class SectorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/intrusion_sets`}
+            to={`/dashboard/entities/sectors/${sectorId}/knowledge/intrusion_sets`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/sectors/${sectorId}/knowledge/intrusion_sets`
+              === `/dashboard/entities/sectors/${sectorId}/knowledge/intrusion_sets`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -95,10 +95,10 @@ class SectorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/campaigns`}
+            to={`/dashboard/entities/sectors/${sectorId}/knowledge/campaigns`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/sectors/${sectorId}/knowledge/campaigns`
+              === `/dashboard/entities/sectors/${sectorId}/knowledge/campaigns`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -113,10 +113,10 @@ class SectorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/incidents`}
+            to={`/dashboard/entities/sectors/${sectorId}/knowledge/incidents`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/sectors/${sectorId}/knowledge/incidents`
+              === `/dashboard/entities/sectors/${sectorId}/knowledge/incidents`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -131,10 +131,10 @@ class SectorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/knowledge/sectors/${sectorId}/knowledge/malwares`}
+            to={`/dashboard/entities/sectors/${sectorId}/knowledge/malwares`}
             selected={
               location.pathname
-              === `/dashboard/knowledge/sectors/${sectorId}/knowledge/malwares`
+              === `/dashboard/entities/sectors/${sectorId}/knowledge/malwares`
             }
             dense={false}
             classes={{ root: classes.item }}

@@ -31,14 +31,14 @@ const styles = theme => ({
 class ThreatActorObservablesComponent extends Component {
   render() {
     const { classes, threatActor, location } = this.props;
-    const link = `/dashboard/knowledge/threat_actors/${
+    const link = `/dashboard/threats/threat_actors/${
       threatActor.id
     }/observables`;
     return (
       <div
         className={
           location.pathname.includes(
-            `/dashboard/knowledge/threat_actors/${
+            `/dashboard/threats/threat_actors/${
               threatActor.id
             }/observables/relations/`,
           )
@@ -49,7 +49,7 @@ class ThreatActorObservablesComponent extends Component {
         <ThreatActorHeader threatActor={threatActor} variant="noalias" />
         <Route
           exact
-          path="/dashboard/knowledge/threat_actors/:threatActorId/observables/relations/:relationId"
+          path="/dashboard/threats/threat_actors/:threatActorId/observables/relations/:relationId"
           render={routeProps => (
             <StixRelation
               entityId={threatActor.id}
@@ -61,7 +61,7 @@ class ThreatActorObservablesComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/knowledge/threat_actors/:threatActorId/observables"
+          path="/dashboard/threats/threat_actors/:threatActorId/observables"
           render={routeProps => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityStixObservables

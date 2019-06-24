@@ -45,7 +45,7 @@ class TopMenuOrganization extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/catalogs/organizations"
+          to="/dashboard/entities/organizations"
           variant="contained"
           size="small"
           color="inherit"
@@ -57,17 +57,17 @@ class TopMenuOrganization extends Component {
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
-          to={`/dashboard/catalogs/organizations/${organizationId}`}
+          to={`/dashboard/entities/organizations/${organizationId}`}
           variant={
             location.pathname
-            === `/dashboard/catalogs/organizations/${organizationId}`
+            === `/dashboard/entities/organizations/${organizationId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/catalogs/organizations/${organizationId}`
+            === `/dashboard/entities/organizations/${organizationId}`
               ? 'primary'
               : 'inherit'
           }
@@ -77,17 +77,17 @@ class TopMenuOrganization extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/catalogs/organizations/${organizationId}/reports`}
+          to={`/dashboard/entities/organizations/${organizationId}/reports`}
           variant={
             location.pathname
-            === `/dashboard/catalogs/organizations/${organizationId}/reports`
+            === `/dashboard/entities/organizations/${organizationId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/catalogs/organizations/${organizationId}/reports`
+            === `/dashboard/entities/organizations/${organizationId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -97,10 +97,10 @@ class TopMenuOrganization extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/catalogs/organizations/${organizationId}/knowledge`}
+          to={`/dashboard/entities/organizations/${organizationId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/catalogs/organizations/${organizationId}/knowledge`,
+              `/dashboard/entities/organizations/${organizationId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -108,7 +108,7 @@ class TopMenuOrganization extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/catalogs/organizations/${organizationId}/knowledge`,
+              `/dashboard/entities/organizations/${organizationId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'

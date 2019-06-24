@@ -46,7 +46,7 @@ class TopMenuTool extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/catalogs/tools"
+          to="/dashboard/techniques/tools"
           variant="contained"
           size="small"
           color="inherit"
@@ -58,15 +58,15 @@ class TopMenuTool extends Component {
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
-          to={`/dashboard/catalogs/tools/${toolId}`}
+          to={`/dashboard/techniques/tools/${toolId}`}
           variant={
-            location.pathname === `/dashboard/catalogs/tools/${toolId}`
+            location.pathname === `/dashboard/techniques/tools/${toolId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/catalogs/tools/${toolId}`
+            location.pathname === `/dashboard/techniques/tools/${toolId}`
               ? 'primary'
               : 'inherit'
           }
@@ -76,15 +76,15 @@ class TopMenuTool extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/catalogs/tools/${toolId}/reports`}
+          to={`/dashboard/techniques/tools/${toolId}/reports`}
           variant={
-            location.pathname === `/dashboard/catalogs/tools/${toolId}/reports`
+            location.pathname === `/dashboard/techniques/tools/${toolId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/catalogs/tools/${toolId}/reports`
+            location.pathname === `/dashboard/techniques/tools/${toolId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -94,10 +94,10 @@ class TopMenuTool extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/catalogs/tools/${toolId}/knowledge`}
+          to={`/dashboard/techniques/tools/${toolId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/catalogs/tools/${toolId}/knowledge`,
+              `/dashboard/techniques/tools/${toolId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -105,7 +105,7 @@ class TopMenuTool extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/catalogs/tools/${toolId}/knowledge`,
+              `/dashboard/techniques/tools/${toolId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'

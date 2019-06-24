@@ -86,7 +86,7 @@ class SectorPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/knowledge/sectors');
+        this.props.history.push('/dashboard/entities/sectors');
       },
     });
   }

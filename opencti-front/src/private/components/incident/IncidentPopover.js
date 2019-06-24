@@ -86,7 +86,7 @@ class IncidentPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/knowledge/incidents');
+        this.props.history.push('/dashboard/threats/incidents');
       },
     });
   }
