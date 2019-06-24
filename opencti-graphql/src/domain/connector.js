@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, lstatSync } from 'fs';
-import { join } from 'path';
+import { join, basename } from 'path';
 import uuid from 'uuid/v4';
 import { isNil } from 'ramda';
 import {
@@ -13,12 +13,12 @@ import conf, { logger } from '../config/conf';
 export const getConnectors = async () => {
   const path = conf.get('app:connectors');
   const isDirectory = source => lstatSync(source).isDirectory();
-  const getDirectories = source =>
+  const getConnectors = source =>
     readdirSync(source)
       .map(name => join(source, name))
       .filter(isDirectory)
-      .map(dir => dir.replace(`${path}/`, ''));
-  return getDirectories(path).map(async connector => {
+      .map(connector => basename(connector));
+  return getConnectors(path).map(async connector => {
     const connectorConfigTemplate = readFileSync(
       `${path}/${connector}/config.json`
     );

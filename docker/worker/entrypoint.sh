@@ -15,7 +15,7 @@ do
 done
 
 # Replace the token in the configuration
-sed -i -e "s/REPLACE_API_KEY/$(cat /opt/opencti/shared_config/token)/g" /opt/opencti/worker/config.yml.sample
+sed -i -e "s/REPLACE_API_KEY/$(cat /opt/opencti/shared_config/token)/g" /opt/opencti/worker/config.yml.docker.sample
 cp /opt/opencti/worker/config.yml.docker.sample /opt/opencti/shared_config/config.yml
 
 # Chown the application
