@@ -18,3 +18,4 @@ export const { query } = createTestClient(server);
 
 require('./database/grakn');
 require('./resolvers/user');
+require('./resolvers/threatActor');

@@ -72,6 +72,10 @@ class ConnectorsScheduler:
                 schedule.every(1).minutes.do(self.run_connector, identifier=identifier)
             elif connector_config['cron'] == 'daily':
                 schedule.every().day.at("02:30").do(self.run_connector, identifier=identifier)
+            elif connector_config['cron'] == 'weekly':
+                schedule.every().wednesday.at("04:30").do(self.run_connector, identifier=identifier)
+            elif connector_config['cron'] == 'monthly':
+                schedule.every(30).day.at("04:30").do(self.run_connector, identifier=identifier)
         while True:
             schedule.run_pending()
             time.sleep(1)

@@ -19,8 +19,6 @@ const LOGIN_QUERY = `
     }`;
 // endregion
 
-beforeAll(() => write('match $x isa User; $z($x, $y); delete $z,$x;'));
-
 describe('User resolver standard behavior', () => {
   it('should user created', async () => {
     const USER_TO_CREATE = {
