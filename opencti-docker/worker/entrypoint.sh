@@ -15,11 +15,13 @@ do
 done
 
 # Replace the token in the configuration
-sed -i -e "s/REPLACE_API_KEY/$(cat /opt/opencti/shared_config/token)/g" /opt/opencti/worker/config.yml.sample
+sed -i -e "s/REPLACE_API_KEY/$(cat /opt/opencti/shared_config/token)/g" /opt/opencti/worker/config.yml.docker.sample
 cp /opt/opencti/worker/config.yml.docker.sample /opt/opencti/shared_config/config.yml
 
 # Chown the application
-chown -R ${RUN_USER} /opt/opencti
+if [ $RUN_USER != "root" ]; then
+  chown -R ${RUN_USER} /opt/opencti
+fi
 
 # Start
 cd /opt/opencti/worker

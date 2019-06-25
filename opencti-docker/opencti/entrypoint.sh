@@ -14,7 +14,9 @@ while ! nc -z grakn 48555; do
 done
 
 # Chown the application
-chown -R ${RUN_USER} /opt/opencti
+if [ $RUN_USER != "root" ]; then
+  chown -R ${RUN_USER} /opt/opencti
+fi
 
 # Upgrade schema & do migrations
 cd /opt/opencti
