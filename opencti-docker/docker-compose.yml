@@ -1,0 +1,74 @@
+version: '3'
+services:
+  grakn:
+    image: graknlabs/grakn:1.5.5
+    ports:
+      - 48555:48555 
+    restart: always
+  redis:
+    image: redis
+    restart: always
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
+    restart: always
+  rabbitmq:
+    image: rabbitmq
+    restart: always
+  worker:
+    image: luatix/opencti-worker
+    build:
+     context: ./worker
+    environment:
+      - RUN_USER=root
+    volumes:
+      - "./config:/opt/opencti/shared_config:rw"
+    links:
+      - opencti:opencti
+    restart: always
+  integration:
+    image: luatix/opencti-integration
+    build:
+     context: ./integration
+    environment:
+      - RUN_USER=root
+    volumes:
+      - "./config:/opt/opencti/shared_config:rw"
+    links:
+      - opencti:opencti
+    restart: always    
+  opencti:
+    image: luatix/opencti
+    build:
+      context: ./opencti
+    environment:
+      - RUN_USER=root
+      - APP__PORT=8080
+      - APP__LOGS=./logs
+      - APP__CONNECTORS=./integration/connectors
+      - APP__SECRET=ChangeMe
+      - APP__REACTIVE=true
+      - APP__COOKIE_SECURE=false
+      - GRAKN__HOSTNAME=grakn
+      - GRAKN__PORT=48555
+      - GRAKN__TIMEOUT=30000
+      - REDIS__HOSTNAME=redis
+      - REDIS__PORT=6379
+      - ELASTICSEARCH__HOSTNAME=elasticsearch
+      - ELASTICSEARCH__PORT=9200
+      - RABBITMQ__HOSTNAME=rabbitmq
+      - RABBITMQ__PORT=5672
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./config:/opt/opencti/shared_config:rw"
+    depends_on:
+      - grakn
+      - redis
+      - elasticsearch
+      - rabbitmq
+    links:
+     - grakn:grakn
+     - redis:redis
+     - elasticsearch:elasticsearch
+     - rabbitmq:rabbitmq
+    restart: always

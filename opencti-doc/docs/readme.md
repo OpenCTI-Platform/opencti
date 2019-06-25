@@ -1,4 +1,4 @@
-![](opencti-documentation/docs/assets/introduction/logo.png)
+![](docs/logo.png)
 ---
 [![Website](https://img.shields.io/badge/website-opencti.io-blue.svg)](https://www.opencti.io)
 [![CircleCI](https://circleci.com/gh/OpenCTI-Platform/opencti.svg?style=shield&circle-token=71bf657a43ec48f8433ece2f4879eadaf920d79a)](https://circleci.com/gh/OpenCTI-Platform/opencti)
@@ -19,18 +19,21 @@ The releases are available on the [Github releases page](https://github.com/Open
 
 ## Installation
 
-All you need to install openCTI can be found in the [Official documentation](https://opencti-platform.github.io/docs/introduction)
+* [Use Docker](docker)
+* [Install OpenCTI manually](docs/Installation.md)
+* [Install OpenCTI for development](docs/Development.md)
 
-## Contributing
+## Details
 
-### Code of Conduct
-OpenCTI has adopted a Code of Conduct that we expect project participants to adhere to. Please read the [full text](CODE_OF_CONDUCT.md) so that you can understand what actions will and will not be tolerated.
+### Architecture
 
-### Beginner Friendly Issues
-To help you get you familiar with our contribution process, we have a list of [beginner friendly issues](https://github.com/OpenCTI-Platform/opencti/labels/beginner%20friendly%20issue) which are fairly easy to implement. This is a great place to get started.
+![Architecture](docs/architecture.png "OpenCTI architecture")
 
-### Development
-If you want to actively help OpenCTI, please take a look to [Official documentation](https://opencti-platform.github.io/docs/development/development-docker)
+### Native graph database visualizer
+
+The [Grakn](https://github.com/graknlabs/grakn) knowledge graph database provides a client called the [Grakn workbase](https://github.com/graknlabs/workbase) that can be used to explore the whole database. You can use it in order to explore your data in an original way.
+
+![Grakn workbase](docs/workbase.png "OpenCTI architecture")
 
 ## Community
 

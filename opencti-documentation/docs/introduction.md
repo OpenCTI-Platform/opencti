@@ -1,13 +1,14 @@
-![](opencti-documentation/docs/assets/introduction/logo.png)
 ---
-[![Website](https://img.shields.io/badge/website-opencti.io-blue.svg)](https://www.opencti.io)
-[![CircleCI](https://circleci.com/gh/OpenCTI-Platform/opencti.svg?style=shield&circle-token=71bf657a43ec48f8433ece2f4879eadaf920d79a)](https://circleci.com/gh/OpenCTI-Platform/opencti)
-[![GitHub release](https://img.shields.io/github/release/OpenCTI-Platform/opencti.svg)](https://github.com/OpenCTI-Platform/opencti/releases/latest)
-[![Slack Status](https://slack.luatix.org/badge.svg)](https://slack.luatix.org)
+id: introduction
+title: Introduction
+sidebar_label: Introduction
+---
 
+![](assets/introduction/logo.png)
+---
 OpenCTI is an open source platform allowing organizations to manage their cyber threat intelligence knowledge, investigations and indicators of compromise. OpenCTI can be integrated with other applications such as [Maltego](https://www.paterva.com/web7/buy/maltego-clients/maltego-ce.php), [MISP](https://www.misp-project.org/), [CORTEX](https://github.com/TheHive-Project/Cortex) and many other STIX2 compliant products. It has been designed as a modern web application including a GraphQL API and an UX oriented frontend.
 
-![Screenshot](docs/screenshot.png "OpenCTI")
+![Screenshot](assets/introduction/screenshot.png "OpenCTI")
 
 ## Demonstration
 
@@ -19,18 +20,26 @@ The releases are available on the [Github releases page](https://github.com/Open
 
 ## Installation
 
-All you need to install openCTI can be found in the [Official documentation](https://opencti-platform.github.io/docs/introduction)
+* [Use Docker](installation/docker.md) / Prefered way
+* [Install OpenCTI manually](installation/manual.md)
 
-## Contributing
+## Development
 
-### Code of Conduct
-OpenCTI has adopted a Code of Conduct that we expect project participants to adhere to. Please read the [full text](CODE_OF_CONDUCT.md) so that you can understand what actions will and will not be tolerated.
+Everything you need to be ready for helping the openCTI development can be find here:
+* [Install OpenCTI for development](development/docker.md)
 
-### Beginner Friendly Issues
-To help you get you familiar with our contribution process, we have a list of [beginner friendly issues](https://github.com/OpenCTI-Platform/opencti/labels/beginner%20friendly%20issue) which are fairly easy to implement. This is a great place to get started.
 
-### Development
-If you want to actively help OpenCTI, please take a look to [Official documentation](https://opencti-platform.github.io/docs/development/development-docker)
+## Details
+
+### Architecture
+
+![Architecture](assets/introduction/architecture.png "OpenCTI architecture")
+
+### Database visualizer
+
+The [Grakn](https://github.com/graknlabs/grakn) knowledge graph database provides a client called the [Grakn workbase](https://github.com/graknlabs/workbase) that can be used to explore the whole database. You can use it in order to explore your data in an original way.
+
+![Grakn workbase](assets/introduction/workbase.png "OpenCTI architecture")
 
 ## Community
 
