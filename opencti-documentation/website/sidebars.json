@@ -1,0 +1,14 @@
+{
+  "docs": {
+    "Getting Started": [
+      "introduction"
+    ],
+    "Installation": [
+      "installation/docker-installation",
+      "installation/manual-installation"
+    ],
+    "Development": [
+      "development/development-docker"
+    ]
+  }
+}
