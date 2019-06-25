@@ -43,10 +43,10 @@ class CourseOfActionKnowledgeBar extends Component {
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/threats/overview`}
+            to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge/overview`}
             selected={
               location.pathname
-              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/threats/overview`
+              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge/overview`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -58,10 +58,10 @@ class CourseOfActionKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/threats/intrusion_sets`}
+            to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge/intrusion_sets`}
             selected={
               location.pathname
-              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/threats/intrusion_sets`
+              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge/intrusion_sets`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -76,10 +76,10 @@ class CourseOfActionKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/threats/campaigns`}
+            to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge/campaigns`}
             selected={
               location.pathname
-              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/threats/campaigns`
+              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge/campaigns`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -94,10 +94,10 @@ class CourseOfActionKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/threats/incidents`}
+            to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge/incidents`}
             selected={
               location.pathname
-              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/threats/incidents`
+              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge/incidents`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -112,10 +112,10 @@ class CourseOfActionKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/threats/malwares`}
+            to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge/malwares`}
             selected={
               location.pathname
-              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/threats/malwares`
+              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge/malwares`
             }
             dense={false}
             classes={{ root: classes.item }}

@@ -43,10 +43,10 @@ class AttackPatternKnowledgeBar extends Component {
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/threats/overview`}
+            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`}
             selected={
               location.pathname
-              === `/dashboard/techniques/attack_patterns/${attackPatternId}/threats/overview`
+              === `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -58,10 +58,10 @@ class AttackPatternKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/threats/intrusion_sets`}
+            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/intrusion_sets`}
             selected={
               location.pathname
-              === `/dashboard/techniques/attack_patterns/${attackPatternId}/threats/intrusion_sets`
+              === `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/intrusion_sets`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -76,10 +76,10 @@ class AttackPatternKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/threats/campaigns`}
+            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/campaigns`}
             selected={
               location.pathname
-              === `/dashboard/techniques/attack_patterns/${attackPatternId}/threats/campaigns`
+              === `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/campaigns`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -94,10 +94,10 @@ class AttackPatternKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/threats/incidents`}
+            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/incidents`}
             selected={
               location.pathname
-              === `/dashboard/techniques/attack_patterns/${attackPatternId}/threats/incidents`
+              === `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/incidents`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -112,10 +112,10 @@ class AttackPatternKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/threats/malwares`}
+            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/malwares`}
             selected={
               location.pathname
-              === `/dashboard/techniques/attack_patterns/${attackPatternId}/threats/malwares`
+              === `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/malwares`
             }
             dense={false}
             classes={{ root: classes.item }}

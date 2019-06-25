@@ -89,15 +89,15 @@ class RootAttackPattern extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/attack_patterns/:attackPatternId/threats"
+                    path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/techniques/attack_patterns/${attackPatternId}/threats/overview`}
+                        to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/techniques/attack_patterns/:attackPatternId/threats"
+                    path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge"
                     render={routeProps => (
                       <AttackPatternKnowledge
                         {...routeProps}

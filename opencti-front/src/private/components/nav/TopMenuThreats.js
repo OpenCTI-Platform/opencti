@@ -23,7 +23,7 @@ const styles = theme => ({
   },
 });
 
-class TopMenuKnowledge extends Component {
+class TopMenuThreats extends Component {
   render() {
     const {
       t, location, classes, width,
@@ -130,7 +130,7 @@ class TopMenuKnowledge extends Component {
   }
 }
 
-TopMenuKnowledge.propTypes = {
+TopMenuThreats.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,
@@ -143,4 +143,4 @@ export default compose(
   withRouter,
   windowDimensions(),
   withStyles(styles),
-)(TopMenuKnowledge);
+)(TopMenuThreats);

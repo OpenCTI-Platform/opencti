@@ -20,7 +20,7 @@ import TopMenuExplore from './TopMenuExplore';
 import TopMenuExploreWorkspace from './TopMenuExploreWorkspace';
 import TopMenuInvestigate from './TopMenuInvestigate';
 import TopMenuInvestigateWorkspace from './TopMenuInvestigateWorkspace';
-import TopMenuKnowledge from './TopMenuKnowledge';
+import TopMenuKnowledge from './TopMenuThreats';
 import TopMenuThreatActor from './TopMenuThreatActor';
 import TopMenuSector from './TopMenuSector';
 import TopMenuIntrusionSet from './TopMenuIntrusionSet';

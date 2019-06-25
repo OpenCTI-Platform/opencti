@@ -88,15 +88,15 @@ class RootCourseOfAction extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/courses_of_action/:courseOfActionId/threats"
+                    path="/dashboard/techniques/courses_of_action/:courseOfActionId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/threats/overview`}
+                        to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/techniques/courses_of_action/:courseOfActionId/threats"
+                    path="/dashboard/techniques/courses_of_action/:courseOfActionId/knowledge"
                     render={routeProps => (
                       <CourseOfActionKnowledge
                         {...routeProps}

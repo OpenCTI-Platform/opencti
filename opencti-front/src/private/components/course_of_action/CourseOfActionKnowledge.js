@@ -36,7 +36,7 @@ class CourseOfActionKnowledgeComponent extends Component {
         <div className={classes.content}>
           <Route
             exact
-            path="/dashboard/techniques/courses_of_action/:courseOfActionId/threats/relations/:relationId"
+            path="/dashboard/techniques/courses_of_action/:courseOfActionId/knowledge/relations/:relationId"
             render={routeProps => (
               <StixRelation
                 entityId={courseOfAction.id}
@@ -47,7 +47,7 @@ class CourseOfActionKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/techniques/courses_of_action/:courseOfActionId/threats/overview"
+            path="/dashboard/techniques/courses_of_action/:courseOfActionId/knowledge/overview"
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={courseOfAction.id}
@@ -57,7 +57,7 @@ class CourseOfActionKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/techniques/courses_of_action/:courseOfActionId/threats/intrusion_sets"
+            path="/dashboard/techniques/courses_of_action/:courseOfActionId/knowledge/intrusion_sets"
             render={routeProps => (
               <EntityStixRelations
                 entityId={courseOfAction.id}
@@ -70,7 +70,7 @@ class CourseOfActionKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/techniques/courses_of_action/:courseOfActionId/threats/campaigns"
+            path="/dashboard/techniques/courses_of_action/:courseOfActionId/knowledge/campaigns"
             render={routeProps => (
               <EntityStixRelations
                 entityId={courseOfAction.id}
@@ -84,7 +84,7 @@ class CourseOfActionKnowledgeComponent extends Component {
 
           <Route
             exact
-            path="/dashboard/techniques/courses_of_action/:courseOfActionId/threats/incidents"
+            path="/dashboard/techniques/courses_of_action/:courseOfActionId/knowledge/incidents"
             render={routeProps => (
               <EntityStixRelations
                 entityId={courseOfAction.id}
@@ -97,7 +97,7 @@ class CourseOfActionKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/techniques/courses_of_action/:courseOfActionId/threats/malwares"
+            path="/dashboard/techniques/courses_of_action/:courseOfActionId/knowledge/malwares"
             render={routeProps => (
               <EntityStixRelations
                 entityId={courseOfAction.id}
