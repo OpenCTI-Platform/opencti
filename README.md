@@ -1,6 +1,6 @@
-<p align="center">
+<h1 align="center">
   <a href="https://www.opencti.io"><img src="https://opencti-platform.github.io/docs/assets/introduction/logo.png" alt="OpenCTI"></a>
-</p>
+</h1>
 <p align="center">
   <a href="https://www.opencti.io" alt="Website"><img src="https://img.shields.io/badge/website-opencti.io-blue.svg" /></a>
   <a href="https://circleci.com/gh/OpenCTI-Platform/opencti" alt="CICD"><img src="https://circleci.com/gh/OpenCTI-Platform/opencti.svg?style=shield" /></a>
@@ -11,19 +11,19 @@
 
 ## Introduction
 
-OpenCTI is an open source platform allowing organizations to manage their cyber threat intelligence knowledge, investigations and observables. It has been created in order to structure, store, organize and visualise technical and non-technical information and knowledge on cyber threats.
+OpenCTI is an open source platform allowing organizations to manage their cyber threat intelligence knowledge and observables. It has been created in order to structure, store, organize and visualize technical and non-technical information about cyber threats.
 
-The structuration, organization and visualisation of the information use a knowledge schema based on the STIX2 standard. It has been designed as a modern web application including a GraphQL API and an UX oriented frontend. Also, OpenCTI can be integrated with other tools and applications such as MISP, The-Hive, MITRE ATT&CK, etc.
+The structuration of the data is performed using a knowledge schema based on the [STIX2 standards](https://oasis-open.github.io/cti-documentation/). It has been designed as a modern web application including a [GraphQL API](https://graphql.org) and an UX oriented frontend. Also, OpenCTI can be integrated with other tools and applications such as [MISP](https://github.com/MISP/MISP), [TheHive](https://github.com/TheHive-Project/TheHive), [MITRE ATT&CK](https://github.com/mitre/cti), etc.
 
 ![Screenshot](https://opencti-platform.github.io/docs/assets/introduction/screenshot.png "Screenshot")
 
 ## Objective
 
-The goal is to create a comprehensive tool allowing users to capitalise technical (such as TTPs and observables) and non-technical information (such as suggested attribution, victimlogy etc.) while linking each piece of information to its primary source (a report, a MISP event, a Maltego graph), with features such as links between each information, first and last seen dates, levels of confidence etc. The tool is able to use the MITRE ATT&CK Framework (through a [dedicated connector](https://github.com/OpenCTI-Platform/connectors)) to help structure the data. The user can also chose to implement its own datasets.
+The goal is to create a comprehensive tool allowing users to capitalize technical (such as TTPs and observables) and non-technical information (such as suggested attribution, victimlogy etc.) while linking each piece of information to its primary source (a report, a MISP event, etc.), with features such as links between each information, first and last seen dates, levels of confidence etc. The tool is able to use the [MITRE ATT&CK framework](https://attack.mitre.org) (through a [dedicated connector](https://github.com/OpenCTI-Platform/connectors)) to help structure the data. The user can also chose to implement its own datasets.
 
-Once data has been capitalised and processed by the analyst inside OpenCTI, new relations can be inferred and graphs can be generated to facilitate the understanding and the representation of this information. This allow the user to extract and leverage meaningful knowledge from the raw data. 
+Once data has been capitalised and processed by the analyst within OpenCTI, new relations [may be inferred](https://opencti-platform.github.io/docs/guides/inferences) from existing ones to facilitate the understanding and the representation of this information. This allow the user to extract and leverage meaningful knowledge from the raw data.
 
-OpenCTI not only allows imports but also exports of data under different formats. [Connectors](https://github.com/OpenCTI-Platform/connectors) are currently developped to accelerate interactions between the tool and other platforms.
+OpenCTI not only allows [imports]((https://opencti-platform.github.io/docs/guides/import-data)) but also [exports of data]((https://opencti-platform.github.io/docs/guides/export-data)) under different formats (CSV, STIX2 bundles, etc.). [Connectors](https://github.com/OpenCTI-Platform/connectors) are currently developped to accelerate interactions between the tool and other platforms.
 
 ## Documentation and demonstration
 
