@@ -39,6 +39,11 @@ export const addOrganization = async (user, organization) => {
     has alias "",
     has name "${escapeString(organization.name)}",
     has description "${escapeString(organization.description)}",
+    has organization_class "${
+      organization.organization_class
+        ? escapeString(organization.organization_class)
+        : 'other'
+    }",
     has created ${
       organization.created ? prepareDate(organization.created) : now()
     },

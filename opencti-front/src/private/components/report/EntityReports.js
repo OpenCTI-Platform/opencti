@@ -216,14 +216,26 @@ class EntityReports extends Component {
 
   render() {
     const {
-      classes, t, entityId, reportClass,
+      classes, t, entityId, authorId, reportClass,
     } = this.props;
-    const paginationOptions = {
-      objectId: entityId,
-      reportClass: reportClass || null,
-      orderBy: this.state.sortBy,
-      orderMode: this.state.orderAsc ? 'asc' : 'desc',
-    };
+    let paginationOptions;
+    if (authorId) {
+      paginationOptions = {
+        objectId: null,
+        authorId,
+        reportClass: reportClass || null,
+        orderBy: this.state.sortBy,
+        orderMode: this.state.orderAsc ? 'asc' : 'desc',
+      };
+    } else {
+      paginationOptions = {
+        objectId: entityId,
+        authorId: null,
+        reportClass: reportClass || null,
+        orderBy: this.state.sortBy,
+        orderMode: this.state.orderAsc ? 'asc' : 'desc',
+      };
+    }
     return (
       <div>
         <div className={classes.header}>
@@ -366,6 +378,7 @@ class EntityReports extends Component {
 
 EntityReports.propTypes = {
   entityId: PropTypes.string,
+  authorId: PropTypes.string,
   classes: PropTypes.object,
   reportClass: PropTypes.string,
   t: PropTypes.func,

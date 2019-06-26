@@ -48,13 +48,13 @@ const styles = theme => ({
   },
   content: {
     width: '100%',
-    height: 89,
+    height: 87,
     overflow: 'hidden',
     paddingTop: 0,
   },
   contentDummy: {
     width: '100%',
-    height: 89,
+    height: 87,
     overflow: 'hidden',
     marginTop: 15,
   },

@@ -55,6 +55,7 @@ class OrganizationsLines extends Component {
     const searchTerm = propOr('', 'searchTerm', this.props);
     const filterByKeyword = n => searchTerm === ''
       || n.node.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || propOr('', 'organization_class', n.node).toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || n.node.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
     if (searchTerm.length > 0) {
       return filter(filterByKeyword, list);

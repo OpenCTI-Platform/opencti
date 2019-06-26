@@ -8,7 +8,7 @@
     "@material-ui/core": "^4.1.1",
     "@material-ui/icons": "^4.2.0",
     "@material-ui/lab": "^4.0.0-alpha.16",
-    "@material-ui/pickers": "^3.1.1",
+    "@material-ui/pickers": "^3.1.2",
     "apollo-link": "^1.2.12",
     "apollo-link-ws": "^1.0.18",
     "babel-plugin-relay": "^5.0.0",

@@ -33,6 +33,7 @@ import { markingDefinitionsLinesSearchQuery } from '../marking_definition/Markin
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../identity/IdentityCreation';
+import DatePickerField from '../../../components/DatePickerField';
 
 const styles = theme => ({
   drawerPaper: {
@@ -119,6 +120,8 @@ const reportValidation = t => Yup.object().shape({
     .required(t('This field is required')),
   report_class: Yup.string().required(t('This field is required')),
   description: Yup.string(),
+  object_status: Yup.number(),
+  source_confidence_level: Yup.number(),
 });
 
 class ReportEditionOverviewComponent extends Component {
@@ -304,6 +307,8 @@ class ReportEditionOverviewComponent extends Component {
         'report_class',
         'createdByRef',
         'markingDefinitions',
+        'object_status',
+        'source_confidence_level',
       ]),
     )(report);
     return (
@@ -353,6 +358,22 @@ class ReportEditionOverviewComponent extends Component {
                   <MenuItem value="internal">{t('Internal report')}</MenuItem>
                   <MenuItem value="external">{t('External source')}</MenuItem>
                 </Field>
+                <Field
+                  name="published"
+                  component={DatePickerField}
+                  label={t('Publication date')}
+                  fullWidth={true}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="published"
+                    />
+                  }
+                />
                 <Field
                   name="description"
                   component={TextField}
@@ -406,6 +427,75 @@ class ReportEditionOverviewComponent extends Component {
                     />
                   }
                 />
+                <Field
+                  name="object_status"
+                  component={Select}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onChange={this.handleSubmitField.bind(this)}
+                  label={t('Processing status')}
+                  fullWidth={true}
+                  inputProps={{
+                    name: 'object_status',
+                    id: 'object_status',
+                  }}
+                  containerstyle={{ width: '100%', marginTop: 10 }}
+                  helpertext={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="object_status"
+                    />
+                  }
+                >
+                  <MenuItem key="0" value="0">
+                    {t('report_status_0')}
+                  </MenuItem>
+                  <MenuItem key="1" value="1">
+                    {t('report_status_1')}
+                  </MenuItem>
+                  <MenuItem key="2" value="2">
+                    {t('report_status_2')}
+                  </MenuItem>
+                  <MenuItem key="3" value="3">
+                    {t('report_status_3')}
+                  </MenuItem>
+                </Field>
+                <Field
+                  name="source_confidence_level"
+                  component={Select}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onChange={this.handleSubmitField.bind(this)}
+                  label={t('Confidence level')}
+                  fullWidth={true}
+                  inputProps={{
+                    name: 'source_confidence_level',
+                    id: 'source_confidence_level',
+                  }}
+                  containerstyle={{ width: '100%', marginTop: 10 }}
+                  helpertext={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="source_confidence_level"
+                    />
+                  }
+                >
+                  <MenuItem key="1" value="1">
+                    {t('confidence_1')}
+                  </MenuItem>
+                  <MenuItem key="2" value="2">
+                    {t('confidence_2')}
+                  </MenuItem>
+                  <MenuItem key="3" value="3">
+                    {t('confidence_3')}
+                  </MenuItem>
+                  <MenuItem key="4" value="4">
+                    {t('confidence_4')}
+                  </MenuItem>
+                  <MenuItem key="5" value="5">
+                    {t('confidence_5')}
+                  </MenuItem>
+                </Field>
               </Form>
               <IdentityCreation
                 contextual={true}
@@ -449,6 +539,9 @@ const ReportEditionOverview = createFragmentContainer(
         name
         description
         report_class
+        published
+        object_status
+        source_confidence_level
         createdByRef {
           node {
             id

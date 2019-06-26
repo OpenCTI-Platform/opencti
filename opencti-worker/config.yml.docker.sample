@@ -2,7 +2,7 @@ dumper:
   file: './dump.gql'
 
 opencti:
-  api_url: 'http://opencti:8080'
+  api_url: 'http://opencti:OPENCTI_PORT'
   api_key: 'REPLACE_API_KEY'
   verbose: true
 

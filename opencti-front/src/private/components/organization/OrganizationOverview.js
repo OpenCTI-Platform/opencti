@@ -9,7 +9,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = () => ({
   paper: {
     minHeight: '100%',
     margin: '10px 0 0 0',
@@ -30,6 +30,14 @@ class OrganizationOverviewComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant="h3" gutterBottom={true}>
+            {t('Organization type')}
+          </Typography>
+          {t(`organization_${organization.organization_class}`)}
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Creation date')}
           </Typography>
           {fld(organization.created)}
@@ -76,6 +84,7 @@ const OrganizationOverview = createFragmentContainer(
     organization: graphql`
       fragment OrganizationOverview_organization on Organization {
         id
+        organization_class
         name
         description
         created

@@ -55,7 +55,13 @@ const inlineStyles = {
   },
   name: {
     float: 'left',
-    width: '60%',
+    width: '40%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  organization_class: {
+    float: 'left',
+    width: '20%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -214,6 +220,7 @@ class Organizations extends Component {
               primary={
                 <div>
                   {this.SortHeader('name', 'Name')}
+                  {this.SortHeader('organization_class', 'Organization type')}
                   {this.SortHeader('created_at', 'Creation date')}
                   {this.SortHeader('updated_at', 'Modification date')}
                 </div>

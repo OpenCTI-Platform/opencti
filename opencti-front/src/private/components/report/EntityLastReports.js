@@ -54,13 +54,15 @@ const inlineStyles = {
 
 const entityLastReportsQuery = graphql`
   query EntityLastReportsQuery(
-    $objectId: String!
+    $objectId: String
+    $authorId: String
     $first: Int
     $orderBy: ReportsOrdering
     $orderMode: OrderingMode
   ) {
     reports(
       objectId: $objectId
+      authorId: $authorId
       first: $first
       orderBy: $orderBy
       orderMode: $orderMode
@@ -87,7 +89,7 @@ const entityLastReportsQuery = graphql`
 class EntityLastReports extends Component {
   render() {
     const {
-      t, nsd, classes, entityId,
+      t, nsd, classes, entityId, authorId,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -98,7 +100,8 @@ class EntityLastReports extends Component {
           <QueryRenderer
             query={entityLastReportsQuery}
             variables={{
-              objectId: entityId,
+              objectId: authorId ? null : entityId,
+              authorId: authorId || null,
               first: 8,
               orderBy: 'published',
               orderMode: 'desc',
@@ -158,6 +161,7 @@ class EntityLastReports extends Component {
 
 EntityLastReports.propTypes = {
   entityId: PropTypes.string,
+  authorId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,

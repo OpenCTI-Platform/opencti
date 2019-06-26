@@ -128,7 +128,7 @@ class CourseOfActionPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this attack pattern?')}
+              {t('Do you want to delete this course of action?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>

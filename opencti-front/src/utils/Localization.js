@@ -55,6 +55,8 @@ const i18n = {
         'Souhaitez-vous supprimer cet espace de travail ?',
       'Do you want to delete this attack pattern?':
         'Souhaitez-vous supprimer cette TTP ?',
+      'Do you want to delete this course of action?':
+        'Souhaitez-vous supprimer cette conduite à suivre ?',
       'Do you want to delete this tool?':
         'Souhaitez-vous supprimer cet outil ?',
       'Do you want to delete this vulnerability?':
@@ -169,6 +171,7 @@ const i18n = {
       'Update a relationship': 'Modifier une relation',
       'Select a relationship': 'Sélectionner une relation',
       'Add external references': 'Ajouter des références externes',
+      'Add courses of action': 'Ajouter des conduites à suivre',
       'Add entities': 'Ajouter des entités',
       'Add observable': 'Ajouter un observable',
       'The password has been updated': 'Le mot de passe a été modifié',
@@ -215,7 +218,15 @@ const i18n = {
       Overview: 'Aperçu',
       Relationships: 'Relations',
       Entities: 'Entités',
+      'entitie(s)': 'entité(s)',
       Observables: 'Observables',
+      Category: 'Catégorie',
+      Constituent: 'Bénéficiaire',
+      CSIRT: 'CSIRT',
+      Partner: 'Partenaire',
+      Vendor: 'Editeur',
+      Other: 'Autre',
+      'Organization type': "Type d'organisation",
       'Entities types': "Types d'entités",
       'Attack pattern usage': 'Usage de cette TTP',
       'Vulnerability usage': 'Usage de cette vulnérabilité',
@@ -584,6 +595,11 @@ const i18n = {
       report_status_1: 'En cours',
       report_status_2: 'Capitalisé',
       report_status_3: 'Fermé',
+      organization_constituent: 'Bénéficiaire',
+      organization_csirt: 'CSIRT',
+      organization_partner: 'Partenaire',
+      organization_vendor: 'Editeur',
+      organization_other: 'Autre',
     },
     en: {
       Nonee: 'None',
@@ -673,6 +689,11 @@ const i18n = {
       report_status_1: 'In progress',
       report_status_2: 'Analyzed',
       report_status_3: 'Closed',
+      organization_constituent: 'Constituent',
+      organization_csirt: 'CSIRT',
+      organization_partner: 'Partner',
+      organization_vendor: 'Vendor',
+      organization_other: 'Other',
     },
   },
 };

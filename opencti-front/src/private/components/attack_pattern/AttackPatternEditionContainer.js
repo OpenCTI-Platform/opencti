@@ -90,7 +90,7 @@ class AttackPatternEditionContainer extends Component {
               onChange={this.handleChangeTab.bind(this)}
             >
               <Tab label={t('Overview')} />
-              <Tab label={t('Identity')} />
+              <Tab label={t('Details')} />
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (

@@ -3,19 +3,17 @@ import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose,
-  pathOr,
-  pipe,
-  map,
-  pluck,
-  union,
-  assoc,
+  compose, pathOr, pipe, map, pluck, union, assoc,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -42,10 +40,14 @@ const styles = theme => ({
     }),
     padding: 0,
   },
+  dialogActions: {
+    padding: '0 17px 20px 0',
+  },
   createButton: {
     position: 'fixed',
     bottom: 30,
     right: 30,
+    zIndex: 2000,
   },
   buttons: {
     marginTop: 20,
@@ -188,11 +190,15 @@ class CourseOfActionCreation extends Component {
     });
   }
 
-  onReset() {
+  onResetClassic() {
     this.handleClose();
   }
 
-  render() {
+  onResetContextual() {
+    this.handleClose();
+  }
+
+  renderClassic() {
     const { t, classes } = this.props;
     return (
       <div>
@@ -232,67 +238,66 @@ class CourseOfActionCreation extends Component {
               }}
               validationSchema={courseOfActionValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
+              onReset={this.onResetClassic.bind(this)}
               render={({
                 submitForm,
                 handleReset,
                 isSubmitting,
                 setFieldValue,
               }) => (
-                <div>
-                  <Form style={{ margin: '20px 0 20px 0' }}>
-                    <Field
-                      name="name"
-                      component={TextField}
-                      label={t('Name')}
-                      fullWidth={true}
-                    />
-                    <Field
-                      name="description"
-                      component={TextField}
-                      label={t('Description')}
-                      fullWidth={true}
-                      multiline={true}
-                      rows="4"
-                      style={{ marginTop: 20 }}
-                    />
-                    <Field
-                      name="createdByRef"
-                      component={AutocompleteCreate}
-                      multiple={false}
-                      handleCreate={this.handleOpenIdentityCreation.bind(this)}
-                      label={t('Author')}
-                      options={this.state.identities}
-                      onInputChange={this.searchIdentities.bind(this)}
-                    />
-                    <Field
-                      name="markingDefinitions"
-                      component={Autocomplete}
-                      multiple={true}
-                      label={t('Marking')}
-                      options={this.state.markingDefinitions}
-                      onInputChange={this.searchMarkingDefinitions.bind(this)}
-                    />
-                    <div className={classes.buttons}>
-                      <Button
-                        variant="contained"
-                        onClick={handleReset}
-                        disabled={isSubmitting}
-                        classes={{ root: classes.button }}
-                      >
-                        {t('Cancel')}
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={submitForm}
-                        disabled={isSubmitting}
-                        classes={{ root: classes.button }}
-                      >
-                        {t('Create')}
-                      </Button>
-                    </div>
-                  </Form>
+                <Form style={{ margin: '20px 0 20px 0' }}>
+                  <Field
+                    name="name"
+                    component={TextField}
+                    label={t('Name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    name="description"
+                    component={TextField}
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="createdByRef"
+                    component={AutocompleteCreate}
+                    multiple={false}
+                    handleCreate={this.handleOpenIdentityCreation.bind(this)}
+                    label={t('Author')}
+                    options={this.state.identities}
+                    onInputChange={this.searchIdentities.bind(this)}
+                  />
+                  <Field
+                    name="markingDefinitions"
+                    component={Autocomplete}
+                    multiple={true}
+                    label={t('Marking')}
+                    options={this.state.markingDefinitions}
+                    onInputChange={this.searchMarkingDefinitions.bind(this)}
+                  />
+
+                  <div className={classes.buttons}>
+                    <Button
+                      variant="contained"
+                      onClick={handleReset}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Cancel')}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Create')}
+                    </Button>
+                  </div>
                   <IdentityCreation
                     contextual={true}
                     inputValue={this.state.identityInput}
@@ -305,13 +310,127 @@ class CourseOfActionCreation extends Component {
                       });
                     }}
                   />
-                </div>
+                </Form>
               )}
             />
           </div>
         </Drawer>
       </div>
     );
+  }
+
+  renderContextual() {
+    const {
+      t, classes, inputValue, display,
+    } = this.props;
+    return (
+      <div style={{ display: display ? 'block' : 'none' }}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}
+        >
+          <Add />
+        </Fab>
+        <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
+          <Formik
+            initialValues={{
+              name: inputValue,
+              description: '',
+              createdByRef: '',
+              markingDefinitions: [],
+            }}
+            validationSchema={courseOfActionValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={this.onResetContextual.bind(this)}
+            render={({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+            }) => (
+              <Form>
+                <DialogTitle>{t('Create a course of action')}</DialogTitle>
+                <DialogContent>
+                  <Field
+                    name="name"
+                    component={TextField}
+                    label={t('Name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    name="description"
+                    component={TextField}
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="createdByRef"
+                    component={AutocompleteCreate}
+                    multiple={false}
+                    handleCreate={this.handleOpenIdentityCreation.bind(this)}
+                    label={t('Author')}
+                    options={this.state.identities}
+                    onInputChange={this.searchIdentities.bind(this)}
+                  />
+                  <Field
+                    name="markingDefinitions"
+                    component={Autocomplete}
+                    multiple={true}
+                    label={t('Marking')}
+                    options={this.state.markingDefinitions}
+                    onInputChange={this.searchMarkingDefinitions.bind(this)}
+                  />
+                </DialogContent>
+                <DialogActions classes={{ root: classes.dialogActions }}>
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Create')}
+                  </Button>
+                </DialogActions>
+                <IdentityCreation
+                  contextual={true}
+                  inputValue={this.state.identityInput}
+                  open={this.state.identityCreation}
+                  handleClose={this.handleCloseIdentityCreation.bind(this)}
+                  creationCallback={(data) => {
+                    setFieldValue('createdByRef', {
+                      label: data.identityAdd.name,
+                      value: data.identityAdd.id,
+                    });
+                  }}
+                />
+              </Form>
+            )}
+          />
+        </Dialog>
+      </div>
+    );
+  }
+
+  render() {
+    const { contextual } = this.props;
+    if (contextual) {
+      return this.renderContextual();
+    }
+    return this.renderClassic();
   }
 }
 
@@ -320,6 +439,9 @@ CourseOfActionCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  contextual: PropTypes.bool,
+  display: PropTypes.bool,
+  inputValue: PropTypes.string,
 };
 
 export default compose(

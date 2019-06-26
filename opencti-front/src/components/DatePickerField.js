@@ -1,10 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { DatePicker } from '@material-ui/pickers'
+import { DatePicker } from '@material-ui/pickers';
 import { dateFormat } from '../utils/Time';
 import inject18n from './i18n';
 
 class DatePickerField extends Component {
+  constructor(props) {
+    super(props);
+    this.currentDate = this.props.field.value;
+  }
+
   render() {
     const {
       t,
@@ -14,22 +19,20 @@ class DatePickerField extends Component {
       fd,
       yd,
       nsd,
+      nsdt,
       field,
       form,
       onFocus,
       onSubmit,
-      onChange,
       ...other
     } = this.props;
     const currentError = form.errors[field.name];
     return (
       <DatePicker
         variant='inline'
-        disableToolbar={true}
+        disableToolbar={false}
         autoOk={true}
-        keyboard={true}
         allowKeyboardControl={true}
-        clearable={true}
         name={field.name}
         value={field.value}
         onFocus={() => {
@@ -47,12 +50,12 @@ class DatePickerField extends Component {
           }
         }}
         onChange={(date) => {
-          form.setFieldValue(field.name, date);
-          if (typeof onChange === 'function') {
-            onChange(field.name, date);
-          }
-          if (typeof onSubmit === 'function') {
-            onSubmit(field.name, dateFormat(date));
+          if (this.currentDate !== date) {
+            form.setFieldValue(field.name, date);
+            this.currentDate = date;
+            if (typeof onSubmit === 'function') {
+              onSubmit(field.name, dateFormat(date));
+            }
           }
         }}
         format="YYYY-MM-DD"

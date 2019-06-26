@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter } from 'react-router-dom';
+import { Route, withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import CourseOfAction from './CourseOfAction';
-import CourseOfActionReports from './CourseOfActionReports';
-import CourseOfActionKnowledge from './CourseOfActionKnowledge';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -25,8 +23,6 @@ const courseOfActionQuery = graphql`
       ...CourseOfAction_courseOfAction
       ...CourseOfActionHeader_courseOfAction
       ...CourseOfActionOverview_courseOfAction
-      ...CourseOfActionReports_courseOfAction
-      ...CourseOfActionKnowledge_courseOfAction
     }
   }
 `;
@@ -71,34 +67,6 @@ class RootCourseOfAction extends Component {
                     path="/dashboard/techniques/courses_of_action/:courseOfActionId"
                     render={routeProps => (
                       <CourseOfAction
-                        {...routeProps}
-                        courseOfAction={props.courseOfAction}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/techniques/courses_of_action/:courseOfActionId/reports"
-                    render={routeProps => (
-                      <CourseOfActionReports
-                        {...routeProps}
-                        courseOfAction={props.courseOfAction}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/techniques/courses_of_action/:courseOfActionId/knowledge"
-                    render={() => (
-                      <Redirect
-                        to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge/overview`}
-                      />
-                    )}
-                  />
-                  <Route
-                    path="/dashboard/techniques/courses_of_action/:courseOfActionId/knowledge"
-                    render={routeProps => (
-                      <CourseOfActionKnowledge
                         {...routeProps}
                         courseOfAction={props.courseOfAction}
                       />

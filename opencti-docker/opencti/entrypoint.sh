@@ -4,12 +4,20 @@
 /etc/init.d/rsyslog start
 
 # Wait launching
-while ! nc -z elasticsearch 9200; do
+while ! nc -z ${ELASTICSEARCH__HOSTNAME} 9200; do
   echo "Waiting ElasticSearch to launch..."
   sleep 2
 done
-while ! nc -z grakn 48555; do
+while ! nc -z ${GRAKN__HOSTNAME} 48555; do
   echo "Waiting Grakn to launch..."
+  sleep 2
+done
+while ! nc -z ${REDIS__HOSTNAME} 6379; do
+  echo "Waiting Redis to launch..."
+  sleep 2
+done
+while ! nc -z ${RABBITMQ__HOSTNAME} 5672; do
+  echo "Waiting RabbitMQ to launch..."
   sleep 2
 done
 

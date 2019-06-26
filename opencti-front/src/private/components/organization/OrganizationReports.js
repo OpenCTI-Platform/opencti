@@ -28,7 +28,7 @@ class OrganizationReportsComponent extends Component {
       <div className={classes.container}>
         <OrganizationHeader organization={organization} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={organization.id} />
+          <EntityReports authorId={organization.id} />
         </Paper>
       </div>
     );

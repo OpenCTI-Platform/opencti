@@ -1104,7 +1104,6 @@ export const updateAttribute = async (id, input, tx = null) => {
     const createQuery = `match $m has internal_id "${escapeString(
       id
     )}"; insert $m ${graknValues};`;
-
     logger.debug(`[GRAKN - infer: false] ${createQuery}`);
     await wTx.tx.query(createQuery);
 

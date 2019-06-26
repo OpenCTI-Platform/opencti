@@ -7,6 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
+import MenuItem from '@material-ui/core/MenuItem';
 import { Add, Close } from '@material-ui/icons';
 import {
   compose, pathOr, pipe, map, pluck, union, assoc,
@@ -19,6 +20,7 @@ import { commitMutation, fetchQuery } from '../../../relay/environment';
 import Autocomplete from '../../../components/Autocomplete';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import TextField from '../../../components/TextField';
+import Select from '../../../components/Select';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definition/MarkingDefinitionsLines';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
@@ -81,6 +83,7 @@ const organizationValidation = t => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
+  organization_class: Yup.string().required(t('This field is required')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -218,6 +221,7 @@ class OrganizationCreation extends Component {
               initialValues={{
                 name: '',
                 description: '',
+                organization_class: 'other',
                 createdByRef: '',
                 markingDefinitions: [],
               }}
@@ -247,6 +251,33 @@ class OrganizationCreation extends Component {
                       rows="4"
                       style={{ marginTop: 20 }}
                     />
+                    <Field
+                      name="organization_class"
+                      component={Select}
+                      label={t('Category')}
+                      fullWidth={true}
+                      inputProps={{
+                        name: 'organization_class',
+                        id: 'organization_class',
+                      }}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
+                    >
+                      <MenuItem value="constituent">
+                        {t('Constituent')}
+                      </MenuItem>
+                      <MenuItem value="csirt">
+                        {t('CSIRT')}
+                      </MenuItem>
+                      <MenuItem value="partner">
+                        {t('Partner')}
+                      </MenuItem>
+                      <MenuItem value="vendor">
+                        {t('Vendor')}
+                      </MenuItem>
+                      <MenuItem value="other">
+                        {t('Other')}
+                      </MenuItem>
+                    </Field>
                     <Field
                       name="createdByRef"
                       component={AutocompleteCreate}

@@ -57,10 +57,10 @@ class OrganizationKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/entities/organizations/${organizationId}/entities/sectors`}
+            to={`/dashboard/entities/organizations/${organizationId}/knowledge/sectors`}
             selected={
               location.pathname
-              === `/dashboard/entities/organizations/${organizationId}/entities/sectors`
+              === `/dashboard/entities/organizations/${organizationId}/knowledge/sectors`
             }
             dense={false}
             classes={{ root: classes.item }}

@@ -218,6 +218,7 @@ ReportsLines.propTypes = {
 export const reportsLinesQuery = graphql`
   query ReportsLinesPaginationQuery(
     $objectId: String
+    $authorId: String
     $reportClass: String
     $count: Int!
     $cursor: ID
@@ -227,6 +228,7 @@ export const reportsLinesQuery = graphql`
     ...ReportsLines_data
       @arguments(
         objectId: $objectId
+        authorId: $authorId
         reportClass: $reportClass
         count: $count
         cursor: $cursor
@@ -265,6 +267,7 @@ export default withStyles(styles)(
         fragment ReportsLines_data on Query
           @argumentDefinitions(
             objectId: { type: "String" }
+            authorId: { type: "String" }
             reportClass: { type: "String" }
             count: { type: "Int", defaultValue: 25 }
             cursor: { type: "ID" }
@@ -273,6 +276,7 @@ export default withStyles(styles)(
           ) {
           reports(
             objectId: $objectId
+            authorId: $authorId
             reportClass: $reportClass
             first: $count
             after: $cursor
@@ -318,6 +322,7 @@ export default withStyles(styles)(
       getVariables(props, { count, cursor }, fragmentVariables) {
         return {
           objectId: fragmentVariables.objectId,
+          authorId: fragmentVariables.authorId,
           reportClass: fragmentVariables.reportClass,
           count,
           cursor,

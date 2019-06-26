@@ -16,9 +16,11 @@ import {
   union,
 } from 'ramda';
 import * as Yup from 'yup';
+import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../components/i18n';
 import Autocomplete from '../../../components/Autocomplete';
 import TextField from '../../../components/TextField';
+import Select from '../../../components/Select';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import {
   commitMutation,
@@ -118,6 +120,7 @@ const organizationValidation = t => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
+  organization_class: Yup.string().required(t('This field is required')),
 });
 
 class OrganizationEditionOverviewComponent extends Component {
@@ -308,7 +311,13 @@ class OrganizationEditionOverviewComponent extends Component {
     const initialValues = pipe(
       assoc('createdByRef', createdByRef),
       assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'description', 'createdByRef', 'markingDefinitions']),
+      pick([
+        'name',
+        'description',
+        'organization_class',
+        'createdByRef',
+        'markingDefinitions',
+      ]),
     )(organization);
     return (
       <div>
@@ -353,6 +362,32 @@ class OrganizationEditionOverviewComponent extends Component {
                     />
                   }
                 />
+                <Field
+                  name="organization_class"
+                  component={Select}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onChange={this.handleSubmitField.bind(this)}
+                  label={t('Category')}
+                  fullWidth={true}
+                  inputProps={{
+                    name: 'organization_class',
+                    id: 'organization_class',
+                  }}
+                  containerstyle={{ marginTop: 10, width: '100%' }}
+                  helpertext={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="organization_class"
+                    />
+                  }
+                >
+                  <MenuItem value="constituent">{t('Constituent')}</MenuItem>
+                  <MenuItem value="csirt">{t('CSIRT')}</MenuItem>
+                  <MenuItem value="partner">{t('Partner')}</MenuItem>
+                  <MenuItem value="vendor">{t('Vendor')}</MenuItem>
+                  <MenuItem value="other">{t('Other')}</MenuItem>
+                </Field>
                 <Field
                   name="createdByRef"
                   component={AutocompleteCreate}
@@ -430,6 +465,7 @@ const OrganizationEditionOverview = createFragmentContainer(
         id
         name
         description
+        organization_class
         createdByRef {
           node {
             id

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, contains } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -23,9 +23,41 @@ const styles = () => ({
   },
 });
 
+const organizationTypesForAuthorMode = ['vendor', 'csirt', 'partner'];
+
 class OrganizationComponent extends Component {
   render() {
     const { classes, organization } = this.props;
+    if (contains(organization.organization_class, organizationTypesForAuthorMode)) {
+      return (
+        <div className={classes.container}>
+          <OrganizationHeader organization={organization} />
+          <Grid
+            container={true}
+            spacing={3}
+            classes={{ container: classes.gridContainer }}
+          >
+            <Grid item={true} xs={6}>
+              <OrganizationOverview organization={organization} />
+            </Grid>
+            <Grid item={true} xs={6}>
+              <EntityLastReports authorId={organization.id} />
+            </Grid>
+          </Grid>
+          <Grid
+            container={true}
+            spacing={3}
+            classes={{ container: classes.gridContainer }}
+            style={{ marginTop: 30 }}
+          >
+            <Grid item={true} xs={12}>
+              <EntityReportsChart authorId={organization.id} />
+            </Grid>
+          </Grid>
+          <OrganizationEdition organizationId={organization.id} />
+        </div>
+      );
+    }
     return (
       <div className={classes.container}>
         <OrganizationHeader organization={organization} />
@@ -73,6 +105,7 @@ const Organization = createFragmentContainer(OrganizationComponent, {
   organization: graphql`
     fragment Organization_organization on Organization {
       id
+      organization_class
       ...OrganizationHeader_organization
       ...OrganizationOverview_organization
     }

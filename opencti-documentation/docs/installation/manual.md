@@ -7,7 +7,7 @@ sidebar_label: Manual
 ## Prerequisites
 
 - Node.JS (>= 10)
-- Grakn (>= 1.5.2)
+- Grakn (>= 1.5.6)
 - Redis (>= 3.0)
 - ElasticSearch (>= 6)
 - RabbitMQ (>= 3.7)
@@ -20,7 +20,7 @@ $ sudo apt-get install nodejs npm python3 python3-pip
 ## Download the application files
 ```bash
 $ mkdir /path/to/your/app && cd /path/to/your/app
-$ wget https://github.com/LuatixHQ/opencti/releases/download/v0.1/opencti-release-0.1.tar.gz
+$ wget https://github.com/OpenCTI-Platform/opencti/releases/download/1.0.0/opencti-release-0.1.tar.gz
 $ tar xvfz opencti-release-0.1.tar.gz
 ```
 

@@ -621,6 +621,7 @@ enum OrganizationsOrdering {
   stix_id
   name
   description
+  organization_class
   created
   modified
   created_at
@@ -644,6 +645,7 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
   stix_label: [String]
   alias: [String]
   description: String
+  organization_class: String
   created: DateTime
   modified: DateTime
   revoked: Boolean
@@ -686,6 +688,7 @@ input OrganizationAddInput {
   stix_id: String
   name: String!
   description: String
+  organization_class: String
   createdByRef: String
   markingDefinitions: [String]
   clientMutationId: String
@@ -1287,6 +1290,7 @@ type CourseOfActionConnection {
 type CourseOfActionEdge {
   cursor: String!
   node: CourseOfAction!
+  relation: RelationEmbedded!
 }
 type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
@@ -2150,7 +2154,12 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth
-  stixRelationsNumber(type: String, fromId: String, endDate: DateTime, inferred: Boolean): Number @auth
+  stixRelationsNumber(
+    type: String
+    fromId: String
+    endDate: DateTime
+    inferred: Boolean
+  ): Number @auth
   # Workspaces
   workspace(id: String!): Workspace @auth
   workspaces(
@@ -2184,6 +2193,7 @@ type Query {
   # Organizations
   organization(id: String!): Organization @auth
   organizations(
+    organizationClass: String
     first: Int
     after: ID
     orderBy: OrganizationsOrdering
@@ -2276,6 +2286,7 @@ type Query {
     after: ID
     orderBy: AttackPatternsOrdering
     orderMode: OrderingMode
+    objectId: String
     search: String
   ): AttackPatternConnection @auth
   # CoursesOfAction
@@ -2285,6 +2296,7 @@ type Query {
     after: ID
     orderBy: CoursesOfActionOrdering
     orderMode: OrderingMode
+    objectId: String
     search: String
   ): CourseOfActionConnection @auth
   # ThreatActors
@@ -2374,11 +2386,13 @@ type Query {
     orderBy: ReportsOrdering
     orderMode: OrderingMode
     objectId: String
+    authorId: String
     reportClass: String
     search: String
   ): ReportConnection @auth
   reportsTimeSeries(
     objectId: String
+    authorId: String
     reportClass: String
     field: String!
     operation: StatsOperation!
@@ -2386,8 +2400,18 @@ type Query {
     endDate: DateTime!
     interval: String!
   ): [TimeSeries] @auth
-  reportsNumber(reportClass: String, objectId: String, endDate: DateTime): Number @auth
-  reportsDistribution(objectId: String, field: String!, operation: StatsOperation!, limit: Int, order: String): [Distribution] @auth
+  reportsNumber(
+    reportClass: String
+    objectId: String
+    endDate: DateTime
+  ): Number @auth
+  reportsDistribution(
+    objectId: String
+    field: String!
+    operation: StatsOperation!
+    limit: Int
+    order: String
+  ): [Distribution] @auth
 }
 
 ### SUBSCRIPTIONS
@@ -2420,7 +2444,8 @@ type StixDomainEntityEditMutations {
   relationAdd(input: RelationAddInput): RelationData
   relationDelete(relationId: ID!): RelationData
   refreshExport(entityType: String!, type: String!): StixDomainEntity
-  exportPush(exportId: String!, rawData: String!): Boolean @auth(for: ROLE_ADMIN)
+  exportPush(exportId: String!, rawData: String!): Boolean
+    @auth(for: ROLE_ADMIN)
 }
 
 # StixObservable
@@ -2673,7 +2698,8 @@ type Mutation {
   settingsAdd(input: SettingsAddInput): Settings @auth(for: ROLE_ADMIN)
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: ROLE_ADMIN)
   # Connector
-  connectorConfig(identifier: String!, config: String!): Boolean @auth(for: ROLE_ADMIN)
+  connectorConfig(identifier: String!, config: String!): Boolean
+    @auth(for: ROLE_ADMIN)
   # Import data
   importData(type: String!, file: Upload!): Boolean @auth
   # StixDomainEntity

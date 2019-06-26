@@ -10,7 +10,8 @@ import {
   notify,
   now,
   takeWriteTx,
-  commitWriteTx
+  commitWriteTx,
+  paginate
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
@@ -18,6 +19,17 @@ import { index, paginate as elPaginate } from '../database/elasticSearch';
 export const findAll = args =>
   elPaginate('stix-domain-entities', assoc('type', 'course-of-action', args));
 // paginate('match $c isa Course-Of-Action', args);
+
+export const search = args =>
+  elPaginate('stix-domain-entities', assoc('type', 'course-of-action', args));
+
+export const findByEntity = args =>
+  paginate(
+    `match $c isa Course-Of-Action; 
+    $rel(mitigation:$c, problem:$p) isa mitigates;
+    $p has internal_id "${escapeString(args.objectId)}"`,
+    args
+  );
 
 export const findById = courseOfActionId => getById(courseOfActionId);
 

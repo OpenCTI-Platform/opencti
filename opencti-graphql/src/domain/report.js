@@ -126,11 +126,41 @@ export const findByEntity = args => {
   );
 };
 
+export const findByAuthor = args => {
+  return paginate(
+    `match $r isa Report; 
+    $rel(so:$r, creator:$so) isa created_by_ref; 
+    $so has internal_id "${escapeString(args.authorId)}" ${
+      args.reportClass
+        ? `; 
+    $r has report_class "${escapeString(args.reportClass)}"`
+        : ''
+    }`,
+    args,
+    true,
+    null,
+    true
+  );
+};
+
 export const reportsTimeSeriesByEntity = args =>
   timeSeries(
     `match $x isa Report;
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
     $so has internal_id "${escapeString(args.objectId)}" ${
+      args.reportClass
+        ? `; 
+    $x has report_class "${escapeString(args.reportClass)}"`
+        : ''
+    }`,
+    args
+  );
+
+export const reportsTimeSeriesByAuthor = args =>
+  timeSeries(
+    `match $x isa Report;
+    $rel(so:$x, creator:$so) isa created_by_ref; 
+    $so has internal_id "${escapeString(args.authorId)}" ${
       args.reportClass
         ? `; 
     $x has report_class "${escapeString(args.reportClass)}"`

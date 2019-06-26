@@ -76,48 +76,6 @@ class TopMenuCourseOfAction extends Component {
         >
           {t('Overview')}
         </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/reports`}
-          variant={
-            location.pathname
-            === `/dashboard/techniques/courses_of_action/${courseOfActionId}/reports`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/techniques/courses_of_action/${courseOfActionId}/reports`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/techniques/courses_of_action/${courseOfActionId}/knowledge`,
-            )
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Knowledge')}
-        </Button>
       </div>
     );
   }

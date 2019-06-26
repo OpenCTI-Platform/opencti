@@ -28,7 +28,7 @@ class AttackPatternKnowledgeComponent extends Component {
     const { classes, attackPattern } = this.props;
     const link = `/dashboard/techniques/attack_patterns/${
       attackPattern.id
-    }/threats`;
+    }/knowledge`;
     return (
       <div className={classes.container}>
         <AttackPatternHeader attackPattern={attackPattern} variant="noalias" />

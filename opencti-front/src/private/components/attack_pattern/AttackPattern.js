@@ -11,7 +11,7 @@ import AttackPatternOverview from './AttackPatternOverview';
 import AttackPatternIdentity from './AttackPatternIdentity';
 import AttackPatternEdition from './AttackPatternEdition';
 import EntityExternalReferences from '../external_reference/EntityExternalReferences';
-import EntityStixRelationsPie from '../stix_relation/EntityStixRelationsPie';
+import EntityCoursesOfAction from '../course_of_action/EntityCoursesOfAction';
 import EntityReportsChart from '../report/EntityReportsChart';
 import EntityStixRelationsChart from '../stix_relation/EntityStixRelationsChart';
 
@@ -52,16 +52,12 @@ class AttackPatternComponent extends Component {
           style={{ marginTop: 30 }}
         >
           <Grid item={true} xs={4}>
+            <EntityCoursesOfAction entityId={attackPattern.id} />
+          </Grid>
+          <Grid item={true} xs={4}>
             <EntityStixRelationsChart
               entityId={attackPattern.id}
               relationType="uses"
-            />
-          </Grid>
-          <Grid item={true} xs={4}>
-            <EntityStixRelationsPie
-              entityId={attackPattern.id}
-              entityType="Stix-Domain-Entity"
-              field="entity_type"
             />
           </Grid>
           <Grid item={true} xs={4}>

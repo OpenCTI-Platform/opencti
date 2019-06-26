@@ -39,7 +39,15 @@ const styles = theme => ({
 const inlineStyles = {
   name: {
     float: 'left',
-    width: '60%',
+    width: '40%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  organization_class: {
+    float: 'left',
+    width: '20%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -64,7 +72,9 @@ const inlineStyles = {
 
 class OrganizationLineComponent extends Component {
   render() {
-    const { fd, classes, organization } = this.props;
+    const {
+      t, fd, classes, organization,
+    } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -80,6 +90,9 @@ class OrganizationLineComponent extends Component {
             <div>
               <div className={classes.bodyItem} style={inlineStyles.name}>
                 {organization.name}
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.organization_class}>
+                {organization.organization_class ? t(`organization_${organization.organization_class}`) : ''}
               </div>
               <div className={classes.bodyItem} style={inlineStyles.created}>
                 {fd(organization.created)}
@@ -110,6 +123,7 @@ const OrganizationLineFragment = createFragmentContainer(
     organization: graphql`
       fragment OrganizationLine_organization on Organization {
         id
+        organization_class
         name
         created
         modified
@@ -135,6 +149,9 @@ class OrganizationLineDummyComponent extends Component {
           primary={
             <div>
               <div className={classes.bodyItem} style={inlineStyles.name}>
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem} style={inlineStyles.organization_class}>
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div className={classes.bodyItem} style={inlineStyles.created}>

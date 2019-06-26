@@ -2,8 +2,10 @@ import {
   addReport,
   findAll,
   findByEntity,
+  findByAuthor,
   reportsTimeSeries,
   reportsTimeSeriesByEntity,
+  reportsTimeSeriesByAuthor,
   reportsNumber,
   reportsNumberByEntity,
   reportsDistributionByEntity,
@@ -33,11 +35,17 @@ const reportResolvers = {
       if (args.objectId && args.objectId.length > 0) {
         return findByEntity(args);
       }
+      if (args.authorId && args.authorId.length > 0) {
+        return findByAuthor(args);
+      }
       return findAll(args);
     },
     reportsTimeSeries: (_, args) => {
       if (args.objectId && args.objectId.length > 0) {
         return reportsTimeSeriesByEntity(args);
+      }
+      if (args.authorId && args.authorId.length > 0) {
+        return reportsTimeSeriesByAuthor(args);
       }
       return reportsTimeSeries(args);
     },

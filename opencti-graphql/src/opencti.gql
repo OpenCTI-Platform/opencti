@@ -88,6 +88,7 @@ define
   published_day sub attribute, datatype string;
   published_month sub attribute, datatype string;
   published_year sub attribute, datatype string;
+  organization_class sub attribute, datatype string;
   report_class sub attribute, datatype string;
   pattern sub attribute, datatype string;
   valid_from sub attribute, datatype date;
@@ -626,7 +627,8 @@ define
 
   Sector sub Identity;
 
-  Organization sub Identity;
+  Organization sub Identity,
+    has organization_class;
 
   Threat-Actor sub Identity,
     has stix_role,

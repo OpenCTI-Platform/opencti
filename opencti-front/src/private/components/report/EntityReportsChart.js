@@ -37,6 +37,7 @@ const styles = theme => ({
 const entityReportsChartReportsTimeSeriesQuery = graphql`
   query EntityReportsChartReportsTimeSeriesQuery(
     $objectId: String
+    $authorId: String
     $reportClass: String
     $field: String!
     $operation: StatsOperation!
@@ -46,6 +47,7 @@ const entityReportsChartReportsTimeSeriesQuery = graphql`
   ) {
     reportsTimeSeries(
       objectId: $objectId
+      authorId: $authorId
       reportClass: $reportClass
       field: $field
       operation: $operation
@@ -85,17 +87,32 @@ class EntityReportsChart extends Component {
 
   render() {
     const {
-      t, md, classes, entityId, reportClass,
+      t, md, classes, entityId, authorId, reportClass,
     } = this.props;
-    const reportsTimeSeriesVariables = {
-      objectId: entityId,
-      reportClass: reportClass || null,
-      field: 'published',
-      operation: 'count',
-      startDate: monthsAgo(this.state.period),
-      endDate: now(),
-      interval: 'month',
-    };
+    let reportsTimeSeriesVariables;
+    if (authorId) {
+      reportsTimeSeriesVariables = {
+        authorId,
+        objectId: null,
+        reportClass: reportClass || null,
+        field: 'published',
+        operation: 'count',
+        startDate: monthsAgo(this.state.period),
+        endDate: now(),
+        interval: 'month',
+      };
+    } else {
+      reportsTimeSeriesVariables = {
+        authorId: null,
+        objectId: entityId,
+        reportClass: reportClass || null,
+        field: 'published',
+        operation: 'count',
+        startDate: monthsAgo(this.state.period),
+        endDate: now(),
+        interval: 'month',
+      };
+    }
 
     return (
       <div style={{ height: '100%' }}>
@@ -223,6 +240,7 @@ class EntityReportsChart extends Component {
 
 EntityReportsChart.propTypes = {
   entityId: PropTypes.string,
+  authorId: PropTypes.string,
   classes: PropTypes.object,
   reportClass: PropTypes.string,
   t: PropTypes.func,
