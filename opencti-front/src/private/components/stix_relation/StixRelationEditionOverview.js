@@ -161,6 +161,7 @@ const stixRelationValidation = t => Yup.object().shape({
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   description: Yup.string(),
+  role_played: Yup.string(),
 });
 
 class StixRelationEditionContainer extends Component {

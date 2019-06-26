@@ -51,6 +51,7 @@ class AttackPatternKnowledgeComponent extends Component {
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={attackPattern.id}
+                stixDomainEntityType='attack-pattern'
                 {...routeProps}
               />
             )}

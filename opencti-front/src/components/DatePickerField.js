@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { DatePicker } from '@material-ui/pickers';
+import { KeyboardDatePicker } from '@material-ui/pickers';
 import { dateFormat } from '../utils/Time';
 import inject18n from './i18n';
 
@@ -26,10 +26,9 @@ class DatePickerField extends Component {
       onSubmit,
       ...other
     } = this.props;
-    const currentError = form.errors[field.name];
     return (
-      <DatePicker
-        variant='inline'
+      <KeyboardDatePicker
+        variant="inline"
         disableToolbar={false}
         autoOk={true}
         allowKeyboardControl={true}
@@ -40,30 +39,30 @@ class DatePickerField extends Component {
             onFocus(field.name);
           }
         }}
-        onBlur={() => {
+        onBlur={(event) => {
           form.setFieldTouched(field.name, true, true);
+          if (
+            typeof onSubmit === 'function'
+            && this.currentDate !== event.target.value
+          ) {
+            onSubmit(field.name, dateFormat(event.target.value));
+            this.currentDate = event.target.value;
+          }
         }}
         onKeyPress={(event) => {
-          form.setFieldTouched(field.name, true, true);
-          if (typeof onSubmit === 'function' && event.key === 'Enter') {
-            onSubmit(field.name, event.target.value);
+          if (
+            typeof onSubmit === 'function'
+            && event.key === 'Enter'
+            && this.currentDate !== event.target.value
+          ) {
+            onSubmit(field.name, dateFormat(event.target.value));
+            this.currentDate = event.target.value;
           }
         }}
         onChange={(date) => {
-          if (this.currentDate !== date) {
-            form.setFieldValue(field.name, date);
-            this.currentDate = date;
-            if (typeof onSubmit === 'function') {
-              onSubmit(field.name, dateFormat(date));
-            }
-          }
+          form.setFieldValue(field.name, date);
         }}
         format="YYYY-MM-DD"
-        helperText={
-          form.errors[field.name] !== undefined && form.touched[field.name]
-            ? currentError
-            : ''
-        }
         error={
           form.errors[field.name] !== undefined && form.touched[field.name]
         }

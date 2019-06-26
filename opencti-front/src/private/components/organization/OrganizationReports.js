@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, contains } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -9,7 +9,7 @@ import inject18n from '../../../components/i18n';
 import OrganizationHeader from './OrganizationHeader';
 import EntityReports from '../report/EntityReports';
 
-const styles = theme => ({
+const styles = () => ({
   container: {
     margin: 0,
   },
@@ -21,14 +21,26 @@ const styles = theme => ({
   },
 });
 
+const organizationTypesForAuthorMode = ['vendor', 'csirt', 'partner'];
+
 class OrganizationReportsComponent extends Component {
   render() {
     const { classes, organization } = this.props;
+    if (contains(organization.organization_class, organizationTypesForAuthorMode)) {
+      return (
+        <div className={classes.container}>
+          <OrganizationHeader organization={organization}/>
+          <Paper classes={{ root: classes.paper }} elevation={2}>
+            <EntityReports authorId={organization.id}/>
+          </Paper>
+        </div>
+      );
+    }
     return (
       <div className={classes.container}>
-        <OrganizationHeader organization={organization} />
+        <OrganizationHeader organization={organization}/>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports authorId={organization.id} />
+          <EntityReports entityId={organization.id}/>
         </Paper>
       </div>
     );

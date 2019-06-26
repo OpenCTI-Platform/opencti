@@ -9,7 +9,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { Domain, Person } from '@material-ui/icons';
-import { Gauge, SourceFork, TargetVariant } from 'mdi-material-ui';
+import { Gauge, TargetVariant } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({
@@ -107,24 +107,6 @@ class OrganizationKnowledgeBar extends Component {
             <ListItemText
               primary={t('Threats')}
               secondary={t('Targeting this organization')}
-            />
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to={`/dashboard/entities/organizations/${organizationId}/knowledge/entities`}
-            selected={
-              location.pathname
-              === `/dashboard/entities/organizations/${organizationId}/knowledge/entities`
-            }
-            dense={false}
-            classes={{ root: classes.item }}
-          >
-            <ListItemIcon>
-              <SourceFork />
-            </ListItemIcon>
-            <ListItemText
-              primary={t('Entities')}
-              secondary={t('Related to this organization')}
             />
           </MenuItem>
         </MenuList>

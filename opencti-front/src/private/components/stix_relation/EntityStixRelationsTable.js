@@ -106,7 +106,7 @@ class EntityStixRelationsTable extends Component {
       fromId: entityId,
       toTypes: entityType ? [entityType] : null,
       entityTypes: entityTypes || null,
-      inferred: inferred || true,
+      inferred: inferred !== null ? inferred : true,
       startDate: startDate || null,
       endDate: endDate || null,
       resolveInferences,

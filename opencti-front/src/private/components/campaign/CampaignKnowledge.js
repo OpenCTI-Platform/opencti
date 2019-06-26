@@ -49,6 +49,7 @@ class CampaignKnowledgeComponent extends Component {
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={campaign.id}
+                stixDomainEntityType='campaign'
                 {...routeProps}
               />
             )}

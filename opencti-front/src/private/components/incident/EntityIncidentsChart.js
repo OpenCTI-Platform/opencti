@@ -2,18 +2,19 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import AreaChart from 'recharts/lib/chart/AreaChart';
+import LineChart from 'recharts/lib/chart/LineChart';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
-import Area from 'recharts/lib/cartesian/Area';
+import Line from 'recharts/lib/cartesian/Line';
 import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
-import Tooltip from 'recharts/lib/component/Tooltip';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Chip from '@material-ui/core/Chip';
 import Paper from '@material-ui/core/Paper';
+import Chip from '@material-ui/core/Chip';
 import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import { SettingsInputComponent } from '@material-ui/icons';
 import { QueryRenderer } from '../../../relay/environment';
 import { monthsAgo, now } from '../../../utils/Time';
 import Theme from '../../../components/Theme';
@@ -23,7 +24,13 @@ const styles = () => ({
   paper: {
     minHeight: 300,
     height: '100%',
-    margin: '10px 0 0 0',
+    margin: '4px 0 0 0',
+    padding: 0,
+    borderRadius: 6,
+  },
+  paperExplore: {
+    height: '100%',
+    margin: 0,
     padding: 0,
     borderRadius: 6,
   },
@@ -32,16 +39,20 @@ const styles = () => ({
     height: 20,
     marginLeft: 10,
   },
+  updateButton: {
+    float: 'right',
+    margin: '7px 10px 0 0',
+  },
 });
 
 const entityIncidentsChartIncidentsTimeSeriesQuery = graphql`
   query EntityIncidentsChartIncidentsTimeSeriesQuery(
-    $objectId: String
-    $field: String!
-    $operation: StatsOperation!
-    $startDate: DateTime!
-    $endDate: DateTime!
-    $interval: String!
+  $objectId: String
+  $field: String!
+  $operation: StatsOperation!
+  $startDate: DateTime!
+  $endDate: DateTime!
+  $interval: String!
   ) {
     incidentsTimeSeries(
       objectId: $objectId
@@ -81,10 +92,8 @@ class EntityIncidentsChart extends Component {
     this.setState({ period, interval });
   }
 
-  render() {
-    const {
-      t, md, classes, entityId,
-    } = this.props;
+  renderContent() {
+    const { t, md, entityId, variant } = this.props;
     const incidentsTimeSeriesVariables = {
       objectId: entityId,
       field: 'first_seen',
@@ -94,11 +103,113 @@ class EntityIncidentsChart extends Component {
       interval: 'month',
     };
     return (
+      <QueryRenderer
+        query={entityIncidentsChartIncidentsTimeSeriesQuery}
+        variables={incidentsTimeSeriesVariables}
+        render={({ props }) => {
+          if (props && props.incidentsTimeSeries) {
+            return (
+              <ResponsiveContainer height={variant === 'explore' ? '90%' : 330} width="100%">
+                <LineChart
+                  data={props.incidentsTimeSeries}
+                  margin={{
+                    top: 20,
+                    right: 50,
+                    bottom: 20,
+                    left: -10,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
+                  <XAxis
+                    dataKey="date"
+                    stroke="#ffffff"
+                    interval={this.state.interval}
+                    angle={-45}
+                    textAnchor="end"
+                    tickFormatter={md}
+                  />
+                  <YAxis stroke="#ffffff" />
+                  <Line
+                    type="monotone"
+                    stroke={Theme.palette.primary.main}
+                    dataKey="value"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            );
+          }
+          if (props) {
+            return (
+              <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                <span
+                  style={{
+                    display: 'table-cell',
+                    verticalAlign: 'middle',
+                    textAlign: 'center',
+                  }}
+                >
+                  {t('No entities of this type has been found.')}
+                </span>
+              </div>
+            );
+          }
+          return (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                <CircularProgress size={40} thickness={2} />
+              </span>
+            </div>
+          );
+        }}
+      />
+    );
+  }
+
+  render() {
+    const {
+      t,
+      classes,
+      variant,
+      title,
+      configuration,
+      handleOpenConfig,
+    } = this.props;
+    if (variant === 'explore') {
+      return (
+        <Paper classes={{ root: classes.paperExplore }} elevation={2}>
+          <Typography
+            variant="h4"
+            gutterBottom={true}
+            style={{ float: 'left', padding: '10px 0 0 10px' }}
+          >
+            {title || t('Incidents')}
+          </Typography>
+          <IconButton
+            color="secondary"
+            aria-label="Update"
+            size="small"
+            classes={{ root: classes.updateButton }}
+            onClick={handleOpenConfig.bind(this, configuration)}
+          >
+            <SettingsInputComponent fontSize="inherit" />
+          </IconButton>
+          <div className="clearfix" />
+          {this.renderContent()}
+        </Paper>
+      );
+    }
+    return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Incidents')}
+          {title || t('Incidents')}
         </Typography>
-        <div style={{ float: 'right', marginTop: -6 }}>
+        <div style={{ float: 'right', marginTop: -5 }}>
           <Chip
             classes={{ root: classes.chip }}
             style={{
@@ -129,88 +240,7 @@ class EntityIncidentsChart extends Component {
         </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <QueryRenderer
-            query={entityIncidentsChartIncidentsTimeSeriesQuery}
-            variables={incidentsTimeSeriesVariables}
-            render={({ props }) => {
-              if (props && props.incidentsTimeSeries) {
-                return (
-                  <ResponsiveContainer height={330} width="100%">
-                    <AreaChart
-                      data={props.incidentsTimeSeries}
-                      margin={{
-                        top: 20,
-                        right: 50,
-                        bottom: 20,
-                        left: -10,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
-                      <XAxis
-                        dataKey="date"
-                        stroke="#ffffff"
-                        interval={this.state.interval}
-                        angle={-45}
-                        textAnchor="end"
-                        tickFormatter={md}
-                      />
-                      <YAxis stroke="#ffffff" />
-                      <Tooltip
-                        cursor={{
-                          fill: 'rgba(0, 0, 0, 0.2)',
-                          stroke: 'rgba(0, 0, 0, 0.2)',
-                          strokeWidth: 2,
-                        }}
-                        contentStyle={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                          fontSize: 12,
-                          borderRadius: 10,
-                        }}
-                        labelFormatter={md}
-                      />
-                      <Area
-                        type="monotone"
-                        stroke={Theme.palette.primary.main}
-                        dataKey="value"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                );
-              }
-              if (props) {
-                return (
-                  <div
-                    style={{ display: 'table', height: '100%', width: '100%' }}
-                  >
-                    <span
-                      style={{
-                        display: 'table-cell',
-                        verticalAlign: 'middle',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {t('No entities of this type has been found.')}
-                    </span>
-                  </div>
-                );
-              }
-              return (
-                <div
-                  style={{ display: 'table', height: '100%', width: '100%' }}
-                >
-                  <span
-                    style={{
-                      display: 'table-cell',
-                      verticalAlign: 'middle',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <CircularProgress size={40} thickness={2} />
-                  </span>
-                </div>
-              );
-            }}
-          />
+          {this.renderContent()}
         </Paper>
       </div>
     );
@@ -218,10 +248,15 @@ class EntityIncidentsChart extends Component {
 }
 
 EntityIncidentsChart.propTypes = {
+  variant: PropTypes.string,
+  title: PropTypes.string,
   entityId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
+  fld: PropTypes.func,
   md: PropTypes.func,
+  configuration: PropTypes.object,
+  handleOpenConfig: PropTypes.func,
 };
 
 export default compose(

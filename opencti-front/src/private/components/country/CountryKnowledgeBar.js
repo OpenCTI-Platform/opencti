@@ -10,7 +10,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { AccountBalance } from '@material-ui/icons';
 import {
-  Gauge, TargetVariant, SourceFork, CityVariant,
+  Gauge, TargetVariant, CityVariant,
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
@@ -109,24 +109,6 @@ class CountryKnowledgeBar extends Component {
             <ListItemText
               primary={t('Threats')}
               secondary={t('Targeting this country')}
-            />
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to={`/dashboard/entities/countries/${countryId}/knowledge/entities`}
-            selected={
-              location.pathname
-              === `/dashboard/entities/countries/${countryId}/knowledge/entities`
-            }
-            dense={false}
-            classes={{ root: classes.item }}
-          >
-            <ListItemIcon>
-              <SourceFork />
-            </ListItemIcon>
-            <ListItemText
-              primary={t('Entities')}
-              secondary={t('Related to this country')}
             />
           </MenuItem>
         </MenuList>

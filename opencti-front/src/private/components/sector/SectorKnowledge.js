@@ -49,6 +49,7 @@ class SectorKnowledgeComponent extends Component {
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={sector.id}
+                stixDomainEntityType='sector'
                 {...routeProps}
               />
             )}

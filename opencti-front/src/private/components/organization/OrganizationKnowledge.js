@@ -51,6 +51,7 @@ class OrganizationKnowledgeComponent extends Component {
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={organization.id}
+                stixDomainEntityType='organization'
                 {...routeProps}
               />
             )}
@@ -120,19 +121,6 @@ class OrganizationKnowledgeComponent extends Component {
                   'Incident',
                   'Malware',
                 ]}
-                entityLink={link}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/entities/organizations/:organizationId/knowledge/entities"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={organization.id}
-                relationType="related-to"
-                targetEntityTypes={['Identity']}
                 entityLink={link}
                 {...routeProps}
               />

@@ -49,6 +49,7 @@ class RegionKnowledgeComponent extends Component {
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={region.id}
+                stixDomainEntityType='region'
                 {...routeProps}
               />
             )}
@@ -106,19 +107,6 @@ class RegionKnowledgeComponent extends Component {
                     relationRole: 'attribution',
                   },
                 ]}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/entities/regions/:regionId/knowledge/entities"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={region.id}
-                relationType="related-to"
-                targetEntityTypes={['Identity']}
-                entityLink={link}
                 {...routeProps}
               />
             )}

@@ -178,15 +178,23 @@ class ExploreUpdateWidget extends Component {
                     }}
                   >
                     <MenuItem value="VictimologyDistribution">
-                      {t('Victimology distribution')}
+                      {t('[Victimology] Distribution')}
                     </MenuItem>
                     <MenuItem value="VictimologyTimeseries">
-                      {t('Victimology timeseries')}
+                      {t('[Victimology] Timeseries')}
                     </MenuItem>
                     <MenuItem value="CampaignsTimeseries">
-                      {t('Campaigns timeseries')}
+                      {t('[Campaigns] Timeseries')}
                     </MenuItem>
-                    <MenuItem value="Killchains">{t('Killchains')}</MenuItem>
+                    <MenuItem value="IncidentsTimeseries">
+                      {t('[Incidents] Timeseries')}
+                    </MenuItem>
+                    <MenuItem value="AttackPatternsDistribution">
+                      {t('[TTPs] Distribution')}
+                    </MenuItem>
+                    <MenuItem value="Killchain">
+                      {t('[Killchain] Tactics and procedures')}
+                    </MenuItem>
                   </Field>
                   <Field
                     name="entity"
@@ -251,10 +259,8 @@ class ExploreUpdateWidget extends Component {
                       containerstyle={{ marginTop: 20, width: '100%' }}
                     >
                       <MenuItem value="table">{t('Table')}</MenuItem>
-                      <MenuItem value="chart">{t('Lines chart')}</MenuItem>
-                      <MenuItem value="timeline">
-                        {t('Timeline chart')}
-                      </MenuItem>
+                      <MenuItem value="line">{t('Line chart')}</MenuItem>
+                      <MenuItem value="timeline">{t('Timeline')}</MenuItem>
                     </Field>
                   ) : (
                     ''

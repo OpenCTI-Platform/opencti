@@ -49,6 +49,7 @@ class IncidentKnowledgeComponent extends Component {
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={incident.id}
+                stixDomainEntityType='incident'
                 {...routeProps}
               />
             )}

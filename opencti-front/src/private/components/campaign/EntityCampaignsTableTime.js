@@ -2,23 +2,23 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, reverse } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
+import { withStyles } from '@material-ui/core/styles';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Paper from '@material-ui/core/Paper';
+import Chip from '@material-ui/core/Chip';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import Chip from '@material-ui/core/Chip';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
-import { withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
 import { SettingsInputComponent } from '@material-ui/icons';
 import { QueryRenderer } from '../../../relay/environment';
-import inject18n from '../../../components/i18n';
 import { monthsAgo, now } from '../../../utils/Time';
+import inject18n from '../../../components/i18n';
 
-const styles = à => ({
+const styles = () => ({
   paper: {
     minHeight: 340,
     height: '100%',
@@ -53,33 +53,17 @@ const styles = à => ({
   },
 });
 
-const entityStixRelationsTableTimeStixRelationTimeSeriesQuery = graphql`
-  query EntityStixRelationsTableTimeStixRelationTimeSeriesQuery(
-    $fromId: String
-    $entityTypes: [String]
-    $relationType: String
-    $resolveInferences: Boolean
-    $resolveRelationType: String
-    $resolveRelationRole: String
-    $resolveRelationToTypes: [String]
-    $resolveViaTypes: [EntityRelation]
-    $toTypes: [String]
+const entityCampaignsTableTimeCampaignsTimeSeriesQuery = graphql`
+  query EntityCampaignsTableTimeCampaignsTimeSeriesQuery(
+    $objectId: String
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
   ) {
-    stixRelationsTimeSeries(
-      fromId: $fromId
-      entityTypes: $entityTypes
-      relationType: $relationType
-      resolveInferences: $resolveInferences
-      resolveRelationType: $resolveRelationType
-      resolveRelationRole: $resolveRelationRole
-      resolveRelationToTypes: $resolveRelationToTypes
-      resolveViaTypes: $resolveViaTypes
-      toTypes: $toTypes
+    campaignsTimeSeries(
+      objectId: $objectId
       field: $field
       operation: $operation
       startDate: $startDate
@@ -92,7 +76,7 @@ const entityStixRelationsTableTimeStixRelationTimeSeriesQuery = graphql`
   }
 `;
 
-class EntityStixRelationsTableTime extends Component {
+class EntityCampaignsTableTime extends Component {
   constructor(props) {
     super(props);
     this.state = { interval: 'year' };
@@ -107,54 +91,36 @@ class EntityStixRelationsTableTime extends Component {
       t,
       md,
       yd,
-      classes,
-      variant,
       entityId,
+      variant,
+      classes,
       startDate,
       endDate,
-      toTypes,
-      relationType,
-      resolveInferences,
-      entityTypes,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
     } = this.props;
     const finalStartDate = variant === 'explore' && startDate
       ? startDate
       : this.state.interval === 'month'
         ? monthsAgo(6)
         : monthsAgo(12 * 5);
-    const stixRelationsTimeSeriesVariables = {
-      fromId: entityId || null,
-      entityTypes: entityTypes || null,
-      relationType,
-      toTypes: toTypes || null,
+    const campaignsTimeSeriesVariables = {
+      objectId: entityId,
       field: 'first_seen',
       operation: 'count',
       startDate: finalStartDate,
       endDate: variant === 'explore' && endDate ? endDate : now(),
       interval: this.state.interval,
-      resolveInferences,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
     };
     return (
       <QueryRenderer
-        query={entityStixRelationsTableTimeStixRelationTimeSeriesQuery}
-        variables={stixRelationsTimeSeriesVariables}
+        query={entityCampaignsTableTimeCampaignsTimeSeriesQuery}
+        variables={campaignsTimeSeriesVariables}
         render={({ props }) => {
           if (
             props
-            && props.stixRelationsTimeSeries
-            && props.stixRelationsTimeSeries.length > 0
+            && props.campaignsTimeSeries
+            && props.campaignsTimeSeries.length > 0
           ) {
-            const stixRelationsTimeSeries = reverse(
-              props.stixRelationsTimeSeries,
-            );
+            const campaignsTimeSeries = reverse(props.campaignsTimeSeries);
             return (
               <Table className={classes.table}>
                 <TableHead>
@@ -165,13 +131,13 @@ class EntityStixRelationsTableTime extends Component {
                           + this.state.interval.slice(1),
                       )}
                     </TableCell>
-                    <TableCell align="right">{`${t('Number of')} ${t(
-                      `relation_${relationType}`,
-                    )}s`}</TableCell>
+                    <TableCell align="right">
+                      {t('Number of campaigns')}
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {stixRelationsTimeSeries.map((row) => {
+                  {campaignsTimeSeries.map((row) => {
                     let date;
                     if (this.state.interval === 'month') {
                       date = md(row.date);
@@ -239,11 +205,10 @@ class EntityStixRelationsTableTime extends Component {
     const {
       t,
       classes,
-      title,
       variant,
+      title,
       configuration,
       handleOpenConfig,
-      relationType,
     } = this.props;
     if (variant === 'explore') {
       return (
@@ -253,7 +218,7 @@ class EntityStixRelationsTableTime extends Component {
             gutterBottom={true}
             style={{ float: 'left', padding: '10px 0 0 10px' }}
           >
-            {title || t('Entity usage')}
+            {title || t('Campaigns')}
           </Typography>
           <IconButton
             color="secondary"
@@ -264,28 +229,6 @@ class EntityStixRelationsTableTime extends Component {
           >
             <SettingsInputComponent fontSize="inherit" />
           </IconButton>
-          <div style={{ float: 'right', padding: '8px 10px 0 0' }}>
-            <Chip
-              classes={{ root: classes.chip }}
-              style={{
-                backgroundColor:
-                  this.state.interval === 'month' ? '#795548' : '#757575',
-              }}
-              label={t('Month')}
-              component="button"
-              onClick={this.changeInterval.bind(this, 'month')}
-            />
-            <Chip
-              classes={{ root: classes.chip }}
-              style={{
-                backgroundColor:
-                  this.state.interval === 'year' ? '#795548' : '#757575',
-              }}
-              label={t('Year')}
-              component="button"
-              onClick={this.changeInterval.bind(this, 'year')}
-            />
-          </div>
           <div className="clearfix" />
           {this.renderContent()}
         </Paper>
@@ -294,28 +237,35 @@ class EntityStixRelationsTableTime extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {title || t(`relation_${relationType}`)}
+          {title || t('Campaigns')}
         </Typography>
-        <div style={{ float: 'right', marginTop: -6 }}>
+        <div style={{ float: 'right', marginTop: -5 }}>
           <Chip
             classes={{ root: classes.chip }}
             style={{
-              backgroundColor:
-                this.state.interval === 'month' ? '#795548' : '#757575',
+              backgroundColor: this.state.period === 12 ? '#795548' : '#757575',
             }}
-            label={t('Month')}
+            label="12M"
             component="button"
-            onClick={this.changeInterval.bind(this, 'month')}
+            onClick={this.changePeriod.bind(this, 12)}
           />
           <Chip
             classes={{ root: classes.chip }}
             style={{
-              backgroundColor:
-                this.state.interval === 'year' ? '#795548' : '#757575',
+              backgroundColor: this.state.period === 24 ? '#795548' : '#757575',
             }}
-            label={t('Year')}
+            label="24M"
             component="button"
-            onClick={this.changeInterval.bind(this, 'year')}
+            onClick={this.changePeriod.bind(this, 24)}
+          />
+          <Chip
+            classes={{ root: classes.chip }}
+            style={{
+              backgroundColor: this.state.period === 36 ? '#795548' : '#757575',
+            }}
+            label="36M"
+            component="button"
+            onClick={this.changePeriod.bind(this, 36)}
           />
         </div>
         <div className="clearfix" />
@@ -327,22 +277,15 @@ class EntityStixRelationsTableTime extends Component {
   }
 }
 
-EntityStixRelationsTableTime.propTypes = {
+EntityCampaignsTableTime.propTypes = {
   variant: PropTypes.string,
   title: PropTypes.string,
   entityId: PropTypes.string,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
-  relationType: PropTypes.string,
-  resolveInferences: PropTypes.bool,
-  resolveRelationType: PropTypes.string,
-  resolveRelationRole: PropTypes.string,
-  resolveRelationToTypes: PropTypes.array,
-  resolveViaTypes: PropTypes.array,
-  entityTypes: PropTypes.array,
-  toTypes: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
+  fld: PropTypes.func,
   md: PropTypes.func,
   yd: PropTypes.func,
   configuration: PropTypes.object,
@@ -352,4 +295,4 @@ EntityStixRelationsTableTime.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityStixRelationsTableTime);
+)(EntityCampaignsTableTime);

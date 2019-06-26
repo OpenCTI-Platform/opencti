@@ -12,9 +12,11 @@ import { QueryRenderer } from '../../../relay/environment';
 import { monthsAgo } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import ItemNumberDifference from '../../../components/ItemNumberDifference';
+import { resolveLink } from '../../../utils/Entity';
 import EntityReportsPie from '../report/EntityReportsPie';
 import EntityStixRelationsDonut from '../stix_relation/EntityStixRelationsDonut';
 import EntityStixRelationsChart from '../stix_relation/EntityStixRelationsChart';
+import SimpleEntityStixRelations from '../stix_relation/SimpleEntityStixRelations';
 
 const styles = theme => ({
   card: {
@@ -95,7 +97,10 @@ const stixDomainEntityKnowledgeStixRelationsNumberQuery = graphql`
 
 class StixDomainEntityKnowledge extends Component {
   render() {
-    const { t, classes, stixDomainEntityId } = this.props;
+    const {
+      t, classes, stixDomainEntityId, stixDomainEntityType,
+    } = this.props;
+    const link = `${resolveLink(stixDomainEntityType)}/${stixDomainEntityId}/knowledge`;
     return (
       <div>
         <Grid container={true} spacing={2}>
@@ -186,10 +191,10 @@ class StixDomainEntityKnowledge extends Component {
           </Grid>
         </Grid>
         <Grid container={true} spacing={2}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
             <EntityReportsPie entityId={stixDomainEntityId}/>
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
             <EntityStixRelationsDonut
               entityId={stixDomainEntityId}
               entityType="Stix-Domain-Entity"
@@ -199,14 +204,24 @@ class StixDomainEntityKnowledge extends Component {
             />
           </Grid>
         </Grid>
-        <div style={{ margin: '60px 0 60px 0', height: 300 }}>
-          <EntityStixRelationsChart
-            entityId={stixDomainEntityId}
-            entityType="Stix-Domain-Entity"
-            title={t('Direct relations creations')}
-            field='created_at'
-          />
-        </div>
+        <Grid container={true} spacing={2}>
+          <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
+            <EntityStixRelationsChart
+              entityId={stixDomainEntityId}
+              entityType="Stix-Domain-Entity"
+              title={t('Direct relations creations')}
+              field='created_at'
+            />
+          </Grid>
+          <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
+            <SimpleEntityStixRelations
+              entityId={stixDomainEntityId}
+              relationType="related-to"
+              targetEntityTypes={['Stix-Domain-Entity']}
+              entityLink={link}
+            />
+          </Grid>
+        </Grid>
       </div>
     );
   }
@@ -214,6 +229,7 @@ class StixDomainEntityKnowledge extends Component {
 
 StixDomainEntityKnowledge.propTypes = {
   stixDomainEntityId: PropTypes.string,
+  stixDomainEntityType: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

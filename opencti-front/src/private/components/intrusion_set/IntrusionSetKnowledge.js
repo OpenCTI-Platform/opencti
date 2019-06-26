@@ -51,6 +51,7 @@ class IntrusionSetKnowledgeComponent extends Component {
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={intrusionSet.id}
+                stixDomainEntityType='intrusion-set'
                 {...routeProps}
               />
             )}

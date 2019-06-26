@@ -49,6 +49,7 @@ class ToolKnowledgeComponent extends Component {
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={tool.id}
+                stixDomainEntityType='tool'
                 {...routeProps}
               />
             )}

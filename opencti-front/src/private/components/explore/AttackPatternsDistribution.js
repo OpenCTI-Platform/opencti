@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import EntityStixRelationsPie from '../stix_relation/EntityStixRelationsPie';
+import EntityStixRelationsRadar from '../stix_relation/EntityStixRelationsRadar';
+import EntityStixRelationsDonut from '../stix_relation/EntityStixRelationsDonut';
 import EntityStixRelationsTable from '../stix_relation/EntityStixRelationsTable';
 
 const styles = () => ({
@@ -15,45 +16,62 @@ const styles = () => ({
 
 class AttackPatternsDistribution extends Component {
   render() {
-    const { classes, stixDomainEntity, inferred } = this.props;
-    return (
-      <div className={classes.container}>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-        >
-          <Grid item={true} xs={6}>
-            <EntityStixRelationsTable
-              entityId={stixDomainEntity.id}
-              entityType="Attack-Pattern"
-              relationType="uses"
-              field="name"
-              resolveInferences={inferred}
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-            />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <EntityStixRelationsPie
-              entityId={stixDomainEntity.id}
-              entityType="Attack-Pattern"
-              relationType="uses"
-              field="name"
-              resolveInferences={inferred}
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-            />
-          </Grid>
-        </Grid>
-      </div>
-    );
+    const {
+      configuration,
+      handleOpenConfig,
+      inferred,
+      startDate,
+      endDate,
+    } = this.props;
+    switch (configuration.graph_type) {
+      case 'table':
+        return (
+          <EntityStixRelationsTable
+            variant="explore"
+            configuration={configuration}
+            handleOpenConfig={handleOpenConfig.bind(this)}
+            title={propOr('Widget', 'title', configuration)}
+            entityId={pathOr(null, ['entity', 'id'], configuration)}
+            entityType="Attack-Pattern"
+            relationType="uses"
+            field="name"
+            resolveInferences={inferred}
+            resolveRelationType="attributed-to"
+            resolveRelationRole="origin"
+            inferred={inferred}
+            startDate={startDate}
+            endDate={endDate}
+          />
+        );
+      default:
+        return (
+          <EntityStixRelationsTable
+            variant="explore"
+            configuration={configuration}
+            handleOpenConfig={handleOpenConfig.bind(this)}
+            title={propOr('Widget', 'title', configuration)}
+            entityId={pathOr(null, ['entity', 'id'], configuration)}
+            entityType="Attack-Pattern"
+            relationType="uses"
+            field="name"
+            resolveInferences={inferred}
+            resolveRelationType="attributed-to"
+            resolveRelationRole="origin"
+            inferred={inferred}
+            startDate={startDate}
+            endDate={endDate}
+          />
+        );
+    }
   }
 }
 
 AttackPatternsDistribution.propTypes = {
-  stixDomainEntity: PropTypes.object,
+  configuration: PropTypes.object,
+  handleOpenConfig: PropTypes.func,
   inferred: PropTypes.bool,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

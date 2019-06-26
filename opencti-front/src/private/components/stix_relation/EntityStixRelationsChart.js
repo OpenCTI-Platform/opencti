@@ -13,22 +13,34 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Chip from '@material-ui/core/Chip';
 import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import { SettingsInputComponent } from '@material-ui/icons';
 import { QueryRenderer } from '../../../relay/environment';
 import { monthsAgo, now } from '../../../utils/Time';
 import Theme from '../../../components/Theme';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = () => ({
   paper: {
     minHeight: 340,
     height: '100%',
     margin: '4px 0 0 0',
     borderRadius: 6,
   },
+  paperExplore: {
+    height: '100%',
+    margin: 0,
+    padding: '0 0 10px 0',
+    borderRadius: 6,
+  },
   chip: {
     fontSize: 10,
     height: 20,
     marginLeft: 10,
+  },
+  updateButton: {
+    float: 'right',
+    margin: '7px 10px 0 0',
   },
 });
 
@@ -95,17 +107,18 @@ class EntityStixRelationsChart extends Component {
     this.setState({ period, interval });
   }
 
-  render() {
+  renderContent() {
     const {
       t,
-      classes,
       entityId,
       toTypes,
       relationType,
-      title,
+      variant,
       md,
       field,
       inferred,
+      startDate,
+      endDate,
       resolveInferences,
       entityTypes,
       resolveRelationType,
@@ -120,8 +133,8 @@ class EntityStixRelationsChart extends Component {
       toTypes: toTypes || null,
       field: field || 'first_seen',
       operation: 'count',
-      startDate: monthsAgo(this.state.period),
-      endDate: now(),
+      startDate: variant === 'explore' && startDate ? startDate : monthsAgo(this.state.period),
+      endDate: variant === 'explore' && endDate ? endDate : now(),
       interval: 'month',
       inferred,
       resolveInferences,
@@ -130,6 +143,108 @@ class EntityStixRelationsChart extends Component {
       resolveRelationToTypes,
       resolveViaTypes,
     };
+    return (
+      <QueryRenderer
+        query={entityStixRelationsChartStixRelationTimeSeriesQuery}
+        variables={stixRelationsTimeSeriesVariables}
+        render={({ props }) => {
+          if (props && props.stixRelationsTimeSeries) {
+            return (
+              <ResponsiveContainer height={variant === 'explore' ? '90%' : 330} width="100%">
+                <AreaChart
+                  data={props.stixRelationsTimeSeries}
+                  margin={{
+                    top: 20,
+                    right: 50,
+                    bottom: 20,
+                    left: -10,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
+                  <XAxis
+                    dataKey="date"
+                    stroke="#ffffff"
+                    interval={this.state.interval}
+                    angle={-45}
+                    textAnchor="end"
+                    tickFormatter={md}
+                  />
+                  <YAxis stroke="#ffffff" />
+                  <Area
+                    type="monotone"
+                    stroke={Theme.palette.primary.main}
+                    dataKey="value"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            );
+          }
+          if (props) {
+            return (
+              <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                <span
+                  style={{
+                    display: 'table-cell',
+                    verticalAlign: 'middle',
+                    textAlign: 'center',
+                  }}
+                >
+                  {t('No entities of this type has been found.')}
+                </span>
+              </div>
+            );
+          }
+          return (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                <CircularProgress size={40} thickness={2} />
+              </span>
+            </div>
+          );
+        }}
+      />
+    );
+  }
+
+  render() {
+    const {
+      t,
+      classes,
+      title,
+      variant,
+      configuration,
+      handleOpenConfig,
+    } = this.props;
+    if (variant === 'explore') {
+      return (
+        <Paper classes={{ root: classes.paperExplore }} elevation={2}>
+          <Typography
+            variant="h4"
+            gutterBottom={true}
+            style={{ float: 'left', padding: '10px 0 0 10px' }}
+          >
+            {title || t('Entity usage')}
+          </Typography>
+          <IconButton
+            color="secondary"
+            aria-label="Update"
+            size="small"
+            classes={{ root: classes.updateButton }}
+            onClick={handleOpenConfig.bind(this, configuration)}
+          >
+            <SettingsInputComponent fontSize="inherit" />
+          </IconButton>
+          <div className="clearfix" />
+          {this.renderContent()}
+        </Paper>
+      );
+    }
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -166,75 +281,7 @@ class EntityStixRelationsChart extends Component {
         </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <QueryRenderer
-            query={entityStixRelationsChartStixRelationTimeSeriesQuery}
-            variables={stixRelationsTimeSeriesVariables}
-            render={({ props }) => {
-              if (props && props.stixRelationsTimeSeries) {
-                return (
-                  <ResponsiveContainer height={330} width="100%">
-                    <AreaChart
-                      data={props.stixRelationsTimeSeries}
-                      margin={{
-                        top: 20,
-                        right: 50,
-                        bottom: 20,
-                        left: -10,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
-                      <XAxis
-                        dataKey="date"
-                        stroke="#ffffff"
-                        interval={this.state.interval}
-                        angle={-45}
-                        textAnchor="end"
-                        tickFormatter={md}
-                      />
-                      <YAxis stroke="#ffffff" />
-                      <Area
-                        type="monotone"
-                        stroke={Theme.palette.primary.main}
-                        dataKey="value"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                );
-              }
-              if (props) {
-                return (
-                  <div
-                    style={{ display: 'table', height: '100%', width: '100%' }}
-                  >
-                    <span
-                      style={{
-                        display: 'table-cell',
-                        verticalAlign: 'middle',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {t('No entities of this type has been found.')}
-                    </span>
-                  </div>
-                );
-              }
-              return (
-                <div
-                  style={{ display: 'table', height: '100%', width: '100%' }}
-                >
-                  <span
-                    style={{
-                      display: 'table-cell',
-                      verticalAlign: 'middle',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <CircularProgress size={40} thickness={2} />
-                  </span>
-                </div>
-              );
-            }}
-          />
+          {this.renderContent()}
         </Paper>
       </div>
     );
@@ -242,10 +289,14 @@ class EntityStixRelationsChart extends Component {
 }
 
 EntityStixRelationsChart.propTypes = {
+  variant: PropTypes.string,
+  title: PropTypes.string,
   entityId: PropTypes.string,
   relationType: PropTypes.string,
   field: PropTypes.string,
   inferred: PropTypes.bool,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
   resolveInferences: PropTypes.bool,
   resolveRelationType: PropTypes.string,
   resolveRelationRole: PropTypes.string,
@@ -253,10 +304,11 @@ EntityStixRelationsChart.propTypes = {
   resolveViaTypes: PropTypes.array,
   entityTypes: PropTypes.array,
   toTypes: PropTypes.array,
-  title: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   md: PropTypes.func,
+  configuration: PropTypes.object,
+  handleOpenConfig: PropTypes.func,
 };
 
 export default compose(

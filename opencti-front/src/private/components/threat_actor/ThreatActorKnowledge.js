@@ -51,6 +51,7 @@ class ThreatActorKnowledgeComponent extends Component {
             render={routeProps => (
               <StixDomainEntityKnowledge
                 stixDomainEntityId={threatActor.id}
+                stixDomainEntityType='threat-actor'
                 {...routeProps}
               />
             )}

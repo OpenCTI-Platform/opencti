@@ -26,11 +26,14 @@ import { workspaceMutationFieldPatch } from '../workspace/WorkspaceEditionOvervi
 import ExploreAddWidget from './ExploreAddWidget';
 import ExploreUpdateWidget from './ExploreUpdateWidget';
 import VictimologyDistribution from './VictimologyDistribution';
+import VictimologyTimeseries from './VictimologyTimeseries';
 import CampaignsTimeseries from './CampaignsTimeseries';
+import IncidentsTimeseries from './IncidentsTimeseries';
+import AttackPatternsDistribution from './AttackPatternsDistribution';
 
 const styles = theme => ({
   container: {
-    margin: 0,
+    margin: '0 0 80px 0',
     padding: 0,
   },
   bottomNav: {
@@ -240,10 +243,46 @@ class WorkspaceExploreSpaceComponent extends Component {
                     />
                   </div>
                 );
+              case 'VictimologyTimeseries':
+                return (
+                  <div key={widget.id} data-grid={widget.layout}>
+                    <VictimologyTimeseries
+                      configuration={widget}
+                      handleOpenConfig={this.handleOpenConfig.bind(this)}
+                      inferred={workspaceData.config.inferred}
+                      startDate={workspaceData.config.startDate}
+                      endDate={workspaceData.config.endDate}
+                    />
+                  </div>
+                );
               case 'CampaignsTimeseries':
                 return (
                   <div key={widget.id} data-grid={widget.layout}>
                     <CampaignsTimeseries
+                      configuration={widget}
+                      handleOpenConfig={this.handleOpenConfig.bind(this)}
+                      inferred={workspaceData.config.inferred}
+                      startDate={workspaceData.config.startDate}
+                      endDate={workspaceData.config.endDate}
+                    />
+                  </div>
+                );
+              case 'IncidentsTimeseries':
+                return (
+                  <div key={widget.id} data-grid={widget.layout}>
+                    <IncidentsTimeseries
+                      configuration={widget}
+                      handleOpenConfig={this.handleOpenConfig.bind(this)}
+                      inferred={workspaceData.config.inferred}
+                      startDate={workspaceData.config.startDate}
+                      endDate={workspaceData.config.endDate}
+                    />
+                  </div>
+                );
+              case 'AttackPatternsDistribution':
+                return (
+                  <div key={widget.id} data-grid={widget.layout}>
+                    <AttackPatternsDistribution
                       configuration={widget}
                       handleOpenConfig={this.handleOpenConfig.bind(this)}
                       inferred={workspaceData.config.inferred}

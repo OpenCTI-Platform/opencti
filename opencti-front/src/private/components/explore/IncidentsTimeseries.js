@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
-import EntityCampaignsTableTime from '../campaign/EntityCampaignsTableTime';
-import EntityCampaignsChart from '../campaign/EntityCampaignsChart';
+import EntityIncidentsTableTime from '../incident/EntityIncidentsTableTime';
+import EntityIncidentsChart from '../incident/EntityIncidentsChart';
 
 const styles = () => ({
   container: {
@@ -12,13 +12,13 @@ const styles = () => ({
   },
 });
 
-class CampaignsTimeseries extends Component {
+class IncidentsTimeseries extends Component {
   render() {
     const { configuration, handleOpenConfig } = this.props;
     switch (configuration.graph_type) {
       case 'table':
         return (
-            <EntityCampaignsTableTime
+            <EntityIncidentsTableTime
               variant="explore"
               configuration={configuration}
               handleOpenConfig={handleOpenConfig.bind(this)}
@@ -28,7 +28,7 @@ class CampaignsTimeseries extends Component {
         );
       case 'line':
         return (
-          <EntityCampaignsChart
+          <EntityIncidentsChart
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
@@ -38,7 +38,7 @@ class CampaignsTimeseries extends Component {
         );
       default:
         return (
-            <EntityCampaignsChart
+            <EntityIncidentsChart
               variant="explore"
               configuration={configuration}
               handleOpenConfig={handleOpenConfig.bind(this)}
@@ -50,7 +50,7 @@ class CampaignsTimeseries extends Component {
   }
 }
 
-CampaignsTimeseries.propTypes = {
+IncidentsTimeseries.propTypes = {
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
   inferred: PropTypes.bool,
@@ -63,4 +63,4 @@ CampaignsTimeseries.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(CampaignsTimeseries);
+)(IncidentsTimeseries);
