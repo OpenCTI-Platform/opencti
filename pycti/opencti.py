@@ -8,7 +8,7 @@ import json
 import uuid
 import base64
 
-from .stix2 import Stix2
+from pycti.stix2 import Stix2
 
 
 class OpenCTI:
@@ -919,8 +919,15 @@ class OpenCTI:
         })
         return result['data']['identityAdd']
 
-    def create_identity_if_not_exists(self, type, name, description, id=None, stix_id=None, created=None,
-                                      modified=None):
+    def create_identity_if_not_exists(self,
+                                      type,
+                                      name,
+                                      description,
+                                      id=None,
+                                      stix_id=None,
+                                      created=None,
+                                      modified=None
+                                      ):
         object_result = self.check_existing_stix_domain_entity(stix_id, name, type)
         if object_result is not None:
             return object_result
