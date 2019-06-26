@@ -27,7 +27,7 @@ OpenCTI not only allows [imports]((https://opencti-platform.github.io/docs/guide
 
 ## Documentation and demonstration
 
-If you want to know more on OpenCTI, you can read the [documentation on the tool](https://opencti-platform.github.io/docs). If you wish to discover how the OpenCTI platform is working, a [demonstration instance](https://demo.opencti.io) is available and open to everyone. This instance is reset every nights and based on reference data maintened by the OpenCTI developers.
+If you want to know more on OpenCTI, you can read the [documentation on the tool](https://opencti-platform.github.io/docs). If you wish to discover how the OpenCTI platform is working, a [demonstration instance](https://demo.opencti.io) is available and open to everyone. This instance is reset every night and is based on reference data maintened by the OpenCTI developers.
 
 ## Releases download
 
