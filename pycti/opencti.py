@@ -55,6 +55,15 @@ class OpenCTI:
             result.append(self.parse_stix(edge['node']))
         return result
 
+    def health_check(self):
+        try:
+            test = self.get_threat_actors(1)
+            if test is not None:
+                return True
+        except:
+            return False
+        return False
+
     def parse_stix(self, data):
         if 'createdByRef' in data and data['createdByRef'] is not None and 'node' in data['createdByRef']:
             data['createdByRef'] = data['createdByRef']['node']
@@ -83,7 +92,6 @@ class OpenCTI:
         return object_result
 
     def update_settings_field(self, id, key, value):
-
         self.log('Updating settings field ' + key + ' of ' + id + '...')
         query = """
             mutation SettingsEdit($id: ID!, $input: EditInput!) {

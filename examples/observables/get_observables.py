@@ -17,6 +17,8 @@ opencti = OpenCTI(config['opencti']['api_url'], config['opencti']['api_key'], co
 # Get observables and their context
 observables = opencti.get_stix_observables(10)
 
+opencti.health_check()
+
 for observable in observables:
     observable_value = observable['observable_value']
     for relation in observable['stixRelations']:
