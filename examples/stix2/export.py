@@ -7,7 +7,7 @@ import json
 from opencti import OpenCTI
 
 # Load configuration
-config = yaml.load(open(os.path.dirname(__file__) + '/config.yml'))
+config = yaml.load(open(os.path.dirname(__file__) + '/../config.yml'))
 
 # Export file
 export_file = './exports/IntrusionSets.json'
