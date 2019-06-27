@@ -16,7 +16,7 @@ const subscription = graphql`
 `;
 
 const stixObservableQuery = graphql`
-  query RootStixObservableQuery($id: String!) {
+  query RootStixObservableQuery($id: String!, $relationType: String) {
     stixObservable(id: $id) {
       ...StixObservable_stixObservable
       ...StixObservableHeader_stixObservable
@@ -56,7 +56,7 @@ class RootStixObservable extends Component {
         <TopBar me={me || null} />
         <QueryRenderer
           query={stixObservableQuery}
-          variables={{ id: observableId }}
+          variables={{ id: observableId, relationType: 'indicates' }}
           render={({ props }) => {
             if (props && props.stixObservable) {
               return (

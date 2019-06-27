@@ -450,7 +450,7 @@ const i18n = {
       '[Killchain] Tactics and procedures': '[Killchain] Tactiques et procédures',
       'No widget in this workspace': 'Aucun widget dans cet espace de travail',
       'Averages of context relations': 'Moyennes des relations de contexte',
-      Scoring: 'Score',
+      Score: 'Score',
       Expiration: 'Expiration',
       Statistics: 'Statistiques',
       'Graph type': 'Type de graphique',

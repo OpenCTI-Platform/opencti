@@ -393,6 +393,8 @@ input StixRelationAddInput {
   relationship_type: String!
   role_played: String
   weight: Int
+  score: Int
+  expiration: DateTime
   description: String
   first_seen: DateTime
   last_seen: DateTime

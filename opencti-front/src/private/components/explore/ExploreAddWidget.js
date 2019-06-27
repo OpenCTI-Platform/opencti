@@ -268,6 +268,7 @@ class ExploreAddWidget extends Component {
                     <div className={classes.buttons}>
                       <Button
                         variant="contained"
+                        minExpiration
                         onClick={handleReset}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}

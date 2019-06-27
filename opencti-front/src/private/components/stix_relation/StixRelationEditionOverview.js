@@ -39,7 +39,6 @@ import {
 } from '../../../components/Subscription';
 import Select from '../../../components/Select';
 import { countriesLinesSearchQuery } from '../country/CountriesLines';
-import Autocomplete from '../../../components/Autocomplete';
 import DatePickerField from '../../../components/DatePickerField';
 
 const styles = theme => ({
@@ -162,6 +161,8 @@ const stixRelationValidation = t => Yup.object().shape({
     .required(t('This field is required')),
   description: Yup.string(),
   role_played: Yup.string(),
+  score: Yup.string(),
+  expiration: Yup.date().typeError(t('The value must be a date (YYYY-MM-DD)')),
 });
 
 class StixRelationEditionContainer extends Component {
@@ -303,6 +304,8 @@ class StixRelationEditionContainer extends Component {
         'description',
         'locations',
         'role_played',
+        'score',
+        'expiration',
       ]),
     )(stixRelation);
     const link = stixDomainEntity
@@ -386,6 +389,26 @@ class StixRelationEditionContainer extends Component {
                   <MenuItem value="4">{t('High')}</MenuItem>
                   <MenuItem value="5">{t('Very high')}</MenuItem>
                 </Field>
+                {stixRelation.relationship_type === 'indicates' ? (
+                  <Field
+                    name="score"
+                    component={TextField}
+                    label={t('Score')}
+                    fullWidth={true}
+                    style={{ marginTop: 10 }}
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onSubmit={this.handleSubmitField.bind(this)}
+                    helperText={
+                      <SubscriptionFocus
+                        me={me}
+                        users={editUsers}
+                        fieldName="score"
+                      />
+                    }
+                  />
+                ) : (
+                  ''
+                )}
                 <Field
                   name="first_seen"
                   component={DatePickerField}
@@ -418,21 +441,20 @@ class StixRelationEditionContainer extends Component {
                     />
                   }
                 />
-                {stixRelation.relationship_type === 'targets' ? (
+                {stixRelation.relationship_type === 'indicates' ? (
                   <Field
-                    name="locations"
-                    component={Autocomplete}
-                    multiple={true}
-                    label={t('Locations')}
-                    options={this.state.locations}
-                    onInputChange={this.searchLocations.bind(this)}
-                    onChange={this.handleChangeLocation.bind(this)}
+                    name="expiration"
+                    component={DatePickerField}
+                    label={t('Expiration')}
+                    fullWidth={true}
+                    style={{ marginTop: 10 }}
                     onFocus={this.handleChangeFocus.bind(this)}
+                    onSubmit={this.handleSubmitField.bind(this)}
                     helperText={
                       <SubscriptionFocus
                         me={me}
                         users={editUsers}
-                        fieldName="locations"
+                        fieldName="expiration"
                       />
                     }
                   />
@@ -465,9 +487,7 @@ class StixRelationEditionContainer extends Component {
               variant="contained"
               color="primary"
               component={Link}
-              to={`${link}/${stixDomainEntity.id}/knowledge/relations/${
-                stixRelation.id
-              }`}
+              to={`${link}/${stixDomainEntity.id}/knowledge/relations/${stixRelation.id}`}
               classes={{ root: classes.buttonLeft }}
             >
               {t('Details')}
@@ -516,6 +536,8 @@ const StixRelationEditionFragment = createFragmentContainer(
         description
         relationship_type
         role_played
+        score
+        expiration
         locations {
           edges {
             node {

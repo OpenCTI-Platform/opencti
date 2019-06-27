@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import moment from 'moment-timezone';
+import { compose, mean } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -21,7 +22,14 @@ const styles = () => ({
 
 class StixObservableAveragesComponent extends Component {
   render() {
-    const { t, fld, classes } = this.props;
+    const {
+      t, fld, classes, stixObservable,
+    } = this.props;
+    const scores = stixObservable.stixRelations.edges.map(n => n.node.score);
+    const expirations = stixObservable.stixRelations.edges.map(n => moment(n.node.expiration));
+    const weights = stixObservable.stixRelations.edges.map(n => n.node.weight
+    );
+    const minExpiration = moment.min(expirations);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -31,15 +39,15 @@ class StixObservableAveragesComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Confidence level')}
           </Typography>
-          <ItemConfidenceLevel level={2} />
+          <ItemConfidenceLevel level={Math.trunc(mean(weights))} />
           <Typography
             variant="h3"
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Scoring')}
+            {t('Score')}
           </Typography>
-          <ItemScore score={74} />
+          <ItemScore score={Math.trunc(mean(scores))} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -47,7 +55,7 @@ class StixObservableAveragesComponent extends Component {
           >
             {t('Expiration')}
           </Typography>
-          {fld('2018-08-08')}
+          {fld(minExpiration.format())}
         </Paper>
       </div>
     );
@@ -65,9 +73,18 @@ const StixObservableAverages = createFragmentContainer(
   StixObservableAveragesComponent,
   {
     stixObservable: graphql`
-      fragment StixObservableAverages_stixObservable on StixObservable {
+      fragment StixObservableAverages_stixObservable on StixObservable
+        @argumentDefinitions(relationType: { type: "String" }) {
         id
-        observable_value
+        stixRelations(relationType: $relationType) {
+          edges {
+            node {
+              score
+              expiration
+              weight
+            }
+          }
+        }
       }
     `,
   },

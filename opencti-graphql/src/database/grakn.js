@@ -63,7 +63,8 @@ export const multipleAttributes = [
 export const statsDateAttributes = [
   'first_seen', // Standard
   'last_seen', // Standard
-  'published' // Standard
+  'published', // Standard
+  'expiration' // Standard
 ];
 
 const client = new Grakn(

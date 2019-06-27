@@ -573,6 +573,15 @@ export const addStixRelation = async (user, stixRelation) => {
     has description "${escapeString(stixRelation.description)}",
     has role_played "${escapeString(stixRelation.role_played)}",
     has weight ${escape(stixRelation.weight)},
+    has score ${stixRelation.score ? escape(stixRelation.score) : 50},
+    ${
+      stixRelation.expiration
+        ? `has expiration ${prepareDate(stixRelation.expiration)},
+          has expiration_day "${dayFormat(stixRelation.expiration)}",
+          has expiration_month "${monthFormat(stixRelation.expiration)}",
+          has expiration_year "${yearFormat(stixRelation.expiration)}",`
+        : ''
+    }
     has first_seen ${prepareDate(stixRelation.first_seen)},
     has first_seen_day "${dayFormat(stixRelation.first_seen)}",
     has first_seen_month "${monthFormat(stixRelation.first_seen)}",

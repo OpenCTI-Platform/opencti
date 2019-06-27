@@ -8,6 +8,7 @@ class DatePickerField extends Component {
   constructor(props) {
     super(props);
     this.currentDate = this.props.field.value;
+    this.state = { focused: false };
   }
 
   render() {
@@ -35,11 +36,13 @@ class DatePickerField extends Component {
         name={field.name}
         value={field.value}
         onFocus={() => {
+          this.setState({ focused: true });
           if (typeof onFocus === 'function') {
             onFocus(field.name);
           }
         }}
         onBlur={(event) => {
+          this.setState({ focused: false });
           form.setFieldTouched(field.name, true, true);
           if (
             typeof onSubmit === 'function'
@@ -50,6 +53,7 @@ class DatePickerField extends Component {
           }
         }}
         onKeyPress={(event) => {
+          this.setState({ focused: true });
           if (
             typeof onSubmit === 'function'
             && event.key === 'Enter'
@@ -61,6 +65,14 @@ class DatePickerField extends Component {
         }}
         onChange={(date) => {
           form.setFieldValue(field.name, date);
+          if (
+            this.state.focused === false
+            && typeof onSubmit === 'function'
+            && this.currentDate !== date
+          ) {
+            onSubmit(field.name, dateFormat(date));
+            this.currentDate = date;
+          }
         }}
         format="YYYY-MM-DD"
         error={
