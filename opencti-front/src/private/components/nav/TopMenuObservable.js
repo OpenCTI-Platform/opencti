@@ -73,6 +73,26 @@ class TopMenuObservable extends Component {
         >
           {t('Overview')}
         </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/observables/all/${observableId}/enrichment`}
+          variant={
+            location.pathname
+            === `/dashboard/observables/all/${observableId}/enrichment`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/observables/all/${observableId}/enrichment`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Enrichment')}
+        </Button>
       </div>
     );
   }

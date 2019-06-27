@@ -266,7 +266,7 @@ export const getAttributes = async (concept, graknAttributes = false) => {
           groupBy(head), // Group by key
           map(pluck(1)), // Remove grouping boilerplate
           mapObjIndexed((num, key, obj) =>
-            obj[key].length === 1 && !includes(key, multipleAttributes)
+            Array.isArray(obj[key]) && !includes(key, multipleAttributes)
               ? head(obj[key])
               : head(obj[key]) && head(obj[key]).length > 0
               ? obj[key]

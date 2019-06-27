@@ -10,7 +10,7 @@ import inject18n from '../../../components/i18n';
 import ItemStatus from '../../../components/ItemStatus';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
 
-const styles = theme => ({
+const styles = () => ({
   paper: {
     minHeight: '100%',
     margin: '10px 0 0 0',

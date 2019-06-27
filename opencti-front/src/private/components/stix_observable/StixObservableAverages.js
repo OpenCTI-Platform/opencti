@@ -7,8 +7,10 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
+import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
+import ItemScore from '../../../components/ItemScore';
 
-const styles = theme => ({
+const styles = () => ({
   paper: {
     minHeight: '100%',
     margin: '10px 0 0 0',
@@ -17,52 +19,53 @@ const styles = theme => ({
   },
 });
 
-class StixObservableIdentityComponent extends Component {
+class StixObservableAveragesComponent extends Component {
   render() {
-    const { t, classes } = this.props;
+    const { t, fld, classes } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Enrichment')}
+          {t('Averages of context relations')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant="h3" gutterBottom={true}>
-            {t('Location')}
+            {t('Confidence level')}
           </Typography>
-          United States, North America
+          <ItemConfidenceLevel level={2} />
           <Typography
             variant="h3"
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Autonomous system')}
+            {t('Scoring')}
           </Typography>
-          AS15169 (Google LLC)
+          <ItemScore score={74} />
           <Typography
             variant="h3"
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('FireHOL')}
+            {t('Expiration')}
           </Typography>
+          {fld('2018-08-08')}
         </Paper>
       </div>
     );
   }
 }
 
-StixObservableIdentityComponent.propTypes = {
+StixObservableAveragesComponent.propTypes = {
   stixObservable: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const StixObservableIdentity = createFragmentContainer(
-  StixObservableIdentityComponent,
+const StixObservableAverages = createFragmentContainer(
+  StixObservableAveragesComponent,
   {
     stixObservable: graphql`
-      fragment StixObservableIdentity_stixObservable on StixObservable {
+      fragment StixObservableAverages_stixObservable on StixObservable {
         id
         observable_value
       }
@@ -73,4 +76,4 @@ const StixObservableIdentity = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixObservableIdentity);
+)(StixObservableAverages);

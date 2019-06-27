@@ -533,7 +533,7 @@ class StixObservableEntities extends Component {
     return (
       <div style={{ marginTop: 30 }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Links with threats')}
+          {t('Context relations with threats')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <div className={classes.header}>

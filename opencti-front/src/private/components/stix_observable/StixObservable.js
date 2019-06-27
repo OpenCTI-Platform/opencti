@@ -8,7 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import StixObservableHeader from './StixObservableHeader';
 import StixObservableOverview from './StixObservableOverview';
-import StixObservableIdentity from './StixObservableIdentity';
+import StixObservableAverages from './StixObservableAverages';
 import StixObservableEdition from './StixObservableEdition';
 import EntityLastReports from '../report/EntityLastReports';
 import StixObservableEntities from './StixObservableEntities';
@@ -37,7 +37,7 @@ class StixObservableComponent extends Component {
             <StixObservableOverview stixObservable={stixObservable} />
           </Grid>
           <Grid item={true} xs={3}>
-            <StixObservableIdentity stixObservable={stixObservable} />
+            <StixObservableAverages stixObservable={stixObservable} />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={stixObservable.id} />
@@ -65,7 +65,7 @@ const StixObservable = createFragmentContainer(StixObservableComponent, {
       id
       ...StixObservableHeader_stixObservable
       ...StixObservableOverview_stixObservable
-      ...StixObservableIdentity_stixObservable
+      ...StixObservableAverages_stixObservable
     }
   `,
 });

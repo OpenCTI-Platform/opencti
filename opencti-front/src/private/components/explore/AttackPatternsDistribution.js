@@ -3,9 +3,6 @@ import PropTypes from 'prop-types';
 import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
-import EntityStixRelationsPie from '../stix_relation/EntityStixRelationsPie';
-import EntityStixRelationsRadar from '../stix_relation/EntityStixRelationsRadar';
-import EntityStixRelationsDonut from '../stix_relation/EntityStixRelationsDonut';
 import EntityStixRelationsTable from '../stix_relation/EntityStixRelationsTable';
 
 const styles = () => ({

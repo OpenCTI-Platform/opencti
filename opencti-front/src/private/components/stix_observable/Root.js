@@ -21,7 +21,7 @@ const stixObservableQuery = graphql`
       ...StixObservable_stixObservable
       ...StixObservableHeader_stixObservable
       ...StixObservableOverview_stixObservable
-      ...StixObservableIdentity_stixObservable
+      ...StixObservableAverages_stixObservable
     }
   }
 `;
