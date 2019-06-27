@@ -824,6 +824,8 @@ class Stix2:
             'x_opencti_last_seen': entity['last_seen'],
             'x_opencti_weight': entity['weight'],
             'x_opencti_role_played': entity['role_played'],
+            'x_opencti_score': entity['score'],
+            'x_opencti_expiration': entity['expiration'],
         }
         return self.prepare_export(entity, stix_relation)
 
@@ -872,7 +874,7 @@ class Stix2:
         if date is None:
             date = datetime.datetime.utcnow().replace(microsecond=0, tzinfo=datetime.timezone.utc).isoformat()
 
-        stix_relation_id = self.opencti.create_relation_if_not_exists(
+        stix_relation = self.opencti.create_relation_if_not_exists(
             source_id,
             source_type,
             target_id,
@@ -885,11 +887,17 @@ class Stix2:
                 'x_opencti_last_seen'] if 'x_opencti_last_seen' in stix_relation else date,
             stix_relation['x_opencti_weight'] if 'x_opencti_weight' in stix_relation else 4,
             stix_relation['x_opencti_role_played'] if 'x_opencti_role_played' in stix_relation else None,
+            stix_relation['x_opencti_score'] if 'x_opencti_score' in stix_relation else None,
+            stix_relation['x_opencti_expiration'] if 'x_opencti_expiration' in stix_relation else None,
             stix_relation['x_opencti_id'] if 'x_opencti_id' in stix_relation else None,
             stix_relation['id'] if 'id' in stix_relation else None,
             stix_relation['created'] if 'created' in stix_relation else None,
             stix_relation['modified'] if 'modified' in stix_relation else None,
-        )['id']
+        )
+        if stix_relation is not None:
+            stix_relation_id = stix_relation['id']
+        else:
+            return None
 
         # External References
         external_references_ids = []

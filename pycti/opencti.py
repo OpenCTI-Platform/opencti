@@ -70,6 +70,8 @@ class OpenCTI:
             data['observableRefs'] = self.parse_multiple(data['observableRefs'])
         if 'relationRefs' in data:
             data['relationRefs'] = self.parse_multiple(data['relationRefs'])
+        if 'stixRelations' in data:
+            data['stixRelations'] = self.parse_multiple(data['stixRelations'])
         return data
 
     def check_existing_stix_domain_entity(self, stix_id=None, name=None, type=None):
@@ -81,6 +83,7 @@ class OpenCTI:
         return object_result
 
     def update_settings_field(self, id, key, value):
+
         self.log('Updating settings field ' + key + ' of ' + id + '...')
         query = """
             mutation SettingsEdit($id: ID!, $input: EditInput!) {
@@ -346,6 +349,8 @@ class OpenCTI:
                     description
                     weight
                     role_played
+                    score
+                    expiration
                     first_seen
                     last_seen
                     created
@@ -365,6 +370,9 @@ class OpenCTI:
         return result['data']['stixRelation']
 
     def get_stix_relations(self, from_id=None, to_id=None, type='stix_relation', first_seen=None, last_seen=None):
+        if type == 'revoked-by':
+            return []
+
         if first_seen is not None and last_seen is not None:
             first_seen = dateutil.parser.parse(first_seen)
             first_seen_start = (first_seen + datetime.timedelta(days=-1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
@@ -390,6 +398,8 @@ class OpenCTI:
                             description
                             weight
                             role_played
+                            score
+                            expiration
                             first_seen
                             last_seen
                             created
@@ -436,6 +446,8 @@ class OpenCTI:
                         last_seen,
                         weight,
                         role_played=None,
+                        score=None,
+                        expiration=None,
                         id=None,
                         stix_id=None,
                         created=None,
@@ -458,6 +470,8 @@ class OpenCTI:
                 'relationship_type': type,
                 'description': description,
                 'role_played': role_played,
+                'score': score,
+                'expiration': expiration,
                 'first_seen': first_seen,
                 'last_seen': last_seen,
                 'weight': weight,
@@ -480,6 +494,8 @@ class OpenCTI:
                                       last_seen,
                                       weight,
                                       role_played=None,
+                                      score=None,
+                                      expiration=None,
                                       id=None,
                                       stix_id=None,
                                       created=None,
@@ -522,6 +538,8 @@ class OpenCTI:
                 last_seen,
                 weight,
                 role_played,
+                score,
+                expiration,
                 id,
                 stix_id,
                 created,
@@ -2807,6 +2825,10 @@ class OpenCTI:
                                 role_played
                                 expiration
                                 score
+                                to {
+                                    id
+                                    name
+                                }
                             }
                         }
                     }
@@ -2869,6 +2891,10 @@ class OpenCTI:
                                         role_played
                                         expiration
                                         score
+                                        to {
+                                            id
+                                            name
+                                        }
                                     }
                                 }
                             }
@@ -2936,6 +2962,10 @@ class OpenCTI:
                                         role_played
                                         expiration
                                         score
+                                        to {
+                                            id
+                                            name
+                                        }
                                     }
                                 }
                             }
@@ -3442,6 +3472,12 @@ class OpenCTI:
                     'campaign': {'from_role': 'indicator', 'to_role': 'characterize'},
                     'malware': {'from_role': 'indicator', 'to_role': 'characterize'},
                     'tool': {'from_role': 'indicator', 'to_role': 'characterize'},
+                }
+            },
+            'gathering': {
+                'sector': {
+                    'sector': {'from_role': 'gather', 'to_role': 'part_of'},
+                    'organization': {'from_role': 'gather', 'to_role': 'part_of'},
                 }
             }
         }
