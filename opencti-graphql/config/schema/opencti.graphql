@@ -111,6 +111,7 @@ type Settings {
   platform_language: String
   platform_external_auth: Boolean
   platform_registration: Boolean
+  platform_demo: Boolean
   editContext: [EditUserContext]
   created_at: DateTime
   updated_at: DateTime
@@ -122,6 +123,7 @@ input SettingsAddInput {
   platform_language: String
   platform_external_auth: Boolean
   platform_registration: Boolean
+  platform_demo: Boolean
 }
 
 ### Connectors

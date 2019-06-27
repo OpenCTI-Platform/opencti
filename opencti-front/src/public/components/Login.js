@@ -58,6 +58,7 @@ const LoginQuery = graphql`
   query LoginQuery {
     settings {
       platform_external_auth
+      platform_demo
       ...AppIntlProvider_settings
       ...AppDocumentTitle_settings
     }
@@ -134,35 +135,42 @@ class Login extends Component {
       <QueryRenderer
         query={LoginQuery}
         variables={{}}
-        render={({ props }) => (
-          <ConnectedIntlProvider
-            me={props && props.me ? props.me : null}
-            settings={props && props.settings ? props.settings : null}
-          >
-            <ConnectedDocumentTitle
-              settings={props && props.settings ? props.settings : null}
-            >
-              <div
-                className={this.props.classes.container}
-                style={{ marginTop }}
+        render={({ props }) => {
+          if (props && props.settings) {
+            return (
+              <ConnectedIntlProvider
+                me={props && props.me ? props.me : null}
+                settings={props && props.settings ? props.settings : null}
               >
-                <img
-                  src={logo}
-                  alt="logo"
-                  className={this.props.classes.logo}
-                />
-                <LoginForm />
-                {pathOr(
-                  false,
-                  ['settings', 'platform_external_auth'],
-                  props,
-                ) === true
-                  ? this.renderExternalAuth()
-                  : ''}
-              </div>
-            </ConnectedDocumentTitle>
-          </ConnectedIntlProvider>
-        )}
+                <ConnectedDocumentTitle
+                  settings={props && props.settings ? props.settings : null}
+                >
+                  <div
+                    className={this.props.classes.container}
+                    style={{ marginTop }}
+                  >
+                    <img
+                      src={logo}
+                      alt="logo"
+                      className={this.props.classes.logo}
+                    />
+                    <LoginForm
+                      demo={pathOr(false, ['settings', 'platform_demo'], props)}
+                    />
+                    {pathOr(
+                      false,
+                      ['settings', 'platform_external_auth'],
+                      props,
+                    ) === true
+                      ? this.renderExternalAuth()
+                      : ''}
+                  </div>
+                </ConnectedDocumentTitle>
+              </ConnectedIntlProvider>
+            );
+          }
+          return <div />;
+        }}
       />
     );
   }

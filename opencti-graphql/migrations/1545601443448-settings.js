@@ -10,7 +10,8 @@ module.exports.up = async next => {
       platform_url: '',
       platform_language: 'auto',
       platform_external_auth: true,
-      platform_registration: false
+      platform_registration: false,
+      platform_demo: false
     }
   );
   await addMarkingDefinition(

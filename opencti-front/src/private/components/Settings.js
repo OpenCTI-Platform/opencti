@@ -42,6 +42,7 @@ const settingsQuery = graphql`
       platform_language
       platform_external_auth
       platform_registration
+      platform_demo
       editContext {
         name
         focusOn
@@ -64,6 +65,7 @@ const settingsMutationFieldPatch = graphql`
         platform_language
         platform_external_auth
         platform_registration
+        platform_demo
       }
     }
   }
@@ -80,6 +82,7 @@ const settingsFocus = graphql`
         platform_language
         platform_external_auth
         platform_registration
+        platform_demo
       }
     }
   }
@@ -96,6 +99,7 @@ const settingsValidation = t => Yup.object().shape({
   platform_language: Yup.string(),
   platform_external_auth: Yup.boolean(),
   platform_registration: Yup.boolean(),
+  platform_demo: Yup.boolean(),
 });
 
 class Settings extends Component {
@@ -146,6 +150,7 @@ class Settings extends Component {
                 'platform_language',
                 'platform_external_auth',
                 'platform_registration',
+                'platform_demo',
               ],
               settings,
             );
@@ -252,6 +257,12 @@ class Settings extends Component {
                             name="platform_registration"
                             component={Switch}
                             label={t('Registration')}
+                            onChange={this.handleSubmitField.bind(this, id)}
+                          />
+                          <Field
+                            name="platform_demo"
+                            component={Switch}
+                            label={t('Display demo credentials')}
                             onChange={this.handleSubmitField.bind(this, id)}
                           />
                         </Paper>

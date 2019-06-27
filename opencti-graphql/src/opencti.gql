@@ -29,6 +29,7 @@ define
   platform_url sub attribute, datatype string;
   platform_external_auth sub attribute, datatype boolean;
   platform_registration sub attribute, datatype boolean;
+  platform_demo sub attribute, datatype boolean;
   connector_identifier sub attribute, datatype string;
   connector_config sub attribute, datatype string;
   graph_data sub attribute, datatype string;
@@ -443,6 +444,7 @@ define
     has platform_language,
     has platform_external_auth,
     has platform_registration,
+    has platform_demo,
     has created_at,
     has created_at_day,
     has created_at_month,

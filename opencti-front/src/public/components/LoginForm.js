@@ -51,11 +51,11 @@ class LoginForm extends Component {
   }
 
   render() {
-    const { classes, t } = this.props;
+    const { classes, t, demo } = this.props;
     return (
       <div className={classes.login}>
         <Formik
-          initialValues={{ email: '', password: '' }}
+          initialValues={{ email: demo ? 'demo@opencti.io' : '', password: demo ? 'demo' : '' }}
           validationSchema={loginValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           render={({ submitForm, isSubmitting }) => (
@@ -96,6 +96,7 @@ LoginForm.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  demo: PropTypes.bool,
 };
 
 export default compose(

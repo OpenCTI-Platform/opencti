@@ -180,6 +180,8 @@ const i18n = {
       'The connector has been triggered': 'Le connecteur a été déclenché',
       'Settings have been updated': 'Les paramètres ont été mis à jour',
       'Export the entity': "Exporter l'entité",
+      'Display demo credentials': 'Afficher les identifiants de démo',
+      'Login: demo@opencti.io / Password: demo': 'Identifiant : demo@opencti.io / Mot de passe : demo',
       // Menu
       Dashboard: 'Tableau de bord',
       Visualization: 'Visualisation',
