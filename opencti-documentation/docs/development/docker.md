@@ -1,7 +1,7 @@
 ---
 id: development-docker
 title: Development docker installation
-sidebar_label: Docker
+sidebar_label: Development environment
 ---
 
 ## Prerequisites

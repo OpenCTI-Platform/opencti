@@ -6,13 +6,24 @@ sidebar_label: Introduction
 
 ![](assets/introduction/logo.png)
 ---
-OpenCTI is an open source platform allowing organizations to manage their cyber threat intelligence knowledge, investigations and indicators of compromise. OpenCTI can be integrated with other applications such as [Maltego](https://www.paterva.com/web7/buy/maltego-clients/maltego-ce.php), [MISP](https://www.misp-project.org/), [CORTEX](https://github.com/TheHive-Project/Cortex) and many other STIX2 compliant products. It has been designed as a modern web application including a GraphQL API and an UX oriented frontend.
+
+OpenCTI is an open source platform allowing organizations to manage their cyber threat intelligence knowledge and observables. It has been created in order to structure, store, organize and visualize technical and non-technical information about cyber threats.
+
+The structuration of the data is performed using a knowledge schema based on the [STIX2 standards](https://oasis-open.github.io/cti-documentation/). It has been designed as a modern web application including a [GraphQL API](https://graphql.org) and an UX oriented frontend. Also, OpenCTI can be integrated with other tools and applications such as [MISP](https://github.com/MISP/MISP), [TheHive](https://github.com/TheHive-Project/TheHive), [MITRE ATT&CK](https://github.com/mitre/cti), etc.
 
 ![Screenshot](assets/introduction/screenshot.png "OpenCTI")
 
-## Demonstration
+## Objective
 
-If you wish to discover how the OpenCTI platform is working, a [demonstration instance](https://demo.opencti.io) is available and open to everyone. This instance is reset every nights and based on reference data maintened by the OpenCTI developers.
+The goal is to create a comprehensive tool allowing users to capitalize technical (such as TTPs and observables) and non-technical information (such as suggested attribution, victimlogy etc.) while linking each piece of information to its primary source (a report, a MISP event, etc.), with features such as links between each information, first and last seen dates, levels of confidence etc. The tool is able to use the [MITRE ATT&CK framework](https://attack.mitre.org) (through a [dedicated connector](https://github.com/OpenCTI-Platform/connectors)) to help structure the data. The user can also chose to implement its own datasets.
+
+Once data has been capitalized and processed by the analysts within OpenCTI, new relations [may be inferred](https://opencti-platform.github.io/docs/guides/inferences) from existing ones to facilitate the understanding and the representation of this information. This allow the user to extract and leverage meaningful knowledge from the raw data.
+
+OpenCTI not only allows [imports](guides/import-data) but also [exports of data](guides/export-data) under different formats (CSV, STIX2 bundles, etc.). [Connectors](https://github.com/OpenCTI-Platform/connectors) are currently developped to accelerate interactions between the tool and other platforms.
+
+## Documentation and demonstration
+
+If you want to know more on OpenCTI, you can read the [documentation on the tool](https://opencti-platform.github.io/docs). If you wish to discover how the OpenCTI platform is working, a [demonstration instance](https://demo.opencti.io) is available and open to everyone. This instance is reset every night and is based on reference data maintened by the OpenCTI developers.
 
 ## Releases download
 
@@ -20,26 +31,30 @@ The releases are available on the [Github releases page](https://github.com/Open
 
 ## Installation
 
-* [Use Docker](installation/docker.md) / Prefered way
-* [Install OpenCTI manually](installation/manual.md)
+All you need to install the OpenCTI platform can be found in the [official documentation](https://opencti-platform.github.io/docs/introduction). For installation, you can:
 
-## Development
+* [Use Docker](installation/docker-installation) (recommanded)
+* [Install manually](installation/docker-installation) 
+
+## Contributing
+
+### Code of Conduct
+
+OpenCTI has adopted a [Code of Conduct](https://github.com/OpenCTI-Platform/opencti/blob/master/CODE_OF_CONDUCT.md) that we expect project participants to adhere to. Please read the [full text](https://github.com/OpenCTI-Platform/opencti/blob/master/CODE_OF_CONDUCT.md) so that you can understand what actions will and will not be tolerated.
+
+### Contributing Guide
+
+Read our [contributing guide](https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to OpenCTI.
+
+### Beginner friendly issues
+
+To help you get you familiar with our contribution process, we have a list of [beginner friendly issues](https://github.com/OpenCTI-Platform/opencti/labels/beginner%20friendly%20issue) which are fairly easy to implement. This is a great place to get started.
+
+### Development
 
 Everything you need to be ready for helping the openCTI development can be find here:
+
 * [Install OpenCTI for development](development/docker.md)
-
-
-## Details
-
-### Architecture
-
-![Architecture](assets/introduction/architecture.png "OpenCTI architecture")
-
-### Database visualizer
-
-The [Grakn](https://github.com/graknlabs/grakn) knowledge graph database provides a client called the [Grakn workbase](https://github.com/graknlabs/workbase) that can be used to explore the whole database. You can use it in order to explore your data in an original way.
-
-![Grakn workbase](assets/introduction/workbase.png "OpenCTI architecture")
 
 ## Community
 
