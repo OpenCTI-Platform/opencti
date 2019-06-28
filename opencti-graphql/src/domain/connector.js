@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, lstatSync } from 'fs';
 import { join, basename } from 'path';
 import uuid from 'uuid/v4';
-import { isNil } from 'ramda';
+import { isNil, filter } from 'ramda';
 import {
   commitWriteTx,
   queryOne,
@@ -18,20 +18,24 @@ export const getConnectors = async () => {
       .map(name => join(source, name))
       .filter(isDirectory)
       .map(connector => basename(connector));
-  return getDirectories(path).map(async connector => {
-    const connectorConfigTemplate = readFileSync(
-      `${path}/${connector}/config.json`
-    );
-    const connectorObject = await queryOne(
-      `match $x isa Connector; $x has connector_identifier "${connector}"; get $x;`,
-      ['x']
-    );
-    return {
-      identifier: connector,
-      config_template: Buffer.from(connectorConfigTemplate).toString('base64'),
-      config: connectorObject ? connectorObject.x.connector_config : null
-    };
-  });
+  return filter(n => n !== '.github', getDirectories(path)).map(
+    async connector => {
+      const connectorConfigTemplate = readFileSync(
+        `${path}/${connector}/config.json`
+      );
+      const connectorObject = await queryOne(
+        `match $x isa Connector; $x has connector_identifier "${connector}"; get $x;`,
+        ['x']
+      );
+      return {
+        identifier: connector,
+        config_template: Buffer.from(connectorConfigTemplate).toString(
+          'base64'
+        ),
+        config: connectorObject ? connectorObject.x.connector_config : null
+      };
+    }
+  );
 };
 
 export const updateConfig = async (identifier, config) => {
