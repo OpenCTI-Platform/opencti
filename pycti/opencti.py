@@ -3352,7 +3352,7 @@ class OpenCTI:
 
     def resolve_role(self, relation_type, from_type, to_type):
         if relation_type == 'related-to':
-            return {'from_role': 'relates_from', 'to_role': 'relates_to'}
+            return {'from_role': 'relate_from', 'to_role': 'relate_to'}
 
         relation_type = relation_type.lower()
         from_type = from_type.lower()
