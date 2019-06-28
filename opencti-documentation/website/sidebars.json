@@ -6,11 +6,12 @@
     "Installation": [
       "installation/installation-docker",
       "installation/installation-manual",
-      "development/development-docker"
+      "development/development-installation"
     ],
     "Usage": [
       "usage/usage-introduction",
-      "usage/usage-create-reports"
+      "usage/usage-reports-create",
+      "usage/usage-report-knowledge"
     ]
   }
 }

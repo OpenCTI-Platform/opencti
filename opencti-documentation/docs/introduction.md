@@ -33,8 +33,8 @@ The releases are available on the [Github releases page](https://github.com/Open
 
 All you need to install the OpenCTI platform can be found in the [official documentation](https://opencti-platform.github.io/docs/introduction). For installation, you can:
 
-* [Use Docker](installation/docker-installation) (recommanded)
-* [Install manually](installation/docker-installation) 
+* [Use Docker](installation/installation-docker) (recommanded)
+* [Install manually](installation/installation-manual) 
 
 ## Contributing
 
@@ -54,7 +54,7 @@ To help you get you familiar with our contribution process, we have a list of [b
 
 Everything you need to be ready for helping the openCTI development can be find here:
 
-* [Install OpenCTI for development](development/docker.md)
+* [Install OpenCTI for development](development/development-installation)
 
 ## Community
 

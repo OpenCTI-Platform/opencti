@@ -20,7 +20,7 @@ On the left side, you can see a menu made of several icons. The upper left one i
 
 *Tip: The small arrow at the bottom left allows you to unroll the menu in order to see the name for each icon*
 
-(image) 
+![Menu](assets/usage/menu.png "Menu")
 
 Below the dashboard icon, the other icons are for the following services:
 
@@ -78,6 +78,6 @@ In this tab, you can manage the different connectors which are used to upload da
 
 ![Connectors](assets/usage/connectors.png "Connectors")
 
-### Settings
+#### Settings
 
 In this tab, you can change the parameters, visualize all users, create or manage groups, create or manage tagging (by default, the Traffic Light Protocol is implemented, but you can add your own tagging) and manage the kill chain steps (by default, the kill chainis the one defined in the [MITRE ATT&CK framework](https://attack.mitre.org/)).
