@@ -12,6 +12,9 @@
       "usage/usage-introduction",
       "usage/usage-reports-create",
       "usage/usage-report-knowledge"
+    ],
+   "Reference": [
+      "reference/reference-relations"
     ]
   }
 }
