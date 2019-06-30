@@ -1,5 +1,5 @@
 ---
-id: usage-reports-create
+id: reports-create
 title: Create reports
 sidebar_label: Create reports
 ---
@@ -22,4 +22,4 @@ You can then add information that you had not previously typped in. For instance
 
 ![Report external references](assets/usage/report_external-references.png "Report external references")
 
-*Note that the bottom boxes on the page, which are displaying graphs and charts, cannot be directly modified, but will update automatically if you add observables, entities or knowledge to the report.*
+> Note that the bottom boxes on the page, which are displaying graphs and charts, cannot be directly modified, but will update automatically if you add observables, entities or knowledge to the report.

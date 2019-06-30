@@ -1,5 +1,5 @@
 ---
-id: installation-manual
+id: manual
 title: Manual installation
 sidebar_label: Manual deployment
 ---

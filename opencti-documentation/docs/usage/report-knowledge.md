@@ -1,5 +1,5 @@
 ---
-id: usage-report-knowledge
+id: report-knowledge
 title: Add knowledge to a report
 sidebar_label: Add knowledge to a report
 ---
@@ -25,21 +25,23 @@ In this space, you can start selecting entities in order to link them, on the ba
 
 ![Report add knowledge](assets/usage/report_knowledge_add.png "Report add knowledge")
 
-*Tip: all the TTPs are from the MITRE ATT&CK framework. If you need to, you can either go to the [OpenCTI page]() or to the [MITRE ATT&CK page](https://attack.mitre.org/) where they are listed and described.*
+> *Note*: all the TTPs displayed in the demonstration or in this documentation are from the [MITRE ATT&CK framework](https://attack.mitre.org). But you can add any framework you want or build your own by adding TTPs on the platform.
 
 * Each time you click on one element you wish to add, it will stack itself at the upper left of the workspace, just under the title. You can stack all the elements you need for now and unstack them as you organize them on the page and link them to each other.
 
 * If one element you wish to add from the report is not in the OpenCTI database, you can create it by clicking again on the orange button at the bottom right of your window. Whatch out for duplicates!
 
-*Tip: to avoid duplicates, especially with entities such as sectors, cities, countries and regions, we suggest you use the datasets on the [repository](https://github.com/OpenCTI-Platform/datasets) or create your own.*
+> To avoid duplicates, especially with entities such as sectors, cities, countries and regions, we suggest you use the datasets on the [repository](https://github.com/OpenCTI-Platform/datasets) or create your own.*
 
 * Once all the elements of interest are stacked, you can collapse the right window by clicking on the workspace and start unstacking and organizing the boxes on the space by clicking on them and dragging and dropping them.
 
 * You then can start to create links between your different entities and techniques. 
 
-> **The direction in which you draw the link matters a lot, so we strongly advise you to carefully read the [guide on creating relations](reference/reference-relation) before starting creating real cases.** As an exemple, if you draw a link from an intrusion set to a TTP, it will be a link of *APT-X uses TTP xx*, but you want to avoid drawing a link from the TTP to the APT as it does not make sense for an intrusion set to be used by a TTP. 
+> **The direction in which you draw the link matters a lot, so we strongly advise you to carefully read the [guide on creating relations](../reference/relations) before starting creating real cases.** As an exemple, if you draw a link from an intrusion set to a TTP, it will be a link of *APT-X uses TTP xx*, but you want to avoid drawing a link from the TTP to the APT as it does not make sense for an intrusion set to be used by a TTP. 
 
-*Tip: In some cases, a relation already exists between two entities. For instance, the relation between the tool "Cobalt Strike" using the TTP "credential dumping" will be created multiple times. We advise you create a new relation everytime it is mentionned, with the date matching the information in the report, instead of using always the same relation.*
+In some cases, a relation already exists between two entities. For instance, the relation between the tool "Cobalt Strike" using the TTP "credential dumping" will be created multiple times.
+
+> We advise you create a new relation everytime it is mentionned, with the date matching the information in the report, instead of using always the same relation.
 
 ![Report existing relation](assets/usage/report_existing_relation.png "Report existing relation")
 

@@ -1,5 +1,5 @@
 ---
-id: development-installation
+id: installation
 title: Development environment installation
 sidebar_label: Development environment
 ---

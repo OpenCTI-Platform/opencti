@@ -39,7 +39,7 @@ const siteConfig = {
 
   // For no header links in the top nav bar -> headerLinks: [],
   headerLinks: [
-    { doc: 'introduction', label: 'Documentation' },
+    { doc: 'getting-started/introduction', label: 'Documentation' },
     { href: 'https://slack.luatix.org', label: 'Help' },
     { href: 'https://www.github.com/OpenCTI-Platform/opencti', label: 'GitHub' },
   ],
@@ -48,13 +48,13 @@ const siteConfig = {
   users,
 
   /* path to images for header/footer */
-  headerIcon: 'img/logo.png',
+  headerIcon: 'img/logo_header.png',
   footerIcon: 'img/logo.png',
   favicon: 'img/logo.png',
 
   /* Colors for website */
   colors: {
-    primaryColor: '#294b5d',
+    primaryColor: '#507bc8',
     secondaryColor: '#651c4f',
   },
 
@@ -74,10 +74,10 @@ const siteConfig = {
 
   // This copyright info is used in /core/Footer.js and blog RSS/Atom feeds.
   copyright: `Copyright © ${new Date().getFullYear()} OpenCTI`,
-
+  usePrism: ['jsx'],
   highlight: {
     // Highlight.js theme to use for syntax highlighting in code blocks.
-    theme: 'default',
+    theme: 'atom-one-dark',
   },
 
   // Add custom scripts here that would be placed in <script> tags.
