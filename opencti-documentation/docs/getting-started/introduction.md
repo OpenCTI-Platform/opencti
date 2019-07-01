@@ -33,7 +33,7 @@ The releases are available on the [Github releases page](https://github.com/Open
 
 You have 3 options to install the OpenCTI platform, depending of your needs:
 
-* [Use Docker](../installation/docker) (recommanded)
+* [Use Docker](../installation/docker) (recommended)
 * [Install manually](../installation/manual) 
 * [Install for development](../development/installation)
 
