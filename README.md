@@ -23,7 +23,7 @@ The goal is to create a comprehensive tool allowing users to capitalize technica
 
 Once data has been capitalized and processed by the analysts within OpenCTI, new relations [may be inferred](https://opencti-platform.github.io/docs/reference/inferences) from existing ones to facilitate the understanding and the representation of this information. This allow the user to extract and leverage meaningful knowledge from the raw data.
 
-OpenCTI not only allows [imports]((https://opencti-platform.github.io/docs/usage/import)) but also [exports of data]((https://opencti-platform.github.io/docs/usage/export)) under different formats (CSV, STIX2 bundles, etc.). [Connectors](https://github.com/OpenCTI-Platform/connectors) are currently developped to accelerate interactions between the tool and other platforms.
+OpenCTI not only allows [imports](https://opencti-platform.github.io/docs/usage/import) but also [exports of data](https://opencti-platform.github.io/docs/usage/export) under different formats (CSV, STIX2 bundles, etc.). [Connectors](https://github.com/OpenCTI-Platform/connectors) are currently developped to accelerate interactions between the tool and other platforms.
 
 ## Documentation and demonstration
 
