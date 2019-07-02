@@ -157,6 +157,34 @@ jobs:
             echo "machine github.com login SamuelHassine password $GITHUB_TOKEN" > ~/.netrc
             cd website && yarn install && ORGANIZATION_NAME=OpenCTI-Platform PROJECT_NAME=docs GIT_USER=SamuelHassine yarn run publish-gh-pages
 
+  docker_build:
+    environment:
+      IMAGE_NAME: jonathancardoso/building-on-ci
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          working_directory: ~/opencti/opencti-docker/opencti
+          name: Build Docker image opencti/platform
+          command: docker build -t opencti/platform:latest .
+      - run:
+          working_directory: ~/opencti/opencti-docker/worker
+          name: Build Docker image opencti/worker
+          command: docker build -t opencti/worker:latest .
+      - run:
+          working_directory: ~/opencti/opencti-docker/integration
+          name: Build Docker image opencti/integration
+          command: docker build -t opencti/integration:latest .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker push opencti/platform:latest
+            docker push opencti/worker:latest
+            docker push opencti/integration:latest
+
 workflows:
   opencti:
     jobs:
@@ -192,4 +220,9 @@ workflows:
           filters:
             branches:
               only:
-                - master                
+                - master
+      - docker_build:
+          filters:
+            branches:
+              only:
+                - master           

@@ -22,7 +22,7 @@ services:
     image: rabbitmq
     restart: always
   worker:
-    image: luatix/opencti-worker
+    image: opencti/worker
     build:
      context: ./worker
     environment:
@@ -36,7 +36,7 @@ services:
       - opencti:opencti
     restart: always
   integration:
-    image: luatix/opencti-integration
+    image: opencti/integration
     build:
      context: ./integration
     environment:
@@ -50,7 +50,7 @@ services:
       - opencti:opencti
     restart: always    
   opencti:
-    image: luatix/opencti
+    image: opencti/platform
     build:
       context: ./opencti
     environment:
