@@ -34,8 +34,6 @@ services:
       - "./config:/opt/opencti/shared_config:rw"
     depends_on:
       - opencti
-    links:
-      - opencti:opencti
     restart: always
   integration:
     image: opencti/integration
@@ -46,8 +44,6 @@ services:
       - "./config:/opt/opencti/shared_config:rw"
     depends_on:
       - opencti
-    links:
-      - opencti:opencti
     restart: always    
   opencti:
     image: opencti/platform
@@ -77,9 +73,4 @@ services:
       - redis
       - elasticsearch
       - rabbitmq
-    links:
-     - grakn:grakn
-     - redis:redis
-     - elasticsearch:elasticsearch
-     - rabbitmq:rabbitmq
     restart: always
