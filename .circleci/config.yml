@@ -158,8 +158,7 @@ jobs:
             cd website && yarn install && ORGANIZATION_NAME=OpenCTI-Platform PROJECT_NAME=docs GIT_USER=SamuelHassine yarn run publish-gh-pages
 
   docker_build:
-    environment:
-      IMAGE_NAME: jonathancardoso/building-on-ci
+    working_directory: ~/opencti
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
