@@ -32,6 +32,7 @@ const relationsTypesMapping = {
   campaign_malware: ['uses'],
   campaign_tool: ['uses'],
   campaign_vulnerability: ['targets'],
+  'incident_attack-pattern': ['uses'],
   incident_region: ['targets'],
   incident_country: ['targets'],
   incident_city: ['targets'],

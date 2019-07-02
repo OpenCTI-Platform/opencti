@@ -30,7 +30,7 @@ export const addCountry = async (user, country) => {
     has internal_id "${internalId}",
     has entity_type "country",
     has stix_id "${
-      country.stix_id ? escapeString(country.stix_id) : `country--${uuid()}`
+      country.stix_id ? escapeString(country.stix_id) : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",

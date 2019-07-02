@@ -51,7 +51,7 @@ export const addIncident = async (user, incident) => {
     has internal_id "${internalId}",
     has entity_type "incident",
     has stix_id "${
-      incident.stix_id ? escapeString(incident.stix_id) : `incident--${uuid()}`
+      incident.stix_id ? escapeString(incident.stix_id) : `x-opencti-incident--${uuid()}`
     }",
     has stix_label "",
     has alias "",

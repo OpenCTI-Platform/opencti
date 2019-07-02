@@ -95,9 +95,11 @@ export const addPerson = async (user, newUser) => {
     ? escapeString(newUser.internal_id)
     : uuid();
   const query = `insert $user isa User,
-    has internal_id "",
+    has internal_id "${internalId}",
     has entity_type "user",
-    has stix_id "${internalId}",
+    has stix_id "${
+      newUser.stix_id ? escapeString(newUser.stix_id) : `identity--${uuid()}`
+    }",
     has stix_label "",
     has alias "",
     has name "${escapeString(newUser.name)}",
@@ -141,7 +143,7 @@ export const addUser = async (user, newUser, displayToken = false) => {
     has internal_id "${internalId}",
     has entity_type "user",
     has stix_id "${
-      newUser.stix_id ? escapeString(newUser.stix_id) : `user--${uuid()}`
+      newUser.stix_id ? escapeString(newUser.stix_id) : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",

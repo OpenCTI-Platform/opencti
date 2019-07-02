@@ -487,7 +487,7 @@ export const getRelationInferredById = async id => {
     const toRoleLabel = await toRole.label();
     const relationPromise = await Promise.resolve({
       id,
-      type: 'stix_relation',
+      entity_type: 'stix_relation',
       relationship_type: relationTypeValue,
       inferred: true
     });
@@ -699,7 +699,7 @@ export const getObjects = async (
               .type();
             relationPromise = await Promise.resolve({
               id: uuid(),
-              type: 'stix_relation',
+              entity_type: 'stix_relation',
               relationship_type: relationType.label(),
               inferred: true
             });
@@ -845,7 +845,7 @@ export const getRelations = async (
           }; $to id ${toObject.id}; };`;
           relationPromise = await Promise.resolve({
             id: Buffer.from(queryPattern).toString('base64'),
-            type: 'stix_relation',
+            entity_type: 'stix_relation',
             relationship_type: relationTypeLabel,
             inferred: true
           });

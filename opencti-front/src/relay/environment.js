@@ -50,6 +50,7 @@ export const ACCESS_PROVIDERS = split(
 // Network
 const networkFetch = (operation, variables) => fetch('/graphql', {
   method: 'POST',
+  credentials: 'same-origin',
   headers: {
     'Content-Type': 'application/json',
   },

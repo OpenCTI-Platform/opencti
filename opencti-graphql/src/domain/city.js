@@ -28,7 +28,7 @@ export const addCity = async (user, city) => {
     has internal_id "${internalId}",
     has entity_type "city",
     has stix_id "${
-      city.stix_id ? escapeString(city.stix_id) : `city--${uuid()}`
+      city.stix_id ? escapeString(city.stix_id) : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",

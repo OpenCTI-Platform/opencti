@@ -10,7 +10,7 @@ RUN curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
 
 # Download archive
-RUN wget -O /opt/opencti.tar.gz https://github.com/OpenCTI-Platform/opencti/releases/download/1.0.0/opencti-release.tar.gz
+RUN wget -O /opt/opencti.tar.gz https://releases.opencti.io/opencti-20190702.tar.gz
 RUN cd /opt && tar xvfz opencti.tar.gz
 
 # Expose and entrypoint

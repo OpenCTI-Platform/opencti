@@ -8,7 +8,8 @@ import {
   getObject,
   notify,
   now,
-  takeWriteTx, commitWriteTx
+  takeWriteTx,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, setEditContext } from '../database/redis';

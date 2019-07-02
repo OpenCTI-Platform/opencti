@@ -30,6 +30,8 @@ services:
       - OPENCTI_PORT=8080
     volumes:
       - "./config:/opt/opencti/shared_config:rw"
+    depends_on:
+      - opencti
     links:
       - opencti:opencti
     restart: always
@@ -42,6 +44,8 @@ services:
       - OPENCTI_PORT=8080
     volumes:
       - "./config:/opt/opencti/shared_config:rw"
+    depends_on:
+      - opencti
     links:
       - opencti:opencti
     restart: always    

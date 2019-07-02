@@ -30,7 +30,7 @@ export const addRegion = async (user, region) => {
     has internal_id "${internalId}",
     has entity_type "region",
     has stix_id "${
-      region.stix_id ? escapeString(region.stix_id) : `region--${uuid()}`
+      region.stix_id ? escapeString(region.stix_id) : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",

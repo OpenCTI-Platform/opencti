@@ -33,7 +33,7 @@ export const addOrganization = async (user, organization) => {
     has stix_id "${
       organization.stix_id
         ? escapeString(organization.stix_id)
-        : `organization--${uuid()}`
+        : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",

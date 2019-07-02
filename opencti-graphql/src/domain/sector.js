@@ -47,7 +47,7 @@ export const addSector = async (user, sector) => {
     has internal_id "${internalId}",
     has entity_type "sector",
     has stix_id "${
-      sector.stix_id ? escapeString(sector.stix_id) : `sector--${uuid()}`
+      sector.stix_id ? escapeString(sector.stix_id) : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",
