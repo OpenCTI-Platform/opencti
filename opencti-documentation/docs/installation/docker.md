@@ -10,7 +10,7 @@ OpenCTI could be deployed using the *docker-compose* command.
 
 ```bash
 $ mkdir /path/to/your/app && cd /path/to/your/app
-$ git clone https://github.com/LuatixHQ/opencti.git
+$ git clone https://github.com/OpenCTI-Platform/opencti.git
 $ cd opencti/opencti-docker
 ```
 
