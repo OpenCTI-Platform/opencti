@@ -38,22 +38,4 @@ You can now go to http://localhost:8080 and log in with username `admin@opencti.
 
 ## Data persistence
 
-If you wish your OpenCTI data to be persistent in production, you should add volumes for both `Grakn` and `ElasticSearch`.
-
-In the `elasticsearch` service:
-
-```
-  elasticsearch:
-    [...]
-    volumes:
-      - esdata:/usr/share/elasticsearch/data
-```
-
-In the `grakn` service:
-
-```
-  grakn:
-    [...]
-    volumes:
-      - grakndata:/grakn-core-all-linux/server/db
-```
+If you wish your OpenCTI data to be persistent in production, you should be aware of the  `volumes` section for both `Grakn` and `ElasticSearch` services in the `docker-compose.yml`.
