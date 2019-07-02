@@ -221,6 +221,8 @@ workflows:
               only:
                 - master
       - docker_build:
+          requires:
+            - package_rolling
           filters:
             branches:
               only:

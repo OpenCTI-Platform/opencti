@@ -23,8 +23,6 @@ services:
     restart: always
   worker:
     image: opencti/worker
-    build:
-     context: ./worker
     environment:
       - RUN_USER=root
       - OPENCTI_PORT=8080
@@ -37,8 +35,6 @@ services:
     restart: always
   integration:
     image: opencti/integration
-    build:
-     context: ./integration
     environment:
       - RUN_USER=root
       - OPENCTI_PORT=8080
@@ -51,8 +47,6 @@ services:
     restart: always    
   opencti:
     image: opencti/platform
-    build:
-      context: ./opencti
     environment:
       - RUN_USER=root
       - APP__PORT=8080
