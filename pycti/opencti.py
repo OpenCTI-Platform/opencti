@@ -334,6 +334,7 @@ class OpenCTI:
                     edges {
                         node {
                             id
+                            entity_type
                         }
                     }
                 }
@@ -377,7 +378,8 @@ class OpenCTI:
         result = self.query(query, {'id': id})
         return result['data']['stixRelation']
 
-    def get_stix_relations(self, from_id=None, to_id=None, type='stix_relation', first_seen=None, last_seen=None):
+    def get_stix_relations(self, from_id=None, to_id=None, type='stix_relation', first_seen=None, last_seen=None, inferred=False):
+        self.log('Getting relations, from: ' + from_id + ', to: ' + to_id + '...')
         if type == 'revoked-by':
             return []
 
@@ -395,8 +397,8 @@ class OpenCTI:
             last_seen_stop = None
 
         query = """
-            query StixRelations($fromId: String, $toId: String, $relationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime) {
-                stixRelations(fromId: $fromId, toId: $toId, relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop) {
+            query StixRelations($fromId: String, $toId: String, $relationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean) {
+                stixRelations(fromId: $fromId, toId: $toId, relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred) {
                     edges {
                         node {
                             id
@@ -432,7 +434,8 @@ class OpenCTI:
             'firstSeenStart': first_seen_start,
             'firstSeenStop': first_seen_stop,
             'lastSeenStart': last_seen_start,
-            'lastSeenStop': last_seen_stop
+            'lastSeenStop': last_seen_stop,
+            'inferred': inferred
         })
         return self.parse_multiple(result['data']['stixRelations'])
 
@@ -587,6 +590,7 @@ class OpenCTI:
                      edges {
                          node {
                              id
+                             entity_type
                          }
                      }
                  }
@@ -605,6 +609,7 @@ class OpenCTI:
                      edges {
                          node {
                              id
+                             entity_type
                          }
                      }
                  }
@@ -631,6 +636,7 @@ class OpenCTI:
             mutation MarkingDefinitionAdd($input: MarkingDefinitionAddInput) {
                 markingDefinitionAdd(input: $input) {
                     id
+                    entity_type
                 }
             }
         """
@@ -3474,7 +3480,12 @@ class OpenCTI:
                 },
                 'city': {
                     'country': {'from_role': 'localized', 'to_role': 'location'}
-                }
+                },
+                'organization': {
+                    'region': {'from_role': 'localized', 'to_role': 'location'},
+                    'country': {'from_role': 'localized', 'to_role': 'location'},
+                    'city': {'from_role': 'localized', 'to_role': 'location'}
+                },
             },
             'indicates': {
                 'observable': {
