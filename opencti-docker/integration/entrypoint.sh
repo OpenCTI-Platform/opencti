@@ -17,6 +17,11 @@ do
   sleep 2
 done
 
+while ! nc -z opencti ${OPENCTI_PORT}; do
+  echo "Waiting OpenCTI GraphQL to launch..."
+  sleep 2
+done
+
 # Replace the token in the configuration
 cd /opt/opencti/integration
 cp config.yml.docker.sample config.yml.sample
