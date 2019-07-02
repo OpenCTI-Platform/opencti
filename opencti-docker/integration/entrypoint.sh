@@ -26,6 +26,7 @@ done
 cd /opt/opencti/integration
 cp config.yml.docker.sample config.yml.sample
 sed -i -e "s/REPLACE_API_KEY/$(cat /opt/opencti/shared_config/token)/g" config.yml.sample
+sed -i -e "s/OPENCTI_HOSTNAME/${OPENCTI_HOSTNAME}/g" config.yml.sample
 sed -i -e "s/OPENCTI_PORT/${OPENCTI_PORT}/g" config.yml.sample
 cp config.yml.sample /opt/opencti/shared_config/config_integration.yml
 

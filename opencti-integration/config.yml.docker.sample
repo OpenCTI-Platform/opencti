@@ -1,4 +1,4 @@
 opencti:
-  api_url: 'http://opencti:OPENCTI_PORT'
+  api_url: 'http://OPENCTI_HOSTNAME:OPENCTI_PORT'
   api_key: 'REPLACE_API_KEY'
   verbose: true

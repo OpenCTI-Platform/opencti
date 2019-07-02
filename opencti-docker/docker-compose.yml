@@ -28,7 +28,9 @@ services:
   worker:
     image: opencti/worker
     environment:
+      - OPENCTI_HOSTNAME=opencti
       - OPENCTI_PORT=8080
+      - RABBITMQ_HOSTNAME=rabbitmq
     volumes:
       - "./config:/opt/opencti/shared_config:rw"
     depends_on:
@@ -37,6 +39,7 @@ services:
   integration:
     image: opencti/integration
     environment:
+      - OPENCTI_HOSTNAME=opencti
       - OPENCTI_PORT=8080
     volumes:
       - "./config:/opt/opencti/shared_config:rw"

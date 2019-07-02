@@ -20,8 +20,8 @@ $ sudo apt-get install nodejs npm python3 python3-pip
 ## Download the application files
 ```bash
 $ mkdir /path/to/your/app && cd /path/to/your/app
-$ wget https://github.com/OpenCTI-Platform/opencti/releases/download/1.0.0/opencti-release-0.1.tar.gz
-$ tar xvfz opencti-release-0.1.tar.gz
+$ wget https://github.com/OpenCTI-Platform/opencti/releases/download/{RELEASE_VERSION}/opencti-release.tar.gz
+$ tar xvfz opencti-release.tar.gz
 ```
 
 ## Configure the application
@@ -53,8 +53,22 @@ $ cp config.yml.sample config.yml
 
 Change the *config.yml* file according to your OpenCTI token, ElasticSearch, Grakn and RabbitMQ configuration.
 
+## Configure the integration
+```bash
+$ cd integration
+$ cp config.yml.sample config.yml
+```
+
+Change the *config.yml* file according to your OpenCTI instance configuration.
+
 ## Start the workers
 ```bash
 $ python3 worker_export.py &
 $ python3 worker_import.py &
 ```
+
+## Start the integration
+```bash
+$ python3 connectors_scheduler.py &
+```
+
