@@ -38,7 +38,8 @@ import {
   SubscriptionFocus,
 } from '../../../components/Subscription';
 import Select from '../../../components/Select';
-import { countriesLinesSearchQuery } from '../country/CountriesLines';
+import Autocomplete from '../../../components/Autocomplete';
+import { stixDomainEntitiesLinesSearchQuery } from '../stix_domain_entity/StixDomainEntitiesLines';
 import DatePickerField from '../../../components/DatePickerField';
 
 const styles = theme => ({
@@ -187,11 +188,12 @@ class StixRelationEditionContainer extends Component {
   }
 
   searchLocations(event) {
-    fetchQuery(countriesLinesSearchQuery, {
+    fetchQuery(stixDomainEntitiesLinesSearchQuery, {
       search: event.target.value,
+      types: ['region', 'country', 'city'],
     }).then((data) => {
       const locations = pipe(
-        pathOr([], ['countries', 'edges']),
+        pathOr([], ['stixDomainEntities', 'edges']),
         map(n => ({ label: n.node.name, value: n.node.id })),
       )(data);
       this.setState({ locations });
@@ -441,6 +443,27 @@ class StixRelationEditionContainer extends Component {
                     />
                   }
                 />
+                {stixRelation.relationship_type === 'targets' ? (
+                  <Field
+                    name="locations"
+                    component={Autocomplete}
+                    multiple={true}
+                    label={t('Locations')}
+                    options={this.state.locations}
+                    onInputChange={this.searchLocations.bind(this)}
+                    onChange={this.handleChangeLocation.bind(this)}
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    helperText={
+                      <SubscriptionFocus
+                        me={me}
+                        users={editUsers}
+                        fieldName="locations"
+                      />
+                    }
+                  />
+                ) : (
+                  ''
+                )}
                 {stixRelation.relationship_type === 'indicates' ? (
                   <Field
                     name="expiration"

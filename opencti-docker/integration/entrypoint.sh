@@ -5,10 +5,10 @@
 
 # Install Python modules
 cd /opt/opencti/integration
-sudo -E -H -u ${RUN_USER} pip3 install -r requirements.txt
+pip3 install -r requirements.txt
 
 # Install Python modules of each connectors
-sudo -E -H -u ${RUN_USER} find connectors -name requirements.txt -exec pip3 install -r {} \;
+find connectors -name requirements.txt -exec pip3 install -r {} \;
 
 # Check configuration
 while [ ! -f /opt/opencti/shared_config/token ]
@@ -29,11 +29,6 @@ sed -i -e "s/REPLACE_API_KEY/$(cat /opt/opencti/shared_config/token)/g" config.y
 sed -i -e "s/OPENCTI_PORT/${OPENCTI_PORT}/g" config.yml.sample
 cp config.yml.sample /opt/opencti/shared_config/config_integration.yml
 
-# Chown the application
-if [ $RUN_USER != "root" ]; then
-  chown -R ${RUN_USER} /opt/opencti
-fi
-
 # Start
 cd /opt/opencti/integration
-sudo -E -H -u ${RUN_USER} python3 connectors_scheduler.py
+python3 connectors_scheduler.py

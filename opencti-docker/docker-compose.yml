@@ -28,7 +28,6 @@ services:
   worker:
     image: opencti/worker
     environment:
-      - RUN_USER=root
       - OPENCTI_PORT=8080
     volumes:
       - "./config:/opt/opencti/shared_config:rw"
@@ -38,7 +37,6 @@ services:
   integration:
     image: opencti/integration
     environment:
-      - RUN_USER=root
       - OPENCTI_PORT=8080
     volumes:
       - "./config:/opt/opencti/shared_config:rw"
@@ -48,7 +46,6 @@ services:
   opencti:
     image: opencti/platform
     environment:
-      - RUN_USER=root
       - APP__PORT=8080
       - APP__LOGS=./logs
       - APP__CONNECTORS=./integration/connectors

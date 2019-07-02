@@ -28,9 +28,9 @@ fi
 
 # Upgrade schema & do migrations
 cd /opt/opencti
-sudo -E -H -u ${RUN_USER} npm run schema
-TOKEN=`sudo -E -H -u ${RUN_USER} npm run migrate | grep "Token for user admin:" | awk '{split($0,a,": "); print a[2]}'`
+npm run schema
+TOKEN=`npm run migrate | grep "Token for user admin:" | awk '{split($0,a,": "); print a[2]}'`
 [ -n "$TOKEN" ] && echo $TOKEN > /opt/opencti/shared_config/token
 
 # Start
-sudo -E -H -u ${RUN_USER} node dist/server.js
+node dist/server.js

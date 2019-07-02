@@ -8,7 +8,7 @@ import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { Domain, Person } from '@material-ui/icons';
+import { Domain, Person, Map } from '@material-ui/icons';
 import { Gauge, TargetVariant } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
@@ -71,6 +71,24 @@ class OrganizationKnowledgeBar extends Component {
             <ListItemText
               primary={t('Sectors')}
               secondary={t('Related to this organization')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/entities/organizations/${organizationId}/knowledge/locations`}
+            selected={
+              location.pathname
+              === `/dashboard/entities/organizations/${organizationId}/knowledge/locations`
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Map />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Localization')}
+              secondary={t('Locations of this organization')}
             />
           </MenuItem>
           <MenuItem

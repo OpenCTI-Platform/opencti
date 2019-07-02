@@ -5,8 +5,8 @@ FROM ubuntu:18.04
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
 
 # Node v11
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl sudo rsyslog wget netcat
-RUN curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl rsyslog wget netcat
+RUN curl -sL https://deb.nodesource.com/setup_11.x | bash -
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
 
 # Download archive

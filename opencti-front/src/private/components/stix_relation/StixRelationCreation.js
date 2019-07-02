@@ -23,7 +23,7 @@ import { resolveRoles, resolveRelationsTypes } from '../../../utils/Relation';
 import ItemIcon from '../../../components/ItemIcon';
 import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
-import { countriesLinesSearchQuery } from '../country/CountriesLines';
+import { stixDomainEntitiesLinesSearchQuery } from '../stix_domain_entity/StixDomainEntitiesLines';
 import Autocomplete from '../../../components/Autocomplete';
 import DatePickerField from '../../../components/DatePickerField';
 
@@ -189,13 +189,14 @@ class StixRelationCreation extends Component {
       step: 0,
       existingRelations: [],
       locations: [],
-      currentType: '',
+      currentType: null,
     };
   }
 
   searchLocations(event) {
-    fetchQuery(countriesLinesSearchQuery, {
+    fetchQuery(stixDomainEntitiesLinesSearchQuery, {
       search: event.target.value,
+      types: ['region', 'country', 'city'],
     }).then((data) => {
       const locations = pipe(
         pathOr([], ['countries', 'edges']),
@@ -413,7 +414,8 @@ class StixRelationCreation extends Component {
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
-              {initialValues.relationship_type === 'targets'
+              {(initialValues.relationship_type === 'targets'
+                && this.state.currentType === null)
               || this.state.currentType === 'targets' ? (
                 <Field
                   name="locations"

@@ -221,8 +221,8 @@ export const stixDomainEntitiesLinesQuery = graphql`
 `;
 
 export const stixDomainEntitiesLinesSearchQuery = graphql`
-  query StixDomainEntitiesLinesSearchQuery($search: String) {
-    stixDomainEntities(search: $search) {
+  query StixDomainEntitiesLinesSearchQuery($search: String, $types: [String]) {
+    stixDomainEntities(search: $search, types: $types) {
       edges {
         node {
           id

@@ -2070,6 +2070,7 @@ type Query {
     search: String
     externalReferenceId: String
     type: String
+    types: [String]
   ): StixDomainEntityConnection @auth
   stixDomainEntitiesTimeSeries(
     type: String

@@ -1,6 +1,6 @@
 import elasticsearch from 'elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import { pipe, map, append, head, assoc } from 'ramda';
+import { map, append, assoc } from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
 

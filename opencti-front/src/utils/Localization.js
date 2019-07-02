@@ -311,6 +311,7 @@ const i18n = {
       'Belonging to this organization': 'Appartenant à cette organisa.',
       'Attributed to this organization': 'Attribué à cette organisation',
       'Targeting this organization': 'Ciblant cette organisation',
+      'Locations of this organization': 'Lieux de cette organisation',
       'Localized in this country': 'Localisé dans ce pays',
       'Targeting this country': 'Ciblant ce pays',
       'Attributed to this country': 'Attribué à ce pays',

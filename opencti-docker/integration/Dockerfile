@@ -5,7 +5,7 @@ FROM ubuntu:18.04
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade
 
 # Setup install environment and OpenCTI dependencies
-RUN DEBIAN_FRONTEND=noninteractive apt-get -y install python3 python3-pip curl sudo rsyslog wget netcat locales
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y install python3 python3-pip curl rsyslog wget netcat locales
 
 # Download archive
 RUN wget -O /opt/opencti.tar.gz https://releases.opencti.io/opencti-20190702.tar.gz
