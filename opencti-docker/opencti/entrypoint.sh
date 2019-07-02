@@ -21,11 +21,6 @@ while ! nc -z ${RABBITMQ__HOSTNAME} 5672; do
   sleep 2
 done
 
-# Chown the application
-if [ $RUN_USER != "root" ]; then
-  chown -R ${RUN_USER} /opt/opencti
-fi
-
 # Upgrade schema & do migrations
 cd /opt/opencti
 npm run schema

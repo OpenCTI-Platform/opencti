@@ -17,7 +17,7 @@ do
   sleep 2
 done
 
-while ! nc -z opencti ${OPENCTI_PORT}; do
+while ! nc -z ${OPENCTI_HOSTNAME} ${OPENCTI_PORT}; do
   echo "Waiting OpenCTI GraphQL to launch..."
   sleep 2
 done

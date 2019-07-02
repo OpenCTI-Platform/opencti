@@ -40,7 +40,7 @@ $ npm run migrate
 
 ## Start the application
 ```bash
-$ node dist/server.js
+$ node dist/server.js &
 ```
 
 The default username is *admin@opencti.io* and the password is *admin*. Login and get the administrator token in your profile.
@@ -53,22 +53,21 @@ $ cp config.yml.sample config.yml
 
 Change the *config.yml* file according to your OpenCTI token, ElasticSearch, Grakn and RabbitMQ configuration.
 
-## Configure the integration
-```bash
-$ cd integration
-$ cp config.yml.sample config.yml
-```
-
-Change the *config.yml* file according to your OpenCTI instance configuration.
-
 ## Start the workers
 ```bash
 $ python3 worker_export.py &
 $ python3 worker_import.py &
 ```
 
+## Configure the integration
+```bash
+$ cd ../integration
+$ cp config.yml.sample config.yml
+```
+
+Change the *config.yml* file according to your OpenCTI instance configuration.
+
 ## Start the integration
 ```bash
 $ python3 connectors_scheduler.py &
 ```
-
