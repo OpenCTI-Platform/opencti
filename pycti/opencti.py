@@ -8,7 +8,7 @@ import json
 import uuid
 import base64
 
-from pycti.stix2 import Stix2
+from pycti.opencti_stix2 import OpenCTIStix2
 
 
 class OpenCTI:
@@ -574,9 +574,22 @@ class OpenCTI:
             query StixObservable($id: String!) {
                 stixObservable(id: $id) {
                     id
+                    name
+                    description
                     stix_id
                     entity_type
                     observable_value
+                    created_at
+                    updated_at
+                    stixRelations {
+                        edges {
+                            node {
+                                id
+                                first_seen
+                                last_seen
+                            }
+                        }
+                    }
                 }
             }
         """
@@ -2781,7 +2794,10 @@ class OpenCTI:
                     stix_id
                     entity_type
                     name
+                    description
                     observable_value
+                    created_at
+                    updated_at
                     createdByRef {
                         node {
                             id
@@ -2863,7 +2879,10 @@ class OpenCTI:
                             stix_id
                             entity_type
                             name
+                            description
                             observable_value
+                            created_at
+                            updated_at
                             createdByRef {
                                 node {
                                     id
@@ -2934,7 +2953,10 @@ class OpenCTI:
                             stix_id
                             entity_type
                             name
+                            description
                             observable_value
+                            created_at
+                            updated_at
                             createdByRef {
                                 node {
                                     id
@@ -3517,16 +3539,16 @@ class OpenCTI:
         with open(os.path.join(file_path)) as file:
             data = json.load(file)
 
-        stix2 = Stix2(self)
+        stix2 = OpenCTIStix2(self)
         stix2.import_bundle(data, update, types)
 
     def stix2_import_bundle(self, json_data, update=False, types=[]):
         data = json.loads(json_data)
-        stix2 = Stix2(self)
+        stix2 = OpenCTIStix2(self)
         stix2.import_bundle(data, update, types)
 
     def stix2_export_entity(self, entity_type, entity_id, mode='simple'):
-        stix2 = Stix2(self)
+        stix2 = OpenCTIStix2(self)
         bundle = {
             'type': 'bundle',
             'id': 'bundle--' + str(uuid.uuid4()),
@@ -3541,7 +3563,7 @@ class OpenCTI:
         return bundle
 
     def stix2_export_bundle(self, types=[]):
-        stix2 = Stix2(self)
+        stix2 = OpenCTIStix2(self)
         uuids = []
         bundle = {
             'type': 'bundle',

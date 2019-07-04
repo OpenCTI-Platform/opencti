@@ -4,11 +4,15 @@ import time
 import datetime
 import datefinder
 import dateutil.parser
+import pytz
 
 datefinder.ValueError = ValueError, OverflowError
+from stix2 import ObjectPath, ObservationExpression, EqualityComparisonExpression, HashConstant
+
+utc = pytz.UTC
 
 
-class Stix2:
+class OpenCTIStix2:
     """
         Python API for Stix2 in OpenCTI
         :param opencti: OpenCTI instance
@@ -29,7 +33,7 @@ class Stix2:
     def filter_objects(self, uuids, objects):
         result = []
         for object in objects:
-            if object['id'] not in uuids:
+            if 'id' in object and object['id'] not in uuids:
                 result.append(object)
         return result
 
@@ -59,6 +63,7 @@ class Stix2:
             created_by_ref['created'] = self.format_date(entity_created_by_ref['created'])
             created_by_ref['modified'] = self.format_date(entity_created_by_ref['modified'])
             if self.not_empty(entity_created_by_ref['alias']): created_by_ref['x_opencti_aliases'] = entity_created_by_ref['alias']
+            created_by_ref['x_opencti_identity_type'] = entity_created_by_ref['entity_type']
             created_by_ref['x_opencti_id'] = entity_created_by_ref['id']
 
             stix_object['created_by_ref'] = created_by_ref['id']
@@ -129,7 +134,9 @@ class Stix2:
 
         result.append(stix_object)
 
-        uuids = [x['id'] for x in result]
+        uuids = []
+        for x in result:
+            uuids.append(x['id'])
         if mode == 'full' and len(objects_to_get) > 0:
             for entity_object in objects_to_get:
                 entity_object_data = None
@@ -250,6 +257,7 @@ class Stix2:
         return result
 
     def import_object(self, stix_object, update=False):
+        self.opencti.log('Importing a ' + stix_object['type'])
         # Reports
         reports = {}
         # Created By Ref
@@ -396,6 +404,7 @@ class Stix2:
             'attack-pattern': self.create_attack_pattern,
             'course-of-action': self.create_course_of_action,
             'report': self.create_report,
+            'indicator': self.create_indicator,
         }
         do_import = importer.get(stix_object['type'], lambda stix_object, update: self.unknown_type(stix_object, update))
         stix_object_result = do_import(stix_object, update)
@@ -816,8 +825,7 @@ class Stix2:
             stix_object['published'] if 'published' in stix_object else '',
             stix_object['x_opencti_report_class'] if 'x_opencti_report_class' in stix_object else 'external',
             stix_object['x_opencti_object_status'] if 'x_opencti_object_status' in stix_object else 0,
-            stix_object[
-                'x_opencti_source_confidence_level'] if 'x_opencti_source_confidence_level' in stix_object else 3,
+            stix_object['x_opencti_source_confidence_level'] if 'x_opencti_source_confidence_level' in stix_object else 3,
             stix_object['x_opencti_graph_data'] if 'x_opencti_graph_data' in stix_object else '',
             stix_object['x_opencti_id'] if 'x_opencti_id' in stix_object else None,
             stix_object['id'] if 'id' in stix_object else None,
@@ -826,12 +834,39 @@ class Stix2:
         )
 
     def export_stix_observable(self, entity):
-        stix_observable = {
-            'id': entity['stix_id'],
-            'type': entity['entity_type'],
-            'value': entity['observable_value']
-        }
-        return self.prepare_export(entity, stix_observable)
+        stix_observable = dict()
+        stix_observable['id'] = entity['stix_id']
+        stix_observable['type'] = 'indicator'
+        stix_observable['name'] = 'Indicator'
+        if self.not_empty(entity['description']): stix_observable['description'] = entity['description']
+        stix_observable['labels'] = ['indicator']
+        stix_observable['created'] = self.format_date(entity['created_at'])
+        stix_observable['modified'] = self.format_date(entity['updated_at'])
+        stix_observable['x_opencti_observable_type'] = entity['entity_type']
+        stix_observable['x_opencti_observable_value'] = entity['observable_value']
+        stix_observable['x_opencti_id'] = entity['id']
+        if len(entity['stixRelations']) > 0:
+            first_seen = utc.localize(datetime.datetime.utcnow())
+            for relation in entity['stixRelations']:
+                relation_first_seen = dateutil.parser.parse(relation['first_seen'])
+                if relation_first_seen < first_seen:
+                    first_seen = relation_first_seen
+            stix_observable['valid_from'] = self.format_date(first_seen)
+        final_stix_observable = self.prepare_observable(entity, stix_observable)
+        return self.prepare_export(entity, final_stix_observable)
+
+    def create_indicator(self, stix_object, update=False):
+        if 'x_opencti_observable_type' in stix_object and 'x_opencti_observable_value' in stix_object:
+            return self.opencti.create_stix_observable_if_not_exists(
+                stix_object['x_opencti_observable_type'],
+                stix_object['x_opencti_observable_value'],
+                self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+                stix_object['id'] if 'id' in stix_object else None,
+                stix_object['created'] if 'created' in stix_object else None,
+                stix_object['modified'] if 'modified' in stix_object else None,
+            )
+        # TODO: Implement extraction of observables from STIX2 patterns
+        return None
 
     def export_stix_relation(self, entity):
         stix_relation = dict()
@@ -851,6 +886,7 @@ class Stix2:
         if self.not_empty(entity['weight']): stix_relation['x_opencti_weight'] = entity['weight']
         if self.not_empty(entity['role_played']): stix_relation['x_opencti_role_played'] = entity['role_played']
         if self.not_empty(entity['score']): stix_relation['x_opencti_score'] = entity['score']
+        stix_relation['x_opencti_id'] = entity['id']
         return self.prepare_export(entity, stix_relation)
 
     def import_relationship(self, stix_relation, update=False):
@@ -862,7 +898,7 @@ class Stix2:
         # Check entities
         if stix_relation['source_ref'] in self.mapping_cache:
             source_id = self.mapping_cache[stix_relation['source_ref']]['id']
-            source_type = self.mapping_cache[stix_relation['source_ref']]['type']
+            source_type = self.mapping_cache[stix_relation['source_ref']]['type'] if stix_relation['relationship_type'] != 'indicates' else 'observable'
         else:
             if 'x_opencti_source_ref' in stix_relation:
                 stix_object_result = self.opencti.get_stix_domain_entity_by_id(stix_relation['x_opencti_source_ref'])
@@ -870,7 +906,7 @@ class Stix2:
                 stix_object_result = self.opencti.get_stix_domain_entity_by_stix_id(stix_relation['source_ref'])
             if stix_object_result is not None:
                 source_id = stix_object_result['id']
-                source_type = stix_object_result['entity_type']
+                source_type = stix_object_result['entity_type'] if stix_relation['relationship_type'] != 'indicates' else 'observable'
             else:
                 self.opencti.log('Source ref of the relationship not found, doing nothing...')
                 return None
@@ -1032,6 +1068,23 @@ class Stix2:
             return self.get_author('The MITRE Corporation')
         return None
 
+    def prepare_observable(self, entity, stix_observable):
+        if 'file' in entity['entity_type']:
+            observable_type = 'file'
+        elif entity['entity_type'] == 'domain':
+            observable_type = 'domain-name'
+        else:
+            observable_type = entity['entity_type']
+
+        if observable_type == 'file':
+            lhs = ObjectPath(observable_type, ['hashes', entity['entity_type'].split('-')[1].upper()])
+            ece = ObservationExpression(EqualityComparisonExpression(lhs, HashConstant(entity['observable_value'], entity['entity_type'].split('-')[1].upper())))
+        if observable_type == 'ipv4-addr' or observable_type == 'ipv6-addr' or observable_type == 'domain_name' or observable_type == 'url':
+            lhs = ObjectPath(observable_type, ["value"])
+            ece = ObservationExpression(EqualityComparisonExpression(lhs, entity['observable_value']))
+        stix_observable['pattern'] = str(ece)
+        return stix_observable
+
     def get_author(self, name):
         if name in self.mapping_cache:
             return self.mapping_cache[name]
@@ -1041,6 +1094,8 @@ class Stix2:
             return author_id
 
     def format_date(self, date):
+        if isinstance(date, datetime.date):
+            return date.isoformat(timespec='milliseconds').replace('+00:00', 'Z')
         if date is not None:
             return dateutil.parser.parse(date).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
         else:
