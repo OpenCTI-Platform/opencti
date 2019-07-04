@@ -5,7 +5,7 @@
 [![GitHub release](https://img.shields.io/github/release/OpenCTI-Platform/client-python.svg)](https://github.com/OpenCTI-Platform/client-python/releases/latest)
 [![Slack Status](https://slack.luatix.org/badge.svg)](https://slack.luatix.org)
 
-The official OpenCTI Python client helps developers to use the OpenCTI API by providing easy to use methods and utils.
+The official OpenCTI Python client helps developers to use the OpenCTI API by providing easy to use methods and utils. This client is also used by some OpenCTI components.
 
 ## Python client
 
@@ -17,11 +17,11 @@ $ pip3 install pycti
 
 ### Client usage
 
-To learn about how to use the OpenCTI Python client and read some examples and cases, refer to [the client documentation](http://xxxxxxx).
+To learn about how to use the OpenCTI Python client and read some examples and cases, refer to [the client documentation](https://opencti-client-for-python.readthedocs.io/en/latest).
 
 ### API reference
 
-To learn about the methods available for executing queries and retrieving their answers, refer to [the client API Reference](http://xxxxx).
+To learn about the methods available for executing queries and retrieving their answers, refer to [the client API Reference](https://opencti-client-for-python.readthedocs.io/en/latest).
 
 ## About
 
