@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
-import TruncatedMarkdown from "../../../components/TruncatedMarkdown";
+import ExpandableMarkdown from "../../../components/ExpandableMarkdown";
 
 const styles = theme => ({
   paper: {
@@ -56,7 +56,7 @@ class ReportOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <TruncatedMarkdown
+          <ExpandableMarkdown
             className="markdown"
             source={report.description}
             limit={250}
