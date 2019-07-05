@@ -9,7 +9,7 @@ from opencti import OpenCTI
 config = yaml.load(open(os.path.dirname(__file__) + '/../config.yml'))
 
 # File to import
-file_to_import = config['mitre']['repository_path_cti'] + '/enterprise-attack/enterprise-attack.json'
+file_to_import = config['mitre']['repository_path_cti'] + '/apt1.json'
 
 # OpenCTI initialization
 opencti = OpenCTI(config['opencti']['api_url'], config['opencti']['api_key'], config['opencti']['log_file'], config['opencti']['verbose'])

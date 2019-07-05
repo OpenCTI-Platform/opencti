@@ -12,7 +12,7 @@ except ImportError:
     print("warning: pypandoc module not found, could not convert Markdown to RST")
     read_md = lambda f: open(f, 'r').read()
 
-VERSION = "1.2.4"
+VERSION = "1.2.5"
 
 class VerifyVersionCommand(install):
     description = 'verify that the git tag matches our version'
@@ -50,7 +50,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     include_package_data=True,
-    install_requires=['requests', 'PyYAML', 'python-dateutil', 'datefinder'],
+    install_requires=['requests', 'PyYAML', 'python-dateutil', 'datefinder', 'stix2', 'pytz'],
     cmdclass={
         'verify': VerifyVersionCommand,
     }
