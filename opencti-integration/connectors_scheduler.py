@@ -61,18 +61,29 @@ class ConnectorsScheduler:
                 if connector['config'] is not None:
                     connector_config = json.loads(base64.b64decode(connector['config']))
                     config = self.config
-                    config[connector['identifier']] = connector_config
 
+                    # First time, load code, create instance
                     if connector['identifier'] not in self.connectors:
+                        config[connector['identifier']] = connector_config
                         connector_module = importlib.import_module('connectors.' + connector['identifier'] + '.' + connector['identifier'])
                         connector_class = getattr(connector_module, connector['identifier'].capitalize())
                         self.connectors[connector['identifier']] = {"config": config, "instance": connector_class(config, self)}
                         self.logger.log('Connector ' + connector['identifier'] + ' initialized')
+                    # Code is already there, just reconfigure
                     else:
+                        # If cron changed, reschedule
+                        current_config = self.connectors[connector['identifier']]['instance'].get_config()
+                        if connector_config['cron'] != current_config['cron']:
+                            self.logger.log('Connector ' + connector['identifier'] + ' has to be rescheduled')
+                            self.schedule_connectors()
+
+                        # Reconfigure
+                        config[connector['identifier']] = connector_config
                         self.connectors[connector['identifier']]['instance'].set_config(config)
                         self.connectors[connector['identifier']]['config'] = config
                         self.logger.log('Connector ' + connector['identifier'] + ' configured')
 
+                    # Manual trigger of the connector
                     if 'triggered' in connector_config and connector_config['triggered'] is True:
                         connector_config['triggered'] = False
                         self.opencti.update_connector_config(connector['identifier'], connector_config)
@@ -88,26 +99,32 @@ class ConnectorsScheduler:
         except Exception as e:
             self.logger.log('Unable to run ' + identifier + ': {' + str(e) + '}')
 
-    def run_connectors(self):
-        self.logger.log('Starting connectors')
+    def schedule_connectors(self):
+        schedule.clear()
+        self.logger.log('Scheduling connectors')
         schedule.every(1).minutes.do(self.init_connectors)
         for identifier, connector in self.connectors.items():
             connector_config = connector['instance'].get_config()
             if connector_config['cron'] == 'realtime':
                 schedule.every(1).minutes.do(self.run_connector, identifier=identifier)
+            elif connector_config['cron'] == 'hourly':
+                schedule.every(1).hours.do(self.run_connector, identifier=identifier)
             elif connector_config['cron'] == 'daily':
                 schedule.every().day.at("02:30").do(self.run_connector, identifier=identifier)
             elif connector_config['cron'] == 'weekly':
                 schedule.every().wednesday.at("04:30").do(self.run_connector, identifier=identifier)
             elif connector_config['cron'] == 'monthly':
                 schedule.every(30).day.at("04:30").do(self.run_connector, identifier=identifier)
+
+    def run(self):
         while True:
             schedule.run_pending()
             time.sleep(1)
 
     def init(self):
         self.init_connectors()
-        self.run_connectors()
+        self.schedule_connectors()
+        self.run()
 
 
 if __name__ == '__main__':
