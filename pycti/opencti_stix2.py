@@ -969,7 +969,7 @@ class OpenCTIStix2:
         )
         if stix_relation_result is not None:
             stix_relation_result_id = stix_relation_result['id']
-            self.mapping_cache[stix_relation['id']] = stix_relation_result_id
+            self.mapping_cache[stix_relation['id']] = {'id': stix_relation_result_id}
         else:
             return None
 
