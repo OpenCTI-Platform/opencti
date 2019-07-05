@@ -949,7 +949,7 @@ class OpenCTIStix2:
         if date is None:
             date = datetime.datetime.utcnow().replace(microsecond=0, tzinfo=datetime.timezone.utc).isoformat()
 
-        stix_relation = self.opencti.create_relation_if_not_exists(
+        stix_relation_result = self.opencti.create_relation_if_not_exists(
             source_id,
             source_type,
             target_id,
@@ -967,8 +967,9 @@ class OpenCTIStix2:
             stix_relation['created'] if 'created' in stix_relation else None,
             stix_relation['modified'] if 'modified' in stix_relation else None,
         )
-        if stix_relation is not None:
-            stix_relation_id = stix_relation['id']
+        if stix_relation_result is not None:
+            stix_relation_result_id = stix_relation_result['id']
+            self.mapping_cache[stix_relation['id']] = stix_relation_result_id
         else:
             return None
 
@@ -1040,7 +1041,7 @@ class OpenCTIStix2:
                 # Add refs to report
                 self.opencti.add_object_ref_to_report_if_not_exists(report_id, source_id)
                 self.opencti.add_object_ref_to_report_if_not_exists(report_id, target_id)
-                self.opencti.add_object_ref_to_report_if_not_exists(report_id, stix_relation_id)
+                self.opencti.add_object_ref_to_report_if_not_exists(report_id, stix_relation_result_id)
 
     def resolve_author(self, title):
         if 'fireeye' in title.lower() or 'mandiant' in title.lower():

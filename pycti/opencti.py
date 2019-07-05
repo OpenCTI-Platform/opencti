@@ -91,6 +91,14 @@ class OpenCTI:
             object_result = self.search_stix_domain_entity_by_name(name, type)
         return object_result
 
+    def check_existing_report(self, stix_id=None, name=None, published=None):
+        object_result = None
+        if stix_id is not None:
+            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+        if object_result is None and name is not None and published is not None:
+            object_result = self.search_report_by_name_and_date(name, published)
+        return object_result
+
     def update_settings_field(self, id, key, value):
         self.log('Updating settings field ' + key + ' of ' + id + '...')
         query = """
@@ -254,6 +262,29 @@ class OpenCTI:
 
     def search_stix_domain_entity_by_name(self, name_or_alias, type='Stix-Domain-Entity'):
         result = self.search_stix_domain_entities_by_name(name_or_alias, type)
+        if len(result) > 0:
+            return result[0]
+        else:
+            return None
+
+    def search_reports_by_name_and_date(self, name, published):
+        query = """
+               query Reports($name: String, $published: DateTime) {
+                   reports(name: $name, published: $published) {
+                       edges {
+                           node {
+                               id
+                               entity_type
+                           }
+                       }
+                   }
+               }
+           """
+        result = self.query(query, {'name': name, 'published': published})
+        return self.parse_multiple(result['data']['reports'])
+
+    def search_report_by_name_and_date(self, name, published):
+        result = self.search_reports_by_name_and_date(name, published)
         if len(result) > 0:
             return result[0]
         else:
@@ -2731,7 +2762,7 @@ class OpenCTI:
                                     modified=None
                                     ):
         if stix_id is not None:
-            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+            object_result = self.check_existing_report(stix_id, name, published)
         else:
             object_result = None
         if object_result is not None:
