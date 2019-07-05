@@ -7,7 +7,7 @@ export const importData = async (type, file) => {
     JSON.stringify({
       type,
       file_name: file.name,
-      content: file.base64,
+      content: file.base64
     })
   );
   return true;

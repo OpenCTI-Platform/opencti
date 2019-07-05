@@ -18,7 +18,7 @@ class GraknDumper:
         self.session = self.grakn.session(keyspace='grakn')
 
         # Open the dump file
-        self.dump_file = open(self.config['dumper']['file'], 'w')
+        self.dump_file = open('./dump.gql', 'w')
 
         # Entities
         self.entities = {}

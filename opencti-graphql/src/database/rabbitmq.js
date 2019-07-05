@@ -1,4 +1,5 @@
 import amqp from 'amqplib';
+import axios from 'axios';
 import conf, { logger } from '../config/conf';
 
 export const send = (exchangeName, key, message) => {
@@ -25,4 +26,22 @@ export const send = (exchangeName, key, message) => {
         });
       });
   }
+};
+
+export const statsQueues = () => {
+  const baseURL = `http${
+    conf.get('rabbitmq:management_ssl') === true ? 's' : ''
+  }://${conf.get('rabbitmq:hostname')}:${conf.get('rabbitmq:port_management')}`;
+  return axios
+    .get('/api/queues', {
+      baseURL,
+      withCredentials: true,
+      auth: {
+        username: conf.get('rabbitmq:username'),
+        password: conf.get('rabbitmq:password')
+      }
+    })
+    .then(response => {
+      return response.data;
+    });
 };

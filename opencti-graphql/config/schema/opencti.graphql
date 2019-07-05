@@ -85,6 +85,21 @@ type EditUserContext {
 }
 
 ### Stats
+type DeliverDetails {
+  rate: Int
+}
+type MessagesStats {
+  deliver_details: DeliverDetails
+}
+type QueueStats {
+  name: String
+  messages: Int
+  messages_ready: Int
+  messages_unacknowledged: Int
+  consumers: Int,
+  message_stats: MessagesStats
+}
+
 enum StatsOperation {
   count
   sum
@@ -2057,6 +2072,7 @@ type Query {
   settings: Settings
   # Connectors
   connectors: [Connector] @auth(for: ROLE_ADMIN)
+  connectorsStats: [QueueStats] @auth(for: ROLE_ADMIN)
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(

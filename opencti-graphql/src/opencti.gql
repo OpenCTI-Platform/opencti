@@ -765,9 +765,26 @@ define
     Mutex sub Stix-Observable;
 
     File sub Stix-Observable;
+    File-Name sub File;
+    File-Path sub File;
     File-MD5 sub File;
     File-SHA1 sub File;
     File-SHA256 sub File;
+
+    Registry-Key sub Stix-Observable;
+    Registry-Key-Value sub Registry-Key;
+
+    PDB-Path sub Stix-Observable;
+
+    Windows-Service sub Stix-Observable;
+    Windows-Service-Name sub Windows-Service;
+    Windows-Service-Display-Name sub Windows-Service;
+
+    Windows-Scheduled-Task sub Stix-Observable;
+
+    X509-Certificate sub Stix-Observable;
+    X509-Certificate-Issuer sub X509-Certificate;
+    X509-Certificate-Serial-Number sub X509-Certificate;
 
     Stix-Observable-Data sub entity,
     abstract,

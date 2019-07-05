@@ -110,7 +110,7 @@ class StixObservablesRightBar extends Component {
             classes={{ root: classes.item }}
           >
             <Checkbox checked={types.includes('Email')} disableRipple={true} />
-            <ListItemText primary={t('Email addresses')} />
+            <ListItemText primary={t('Emails')} />
           </ListItem>
           <ListItem
             dense={true}
@@ -128,7 +128,7 @@ class StixObservablesRightBar extends Component {
             classes={{ root: classes.item }}
           >
             <Checkbox checked={types.includes('File')} disableRipple={true} />
-            <ListItemText primary={t('File hashes')} />
+            <ListItemText primary={t('Files')} />
           </ListItem>
         </List>
         <List

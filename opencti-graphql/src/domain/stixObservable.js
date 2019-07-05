@@ -156,7 +156,7 @@ export const addStixObservable = async (user, stixObservable) => {
     has stix_id "${
       stixObservable.stix_id
         ? escapeString(stixObservable.stix_id)
-        : `observable--${uuid()}`
+        : `indicator--${uuid()}`
     }",
     has entity_type "${escapeString(stixObservable.type.toLowerCase())}",
     has name "",

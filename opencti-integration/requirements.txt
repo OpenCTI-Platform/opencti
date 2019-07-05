@@ -3,3 +3,4 @@ pycti
 schedule
 python-dateutil
 PyYAML
+pika

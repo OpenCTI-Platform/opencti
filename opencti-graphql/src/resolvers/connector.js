@@ -1,8 +1,9 @@
-import { getConnectors, updateConfig } from '../domain/connector';
+import { getConnectors, updateConfig, getStatistics } from '../domain/connector';
 
 const connectorResolvers = {
   Query: {
-    connectors: () => getConnectors()
+    connectors: () => getConnectors(),
+    connectorsStats: () => getStatistics()
   },
   Mutation: {
     connectorConfig: (_, { identifier, config }) =>

@@ -2,3 +2,9 @@ opencti:
   api_url: 'http://REPLACE_API_URL'
   api_key: 'REPLACE_API_KEY'
   verbose: true
+
+rabbitmq:
+  hostname: 'localhost'
+  port: 5672
+  username: 'guest'
+  password: 'guest'

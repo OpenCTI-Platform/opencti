@@ -37,13 +37,13 @@ class Footer extends React.Component {
           </a>
           <div>
             <h5>Docs</h5>
-            <a href={this.docUrl('installation/installation-docker')}>
+            <a href={this.docUrl('installation/docker')}>
               Install using Docker
             </a>
-            <a href={this.docUrl('usage/usage-introduction')}>
+            <a href={this.docUrl('usage/overview')}>
               Usage introduction
             </a>
-            <a href={this.docUrl('development/development-docker')}>
+            <a href={this.docUrl('development/installation')}>
               Development environment
             </a>
           </div>

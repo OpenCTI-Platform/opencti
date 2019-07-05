@@ -8,7 +8,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y upgrade && apt-g
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install python3 python3-pip curl rsyslog wget netcat locales
 
 # Download archive
-RUN wget -O /opt/opencti.tar.gz https://releases.opencti.io/opencti-20190702.tar.gz
+RUN wget -O /opt/opencti.tar.gz https://releases.opencti.io/opencti-20190704.tar.gz
 RUN cd /opt && tar xvfz opencti.tar.gz
 
 # Set the locale
@@ -19,6 +19,12 @@ ENV LC_ALL en_US.UTF-8
 
 # Prepare configuration
 RUN cd /opt/opencti/integration && rm -f config.yml && ln -s /opt/opencti/shared_config/config_integration.yml config.yml
+
+# Install Python modules
+RUN cd /opt/opencti/integration && pip3 install -r requirements.txt
+
+# Install Python modules of each connectors
+RUN cd /opt/opencti/integration && find connectors -name requirements.txt -exec pip3 install -r {} \;
 
 # Expose and entrypoint
 COPY entrypoint.sh /
