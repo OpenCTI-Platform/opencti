@@ -2413,6 +2413,8 @@ type Query {
     authorId: String
     reportClass: String
     search: String
+    name: String
+    published: DateTime
   ): ReportConnection @auth
   reportsTimeSeries(
     objectId: String

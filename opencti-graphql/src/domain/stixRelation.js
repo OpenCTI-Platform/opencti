@@ -558,7 +558,7 @@ export const addStixRelation = async (user, stixRelation) => {
     insert $stixRelation(${escape(stixRelation.fromRole)}: $from, ${escape(
     stixRelation.toRole
   )}: $to) 
-    isa ${escape(stixRelation.relationship_type)},
+    isa ${escape(stixRelation.relationship_type)}, 
     has internal_id "${internalId}",
     has relationship_type "${escapeString(
       stixRelation.relationship_type.toLowerCase()

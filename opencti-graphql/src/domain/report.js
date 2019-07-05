@@ -37,6 +37,14 @@ export const findAll = args => {
       'x'
     );
   }
+  if (args.name && args.published) {
+    return paginate(
+      `match $r isa Report, has name "${escapeString(
+        args.name
+      )}", has published ${prepareDate(args.published)}`,
+      args
+    );
+  }
   return elPaginate('stix-domain-entities', assoc('type', 'report', args));
   /*
   return paginate(
