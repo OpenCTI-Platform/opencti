@@ -428,7 +428,10 @@ class OpenCTIStix2:
 
             # Update created by ref
             if created_by_ref_id is not None and stix_object['type'] != 'marking-definition':
-                self.opencti.update_stix_domain_entity_created_by_ref(stix_object_result['id'], created_by_ref_id)
+                if stix_object['type'] == 'indicator':
+                    self.opencti.update_stix_observable_created_by_ref(stix_object_result['id'], created_by_ref_id)
+                else:
+                    self.opencti.update_stix_domain_entity_created_by_ref(stix_object_result['id'], created_by_ref_id)
             # Add marking definitions
             for marking_definition_id in marking_definitions_ids:
                 self.opencti.add_marking_definition_if_not_exists(stix_object_result['id'], marking_definition_id)
@@ -448,9 +451,15 @@ class OpenCTIStix2:
         return stix_object_result
 
     def create_marking_definition(self, stix_object, update=False):
+        definition_type = stix_object['definition_type']
+        definition = stix_object['definition'][stix_object['definition_type']]
+        if stix_object['definition_type'] == 'tlp':
+            definition_type = 'TLP'
+            definition = 'TLP:' + stix_object['definition'][stix_object['definition_type']].upper()
+
         return self.opencti.create_marking_definition_if_not_exists(
-            stix_object['definition_type'],
-            stix_object['definition'][stix_object['definition_type']],
+            definition_type,
+            definition,
             stix_object['x_opencti_level'] if 'x_opencti_level' in stix_object else 0,
             stix_object['x_opencti_color'] if 'x_opencti_color' in stix_object else None,
             stix_object['x_opencti_id'] if 'x_opencti_id' in stix_object else None,
