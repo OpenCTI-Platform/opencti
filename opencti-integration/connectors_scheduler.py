@@ -69,6 +69,7 @@ class ConnectorsScheduler:
                         connector_class = getattr(connector_module, connector['identifier'].capitalize())
                         self.connectors[connector['identifier']] = {"config": config, "instance": connector_class(config, self)}
                         self.logger.log('Connector ' + connector['identifier'] + ' initialized')
+                        self.schedule_connectors()
                     # Code is already there, just reconfigure
                     else:
                         # If cron changed, reschedule
