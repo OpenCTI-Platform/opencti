@@ -99,6 +99,9 @@ type QueueStats {
   consumers: Int,
   message_stats: MessagesStats
 }
+type QueuesStats {
+  queues: [QueueStats]
+}
 
 enum StatsOperation {
   count
@@ -2072,7 +2075,7 @@ type Query {
   settings: Settings
   # Connectors
   connectors: [Connector] @auth(for: ROLE_ADMIN)
-  connectorsStats: [QueueStats] @auth(for: ROLE_ADMIN)
+  connectorsStats: QueuesStats @auth(for: ROLE_ADMIN)
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(

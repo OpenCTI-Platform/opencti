@@ -33,7 +33,6 @@ class ConnectorsScheduler:
         )
 
     def send_stix2_bundle(self, bundle):
-        print(bundle)
         self.logger.log('Sending a message to the import workers')
         # Prepare
         message = {
@@ -102,7 +101,6 @@ class ConnectorsScheduler:
                 schedule.every().wednesday.at("04:30").do(self.run_connector, identifier=identifier)
             elif connector_config['cron'] == 'monthly':
                 schedule.every(30).day.at("04:30").do(self.run_connector, identifier=identifier)
-        self.run_connector('misp')
         while True:
             schedule.run_pending()
             time.sleep(1)

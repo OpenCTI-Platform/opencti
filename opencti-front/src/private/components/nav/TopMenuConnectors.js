@@ -37,6 +37,20 @@ class TopMenuConnectors extends Component {
         >
           {t('Data import')}
         </Button>
+        <Button
+          component={Link}
+          to="/dashboard/connectors/status"
+          variant={
+            location.pathname === '/dashboard/connectors/status' ? 'contained' : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/connectors/status' ? 'primary' : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Status')}
+        </Button>
       </div>
     );
   }

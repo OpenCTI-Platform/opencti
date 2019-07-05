@@ -62,5 +62,5 @@ export const updateConfig = async (identifier, config) => {
 
 export const getStatistics = async () => {
   const importStatistics = await statsQueues();
-  return importStatistics;
+  return {queues: importStatistics};
 };

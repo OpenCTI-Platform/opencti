@@ -473,6 +473,7 @@ const i18n = {
       Table: 'Tableau',
       'Line chart': 'Graphique linéaire',
       Timeline: 'Chronologie',
+      'Total pending inserts': "Nombre d'insertions en attente",
       'Context relations with threats': 'Relations de contexte avec des menaces',
       'Direct relations creations': 'Créations de relations directes',
       'Number of target relations': 'Nombre de relations de ciblage',

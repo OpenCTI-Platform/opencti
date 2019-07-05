@@ -47,6 +47,7 @@ import Organizations from './components/Organizations';
 import RootOrganization from './components/organization/Root';
 import Persons from './components/Persons';
 import Connectors from './components/Connectors';
+import ConnectorsStatus from './components/connector/ConnectorsStatus';
 import Settings from './components/Settings';
 import Users from './components/Users';
 import Groups from './components/Groups';
@@ -387,6 +388,13 @@ class Root extends Component {
                           path="/dashboard/connectors"
                           render={routeProps => (
                             <Connectors {...routeProps} type="importer" />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/connectors/status"
+                          render={routeProps => (
+                            <ConnectorsStatus {...routeProps} type="importer" />
                           )}
                         />
                         <BoundaryRoute
