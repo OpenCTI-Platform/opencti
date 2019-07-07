@@ -40,16 +40,20 @@ Any contribution is appreciated and many don’t imply coding. Contributions can
 
 For general suggestions or questions about the project or the documentation, you can open an issue on the repository with the label "question". We will answer as soon as possible. If you do not wish to publish on the repository, please see the section below [**"How can you get in touch for other questions?"**](#howcanyougetintouchforotherquestions).
 
-* Just using OpenCTI and opening issues if everything is not working as expect will be a huge step forward. See our section about opening an issue. To report a bug, please refer to the bug reporting [template](https://github.com/LuatixHQ/opencti/blob/master/.github/ISSUE_TEMPLATE/bug_report.md). To suggest a new feature, please fill in the feature request [form](https://github.com/LuatixHQ/opencti/blob/master/.github/ISSUE_TEMPLATE/feature_request.md).
+* Just using OpenCTI and opening issues if everything is not working as expect will be a huge step forward. See our section about opening an issue. To report a bug, please refer to the [bug reporting module](https://github.com/OpenCTI-Platform/opencti/issues/new?assignees=&labels=&template=bug_report.md&title=). To suggest a new feature, please fill in the feature request [form](https://github.com/OpenCTI-Platform/opencti/issues/new?assignees=&labels=&template=feature_request.md&title=).
 
-* Don’t hesitate to flag us an issue with the documentation or the templates if you find them incomplete or not clear enough. You can do that either by opening a [bug report](https://github.com/LuatixHQ/opencti/blob/master/.github/ISSUE_TEMPLATE/bug_report.md) or by sending us a message on our [Slack channel](https://slack.luatix.org/).
+* Don’t hesitate to flag us an issue with the documentation or the templates if you find them incomplete or not clear enough. You can do that either by opening a [bug report](https://github.com/OpenCTI-Platform/opencti/issues/new?assignees=&labels=&template=bug_report.md&title=) or by sending us a message on our [Slack channel](https://slack.luatix.org/).
 
 * You can look through opened issues and help triage them (ask for more information, suggest workarounds, suggest label, flag issues etc.)
 
 * If you are interested in contributing to developping OpenCTI, please refer to the [detailed documentation](https://opencti-platform.github.io/docs/introduction). It can be either a to fix an issue which is meaningful to you, or to develop a feature requested by others.
 
+* All commits messages must be formatted as: `[component] Message (#issuenumber)` where component should be:
+  * api
+  * frontend
+  * worker
+  * doc
 
 ### How can you get in touch for other questions ?
-
 
 If you need support or you wish to engage a discussion about the OpenCTI platform, feel free to join us on our [Slack channel](https://luatix.slack.com/). You can also send us an [email](mailto:contact@opencti.io).
