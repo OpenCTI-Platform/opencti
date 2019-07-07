@@ -1,7 +1,7 @@
 version: '3'
 services:
   grakn:
-    image: graknlabs/grakn:1.5.6
+    image: graknlabs/grakn:1.5.7
     ports:
       - 48555:48555 
     volumes:
@@ -17,6 +17,9 @@ services:
     restart: always
   rabbitmq:
     image: rabbitmq:management
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest    
     restart: always
   worker:
     image: opencti/worker
