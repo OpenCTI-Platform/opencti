@@ -2,13 +2,15 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import Toolbar from '@material-ui/core/Toolbar';
+import IconButton from '@material-ui/core/IconButton';
 import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
+import logo from '../../../resources/images/logo_text.png';
 import {
   Dashboard,
   Explore,
@@ -30,23 +32,13 @@ import inject18n from '../../../components/i18n';
 const styles = theme => ({
   drawerPaper: {
     minHeight: '100vh',
-    position: 'fixed',
     width: 60,
     backgroundColor: theme.palette.background.nav,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
   },
   drawerPaperOpen: {
     minHeight: '100vh',
-    position: 'fixed',
     width: 220,
     backgroundColor: theme.palette.background.nav,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
   },
   menuList: {
     height: '100%',
@@ -54,12 +46,13 @@ const styles = theme => ({
   lastItem: {
     bottom: 0,
   },
-  logoContainer: {
-    margin: '6px 20px 0px -5px',
+  logoButton: {
+    marginLeft: -23,
+    marginRight: 20,
   },
   logo: {
     cursor: 'pointer',
-    width: 35,
+    height: 35,
   },
   toolbar: theme.mixins.toolbar,
 });
@@ -74,135 +67,74 @@ class LeftBar extends Component {
     this.setState({ open: !this.state.open });
   }
 
-  handleClickAway() {
-    if (this.state.open) {
-      this.toggle();
-    }
-  }
-
   render() {
     const {
       t, location, classes, me,
     } = this.props;
     return (
-      <ClickAwayListener onClickAway={this.handleClickAway.bind(this)}>
-        <Drawer
-          variant="permanent"
-          open={this.state.open}
-          classes={{
-            paper: this.state.open
-              ? classes.drawerPaperOpen
-              : classes.drawerPaper,
-          }}
-        >
+      <div>
+        <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
           <div className={classes.toolbar} />
           <MenuList component="nav">
             <MenuItem
               component={Link}
               to="/dashboard"
-              onClick={this.handleClickAway.bind(this)}
               selected={location.pathname === '/dashboard'}
               dense={false}
             >
               <ListItemIcon>
                 <Dashboard />
               </ListItemIcon>
-              {this.state.open ? <ListItemText primary={t('Dashboard')} /> : ''}
             </MenuItem>
             <MenuItem
               component={Link}
               to="/dashboard/threats"
-              onClick={this.handleClickAway.bind(this)}
               selected={location.pathname.includes('/dashboard/threats')}
               dense={false}
             >
               <ListItemIcon>
                 <Database />
               </ListItemIcon>
-              {this.state.open ? (
-                <ListItemText
-                  primary={t('Threats')}
-                  classes={{ root: classes.listText }}
-                />
-              ) : (
-                ''
-              )}
             </MenuItem>
             <MenuItem
               component={Link}
               to="/dashboard/techniques"
-              onClick={this.handleClickAway.bind(this)}
               selected={location.pathname.includes('/dashboard/techniques')}
               dense={false}
             >
               <ListItemIcon>
                 <Layers />
               </ListItemIcon>
-              {this.state.open ? (
-                <ListItemText
-                  primary={t('Techniques')}
-                  classes={{ root: classes.listText }}
-                />
-              ) : (
-                ''
-              )}
             </MenuItem>
             <MenuItem
               component={Link}
               to="/dashboard/observables"
-              onClick={this.handleClickAway.bind(this)}
               selected={location.pathname.includes('/dashboard/observables')}
               dense={false}
             >
               <ListItemIcon>
                 <Binoculars />
               </ListItemIcon>
-              {this.state.open ? (
-                <ListItemText
-                  primary={t('Observables')}
-                  classes={{ root: classes.listText }}
-                />
-              ) : (
-                ''
-              )}
             </MenuItem>
             <MenuItem
               component={Link}
               to="/dashboard/reports"
-              onClick={this.handleClickAway.bind(this)}
               selected={location.pathname.includes('/dashboard/reports')}
               dense={false}
             >
               <ListItemIcon>
                 <Assignment />
               </ListItemIcon>
-              {this.state.open ? (
-                <ListItemText
-                  primary={t('Reports')}
-                  classes={{ root: classes.listText }}
-                />
-              ) : (
-                ''
-              )}
             </MenuItem>
             <MenuItem
               component={Link}
               to="/dashboard/entities"
-              onClick={this.handleClickAway.bind(this)}
               selected={location.pathname.includes('/dashboard/entities')}
               dense={false}
             >
               <ListItemIcon>
                 <ListAlt />
               </ListItemIcon>
-              {this.state.open ? (
-                <ListItemText
-                  primary={t('Entities')}
-                  classes={{ root: classes.listText }}
-                />
-              ) : (
-                ''
-              )}
             </MenuItem>
           </MenuList>
           <Divider />
@@ -210,61 +142,34 @@ class LeftBar extends Component {
             <MenuItem
               component={Link}
               to="/dashboard/explore"
-              onClick={this.handleClickAway.bind(this)}
               selected={location.pathname.includes('/dashboard/explore')}
               dense={false}
             >
               <ListItemIcon>
                 <Explore />
               </ListItemIcon>
-              {this.state.open ? (
-                <ListItemText
-                  primary={t('Explore')}
-                  classes={{ root: classes.listText }}
-                />
-              ) : (
-                ''
-              )}
             </MenuItem>
             <MenuItem
               component={Link}
               disabled={true}
               to="/dashboard/investigate"
-              onClick={this.handleClickAway.bind(this)}
               selected={location.pathname.includes('/dashboard/investigate')}
               dense={false}
             >
               <ListItemIcon>
                 <DeviceHub />
               </ListItemIcon>
-              {this.state.open ? (
-                <ListItemText
-                  primary={t('Investigate')}
-                  classes={{ root: classes.listText }}
-                />
-              ) : (
-                ''
-              )}
             </MenuItem>
             <MenuItem
               component={Link}
               disabled={true}
               to="/dashboard/correlate"
-              onClick={this.handleClickAway.bind(this)}
               selected={location.pathname.includes('/dashboard/correlate')}
               dense={false}
             >
               <ListItemIcon>
                 <GroupWork />
               </ListItemIcon>
-              {this.state.open ? (
-                <ListItemText
-                  primary={t('Correlate')}
-                  classes={{ root: classes.listText }}
-                />
-              ) : (
-                ''
-              )}
             </MenuItem>
           </MenuList>
           {includes('ROLE_ADMIN', propOr([], 'grant', me)) && (
@@ -274,26 +179,16 @@ class LeftBar extends Component {
                 <MenuItem
                   component={Link}
                   to="/dashboard/connectors"
-                  onClick={this.handleClickAway.bind(this)}
                   selected={location.pathname.includes('/dashboard/connectors')}
                   dense={false}
                 >
                   <ListItemIcon>
                     <Extension />
                   </ListItemIcon>
-                  {this.state.open ? (
-                    <ListItemText
-                      primary={t('Connectors')}
-                      classes={{ root: classes.listText }}
-                    />
-                  ) : (
-                    ''
-                  )}
                 </MenuItem>
                 <MenuItem
                   component={Link}
                   to="/dashboard/settings"
-                  onClick={this.handleClickAway.bind(this)}
                   selected={location.pathname.includes('/dashboard/settings')}
                   dense={false}
                   style={{ marginBottom: 50 }}
@@ -301,14 +196,6 @@ class LeftBar extends Component {
                   <ListItemIcon>
                     <Settings />
                   </ListItemIcon>
-                  {this.state.open ? (
-                    <ListItemText
-                      primary={t('Settings')}
-                      classes={{ root: classes.listText }}
-                    />
-                  ) : (
-                    ''
-                  )}
                 </MenuItem>
               </MenuList>
             </div>
@@ -323,16 +210,196 @@ class LeftBar extends Component {
               style={{ position: 'absolute', bottom: 10, width: '100%' }}
             >
               <ListItemIcon>
-                {this.state.open ? (
-                  <KeyboardArrowLeft />
-                ) : (
-                  <KeyboardArrowRight />
-                )}
+                <KeyboardArrowRight />
               </ListItemIcon>
             </MenuItem>
           </MenuList>
         </Drawer>
-      </ClickAwayListener>
+        <Drawer
+          open={this.state.open}
+          classes={{ paper: classes.drawerPaperOpen }}
+          onClose={this.toggle.bind(this)}
+        >
+          <Toolbar>
+            <IconButton
+              classes={{ root: classes.logoButton }}
+              color="inherit"
+              aria-label="Menu"
+              component={Link}
+              to="/dashboard"
+            >
+              <img src={logo} alt="logo" className={classes.logo} />
+            </IconButton>
+          </Toolbar>
+          <MenuList component="nav">
+            <MenuItem
+              component={Link}
+              to="/dashboard"
+              onClick={this.toggle.bind(this)}
+              selected={location.pathname === '/dashboard'}
+              dense={false}
+            >
+              <ListItemIcon>
+                <Dashboard />
+              </ListItemIcon>
+              <ListItemText primary={t('Dashboard')} />
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              to="/dashboard/threats"
+              onClick={this.toggle.bind(this)}
+              selected={location.pathname.includes('/dashboard/threats')}
+              dense={false}
+            >
+              <ListItemIcon>
+                <Database />
+              </ListItemIcon>
+              <ListItemText primary={t('Threats')} />
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              to="/dashboard/techniques"
+              onClick={this.toggle.bind(this)}
+              selected={location.pathname.includes('/dashboard/techniques')}
+              dense={false}
+            >
+              <ListItemIcon>
+                <Layers />
+              </ListItemIcon>
+
+              <ListItemText primary={t('Techniques')} />
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              to="/dashboard/observables"
+              onClick={this.toggle.bind(this)}
+              selected={location.pathname.includes('/dashboard/observables')}
+              dense={false}
+            >
+              <ListItemIcon>
+                <Binoculars />
+              </ListItemIcon>
+
+              <ListItemText primary={t('Observables')} />
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              to="/dashboard/reports"
+              onClick={this.toggle.bind(this)}
+              selected={location.pathname.includes('/dashboard/reports')}
+              dense={false}
+            >
+              <ListItemIcon>
+                <Assignment />
+              </ListItemIcon>
+
+              <ListItemText primary={t('Reports')} />
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              to="/dashboard/entities"
+              selected={location.pathname.includes('/dashboard/entities')}
+              dense={false}
+            >
+              <ListItemIcon>
+                <ListAlt />
+              </ListItemIcon>
+              <ListItemText primary={t('Entities')} />
+            </MenuItem>
+          </MenuList>
+          <Divider />
+          <MenuList component="nav">
+            <MenuItem
+              component={Link}
+              to="/dashboard/explore"
+              onClick={this.toggle.bind(this)}
+              selected={location.pathname.includes('/dashboard/explore')}
+              dense={false}
+            >
+              <ListItemIcon>
+                <Explore />
+              </ListItemIcon>
+
+              <ListItemText primary={t('Explore')} />
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              disabled={true}
+              to="/dashboard/investigate"
+              onClick={this.toggle.bind(this)}
+              selected={location.pathname.includes('/dashboard/investigate')}
+              dense={false}
+            >
+              <ListItemIcon>
+                <DeviceHub />
+              </ListItemIcon>
+
+              <ListItemText primary={t('Investigate')} />
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              disabled={true}
+              to="/dashboard/correlate"
+              onClick={this.toggle.bind(this)}
+              selected={location.pathname.includes('/dashboard/correlate')}
+              dense={false}
+            >
+              <ListItemIcon>
+                <GroupWork />
+              </ListItemIcon>
+
+              <ListItemText primary={t('Correlate')} />
+            </MenuItem>
+          </MenuList>
+          {includes('ROLE_ADMIN', propOr([], 'grant', me)) && (
+            <div>
+              <Divider />
+              <MenuList component="nav">
+                <MenuItem
+                  component={Link}
+                  to="/dashboard/connectors"
+                  onClick={this.toggle.bind(this)}
+                  selected={location.pathname.includes('/dashboard/connectors')}
+                  dense={false}
+                >
+                  <ListItemIcon>
+                    <Extension />
+                  </ListItemIcon>
+
+                  <ListItemText primary={t('Connectors')} />
+                </MenuItem>
+                <MenuItem
+                  component={Link}
+                  to="/dashboard/settings"
+                  onClick={this.toggle.bind(this)}
+                  selected={location.pathname.includes('/dashboard/settings')}
+                  dense={false}
+                  style={{ marginBottom: 50 }}
+                >
+                  <ListItemIcon>
+                    <Settings />
+                  </ListItemIcon>
+                  <ListItemText primary={t('Settings')} />
+                </MenuItem>
+              </MenuList>
+            </div>
+          )}
+          <MenuList
+            component="nav"
+            classes={{ root: this.props.classes.menuList }}
+          >
+            <MenuItem
+              onClick={this.toggle.bind(this)}
+              dense={false}
+              style={{ position: 'absolute', bottom: 10, width: '100%' }}
+            >
+              <ListItemIcon>
+                <KeyboardArrowLeft />
+              </ListItemIcon>
+            </MenuItem>
+          </MenuList>
+        </Drawer>
+      </div>
     );
   }
 }

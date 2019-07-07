@@ -62,7 +62,7 @@ const styles = () => ({
   },
   icon: {
     position: 'fixed',
-    zIndex: 3000,
+    zIndex: 1001,
     bottom: 13,
   },
 });

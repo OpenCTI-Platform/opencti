@@ -59,12 +59,11 @@ const styles = theme => ({
     flexGrow: 1,
   },
   logoButton: {
-    marginLeft: -23,
+    marginLeft: -20,
     marginRight: 20,
   },
   logo: {
     cursor: 'pointer',
-    width: 35,
     height: 35,
   },
   progressBar: {

@@ -21,8 +21,8 @@ const styles = theme => ({
     height: loginHeight,
   },
   logo: {
-    width: '250px',
-    margin: '0px 0px 20px 0px',
+    width: '200px',
+    margin: '0px 0px 30px 0px',
   },
   buttonGoogle: {
     margin: theme.spacing(1),
