@@ -26,19 +26,6 @@ class WorkerImport:
             self.config['opencti']['verbose']
         )
 
-        # Initialize the RabbitMQ connection
-        credentials = pika.PlainCredentials(self.config['rabbitmq']['username'], self.config['rabbitmq']['password'])
-        connection = pika.BlockingConnection(pika.ConnectionParameters(
-            host=self.config['rabbitmq']['hostname'],
-            port=self.config['rabbitmq']['port'],
-            virtual_host='/',
-            credentials=credentials
-        ))
-        self.channel = connection.channel()
-        self.channel.exchange_declare(exchange='opencti', exchange_type='topic', durable=True)
-        self.channel.queue_declare('opencti-import', durable=True)
-        self.channel.queue_bind(exchange='opencti', queue='opencti-import', routing_key='import.*.*')
-
     def import_action(self, ch, method, properties, body):
         try:
             data = json.loads(body)
@@ -50,14 +37,26 @@ class WorkerImport:
             return False
 
     def consume(self):
-        self.channel.basic_consume(queue='opencti-import', on_message_callback=self.import_action, auto_ack=True)
-        self.channel.start_consuming()
+        # Initialize the RabbitMQ connection
+        credentials = pika.PlainCredentials(self.config['rabbitmq']['username'], self.config['rabbitmq']['password'])
+        connection = pika.BlockingConnection(pika.ConnectionParameters(
+            host=self.config['rabbitmq']['hostname'],
+            port=self.config['rabbitmq']['port'],
+            virtual_host='/',
+            credentials=credentials
+        ))
+        channel = connection.channel()
+        channel.exchange_declare(exchange='opencti', exchange_type='topic', durable=True)
+        channel.queue_declare('opencti-import', durable=True)
+        channel.queue_bind(exchange='opencti', queue='opencti-import', routing_key='import.*.*')
+        channel.basic_consume(queue='opencti-import', on_message_callback=self.import_action, auto_ack=True)
+        channel.start_consuming()
 
 
 if __name__ == '__main__':
+    worker_import = WorkerImport()
     while True:
         try:
-            worker_import = WorkerImport()
             worker_import.consume()
         except Exception as e:
             print(e)
