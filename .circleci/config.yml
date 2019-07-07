@@ -218,9 +218,15 @@ workflows:
   opencti:
     jobs:
       - build
+          filters:
+            tags:
+              only: /.*/
       - test:
           requires:
             - build
+          filters:
+            tags:
+              only: /.*/
       - package_rolling:
           requires:
             - build
@@ -229,6 +235,8 @@ workflows:
             branches:
               only:
                 - master
+            tags:
+              only: /.*/
       - deploy_demo:
           requires:
             - build
