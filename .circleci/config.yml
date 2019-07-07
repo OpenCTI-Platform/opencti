@@ -217,7 +217,7 @@ jobs:
 workflows:
   opencti:
     jobs:
-      - build
+      - build:
           filters:
             tags:
               only: /.*/
