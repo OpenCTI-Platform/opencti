@@ -1,6 +1,41 @@
 # Changelog
 
-## v1.0.0 (28/06/2019)
+## Version 1.0.2 (07/07/2019)
+
+#### Enhancements:
+
+- [#116](https://github.com/OpenCTI-Platform/opencti/issues/116) Docker-compose build behind a HTTP proxy 
+- [#115](https://github.com/OpenCTI-Platform/opencti/issues/115) Add expanding to report description
+- [#109](https://github.com/OpenCTI-Platform/opencti/issues/109) Import is really really slow
+- [#85](https://github.com/OpenCTI-Platform/opencti/issues/85) Provide support for more Observable types
+
+#### Bug Fixes:
+
+- [#118](https://github.com/OpenCTI-Platform/opencti/issues/118) No module named "stix2"
+- [#113](https://github.com/OpenCTI-Platform/opencti/issues/113) Add English as a language option for the Date selection widget
+- [#101](https://github.com/OpenCTI-Platform/opencti/issues/101) Login redirection failed in Firefox ESR
+- [#79](https://github.com/OpenCTI-Platform/opencti/issues/79) Left side bar does not automatically collapse
+
+---
+
+## Version 1.0.1 (02/07/2019)
+
+#### Enhancements:
+
+- [#94](https://github.com/OpenCTI-Platform/opencti/issues/94) Provide pre-built Docker images from Docker Hub instead of building it
+- [#93](https://github.com/OpenCTI-Platform/opencti/issues/93) Ulimit should be increase for elasticsearch
+- [#92](https://github.com/OpenCTI-Platform/opencti/issues/92) Update the docker install documentation for data persistence
+- [#91](https://github.com/OpenCTI-Platform/opencti/issues/91) Link broken releases.opencti.io
+
+#### Bug Fixes:
+
+- [#101](https://github.com/OpenCTI-Platform/opencti/issues/101) Login redirection failed in Firefox ESR
+- [#82](https://github.com/OpenCTI-Platform/opencti/issues/82) Export in STIX2 fail the official stix2-validator
+- [#80](https://github.com/OpenCTI-Platform/opencti/issues/80) System requirements
+
+---
+
+## Version 1.0.0 (28/06/2019)
 
 #### Enhancements:
 
@@ -24,10 +59,26 @@
 - [#25](https://github.com/OpenCTI-Platform/opencti/issues/25) Migrate the Grakn schema creation from loader to API
 - [#24](https://github.com/OpenCTI-Platform/opencti/issues/24) Create a loader for STIX 2 json files
 - [#23](https://github.com/OpenCTI-Platform/opencti/issues/23) Implement the CSV export of all lists of entities
+- [#22](https://github.com/OpenCTI-Platform/opencti/issues/22) API events logs / audit logs
+- [#19](https://github.com/OpenCTI-Platform/opencti/issues/19) Implement logout
+- [#18](https://github.com/OpenCTI-Platform/opencti/issues/18) Create the documentation for manual installation
+- [#17](https://github.com/OpenCTI-Platform/opencti/issues/17) Add subscriptions on any entity view (not list)
+- [#16](https://github.com/OpenCTI-Platform/opencti/issues/16) Add README, Docker install and publish on Github
+- [#15](https://github.com/OpenCTI-Platform/opencti/issues/15) Implement basic observables management
+- [#14](https://github.com/OpenCTI-Platform/opencti/issues/14) Implement the user profile
+- [#13](https://github.com/OpenCTI-Platform/opencti/issues/13) Handle default createdbyref on all entities
+- [#12](https://github.com/OpenCTI-Platform/opencti/issues/12) Implement all knowledge entities CRUD
+- [#11](https://github.com/OpenCTI-Platform/opencti/issues/11) Implement the global search field
+- [#10](https://github.com/OpenCTI-Platform/opencti/issues/10) Implement the knowledge graph of a report
+- [#8](https://github.com/OpenCTI-Platform/opencti/issues/8) Implement the report management (creation / edition / deletion)
+- [#6](https://github.com/OpenCTI-Platform/opencti/issues/6) Create the OpenCTI website and explain the target vision
+- [#5](https://github.com/OpenCTI-Platform/opencti/issues/5) Ensure that websocket (api, redis, ...) can be disable
+- [#3](https://github.com/OpenCTI-Platform/opencti/issues/3) Add an error handling for disconnected users and more globally for CRUD
+- [#1](https://github.com/OpenCTI-Platform/opencti/issues/1) Migrate security to @auth directive
 
 #### Bug Fixes:
 
 - [#51](https://github.com/OpenCTI-Platform/opencti/issues/51) Reconnect to Grakn server after lost connection
-- [#36](https://github.com/OpenCTI-Platform/opencti/issues/36) Slow display of big reports, statistics & victimology
 - [#35](https://github.com/OpenCTI-Platform/opencti/issues/35) Enhance the search function
 - [#29](https://github.com/OpenCTI-Platform/opencti/issues/29) List view is stuck in dummy mode in some scenarios
+- [#4](https://github.com/OpenCTI-Platform/opencti/issues/4) Fix case when user cannot logout

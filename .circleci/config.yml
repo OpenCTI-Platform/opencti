@@ -167,7 +167,7 @@ jobs:
       - run:
           working_directory: ~/opencti/opencti-docker/opencti
           name: Build Docker image opencti/platform
-          command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/platform:latest . && docker tag opencti/platform:latest opencti/integration:${CIRCLE_TAG}
+          command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/platform:latest . && docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
       - run:
           working_directory: ~/opencti/opencti-docker/worker
           name: Build Docker image opencti/worker
@@ -180,8 +180,8 @@ jobs:
           name: Publish Docker Image to Docker Hub
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker push opencti/platform:${CIRCLE_TAG}
             docker push opencti/platform:latest
+            docker push opencti/platform:${CIRCLE_TAG}
             docker push opencti/worker:latest
             docker push opencti/worker:${CIRCLE_TAG}
             docker push opencti/integration:latest
