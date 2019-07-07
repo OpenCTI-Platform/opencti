@@ -411,7 +411,11 @@ class OpenCTIStix2:
 
         # Add embedded relationships
         if stix_object_result is not None:
-            self.mapping_cache[stix_object['id']] = {'id': stix_object_result['id'], 'type': stix_object_result['entity_type']}
+            if stix_object['type'] == 'indicator':
+                stix_object_result_type = 'observable'
+            else:
+                stix_object_result_type = stix_object_result['entity_type']
+            self.mapping_cache[stix_object['id']] = {'id': stix_object_result['id'], 'type': stix_object_result_type}
             # Add aliases
             if 'aliases' in stix_object:
                 new_aliases = stix_object_result['alias'] + list(
@@ -797,7 +801,7 @@ class OpenCTIStix2:
         return self.prepare_export(entity, course_of_action)
 
     def create_course_of_action(self, stix_object, update=False):
-        return self.opencti.create_course_of_action_if_not_exists(
+        course_of_action = self.opencti.create_course_of_action_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['x_opencti_id'] if 'x_opencti_id' in stix_object else None,
@@ -805,6 +809,11 @@ class OpenCTIStix2:
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
         )
+        if update:
+            self.opencti.update_stix_domain_entity_field(course_of_action['id'], 'name', stix_object['name'])
+            if 'description' in stix_object:
+                self.opencti.update_stix_domain_entity_field(course_of_action['id'], 'description', stix_object['description'])
+        return course_of_action
 
     def export_report(self, entity, mode='simple'):
         report = dict()
@@ -870,6 +879,7 @@ class OpenCTIStix2:
                 stix_object['x_opencti_observable_type'],
                 stix_object['x_opencti_observable_value'],
                 self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+                stix_object['x_opencti_id'] if 'x_opencti_id' in stix_object else None,
                 stix_object['id'] if 'id' in stix_object else None,
                 stix_object['created'] if 'created' in stix_object else None,
                 stix_object['modified'] if 'modified' in stix_object else None,
@@ -907,7 +917,7 @@ class OpenCTIStix2:
         # Check entities
         if stix_relation['source_ref'] in self.mapping_cache:
             source_id = self.mapping_cache[stix_relation['source_ref']]['id']
-            source_type = self.mapping_cache[stix_relation['source_ref']]['type'] if stix_relation['relationship_type'] != 'indicates' else 'observable'
+            source_type = self.mapping_cache[stix_relation['source_ref']]['type']
         else:
             if 'x_opencti_source_ref' in stix_relation:
                 stix_object_result = self.opencti.get_stix_domain_entity_by_id(stix_relation['x_opencti_source_ref'])
@@ -1126,6 +1136,7 @@ class OpenCTIStix2:
             return False
 
     def import_bundle(self, stix_bundle, update=False, types=[]):
+        self.mapping_cache = {}
         # Check if the bundle is correctly formated
         if 'type' not in stix_bundle or stix_bundle['type'] != 'bundle':
             self.opencti.log('JSON data type is not a STIX2 bundle')

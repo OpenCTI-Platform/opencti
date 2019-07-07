@@ -1717,10 +1717,8 @@ class OpenCTI:
         object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Incident')
         if object_result is not None:
             self.update_stix_domain_entity_field(object_result['id'], 'name', name)
-            description is not None and self.update_stix_domain_entity_field(object_result['id'], 'description',
-                                                                             description)
-            first_seen is not None and self.update_stix_domain_entity_field(object_result['id'], 'first_seen',
-                                                                            first_seen)
+            description is not None and self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+            first_seen is not None and self.update_stix_domain_entity_field(object_result['id'], 'first_seen', first_seen)
             last_seen is not None and self.update_stix_domain_entity_field(object_result['id'], 'last_seen', last_seen)
             return object_result
         else:
@@ -2511,8 +2509,7 @@ class OpenCTI:
         })
         return result['data']['courseOfActionAdd']
 
-    def create_course_of_action_if_not_exists(self, name, description, id=None, stix_id=None, created=None,
-                                              modified=None):
+    def create_course_of_action_if_not_exists(self, name, description, id=None, stix_id=None, created=None, modified=None):
         object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Course-Of-Action')
         if object_result is not None:
             return object_result
@@ -3661,8 +3658,7 @@ class OpenCTI:
         if 'Course-Of-Action' in types:
             course_of_actions = self.get_course_of_actions()
             for course_of_action in course_of_actions:
-                course_of_action_bundle = stix2.filter_objects(uuids,
-                                                               stix2.export_course_of_action(course_of_action))
+                course_of_action_bundle = stix2.filter_objects(uuids, stix2.export_course_of_action(course_of_action))
                 uuids = uuids + [x['id'] for x in course_of_action_bundle]
                 bundle['objects'] = bundle['objects'] + course_of_action_bundle
         if 'Report' in types:
