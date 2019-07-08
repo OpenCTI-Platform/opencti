@@ -15,6 +15,13 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
     restart: always
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
   rabbitmq:
     image: rabbitmq:3.7.16-management
     environment:
