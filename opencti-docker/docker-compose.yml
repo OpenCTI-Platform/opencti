@@ -11,7 +11,7 @@ services:
     image: redis:5.0.5
     restart: always
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.1
     volumes:
       - esdata:/usr/share/elasticsearch/data
     restart: always
@@ -26,13 +26,11 @@ services:
     environment:
       - OPENCTI_HOSTNAME=opencti
       - OPENCTI_PORT=8080
-      - OPENCTI_TOKEN=<Same as opencti APP__ADMIN_TOKEN>
+      - OPENCTI_TOKEN=ChangeMe
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USERNAME=guest
       - RABBITMQ_PASSWORD=guest
-    volumes:
-      - config:/opt/opencti/shared_config:rw
     depends_on:
       - opencti
     restart: always
@@ -41,13 +39,11 @@ services:
     environment:
       - OPENCTI_HOSTNAME=opencti
       - OPENCTI_PORT=8080
-      - OPENCTI_TOKEN=<Same as opencti APP__ADMIN_TOKEN>
+      - OPENCTI_TOKEN=43aff6bd-fe7a-4547-ba51-77eaed15ba10
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USERNAME=guest
-      - RABBITMQ_PASSWORD=guest      
-    volumes:
-      - config:/opt/opencti/shared_config:rw
+      - RABBITMQ_PASSWORD=guest
     depends_on:
       - opencti
     restart: always    
@@ -56,8 +52,8 @@ services:
     environment:
       - APP__PORT=8080
       - APP__ADMIN__EMAIL=admin@opencti.io
-      - APP__ADMIN__PASSWORD=ChangeMe
-      - APP__ADMIN__TOKEN=ChangeMe
+      - APP__ADMIN__PASSWORD=admin
+      - APP__ADMIN__TOKEN=43aff6bd-fe7a-4547-ba51-77eaed15ba10
       - APP__LOGS=./logs
       - APP__CONNECTORS=./integration/connectors
       - APP__REACTIVE=true
@@ -77,8 +73,6 @@ services:
       - RABBITMQ__PASSWORD=guest
     ports:
       - "8080:8080"
-    volumes:
-      - config:/opt/opencti/shared_config:rw
     depends_on:
       - grakn
       - redis
@@ -89,4 +83,3 @@ services:
 volumes:
   grakndata:
   esdata:
-  config:

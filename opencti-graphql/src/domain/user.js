@@ -376,7 +376,7 @@ export const initAdmin = async (email, password, tokenValue) => {
         stix_id: `identity--${OPENCTI_ADMIN_DNS}`,
         name: 'admin',
         firstname: 'Admin',
-        lastname: 'Admin',
+        lastname: 'OpenCTI',
         description: 'Principal admin account',
         email,
         password,

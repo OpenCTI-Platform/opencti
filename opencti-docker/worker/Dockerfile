@@ -17,9 +17,6 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en  
 ENV LC_ALL en_US.UTF-8 
 
-# Prepare configuration
-RUN cd /opt/opencti/worker && rm -f config.yml && ln -s /opt/opencti/shared_config/config_worker.yml config.yml
-
 # Install Python modules
 RUN cd /opt/opencti/worker && pip3 install -r requirements.txt
 
