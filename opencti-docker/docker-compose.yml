@@ -8,7 +8,7 @@ services:
       - grakndata:/grakn-core-all-linux/server/db
     restart: always
   redis:
-    image: redis
+    image: redis:5.0.5
     restart: always
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
@@ -16,16 +16,17 @@ services:
       - esdata:/usr/share/elasticsearch/data
     restart: always
   rabbitmq:
-    image: rabbitmq:management
+    image: rabbitmq:3.7.16-management
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest    
     restart: always
   worker:
-    image: opencti/worker
+    image: opencti/worker:1.1.0
     environment:
       - OPENCTI_HOSTNAME=opencti
       - OPENCTI_PORT=8080
+      - OPENCTI_TOKEN=<Same as opencti APP__ADMIN_TOKEN>
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USERNAME=guest
@@ -36,10 +37,11 @@ services:
       - opencti
     restart: always
   integration:
-    image: opencti/integration
+    image: opencti/integration:1.1.0
     environment:
       - OPENCTI_HOSTNAME=opencti
       - OPENCTI_PORT=8080
+      - OPENCTI_TOKEN=<Same as opencti APP__ADMIN_TOKEN>
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USERNAME=guest
@@ -50,12 +52,14 @@ services:
       - opencti
     restart: always    
   opencti:
-    image: opencti/platform
+    image: opencti/platform:1.1.0
     environment:
       - APP__PORT=8080
+      - APP__ADMIN__EMAIL=admin@opencti.io
+      - APP__ADMIN__PASSWORD=ChangeMe
+      - APP__ADMIN__TOKEN=ChangeMe
       - APP__LOGS=./logs
       - APP__CONNECTORS=./integration/connectors
-      - APP__SECRET=ChangeMe
       - APP__REACTIVE=true
       - APP__COOKIE_SECURE=false
       - GRAKN__HOSTNAME=grakn

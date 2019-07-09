@@ -1,11 +1,38 @@
 import passport from 'passport/lib';
+import validator from 'validator';
 import FacebookStrategy from 'passport-facebook';
 import GithubStrategy from 'passport-github';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
-import { join, head } from 'ramda';
-import { loginFromProvider } from '../domain/user';
+import { join, head, isEmpty, anyPass, isNil } from 'ramda';
+import { initAdmin, loginFromProvider } from '../domain/user';
 import conf from './conf';
 
+// Admin user initialization
+const empty = anyPass([isNil, isEmpty]);
+const DEFAULT_CONF_VALUE = 'ChangeMe';
+const adminEmail = conf.get('app:admin:email');
+const adminPassword = conf.get('app:admin:password');
+const adminToken = conf.get('app:admin:token');
+if (
+  empty(adminEmail) ||
+  empty(adminPassword) ||
+  empty(adminToken) ||
+  adminPassword === DEFAULT_CONF_VALUE ||
+  adminToken === DEFAULT_CONF_VALUE
+) {
+  throw new Error('Admin setup > You need to configure the environment vars');
+} else {
+  // Check fields
+  if (!validator.isEmail(adminEmail))
+    throw new Error('Admin setup > email must be a valid email address');
+  if (!validator.isUUID(adminToken))
+    throw new Error('Admin setup > Token must be a valid UUID');
+  // Initialize the admin account
+  // noinspection JSIgnoredPromiseFromCall
+  initAdmin(adminEmail, adminPassword, adminToken);
+}
+
+// Providers definition
 const providers = [];
 // Facebook
 if (conf.get('providers:facebook')) {

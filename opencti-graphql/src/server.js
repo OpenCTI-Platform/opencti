@@ -4,7 +4,6 @@ import { readFileSync } from 'fs';
 import bodyParser from 'body-parser';
 import { createTerminus } from '@godaddy/terminus';
 import cookie from 'cookie';
-import { verify } from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import { ApolloServer } from 'apollo-server-express';
 import { formatError as apolloFormatError } from 'apollo-errors';
@@ -20,7 +19,7 @@ import conf, {
   OPENCTI_TOKEN
 } from './config/conf';
 import passport, { ACCESS_PROVIDERS } from './config/security';
-import { findByTokenId, setAuthenticationCookie } from './domain/user';
+import { findByTokenUUID, setAuthenticationCookie } from './domain/user';
 import schema from './schema/schema';
 import { ConstraintFailure, TYPE_AUTH, Unknown } from './config/errors';
 
@@ -60,15 +59,14 @@ app.get(
 export const authentication = async token => {
   if (!token) return undefined;
   try {
-    const decodedToken = verify(token, conf.get('app:secret'));
-    return await findByTokenId(decodedToken.uuid);
+    return await findByTokenUUID(token);
   } catch (err) {
     logger.error(token, err);
     return undefined;
   }
 };
 
-const extractTokenFromBearer = bearer =>
+export const extractTokenFromBearer = bearer =>
   bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
 
 const server = new ApolloServer({
@@ -124,7 +122,8 @@ const server = new ApolloServer({
       const parsedCookies = cookies ? cookie.parse(cookies) : null;
       let token = parsedCookies ? parsedCookies[OPENCTI_TOKEN] : null;
       token = token || extractTokenFromBearer(connectionParams.authorization);
-      return { user: await authentication(token) };
+      const user = await authentication(token);
+      return { user };
     }
   }
 });
