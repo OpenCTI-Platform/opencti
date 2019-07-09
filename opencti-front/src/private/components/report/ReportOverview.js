@@ -7,9 +7,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
-import ExpandableMarkdown from "../../../components/ExpandableMarkdown";
+import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
 
-const styles = theme => ({
+const styles = () => ({
   paper: {
     minHeight: '100%',
     margin: '10px 0 0 0',

@@ -1,5 +1,3 @@
-import { sign } from 'jsonwebtoken';
-import conf from '../config/conf';
 import {
   addUser,
   addPerson,
@@ -48,7 +46,7 @@ const userResolvers = {
     token: (_, { input }, context) =>
       login(input.email, input.password).then(tokenObject => {
         setAuthenticationCookie(tokenObject, context.res);
-        return sign(tokenObject, conf.get('app:secret'));
+        return tokenObject.uuid;
       }),
     logout: (_, args, context) => logout(context.user, context.res),
     userEdit: (_, { id }, { user }) => ({
@@ -56,7 +54,7 @@ const userResolvers = {
       fieldPatch: ({ input }) => userEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
-      tokenRenew: () => userRenewToken(user, id),
+      tokenRenew: () => userRenewToken(id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId)

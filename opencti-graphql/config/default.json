@@ -3,10 +3,14 @@
     "port": 4000,
     "logs": "./logs",
     "connectors": "./integration/connectors",
-    "secret": "define your secret",
     "reactive": true,
     "cookie_secure": false,
-    "default_roles": []
+    "default_roles": [],
+    "admin": {
+      "email": "admin@opencti.io",
+      "password": "ChangeMe",
+      "token": "ChangeMe"
+    }
   },
   "grakn": {
     "hostname": "localhost",
@@ -28,9 +32,6 @@
     "management_ssl": false,
     "username": "guest",
     "password": "guest"
-  },
-  "jwt": {
-    "dev_token": "a token of a user for the GraphQL playground in dev mode"
   },
   "providers": {
     "facebook": {

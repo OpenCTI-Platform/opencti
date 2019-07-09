@@ -2,7 +2,6 @@ import { head, isNil, join, map } from 'ramda';
 import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
 import { delUserContext } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess } from '../config/errors';
 import conf, {
@@ -32,8 +31,8 @@ import {
 import { index } from '../database/elasticSearch';
 
 // Security related
-export const generateOpenCTIWebToken = () => ({
-  uuid: uuid(),
+export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
+  uuid: tokenValue,
   name: OPENCTI_WEB_TOKEN,
   created: now(),
   issuer: OPENCTI_ISSUER,
@@ -45,9 +44,8 @@ export const setAuthenticationCookie = (token, res) => {
   const creation = moment(token.created);
   const maxDuration = moment.duration(token.duration);
   const expires = creation.add(maxDuration).toDate();
-  const signedToken = sign(token, conf.get('app:secret'));
   if (res) {
-    res.cookie('opencti_token', signedToken, {
+    res.cookie('opencti_token', token.uuid, {
       httpOnly: true,
       expires,
       secure: conf.get('app:cookie_secure')
@@ -86,7 +84,7 @@ export const token = (userId, args, context) => {
     )}"; get $x, $rel; offset 0; limit 1;`,
     'x',
     'rel'
-  ).then(result => sign(result.node, conf.get('app:secret')));
+  ).then(result => result.node.uuid);
 };
 
 export const addPerson = async (user, newUser) => {
@@ -133,8 +131,11 @@ export const addPerson = async (user, newUser) => {
   });
 };
 
-export const addUser = async (user, newUser, displayToken = false) => {
-  const newToken = generateOpenCTIWebToken();
+export const addUser = async (
+  user,
+  newUser,
+  newToken = generateOpenCTIWebToken()
+) => {
   const wTx = await takeWriteTx();
   const internalId = newUser.internal_id
     ? escapeString(newUser.internal_id)
@@ -213,16 +214,6 @@ export const addUser = async (user, newUser, displayToken = false) => {
 
   await commitWriteTx(wTx);
 
-  if (displayToken) {
-    // eslint-disable-next-line
-    console.log(
-      `Token for user ${newUser.name}: ${sign(
-        newToken,
-        conf.get('app:secret')
-      )}`
-    );
-  }
-
   return getById(internalId).then(created => {
     index('stix-domain-entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
@@ -274,14 +265,16 @@ export const logout = async (user, res) => {
   return user.id;
 };
 
-export const userRenewToken = async (user, userId) => {
+export const userRenewToken = async (
+  userId,
+  newToken = generateOpenCTIWebToken()
+) => {
   const wTx = await takeWriteTx();
   await wTx.tx.query(
     `match $user has internal_id "${escapeString(userId)}";
     $rel(authorization:$token, client:$user);
     delete $rel, $token;`
   );
-  const newToken = generateOpenCTIWebToken();
   const tokenIterator = await wTx.tx.query(`insert $token isa Token,
     has internal_id "${uuid()}",
     has entity_type "token",
@@ -297,7 +290,7 @@ export const userRenewToken = async (user, userId) => {
   const createdToken = await tokenIterator.next();
   await createdToken.map().get('token').id;
   await wTx.tx.query(
-    `match $user has internal_id "${escapeString(userId)}"";
+    `match $user has internal_id "${escapeString(userId)}";
     $token isa Token,
     has uuid "${newToken.uuid}";
     insert (client: $user, authorization: $token) isa authorize, has internal_id "${uuid()}";`
@@ -332,10 +325,10 @@ export const meEditField = (user, userId, input) => {
 };
 
 // Token related
-export const findByTokenId = async tokenId => {
+export const findByTokenUUID = async tokenValue => {
   const result = await queryOne(
     `match $token isa Token,
-    has uuid "${escapeString(tokenId)}",
+    has uuid "${escapeString(tokenValue)}",
     has revoked false;
     (authorization:$token, client:$client); get;`,
     ['client', 'token']
@@ -348,4 +341,48 @@ export const findByTokenId = async tokenId => {
   const currentDuration = moment.duration(moment().diff(created));
   if (currentDuration > maxDuration) return undefined;
   return result.client;
+};
+
+// The static admin account internal ID
+const OPENCTI_ADMIN_DNS = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
+/**
+ * Create or update the default administrator account.
+ * @param email the admin email
+ * @param password the admin password
+ * @param tokenValue the admin default token
+ * @returns {*}
+ */
+export const initAdmin = async (email, password, tokenValue) => {
+  const admin = await findById(OPENCTI_ADMIN_DNS);
+  const user = { name: 'system' };
+  const tokenAdmin = generateOpenCTIWebToken(tokenValue);
+  if (admin) {
+    // Update email and password
+    await userEditField(user, OPENCTI_ADMIN_DNS, {
+      key: 'email',
+      value: [email]
+    });
+    await userEditField(user, OPENCTI_ADMIN_DNS, {
+      key: 'password',
+      value: [password]
+    });
+    // Renew the token
+    await userRenewToken(OPENCTI_ADMIN_DNS, tokenAdmin);
+  } else {
+    await addUser(
+      user,
+      {
+        internal_id: OPENCTI_ADMIN_DNS,
+        stix_id: `identity--${OPENCTI_ADMIN_DNS}`,
+        name: 'admin',
+        firstname: 'Admin',
+        lastname: 'Admin',
+        description: 'Principal admin account',
+        email,
+        password,
+        grant: ['ROLE_ROOT', 'ROLE_ADMIN']
+      },
+      tokenAdmin
+    );
+  }
 };

@@ -71,6 +71,7 @@
     "ramda": "^0.26.1",
     "rxjs": "^6.5.2",
     "uuid": "^3.3.2",
+    "validator": "^11.1.0",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^3.9.0"
   },
