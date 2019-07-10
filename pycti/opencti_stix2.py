@@ -2,6 +2,7 @@
 
 import time
 import datetime
+import logging
 import datefinder
 import dateutil.parser
 import pytz
@@ -18,12 +19,18 @@ class OpenCTIStix2:
         :param opencti: OpenCTI instance
     """
 
-    def __init__(self, opencti):
+    def __init__(self, opencti, log_level='info'):
+        # Configure logger
+        numeric_level = getattr(logging, log_level, None)
+        if not isinstance(numeric_level, int):
+            raise ValueError('Invalid log level: ' + log_level)
+        logging.basicConfig(level=numeric_level)
+
         self.opencti = opencti
         self.mapping_cache = {}
 
     def unknown_type(self, stix_object, update=False):
-        self.opencti.log('Unknown object type "' + stix_object['type'] + '", doing nothing...')
+        logging.error('Unknown object type "' + stix_object['type'] + '", doing nothing...')
 
     def convert_markdown(self, text):
         return text. \
@@ -257,7 +264,7 @@ class OpenCTIStix2:
         return result
 
     def import_object(self, stix_object, update=False):
-        self.opencti.log('Importing a ' + stix_object['type'])
+        logging.info('Importing a ' + stix_object['type'])
         # Reports
         reports = {}
         # Created By Ref
@@ -927,7 +934,7 @@ class OpenCTIStix2:
                 source_id = stix_object_result['id']
                 source_type = stix_object_result['entity_type'] if stix_relation['relationship_type'] != 'indicates' else 'observable'
             else:
-                self.opencti.log('Source ref of the relationship not found, doing nothing...')
+                logging.error('Source ref of the relationship not found, doing nothing...')
                 return None
 
         if stix_relation['target_ref'] in self.mapping_cache:
@@ -942,7 +949,7 @@ class OpenCTIStix2:
                 target_id = stix_object_result['id']
                 target_type = stix_object_result['entity_type']
             else:
-                self.opencti.log('Target ref of the relationship not found, doing nothing...')
+                logging.error('Target ref of the relationship not found, doing nothing...')
                 return None
 
         date = None
@@ -1139,10 +1146,10 @@ class OpenCTIStix2:
         self.mapping_cache = {}
         # Check if the bundle is correctly formated
         if 'type' not in stix_bundle or stix_bundle['type'] != 'bundle':
-            self.opencti.log('JSON data type is not a STIX2 bundle')
+            logging.error('JSON data type is not a STIX2 bundle')
             return None
         if 'objects' not in stix_bundle or len(stix_bundle['objects']) == 0:
-            self.opencti.log('JSON data objects is empty')
+            logging.error('JSON data objects is empty')
             return None
 
         start_time = time.time()
@@ -1150,14 +1157,14 @@ class OpenCTIStix2:
             if item['type'] == 'marking-definition':
                 self.import_object(item, update)
         end_time = time.time()
-        self.opencti.log("Marking definitions imported in: %ssecs" % round(end_time - start_time))
+        logging.info("Marking definitions imported in: %ssecs" % round(end_time - start_time))
 
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'identity' and (len(types) == 0 or 'identity' in types):
                 self.import_object(item, update)
         end_time = time.time()
-        self.opencti.log("Identities imported in: %ssecs" % round(end_time - start_time))
+        logging.info("Identities imported in: %ssecs" % round(end_time - start_time))
 
         start_time = time.time()
         for item in stix_bundle['objects']:
@@ -1165,18 +1172,18 @@ class OpenCTIStix2:
                     len(types) == 0 or item['type'] in types):
                 self.import_object(item, update)
         end_time = time.time()
-        self.opencti.log("Objects imported in: %ssecs" % round(end_time - start_time))
+        logging.info("Objects imported in: %ssecs" % round(end_time - start_time))
 
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'relationship':
                 self.import_relationship(item, update)
         end_time = time.time()
-        self.opencti.log("Relationships imported in: %ssecs" % round(end_time - start_time))
+        logging.info("Relationships imported in: %ssecs" % round(end_time - start_time))
 
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'report' and (len(types) == 0 or 'report' in types):
                 self.import_object(item, update)
         end_time = time.time()
-        self.opencti.log("Reports imported in: %ssecs" % round(end_time - start_time))
+        logging.info("Reports imported in: %ssecs" % round(end_time - start_time))

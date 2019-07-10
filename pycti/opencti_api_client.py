@@ -19,26 +19,29 @@ class OpenCTIApiClient:
         :param token: The API key
     """
 
-    def __init__(self, url, token):
+    def __init__(self, url, token, log_level='info'):
+        # Configure logger
+        numeric_level = getattr(logging, log_level, None)
+        if not isinstance(numeric_level, int):
+            raise ValueError('Invalid log level: ' + log_level)
+        logging.basicConfig(level=numeric_level)
+
         self.api_url = url + '/graphql'
         self.request_headers = {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json'
         }
 
-    def log(self, message):
-        logging.info('[' + datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S') + '] ' + message + "\n")
-
     def query(self, query, variables={}):
         r = requests.post(self.api_url, json={'query': query, 'variables': variables}, headers=self.request_headers)
         if r.status_code == requests.codes.ok:
             result = r.json()
             if 'errors' in result:
-                self.log(result['errors'][0]['message'])
+                logging.error(result['errors'][0]['message'])
             else:
                 return result
         else:
-            self.log(r.text)
+            logging.info(r.text)
 
     def parse_multiple(self, data):
         result = []
@@ -91,7 +94,7 @@ class OpenCTIApiClient:
         return object_result
 
     def update_settings_field(self, id, key, value):
-        self.log('Updating settings field ' + key + ' of ' + id + '...')
+        logging.info('Updating settings field ' + key + ' of ' + id + '...')
         query = """
             mutation SettingsEdit($id: ID!, $input: EditInput!) {
                 settingsEdit(id: $id) {
@@ -123,7 +126,7 @@ class OpenCTIApiClient:
         return result['data']['connectors']
 
     def update_connector_config(self, identifier, config):
-        self.log('Updating connector config of ' + identifier + '...')
+        logging.info('Updating connector config of ' + identifier + '...')
         query = """
             mutation ConnectorConfig($identifier: String!, $config: String!) {
                 connectorConfig(identifier: $identifier, config: $config)
@@ -282,7 +285,7 @@ class OpenCTIApiClient:
             return None
 
     def update_stix_domain_entity_field(self, id, key, value):
-        self.log('Updating field ' + key + ' of ' + id + '...')
+        logging.info('Updating field ' + key + ' of ' + id + '...')
         query = """
             mutation StixDomainEntityEdit($id: ID!, $input: EditInput!) {
                 stixDomainEntityEdit(id: $id) {
@@ -303,7 +306,7 @@ class OpenCTIApiClient:
         })
 
     def update_stix_relation_field(self, id, key, value):
-        self.log('Updating field ' + key + ' of ' + id + '...')
+        logging.info('Updating field ' + key + ' of ' + id + '...')
         query = """
             mutation StixRelationEdit($id: ID!, $input: EditInput!) {
                 stixRelationEdit(id: $id) {
@@ -338,7 +341,7 @@ class OpenCTIApiClient:
         })
 
     def delete_stix_domain_entity(self, id):
-        self.log('Deleting + ' + id + '...')
+        logging.info('Deleting + ' + id + '...')
         query = """
              mutation StixDomainEntityEdit($id: ID!) {
                  stixDomainEntityEdit(id: $id) {
@@ -349,7 +352,7 @@ class OpenCTIApiClient:
         self.query(query, {'id': id})
 
     def get_stix_relation_by_stix_id(self, stix_id):
-        self.log('Getting relation ' + stix_id + '...')
+        logging.info('Getting relation ' + stix_id + '...')
         query = """
             query StixRelations($stix_id: String) {
                 stixRelations(stix_id: $stix_id) {
@@ -369,7 +372,7 @@ class OpenCTIApiClient:
             return None
 
     def get_stix_relation_by_id(self, id):
-        self.log('Getting relation ' + id + '...')
+        logging.info('Getting relation ' + id + '...')
         query = """
             query StixRelation($id: String!) {
                 stixRelation(id: $id) {
@@ -402,7 +405,7 @@ class OpenCTIApiClient:
 
     def get_stix_relations(self, from_id=None, to_id=None, type='stix_relation', first_seen=None, last_seen=None,
                            inferred=False):
-        self.log('Getting relations, from: ' + from_id + ', to: ' + to_id + '...')
+        logging.info('Getting relations, from: ' + from_id + ', to: ' + to_id + '...')
         if type == 'revoked-by':
             return []
 
@@ -487,7 +490,7 @@ class OpenCTIApiClient:
                         created=None,
                         modified=None
                         ):
-        self.log('Creating relation ' + from_role + ' => ' + to_role + '...')
+        logging.info('Creating relation ' + from_role + ' => ' + to_role + '...')
         query = """
              mutation StixRelationAdd($input: StixRelationAddInput!) {
                  stixRelationAdd(input: $input) {
@@ -558,7 +561,7 @@ class OpenCTIApiClient:
                     final_from_id = to_id
                     final_to_id = from_id
                 else:
-                    self.log('Cannot resolve roles, doing nothing (' + type + ': ' + from_type + ',' + to_type + ')')
+                    logging.info('Cannot resolve roles, doing nothing (' + type + ': ' + from_type + ',' + to_type + ')')
                     return None
 
             return self.create_relation(
@@ -581,7 +584,7 @@ class OpenCTIApiClient:
             )
 
     def delete_relation(self, id):
-        self.log('Deleting ' + id + '...')
+        logging.info('Deleting ' + id + '...')
         query = """
             mutation StixRelationEdit($id: ID!) {
                 stixRelationEdit(id: $id) {
@@ -592,7 +595,7 @@ class OpenCTIApiClient:
         self.query(query, {'id': id})
 
     def get_stix_observable_by_id(self, id):
-        self.log('Getting stix observable ' + id + '...')
+        logging.info('Getting stix observable ' + id + '...')
         query = """
             query StixObservable($id: String!) {
                 stixObservable(id: $id) {
@@ -667,7 +670,7 @@ class OpenCTIApiClient:
                                   created=None,
                                   modified=None
                                   ):
-        self.log('Creating marking definition ' + definition + '...')
+        logging.info('Creating marking definition ' + definition + '...')
         query = """
             mutation MarkingDefinitionAdd($input: MarkingDefinitionAddInput) {
                 markingDefinitionAdd(input: $input) {
@@ -747,7 +750,7 @@ class OpenCTIApiClient:
                                   created=None,
                                   modified=None
                                   ):
-        self.log('Creating external reference ' + source_name + '...')
+        logging.info('Creating external reference ' + source_name + '...')
         query = """
             mutation ExternalReferenceAdd($input: ExternalReferenceAddInput) {
                 externalReferenceAdd(input: $input) {
@@ -820,7 +823,7 @@ class OpenCTIApiClient:
                                 stix_id=None,
                                 created=None,
                                 modified=None):
-        self.log('Creating kill chain phase ' + phase_name + '...')
+        logging.info('Creating kill chain phase ' + phase_name + '...')
         query = """
                mutation KillChainPhaseAdd($input: KillChainPhaseAddInput) {
                    killChainPhaseAdd(input: $input) {
@@ -864,7 +867,7 @@ class OpenCTIApiClient:
             )
 
     def get_identity(self, id):
-        self.log('Getting identity ' + id + '...')
+        logging.info('Getting identity ' + id + '...')
         query = """
             query Identity($id: String!) {
                 identity(id: $id) {
@@ -912,7 +915,7 @@ class OpenCTIApiClient:
         return result['data']['identity']
 
     def get_identities(self, limit=10000):
-        self.log('Getting identities...')
+        logging.info('Getting identities...')
         query = """
             query Identities($first: Int) {
                 identities(first: $first) {
@@ -964,7 +967,7 @@ class OpenCTIApiClient:
         return self.parse_multiple(result['data']['identities'])
 
     def create_identity(self, type, name, description, id=None, stix_id=None, created=None, modified=None):
-        self.log('Creating identity ' + name + '...')
+        logging.info('Creating identity ' + name + '...')
         query = """
             mutation IdentityAdd($input: IdentityAddInput) {
                 identityAdd(input: $input) {
@@ -1011,7 +1014,7 @@ class OpenCTIApiClient:
             )
 
     def get_threat_actor(self, id):
-        self.log('Getting threat actor ' + id + '...')
+        logging.info('Getting threat actor ' + id + '...')
         query = """
             query ThreatActor($id: String!) {
                 threatActor(id: $id) {
@@ -1065,7 +1068,7 @@ class OpenCTIApiClient:
         return result['data']['threatActor']
 
     def get_threat_actors(self, limit=10000):
-        self.log('Getting threat actors...')
+        logging.info('Getting threat actors...')
         query = """
             query ThreatActors($first: Int) {
                 threatActors(first: $first) {
@@ -1136,7 +1139,7 @@ class OpenCTIApiClient:
                             created=None,
                             modified=None
                             ):
-        self.log('Creating threat actor ' + name + '...')
+        logging.info('Creating threat actor ' + name + '...')
         query = """
             mutation ThreatActorAdd($input: ThreatActorAddInput) {
                 threatActorAdd(input: $input) {
@@ -1198,7 +1201,7 @@ class OpenCTIApiClient:
             )
 
     def get_intrusion_set(self, id):
-        self.log('Getting intrusion set ' + id + '...')
+        logging.info('Getting intrusion set ' + id + '...')
         query = """
             query IntrusionSet($id: String!) {
                 intrusionSet(id: $id) {
@@ -1252,7 +1255,7 @@ class OpenCTIApiClient:
         return result['data']['intrusionSet']
 
     def get_intrusion_sets(self, limit=10000):
-        self.log('Getting intrusion sets...')
+        logging.info('Getting intrusion sets...')
         query = """
             query IntrusionSets($first: Int) {
                 intrusionSets(first: $first) {
@@ -1324,7 +1327,7 @@ class OpenCTIApiClient:
                              created=None,
                              modified=None
                              ):
-        self.log('Creating intrusion set ' + name + '...')
+        logging.info('Creating intrusion set ' + name + '...')
         query = """
             mutation IntrusionSetAdd($input: IntrusionSetAddInput) {
                 intrusionSetAdd(input: $input) {
@@ -1389,7 +1392,7 @@ class OpenCTIApiClient:
             )
 
     def get_campaign(self, id):
-        self.log('Getting campaign ' + id + '...')
+        logging.info('Getting campaign ' + id + '...')
         query = """
             query Campaign($id: String!) {
                 campaign(id: $id) {
@@ -1439,7 +1442,7 @@ class OpenCTIApiClient:
         return result['data']['campaign']
 
     def get_campaigns(self, limit=10000):
-        self.log('Getting campaigns...')
+        logging.info('Getting campaigns...')
         query = """
             query Campaigns($first: Int) {
                 campaigns(first: $first) {
@@ -1503,7 +1506,7 @@ class OpenCTIApiClient:
                         created=None,
                         modified=None
                         ):
-        self.log('Creating campaign ' + name + '...')
+        logging.info('Creating campaign ' + name + '...')
         query = """
             mutation CampaignAdd($input: CampaignAddInput) {
                 campaignAdd(input: $input) {
@@ -1556,7 +1559,7 @@ class OpenCTIApiClient:
             )
 
     def get_incident(self, id):
-        self.log('Getting incident ' + id + '...')
+        logging.info('Getting incident ' + id + '...')
         query = """
             query Incident($id: String!) {
                 incident(id: $id) {
@@ -1606,7 +1609,7 @@ class OpenCTIApiClient:
         return result['data']['incident']
 
     def get_incidents(self, limit=10000):
-        self.log('Getting incidents...')
+        logging.info('Getting incidents...')
         query = """
             query Incidents($first: Int) {
                 incidents(first: $first) {
@@ -1670,7 +1673,7 @@ class OpenCTIApiClient:
                         created=None,
                         modified=None
                         ):
-        self.log('Creating incident ' + name + '...')
+        logging.info('Creating incident ' + name + '...')
         query = """
            mutation IncidentAdd($input: IncidentAddInput) {
                incidentAdd(input: $input) {
@@ -1729,7 +1732,7 @@ class OpenCTIApiClient:
             )
 
     def get_malware(self, id):
-        self.log('Getting malware ' + id + '...')
+        logging.info('Getting malware ' + id + '...')
         query = """
             query Malware($id: String!) {
                 malware(id: $id) {
@@ -1790,7 +1793,7 @@ class OpenCTIApiClient:
         return result['data']['malware']
 
     def get_malwares(self, limit=10000):
-        self.log('Getting malwares...')
+        logging.info('Getting malwares...')
         query = """
             query Malwares($first: Int) {
                 malwares(first: $first) {
@@ -1855,7 +1858,7 @@ class OpenCTIApiClient:
         return self.parse_multiple(result['data']['malwares'])
 
     def create_malware(self, name, description, id=None, stix_id=None, created=None, modified=None):
-        self.log('Creating malware ' + name + '...')
+        logging.info('Creating malware ' + name + '...')
         query = """
             mutation MalwareAdd($input: MalwareAddInput) {
                 malwareAdd(input: $input) {
@@ -1892,7 +1895,7 @@ class OpenCTIApiClient:
             )
 
     def get_tool(self, id):
-        self.log('Getting tool ' + id + '...')
+        logging.info('Getting tool ' + id + '...')
         query = """
             query Tool($id: String!) {
                 tool(id: $id) {
@@ -1940,7 +1943,7 @@ class OpenCTIApiClient:
         return result['data']['tool']
 
     def get_tools(self, limit=10000):
-        self.log('Getting tools...')
+        logging.info('Getting tools...')
         query = """
             query Tools($first: Int) {
                 tools(first: $first) {
@@ -1992,7 +1995,7 @@ class OpenCTIApiClient:
         return self.parse_multiple(result['data']['tools'])
 
     def create_tool(self, name, description, id=None, stix_id=None, created=None, modified=None):
-        self.log('Creating tool ' + name + '...')
+        logging.info('Creating tool ' + name + '...')
         query = """
             mutation ToolAdd($input: ToolAddInput) {
                 toolAdd(input: $input) {
@@ -2029,7 +2032,7 @@ class OpenCTIApiClient:
             )
 
     def get_vulnerability(self, id):
-        self.log('Getting vulnerability ' + id + '...')
+        logging.info('Getting vulnerability ' + id + '...')
         query = """
             query Vulnerability($id: String!) {
                 vulnerability(id: $id) {
@@ -2076,7 +2079,7 @@ class OpenCTIApiClient:
         return result['data']['vulnerability']
 
     def get_vulnerabilities(self, limit=10000):
-        self.log('Getting vulnerabilities...')
+        logging.info('Getting vulnerabilities...')
         query = """
             query Vulnerabilities($first: Int) {
                 vulnerabilities(first: $first) {
@@ -2127,7 +2130,7 @@ class OpenCTIApiClient:
         return self.parse_multiple(result['data']['vulnerabilities'])
 
     def create_vulnerability(self, name, description, id=None, stix_id=None, created=None, modified=None):
-        self.log('Creating tool ' + name + '...')
+        logging.info('Creating tool ' + name + '...')
         query = """
             mutation VulnerabilityAdd($input: VulnerabilityAddInput) {
                 vulnerabilityAdd(input: $input) {
@@ -2164,7 +2167,7 @@ class OpenCTIApiClient:
             )
 
     def get_attack_pattern(self, id):
-        self.log('Getting attack pattern ' + id + '...')
+        logging.info('Getting attack pattern ' + id + '...')
         query = """
             query AttackPattern($id: String!) {
                 attackPattern(id: $id) {
@@ -2243,7 +2246,7 @@ class OpenCTIApiClient:
         return result['data']['attackPattern']
 
     def get_attack_patterns(self, limit=10000):
-        self.log('Getting attack patterns...')
+        logging.info('Getting attack patterns...')
         query = """
             query AttackPatterns($first: Int) {
                 attackPatterns(first: $first) {
@@ -2334,7 +2337,7 @@ class OpenCTIApiClient:
                               stix_id=None,
                               created=None,
                               modified=None):
-        self.log('Creating attack pattern ' + name + '...')
+        logging.info('Creating attack pattern ' + name + '...')
         query = """
            mutation AttackPatternAdd($input: AttackPatternAddInput) {
                attackPatternAdd(input: $input) {
@@ -2383,7 +2386,7 @@ class OpenCTIApiClient:
             )
 
     def get_course_of_action(self, id):
-        self.log('Getting course of action ' + id + '...')
+        logging.info('Getting course of action ' + id + '...')
         query = """
             query CourseOfAction($id: String!) {
                 courseOfAction(id: $id) {
@@ -2430,7 +2433,7 @@ class OpenCTIApiClient:
         return result['data']['courseOfAction']
 
     def get_course_of_actions(self, limit=10000):
-        self.log('Getting course of actions...')
+        logging.info('Getting course of actions...')
         query = """
             query CourseOfActions($first: Int) {
                 courseOfActions(first: $first) {
@@ -2481,7 +2484,7 @@ class OpenCTIApiClient:
         return self.parse_multiple(result['data']['courseOfActions'])
 
     def create_course_of_action(self, name, description, id=None, stix_id=None, created=None, modified=None):
-        self.log('Creating course of action ' + name + '...')
+        logging.info('Creating course of action ' + name + '...')
         query = """
            mutation CourseOfActionAdd($input: CourseOfActionAddInput) {
                courseOfActionAdd(input: $input) {
@@ -2519,7 +2522,7 @@ class OpenCTIApiClient:
             )
 
     def get_report(self, id):
-        self.log('Getting report ' + id + '...')
+        logging.info('Getting report ' + id + '...')
         query = """
             query Report($id: String!) {
                 report(id: $id) {
@@ -2613,7 +2616,7 @@ class OpenCTIApiClient:
         return result['data']['report']
 
     def get_reports(self, limit=10000):
-        self.log('Getting reports...')
+        logging.info('Getting reports...')
         query = """
             query Reports($first: Int) {
                 reports(first: $first) {
@@ -2713,7 +2716,7 @@ class OpenCTIApiClient:
                       created=None,
                       modified=None
                       ):
-        self.log('Creating report ' + name + '...')
+        logging.info('Creating report ' + name + '...')
         query = """
            mutation ReportAdd($input: ReportAddInput) {
                reportAdd(input: $input) {
@@ -2809,7 +2812,7 @@ class OpenCTIApiClient:
             return report
 
     def get_stix_observable(self, id):
-        self.log('Getting observable ' + id + '...')
+        logging.info('Getting observable ' + id + '...')
         query = """
             query StixObservable($id: String!) {
                 stixObservable(id: $id) {
@@ -2892,7 +2895,7 @@ class OpenCTIApiClient:
         return result['data']['stixObservable']
 
     def get_stix_observable_by_value(self, observable_value):
-        self.log('Getting observable ' + observable_value + '...')
+        logging.info('Getting observable ' + observable_value + '...')
         query = """
             query StixObservables($observableValue: String!) {
                 stixObservables(observableValue: $observableValue) {
@@ -2966,7 +2969,7 @@ class OpenCTIApiClient:
             return None
 
     def get_stix_observables(self, limit=10000):
-        self.log('Getting observables...')
+        logging.info('Getting observables...')
         query = """
             query StixObservables($first: Int) {
                 stixObservables(first: $first) {
@@ -3045,7 +3048,7 @@ class OpenCTIApiClient:
                                created=None,
                                modified=None
                                ):
-        self.log('Creating observable ' + observable_value + '...')
+        logging.info('Creating observable ' + observable_value + '...')
         query = """
            mutation StixObservableAdd($input: StixObservableAddInput) {
                stixObservableAdd(input: $input) {
@@ -3556,22 +3559,22 @@ class OpenCTIApiClient:
 
     def stix2_import_bundle_from_file(self, file_path, update=False, types=[]):
         if not os.path.isfile(file_path):
-            self.log('The bundle file does not exists')
+            logging.error('The bundle file does not exists')
             return None
 
         with open(os.path.join(file_path)) as file:
             data = json.load(file)
 
-        stix2 = OpenCTIStix2(self)
+        stix2 = OpenCTIStix2(self, log_level)
         stix2.import_bundle(data, update, types)
 
     def stix2_import_bundle(self, json_data, update=False, types=[]):
         data = json.loads(json_data)
-        stix2 = OpenCTIStix2(self)
+        stix2 = OpenCTIStix2(self, log_level)
         stix2.import_bundle(data, update, types)
 
     def stix2_export_entity(self, entity_type, entity_id, mode='simple'):
-        stix2 = OpenCTIStix2(self)
+        stix2 = OpenCTIStix2(self, log_level)
         bundle = {
             'type': 'bundle',
             'id': 'bundle--' + str(uuid.uuid4()),
@@ -3586,7 +3589,7 @@ class OpenCTIApiClient:
         return bundle
 
     def stix2_export_bundle(self, types=[]):
-        stix2 = OpenCTIStix2(self)
+        stix2 = OpenCTIStix2(self, log_level)
         uuids = []
         bundle = {
             'type': 'bundle',
