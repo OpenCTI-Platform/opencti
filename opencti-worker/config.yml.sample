@@ -1,18 +1,14 @@
+worker:
+  log_level: 'info'
+
 opencti:
   api_url: 'http://localhost:8080'
-  api_key: 'REPLACE_API_KEY'
-  verbose: true
-
-grakn:
-  hostname: 'localhost'
-  port: 48555
-
-elasticsearch:
-  hostname: 'localhost'
-  port: 9200
+  token: 'ChangeMe'
 
 rabbitmq:
   hostname: 'localhost'
   port: 5672
+  port_management: 15672
+  management_ssl: False
   username: 'guest'
   password: 'guest'

@@ -1,9 +1,5 @@
 # coding: utf-8
 
-import os
-import time
-import yaml
-
 from grakn.client import GraknClient
 from elasticsearch import Elasticsearch
 
@@ -12,17 +8,12 @@ multiple_attributes = ['stix_label', 'alias', 'grant', 'platform', 'required_per
 
 class ElasticIndexer:
     def __init__(self):
-        # Load configuration
-        self.config = yaml.load(open(os.path.dirname(__file__) + '/config.yml'))
-
         # Initialize Grakn client
-        self.grakn = GraknClient(uri=self.config['grakn']['hostname'] + ':' + str(self.config['grakn']['port']))
+        self.grakn = GraknClient(uri='localhost:48555')
         self.session = self.grakn.session(keyspace='grakn')
 
         # Initialize ElasticSearch client
-        self.elasticsearch = Elasticsearch(
-            [{'host': self.config['elasticsearch']['hostname'], 'port': self.config['elasticsearch']['port']}],
-            timeout=30)
+        self.elasticsearch = Elasticsearch([{'host': 'localhost', 'port': 9200}], timeout=30)
 
         # Delete current indexes
         self.elasticsearch.indices.delete(index='stix-observables', ignore=[400, 404])
