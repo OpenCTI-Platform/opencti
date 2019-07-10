@@ -12,7 +12,7 @@ import logging
 from pycti.opencti_stix2 import OpenCTIStix2
 
 
-class OpenCTI:
+class OpenCTIApiClient:
     """
         Python API for OpenCTI
         :param url: OpenCTI URL

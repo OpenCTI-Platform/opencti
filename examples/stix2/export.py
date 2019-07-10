@@ -4,7 +4,7 @@ import os
 import yaml
 import json
 
-from opencti import OpenCTI
+from pycti import OpenCTIApiClient
 
 # Load configuration
 config = yaml.load(open(os.path.dirname(__file__) + '/../config.yml'))
@@ -13,7 +13,7 @@ config = yaml.load(open(os.path.dirname(__file__) + '/../config.yml'))
 export_file = './report.json'
 
 # OpenCTI initialization
-opencti = OpenCTI(config['opencti']['api_url'], config['opencti']['token'])
+opencti = OpenCTIApiClient(config['opencti']['api_url'], config['opencti']['token'])
 
 # Import the bundle
 bundle = opencti.stix2_export_entity('report', '{REPORT_ID}', 'full')
