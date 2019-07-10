@@ -7,6 +7,7 @@ import dateutil.parser
 import json
 import uuid
 import base64
+import logging
 
 from pycti.opencti_stix2 import OpenCTIStix2
 
@@ -15,28 +16,18 @@ class OpenCTI:
     """
         Python API for OpenCTI
         :param url: OpenCTI URL
-        :param key: The API key
-        :param verbose: Log all requests. Defaults to None
-        :param stdout: Display log to stdout. Defaults to None
+        :param token: The API key
     """
 
-    def __init__(self, url, key, log_file='', verbose=True, stdout=True):
+    def __init__(self, url, token):
         self.api_url = url + '/graphql'
-        self.log_file = log_file
-        self.verbose = verbose
-        self.stdout = stdout
         self.request_headers = {
-            'Authorization': 'Bearer ' + key,
+            'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json'
         }
 
     def log(self, message):
-        if self.stdout:
-            print(message)
-        if self.verbose and len(self.log_file) > 0:
-            file = open(self.log_file, 'a')
-            file.write('[' + datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S') + '] ' + message + "\n")
-            file.close()
+        logging.info('[' + datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S') + '] ' + message + "\n")
 
     def query(self, query, variables={}):
         r = requests.post(self.api_url, json={'query': query, 'variables': variables}, headers=self.request_headers)
@@ -409,7 +400,8 @@ class OpenCTI:
         result = self.query(query, {'id': id})
         return result['data']['stixRelation']
 
-    def get_stix_relations(self, from_id=None, to_id=None, type='stix_relation', first_seen=None, last_seen=None, inferred=False):
+    def get_stix_relations(self, from_id=None, to_id=None, type='stix_relation', first_seen=None, last_seen=None,
+                           inferred=False):
         self.log('Getting relations, from: ' + from_id + ', to: ' + to_id + '...')
         if type == 'revoked-by':
             return []
@@ -1717,8 +1709,10 @@ class OpenCTI:
         object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Incident')
         if object_result is not None:
             self.update_stix_domain_entity_field(object_result['id'], 'name', name)
-            description is not None and self.update_stix_domain_entity_field(object_result['id'], 'description', description)
-            first_seen is not None and self.update_stix_domain_entity_field(object_result['id'], 'first_seen', first_seen)
+            description is not None and self.update_stix_domain_entity_field(object_result['id'], 'description',
+                                                                             description)
+            first_seen is not None and self.update_stix_domain_entity_field(object_result['id'], 'first_seen',
+                                                                            first_seen)
             last_seen is not None and self.update_stix_domain_entity_field(object_result['id'], 'last_seen', last_seen)
             return object_result
         else:
@@ -2509,7 +2503,8 @@ class OpenCTI:
         })
         return result['data']['courseOfActionAdd']
 
-    def create_course_of_action_if_not_exists(self, name, description, id=None, stix_id=None, created=None, modified=None):
+    def create_course_of_action_if_not_exists(self, name, description, id=None, stix_id=None, created=None,
+                                              modified=None):
         object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Course-Of-Action')
         if object_result is not None:
             return object_result

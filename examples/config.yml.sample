@@ -1,7 +1,3 @@
 opencti:
   api_url: 'http://opencti.example.com'
-  api_key : 'XXxxXxXXxxX'
-  verbose: true
-
-mitre:
-  repository_path_cti: '/home/user/git/cti'
+  token : 'ChangeMe'
