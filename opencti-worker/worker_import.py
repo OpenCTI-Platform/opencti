@@ -10,17 +10,20 @@ import json
 import base64
 
 from requests.auth import HTTPBasicAuth
-from pycti import OpenCTI
+from pycti import OpenCTIApiClient
 
+EXCHANGE_NAME = 'amqp.opencti'
+DEFAULT_QUEUE_NAME = 'import-platform'
+DEFAULT_ROUTING_KEY = 'import.platform'
 
-class ConsumerImport:
+class WorkerImport:
     def __init__(self):
         # Get configuration
         config_file_path = os.path.dirname(os.path.abspath(__file__)) + '/config.yml'
         if os.path.isfile(config_file_path):
             config = yaml.load(open(config_file_path), Loader=yaml.FullLoader)
-            self.worker_log_level = config['worker']['log_level']
-            self.opencti_api_url = config['opencti']['api_url']
+            self.log_level = config['worker']['log_level']
+            self.opencti_url = config['opencti']['url']
             self.opencti_token = config['opencti']['token']
             self.rabbitmq_hostname = config['rabbitmq']['hostname']
             self.rabbitmq_port = config['rabbitmq']['port']
@@ -29,8 +32,8 @@ class ConsumerImport:
             self.rabbitmq_username = config['rabbitmq']['username']
             self.rabbitmq_password = config['rabbitmq']['password']
         else:
-            self.worker_log_level = os.getenv('WORKER_LOG_LEVEL', 'info')
-            self.opencti_api_url = os.getenv('OPENCTI_API_URL', 'http://localhost:4000')
+            self.log_level = os.getenv('WORKER_LOG_LEVEL', 'info')
+            self.opencti_url = os.getenv('OPENCTI_URL', 'http://localhost:4000')
             self.opencti_token = os.getenv('OPENCTI_TOKEN', 'ChangeMe')
             self.rabbitmq_hostname = os.getenv('RABBITMQ_HOSTNAME', 'localhost')
             self.rabbitmq_port = os.getenv('RABBITMQ_PORT', 5672)
@@ -40,17 +43,17 @@ class ConsumerImport:
             self.rabbitmq_password = os.getenv('RABBITMQ_PASSWORD', 'guest')
 
         # Check configuration
-        if len(self.opencti_token) == 0 or self.opencti_token == 'ChangeMe':
+        if len(self.opencti_token) == 0 or self.opencti_token == '<Must be the same as APP__ADMIN__TOKEN>':
             raise ValueError('Configuration not found')
 
         # Configure logger
-        numeric_level = getattr(logging, self.worker_log_level.upper(), None)
+        numeric_level = getattr(logging, self.log_level.upper(), None)
         if not isinstance(numeric_level, int):
-            raise ValueError('Invalid log level: ' + self.worker_log_level)
+            raise ValueError('Invalid log level: ' + self.log_level)
         logging.basicConfig(level=numeric_level)
 
         # Initialize OpenCTI client
-        self.opencti = OpenCTI(self.opencti_api_url, self.opencti_token)
+        self.opencti = OpenCTIApiClient(self.opencti_url, self.opencti_token)
 
     # Connect to RabbitMQ
     def _create_connection(self):
@@ -64,12 +67,12 @@ class ConsumerImport:
 
     # Create the exchange
     def _create_exchange(self, channel):
-        channel.exchange_declare(exchange='amqp.opencti', exchange_type='direct', durable=True)
+        channel.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='direct', durable=True)
 
     # Create the default queue for import coming from the platform
     def _create_default_queue(self, channel):
-        channel.queue_declare('import-platform', durable=True)
-        channel.queue_bind(queue='import-platform', exchange='opencti', routing_key='import')
+        channel.queue_declare(DEFAULT_QUEUE_NAME, durable=True)
+        channel.queue_bind(queue=DEFAULT_QUEUE_NAME, exchange=EXCHANGE_NAME, routing_key=DEFAULT_ROUTING_KEY)
 
     # List all connectors queues
     def _list_connectors_queues(self):
@@ -88,11 +91,11 @@ class ConsumerImport:
                     queues_list.append(queue['name'])
             return queues_list
         except:
-            logging.error('Unable to list queues and bind them')
+            logging.error('Unable to list import queues and bind them')
             return []
 
     # Callable for consuming a message
-    def _consume_message(self, channel, method, properties, body):
+    def _process_message(self, body):
         try:
             data = json.loads(body)
             logging.info('Received a new import of type "' + data['type'] + '"')
@@ -101,19 +104,21 @@ class ConsumerImport:
         except Exception as e:
             logging.error('An unexpected error occurred: { ' + str(e) + ' }')
             return False
-        channel.basic_ack(delivery_tag=method.delivery_tag)
 
     # Consume the queues during 1 minute
     def _consume(self, channel):
         timeout = time.time() + 60
         queues = self._list_connectors_queues()
-        queues.append('import-platform')
-        logging.info('Consumer has been started')
+        queues.append(DEFAULT_QUEUE_NAME)
+        logging.info('Import worker has been loaded')
         while True:
             if time.time() > timeout:
                 break
             for queue in queues:
-                channel.basic_get(queue, self._consume_message)
+                method, header, body = channel.basic_get(queue=queue)
+                if method:
+                    self._process_message(body)
+                    channel.basic_ack(delivery_tag=method.delivery_tag)
             time.sleep(1)
 
     # Start the main loop
@@ -127,14 +132,14 @@ class ConsumerImport:
                 self._consume(channel)
                 time.sleep(1)
         except:
-            raise ValueError('Unable to start the consumer')
+            raise ValueError('Unable to start the import worker')
 
 
 if __name__ == '__main__':
-    consumer_import = ConsumerImport()
+    worker_import = WorkerImport()
     while True:
         try:
-            consumer_import.start()
+            worker_import.start()
         except Exception as e:
             logging.error(e)
             time.sleep(5)

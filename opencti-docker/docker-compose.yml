@@ -31,11 +31,13 @@ services:
   worker:
     image: opencti/worker:1.1.0
     environment:
-      - OPENCTI_HOSTNAME=opencti
-      - OPENCTI_PORT=8080
+      - WORKER_LOG_LEVEL=info
+      - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=<Must be the same as APP__ADMIN__TOKEN>
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672
+      - RABBITMQ_PORT_MANAGEMENT=15672
+      - RABBITMQ_MANAGEMENT_SSL=false      
       - RABBITMQ_USERNAME=guest
       - RABBITMQ_PASSWORD=guest
     depends_on:

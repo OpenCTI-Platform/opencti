@@ -10,13 +10,17 @@ export const OPENCTI_WEB_TOKEN = 'Default';
 export const OPENCTI_ISSUER = 'OpenCTI';
 export const OPENCTI_DEFAULT_DURATION = 'P99Y';
 
+export const RABBITMQ_EXCHANGE_NAME = 'amqp.opencti';
+export const RABBITMQ_IMPORT_ROUTING_KEY = 'import.platform';
+export const RABBITMQ_EXPORT_ROUTING_KEY = 'export.platform';
+
 export const BUS_TOPICS = {
   Settings: {
     EDIT_TOPIC: 'SETTINGS_EDIT_TOPIC',
     ADDED_TOPIC: 'SETTINGS_ADDED_TOPIC'
   },
   Connector: {
-    EDIT_TOPIC: 'CONNECTOR_EDIT_TOPIC',
+    EDIT_TOPIC: 'CONNECTOR_EDIT_TOPIC'
   },
   StixDomainEntity: {
     EDIT_TOPIC: 'STIX_DOMAIN_ENTITY_EDIT_TOPIC',
@@ -49,7 +53,7 @@ export const BUS_TOPICS = {
 };
 
 // Environment from NODE_ENV environment variable
-nconf.env({ separator: '__', lowerCase: true,  parseValues: true });
+nconf.env({ separator: '__', lowerCase: true, parseValues: true });
 
 // Environment from "-e" command line parameter
 nconf.add('argv', {

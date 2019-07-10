@@ -61,7 +61,7 @@ class StixDomainEntityExport extends Component {
             query={stixDomainEntityExportContentQuery}
             variables={{
               id: stixDomainEntityId,
-              types: ['export.stix2.simple', 'export.stix2.full'],
+              types: ['stix2-bundle-simple', 'stix2-bundle-full'],
             }}
             render={({ props }) => {
               if (props) {

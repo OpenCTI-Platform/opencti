@@ -161,16 +161,17 @@ jobs:
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
-      - checkout
+      - attach_workspace:
+          at: ~/
       - setup_remote_docker
       - run:
           working_directory: ~/opencti/opencti-docker/opencti
           name: Build Docker image opencti/platform
-          command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/platform:latest . && docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
+          command: cp -a ../../opencti-graphql . && docker build -t opencti/platform:latest . && docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
       - run:
           working_directory: ~/opencti/opencti-docker/worker
           name: Build Docker image opencti/worker
-          command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/worker:latest . && docker tag opencti/worker:latest opencti/worker:${CIRCLE_TAG}
+          command: cp -a ../../opencti-worker . && docker build -t opencti/worker:latest . && docker tag opencti/worker:latest opencti/worker:${CIRCLE_TAG}
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -185,16 +186,17 @@ jobs:
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
-      - checkout
+      - attach_workspace:
+          at: ~/
       - setup_remote_docker
       - run:
           working_directory: ~/opencti/opencti-docker/opencti
           name: Build Docker image opencti/platform
-          command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/platform:rolling .
+          command: cp -a ../../opencti-graphql . && docker build -t opencti/platform:rolling .
       - run:
           working_directory: ~/opencti/opencti-docker/worker
           name: Build Docker image opencti/worker
-          command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/worker:rolling .
+          command: cp -a ../../opencti-worker . && docker build -t opencti/worker:rolling .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |

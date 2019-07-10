@@ -30,7 +30,11 @@ import {
   paginate as elPaginate
 } from '../database/elasticSearch';
 
-import { BUS_TOPICS } from '../config/conf';
+import {
+  BUS_TOPICS,
+  RABBITMQ_EXPORT_ROUTING_KEY,
+  RABBITMQ_EXCHANGE_NAME
+} from '../config/conf';
 import {
   findAll as relationFindAll,
   search as relationSearch
@@ -221,8 +225,8 @@ export const stixDomainEntityRefreshExport = async (
   );
   await commitWriteTx(wTx);
   send(
-    'opencti',
-    type,
+    RABBITMQ_EXCHANGE_NAME,
+    RABBITMQ_EXPORT_ROUTING_KEY,
     JSON.stringify({
       type,
       entity_type: stixDomainEntityType,

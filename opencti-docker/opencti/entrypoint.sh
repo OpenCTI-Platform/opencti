@@ -4,28 +4,29 @@
 /etc/init.d/rsyslog start
 
 # Wait launching
-while ! nc -z ${ELASTICSEARCH__HOSTNAME} 9200; do
+while ! nc -z ${ELASTICSEARCH__HOSTNAME} ${ELASTICSEARCH__PORT}; do
   echo "Waiting ElasticSearch to launch..."
   sleep 2
 done
-while ! nc -z ${GRAKN__HOSTNAME} 48555; do
+while ! nc -z ${GRAKN__HOSTNAME} ${GRAKN__PORT}; do
   echo "Waiting Grakn to launch..."
   sleep 2
 done
-while ! nc -z ${REDIS__HOSTNAME} 6379; do
+while ! nc -z ${REDIS__HOSTNAME} ${REDIS__PORT}; do
   echo "Waiting Redis to launch..."
   sleep 2
 done
-while ! nc -z ${RABBITMQ__HOSTNAME} 5672; do
+while ! nc -z ${RABBITMQ__HOSTNAME} ${RABBITMQ__PORT}; do
   echo "Waiting RabbitMQ to launch..."
   sleep 2
 done
 
-# Upgrade schema & do migrations
+# Correct working directory
 cd /opt/opencti
+
+# Upgrade schema & do migrations
 npm run schema
-TOKEN=`npm run migrate | grep "Token for user admin:" | awk '{split($0,a,": "); print a[2]}'`
-[ -n "$TOKEN" ] && echo $TOKEN > /opt/opencti/shared_config/token
+npm run migrate
 
 # Start
 node dist/server.js
