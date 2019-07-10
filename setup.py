@@ -7,12 +7,14 @@ from setuptools.command.install import install
 
 try:
     from pypandoc import convert
+
     read_md = lambda f: convert(f, 'rst')
 except ImportError:
     print("warning: pypandoc module not found, could not convert Markdown to RST")
     read_md = lambda f: open(f, 'r').read()
 
-VERSION = "1.2.7"
+VERSION = "1.2.8"
+
 
 class VerifyVersionCommand(install):
     description = 'verify that the git tag matches our version'
@@ -24,6 +26,7 @@ class VerifyVersionCommand(install):
                 tag, VERSION
             )
             sys.exit(info)
+
 
 setup(
     name='pycti',
@@ -50,7 +53,8 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     include_package_data=True,
-    install_requires=['requests', 'PyYAML', 'python-dateutil', 'datefinder', 'stix2', 'pytz'],
+    install_requires=['requests', 'PyYAML', 'python-dateutil', 'datefinder', 'stix2', 'stix2-validator', 'pytz',
+                      'pika'],
     cmdclass={
         'verify': VerifyVersionCommand,
     }

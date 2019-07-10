@@ -9,10 +9,10 @@ from opencti import OpenCTI
 config = yaml.load(open(os.path.dirname(__file__) + '/../config.yml'))
 
 # File to import
-file_to_import = config['mitre']['repository_path_cti'] + '/apt1.json'
+file_to_import = './enterprise-attack.json'
 
 # OpenCTI initialization
-opencti = OpenCTI(config['opencti']['api_url'], config['opencti']['api_key'], config['opencti']['log_file'], config['opencti']['verbose'])
+opencti = OpenCTI(config['opencti']['api_url'], config['opencti']['token'])
 
 # Import the bundle
 opencti.stix2_import_bundle_from_file(file_to_import, False)
