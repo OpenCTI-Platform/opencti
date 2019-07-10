@@ -1,8 +1,5 @@
 # coding: utf-8
 
-import os
-import yaml
-
 from grakn.client import GraknClient
 
 multiple_attributes = ['stix_label', 'alias', 'grant', 'platform', 'required_permission']
@@ -10,11 +7,8 @@ multiple_attributes = ['stix_label', 'alias', 'grant', 'platform', 'required_per
 
 class GraknDumper:
     def __init__(self):
-        # Load configuration
-        self.config = yaml.load(open(os.path.dirname(__file__) + '/config.yml'))
-
         # Initialize Grakn client
-        self.grakn = GraknClient(uri=self.config['grakn']['hostname'] + ':' + str(self.config['grakn']['port']))
+        self.grakn = GraknClient(uri='localhost:48555')
         self.session = self.grakn.session(keyspace='grakn')
 
         # Open the dump file

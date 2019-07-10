@@ -36,7 +36,7 @@ jobs:
           APP__REACTIVE: false
           GRAKN__HOSTNAME: 127.0.0.1
           ELASTICSEARCH__HOSTNAME: 127.0.0.1
-      - image: graknlabs/grakn:1.5.6
+      - image: graknlabs/grakn:1.5.7
       - image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
         environment:
           - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -71,7 +71,6 @@ jobs:
       - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push opencti master
       - run: mkdir release
       - run: cp -a opencti-graphql release/opencti
-      - run: cp -a opencti-integration release/opencti/integration
       - run: cp -a opencti-worker release/opencti/worker
       - run: 
           working_directory: ~/opencti/release
@@ -173,10 +172,6 @@ jobs:
           name: Build Docker image opencti/worker
           command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/worker:latest . && docker tag opencti/worker:latest opencti/worker:${CIRCLE_TAG}
       - run:
-          working_directory: ~/opencti/opencti-docker/integration
-          name: Build Docker image opencti/integration
-          command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/integration:latest . && docker tag opencti/integration:latest opencti/integration:${CIRCLE_TAG}
-      - run:
           name: Publish Docker Image to Docker Hub
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
@@ -184,8 +179,6 @@ jobs:
             docker push opencti/platform:${CIRCLE_TAG}
             docker push opencti/worker:latest
             docker push opencti/worker:${CIRCLE_TAG}
-            docker push opencti/integration:latest
-            docker push opencti/integration:${CIRCLE_TAG}
 
   docker_build_rolling:
     working_directory: ~/opencti
@@ -203,16 +196,11 @@ jobs:
           name: Build Docker image opencti/worker
           command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/worker:rolling .
       - run:
-          working_directory: ~/opencti/opencti-docker/integration
-          name: Build Docker image opencti/integration
-          command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/integration:rolling .
-      - run:
           name: Publish Docker Image to Docker Hub
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             docker push opencti/platform:rolling
             docker push opencti/worker:rolling
-            docker push opencti/integration:rolling
 
 workflows:
   opencti:

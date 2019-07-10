@@ -33,7 +33,7 @@ services:
     environment:
       - OPENCTI_HOSTNAME=opencti
       - OPENCTI_PORT=8080
-      - OPENCTI_TOKEN=ChangeMe
+      - OPENCTI_TOKEN=<Must be the same as APP__ADMIN__TOKEN>
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USERNAME=guest
@@ -41,26 +41,13 @@ services:
     depends_on:
       - opencti
     restart: always
-  integration:
-    image: opencti/integration:1.1.0
-    environment:
-      - OPENCTI_HOSTNAME=opencti
-      - OPENCTI_PORT=8080
-      - OPENCTI_TOKEN=43aff6bd-fe7a-4547-ba51-77eaed15ba10
-      - RABBITMQ_HOSTNAME=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=guest
-      - RABBITMQ_PASSWORD=guest
-    depends_on:
-      - opencti
-    restart: always    
   opencti:
     image: opencti/platform:1.1.0
     environment:
       - APP__PORT=8080
       - APP__ADMIN__EMAIL=admin@opencti.io
       - APP__ADMIN__PASSWORD=admin
-      - APP__ADMIN__TOKEN=43aff6bd-fe7a-4547-ba51-77eaed15ba10
+      - APP__ADMIN__TOKEN=ChangeMe
       - APP__LOGS=./logs
       - APP__CONNECTORS=./integration/connectors
       - APP__REACTIVE=true
