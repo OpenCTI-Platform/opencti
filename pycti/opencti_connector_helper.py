@@ -20,7 +20,7 @@ class OpenCTIConnectorHelper:
         :param rabbitmq_password: RabbitMQ password
     """
 
-    def __init__(self, identifier, config, rabbitmq_hostname, rabbitmq_port, rabbitmq_username, rabbitmq_password, log_level='info'):
+    def __init__(self, identifier, connector_config, rabbitmq_config, log_level='info'):
         # Configure logger
         numeric_level = getattr(logging, log_level.upper(), None)
         if not isinstance(numeric_level, int):
@@ -30,11 +30,11 @@ class OpenCTIConnectorHelper:
         # Initialize configuration
         self.connection = None
         self.identifier = identifier
-        self.config = config
-        self.rabbitmq_hostname = rabbitmq_hostname
-        self.rabbitmq_port = rabbitmq_port
-        self.rabbitmq_username = rabbitmq_username
-        self.rabbitmq_password = rabbitmq_password
+        self.config = connector_config
+        self.rabbitmq_hostname = rabbitmq_config['hostname']
+        self.rabbitmq_port = rabbitmq_config['port']
+        self.rabbitmq_username = rabbitmq_config['username']
+        self.rabbitmq_password = rabbitmq_config['password']
         self.queue_name = 'import-connectors-' + self.identifier
         self.routing_key = 'import.connectors.' + self.identifier
 
@@ -80,9 +80,9 @@ class OpenCTIConnectorHelper:
             self._reconnect()
 
         # Validate the STIX 2 bundle
-        validation = validate_string(bundle)
-        if not validation.is_valid:
-            raise ValueError('The bundle is not a valid STIX2 JSON:' + bundle)
+        #validation = validate_string(bundle)
+        #if not validation.is_valid:
+            #raise ValueError('The bundle is not a valid STIX2 JSON:' + bundle)
 
         # Prepare the message
         message = {
