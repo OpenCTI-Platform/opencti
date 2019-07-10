@@ -3,7 +3,7 @@
 import os
 import yaml
 
-from pycti.opencti import OpenCTI
+from pycti.opencti_api_client import OpenCTI
 
 # Load configuration
 config = yaml.load(open(os.path.dirname(__file__) + '/../config.yml'))
