@@ -20,7 +20,13 @@ class OpenCTIConnectorHelper:
         :param rabbitmq_password: RabbitMQ password
     """
 
-    def __init__(self, identifier, config, rabbitmq_hostname, rabbitmq_port, rabbitmq_username, rabbitmq_password):
+    def __init__(self, identifier, config, rabbitmq_hostname, rabbitmq_port, rabbitmq_username, rabbitmq_password, log_level='info'):
+        # Configure logger
+        numeric_level = getattr(logging, log_level, None)
+        if not isinstance(numeric_level, int):
+            raise ValueError('Invalid log level: ' + log_level)
+        logging.basicConfig(level=numeric_level)
+
         # Initialize configuration
         self.connection = None
         self.identifier = identifier
