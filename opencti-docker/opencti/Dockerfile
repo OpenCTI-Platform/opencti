@@ -9,9 +9,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y install curl rsyslog wget netcat
 RUN curl -sL https://deb.nodesource.com/setup_11.x | bash -
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
 
-# Download archive
-RUN wget -O /opt/opencti.tar.gz https://releases.opencti.io/opencti-REPLACE_DATE.tar.gz
-RUN cd /opt && tar xvfz opencti.tar.gz
+# Prepare directory
+COPY ./opencti-graphql /opt/opencti
 
 # Expose and entrypoint
 COPY entrypoint.sh /

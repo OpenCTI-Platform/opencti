@@ -44,7 +44,7 @@ const stixDomainEntitiesImportDataMutation = graphql`
 class StixDomainEntitiesImportData extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, type: 'import.stix2.bundle' };
+    this.state = { open: false, type: 'stix2-bundle' };
     this.uploadRef = React.createRef();
   }
 

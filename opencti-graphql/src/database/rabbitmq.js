@@ -2,7 +2,7 @@ import amqp from 'amqplib';
 import axios from 'axios';
 import conf, { logger } from '../config/conf';
 
-export const send = (exchangeName, key, message) => {
+export const send = (exchangeName, routingKey, message) => {
   if (exchangeName && key && message) {
     amqp
       .connect(
@@ -13,12 +13,12 @@ export const send = (exchangeName, key, message) => {
       .then(connection => {
         return connection.createChannel().then(channel => {
           logger.debug(
-            `[RABBITMQ] Sending ${message} to ${exchangeName} - ${key}`
+            `[RABBITMQ] Sending ${message} to ${exchangeName} - ${routingKey}`
           );
           return channel
-            .assertExchange(exchangeName, 'topic', { durable: true })
+            .assertExchange(exchangeName, 'direct', { durable: true })
             .then(() => {
-              channel.publish(exchangeName, key, Buffer.from(message));
+              channel.publish(exchangeName, routingKey, Buffer.from(message));
               setTimeout(() => {
                 connection.close();
               }, 5000);
