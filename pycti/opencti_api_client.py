@@ -20,10 +20,11 @@ class OpenCTIApiClient:
     """
 
     def __init__(self, url, token, log_level='info'):
+        self.log_level = log_level
         # Configure logger
-        numeric_level = getattr(logging, log_level.upper(), None)
+        numeric_level = getattr(logging, self.log_level.upper(), None)
         if not isinstance(numeric_level, int):
-            raise ValueError('Invalid log level: ' + log_level)
+            raise ValueError('Invalid log level: ' + self.log_level)
         logging.basicConfig(level=numeric_level)
 
         self.api_url = url + '/graphql'
@@ -3565,16 +3566,16 @@ class OpenCTIApiClient:
         with open(os.path.join(file_path)) as file:
             data = json.load(file)
 
-        stix2 = OpenCTIStix2(self, log_level)
+        stix2 = OpenCTIStix2(self, self.log_level)
         stix2.import_bundle(data, update, types)
 
     def stix2_import_bundle(self, json_data, update=False, types=[]):
         data = json.loads(json_data)
-        stix2 = OpenCTIStix2(self, log_level)
+        stix2 = OpenCTIStix2(self, self.log_level)
         stix2.import_bundle(data, update, types)
 
     def stix2_export_entity(self, entity_type, entity_id, mode='simple'):
-        stix2 = OpenCTIStix2(self, log_level)
+        stix2 = OpenCTIStix2(self, self.log_level)
         bundle = {
             'type': 'bundle',
             'id': 'bundle--' + str(uuid.uuid4()),
@@ -3589,7 +3590,7 @@ class OpenCTIApiClient:
         return bundle
 
     def stix2_export_bundle(self, types=[]):
-        stix2 = OpenCTIStix2(self, log_level)
+        stix2 = OpenCTIStix2(self, self.log_level)
         uuids = []
         bundle = {
             'type': 'bundle',
