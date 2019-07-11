@@ -29,7 +29,9 @@ services:
       - RABBITMQ_DEFAULT_PASS=guest    
     restart: always
   worker:
-    image: opencti/worker:1.1.0
+    image: opencti/worker:local
+    build:
+      context: ../opencti-worker    
     environment:
       - WORKER_LOG_LEVEL=info
       - OPENCTI_URL=http://opencti:8080
@@ -44,7 +46,9 @@ services:
       - opencti
     restart: always
   opencti:
-    image: opencti/platform:1.1.0
+    image: opencti/platform:local
+    build:
+      context: ../opencti-platform    
     environment:
       - APP__PORT=8080
       - APP__ADMIN__EMAIL=admin@opencti.io
