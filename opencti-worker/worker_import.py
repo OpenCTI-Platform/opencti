@@ -38,7 +38,7 @@ class WorkerImport:
             self.rabbitmq_hostname = os.getenv('RABBITMQ_HOSTNAME', 'localhost')
             self.rabbitmq_port = os.getenv('RABBITMQ_PORT', 5672)
             self.rabbitmq_port_management = os.getenv('RABBITMQ_PORT_MANAGEMENT', 15672)
-            self.rabbitmq_management_ssl = os.getenv('RABBITMQ_MANAGEMENT_SSL', False)
+            self.rabbitmq_management_ssl = os.getenv('RABBITMQ_MANAGEMENT_SSL', "false") == "true"
             self.rabbitmq_username = os.getenv('RABBITMQ_USERNAME', 'guest')
             self.rabbitmq_password = os.getenv('RABBITMQ_PASSWORD', 'guest')
 

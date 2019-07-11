@@ -37,7 +37,7 @@ services:
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_PORT_MANAGEMENT=15672
-      - RABBITMQ_MANAGEMENT_SSL=false      
+      - RABBITMQ_MANAGEMENT_SSL=false
       - RABBITMQ_USERNAME=guest
       - RABBITMQ_PASSWORD=guest
     depends_on:
@@ -51,7 +51,6 @@ services:
       - APP__ADMIN__PASSWORD=admin
       - APP__ADMIN__TOKEN=ChangeMe
       - APP__LOGS=./logs
-      - APP__CONNECTORS=./integration/connectors
       - APP__REACTIVE=true
       - APP__COOKIE_SECURE=false
       - GRAKN__HOSTNAME=grakn
@@ -75,7 +74,7 @@ services:
       - elasticsearch
       - rabbitmq
     restart: always
-  connector-openbcti:
+  connector-opencti:
     image: opencti/connector-opencti:1.1.0
     environment:
       - RABBITMQ_HOSTNAME=rabbitmq

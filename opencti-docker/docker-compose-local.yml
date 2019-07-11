@@ -35,7 +35,7 @@ services:
     environment:
       - WORKER_LOG_LEVEL=info
       - OPENCTI_URL=http://opencti:8080
-      - OPENCTI_TOKEN=<Must be the same as APP__ADMIN__TOKEN>
+      - OPENCTI_TOKEN=9c92629b-2cae-4463-bc0f-4ce8b0fa3042
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_PORT_MANAGEMENT=15672
@@ -53,9 +53,8 @@ services:
       - APP__PORT=8080
       - APP__ADMIN__EMAIL=admin@opencti.io
       - APP__ADMIN__PASSWORD=admin
-      - APP__ADMIN__TOKEN=ChangeMe
+      - APP__ADMIN__TOKEN=9c92629b-2cae-4463-bc0f-4ce8b0fa3042
       - APP__LOGS=./logs
-      - APP__CONNECTORS=./integration/connectors
       - APP__REACTIVE=true
       - APP__COOKIE_SECURE=false
       - GRAKN__HOSTNAME=grakn
@@ -79,7 +78,7 @@ services:
       - elasticsearch
       - rabbitmq
     restart: always
-  connector-openbcti:
+  connector-opencti:
     image: opencti/connector-opencti:1.1.0
     environment:
       - RABBITMQ_HOSTNAME=rabbitmq
