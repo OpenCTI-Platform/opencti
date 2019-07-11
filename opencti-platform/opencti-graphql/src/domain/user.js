@@ -64,6 +64,17 @@ export const findAll = args => {
 
 export const findById = userId => getById(userId);
 
+export const findByEmail = async userEmail => {
+  const result = await queryOne(
+    `match $user isa User, has email "${escapeString(userEmail)}"; get;`,
+    ['user']
+  );
+  if (result) {
+    return result.user;
+  }
+  return null;
+};
+
 export const groups = (userId, args) =>
   paginate(
     `match $group isa Group; 
@@ -353,21 +364,24 @@ const OPENCTI_ADMIN_DNS = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
  * @returns {*}
  */
 export const initAdmin = async (email, password, tokenValue) => {
-  const admin = await findById(OPENCTI_ADMIN_DNS);
+  let admin = await findByEmail(email);
+  if (admin === null) {
+    admin = await findById(OPENCTI_ADMIN_DNS);
+  }
   const user = { name: 'system' };
   const tokenAdmin = generateOpenCTIWebToken(tokenValue);
   if (admin) {
     // Update email and password
-    await userEditField(user, OPENCTI_ADMIN_DNS, {
+    await userEditField(user, admin.id, {
       key: 'email',
       value: [email]
     });
-    await userEditField(user, OPENCTI_ADMIN_DNS, {
+    await userEditField(user, admin.id, {
       key: 'password',
       value: [password]
     });
     // Renew the token
-    await userRenewToken(OPENCTI_ADMIN_DNS, tokenAdmin);
+    await userRenewToken(admin.id, tokenAdmin);
   } else {
     await addUser(
       user,
