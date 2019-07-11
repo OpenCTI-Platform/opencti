@@ -914,7 +914,7 @@ class OpenCTIStix2:
                 if object_type in stix2.OBJ_MAP_OBSERVABLE:
 
                     # get the left hand side as string and use it for looking up the correct OpenCTI name
-                    lhs = str(pattern.operand.lhs)
+                    lhs = str(pattern.operand.lhs)  # this is "file:hashes.md5" from the reference pattern
                     if lhs in STIX2OPENCTI:
                         # the type and value can now be set
                         indicator_type = STIX2OPENCTI[lhs]
