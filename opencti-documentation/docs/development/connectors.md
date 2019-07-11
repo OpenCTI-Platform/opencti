@@ -4,6 +4,14 @@ title: Development of connectors
 sidebar_label: Connectors
 ---
 
+Connectors are the cornerstone of the OpenCTI platform and allow organizations to easily ingest new data on the platform. The OpenCTI core development team will provide as many connectors as they can but any developers can contribute to community connectors provided on the [official repository](https://github.com/OpenCTI-Platform/connectors).
+
+## Introduction
+
+We choose to have a very decentralized approach on connectors, in order to bring a maximum freedom to developers and vendors. So a connector on OpenCTI can be defined by **a standalone process that pushes an understandable format of data to an ingestion queue of messages**. For the moment, only a valid STIX2 bundle is supported, by we intend to support CSV and other formats in the future.
+
+
+
 ## Prerequisites
 
 - Docker

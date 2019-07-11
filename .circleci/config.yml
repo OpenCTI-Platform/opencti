@@ -7,22 +7,17 @@ jobs:
       - image: circleci/node:11-stretch
     steps:
       - checkout
-      - run:
-          name: "Pull Submodules"
-          command: |
-            git submodule init
-            git submodule update --remote
       - run: 
-          working_directory: ~/opencti/opencti-front
+          working_directory: ~/opencti/opencti-platform/opencti-front
           command: yarn install
       - run:
-          working_directory: ~/opencti/opencti-front
+          working_directory: ~/opencti/opencti-platform/opencti-front
           command: yarn build
       - run:
-          working_directory: ~/opencti/opencti-graphql
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn install
       - run:
-          working_directory: ~/opencti/opencti-graphql
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn build
       - persist_to_workspace:
           root: ~/
@@ -37,7 +32,7 @@ jobs:
           GRAKN__HOSTNAME: 127.0.0.1
           ELASTICSEARCH__HOSTNAME: 127.0.0.1
       - image: graknlabs/grakn:1.5.7
-      - image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
+      - image: docker.elastic.co/elasticsearch/elasticsearch:6.8.1
         environment:
           - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     steps:
@@ -55,7 +50,7 @@ jobs:
           name: Wait for ElasticSearch
           command: dockerize -wait tcp://localhost:9200 -timeout 1m        
       - run:
-          working_directory: ~/opencti/opencti-graphql
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn test
 
   package_rolling:
@@ -70,8 +65,8 @@ jobs:
       - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
       - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push opencti master
       - run: mkdir release
-      - run: cp -a opencti-graphql release/opencti
-      - run: cp -a opencti-worker release/opencti/worker
+      - run: cp -a ./opencti-platform/opencti-graphql release/opencti
+      - run: cp -a ./opencti-worker release/opencti/worker
       - run: 
           working_directory: ~/opencti/release
           command: tar -zcvf "opencti-$(date '+%Y%m%d').tar.gz" opencti
@@ -99,10 +94,10 @@ jobs:
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-graphql/public/ ./opencti-graphql/public/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-graphql/public/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-graphql/dist/ ./opencti-graphql/dist/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-graphql/dist/
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A
@@ -130,10 +125,10 @@ jobs:
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master          
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-graphql/public/ ./opencti-graphql/public/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-graphql/public/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-graphql/dist/ ./opencti-graphql/dist/
+          command: rsync -av --delete ~/opencti/oopencti-platform/pencti-graphql/dist/ ./opencti-graphql/dist/
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A
@@ -161,17 +156,16 @@ jobs:
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
-      - attach_workspace:
-          at: ~/
+      - checkout
       - setup_remote_docker
       - run:
-          working_directory: ~/opencti/opencti-docker/opencti
+          working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
-          command: cp -a ../../opencti-graphql . && docker build -t opencti/platform:latest . && docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
+          command: docker build -t opencti/platform:latest . && docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
       - run:
-          working_directory: ~/opencti/opencti-docker/worker
+          working_directory: ~/opencti/opencti-worker
           name: Build Docker image opencti/worker
-          command: cp -a ../../opencti-worker . && docker build -t opencti/worker:latest . && docker tag opencti/worker:latest opencti/worker:${CIRCLE_TAG}
+          command: docker build -t opencti/worker:latest . && docker tag opencti/worker:latest opencti/worker:${CIRCLE_TAG}
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -186,17 +180,16 @@ jobs:
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
-      - attach_workspace:
-          at: ~/
+      - checkout
       - setup_remote_docker
       - run:
-          working_directory: ~/opencti/opencti-docker/opencti
+          working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
-          command: cp -a ../../opencti-graphql . && docker build -t opencti/platform:rolling .
+          command: docker build -t opencti/platform:rolling .
       - run:
-          working_directory: ~/opencti/opencti-docker/worker
+          working_directory: ~/opencti/opencti-worker
           name: Build Docker image opencti/worker
-          command: cp -a ../../opencti-worker . && docker build -t opencti/worker:rolling .
+          command: docker build -t opencti/worker:rolling .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
