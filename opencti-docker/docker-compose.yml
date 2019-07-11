@@ -115,7 +115,7 @@ services:
       - MITRE_NAME=MITRE\ ATT&CK
       - MITRE_CONFIDENCE_LEVEL=3
       - MITRE_ENTERPRISE_FILE_URL=https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json
-      - MITRE_ENTITIES=attack-pattern,course-of-action,intrusion-set,malware,tool
+      - MITRE_ENTITIES=identity,attack-pattern,course-of-action,intrusion-set,malware,tool
       - MITRE_INTERVAL=7 # Days
       - MITRE_LOG_LEVEL=info    
 volumes:
