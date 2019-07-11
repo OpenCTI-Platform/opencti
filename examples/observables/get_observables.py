@@ -3,21 +3,16 @@
 import os
 import yaml
 
-from pycti.opencti_api_client import OpenCTI
+from pycti import OpenCTIApiClient
 
 # Load configuration
 config = yaml.load(open(os.path.dirname(__file__) + '/../config.yml'))
 
-# File to import
-file_to_import = config['mitre']['repository_path_cti'] + '/enterprise-attack/enterprise-attack.json'
-
 # OpenCTI initialization
-opencti = OpenCTI(config['opencti']['api_url'], config['opencti']['api_key'], config['opencti']['log_file'], config['opencti']['verbose'])
+opencti_api_client = OpenCTIApiClient(config['opencti']['url'], config['opencti']['token'], 'info')
 
 # Get observables and their context
-observables = opencti.get_stix_observables(10)
-
-opencti.health_check()
+observables = opencti_api_client.get_stix_observables(10)
 
 for observable in observables:
     observable_value = observable['observable_value']
