@@ -1,4 +1,5 @@
 worker:
+  type: 'import' # import or export
   log_level: 'info'
 
 opencti:

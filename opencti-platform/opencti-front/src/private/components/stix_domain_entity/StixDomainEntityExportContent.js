@@ -55,7 +55,7 @@ class StixDomainEntityExportContentComponent extends Component {
     this.subscription = interval$.subscribe(() => {
       this.props.relay.refetch({
         id: this.props.stixDomainEntity.id,
-        types: ['export.stix2.simple', 'export.stix2.full'],
+        types: ['stix2-bundle-simple', 'stix2-bundle-full'],
       });
     });
   }
@@ -71,7 +71,7 @@ class StixDomainEntityExportContentComponent extends Component {
         id: this.props.stixDomainEntity.id,
         entityType: this.props.stixDomainEntityType,
         type,
-        types: ['export.stix2.simple', 'export.stix2.full'],
+        types: ['stix2-bundle-simple', 'stix2-bundle-full'],
       },
     });
   }
@@ -87,13 +87,13 @@ class StixDomainEntityExportContentComponent extends Component {
     const { t, nsdt, stixDomainEntity } = this.props;
     const exportStix2Simple = head(
       filter(
-        n => n.export_type === 'export.stix2.simple',
+        n => n.export_type === 'stix2-bundle-simple',
         stixDomainEntity.exports,
       ),
     );
     const exportStix2Full = head(
       filter(
-        n => n.export_type === 'export.stix2.full',
+        n => n.export_type === 'stix2-bundle-full',
         stixDomainEntity.exports,
       ),
     );
@@ -139,7 +139,7 @@ class StixDomainEntityExportContentComponent extends Component {
                 color="secondary"
                 onClick={this.handleRefreshExport.bind(
                   this,
-                  'export.stix2.simple',
+                  'stix2-bundle-simple',
                 )}
               >
                 <Refresh />
@@ -182,7 +182,7 @@ class StixDomainEntityExportContentComponent extends Component {
                 color="secondary"
                 onClick={this.handleRefreshExport.bind(
                   this,
-                  'export.stix2.full',
+                  'stix2-bundle-full',
                 )}
               >
                 <Refresh />

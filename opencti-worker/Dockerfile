@@ -14,7 +14,7 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8 
 
 # Copy the worker
-COPY . /opt/opencti-worker
+COPY src /opt/opencti-worker
 
 # Install Python modules
 RUN cd /opt/opencti-worker && pip3 install -r requirements.txt
