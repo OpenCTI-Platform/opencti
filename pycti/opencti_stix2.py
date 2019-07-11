@@ -8,9 +8,21 @@ import dateutil.parser
 import pytz
 
 datefinder.ValueError = ValueError, OverflowError
+import stix2
 from stix2 import ObjectPath, ObservationExpression, EqualityComparisonExpression, HashConstant
 
 utc = pytz.UTC
+
+# TODO: update this mapping with all the known OpenCTI types
+#       the ones below were taken from the misp connector
+STIX2OPENCTI = {
+    'file:hashes.md5': 'File-MD5',
+    'file:hashes.sha1': 'File-SHA1',
+    'file:hashes.sha256': 'File-SHA256',
+    'ipv4-addr:value': 'IPv4-Addr',
+    'domain:value': 'Domain',
+    'url:value': 'URL',
+}
 
 
 class OpenCTIStix2:
@@ -881,17 +893,48 @@ class OpenCTIStix2:
         return self.prepare_export(entity, final_stix_observable)
 
     def create_indicator(self, stix_object, update=False):
+        indicator_type = None
+        indicator_value = None
+
+        # check the custom stix2 fields
         if 'x_opencti_observable_type' in stix_object and 'x_opencti_observable_value' in stix_object:
+            indicator_type = stix_object['x_opencti_observable_type']
+            indicator_value = stix_object['x_opencti_observable_value']
+        else:
+            # check if the indicator is a 'simple' type (i.e it only has exactly one "Comparison Expression")
+            # there is no good way of checking this, so this is this is done by using the stix pattern parser, and
+            # checking that the pattern's operator is '='
+            # The following pattern will be used for reference:
+            #   [file:hashes.md5 = 'd41d8cd98f00b204e9800998ecf8427e']
+            pattern = stix2.pattern_visitor.create_pattern_object(stix_object['pattern'])
+            if pattern.operand.operator == '=':
+
+                # get the object type (here 'file') and check that it is a standard observable type
+                object_type = pattern.operand.lhs.object_type_name
+                if object_type in stix2.OBJ_MAP_OBSERVABLE:
+
+                    # get the left hand side as string and use it for looking up the correct OpenCTI name
+                    lhs = str(pattern.operand.lhs)
+                    if lhs in STIX2OPENCTI:
+                        # the type and value can now be set
+                        indicator_type = STIX2OPENCTI[lhs]
+                        indicator_value = pattern.operand.rhs.value
+
+        # check that the indicator type and value have been set before creating the indicator
+        if indicator_type and indicator_value:
             return self.opencti.create_stix_observable_if_not_exists(
-                stix_object['x_opencti_observable_type'],
-                stix_object['x_opencti_observable_value'],
+                indicator_type,
+                indicator_value,
                 self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
                 stix_object['x_opencti_id'] if 'x_opencti_id' in stix_object else None,
                 stix_object['id'] if 'id' in stix_object else None,
                 stix_object['created'] if 'created' in stix_object else None,
                 stix_object['modified'] if 'modified' in stix_object else None,
             )
-        # TODO: Implement extraction of observables from STIX2 patterns
+        else:
+            # log that the indicator could not be parsed
+            logging.info("  Cannot handle indicator: {id}".format(id=stix_object['stix_id']))
+
         return None
 
     def export_stix_relation(self, entity):
