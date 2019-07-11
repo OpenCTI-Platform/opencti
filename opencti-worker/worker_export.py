@@ -54,7 +54,7 @@ class WorkerExport:
         logging.basicConfig(level=numeric_level)
 
         # Initialize OpenCTI client
-        self.opencti = OpenCTIApiClient(self.opencti_url, self.opencti_token)
+        self.opencti_api_client = OpenCTIApiClient(self.opencti_url, self.opencti_token)
 
     # Connect to RabbitMQ
     def _create_connection(self):
@@ -102,13 +102,13 @@ class WorkerExport:
             logging.info('Receiving new action of type: { ' + data['type'] + ' }')
             bundle = None
             if data['type'] == 'stix2-bundle-simple':
-                bundle = self.opencti.stix2_export_entity(data['entity_type'], data['entity_id'], 'simple')
+                bundle = self.opencti_api_client.stix2_export_entity(data['entity_type'], data['entity_id'], 'simple')
             if data["type"] == 'stix2-bundle-full':
-                bundle = self.opencti.stix2_export_entity(data['entity_type'], data['entity_id'], 'full')
+                bundle = self.opencti_api_client.stix2_export_entity(data['entity_type'], data['entity_id'], 'full')
 
             if bundle is not None:
                 bundle = base64.b64encode(bytes(json.dumps(bundle, indent=4), 'utf-8')).decode('utf-8')
-                self.opencti.push_stix_domain_entity_export(data['entity_id'], data['export_id'], bundle)
+                self.opencti_api_client.push_stix_domain_entity_export(data['entity_id'], data['export_id'], bundle)
         except Exception as e:
             logging.error('An unexpected error occurred: { ' + str(e) + ' }')
             return False

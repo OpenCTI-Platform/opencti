@@ -75,7 +75,18 @@ services:
       - elasticsearch
       - rabbitmq
     restart: always
-
+  connector-openctidata:
+    image: opencti/connector-openctidata:1.1.0
+    environment:
+      - RABBITMQ_HOSTNAME=rabbitmq
+      - RABBITMQ_PORT=5672 
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+      - OPENCTIDATA_SECTORS_FILE_URL=https://raw.githubusercontent.com/OpenCTI-Platform/datasets/master/data/sectors.json
+      - OPENCTIDATA_ENTITIES=sector,region,country,city
+      - OPENCTIDATA_INTERVAL=1
+      - OPENCTIDATA_LOG_LEVEL=info
+    restart: always
 volumes:
   grakndata:
   esdata:
