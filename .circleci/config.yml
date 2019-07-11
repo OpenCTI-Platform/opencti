@@ -243,14 +243,16 @@ workflows:
                 - master
       - docker_build_rolling:
           requires:
-            - package_rolling
+            - build
+            - test        
           filters:
             branches:
               only:
                 - master
       - docker_build:
           requires:
-            - package_rolling
+            - build
+            - test        
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
