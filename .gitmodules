@@ -1,3 +1,0 @@
-[submodule "opencti-integration/connectors"]
-	path = opencti-integration/connectors
-	url = https://github.com/OpenCTI-Platform/connectors

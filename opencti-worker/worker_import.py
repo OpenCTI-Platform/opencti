@@ -53,7 +53,7 @@ class WorkerImport:
         logging.basicConfig(level=numeric_level)
 
         # Initialize OpenCTI client
-        self.opencti = OpenCTIApiClient(self.opencti_url, self.opencti_token)
+        self.opencti_api_client = OpenCTIApiClient(self.opencti_url, self.opencti_token)
 
     # Connect to RabbitMQ
     def _create_connection(self):
@@ -100,7 +100,7 @@ class WorkerImport:
             data = json.loads(body)
             logging.info('Received a new import of type "' + data['type'] + '"')
             if data['type'] == 'stix2-bundle':
-                self.opencti.stix2_import_bundle(base64.b64decode(data['content']).decode('utf-8'))
+                self.opencti_api_client.stix2_import_bundle(base64.b64decode(data['content']).decode('utf-8'))
         except Exception as e:
             logging.error('An unexpected error occurred: { ' + str(e) + ' }')
             return False
