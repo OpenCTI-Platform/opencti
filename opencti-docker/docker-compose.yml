@@ -30,6 +30,8 @@ services:
     restart: always
   worker-import:
     image: opencti/worker:1.1.0
+    build:
+      context: ../opencti-worker
     environment:
       - WORKER_TYPE=import
       - WORKER_LOG_LEVEL=info
@@ -43,9 +45,14 @@ services:
       - RABBITMQ_PASSWORD=guest
     depends_on:
       - opencti
+    deploy:
+      mode: replicated
+      replicas: 4
     restart: always
   worker-exort:
     image: opencti/worker:1.1.0
+    build:
+      context: ../opencti-worker
     environment:
       - WORKER_TYPE=export
       - WORKER_LOG_LEVEL=info
@@ -59,9 +66,14 @@ services:
       - RABBITMQ_PASSWORD=guest
     depends_on:
       - opencti
+    deploy:
+      mode: replicated
+      replicas: 2      
     restart: always    
   opencti:
     image: opencti/platform:1.1.0
+    build:
+      context: ../opencti-platform    
     environment:
       - APP__PORT=8080
       - APP__ADMIN__EMAIL=admin@opencti.io
@@ -115,7 +127,7 @@ services:
       - MITRE_NAME=MITRE\ ATT&CK
       - MITRE_CONFIDENCE_LEVEL=3
       - MITRE_ENTERPRISE_FILE_URL=https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json
-      - MITRE_ENTITIES=attack-pattern,course-of-action,intrusion-set,malware,tool
+      - MITRE_ENTITIES=identity,attack-pattern,course-of-action,intrusion-set,malware,tool
       - MITRE_INTERVAL=7 # Days
       - MITRE_LOG_LEVEL=info    
 volumes:

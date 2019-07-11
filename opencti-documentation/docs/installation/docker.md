@@ -16,10 +16,11 @@ $ cd opencti/opencti-docker
 
 ### Configure the environement
 
-Before running the docker-compose command, please change the secret key of the application in the file `docker-compose.yml`:
+Before running the docker-compose command, please change the admin token and password of the application in the file `docker-compose.yml`:
 
 ```bash
-- APP__SECRET=ChangeMe
+- APP__ADMIN__PASSWORD=admin
+- APP__ADMIN__TOKEN=ChangeMe
 ```
 
 As OpenCTI has a dependency to ElasticSearch, you have to set the `vm.max_map_count` before running the containers, as mentionned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
