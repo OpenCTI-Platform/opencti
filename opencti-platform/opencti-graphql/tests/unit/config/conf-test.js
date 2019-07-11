@@ -8,6 +8,4 @@ test('default configuration keys must exists', () => {
   expect(nconf.get('app:logs')).toEqual('./logs');
   // Db
   expect(nconf.get('grakn:hostname')).toBeDefined();
-  // Jwt
-  expect(nconf.get('app:secret')).toBeDefined();
 });
