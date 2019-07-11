@@ -12,7 +12,7 @@ config = yaml.load(open(os.path.dirname(__file__) + '/../config.yml'))
 file_to_import = './enterprise-attack.json'
 
 # OpenCTI initialization
-opencti = OpenCTIApiClient(config['opencti']['api_url'], config['opencti']['token'])
+opencti_api_client = OpenCTIApiClient(config['opencti']['url'], config['opencti']['token'])
 
 # Import the bundle
-opencti.stix2_import_bundle_from_file(file_to_import, False)
+opencti_api_client.stix2_import_bundle_from_file(file_to_import, False)
