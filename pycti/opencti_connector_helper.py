@@ -71,22 +71,24 @@ class OpenCTIConnectorHelper:
         self.connection = self._connect()
         self.channel = self._create_channel()
 
-    def send_stix2_bundle(self, bundle):
+    def send_stix2_bundle(self, bundle, entities_types=[]):
         """
             This method send a STIX2 bundle to RabbitMQ to be consumed by workers
             :param bundle: A valid STIX2 bundle
+            :param entities_types: Entities types to ingest
         """
         if not self.channel.is_open:
             self._reconnect()
 
         # Validate the STIX 2 bundle
-        #validation = validate_string(bundle)
-        #if not validation.is_valid:
-            #raise ValueError('The bundle is not a valid STIX2 JSON:' + bundle)
+        # validation = validate_string(bundle)
+        # if not validation.is_valid:
+        # raise ValueError('The bundle is not a valid STIX2 JSON:' + bundle)
 
         # Prepare the message
         message = {
             'type': 'stix2-bundle',
+            'entities_types': entities_types,
             'content': base64.b64encode(bundle.encode('utf-8')).decode('utf-8')
         }
 
