@@ -1,4 +1,4 @@
-config.yml
-__pycache__
-logs
-*.gql
+src/config.yml
+src/__pycache__
+src/logs
+src/*.gql
