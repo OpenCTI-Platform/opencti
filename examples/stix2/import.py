@@ -9,7 +9,7 @@ from pycti import OpenCTIApiClient
 config = yaml.load(open(os.path.dirname(__file__) + '/../config.yml'))
 
 # File to import
-file_to_import = '/home/oxid/Dropbox/Developpement/Associations/Luatix/Produits/OpenCTI/cti/enterprise-attack/enterprise-attack.json'
+file_to_import = './enterprise-attack.json'
 
 # OpenCTI initialization
 opencti_api_client = OpenCTIApiClient(config['opencti']['url'], config['opencti']['token'])
