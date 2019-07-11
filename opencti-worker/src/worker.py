@@ -112,7 +112,7 @@ class Worker:
             data = json.loads(body)
             logging.info('Received a new message of type "' + data['type'] + '"')
             if data['type'] == 'stix2-bundle':
-                self.opencti_api_client.stix2_import_bundle(base64.b64decode(data['content']).decode('utf-8'))
+                self.opencti_api_client.stix2_import_bundle(base64.b64decode(data['content']).decode('utf-8'), True, data['entities_types'])
             if data['type'] == 'stix2-bundle-simple':
                 bundle = self.opencti_api_client.stix2_export_entity(data['entity_type'], data['entity_id'], 'simple')
                 if bundle is not None:

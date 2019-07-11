@@ -43,9 +43,6 @@ services:
       - RABBITMQ_PASSWORD=guest
     depends_on:
       - opencti
-    deploy:
-      mode: replicated
-      replicas: 4    
     restart: always
   worker-exort:
     image: opencti/worker:1.1.0
@@ -62,9 +59,6 @@ services:
       - RABBITMQ_PASSWORD=guest
     depends_on:
       - opencti
-    deploy:
-      mode: replicated
-      replicas: 2     
     restart: always    
   opencti:
     image: opencti/platform:1.1.0

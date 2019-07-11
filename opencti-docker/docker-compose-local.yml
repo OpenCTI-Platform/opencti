@@ -44,7 +44,7 @@ services:
       - RABBITMQ_USERNAME=guest
       - RABBITMQ_PASSWORD=guest
     depends_on:
-      - opencti
+      - opencti  
     restart: always
   worker-export:
     image: opencti/worker:local
@@ -62,7 +62,7 @@ services:
       - RABBITMQ_USERNAME=guest
       - RABBITMQ_PASSWORD=guest
     depends_on:
-      - opencti
+      - opencti  
     restart: always    
   opencti:
     image: opencti/platform:local
@@ -111,19 +111,6 @@ services:
       - OPENCTI_INTERVAL=1 # Days
       - OPENCTI_LOG_LEVEL=info
     restart: always
-  connector-mitre:
-    image: opencti/connector-mitre:1.1.0
-    environment:
-      - RABBITMQ_HOSTNAME=rabbitmq
-      - RABBITMQ_PORT=5672 
-      - RABBITMQ_USERNAME=guest
-      - RABBITMQ_PASSWORD=guest
-      - MITRE_NAME=MITRE\ ATT&CK
-      - MITRE_CONFIDENCE_LEVEL=3
-      - MITRE_ENTERPRISE_FILE_URL=https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json
-      - MITRE_ENTITIES=attack-pattern,course-of-action,intrusion-set,malware,tool
-      - MITRE_INTERVAL=7 # Days
-      - MITRE_LOG_LEVEL=info    
 volumes:
   grakndata:
   esdata:
