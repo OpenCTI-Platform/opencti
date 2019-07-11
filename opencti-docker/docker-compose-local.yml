@@ -28,11 +28,12 @@ services:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest    
     restart: always
-  worker:
+  worker-import:
     image: opencti/worker:local
     build:
       context: ../opencti-worker    
     environment:
+      - WORKER_TYPE=import      
       - WORKER_LOG_LEVEL=info
       - OPENCTI_URL=http://opencti:8080
       - OPENCTI_TOKEN=9c92629b-2cae-4463-bc0f-4ce8b0fa3042
@@ -45,6 +46,24 @@ services:
     depends_on:
       - opencti
     restart: always
+  worker-export:
+    image: opencti/worker:local
+    build:
+      context: ../opencti-worker    
+    environment:
+      - WORKER_TYPE=export      
+      - WORKER_LOG_LEVEL=info
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=9c92629b-2cae-4463-bc0f-4ce8b0fa3042
+      - RABBITMQ_HOSTNAME=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_PORT_MANAGEMENT=15672
+      - RABBITMQ_MANAGEMENT_SSL=false      
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+    depends_on:
+      - opencti
+    restart: always    
   opencti:
     image: opencti/platform:local
     build:

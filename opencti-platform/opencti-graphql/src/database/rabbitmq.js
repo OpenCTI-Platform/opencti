@@ -3,7 +3,7 @@ import axios from 'axios';
 import conf, { logger } from '../config/conf';
 
 export const send = (exchangeName, routingKey, message) => {
-  if (exchangeName && key && message) {
+  if (exchangeName && routingKey && message) {
     amqp
       .connect(
         `amqp://${conf.get('rabbitmq:username')}:${conf.get(
