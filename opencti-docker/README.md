@@ -17,6 +17,11 @@ Before running the docker-compose command, please change the admin token and pas
 - APP__ADMIN__TOKEN=ChangeMe
 ```
 
+And the change the variable OPENCTI_TOKEN (for `worker-import` and `worker-export`) according to the value of APP__ADMIN__TOKEN
+```bash
+- OPENCTI_TOKEN=ChangeMe
+```
+
 As OpenCTI has a dependency to ElasticSearch, you have to set the `vm.max_map_count` before running the containers, as mentionned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
 
 ```bash

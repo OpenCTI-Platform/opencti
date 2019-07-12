@@ -36,7 +36,7 @@ services:
       - WORKER_TYPE=import
       - WORKER_LOG_LEVEL=info
       - OPENCTI_URL=http://opencti:8080
-      - OPENCTI_TOKEN=a5c2cb4f-806b-4bb6-82b7-9c8f262d13a1
+      - OPENCTI_TOKEN=ChangeMe
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_PORT_MANAGEMENT=15672
@@ -57,7 +57,7 @@ services:
       - WORKER_TYPE=export
       - WORKER_LOG_LEVEL=info
       - OPENCTI_URL=http://opencti:8080
-      - OPENCTI_TOKEN=a5c2cb4f-806b-4bb6-82b7-9c8f262d13a1
+      - OPENCTI_TOKEN=ChangeMe
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_PORT_MANAGEMENT=15672
@@ -78,7 +78,7 @@ services:
       - APP__PORT=8080
       - APP__ADMIN__EMAIL=admin@opencti.io
       - APP__ADMIN__PASSWORD=admin
-      - APP__ADMIN__TOKEN=a5c2cb4f-806b-4bb6-82b7-9c8f262d13a1
+      - APP__ADMIN__TOKEN=ChangeMe
       - APP__LOGS=./logs
       - APP__REACTIVE=true
       - APP__COOKIE_SECURE=false
