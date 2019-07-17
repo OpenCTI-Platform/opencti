@@ -26,9 +26,10 @@ import {
   monthFormat,
   yearFormat,
   queryOne,
-  commitWriteTx, getId, deleteEntityById
+  commitWriteTx,
+  deleteEntityById
 } from '../database/grakn';
-import { deleteEntity, index } from '../database/elasticSearch';
+import { index } from '../database/elasticSearch';
 import { stixDomainEntityDelete } from './stixDomainEntity';
 
 // Security related
