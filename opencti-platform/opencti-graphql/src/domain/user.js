@@ -26,9 +26,10 @@ import {
   monthFormat,
   yearFormat,
   queryOne,
-  commitWriteTx
+  commitWriteTx, getId, deleteEntityById
 } from '../database/grakn';
-import { index } from '../database/elasticSearch';
+import { deleteEntity, index } from '../database/elasticSearch';
+import { stixDomainEntityDelete } from './stixDomainEntity';
 
 // Security related
 export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
@@ -96,6 +97,18 @@ export const token = (userId, args, context) => {
     'x',
     'rel'
   ).then(result => result.node.uuid);
+};
+
+export const getTokenId = userId => {
+  return getObject(
+    `match $x isa Token;
+    $rel(authorization:$x, client:$client) isa authorize;
+    $client has internal_id "${escapeString(
+      userId
+    )}"; get $x, $rel; offset 0; limit 1;`,
+    'x',
+    'rel'
+  ).then(result => result.node.id);
 };
 
 export const addPerson = async (user, newUser) => {
@@ -333,6 +346,12 @@ export const meEditField = (user, userId, input) => {
     index('stix-domain-entities', 'stix_domain_entity', userToEdit);
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
   });
+};
+
+export const userDelete = async userId => {
+  const tokenId = await getTokenId(userId);
+  await deleteEntityById(tokenId);
+  return stixDomainEntityDelete(userId);
 };
 
 // Token related

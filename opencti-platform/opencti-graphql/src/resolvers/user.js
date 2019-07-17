@@ -10,7 +10,8 @@ import {
   userEditField,
   meEditField,
   userRenewToken,
-  setAuthenticationCookie
+  setAuthenticationCookie,
+  userDelete,
 } from '../domain/user';
 import {
   createdByRef,
@@ -21,8 +22,7 @@ import {
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete
+  stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -50,7 +50,7 @@ const userResolvers = {
       }),
     logout: (_, args, context) => logout(context.user, context.res),
     userEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(id),
+      delete: () => userDelete(id),
       fieldPatch: ({ input }) => userEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
