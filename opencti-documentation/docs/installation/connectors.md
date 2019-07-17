@@ -1,42 +1,91 @@
 ---
 id: connectors
-title: Connectors installation
+title: Connectors activation
 sidebar_label: Enable connectors
 ---
 
+## Introduction
 
+Connectors are standalone processes that are independant of the rest of the platform. They are using RabbitMQ to push data to OpenCTI, through a dedicated queue for each instance of connector. Depending on your deployment, you can enable connectors by using the connectors Docker images or launch them manually. 
 
-## Clone the repository
+## Connector configurations
 
-```bash
-$ mkdir /path/to/your/app && cd /path/to/your/app
-$ git clone https://github.com/OpenCTI-Platform/opencti.git
-$ cd opencti/opencti-docker
+All connectors have 2 mandatory configuration parameters, the `name` and the `confidence_level`. The `name` is the name of the instance of the connector. For instance, for the MISP connector, you can launch as many MISP connectors as you need, if you need to pull data from multiple MISP instances. 
+
+> The `name` of each instance of connector must be unique.
+
+> The `confidence_level` of the connector will be used to set the `confidence_level` of the relationships created by the connector. If a connector needs to create a relationship that already exists, it will check the current `confidence_level` and if it is lower than its own, it will update the relationship with the new information. If it is higher, it will do nothing and keep the existing relationship.
+
+## Docker activation
+
+You can either directly run the Docker image of connectors or add them to your current `docker-compose.yml` file.
+
+### Add a connector to your deployement
+
+For instance, to enable the MISP connector, you can add a new service to your `docker-compose.yml` file:
+
+```
+  connector-misp:
+    image: opencti/connector-misp:1.1.0
+    environment:
+      - RABBITMQ_HOSTNAME=localhost
+      - RABBITMQ_PORT=5672 
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+      - MISP_NAME=MISP\ Circle
+      - MISP_CONFIDENCE_LEVEL=3
+      - MISP_URL=http://localhost
+      - MISP_KEY=ChangeMe
+      - MISP_TAG=OpenCTI:\ Import
+      - MISP_UNTAG_EVENT=true
+      - MISP_IMPORTED_TAG=OpenCTI:\ Imported
+      - MISP_INTERVAL=1 # Minutes
+      - MISP_LOG_LEVEL=info
+    restart: always
+ ```
+
+### Launch a standalone connector
+
+To launch standalone connector, you can use the `docker-compose.yml` file of the connector itself. Just pull the [dedicated repository](https://github.com/OpenCTI-Platform/connectors) and start the connector:
+
+```
+$ git clone https://github.com/OpenCTI-Platform/connectors
+$ cd misp
 ```
 
-### Configure the environement
+Change the configuration in the `docker-compose.yml` accoarding to the parameters of the platform and of the targeted service. RabbitMQ credentials are the only parameters that the connector need to send data to OpenCTI. Then launch the connector:
 
-Before running the docker-compose command, please change the admin token and password of the application in the file `docker-compose.yml`:
-
-```bash
-- APP__ADMIN__PASSWORD=admin
-- APP__ADMIN__TOKEN=ChangeMe
 ```
-
-As OpenCTI has a dependency to ElasticSearch, you have to set the `vm.max_map_count` before running the containers, as mentionned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
-
-```bash
-$ sysctl -w vm.max_map_count=262144 
-```
-
-## Run
-
-```bash
 $ docker-compose up
 ```
 
-You can now go to http://localhost:8080 and log in with username `admin@opencti.io` and password `admin`.
+## Manual activation
 
-## Data persistence
+If you want to manually launch connector, you just have to install Python 3 and pip3 for dependencies:
 
-If you wish your OpenCTI data to be persistent in production, you should be aware of the  `volumes` section for both `Grakn` and `ElasticSearch` services in the `docker-compose.yml`.
+```
+$ apt install python3 python3-pip
+```
+
+Clone the [repository](https://github.com/OpenCTI-Platform/connectors) of the connectors:
+
+```
+$ git clone https://github.com/OpenCTI-Platform/connectors
+$ cd misp/src
+```
+
+Install dependencies and initialize the configuration:
+
+```
+$ pip3 install -r requirements.txt
+$ cp config.yml.sample config.yml
+```
+
+Change the `config.yml` content according to the parameters of the platform and of the targeted service and launch the connector:
+
+```
+$ python3 misp.py
+```
+
+
+

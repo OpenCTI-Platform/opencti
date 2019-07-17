@@ -46,7 +46,6 @@ import Cities from './components/Cities';
 import Organizations from './components/Organizations';
 import RootOrganization from './components/organization/Root';
 import Persons from './components/Persons';
-import Connectors from './components/Connectors';
 import ConnectorsStatus from './components/connector/ConnectorsStatus';
 import Settings from './components/Settings';
 import Users from './components/Users';
@@ -386,13 +385,13 @@ class Root extends Component {
                         <BoundaryRoute
                           exact
                           path="/dashboard/connectors"
-                          render={routeProps => (
-                            <Connectors {...routeProps} type="importer" />
+                          render={() => (
+                            <Redirect to="/dashboard/connectors/import" />
                           )}
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/connectors/status"
+                          path="/dashboard/connectors/import"
                           render={routeProps => (
                             <ConnectorsStatus {...routeProps} type="importer" />
                           )}

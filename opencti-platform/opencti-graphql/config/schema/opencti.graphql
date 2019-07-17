@@ -91,16 +91,18 @@ type DeliverDetails {
 type MessagesStats {
   deliver_details: DeliverDetails
 }
-type QueueStats {
+type QueueArguments {
+  config: String
+}
+type QueueMetrics {
   name: String
+  arguments: QueueArguments
   messages: Int
   messages_ready: Int
   messages_unacknowledged: Int
-  consumers: Int,
+  consumers: Int
+  idle_since: DateTime
   message_stats: MessagesStats
-}
-type QueuesStats {
-  queues: [QueueStats]
 }
 
 enum StatsOperation {
@@ -142,14 +144,6 @@ input SettingsAddInput {
   platform_external_auth: Boolean
   platform_registration: Boolean
   platform_demo: Boolean
-}
-
-### Connectors
-type Connector {
-  identifier: String
-  config_template: String
-  config: String
-  editContext: [EditUserContext]
 }
 
 ### Export
@@ -2071,11 +2065,9 @@ input RelationsAddInput {
 
 ### QUERIES
 type Query {
-  # Settings
+  # Technical
   settings: Settings
-  # Connectors
-  connectors: [Connector] @auth(for: ROLE_ADMIN)
-  connectorsStats: QueuesStats @auth(for: ROLE_ADMIN)
+  queuesMetrics(prefix: String): [QueueMetrics] @auth(for: ROLE_ADMIN)
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(
@@ -2723,9 +2715,6 @@ type Mutation {
   # Settings
   settingsAdd(input: SettingsAddInput): Settings @auth(for: ROLE_ADMIN)
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: ROLE_ADMIN)
-  # Connector
-  connectorConfig(identifier: String!, config: String!): Boolean
-    @auth(for: ROLE_ADMIN)
   # Import data
   importData(type: String!, file: Upload!): Boolean @auth
   # StixDomainEntity

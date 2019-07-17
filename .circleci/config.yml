@@ -67,7 +67,8 @@ jobs:
       - run: mkdir release
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
       - run: cp -a ./opencti-worker/src release/opencti/worker
-      - run: 
+      - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/connectors
+      - run:
           working_directory: ~/opencti/release
           command: tar -zcvf "opencti-$(date '+%Y%m%d').tar.gz" opencti
       - run: 
@@ -94,10 +95,16 @@ jobs:
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-graphql/public/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-graphql/dist/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker-import/          
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker-export/       
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A
@@ -125,10 +132,16 @@ jobs:
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master          
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-graphql/public/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/oopencti-platform/pencti-graphql/dist/ ./opencti-graphql/dist/
+          command: rsync -av --delete ~/opencti/opencti-platform/pencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker-import/          
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker-export/          
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A

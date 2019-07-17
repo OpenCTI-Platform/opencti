@@ -4,162 +4,34 @@ title: Development of connectors
 sidebar_label: Connectors
 ---
 
+> Available from the version 1.1.0
+
 Connectors are the cornerstone of the OpenCTI platform and allow organizations to easily ingest new data on the platform. The OpenCTI core development team will provide as many connectors as they can but any developers can contribute to community connectors provided on the [official repository](https://github.com/OpenCTI-Platform/connectors).
 
 ## Introduction
 
-We choose to have a very decentralized approach on connectors, in order to bring a maximum freedom to developers and vendors. So a connector on OpenCTI can be defined by **a standalone process that pushes an understandable format of data to an ingestion queue of messages**. For the moment, only a valid STIX2 bundle is supported, by we intend to support CSV and other formats in the future.
+We choose to have a very decentralized approach on connectors, in order to bring a maximum freedom to developers and vendors. So a connector on OpenCTI can be defined by **a standalone Python 3 process that pushes an understandable format of data to an ingestion queue of messages**. For the moment, only a valid STIX2 bundle is supported, by we intend to support CSV and other formats in the future.
+
+![Connector architecture](assets/development/connector_architecture.png "Connector architecture")
+
+## Development
+
+Each connector must implement a long-running process that can be launched just by executing the main Python file. The only mandatory dependency is the `OpenCTIConnectorHelper` class that enables the connector to send data to OpenCTI.
+
+### Connector configuration
+
+The connector configuration can be based on a `config.yml` located in the same directory than the main file or in environments variables when using Docker. The only 2 mandatory fields are `name` and `confidence_level`. 
 
 
-
-## Prerequisites
-
-- Docker
-- Node.JS (>= 10)
-- Python (>= 3)
-- Yarn (>= 1.16)
-
-### Installation of dependencies (Ubuntu 18.04)
-
-```bash
-$ sudo apt-get install nodejs python3 python3-pip
-$ sudo curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-$ sudo echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-$ sudo apt-get update && sudo apt-get install yarn
 ```
+from pycti import OpenCTIConnectorHelper
 
-### Docker stack
+connector_identifier = instance_name # where instance_name is lowercase and contains no special chars, unique based 
 
-As OpenCTI has a dependency to ElasticSearch, you have to set the *vm.max_map_count* before running the containers, as mentionned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
-
-```bash
-$ sysctl -w vm.max_map_count=262144 
-```
-
-* Grakn (Database) - *localhost/48555*
-* Elastic search (Index and search) - *localhost/9200*
-* Redis (Distribution cache for websocket events) - *localhost/6379*
-* RabbitMQ (Message broker for background tasks) - *localhost/5672*
-
-```bash
-$ docker-compose -f ./docker/docker-compose-dev.yml up -d
-```
-
-## Clone the project
-
-```bash
-$ mkdir /path/to/your/app && cd /path/to/your/app
-$ git clone --recursive https://github.com/Luatix/opencti.git
-$ cd opencti
-```
-
-## Application dependencies
-
-### Install the API dependencies
-
-```bash
-$ cd opencti-graphql
-$ yarn install
-```
-
-### Install the frontend dependencies
-```bash
-$ cd ../opencti-front
-$ yarn install
-```
-
-### Install the worker dependencies
-
-```bash
-$ pip3 install -r requirements.txt
-```
-
-### Install the integration dependencies
-
-```bash
-$ pip3 install -r requirements.txt
-```
-
-## Config and run
-
-### GraphQL API
-
-#### Configure
-
-```bash
-$ cp config/default.json config/development.json
-```
-By default the configuration match the docker stack configuration.
-
-#### Start
-
-```bash
-$ cd opencti-graphql
-$ yarn start
-```
-
-The first execution will create and migrate the schema. The admin token will be generated and printed in the console. You need to copy this token for configuration of the worker / integration.
-```bash
-Token for user admin: <OpenCTI token>
-```
-
-### Worker
-
-#### Configure
-
-```bash
-$ cd opencti-worker
-$ cp config.yml.sample config.yml
-```
-Change the *config.yml* file according to your <OpenCTI token>
-
-#### Start
-
-```bash
-$ python3 worker_export.py &
-$ python3 worker_import.py &
-```
-
-### Integration
-
-#### Configure
-
-```bash
-$ cd opencti-integration
-$ cp config.yml.sample config.yml
-```
-Change the *config.yml* file according to your <OpenCTI token>
-
-#### Start
-
-```bash
-$ python3 connectors_scheduler.py
-```
-
-### Frontend
-
-#### Start
-
-```bash
-$ cd opencti-frontend
-$ yarn start
-```
-
-The default username is *admin@opencti.io* and the password is *admin*. Login and get the administrator token in your profile.
-
-## Build for production use
-
-### Build the application
-
-```bash
-$ cd opencti-frontend
-$ yarn build
-$ cd ../opencti-graphql
-$ yarn build
-```
-
-### Start the production package
-
-```bash
-$ yarn serv
+opencti_connector_helper = OpenCTIConnectorHelper(
+	connector_identifier,
+    config_connector,
+    config_rabbitmq,
+    'info' # info, warning, error
+)
 ```

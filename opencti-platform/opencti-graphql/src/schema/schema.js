@@ -5,7 +5,7 @@ import { makeExecutableSchema } from 'graphql-tools';
 import ConstraintDirective from 'graphql-constraint-directive';
 import path from 'path';
 import settingsResolvers from '../resolvers/settings';
-import connectorResolvers from '../resolvers/connector';
+import connectorResolvers from '../resolvers/queue';
 import globalObjectResolvers from '../resolvers/globalObject';
 import stixEntityResolvers from '../resolvers/stixEntity';
 import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';

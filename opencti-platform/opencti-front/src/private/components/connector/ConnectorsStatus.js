@@ -21,10 +21,10 @@ class ConnectorsStatus extends Component {
       <div className={classes.container}>
         <QueryRenderer
           query={connectorsStatusContentQuery}
-          variables={{}}
+          variables={{ prefix: 'import-connectors' }}
           render={({ props }) => {
             if (props) {
-              return <ConnectorsStatusContent queuesStats={props} />;
+              return <ConnectorsStatusContent data={props} />;
             }
             return <div> &nbsp; </div>;
           }}
