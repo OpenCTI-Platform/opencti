@@ -15,7 +15,7 @@ import * as Yup from 'yup';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
-import { stixDomainEntitiesLinesSearchQuery } from '../stix_domain_entity/StixDomainEntitiesLines';
+import { stixDomainEntitiesLinesSearchQuery } from '../common/stix_domain_entities/StixDomainEntitiesLines';
 import { fetchQuery } from '../../../relay/environment';
 import Autocomplete from '../../../components/Autocomplete';
 

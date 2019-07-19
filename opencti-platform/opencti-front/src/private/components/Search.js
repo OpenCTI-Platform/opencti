@@ -10,10 +10,10 @@ import TopBar from './nav/TopBar';
 import Loader from '../Loader';
 import StixDomainEntitiesLines, {
   stixDomainEntitiesLinesQuery,
-} from './stix_domain_entity/StixDomainEntitiesLines';
+} from './common/stix_domain_entities/StixDomainEntitiesLines';
 import StixObservableSearchLines, {
   stixObservablesSearchLinesQuery,
-} from './stix_observable/StixObservablesSearchLines';
+} from './stix_observables/StixObservablesSearchLines';
 
 const styles = () => ({
   linesContainer: {
@@ -34,7 +34,11 @@ class Search extends Component {
     return (
       <div>
         <TopBar me={me || null} keyword={keyword} />
-        <Typography variant="h1" gutterBottom={true} style={{ marginBottom: 20 }}>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          style={{ marginBottom: 20 }}
+        >
           {t('Search for an entity')}
         </Typography>
         <QueryRenderer

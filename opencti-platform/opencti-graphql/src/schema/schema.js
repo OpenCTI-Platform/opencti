@@ -5,7 +5,8 @@ import { makeExecutableSchema } from 'graphql-tools';
 import ConstraintDirective from 'graphql-constraint-directive';
 import path from 'path';
 import settingsResolvers from '../resolvers/settings';
-import connectorResolvers from '../resolvers/queue';
+import attributeResolvers from '../resolvers/attribute';
+import queueResolvers from '../resolvers/queue';
 import globalObjectResolvers from '../resolvers/globalObject';
 import stixEntityResolvers from '../resolvers/stixEntity';
 import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
@@ -45,7 +46,8 @@ const typeDefs = importSchema(schemaPath);
 const resolvers = mergeResolvers([
   globalResolvers,
   settingsResolvers,
-  connectorResolvers,
+  attributeResolvers,
+  queueResolvers,
   globalObjectResolvers,
   stixEntityResolvers,
   stixDomainEntityResolvers,

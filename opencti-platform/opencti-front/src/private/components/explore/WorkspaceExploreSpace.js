@@ -22,7 +22,7 @@ import { DatePicker } from '@material-ui/pickers';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
 import { parse } from '../../../utils/Time';
-import { workspaceMutationFieldPatch } from '../workspace/WorkspaceEditionOverview';
+import { workspaceMutationFieldPatch } from '../workspaces/WorkspaceEditionOverview';
 import ExploreAddWidget from './ExploreAddWidget';
 import ExploreUpdateWidget from './ExploreUpdateWidget';
 import VictimologyDistribution from './VictimologyDistribution';

@@ -701,11 +701,11 @@ define
     plays original;
 
   Report sub Stix-Domain-Entity,
+    has report_class,
     has published,
     has published_day,
     has published_year,
     has published_month,
-    has report_class,
     has source_confidence_level,
     plays knowledge_aggregation,
     plays phase_belonging;

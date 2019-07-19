@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
-import EntityCampaignsTableTime from '../campaign/EntityCampaignsTableTime';
-import EntityCampaignsChart from '../campaign/EntityCampaignsChart';
+import EntityCampaignsTableTime from '../threats/campaigns/EntityCampaignsTableTime';
+import EntityCampaignsChart from '../threats/campaigns/EntityCampaignsChart';
 
 const styles = () => ({
   container: {

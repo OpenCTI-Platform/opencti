@@ -181,6 +181,41 @@ export const getId = async internalId => {
 };
 
 /**
+ * Query and get attribute values
+ * @param type
+ * @returns {{edges: *}}
+ */
+export const queryAttributeValues = async type => {
+  const rTx = await takeReadTx();
+  try {
+    const query = `match $x isa ${escape(type)}; get;`;
+    logger.debug(`[GRAKN - infer: false] ${query}`);
+    const iterator = await rTx.tx.query(query);
+    const answers = await iterator.collect();
+    const resultPromise = Promise.all(
+      answers.map(async answer => {
+        const attribute = answer.map().get('x');
+        const attributeType = await attribute.type();
+        const value = await attribute.value();
+        return {
+          node: {
+            type: await attributeType.label(),
+            value: value.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+          }
+        };
+      })
+    );
+    const result = await Promise.resolve(resultPromise);
+    await closeReadTx(rTx);
+    return { edges: result };
+  } catch (err) {
+    logger.error(err);
+    await closeReadTx(rTx);
+    return Promise.resolve({ edges: [] });
+  }
+};
+
+/**
  * Load any grakn instance with internal grakn ID.
  * @param concept
  * @param graknAttributes

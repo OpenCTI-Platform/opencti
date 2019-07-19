@@ -5,7 +5,7 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
-import WorkspaceHeader from '../workspace/WorkspaceHeader';
+import WorkspaceHeader from '../workspaces/WorkspaceHeader';
 import WorkspaceExploreSpace from './WorkspaceExploreSpace';
 
 const styles = () => ({
