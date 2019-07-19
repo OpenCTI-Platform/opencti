@@ -29,7 +29,7 @@ services:
       - RABBITMQ_DEFAULT_PASS=guest    
     restart: always
   worker-import:
-    image: opencti/worker:1.1.0
+    image: opencti/worker:rolling
     build:
       context: ../opencti-worker
     environment:
@@ -50,7 +50,7 @@ services:
       replicas: 4
     restart: always
   worker-export:
-    image: opencti/worker:1.1.0
+    image: opencti/worker:rolling
     build:
       context: ../opencti-worker
     environment:
@@ -71,7 +71,7 @@ services:
       replicas: 2      
     restart: always    
   opencti:
-    image: opencti/platform:1.1.0
+    image: opencti/platform:rolling
     build:
       context: ../opencti-platform    
     environment:
@@ -104,7 +104,7 @@ services:
       - rabbitmq
     restart: always
   connector-opencti:
-    image: opencti/connector-opencti:1.1.0
+    image: opencti/connector-opencti:rolling
     environment:
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672 
