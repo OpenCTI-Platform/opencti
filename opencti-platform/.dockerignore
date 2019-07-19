@@ -1,0 +1,28 @@
+# Common
+*/.idea
+*/.env
+*/build
+*/dist
+*/node_modules
+*/coverage
+*/npm-debug.log*
+*/yarn-debug.log*
+*/yarn-error.log*
+*__generated__*
+
+# Frontend
+opencti-front/config/development.json
+opencti-front/.DS_Store
+opencti-front/.env.local
+opencti-front/.env.development.local
+opencti-front/.env.test.local
+opencti-front/.env.production.local
+
+# GraphQL API
+opencti-graphql/public
+opencti-graphql/config/development.json
+opencti-graphql/config/production.json
+opencti-grapĥql/config/test.json
+opencti-graphql/config/local.json
+opencti-graphql/logs
+opencti-graphql/yarn-error.log

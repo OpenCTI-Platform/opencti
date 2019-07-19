@@ -7,22 +7,17 @@ jobs:
       - image: circleci/node:11-stretch
     steps:
       - checkout
-      - run:
-          name: "Pull Submodules"
-          command: |
-            git submodule init
-            git submodule update --remote
       - run: 
-          working_directory: ~/opencti/opencti-front
+          working_directory: ~/opencti/opencti-platform/opencti-front
           command: yarn install
       - run:
-          working_directory: ~/opencti/opencti-front
+          working_directory: ~/opencti/opencti-platform/opencti-front
           command: yarn build
       - run:
-          working_directory: ~/opencti/opencti-graphql
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn install
       - run:
-          working_directory: ~/opencti/opencti-graphql
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn build
       - persist_to_workspace:
           root: ~/
@@ -36,8 +31,8 @@ jobs:
           APP__REACTIVE: false
           GRAKN__HOSTNAME: 127.0.0.1
           ELASTICSEARCH__HOSTNAME: 127.0.0.1
-      - image: graknlabs/grakn:1.5.6
-      - image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
+      - image: graknlabs/grakn:1.5.7
+      - image: docker.elastic.co/elasticsearch/elasticsearch:6.8.1
         environment:
           - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     steps:
@@ -55,7 +50,7 @@ jobs:
           name: Wait for ElasticSearch
           command: dockerize -wait tcp://localhost:9200 -timeout 1m        
       - run:
-          working_directory: ~/opencti/opencti-graphql
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn test
 
   package_rolling:
@@ -70,10 +65,10 @@ jobs:
       - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
       - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push opencti master
       - run: mkdir release
-      - run: cp -a opencti-graphql release/opencti
-      - run: cp -a opencti-integration release/opencti/integration
-      - run: cp -a opencti-worker release/opencti/worker
-      - run: 
+      - run: cp -a ./opencti-platform/opencti-graphql release/opencti
+      - run: cp -a ./opencti-worker/src release/opencti/worker
+      - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/connectors
+      - run:
           working_directory: ~/opencti/release
           command: tar -zcvf "opencti-$(date '+%Y%m%d').tar.gz" opencti
       - run: 
@@ -100,10 +95,16 @@ jobs:
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-graphql/public/ ./opencti-graphql/public/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-graphql/dist/ ./opencti-graphql/dist/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker-import/          
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker-export/       
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A
@@ -131,10 +132,16 @@ jobs:
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master          
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-graphql/public/ ./opencti-graphql/public/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-graphql/dist/ ./opencti-graphql/dist/
+          command: rsync -av --delete ~/opencti/opencti-platform/pencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker-import/          
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker-export/          
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A
@@ -165,17 +172,13 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          working_directory: ~/opencti/opencti-docker/opencti
+          working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
-          command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/platform:latest . && docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
+          command: docker build -t opencti/platform:latest . && docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
       - run:
-          working_directory: ~/opencti/opencti-docker/worker
+          working_directory: ~/opencti/opencti-worker
           name: Build Docker image opencti/worker
-          command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/worker:latest . && docker tag opencti/worker:latest opencti/worker:${CIRCLE_TAG}
-      - run:
-          working_directory: ~/opencti/opencti-docker/integration
-          name: Build Docker image opencti/integration
-          command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/integration:latest . && docker tag opencti/integration:latest opencti/integration:${CIRCLE_TAG}
+          command: docker build -t opencti/worker:latest . && docker tag opencti/worker:latest opencti/worker:${CIRCLE_TAG}
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -184,8 +187,6 @@ jobs:
             docker push opencti/platform:${CIRCLE_TAG}
             docker push opencti/worker:latest
             docker push opencti/worker:${CIRCLE_TAG}
-            docker push opencti/integration:latest
-            docker push opencti/integration:${CIRCLE_TAG}
 
   docker_build_rolling:
     working_directory: ~/opencti
@@ -195,24 +196,19 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          working_directory: ~/opencti/opencti-docker/opencti
+          working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
-          command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/platform:rolling .
+          command: docker build -t opencti/platform:rolling .
       - run:
-          working_directory: ~/opencti/opencti-docker/worker
+          working_directory: ~/opencti/opencti-worker
           name: Build Docker image opencti/worker
-          command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/worker:rolling .
-      - run:
-          working_directory: ~/opencti/opencti-docker/integration
-          name: Build Docker image opencti/integration
-          command: sed -i -e "s/REPLACE_DATE/$(date '+%Y%m%d')/g" Dockerfile && docker build -t opencti/integration:rolling .
+          command: docker build -t opencti/worker:rolling .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             docker push opencti/platform:rolling
             docker push opencti/worker:rolling
-            docker push opencti/integration:rolling
 
 workflows:
   opencti:
@@ -260,14 +256,16 @@ workflows:
                 - master
       - docker_build_rolling:
           requires:
-            - package_rolling
+            - build
+            - test        
           filters:
             branches:
               only:
                 - master
       - docker_build:
           requires:
-            - package_rolling
+            - build
+            - test        
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/

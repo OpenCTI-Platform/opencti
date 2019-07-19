@@ -6,7 +6,7 @@ sidebar_label: Add knowledge to a report
 
 ## Introduction
 
-On the OpenCTI platform, knowledge can only be added in the context of a report. **This ensure that all entities and its relationships to be sourced by at least one report**. Adding knowledge to a report can be done programmatically using OpenCTI connectors or through the [Python client](https://github.com/OpenCTI-Platform/client-python). This documentation is a guide for creating knowledge manually, if you wish to use the [Python client](https://github.com/OpenCTI-Platform/client-python), please referer to the [dedicated documentation](python/introduction).
+On the OpenCTI platform, knowledge can only be added in the context of a report. **This ensure that all entities and its relationships to be sourced by at least one report**. Adding knowledge to a report can be done programmatically using OpenCTI connectors or through the [Python client](https://github.com/OpenCTI-Platform/client-python). This documentation is a guide for creating knowledge manually, if you wish to use the [Python client](https://github.com/OpenCTI-Platform/client-python), please referer to the [dedicated documentation](https://opencti-client-for-python.readthedocs.io/en/latest/).
 
 To start adding knowledge to report you should:
 

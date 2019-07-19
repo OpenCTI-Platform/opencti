@@ -8,54 +8,78 @@ services:
       - grakndata:/grakn-core-all-linux/server/db
     restart: always
   redis:
-    image: redis
+    image: redis:5.0.5
     restart: always
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.1
     volumes:
       - esdata:/usr/share/elasticsearch/data
     restart: always
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
   rabbitmq:
-    image: rabbitmq:management
+    image: rabbitmq:3.7.16-management
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest    
     restart: always
-  worker:
-    image: opencti/worker
+  worker-import:
+    image: opencti/worker:rolling
+    build:
+      context: ../opencti-worker
     environment:
-      - OPENCTI_HOSTNAME=opencti
-      - OPENCTI_PORT=8080
+      - WORKER_TYPE=import
+      - WORKER_LOG_LEVEL=info
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=ChangeMe
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672
+      - RABBITMQ_PORT_MANAGEMENT=15672
+      - RABBITMQ_MANAGEMENT_SSL=false
       - RABBITMQ_USERNAME=guest
       - RABBITMQ_PASSWORD=guest
-    volumes:
-      - config:/opt/opencti/shared_config:rw
     depends_on:
       - opencti
+    deploy:
+      mode: replicated
+      replicas: 4
     restart: always
-  integration:
-    image: opencti/integration
+  worker-export:
+    image: opencti/worker:rolling
+    build:
+      context: ../opencti-worker
     environment:
-      - OPENCTI_HOSTNAME=opencti
-      - OPENCTI_PORT=8080
+      - WORKER_TYPE=export
+      - WORKER_LOG_LEVEL=info
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=ChangeMe
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672
+      - RABBITMQ_PORT_MANAGEMENT=15672
+      - RABBITMQ_MANAGEMENT_SSL=false
       - RABBITMQ_USERNAME=guest
-      - RABBITMQ_PASSWORD=guest      
-    volumes:
-      - config:/opt/opencti/shared_config:rw
+      - RABBITMQ_PASSWORD=guest
     depends_on:
       - opencti
+    deploy:
+      mode: replicated
+      replicas: 2      
     restart: always    
   opencti:
-    image: opencti/platform
+    image: opencti/platform:rolling
+    build:
+      context: ../opencti-platform    
     environment:
       - APP__PORT=8080
+      - APP__ADMIN__EMAIL=admin@opencti.io
+      - APP__ADMIN__PASSWORD=admin
+      - APP__ADMIN__TOKEN=ChangeMe
       - APP__LOGS=./logs
-      - APP__CONNECTORS=./integration/connectors
-      - APP__SECRET=ChangeMe
       - APP__REACTIVE=true
       - APP__COOKIE_SECURE=false
       - GRAKN__HOSTNAME=grakn
@@ -73,16 +97,39 @@ services:
       - RABBITMQ__PASSWORD=guest
     ports:
       - "8080:8080"
-    volumes:
-      - config:/opt/opencti/shared_config:rw
     depends_on:
       - grakn
       - redis
       - elasticsearch
       - rabbitmq
     restart: always
-
+  connector-opencti:
+    image: opencti/connector-opencti:rolling
+    environment:
+      - RABBITMQ_HOSTNAME=rabbitmq
+      - RABBITMQ_PORT=5672 
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+      - OPENCTI_NAME=OpenCTI
+      - OPENCTI_CONFIDENCE_LEVEL=5
+      - OPENCTI_SECTORS_FILE_URL=https://raw.githubusercontent.com/OpenCTI-Platform/datasets/master/data/sectors.json
+      - OPENCTI_ENTITIES=sector,region,country,city
+      - OPENCTI_INTERVAL=1 # Days
+      - OPENCTI_LOG_LEVEL=info
+    restart: always
+  connector-mitre:
+    image: opencti/connector-mitre:1.1.0
+    environment:
+      - RABBITMQ_HOSTNAME=rabbitmq
+      - RABBITMQ_PORT=5672 
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+      - MITRE_NAME=MITRE\ ATT&CK
+      - MITRE_CONFIDENCE_LEVEL=3
+      - MITRE_ENTERPRISE_FILE_URL=https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json
+      - MITRE_ENTITIES=identity,attack-pattern,course-of-action,intrusion-set,malware,tool
+      - MITRE_INTERVAL=7 # Days
+      - MITRE_LOG_LEVEL=info    
 volumes:
   grakndata:
   esdata:
-  config:

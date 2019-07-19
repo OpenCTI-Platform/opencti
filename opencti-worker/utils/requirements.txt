@@ -1,0 +1,2 @@
+grakn-client
+elasticsearch

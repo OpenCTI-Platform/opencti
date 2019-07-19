@@ -1,0 +1,52 @@
+{
+  "app": {
+    "port": 4000,
+    "logs": "./logs",
+    "reactive": true,
+    "cookie_secure": false,
+    "default_roles": [],
+    "admin": {
+      "email": "admin@opencti.io",
+      "password": "ChangeMe",
+      "token": "ChangeMe"
+    }
+  },
+  "grakn": {
+    "hostname": "localhost",
+    "port": 48555,
+    "timeout": 30000
+  },
+  "redis": {
+    "hostname": "localhost",
+    "port": 6379
+  },
+  "elasticsearch": {
+    "hostname": "localhost",
+    "port": 9200
+  },
+  "rabbitmq": {
+    "hostname": "localhost",
+    "port": 5672,
+    "port_management": 15672,
+    "management_ssl": false,
+    "username": "guest",
+    "password": "guest"
+  },
+  "providers": {
+    "facebook": {
+      "client_id": "xxxxxx",
+      "client_secret": "xxxxxx",
+      "callback_uri": "http://localhost:4000/auth/facebook/callback"
+    },
+    "google": {
+      "client_id": "xxxxxx",
+      "client_secret": "xxxxxx",
+      "callback_uri": "http://localhost:4000/auth/google/callback"
+    },
+    "github": {
+      "client_id": "xxxxxx",
+      "client_secret": "xxxxxx",
+      "callback_uri": "http://localhost:4000/auth/github/callback"
+    }
+  }
+}

@@ -7,67 +7,109 @@ sidebar_label: Manual deployment
 ## Prerequisites
 
 - Node.JS (>= 10)
-- Grakn (>= 1.5.6)
+- Grakn (>= 1.5.7)
 - Redis (>= 3.0)
-- ElasticSearch (>= 6)
+- ElasticSearch (== 6.x.x)
 - RabbitMQ (>= 3.7)
 
-## Installation of dependencies (Ubuntu 18.04)
+
+## Prepare the installation
+
+### Installation of dependencies
+
+You have to install all the needed dependencies for the main application and the workers. The example below if for Ubuntu:
+
 ```bash
 $ sudo apt-get install nodejs npm python3 python3-pip
 ```
 
-## Download the application files
+### Download the application files
+
+Download and extract the latest release file.
+
 ```bash
 $ mkdir /path/to/your/app && cd /path/to/your/app
 $ wget https://github.com/OpenCTI-Platform/opencti/releases/download/{RELEASE_VERSION}/opencti-release.tar.gz
 $ tar xvfz opencti-release.tar.gz
 ```
 
-## Configure the application
+## Install the main platform
+
+### Configure the application
+
+The main application has just one JSON configuration file to change.
+
 ```bash
 $ cd opencti
 $ cp config/default.json config/production.json
 ```
 
-Change the *config/production.json* file according to your configuration of Grakn, Redis, ElasticSearch, RabbitMQ and keys.
+Change the *config/production.json* file according to your configuration of Grakn, Redis, ElasticSearch, RabbitMQ and default credentials.
 
-## Create the database schema and initial data
+### Database schema and initial data
+
+After the configuration, you can create your database schema and add initial data.
+
 ```bash
 $ npm run schema
 $ npm run migrate
 ```
 
-## Start the application
+### Start the application
+
+The application is just a NodeJS process.
+
 ```bash
 $ node dist/server.js &
 ```
 
-The default username is *admin@opencti.io* and the password is *admin*. Login and get the administrator token in your profile.
+The default username and password are those you put in the `config/production.json` file.
 
-## Configure the worker
+## Install the workers
+
+2 different workers must be configured to allow the platform to import and export data. One is for import and the other for export.
+
+### Install the import worker
+
+#### Configure the import worker
+
+Just copy the worker directory to a new one, named `worker-import`.
+
 ```bash
-$ cd worker
+$ cp -a worker worker-import
+$ cd worker-import
 $ cp config.yml.sample config.yml
 ```
 
-Change the *config.yml* file according to your OpenCTI token, ElasticSearch, Grakn and RabbitMQ configuration.
+Change the *config.yml* file according to your OpenCTI token and RabbitMQ configuration.
 
-## Start the workers
+> The worker type must be set to "import"
+
+#### Start as many workers as you need
 ```bash
-$ python3 worker_export.py &
-$ python3 worker_import.py &
+$ python3 worker.py &
+$ python3 worker.py &
 ```
 
-## Configure the integration
+### Install the export worker
+
+#### Configure the export worker
+
+Just copy the worker directory to a new one, named `worker-export`.
+
 ```bash
-$ cd ../integration
+$ cd ..
+$ cp -a worker worker-export
+$ cd worker-export
 $ cp config.yml.sample config.yml
 ```
 
-Change the *config.yml* file according to your OpenCTI instance configuration.
+Change the *config.yml* file according to your OpenCTI token and RabbitMQ configuration.
 
-## Start the integration
+> The worker type must be set to "export"
+
+#### Start as many workers as you need
 ```bash
-$ python3 connectors_scheduler.py &
+$ python3 worker.py &
+$ python3 worker.py &
 ```

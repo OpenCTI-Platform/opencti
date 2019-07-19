@@ -2,13 +2,13 @@ version: '3'
 services:
   opencti-dev-grakn:
     container_name: opencti-dev-grakn 
-    image: graknlabs/grakn:1.5.6
+    image: graknlabs/grakn:1.5.7
     restart: always
     ports:
       - 48555:48555
   opencti-dev-redis:
     container_name: opencti-dev-redis
-    image: redis
+    image: redis:5.0.5
     restart: always
     ports:
       - 6379:6379
@@ -16,12 +16,20 @@ services:
     container_name: opencti-dev-elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
     restart: always
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
     ports:
       - 9200:9200
   opencti-dev-rabbitmq:
     container_name: opencti-dev-rabbitmq
-    image: rabbitmq
+    image: rabbitmq:3.7.16-management
     restart: always
     ports:
       - 5672:5672
+      - 15672:15672
 
