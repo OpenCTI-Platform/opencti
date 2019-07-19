@@ -1,7 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, propOr, pathOr, toPairs, filter, assoc,
+  compose,
+  propOr,
+  pathOr,
+  toPairs,
+  filter,
+  assoc,
+  assocPath,
+  pipe,
+  map,
+  sortWith,
+  descend,
+  path,
 } from 'ramda';
 import { interval } from 'rxjs';
 import graphql from 'babel-plugin-relay/macro';
@@ -20,7 +31,7 @@ import IconButton from '@material-ui/core/IconButton';
 import CardActions from '@material-ui/core/CardActions';
 import Collapse from '@material-ui/core/Collapse';
 import { createRefetchContainer } from 'react-relay';
-import { ExpandMore } from '@material-ui/icons';
+import { ExpandMore, Extension } from '@material-ui/icons';
 import NoContent from '../../../components/NoContent';
 import inject18n from '../../../components/i18n';
 import { FIVE_SECONDS } from '../../../utils/Time';
@@ -29,15 +40,12 @@ const interval$ = interval(FIVE_SECONDS);
 
 const styles = theme => ({
   card: {
-    width: '60%',
-    margin: '0 auto',
     marginBottom: 20,
     borderRadius: 6,
   },
   metric: {
     margin: '0 auto',
     textAlign: 'center',
-    padding: '20px 0 0 0',
   },
   number: {
     color: theme.palette.primary.main,
@@ -55,8 +63,19 @@ const styles = theme => ({
     textTransform: 'uppercase',
     fontSize: 12,
   },
-  avatar: {
-    backgroundColor: theme.palette.primary.main,
+  icon: {
+    color: theme.palette.primary.main,
+  },
+  confidenceLabel: {
+    float: 'right',
+    lineHeight: '50px',
+    verticalAlign: 'middle',
+  },
+  confidence: {
+    float: 'right',
+    margin: '5px 5px 0 20px',
+    color: '#ffffff',
+    backgroundColor: theme.palette.secondary.main,
   },
   configuration: {
     fontSize: 12,
@@ -102,7 +121,19 @@ class ConnectorsStatusComponent extends Component {
     const {
       classes, t, nsdt, data,
     } = this.props;
-    const { queuesMetrics } = data;
+    const sort = sortWith([
+      descend(path(['arguments', 'config', 'confidence_level'])),
+    ]);
+    const queuesMetrics = pipe(
+      map(n => assocPath(
+        ['arguments', 'config'],
+        JSON.parse(
+          Buffer.from(n.arguments.config, 'base64').toString('ascii'),
+        ),
+        n,
+      )),
+      sort,
+    )(data.queuesMetrics);
     return (
       <div>
         {queuesMetrics.length === 0 ? (
@@ -111,11 +142,7 @@ class ConnectorsStatusComponent extends Component {
           />
         ) : (
           queuesMetrics.map((queueMetric) => {
-            const config = JSON.parse(
-              Buffer.from(queueMetric.arguments.config, 'base64').toString(
-                'ascii',
-              ),
-            );
+            const { config } = queueMetric.arguments;
             return (
               <Card
                 raised={true}
@@ -123,17 +150,27 @@ class ConnectorsStatusComponent extends Component {
                 key={queueMetric.name}
               >
                 <CardHeader
-                  avatar={
-                    <Avatar aria-label="Recipe" className={classes.avatar}>
-                      {propOr(' ', 'name', config).charAt(0)}
-                    </Avatar>
-                  }
+                  avatar={<Extension className={classes.icon} />}
                   title={propOr('', 'name', config)}
+                  action={
+                    <div>
+                      <Avatar className={classes.confidence}>
+                        {propOr('?', 'confidence_level', config)}
+                      </Avatar>
+                      <div className={classes.confidenceLabel}>
+                        {t('Confidence level')}
+                      </div>
+                    </div>
+                  }
                   style={{ paddingBottom: 0 }}
                 />
                 <CardContent style={{ paddingTop: 0 }}>
-                  <Grid container={true} spacing={2}>
-                    <Grid item={true} lg={6} xs={12}>
+                  <Grid
+                    container={true}
+                    spacing={2}
+                    style={{ paddingBottom: 0 }}
+                  >
+                    <Grid item={true} lg={3} xs={6}>
                       <div className={classes.metric}>
                         <div className={classes.number}>
                           {queueMetric.messages_ready}
@@ -143,7 +180,7 @@ class ConnectorsStatusComponent extends Component {
                         </div>
                       </div>
                     </Grid>
-                    <Grid item={true} lg={6} xs={12}>
+                    <Grid item={true} lg={3} xs={6}>
                       <div className={classes.metric}>
                         <div className={classes.number}>
                           {queueMetric.messages_unacknowledged}
@@ -153,7 +190,7 @@ class ConnectorsStatusComponent extends Component {
                         </div>
                       </div>
                     </Grid>
-                    <Grid item={true} lg={6} xs={12}>
+                    <Grid item={true} lg={3} xs={6}>
                       <div className={classes.metric}>
                         <div className={classes.number}>
                           {pathOr(
@@ -168,7 +205,7 @@ class ConnectorsStatusComponent extends Component {
                         </div>
                       </div>
                     </Grid>
-                    <Grid item={true} lg={6} xs={12}>
+                    <Grid item={true} lg={3} xs={6}>
                       <div className={classes.metric}>
                         <div className={classes.date}>
                           {nsdt(queueMetric.idle_since)}
@@ -180,7 +217,7 @@ class ConnectorsStatusComponent extends Component {
                     </Grid>
                   </Grid>
                 </CardContent>
-                <CardActions disableSpacing>
+                <CardActions disableSpacing={true} style={{ paddingTop: 0 }}>
                   <div className={classes.configuration}>
                     {t('Configuration')}
                   </div>
