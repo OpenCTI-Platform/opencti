@@ -17,7 +17,11 @@ import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { parse } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
-import { fetchQuery, commitMutation } from '../../../relay/environment';
+import {
+  QueryRenderer,
+  fetchQuery,
+  commitMutation,
+} from '../../../relay/environment';
 import Autocomplete from '../../../components/Autocomplete';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import TextField from '../../../components/TextField';
@@ -27,6 +31,7 @@ import { markingDefinitionsLinesSearchQuery } from '../settings/marking_definiti
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../common/identities/IdentityCreation';
+import { attributesQuery } from '../settings/attributes/AttributesList';
 
 const styles = theme => ({
   drawerPaper: {
@@ -215,117 +220,137 @@ class ReportCreation extends Component {
             <Typography variant="h6">{t('Create a report')}</Typography>
           </div>
           <div className={classes.container}>
-            <Formik
-              initialValues={{
-                name: '',
-                published: null,
-                description: '',
-                report_class: '',
-                createdByRef: '',
-                markingDefinitions: [],
-              }}
-              validationSchema={reportValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
-              render={({
-                submitForm,
-                handleReset,
-                isSubmitting,
-                setFieldValue,
-              }) => (
-                <div>
-                  <Form style={{ margin: '20px 0 20px 0' }}>
-                    <Field
-                      name="name"
-                      component={TextField}
-                      label={t('Name')}
-                      fullWidth={true}
-                    />
-                    <Field
-                      name="published"
-                      component={DatePickerField}
-                      label={t('Publication date')}
-                      fullWidth={true}
-                      style={{ marginTop: 20 }}
-                    />
-                    <Field
-                      name="report_class"
-                      component={Select}
-                      label={t('Report type')}
-                      fullWidth={true}
-                      inputProps={{
-                        name: 'report_class',
-                        id: 'report_class',
+            <QueryRenderer
+              query={attributesQuery}
+              variables={{ type: 'report_class' }}
+              render={({ props }) => {
+                if (props && props.attributes) {
+                  const reportClassesEdges = props.attributes.edges;
+                  return (
+                    <Formik
+                      initialValues={{
+                        name: '',
+                        published: null,
+                        description: '',
+                        report_class: '',
+                        createdByRef: '',
+                        markingDefinitions: [],
                       }}
-                      containerstyle={{ marginTop: 20, width: '100%' }}
-                    >
-                      <MenuItem value="internal">
-                        {t('Internal report')}
-                      </MenuItem>
-                      <MenuItem value="external">
-                        {t('External source')}
-                      </MenuItem>
-                    </Field>
-                    <Field
-                      name="description"
-                      component={TextField}
-                      label={t('Description')}
-                      fullWidth={true}
-                      multiline={true}
-                      rows="4"
-                      style={{ marginTop: 20 }}
+                      validationSchema={reportValidation(t)}
+                      onSubmit={this.onSubmit.bind(this)}
+                      onReset={this.onReset.bind(this)}
+                      render={({
+                        submitForm,
+                        handleReset,
+                        isSubmitting,
+                        setFieldValue,
+                      }) => (
+                        <div>
+                          <Form style={{ margin: '20px 0 20px 0' }}>
+                            <Field
+                              name="name"
+                              component={TextField}
+                              label={t('Name')}
+                              fullWidth={true}
+                            />
+                            <Field
+                              name="published"
+                              component={DatePickerField}
+                              label={t('Publication date')}
+                              fullWidth={true}
+                              style={{ marginTop: 20 }}
+                            />
+                            <Field
+                              name="report_class"
+                              component={Select}
+                              label={t('Report type')}
+                              fullWidth={true}
+                              inputProps={{
+                                name: 'report_class',
+                                id: 'report_class',
+                              }}
+                              containerstyle={{ marginTop: 20, width: '100%' }}
+                            >
+                              {reportClassesEdges.map(reportClassEdge => (
+                                <MenuItem
+                                  key={reportClassEdge.node.value}
+                                  value={reportClassEdge.node.value}
+                                >
+                                  {reportClassEdge.node.value}
+                                </MenuItem>
+                              ))}
+                            </Field>
+                            <Field
+                              name="description"
+                              component={TextField}
+                              label={t('Description')}
+                              fullWidth={true}
+                              multiline={true}
+                              rows="4"
+                              style={{ marginTop: 20 }}
+                            />
+                            <Field
+                              name="createdByRef"
+                              component={AutocompleteCreate}
+                              multiple={false}
+                              handleCreate={this.handleOpenIdentityCreation.bind(
+                                this,
+                              )}
+                              label={t('Author')}
+                              options={this.state.identities}
+                              onInputChange={this.searchIdentities.bind(this)}
+                            />
+                            <Field
+                              name="markingDefinitions"
+                              component={Autocomplete}
+                              multiple={true}
+                              label={t('Marking')}
+                              options={this.state.markingDefinitions}
+                              onInputChange={this.searchMarkingDefinitions.bind(
+                                this,
+                              )}
+                            />
+                            <div className={classes.buttons}>
+                              <Button
+                                variant="contained"
+                                onClick={handleReset}
+                                disabled={isSubmitting}
+                                classes={{ root: classes.button }}
+                              >
+                                {t('Cancel')}
+                              </Button>
+                              <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={submitForm}
+                                disabled={isSubmitting}
+                                classes={{ root: classes.button }}
+                              >
+                                {t('Create')}
+                              </Button>
+                            </div>
+                          </Form>
+                          <IdentityCreation
+                            contextual={true}
+                            inputValue={this.state.identityInput}
+                            open={this.state.identityCreation}
+                            handleClose={this.handleCloseIdentityCreation.bind(
+                              this,
+                            )}
+                            creationCallback={(data) => {
+                              setFieldValue('createdByRef', {
+                                label: data.identityAdd.name,
+                                value: data.identityAdd.id,
+                              });
+                            }}
+                          />
+                        </div>
+                      )}
                     />
-                    <Field
-                      name="createdByRef"
-                      component={AutocompleteCreate}
-                      multiple={false}
-                      handleCreate={this.handleOpenIdentityCreation.bind(this)}
-                      label={t('Author')}
-                      options={this.state.identities}
-                      onInputChange={this.searchIdentities.bind(this)}
-                    />
-                    <Field
-                      name="markingDefinitions"
-                      component={Autocomplete}
-                      multiple={true}
-                      label={t('Marking')}
-                      options={this.state.markingDefinitions}
-                      onInputChange={this.searchMarkingDefinitions.bind(this)}
-                    />
-                    <div className={classes.buttons}>
-                      <Button
-                        variant="contained"
-                        onClick={handleReset}
-                        disabled={isSubmitting}
-                        classes={{ root: classes.button }}
-                      >
-                        {t('Cancel')}
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={submitForm}
-                        disabled={isSubmitting}
-                        classes={{ root: classes.button }}
-                      >
-                        {t('Create')}
-                      </Button>
-                    </div>
-                  </Form>
-                  <IdentityCreation
-                    contextual={true}
-                    inputValue={this.state.identityInput}
-                    open={this.state.identityCreation}
-                    handleClose={this.handleCloseIdentityCreation.bind(this)}
-                    creationCallback={(data) => {
-                      setFieldValue('createdByRef', {
-                        label: data.identityAdd.name,
-                        value: data.identityAdd.id,
-                      });
-                    }}
-                  />
-                </div>
-              )}
+                  );
+                }
+                return <div> &nbsp; </div>;
+              }}
             />
           </div>
         </Drawer>

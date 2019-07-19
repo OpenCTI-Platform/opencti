@@ -130,21 +130,9 @@ class Root extends Component {
                         />
                         <BoundaryRoute
                           exact
-                          path="/dashboard/reports/all"
-                          component={Reports}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/reports/internal"
+                          path="/dashboard/reports/:reportClass"
                           render={routeProps => (
-                            <Reports {...routeProps} reportClass="internal" />
-                          )}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/reports/external"
-                          render={routeProps => (
-                            <Reports {...routeProps} reportClass="external" />
+                            <Reports {...routeProps} />
                           )}
                         />
                         <BoundaryRoute

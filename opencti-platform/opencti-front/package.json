@@ -16,7 +16,7 @@
     "classnames": "^2.2.6",
     "countdown": "^2.6.0",
     "dagre": "^0.8.4",
-    "formik": "^1.5.7",
+    "formik": "^1.5.8",
     "formik-material-ui": "^0.0.20",
     "graphql": "^14.4.1",
     "http-proxy-middleware": "^0.19.1",

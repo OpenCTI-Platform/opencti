@@ -5,6 +5,8 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import inject18n from '../../../components/i18n';
+import { QueryRenderer } from '../../../relay/environment';
+import { attributesQuery } from '../settings/attributes/AttributesList';
 
 const styles = theme => ({
   button: {
@@ -38,42 +40,47 @@ class TopMenuReports extends Component {
         >
           {t('All reports')}
         </Button>
-        <Button
-          component={Link}
-          to="/dashboard/reports/internal"
-          variant={
-            location.pathname === '/dashboard/reports/internal'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/reports/internal'
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Internal productions')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/reports/external"
-          variant={
-            location.pathname === '/dashboard/reports/external'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/reports/external'
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('External sources')}
-        </Button>
+        <QueryRenderer
+          query={attributesQuery}
+          variables={{ type: 'report_class' }}
+          render={({ props }) => {
+            if (props && props.attributes) {
+              const reportClassesEdges = props.attributes.edges;
+              return reportClassesEdges.map(reportClassEdge => (
+                <Button
+                  component={Link}
+                  to={`/dashboard/reports/${reportClassEdge.node.value.replace(
+                    ' ',
+                    '_',
+                  )}`}
+                  variant={
+                    location.pathname
+                    === `/dashboard/reports/${reportClassEdge.node.value.replace(
+                      ' ',
+                      '_',
+                    )}`
+                      ? 'contained'
+                      : 'text'
+                  }
+                  size="small"
+                  color={
+                    location.pathname
+                    === `/dashboard/reports/${reportClassEdge.node.value.replace(
+                      ' ',
+                      '_',
+                    )}`
+                      ? 'primary'
+                      : 'inherit'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  {reportClassEdge.node.value}
+                </Button>
+              ));
+            }
+            return <span>&nbsp;</span>;
+          }}
+        />
         <Button
           component={Link}
           to="/dashboard/reports/references"

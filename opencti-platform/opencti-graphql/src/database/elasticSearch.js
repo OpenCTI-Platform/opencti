@@ -46,6 +46,7 @@ export const createIndexes = () => {
 };
 
 export const index = (indexName, documentType, documentBody) => {
+  logger.debug(`[ELASTICSEARCH] Indexing a ${documentType}`);
   el.index({
     index: indexName,
     id: documentBody.grakn_id,

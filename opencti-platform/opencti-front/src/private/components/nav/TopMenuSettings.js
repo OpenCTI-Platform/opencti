@@ -109,6 +109,24 @@ class TopMenuSettings extends Component {
         >
           {t('Kill chain phases')}
         </Button>
+        <Button
+          component={Link}
+          to="/dashboard/settings/attributes"
+          variant={
+            location.pathname.includes('/dashboard/settings/attributes')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/dashboard/settings/attributes')
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Custom attributes')}
+        </Button>
       </div>
     );
   }

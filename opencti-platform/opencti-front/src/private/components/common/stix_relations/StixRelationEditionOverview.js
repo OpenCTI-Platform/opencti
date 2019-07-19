@@ -28,6 +28,7 @@ import { dateFormat } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
 import {
+  QueryRenderer,
   commitMutation,
   fetchQuery,
   requestSubscription,
@@ -41,6 +42,7 @@ import Select from '../../../../components/Select';
 import Autocomplete from '../../../../components/Autocomplete';
 import { stixDomainEntitiesLinesSearchQuery } from '../stix_domain_entities/StixDomainEntitiesLines';
 import DatePickerField from '../../../../components/DatePickerField';
+import { attributesQuery } from '../../settings/attributes/AttributesList';
 
 const styles = theme => ({
   header: {
@@ -330,180 +332,196 @@ class StixRelationEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <Formik
-            enableReinitialize={true}
-            initialValues={initialValues}
-            validationSchema={stixRelationValidation(t)}
-            render={() => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                {stixRelation.relationship_type === 'indicates' ? (
-                  <Field
-                    name="role_played"
-                    component={Select}
-                    onFocus={this.handleChangeFocus.bind(this)}
-                    onChange={this.handleSubmitField.bind(this)}
-                    label={t('Played role')}
-                    fullWidth={true}
-                    inputProps={{
-                      name: 'role_played',
-                      id: 'role_played',
-                    }}
-                    containerstyle={{ marginTop: 10, width: '100%' }}
-                    helpertext={
-                      <SubscriptionFocus
-                        me={me}
-                        users={editUsers}
-                        fieldName="role_played"
-                      />
-                    }
-                  >
-                    <MenuItem value="C2 server">{t('C2 server')}</MenuItem>
-                    <MenuItem value="Relay node">{t('Relay node')}</MenuItem>
-                    <MenuItem value="Proxy">{t('Proxy')}</MenuItem>
-                    <MenuItem value="Sender">{t('Sender')}</MenuItem>
-                  </Field>
-                ) : (
-                  ''
-                )}
-                <Field
-                  name="weight"
-                  component={Select}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  label={t('Confidence level')}
-                  fullWidth={true}
-                  inputProps={{
-                    name: 'weight',
-                    id: 'weight',
-                  }}
-                  containerstyle={{ marginTop: 10, width: '100%' }}
-                  helpertext={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="weight"
-                    />
-                  }
-                >
-                  <MenuItem value="1">{t('Very low')}</MenuItem>
-                  <MenuItem value="2">{t('Low')}</MenuItem>
-                  <MenuItem value="3">{t('Medium')}</MenuItem>
-                  <MenuItem value="4">{t('High')}</MenuItem>
-                  <MenuItem value="5">{t('Very high')}</MenuItem>
-                </Field>
-                {stixRelation.relationship_type === 'indicates' ? (
-                  <Field
-                    name="score"
-                    component={TextField}
-                    label={t('Score')}
-                    fullWidth={true}
-                    style={{ marginTop: 10 }}
-                    onFocus={this.handleChangeFocus.bind(this)}
-                    onSubmit={this.handleSubmitField.bind(this)}
-                    helperText={
-                      <SubscriptionFocus
-                        me={me}
-                        users={editUsers}
-                        fieldName="score"
-                      />
-                    }
+          <QueryRenderer
+            query={attributesQuery}
+            variables={{ type: 'role_played' }}
+            render={({ props }) => {
+              if (props && props.attributes) {
+                const rolesPlayedEdges = props.attributes.edges;
+                return (
+                  <Formik
+                    enableReinitialize={true}
+                    initialValues={initialValues}
+                    validationSchema={stixRelationValidation(t)}
+                    render={() => (
+                      <Form style={{ margin: '20px 0 20px 0' }}>
+                        {stixRelation.relationship_type === 'indicates' ? (
+                          <Field
+                            name="role_played"
+                            component={Select}
+                            onFocus={this.handleChangeFocus.bind(this)}
+                            onChange={this.handleSubmitField.bind(this)}
+                            label={t('Played role')}
+                            fullWidth={true}
+                            inputProps={{
+                              name: 'role_played',
+                              id: 'role_played',
+                            }}
+                            containerstyle={{ marginTop: 10, width: '100%' }}
+                            helpertext={
+                              <SubscriptionFocus
+                                me={me}
+                                users={editUsers}
+                                fieldName="role_played"
+                              />
+                            }
+                          >
+                            {rolesPlayedEdges.map(rolePlayedEdge => (
+                              <MenuItem
+                                key={rolePlayedEdge.node.value}
+                                value={rolePlayedEdge.node.value}
+                              >
+                                {rolePlayedEdge.node.value}
+                              </MenuItem>
+                            ))}
+                          </Field>
+                        ) : (
+                          ''
+                        )}
+                        <Field
+                          name="weight"
+                          component={Select}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          onChange={this.handleSubmitField.bind(this)}
+                          label={t('Confidence level')}
+                          fullWidth={true}
+                          inputProps={{
+                            name: 'weight',
+                            id: 'weight',
+                          }}
+                          containerstyle={{ marginTop: 10, width: '100%' }}
+                          helpertext={
+                            <SubscriptionFocus
+                              me={me}
+                              users={editUsers}
+                              fieldName="weight"
+                            />
+                          }
+                        >
+                          <MenuItem value="1">{t('Very low')}</MenuItem>
+                          <MenuItem value="2">{t('Low')}</MenuItem>
+                          <MenuItem value="3">{t('Medium')}</MenuItem>
+                          <MenuItem value="4">{t('High')}</MenuItem>
+                          <MenuItem value="5">{t('Very high')}</MenuItem>
+                        </Field>
+                        {stixRelation.relationship_type === 'indicates' ? (
+                          <Field
+                            name="score"
+                            component={TextField}
+                            label={t('Score')}
+                            fullWidth={true}
+                            style={{ marginTop: 10 }}
+                            onFocus={this.handleChangeFocus.bind(this)}
+                            onSubmit={this.handleSubmitField.bind(this)}
+                            helperText={
+                              <SubscriptionFocus
+                                me={me}
+                                users={editUsers}
+                                fieldName="score"
+                              />
+                            }
+                          />
+                        ) : (
+                          ''
+                        )}
+                        <Field
+                          name="first_seen"
+                          component={DatePickerField}
+                          label={t('First seen')}
+                          fullWidth={true}
+                          style={{ marginTop: 10 }}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          onSubmit={this.handleSubmitField.bind(this)}
+                          helperText={
+                            <SubscriptionFocus
+                              me={me}
+                              users={editUsers}
+                              fieldName="first_seen"
+                            />
+                          }
+                        />
+                        <Field
+                          name="last_seen"
+                          component={DatePickerField}
+                          label={t('Last seen')}
+                          fullWidth={true}
+                          style={{ marginTop: 10 }}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          onSubmit={this.handleSubmitField.bind(this)}
+                          helperText={
+                            <SubscriptionFocus
+                              me={me}
+                              users={editUsers}
+                              fieldName="last_seen"
+                            />
+                          }
+                        />
+                        {stixRelation.relationship_type === 'targets' ? (
+                          <Field
+                            name="locations"
+                            component={Autocomplete}
+                            multiple={true}
+                            label={t('Locations')}
+                            options={this.state.locations}
+                            onInputChange={this.searchLocations.bind(this)}
+                            onChange={this.handleChangeLocation.bind(this)}
+                            onFocus={this.handleChangeFocus.bind(this)}
+                            helperText={
+                              <SubscriptionFocus
+                                me={me}
+                                users={editUsers}
+                                fieldName="locations"
+                              />
+                            }
+                          />
+                        ) : (
+                          ''
+                        )}
+                        {stixRelation.relationship_type === 'indicates' ? (
+                          <Field
+                            name="expiration"
+                            component={DatePickerField}
+                            label={t('Expiration')}
+                            fullWidth={true}
+                            style={{ marginTop: 10 }}
+                            onFocus={this.handleChangeFocus.bind(this)}
+                            onSubmit={this.handleSubmitField.bind(this)}
+                            helperText={
+                              <SubscriptionFocus
+                                me={me}
+                                users={editUsers}
+                                fieldName="expiration"
+                              />
+                            }
+                          />
+                        ) : (
+                          ''
+                        )}
+                        <Field
+                          name="description"
+                          component={TextField}
+                          label={t('Description')}
+                          fullWidth={true}
+                          multiline={true}
+                          rows={4}
+                          style={{ marginTop: 10 }}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          onSubmit={this.handleSubmitField.bind(this)}
+                          helperText={
+                            <SubscriptionFocus
+                              me={me}
+                              users={editUsers}
+                              fieldName="description"
+                            />
+                          }
+                        />
+                      </Form>
+                    )}
                   />
-                ) : (
-                  ''
-                )}
-                <Field
-                  name="first_seen"
-                  component={DatePickerField}
-                  label={t('First seen')}
-                  fullWidth={true}
-                  style={{ marginTop: 10 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="first_seen"
-                    />
-                  }
-                />
-                <Field
-                  name="last_seen"
-                  component={DatePickerField}
-                  label={t('Last seen')}
-                  fullWidth={true}
-                  style={{ marginTop: 10 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="last_seen"
-                    />
-                  }
-                />
-                {stixRelation.relationship_type === 'targets' ? (
-                  <Field
-                    name="locations"
-                    component={Autocomplete}
-                    multiple={true}
-                    label={t('Locations')}
-                    options={this.state.locations}
-                    onInputChange={this.searchLocations.bind(this)}
-                    onChange={this.handleChangeLocation.bind(this)}
-                    onFocus={this.handleChangeFocus.bind(this)}
-                    helperText={
-                      <SubscriptionFocus
-                        me={me}
-                        users={editUsers}
-                        fieldName="locations"
-                      />
-                    }
-                  />
-                ) : (
-                  ''
-                )}
-                {stixRelation.relationship_type === 'indicates' ? (
-                  <Field
-                    name="expiration"
-                    component={DatePickerField}
-                    label={t('Expiration')}
-                    fullWidth={true}
-                    style={{ marginTop: 10 }}
-                    onFocus={this.handleChangeFocus.bind(this)}
-                    onSubmit={this.handleSubmitField.bind(this)}
-                    helperText={
-                      <SubscriptionFocus
-                        me={me}
-                        users={editUsers}
-                        fieldName="expiration"
-                      />
-                    }
-                  />
-                ) : (
-                  ''
-                )}
-                <Field
-                  name="description"
-                  component={TextField}
-                  label={t('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows={4}
-                  style={{ marginTop: 10 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
-                  }
-                />
-              </Form>
-            )}
+                );
+              }
+              return <div> &nbsp; </div>;
+            }}
           />
           {stixDomainEntity ? (
             <Button

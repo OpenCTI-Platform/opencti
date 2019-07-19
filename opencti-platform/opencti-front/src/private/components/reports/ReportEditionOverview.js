@@ -19,6 +19,7 @@ import {
 import * as Yup from 'yup';
 import { dateFormat } from '../../../utils/Time';
 import {
+  QueryRenderer,
   commitMutation,
   fetchQuery,
   WS_ACTIVATED,
@@ -34,6 +35,7 @@ import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../common/identities/IdentityCreation';
 import DatePickerField from '../../../components/DatePickerField';
+import { attributesQuery } from '../settings/attributes/AttributesList';
 
 const styles = theme => ({
   drawerPaper: {
@@ -313,208 +315,234 @@ class ReportEditionOverviewComponent extends Component {
     )(report);
     return (
       <div>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={reportValidation(t)}
-          render={({ setFieldValue }) => (
-            <div>
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  name="name"
-                  component={TextField}
-                  label={t('Name')}
-                  fullWidth={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="name"
-                    />
-                  }
+        <QueryRenderer
+          query={attributesQuery}
+          variables={{ type: 'report_class' }}
+          render={({ props }) => {
+            if (props && props.attributes) {
+              const reportClassesEdges = props.attributes.edges;
+              return (
+                <Formik
+                  enableReinitialize={true}
+                  initialValues={initialValues}
+                  validationSchema={reportValidation(t)}
+                  render={({ setFieldValue }) => (
+                    <div>
+                      <Form style={{ margin: '20px 0 20px 0' }}>
+                        <Field
+                          name="name"
+                          component={TextField}
+                          label={t('Name')}
+                          fullWidth={true}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          onSubmit={this.handleSubmitField.bind(this)}
+                          helperText={
+                            <SubscriptionFocus
+                              me={me}
+                              users={editUsers}
+                              fieldName="name"
+                            />
+                          }
+                        />
+                        <Field
+                          name="report_class"
+                          component={Select}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          onChange={this.handleSubmitField.bind(this)}
+                          label={t('Report type')}
+                          fullWidth={true}
+                          inputProps={{
+                            name: 'report_class',
+                            id: 'report_class',
+                          }}
+                          containerstyle={{ marginTop: 10, width: '100%' }}
+                          helpertext={
+                            <SubscriptionFocus
+                              me={me}
+                              users={editUsers}
+                              fieldName="report_class"
+                            />
+                          }
+                        >
+                          {reportClassesEdges.map(reportClassEdge => (
+                            <MenuItem
+                              key={reportClassEdge.node.value}
+                              value={reportClassEdge.node.value}
+                            >
+                              {reportClassEdge.node.value}
+                            </MenuItem>
+                          ))}
+                        </Field>
+                        <Field
+                          name="published"
+                          component={DatePickerField}
+                          label={t('Publication date')}
+                          fullWidth={true}
+                          style={{ marginTop: 10 }}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          onSubmit={this.handleSubmitField.bind(this)}
+                          helperText={
+                            <SubscriptionFocus
+                              me={me}
+                              users={editUsers}
+                              fieldName="published"
+                            />
+                          }
+                        />
+                        <Field
+                          name="description"
+                          component={TextField}
+                          label={t('Description')}
+                          fullWidth={true}
+                          multiline={true}
+                          rows="4"
+                          style={{ marginTop: 10 }}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          onSubmit={this.handleSubmitField.bind(this)}
+                          helperText={
+                            <SubscriptionFocus
+                              me={me}
+                              users={editUsers}
+                              fieldName="description"
+                            />
+                          }
+                        />
+                        <Field
+                          name="createdByRef"
+                          component={AutocompleteCreate}
+                          multiple={false}
+                          handleCreate={this.handleOpenIdentityCreation.bind(
+                            this,
+                          )}
+                          label={t('Author')}
+                          options={this.state.identities}
+                          onInputChange={this.searchIdentities.bind(this)}
+                          onChange={this.handleChangeCreatedByRef.bind(this)}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          helperText={
+                            <SubscriptionFocus
+                              me={me}
+                              users={editUsers}
+                              fieldName="createdByRef"
+                            />
+                          }
+                        />
+                        <Field
+                          name="markingDefinitions"
+                          component={Autocomplete}
+                          multiple={true}
+                          label={t('Marking')}
+                          options={this.state.markingDefinitions}
+                          onInputChange={this.searchMarkingDefinitions.bind(
+                            this,
+                          )}
+                          onChange={this.handleChangeMarkingDefinition.bind(
+                            this,
+                          )}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          helperText={
+                            <SubscriptionFocus
+                              me={me}
+                              users={editUsers}
+                              fieldName="markingDefinitions"
+                            />
+                          }
+                        />
+                        <Field
+                          name="object_status"
+                          component={Select}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          onChange={this.handleSubmitField.bind(this)}
+                          label={t('Processing status')}
+                          fullWidth={true}
+                          inputProps={{
+                            name: 'object_status',
+                            id: 'object_status',
+                          }}
+                          containerstyle={{ width: '100%', marginTop: 10 }}
+                          helpertext={
+                            <SubscriptionFocus
+                              me={me}
+                              users={editUsers}
+                              fieldName="object_status"
+                            />
+                          }
+                        >
+                          <MenuItem key="0" value="0">
+                            {t('report_status_0')}
+                          </MenuItem>
+                          <MenuItem key="1" value="1">
+                            {t('report_status_1')}
+                          </MenuItem>
+                          <MenuItem key="2" value="2">
+                            {t('report_status_2')}
+                          </MenuItem>
+                          <MenuItem key="3" value="3">
+                            {t('report_status_3')}
+                          </MenuItem>
+                        </Field>
+                        <Field
+                          name="source_confidence_level"
+                          component={Select}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          onChange={this.handleSubmitField.bind(this)}
+                          label={t('Confidence level')}
+                          fullWidth={true}
+                          inputProps={{
+                            name: 'source_confidence_level',
+                            id: 'source_confidence_level',
+                          }}
+                          containerstyle={{ width: '100%', marginTop: 10 }}
+                          helpertext={
+                            <SubscriptionFocus
+                              me={me}
+                              users={editUsers}
+                              fieldName="source_confidence_level"
+                            />
+                          }
+                        >
+                          <MenuItem key="1" value="1">
+                            {t('confidence_1')}
+                          </MenuItem>
+                          <MenuItem key="2" value="2">
+                            {t('confidence_2')}
+                          </MenuItem>
+                          <MenuItem key="3" value="3">
+                            {t('confidence_3')}
+                          </MenuItem>
+                          <MenuItem key="4" value="4">
+                            {t('confidence_4')}
+                          </MenuItem>
+                          <MenuItem key="5" value="5">
+                            {t('confidence_5')}
+                          </MenuItem>
+                        </Field>
+                      </Form>
+                      <IdentityCreation
+                        contextual={true}
+                        inputValue={this.state.identityInput}
+                        open={this.state.identityCreation}
+                        handleClose={this.handleCloseIdentityCreation.bind(
+                          this,
+                        )}
+                        creationCallback={(data) => {
+                          setFieldValue('createdByRef', {
+                            label: data.identityAdd.name,
+                            value: data.identityAdd.id,
+                          });
+                          this.handleChangeCreatedByRef('createdByRef', {
+                            label: data.identityAdd.name,
+                            value: data.identityAdd.id,
+                          });
+                        }}
+                      />
+                    </div>
+                  )}
                 />
-                <Field
-                  name="report_class"
-                  component={Select}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  label={t('Report type')}
-                  fullWidth={true}
-                  inputProps={{
-                    name: 'report_class',
-                    id: 'report_class',
-                  }}
-                  containerstyle={{ marginTop: 10, width: '100%' }}
-                  helpertext={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="report_class"
-                    />
-                  }
-                >
-                  <MenuItem value="internal">{t('Internal report')}</MenuItem>
-                  <MenuItem value="external">{t('External source')}</MenuItem>
-                </Field>
-                <Field
-                  name="published"
-                  component={DatePickerField}
-                  label={t('Publication date')}
-                  fullWidth={true}
-                  style={{ marginTop: 10 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="published"
-                    />
-                  }
-                />
-                <Field
-                  name="description"
-                  component={TextField}
-                  label={t('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={{ marginTop: 10 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
-                  }
-                />
-                <Field
-                  name="createdByRef"
-                  component={AutocompleteCreate}
-                  multiple={false}
-                  handleCreate={this.handleOpenIdentityCreation.bind(this)}
-                  label={t('Author')}
-                  options={this.state.identities}
-                  onInputChange={this.searchIdentities.bind(this)}
-                  onChange={this.handleChangeCreatedByRef.bind(this)}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="createdByRef"
-                    />
-                  }
-                />
-                <Field
-                  name="markingDefinitions"
-                  component={Autocomplete}
-                  multiple={true}
-                  label={t('Marking')}
-                  options={this.state.markingDefinitions}
-                  onInputChange={this.searchMarkingDefinitions.bind(this)}
-                  onChange={this.handleChangeMarkingDefinition.bind(this)}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="markingDefinitions"
-                    />
-                  }
-                />
-                <Field
-                  name="object_status"
-                  component={Select}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  label={t('Processing status')}
-                  fullWidth={true}
-                  inputProps={{
-                    name: 'object_status',
-                    id: 'object_status',
-                  }}
-                  containerstyle={{ width: '100%', marginTop: 10 }}
-                  helpertext={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="object_status"
-                    />
-                  }
-                >
-                  <MenuItem key="0" value="0">
-                    {t('report_status_0')}
-                  </MenuItem>
-                  <MenuItem key="1" value="1">
-                    {t('report_status_1')}
-                  </MenuItem>
-                  <MenuItem key="2" value="2">
-                    {t('report_status_2')}
-                  </MenuItem>
-                  <MenuItem key="3" value="3">
-                    {t('report_status_3')}
-                  </MenuItem>
-                </Field>
-                <Field
-                  name="source_confidence_level"
-                  component={Select}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  label={t('Confidence level')}
-                  fullWidth={true}
-                  inputProps={{
-                    name: 'source_confidence_level',
-                    id: 'source_confidence_level',
-                  }}
-                  containerstyle={{ width: '100%', marginTop: 10 }}
-                  helpertext={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="source_confidence_level"
-                    />
-                  }
-                >
-                  <MenuItem key="1" value="1">
-                    {t('confidence_1')}
-                  </MenuItem>
-                  <MenuItem key="2" value="2">
-                    {t('confidence_2')}
-                  </MenuItem>
-                  <MenuItem key="3" value="3">
-                    {t('confidence_3')}
-                  </MenuItem>
-                  <MenuItem key="4" value="4">
-                    {t('confidence_4')}
-                  </MenuItem>
-                  <MenuItem key="5" value="5">
-                    {t('confidence_5')}
-                  </MenuItem>
-                </Field>
-              </Form>
-              <IdentityCreation
-                contextual={true}
-                inputValue={this.state.identityInput}
-                open={this.state.identityCreation}
-                handleClose={this.handleCloseIdentityCreation.bind(this)}
-                creationCallback={(data) => {
-                  setFieldValue('createdByRef', {
-                    label: data.identityAdd.name,
-                    value: data.identityAdd.id,
-                  });
-                  this.handleChangeCreatedByRef('createdByRef', {
-                    label: data.identityAdd.name,
-                    value: data.identityAdd.id,
-                  });
-                }}
-              />
-            </div>
-          )}
+              );
+            }
+            return <div> &nbsp; </div>;
+          }}
         />
       </div>
     );

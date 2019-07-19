@@ -197,21 +197,74 @@ export const queryAttributeValues = async type => {
         const attribute = answer.map().get('x');
         const attributeType = await attribute.type();
         const value = await attribute.value();
+        const attributeTypeLabel = await attributeType.label();
+        const replacedValue = value.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
         return {
           node: {
-            type: await attributeType.label(),
-            value: value.replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+            id: attribute.id,
+            type: attributeTypeLabel,
+            value: replacedValue
           }
         };
       })
     );
     const result = await Promise.resolve(resultPromise);
     await closeReadTx(rTx);
-    return { edges: result };
+    return buildPagination(5000, 0, result, 5000);
+  } catch (err) {
+    logger.error(err);
+    await closeReadTx(rTx);
+    return Promise.resolve({});
+  }
+};
+
+/**
+ * Query and get attribute values
+ * @param id
+ * @returns {{edges: *}}
+ */
+export const queryAttributeValueById = async id => {
+  const rTx = await takeReadTx();
+  try {
+    const query = `match $x id ${escape(id)}; get;`;
+    logger.debug(`[GRAKN - infer: false] ${query}`);
+    const iterator = await rTx.tx.query(query);
+    const answer = await iterator.next();
+    const attribute = answer.map().get('x');
+    const attributeType = await attribute.type();
+    const value = await attribute.value();
+    const attributeTypeLabel = await attributeType.label();
+    const replacedValue = value.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+    await closeReadTx(rTx);
+    return {
+      id: attribute.id,
+      type: attributeTypeLabel,
+      value: replacedValue
+    };
   } catch (err) {
     logger.error(err);
     await closeReadTx(rTx);
     return Promise.resolve({ edges: [] });
+  }
+};
+
+/**
+ * Grakn generic function to delete an instance (and orphan relationships)
+ * @param id
+ * @returns {Promise<any[] | never>}
+ */
+export const deleteAttributeById = async id => {
+  const wTx = await takeWriteTx();
+  try {
+    const query = `match $x id ${escape(id)}; delete $x;`;
+    logger.debug(`[GRAKN - infer: false] ${query}`);
+    await wTx.tx.query(query, { infer: false });
+    await commitWriteTx(wTx);
+    return Promise.resolve(id);
+  } catch (err) {
+    logger.error(err);
+    await closeWriteTx(wTx);
+    return Promise.resolve(null);
   }
 };
 
@@ -326,7 +379,7 @@ export const getAttributes = async (concept, graknAttributes = false) => {
 };
 
 /**
- * Load any grakn instance with internal grakn ID.
+ * Load any grakn instance with internal ID.
  * @param id
  * @param tx
  * @param graknAttributes
@@ -341,6 +394,40 @@ export const getById = async (id, tx = null, graknAttributes = false) => {
   }
   try {
     const query = `match $x has internal_id "${escapeString(id)}"; get $x;`;
+    logger.debug(`[GRAKN - infer: false] ${query}`);
+    const iterator = await rTx.tx.query(query);
+    const answer = await iterator.next();
+    const concept = answer.map().get('x');
+    const result = await getAttributes(concept, graknAttributes);
+    if (tx === null) {
+      await closeReadTx(rTx);
+    }
+    return result;
+  } catch (err) {
+    logger.error(err);
+    if (tx === null) {
+      await closeReadTx(rTx);
+    }
+    return Promise.resolve(null);
+  }
+};
+
+/**
+ * Load any grakn instance with internal grakn ID.
+ * @param id
+ * @param tx
+ * @param graknAttributes
+ * @returns {Promise<any[] | never>}
+ */
+export const getByGraknId = async (id, tx = null, graknAttributes = false) => {
+  let rTx = null;
+  if (tx === null) {
+    rTx = await takeReadTx();
+  } else {
+    rTx = tx;
+  }
+  try {
+    const query = `match $x id ${escape(id)}; get $x;`;
     logger.debug(`[GRAKN - infer: false] ${query}`);
     const iterator = await rTx.tx.query(query);
     const answer = await iterator.next();

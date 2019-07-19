@@ -32,7 +32,7 @@ class ReportOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Report type')}
           </Typography>
-          {t(`report_${report.report_class}`)}
+          {report.report_class}
           <Typography
             variant="h3"
             gutterBottom={true}

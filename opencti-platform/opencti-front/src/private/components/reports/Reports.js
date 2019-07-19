@@ -14,6 +14,7 @@ import {
   pipe,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
+import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -226,9 +227,14 @@ class Reports extends Component {
   }
 
   render() {
-    const { classes, reportClass } = this.props;
+    const {
+      classes,
+      match: {
+        params: { reportClass },
+      },
+    } = this.props;
     const paginationOptions = {
-      reportClass: reportClass || '',
+      reportClass: reportClass !== 'all' ? reportClass.replace('_', ' ') : '',
       orderBy: this.state.sortBy,
       orderMode: this.state.orderAsc ? 'asc' : 'desc',
     };
@@ -318,12 +324,13 @@ class Reports extends Component {
 
 Reports.propTypes = {
   classes: PropTypes.object,
-  reportClass: PropTypes.string,
+  match: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles),
 )(Reports);

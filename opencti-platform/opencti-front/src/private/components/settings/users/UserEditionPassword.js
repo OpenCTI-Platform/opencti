@@ -12,18 +12,6 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 
 const styles = theme => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',

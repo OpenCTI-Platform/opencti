@@ -1,4 +1,5 @@
 import {
+  findById,
   findAll,
   attributeUpdate,
   attributeDelete,
@@ -7,14 +8,15 @@ import {
 
 const attributeResolvers = {
   Query: {
+    attribute: (_, { id }) => findById(id),
     attributes: (_, args) => findAll(args)
   },
   Mutation: {
-    attributeEdit: (_, { type, value }) => ({
-      delete: () => attributeDelete(type, value),
-      update: ({ newValue }) => attributeUpdate(type, value, newValue)
+    attributeEdit: (_, { id }) => ({
+      delete: () => attributeDelete(id),
+      update: ({ input }) => attributeUpdate(id, input)
     }),
-    attributeAdd: (_, { input }, { user }) => addAttribute(user, input)
+    attributeAdd: (_, { input }) => addAttribute(input)
   }
 };
 

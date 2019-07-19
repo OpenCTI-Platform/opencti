@@ -94,8 +94,8 @@ export const addIncident = async (user, incident) => {
   `;
   logger.debug(`[GRAKN - infer: false] ${query}`);
   const incidentIterator = await wTx.tx.query(query);
-  const createIncident = await incidentIterator.next();
-  const createdIncidentId = await createIncident.map().get('incident').id;
+  const createdIncident = await incidentIterator.next();
+  const createdIncidentId = await createdIncident.map().get('incident').id;
 
   if (incident.createdByRef) {
     await wTx.tx.query(

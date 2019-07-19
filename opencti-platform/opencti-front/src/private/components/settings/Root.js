@@ -5,6 +5,7 @@ import Users from './Users';
 import Groups from './Groups';
 import MarkingDefinitions from './MarkingDefinitions';
 import KillChainPhases from './KillChainPhases';
+import Attributes from './Attributes';
 import { BoundaryRoute } from '../Error';
 
 class Root extends Component {
@@ -31,6 +32,11 @@ class Root extends Component {
           exact
           path="/dashboard/settings/killchains"
           component={KillChainPhases}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/attributes"
+          component={Attributes}
         />
       </Switch>
     );

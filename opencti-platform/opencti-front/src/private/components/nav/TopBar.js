@@ -248,7 +248,7 @@ class TopBar extends Component {
               ''
             )}
             {location.pathname === '/dashboard/reports'
-            || location.pathname.match('/dashboard/reports/[a-z_]+$') ? (
+            || location.pathname.match('/dashboard/reports/[a-zA-Z1-9_-]+$') ? (
               <TopMenuReports />
               ) : (
                 ''

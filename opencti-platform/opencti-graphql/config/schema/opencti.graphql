@@ -148,12 +148,15 @@ input SettingsAddInput {
 
 ### Attribute
 type AttributeConnection {
+  pageInfo: PageInfo!
   edges: [AttributeEdge]
 }
 type AttributeEdge {
+  cursor: String!
   node: Attribute!
 }
 type Attribute {
+  id: ID!
   type: String!
   value: String!
 }
@@ -161,6 +164,11 @@ input AttributeAddInput {
   type: String!
   value: String!
   clientMutationId: String
+}
+input AttributeEditInput {
+  type: String!
+  value: String!
+  newValue: String!
 }
 
 ### Export
@@ -2084,7 +2092,8 @@ input RelationsAddInput {
 type Query {
   # Technical
   settings: Settings
-  attributes(type: String!): AttributeConnection @auth(for: ROLE_ADMIN)
+  attribute(id: String): Attribute @auth
+  attributes(first: Int, type: String!): AttributeConnection @auth
   queuesMetrics(prefix: String): [QueueMetrics] @auth(for: ROLE_ADMIN)
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
@@ -2472,8 +2481,8 @@ type SettingsEditMutations {
 }
 # Attributes
 type AttributeEditMutations {
-  delete: String
-  update(newValue: String): Attribute
+  delete: ID
+  update(input: AttributeEditInput): Attribute
 }
 
 # StixDomain
@@ -2739,8 +2748,8 @@ type Mutation {
   settingsAdd(input: SettingsAddInput): Settings @auth(for: ROLE_ADMIN)
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: ROLE_ADMIN)
   # Attribute
-  attributeAdd(type: String!, value: String!): Attribute @auth(for: ROLE_ADMIN)
-  attributeEdit(type: String!, value: String!): AttributeEditMutations @auth(for: ROLE_ADMIN)
+  attributeAdd(input: AttributeAddInput): Attribute @auth(for: ROLE_ADMIN)
+  attributeEdit(id: ID!): AttributeEditMutations @auth(for: ROLE_ADMIN)
   # Import data
   importData(type: String!, file: Upload!): Boolean @auth
   # StixDomainEntity
