@@ -3,7 +3,7 @@ worker:
   log_level: 'info'
 
 opencti:
-  api_url: 'http://localhost:8080'
+  url: 'http://localhost:8080'
   token: 'ChangeMe'
 
 rabbitmq:
