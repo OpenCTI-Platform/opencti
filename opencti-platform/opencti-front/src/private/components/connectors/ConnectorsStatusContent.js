@@ -195,7 +195,7 @@ class ConnectorsStatusComponent extends Component {
                         <div className={classes.number}>
                           {pathOr(
                             0,
-                            ['deliver_details', 'message_stats', 'rate'],
+                            ['message_stats', 'ack_details', 'rate'],
                             queueMetric,
                           )}
                           /s
@@ -301,7 +301,7 @@ const ConnectorsStatusContent = createRefetchContainer(
             config
           }
           message_stats {
-            deliver_details {
+            ack_details {
               rate
             }
           }

@@ -67,8 +67,14 @@ class Worker:
         # Initialize OpenCTI client
         self.opencti_api_client = OpenCTIApiClient(self.opencti_url, self.opencti_token)
 
+        # Connect to RabbitMQ
+        self.connection = self._connect()
+        self.channel = self.connection.channel()
+        self._create_exchange()
+        self._create_default_queue()
+
     # Connect to RabbitMQ
-    def _create_connection(self):
+    def _connect(self):
         try:
             credentials = pika.PlainCredentials(self.rabbitmq_username, self.rabbitmq_password)
             parameters = pika.ConnectionParameters(self.rabbitmq_hostname, self.rabbitmq_port, '/', credentials)
@@ -78,13 +84,20 @@ class Worker:
             return None
 
     # Create the exchange
-    def _create_exchange(self, channel):
-        channel.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='direct', durable=True)
+    def _create_exchange(self):
+        self.channel.exchange_declare(exchange=EXCHANGE_NAME, exchange_type='direct', durable=True)
 
     # Create the default queue for import coming from the platform
-    def _create_default_queue(self, channel):
-        channel.queue_declare(self.DEFAULT_QUEUE_NAME, durable=True)
-        channel.queue_bind(queue=self.DEFAULT_QUEUE_NAME, exchange=EXCHANGE_NAME, routing_key=self.DEFAULT_ROUTING_KEY)
+    def _create_default_queue(self):
+        self.channel.queue_declare(self.DEFAULT_QUEUE_NAME, durable=True)
+        self.channel.queue_bind(queue=self.DEFAULT_QUEUE_NAME, exchange=EXCHANGE_NAME, routing_key=self.DEFAULT_ROUTING_KEY)
+
+    def _reconnect(self):
+        self.connection = self._connect()
+        self.channel = self.connection.channel()
+        self._create_exchange()
+        self._create_default_queue()
+        logging.info('Successfully connected to RabbitMQ')
 
     # List all connectors queues
     def _list_connectors_queues(self):
@@ -111,8 +124,9 @@ class Worker:
         try:
             data = json.loads(body)
             logging.info('Received a new message of type "' + data['type'] + '"')
-            if data['type'] == 'stix2-bundle':
-                self.opencti_api_client.stix2_import_bundle(base64.b64decode(data['content']).decode('utf-8'), True, data['entities_types'])
+            if data['type'] == 'stix2-bundle' or data['type'] == 'stix2bundle':
+                content = base64.b64decode(data['content']).decode('utf-8')
+                self.opencti_api_client.stix2_import_bundle(content, True, data['entities_types'] if 'entities_types' in data else [])
             if data['type'] == 'stix2-bundle-simple':
                 bundle = self.opencti_api_client.stix2_export_entity(data['entity_type'], data['entity_id'], 'simple')
                 if bundle is not None:
@@ -128,7 +142,7 @@ class Worker:
             return False
 
     # Consume the queues during 1 minute
-    def _consume(self, channel):
+    def _consume(self):
         timeout = time.time() + 60
         queues = self._list_connectors_queues()
         queues.append(self.DEFAULT_QUEUE_NAME)
@@ -137,21 +151,18 @@ class Worker:
             if time.time() > timeout:
                 break
             for queue in queues:
-                method, header, body = channel.basic_get(queue=queue)
+                method, header, body = self.channel.basic_get(queue=queue)
                 if method:
                     self._process_message(body)
-                    channel.basic_ack(delivery_tag=method.delivery_tag)
+                    self.channel.basic_ack(delivery_tag=method.delivery_tag)
             time.sleep(1)
 
     # Start the main loop
     def start(self):
+        self._reconnect()
         try:
-            connection = self._create_connection()
-            channel = connection.channel()
-            self._create_exchange(channel)
-            self._create_default_queue(channel)
             while True:
-                self._consume(channel)
+                self._consume()
                 time.sleep(1)
         except:
             raise ValueError('Unable to start the worker')
