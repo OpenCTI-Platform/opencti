@@ -6,10 +6,10 @@ import logging
 import datefinder
 import dateutil.parser
 import pytz
-
-from pycti.constants import ObservableTypes, CustomProperties
 import stix2
+
 from stix2 import ObjectPath, ObservationExpression, EqualityComparisonExpression, HashConstant
+from pycti.constants import ObservableTypes, CustomProperties
 
 datefinder.ValueError = ValueError, OverflowError
 utc = pytz.UTC
@@ -22,7 +22,7 @@ STIX2OPENCTI = {
     'file:hashes.sha256': ObservableTypes.FILE_HASH_SHA256,
     'ipv4-addr:value': ObservableTypes.IPV4_ADDR,
     'domain:value': ObservableTypes.DOMAIN,
-    'url:value': ObservableTypes.URL,
+    'url:value': ObservableTypes.URL
 }
 
 
