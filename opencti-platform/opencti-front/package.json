@@ -77,7 +77,7 @@
   },
   "scripts": {
     "start": "yarn relay && react-scripts start",
-    "build": "yarn relay && react-scripts build && node src/setupBuild.js",
+    "build": "yarn relay && react-scripts --max_old_space_size=4096 build && node src/setupBuild.js",
     "lint": "eslint .",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
