@@ -1,5 +1,5 @@
 # Use the official Docker Hub Ubuntu 18.04 base image
-FROM ubuntu:18.04
+FROM ubuntu:19.04
 
 # Update the base image
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y upgrade && apt-get -y dist-upgrade

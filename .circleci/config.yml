@@ -90,7 +90,7 @@ jobs:
       - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
       - run:
           working_directory: ~/opencti/deploy
-          command: git clone ssh://opencti-fiqid45E@opencti.io:/~/opencti-fiqid45E.git .
+          command: git clone ssh://opencti-fiqid45E@opencti.io:/~/opencti-fiqid45E.git . && git submodule update --remote
       - run:
           working_directory: ~/opencti/deploy
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master
@@ -105,10 +105,7 @@ jobs:
           command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker-import/          
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker-export/       
-      - run:
-          working_directory: ~/opencti/deploy
-          command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker-export/                 
+          command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker-export/           
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A
@@ -130,7 +127,7 @@ jobs:
       - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
       - run:
           working_directory: ~/opencti/deploy
-          command: git clone ssh://opencti-b0gY5UHe@opencti.io:/~/opencti-b0gY5UHe.git .
+          command: git clone ssh://opencti-b0gY5UHe@opencti.io:/~/opencti-b0gY5UHe.git . && git submodule update --remote
       - run:
           working_directory: ~/opencti/deploy
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master          
@@ -178,11 +175,11 @@ jobs:
       - run:
           working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker build -m 4g -t opencti/platform:latest . && docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
+          command: docker build -t opencti/platform:latest . && docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
       - run:
           working_directory: ~/opencti/opencti-worker
           name: Build Docker image opencti/worker
-          command: docker build -m 4g -t opencti/worker:latest . && docker tag opencti/worker:latest opencti/worker:${CIRCLE_TAG}
+          command: docker build -t opencti/worker:latest . && docker tag opencti/worker:latest opencti/worker:${CIRCLE_TAG}
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -202,11 +199,11 @@ jobs:
       - run:
           working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker build -m 4g -t opencti/platform:rolling .
+          command: docker build -t opencti/platform:rolling .
       - run:
           working_directory: ~/opencti/opencti-worker
           name: Build Docker image opencti/worker
-          command: docker build -m 4g -t opencti/worker:rolling .
+          command: docker build -t opencti/worker:rolling .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
