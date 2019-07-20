@@ -19,10 +19,10 @@ COPY opencti-front /opt/opencti-build/opencti-front
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
 
 # Build frontend
-RUN cd /opt/opencti-build/opencti-front && yarn install && yarn build --max_old_space_size=8192
+RUN cd /opt/opencti-build/opencti-front && yarn install && yarn build --max_old_space_size=4096
 
 # Build GraphQL API
-RUN cd /opt/opencti-build/opencti-graphql && yarn install && yarn build --max_old_space_size=8192
+RUN cd /opt/opencti-build/opencti-graphql && yarn install && yarn build --max_old_space_size=4096
 RUN mv /opt/opencti-build/opencti-graphql /opt/opencti
 
 # Clean
