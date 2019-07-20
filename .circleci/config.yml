@@ -67,6 +67,7 @@ jobs:
       - run: mkdir release
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
       - run: cp -a ./opencti-worker/src release/opencti/worker
+      - run: cp -a ./opencti-docker release/opencti/docker
       - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/connectors
       - run:
           working_directory: ~/opencti/release
@@ -105,6 +106,9 @@ jobs:
       - run:
           working_directory: ~/opencti/deploy
           command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker-export/       
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker-export/                 
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A
@@ -174,11 +178,11 @@ jobs:
       - run:
           working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker build -t opencti/platform:latest . && docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
+          command: docker build -m 4g -t opencti/platform:latest . && docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
       - run:
           working_directory: ~/opencti/opencti-worker
           name: Build Docker image opencti/worker
-          command: docker build -t opencti/worker:latest . && docker tag opencti/worker:latest opencti/worker:${CIRCLE_TAG}
+          command: docker build -m 4g -t opencti/worker:latest . && docker tag opencti/worker:latest opencti/worker:${CIRCLE_TAG}
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -198,11 +202,11 @@ jobs:
       - run:
           working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker build -t opencti/platform:rolling .
+          command: docker build -m 4g -t opencti/platform:rolling .
       - run:
           working_directory: ~/opencti/opencti-worker
           name: Build Docker image opencti/worker
-          command: docker build -t opencti/worker:rolling .
+          command: docker build -m 4g -t opencti/worker:rolling .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
