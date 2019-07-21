@@ -7,33 +7,17 @@
     "Installation": [
       "version-1.0.2-installation/docker",
       "version-1.0.2-installation/manual",
-      "version-1.0.2-installation/connectors",
       "version-1.0.2-development/installation"
     ],
     "Usage": [
       "version-1.0.2-usage/overview",
       "version-1.0.2-usage/model",
       "version-1.0.2-usage/reports-create",
-      "version-1.0.2-usage/report-knowledge",
-      "version-1.0.2-usage/report-observables",
-      "version-1.0.2-usage/entities",
-      "version-1.0.2-usage/import",
-      "version-1.0.2-usage/export",
-      "version-1.0.2-usage/explore",
-      "version-1.0.2-usage/investigate",
-      "version-1.0.2-usage/correlate"
+      "version-1.0.2-usage/report-knowledge"
     ],
     "Reference": [
       "version-1.0.2-reference/relations",
-      "version-1.0.2-reference/observables",
       "version-1.0.2-reference/inferences"
-    ],
-    "Development": [
-      "version-1.0.2-development/api",
-      "version-1.0.2-development/connectors",
-      "version-1.0.2-development/frontend",
-      "version-1.0.2-development/integration",
-      "version-1.0.2-development/workers"
     ]
   }
 }
