@@ -1206,7 +1206,7 @@ class OpenCTIStix2:
 
         start_time = time.time()
         for item in stix_bundle['objects']:
-            if item['type'] == 'identity' and (len(types) == 0 or 'identity' in types or ('x_opencti_identity_type' in item and item['x_opencti_identity_type'] in types)):
+            if item['type'] == 'identity' and (len(types) == 0 or 'identity' in types or (CustomProperties.IDENTITY_TYPE in item and item[CustomProperties.IDENTITY_TYPE] in types)):
                 self.import_object(item, update)
         end_time = time.time()
         logging.info("Identities imported in: %ssecs" % round(end_time - start_time))
