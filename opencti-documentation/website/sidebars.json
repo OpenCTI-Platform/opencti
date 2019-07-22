@@ -2,7 +2,8 @@
   "docs": {
     "Getting Started": [
       "getting-started/introduction",
-      "getting-started/architecture"
+      "getting-started/architecture",
+      "getting-started/requirements"
     ],
     "Installation": [
       "installation/docker",
@@ -14,26 +15,14 @@
       "usage/overview",
       "usage/model",
       "usage/reports-create",
-      "usage/report-knowledge",
-      "usage/report-observables",
-      "usage/entities",
-      "usage/import",
-      "usage/export",
-      "usage/explore",
-      "usage/investigate",
-      "usage/correlate"
+      "usage/report-knowledge"
     ],
    "Reference": [
       "reference/relations",
-      "reference/observables",
       "reference/inferences"
     ],
     "Development": [
-      "development/api",
-      "development/connectors",
-      "development/frontend",
-      "development/integration",
-      "development/workers"
+      "development/connectors"
     ]
   }
 }

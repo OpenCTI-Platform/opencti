@@ -2,7 +2,8 @@
   "version-1.1.0-docs": {
     "Getting Started": [
       "version-1.1.0-getting-started/introduction",
-      "version-1.1.0-getting-started/architecture"
+      "version-1.1.0-getting-started/architecture",
+      "version-1.1.0-getting-started/requirements"
     ],
     "Installation": [
       "version-1.1.0-installation/docker",
