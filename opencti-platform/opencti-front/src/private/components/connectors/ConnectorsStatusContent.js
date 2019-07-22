@@ -118,9 +118,7 @@ class ConnectorsStatusComponent extends Component {
   }
 
   render() {
-    const {
-      classes, t, nsdt, data,
-    } = this.props;
+    const { classes, t, data } = this.props;
     const sort = sortWith([
       descend(path(['arguments', 'config', 'confidence_level'])),
     ]);
@@ -207,11 +205,11 @@ class ConnectorsStatusComponent extends Component {
                     </Grid>
                     <Grid item={true} lg={3} xs={6}>
                       <div className={classes.metric}>
-                        <div className={classes.date}>
-                          {nsdt(queueMetric.idle_since)}
+                        <div className={classes.number}>
+                          {pathOr(0, ['message_stats', 'ack'], queueMetric)}
                         </div>
                         <div className={classes.title}>
-                          {t('Last processed message')}
+                          {t('Total processed messages')}
                         </div>
                       </div>
                     </Grid>
@@ -301,6 +299,7 @@ const ConnectorsStatusContent = createRefetchContainer(
             config
           }
           message_stats {
+            ack
             ack_details {
               rate
             }

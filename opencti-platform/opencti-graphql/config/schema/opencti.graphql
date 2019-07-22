@@ -89,6 +89,7 @@ type AckDetails {
   rate: Float
 }
 type MessagesStats {
+  ack: Int
   ack_details: AckDetails
 }
 type QueueArguments {

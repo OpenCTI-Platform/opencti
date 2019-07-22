@@ -469,6 +469,7 @@ const i18n = {
       'In progress messages': 'Messages en traitement',
       'Messages processed': 'Messages traités',
       'Last processed message': 'Dernier message traité',
+      'Total processed messages': 'Total de messages traités',
       'Graph type': 'Type de graphique',
       'Table (top 10)': 'Tableau (top 10)',
       'Pie chart': 'Camembert',

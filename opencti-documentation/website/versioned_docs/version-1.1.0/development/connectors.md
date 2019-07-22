@@ -1,7 +1,8 @@
 ---
-id: connectors
+id: version-1.1.0-connectors
 title: Development of connectors
 sidebar_label: Connectors
+original_id: connectors
 ---
 
 Connectors are the cornerstone of the OpenCTI platform and allow organizations to easily ingest new data on the platform. The OpenCTI core development team will provide as many connectors as they can but any developers can contribute to community connectors provided on the [official repository](https://github.com/OpenCTI-Platform/connectors).

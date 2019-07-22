@@ -164,6 +164,8 @@ class Worker:
             while True:
                 self._consume()
                 time.sleep(1)
+        except KeyboardInterrupt:
+            exit(0)
         except:
             raise ValueError('Unable to start the worker')
 

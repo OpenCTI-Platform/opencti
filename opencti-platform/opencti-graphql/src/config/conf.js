@@ -90,24 +90,24 @@ export const logger = winston.createLogger({
     new DailyRotateFile({
       filename: 'error.log',
       dirname: nconf.get('app:logs'),
-      level: 'error'
+      level: 'error',
+      maxFiles: '30'
     }),
     new DailyRotateFile({
       filename: 'opencti.log',
-      dirname: nconf.get('app:logs')
+      dirname: nconf.get('app:logs'),
+      maxFiles: '30'
     })
   ]
 });
 
 export const DEV_MODE = environment !== 'production';
-if (DEV_MODE) {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.simple(),
-      level: 'debug'
-    })
-  );
-}
+logger.add(
+  new winston.transports.Console({
+    format: winston.format.simple(),
+    level: DEV_MODE ? 'debug' : 'warning'
+  })
+);
 
 // eslint-disable-next-line
 console.log(`🚀 OpenCTI started in ${environment} mode with ${externalConfigurationFile ? 'external' : 'embedded'} file`);

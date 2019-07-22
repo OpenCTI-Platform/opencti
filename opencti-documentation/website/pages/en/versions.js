@@ -83,12 +83,12 @@ function Versions(props) {
                         {/* You are supposed to change this href where appropriate
                         Example: href="<baseUrl>/docs(/:language)/:version/:id" */}
                         <a
-                          href={`${siteConfig.baseUrl}${siteConfig.docsUrl}getting-started/introduction`}>
+                          href={`${siteConfig.baseUrl}${siteConfig.docsUrl}${version}/getting-started/introduction`}>
                           Documentation
                         </a>
                       </td>
                       <td>
-                        <a href={`${repoUrl}/releases/tag/v${version}`}>
+                        <a href={`${repoUrl}/releases/tag/${version}`}>
                           Release Notes
                         </a>
                       </td>
