@@ -107,9 +107,11 @@ services:
       - OPENCTI_NAME=OpenCTI
       - OPENCTI_CONFIDENCE_LEVEL=5
       - OPENCTI_SECTORS_FILE_URL=https://raw.githubusercontent.com/OpenCTI-Platform/datasets/master/data/sectors.json
-      - OPENCTI_ENTITIES=sector,region,country,city
+      - OPENCTI_ENTITIES=identity,sector,region,country,city
       - OPENCTI_INTERVAL=1 # Days
       - OPENCTI_LOG_LEVEL=info
+    depends_on:
+      - opencti
     restart: always
   connector-mitre:
     image: opencti/connector-mitre:1.1.0
@@ -124,6 +126,9 @@ services:
       - MITRE_ENTITIES=identity,attack-pattern,course-of-action,intrusion-set,malware,tool
       - MITRE_INTERVAL=7 # Days
       - MITRE_LOG_LEVEL=info    
+    depends_on:
+      - opencti
+    restart: always            
 volumes:
   grakndata:
   esdata:
