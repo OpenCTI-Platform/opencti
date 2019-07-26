@@ -41,7 +41,7 @@ $ docker stack deploy -c docker-compose.yml opencti
 
 ### In standard Docker
 ```bash
-$ docker-compose up --compatibility
+$ docker-compose --compatibility up 
 ```
 
 You can now go to http://localhost:8080 and log in with the crendetials configured in your environement variables.
