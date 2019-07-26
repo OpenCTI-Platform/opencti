@@ -71,6 +71,86 @@ export const deleteEntity = async (indexName, documentType, documentId) => {
   return true;
 };
 
+export const countEntities = (indexName, options) => {
+  const {
+    endDate = null,
+    type = null,
+    types = null,
+  } = options;
+  let must = [];
+  if (endDate !== null && endDate.length > 0) {
+    must = append(
+      {
+        range: {
+          created_at: {
+            format: 'strict_date_optional_time',
+            lt: endDate
+          }
+        }
+      },
+      must
+    );
+  }
+  if (type !== null && type.length > 0) {
+    must = append(
+      {
+        match_phrase: {
+          entity_type: {
+            query: type
+          }
+        }
+      },
+      must
+    );
+  }
+  if (types !== null && types.length > 0) {
+    const should = types.map(typeValue => {
+      return {
+        match_phrase: {
+          entity_type: typeValue
+        }
+      };
+    });
+    must = append(
+      {
+        bool: {
+          should,
+          minimum_should_match: 1
+        }
+      },
+      must
+    );
+  }
+  const query = {
+    index: indexName,
+    body: {
+      aggs: {},
+      filter: [
+        {
+          match_all: {}
+        }
+      ],
+      should: [],
+      must_not: [],
+      query: {
+        bool: {
+          must
+        }
+      }
+    }
+  };
+  console.log(query)
+  logger.debug(`[ELASTICSEARCH] ${JSON.stringify(query)}`);
+  return el
+    .count(query)
+    .then(data => {
+      console.log(data)
+    })
+    .catch(() => {
+      return 0
+    });
+};
+
 export const paginate = (indexName, options) => {
   const {
     first = 200,

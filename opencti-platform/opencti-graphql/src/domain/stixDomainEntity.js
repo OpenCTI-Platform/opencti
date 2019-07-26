@@ -1,4 +1,4 @@
-import { assoc, isNil, map, filter, propOr } from 'ramda';
+import { assoc, isNil, map, filter, propOr, dissoc } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
@@ -27,7 +27,8 @@ import {
 import {
   deleteEntity,
   index,
-  paginate as elPaginate
+  paginate as elPaginate,
+  countEntities,
 } from '../database/elasticSearch';
 
 import {
@@ -66,7 +67,9 @@ export const stixDomainEntitiesTimeSeries = args =>
   );
 
 export const stixDomainEntitiesNumber = args => ({
-  count: getSingleValueNumber(
+  count: countEntities('stix-domain-entities', args),
+  total: countEntities('stix-domain-entities', dissoc('endDate', args))
+  /*count: getSingleValueNumber(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
     ${
       args.endDate
@@ -81,7 +84,7 @@ export const stixDomainEntitiesNumber = args => ({
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
     get $x;
     count;`
-  )
+  )*/
 });
 
 export const findById = stixDomainEntityId => getById(stixDomainEntityId);
