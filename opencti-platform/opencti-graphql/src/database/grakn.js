@@ -868,6 +868,7 @@ export const getObject = (query, key = 'x', relationKey, infer = false) =>
  * @param ordered
  * @param relationOrderingKey
  * @param infer
+ * @param computeCount
  * @returns {Promise<any[] | never>}
  */
 export const paginate = (
@@ -875,7 +876,8 @@ export const paginate = (
   options,
   ordered = true,
   relationOrderingKey = null,
-  infer = false
+  infer = false,
+  computeCount = true
 ) => {
   try {
     const { first = 200, after, orderBy = null, orderMode = 'asc' } = options;
@@ -888,12 +890,18 @@ export const paginate = (
     const orderingKey = relationOrderingKey
       ? `$${relationOrderingKey} has ${orderBy} $o;`
       : `$${instanceKey} has ${orderBy} $o;`;
-    const count = getSingleValueNumber(
-      `${query}; ${ordered && orderBy ? orderingKey : ''} get $${instanceKey}${
-        relationKey ? `, $${relationKey}` : ''
-      }${ordered && orderBy ? ', $o' : ''}; count;`,
-      infer
-    );
+
+    let count = first;
+    if (computeCount === true) {
+      count = getSingleValueNumber(
+        `${query}; ${
+          ordered && orderBy ? orderingKey : ''
+        } get $${instanceKey}${relationKey ? `, $${relationKey}` : ''}${
+          ordered && orderBy ? ', $o' : ''
+        }; count;`,
+        infer
+      );
+    }
     const elements = getObjects(
       `${query}; ${ordered && orderBy ? orderingKey : ''} get $${instanceKey}${
         relationKey ? `, $${relationKey}` : ''
@@ -962,9 +970,7 @@ export const getRelations = async (
         const relationIsInferred = await relationObject.isInferred();
         let relationPromise = await Promise.resolve(null);
         if (relationIsInferred) {
-          const queryPattern = `{ $rel(${fromRoleLabel}: $from, ${toRoleLabel}: $to) isa ${relationTypeLabel}; $from id ${
-            fromObject.id
-          }; $to id ${toObject.id}; };`;
+          const queryPattern = `{ $rel(${fromRoleLabel}: $from, ${toRoleLabel}: $to) isa ${relationTypeLabel}; $from id ${fromObject.id}; $to id ${toObject.id}; };`;
           relationPromise = await Promise.resolve({
             id: Buffer.from(queryPattern).toString('base64'),
             entity_type: 'stix_relation',

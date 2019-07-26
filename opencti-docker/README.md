@@ -10,7 +10,7 @@ $ cd opencti/opencti-docker
 
 ### Configure the environement
 
-Before running the docker-compose command, please change the admin token (we advise you to generate a [uuidv4](https://www.uuidgenerator.net/) for it) and password of the application in the file `docker-compose.yml`:
+Before running the docker-compose command, please change the admin token (this token must be a [valid UUID](https://www.uuidgenerator.net/)) and password of the application in the file `docker-compose.yml`:
 
 ```bash
 - APP__ADMIN__PASSWORD=ChangeMe

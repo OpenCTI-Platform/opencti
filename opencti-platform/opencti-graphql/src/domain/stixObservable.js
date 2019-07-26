@@ -119,6 +119,9 @@ export const markingDefinitions = (stixObservableId, args) =>
     $rel(marking:$m, so:$x) isa object_marking_refs; 
     $x has internal_id "${escapeString(stixObservableId)}"`,
     args,
+    false,
+    null,
+    false,
     false
   );
 

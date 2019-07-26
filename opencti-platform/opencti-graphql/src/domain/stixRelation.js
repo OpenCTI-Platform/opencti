@@ -526,7 +526,11 @@ export const markingDefinitions = (stixRelationId, args) =>
     `match $marking isa Marking-Definition; 
     $rel(marking:$marking, so:$stixRelation) isa object_marking_refs; 
     $stixRelation has internal_id "${escapeString(stixRelationId)}"`,
-    args
+    args,
+    false,
+    null,
+    false,
+    false
   );
 
 export const reports = (stixRelationId, args) =>
@@ -571,7 +575,11 @@ export const addStixRelation = async (user, stixRelation) => {
     }",
     has name "",
     has description "${escapeString(stixRelation.description)}",
-    has role_played "${escapeString(stixRelation.role_played)}",
+    has role_played "${
+      stixRelation.role_played
+        ? escapeString(stixRelation.role_played)
+        : 'Unknown'
+    }",
     has weight ${escape(stixRelation.weight)},
     has score ${stixRelation.score ? escape(stixRelation.score) : 50},
     ${

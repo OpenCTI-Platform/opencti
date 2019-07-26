@@ -10,10 +10,13 @@ services:
   redis:
     image: redis:5.0.5
     restart: always
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.1
+  elasticsearch-01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    container_name: elasticsearch-01
+    environment:
+      - cluster.initial_master_nodes=elasticsearch-01
     restart: always
     ulimits:
       memlock:
@@ -28,46 +31,8 @@ services:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest    
     restart: always
-  worker-import:
-    image: opencti/worker:1.1.0
-    environment:
-      - WORKER_TYPE=import
-      - WORKER_LOG_LEVEL=info
-      - OPENCTI_URL=http://opencti:8080
-      - OPENCTI_TOKEN=ChangeMe
-      - RABBITMQ_HOSTNAME=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_PORT_MANAGEMENT=15672
-      - RABBITMQ_MANAGEMENT_SSL=false
-      - RABBITMQ_USERNAME=guest
-      - RABBITMQ_PASSWORD=guest
-    depends_on:
-      - opencti
-    deploy:
-      mode: replicated
-      replicas: 4
-    restart: always
-  worker-export:
-    image: opencti/worker:1.1.0
-    environment:
-      - WORKER_TYPE=export
-      - WORKER_LOG_LEVEL=info
-      - OPENCTI_URL=http://opencti:8080
-      - OPENCTI_TOKEN=ChangeMe
-      - RABBITMQ_HOSTNAME=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_PORT_MANAGEMENT=15672
-      - RABBITMQ_MANAGEMENT_SSL=false
-      - RABBITMQ_USERNAME=guest
-      - RABBITMQ_PASSWORD=guest
-    depends_on:
-      - opencti
-    deploy:
-      mode: replicated
-      replicas: 2      
-    restart: always    
   opencti:
-    image: opencti/platform:1.1.0
+    image: opencti/platform:1.1.1
     environment:
       - APP__PORT=8080
       - APP__ADMIN__EMAIL=admin@opencti.io
@@ -96,6 +61,44 @@ services:
       - redis
       - elasticsearch
       - rabbitmq
+    restart: always
+      worker-import:
+    image: opencti/worker:1.1.1
+    environment:
+      - WORKER_TYPE=import
+      - WORKER_LOG_LEVEL=info
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=ChangeMe
+      - RABBITMQ_HOSTNAME=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_PORT_MANAGEMENT=15672
+      - RABBITMQ_MANAGEMENT_SSL=false
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+    depends_on:
+      - opencti
+    deploy:
+      mode: replicated
+      replicas: 4
+    restart: always
+  worker-export:
+    image: opencti/worker:1.1.1
+    environment:
+      - WORKER_TYPE=export
+      - WORKER_LOG_LEVEL=info
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=ChangeMe
+      - RABBITMQ_HOSTNAME=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_PORT_MANAGEMENT=15672
+      - RABBITMQ_MANAGEMENT_SSL=false
+      - RABBITMQ_USERNAME=guest
+      - RABBITMQ_PASSWORD=guest
+    depends_on:
+      - opencti
+    deploy:
+      mode: replicated
+      replicas: 2      
     restart: always
   connector-opencti:
     image: opencti/connector-opencti:1.1.0
