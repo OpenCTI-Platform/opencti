@@ -10,10 +10,13 @@ services:
   redis:
     image: redis:5.0.5
     restart: always
-  elasticsearch:
+  elasticsearch-01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    container_name: elasticsearch-01
+    environment:
+      - cluster.initial_master_nodes=elasticsearch-01
     restart: always
     ulimits:
       memlock:
