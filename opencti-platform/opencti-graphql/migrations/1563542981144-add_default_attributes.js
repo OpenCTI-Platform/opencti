@@ -3,11 +3,11 @@ import { addAttribute } from '../src/domain/attribute';
 module.exports.up = async next => {
   await addAttribute({
     type: 'report_class',
-    value: 'external'
+    value: 'Threat Report'
   });
   await addAttribute({
     type: 'report_class',
-    value: 'internal'
+    value: 'Internal Report'
   });
   await addAttribute({
     type: 'role_played',

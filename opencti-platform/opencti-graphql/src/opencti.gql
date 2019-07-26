@@ -144,6 +144,10 @@ define
   resolves_to sub role;
   belongs_to sub role;
 
+  # STIX observables roles
+  observable_group sub role;
+  observable_part_of sub role;
+
   # STIX SRO roles
 
   # targets
@@ -303,6 +307,35 @@ define
   belongs_to_refs sub stix_relation_observable_embedded,
     relates soo,
     relates belongs_to;
+
+  # STIX SOO embeded relationships
+   stix_relation_observable_grouping sub relation,
+    abstract,
+    has internal_id,
+    has stix_id,
+    has created,
+    has modified,
+    has revoked,
+    has entity_type,
+    has relationship_type,
+    has weight,
+    has first_seen,
+    has first_seen_day,
+    has first_seen_month,
+    has first_seen_year,
+    has last_seen,
+    has last_seen_day,
+    has last_seen_month,
+    has last_seen_year,
+    has name,
+    has description,
+    has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
+    has updated_at,
+    relates observable_group,
+    relates observable_part_of;
 
   # STIX SRO relationships
   stix_sighting sub relation,
@@ -739,7 +772,9 @@ define
     plays so,
     plays soo,
     plays indicator,
-    plays exported;
+    plays exported,
+    plays observable_group,
+    plays observable_part_of;
 
     Domain sub Stix-Observable;
 
