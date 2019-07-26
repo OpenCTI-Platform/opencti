@@ -12,9 +12,12 @@ services:
     restart: always
     ports:
       - 6379:6379
-  opencti-dev-elasticsearch:
+  opencti-dev-elasticsearch-01:
     container_name: opencti-dev-elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+    container_name: opencti-dev-elasticsearch-01
+    environment:
+      - cluster.initial_master_nodes=opencti-dev-elasticsearch-01
     restart: always
     ulimits:
       memlock:
