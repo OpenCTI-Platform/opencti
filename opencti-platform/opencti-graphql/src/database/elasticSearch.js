@@ -1,4 +1,4 @@
-import elasticsearch from 'elasticsearch';
+import { Client } from '@elastic/elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import { map, append, assoc } from 'ramda';
 import { buildPagination } from './utils';
@@ -13,11 +13,7 @@ const dateFields = [
   'last_seen',
   'published'
 ];
-export const el = new elasticsearch.Client({
-  host: `${conf.get('elasticsearch:hostname')}:${conf.get(
-    'elasticsearch:port'
-  )}`
-});
+export const el = new Client({ node: conf.get('elasticsearch:url') });
 
 export const createIndexes = () => {
   const indexes = [
@@ -185,9 +181,14 @@ export const paginate = (indexName, options) => {
         n => ({
           node: assoc('id', n._source.internal_id, n._source)
         }),
-        data.hits.hits
+        data.body.hits.hits
       );
-      return buildPagination(first, offset, finalData, data.hits.total);
+      return buildPagination(
+        first,
+        offset,
+        finalData,
+        data.body.hits.total.value
+      );
     })
     .catch(() => {
       return buildPagination(first, offset, [], 0);
