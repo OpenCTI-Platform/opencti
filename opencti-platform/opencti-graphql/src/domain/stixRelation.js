@@ -571,7 +571,11 @@ export const addStixRelation = async (user, stixRelation) => {
     }",
     has name "",
     has description "${escapeString(stixRelation.description)}",
-    has role_played "${escapeString(stixRelation.role_played)}",
+    has role_played "${
+      stixRelation.role_played
+        ? escapeString(stixRelation.role_played)
+        : 'Unknown'
+    }",
     has weight ${escape(stixRelation.weight)},
     has score ${stixRelation.score ? escape(stixRelation.score) : 50},
     ${

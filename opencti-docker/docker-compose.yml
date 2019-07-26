@@ -28,7 +28,38 @@ services:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest    
     restart: always
-  worker-import:
+  opencti:
+    image: opencti/platform:1.1.0
+    environment:
+      - APP__PORT=8080
+      - APP__ADMIN__EMAIL=admin@opencti.io
+      - APP__ADMIN__PASSWORD=ChangeMe
+      - APP__ADMIN__TOKEN=ChangeMe
+      - APP__LOGS=./logs
+      - APP__REACTIVE=true
+      - APP__COOKIE_SECURE=false
+      - GRAKN__HOSTNAME=grakn
+      - GRAKN__PORT=48555
+      - GRAKN__TIMEOUT=30000
+      - REDIS__HOSTNAME=redis
+      - REDIS__PORT=6379
+      - ELASTICSEARCH__HOSTNAME=elasticsearch
+      - ELASTICSEARCH__PORT=9200
+      - RABBITMQ__HOSTNAME=rabbitmq
+      - RABBITMQ__PORT=5672
+      - RABBITMQ__PORT_MANAGEMENT=15672
+      - RABBITMQ__MANAGEMENT_SSL=false
+      - RABBITMQ__USERNAME=guest
+      - RABBITMQ__PASSWORD=guest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - grakn
+      - redis
+      - elasticsearch
+      - rabbitmq
+    restart: always
+      worker-import:
     image: opencti/worker:1.1.0
     environment:
       - WORKER_TYPE=import
@@ -65,37 +96,6 @@ services:
     deploy:
       mode: replicated
       replicas: 2      
-    restart: always    
-  opencti:
-    image: opencti/platform:1.1.0
-    environment:
-      - APP__PORT=8080
-      - APP__ADMIN__EMAIL=admin@opencti.io
-      - APP__ADMIN__PASSWORD=ChangeMe
-      - APP__ADMIN__TOKEN=ChangeMe
-      - APP__LOGS=./logs
-      - APP__REACTIVE=true
-      - APP__COOKIE_SECURE=false
-      - GRAKN__HOSTNAME=grakn
-      - GRAKN__PORT=48555
-      - GRAKN__TIMEOUT=30000
-      - REDIS__HOSTNAME=redis
-      - REDIS__PORT=6379
-      - ELASTICSEARCH__HOSTNAME=elasticsearch
-      - ELASTICSEARCH__PORT=9200
-      - RABBITMQ__HOSTNAME=rabbitmq
-      - RABBITMQ__PORT=5672
-      - RABBITMQ__PORT_MANAGEMENT=15672
-      - RABBITMQ__MANAGEMENT_SSL=false
-      - RABBITMQ__USERNAME=guest
-      - RABBITMQ__PASSWORD=guest
-    ports:
-      - "8080:8080"
-    depends_on:
-      - grakn
-      - redis
-      - elasticsearch
-      - rabbitmq
     restart: always
   connector-opencti:
     image: opencti/connector-opencti:1.1.0

@@ -44,7 +44,7 @@ $ cd opencti
 $ cp config/default.json config/production.json
 ```
 
-Change the *config/production.json* file according to your configuration of Grakn, Redis, ElasticSearch, RabbitMQ and default credentials.
+Change the *config/production.json* file according to your configuration of Grakn, Redis, ElasticSearch, RabbitMQ and default credentials (the `ADMIN_TOKEN` must be a [valid UUID](https://www.uuidgenerator.net/)).
 
 ### Database schema and initial data
 
