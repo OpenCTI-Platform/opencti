@@ -133,6 +133,7 @@ export const killChainPhases = (stixDomainEntityId, args) =>
     $rel(kill_chain_phase:$k, phase_belonging:$x) isa kill_chain_phases; 
     $x has internal_id "${escapeString(stixDomainEntityId)}"`,
     args,
+    false,
     false
   );
 
@@ -142,6 +143,9 @@ export const markingDefinitions = (stixDomainEntityId, args) =>
     $rel(marking:$m, so:$x) isa object_marking_refs; 
     $x has internal_id "${escapeString(stixDomainEntityId)}"`,
     args,
+    false,
+    null,
+    false,
     false
   );
 

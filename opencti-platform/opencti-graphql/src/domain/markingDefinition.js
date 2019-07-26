@@ -14,7 +14,8 @@ import {
   notify,
   now,
   paginate,
-  takeWriteTx, commitWriteTx
+  takeWriteTx,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -26,7 +27,11 @@ export const findByEntity = args =>
     `match $m isa Marking-Definition; 
     $rel(marking:$m, so:$so) isa object_marking_refs; 
     $so has internal_id "${escapeString(args.objectId)}"`,
-    args
+    args,
+    false,
+    null,
+    false,
+    false
   );
 
 export const findByDefinition = args =>
@@ -53,7 +58,8 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   const internalId = markingDefinition.internal_id
     ? escapeString(markingDefinition.internal_id)
     : uuid();
-  const markingDefinitionIterator = await wTx.tx.query(`insert $markingDefinition isa Marking-Definition,
+  const markingDefinitionIterator = await wTx.tx
+    .query(`insert $markingDefinition isa Marking-Definition,
     has internal_id "${internalId}",
     has entity_type "marking-definition",
     has stix_id "${

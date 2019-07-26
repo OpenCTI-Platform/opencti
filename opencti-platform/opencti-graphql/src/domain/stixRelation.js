@@ -526,7 +526,11 @@ export const markingDefinitions = (stixRelationId, args) =>
     `match $marking isa Marking-Definition; 
     $rel(marking:$marking, so:$stixRelation) isa object_marking_refs; 
     $stixRelation has internal_id "${escapeString(stixRelationId)}"`,
-    args
+    args,
+    false,
+    null,
+    false,
+    false
   );
 
 export const reports = (stixRelationId, args) =>
