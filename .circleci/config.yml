@@ -49,6 +49,12 @@ jobs:
       - run:
           name: Wait for ElasticSearch
           command: dockerize -wait tcp://localhost:9200 -timeout 1m        
+      - run: 
+          name: Setup custom environment variables
+          command: |
+            echo 'export APP__ADMIN__PASSWORD="admin"' >> $BASH_ENV
+            echo 'export APP__ADMIN__TOKEN="bfa014e0-e02e-4aa6-a42b-603b19dcf159"' >> $BASH_ENV
+            source $BASH_ENV
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn test
