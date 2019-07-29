@@ -57,6 +57,7 @@ class Consumer(threading.Thread):
         # Connect to RabbitMQ
         self.connection = self._connect()
         self.channel = self.connection.channel()
+        self.channel.basic_qos(prefetch_count=1)
         self._create_exchange()
         self._create_default_queue()
 
@@ -101,9 +102,9 @@ class Consumer(threading.Thread):
         thread.start()
 
         while thread.is_alive():  # Loop while the thread is processing
-            channel._connection.sleep(1.0)
+            self.connection.sleep(1.0)
         logging.info('Message (type=' + data['type'] + ', delivery_tag=' + str(method.delivery_tag) + ') processed, thread terminated')
-        channel.basic_ack(delivery_tag=method.delivery_tag)
+        self.channel.basic_ack(delivery_tag=method.delivery_tag)
 
     # Data handling
     def data_handler(self, data):
