@@ -22,7 +22,7 @@ export const findById = identityId => getById(identityId);
 
 export const search = args =>
   elPaginate(
-    'stix-domain-entities',
+    'stix_domain_entities',
     assoc('types', ['user', 'organization', 'region', 'country', 'city'], args)
   );
 /*
@@ -94,7 +94,7 @@ export const addIdentity = async (user, identity) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-domain-entities', 'stix_domain_entity', created);
+    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

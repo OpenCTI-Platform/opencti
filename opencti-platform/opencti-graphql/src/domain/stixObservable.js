@@ -1,4 +1,4 @@
-import { assoc, map, pipe, assocPath } from 'ramda';
+import { assoc, map, pipe, assocPath, dissoc } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
@@ -27,6 +27,7 @@ import {
   search as relationSearch
 } from './stixRelation';
 import {
+  countEntities,
   deleteEntity,
   index,
   paginate as elPaginate
@@ -39,7 +40,7 @@ export const findAll = args => {
     !args.lastSeenStart &&
     !args.lastSeenStop
   ) {
-    return elPaginate('stix-observables', args);
+    return elPaginate('stix_observables', args);
   }
   return relationFindAll({
     relationType: 'indicates',
@@ -72,6 +73,27 @@ export const findAll = args => {
   );
 */
 
+export const stixObservablesNumber = args => ({
+  count: countEntities('stix_observables', args),
+  total: countEntities('stix_observables', dissoc('endDate', args))
+  /*count: getSingleValueNumber(
+    `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
+    ${
+      args.endDate
+        ? `$x has created_at $date;
+    $date < ${prepareDate(args.endDate)};`
+        : ''
+    }
+    get $x;
+    count;`
+  ),
+  total: getSingleValueNumber(
+    `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
+    get $x;
+    count;`
+  )*/
+});
+
 export const stixObservablesTimeSeries = args =>
   timeSeries(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'}`,
@@ -88,7 +110,7 @@ export const findByValue = args =>
     false
   );
 
-export const search = args => elPaginate('stix-observables', args);
+export const search = args => elPaginate('stix_observables', args);
 /*
   paginate(
     `match $x isa ${args.type ? args.type : 'Stix-Observable'};
@@ -204,14 +226,14 @@ export const addStixObservable = async (user, stixObservable) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-observables', 'stix_observable', created);
+    index('stix_observables', created);
     return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
   });
 };
 
 export const stixObservableDelete = async stixObservableId => {
   const graknId = await getId(stixObservableId);
-  await deleteEntity('stix-observables', 'stix_observable', graknId);
+  await deleteEntity('stix_observables', graknId);
   return deleteEntityById(stixObservableId);
 };
 
@@ -247,6 +269,6 @@ export const stixObservableEditContext = (user, stixObservableId, input) => {
 
 export const stixObservableEditField = (user, stixObservableId, input) =>
   updateAttribute(stixObservableId, input).then(stixObservable => {
-    index('stix-observables', 'stix_observable', stixObservable);
+    index('stix_observables', stixObservable);
     return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user);
   });

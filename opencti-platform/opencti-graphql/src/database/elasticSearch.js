@@ -13,53 +13,147 @@ const dateFields = [
   'last_seen',
   'published'
 ];
+
+const defaultIndexes = [
+  'stix_domain_entities',
+  'stix_relations',
+  'stix_observables',
+  'external_references'
+];
+
 export const el = new Client({ node: conf.get('elasticsearch:url') });
 
-export const createIndexes = () => {
-  const indexes = [
-    'stix-domain-entities',
-    'stix-relations',
-    'stix-observables',
-    'external-references'
-  ];
-  indexes.map(index => {
-    return el.indices.exists({ index }).then(result => {
-      if (result === false) {
-        return el.indices.create({
-          index,
-          body: {
-            settings: {
-              index: {
-                max_result_window: 100000
+export const createIndexes = async () => {
+  return Promise.all(
+    defaultIndexes.map(index => {
+      return el.indices.exists({ index }).then(result => {
+        if (result.body === false) {
+          return el.indices.create({
+            index,
+            body: {
+              settings: {
+                index: {
+                  max_result_window: 100000
+                },
+                analysis: {
+                  normalizer: {
+                    string_normalizer: {
+                      type: 'custom',
+                      filter: ['lowercase', 'asciifolding']
+                    }
+                  }
+                }
+              },
+              mappings: {
+                dynamic_templates: [
+                  {
+                    integers: {
+                      match_mapping_type: 'long',
+                      mapping: {
+                        type: 'integer'
+                      }
+                    }
+                  },
+                  {
+                    strings: {
+                      match_mapping_type: 'string',
+                      mapping: {
+                        type: 'text',
+                        fields: {
+                          keyword: {
+                            type: 'keyword',
+                            normalizer: 'string_normalizer',
+                            ignore_above: 512
+                          }
+                        }
+                      }
+                    }
+                  }
+                ],
+                properties: {
+                  created_at_month: {
+                    type: 'date',
+                    format: 'strict_year_month',
+                    ignore_malformed: true
+                  },
+                  first_seen_month: {
+                    type: 'date',
+                    format: 'strict_year_month',
+                    ignore_malformed: true
+                  },
+                  last_seen_month: {
+                    type: 'date',
+                    format: 'strict_year_month',
+                    ignore_malformed: true
+                  },
+                  expiration_month: {
+                    type: 'date',
+                    format: 'strict_year_month',
+                    ignore_malformed: true
+                  },
+                  published_month: {
+                    type: 'date',
+                    format: 'strict_year_month',
+                    ignore_malformed: true
+                  }
+                }
               }
             }
-          }
-        });
-      }
-      return result;
-    });
-  });
+          });
+        }
+        return result;
+      });
+    })
+  );
 };
 
-export const index = (indexName, documentType, documentBody) => {
-  logger.debug(`[ELASTICSEARCH] Indexing a ${documentType}`);
+export const deleteIndexes = async (indexes = null) => {
+  let indexesToDelete = defaultIndexes;
+  if (indexes !== null) {
+    indexesToDelete = indexes;
+  }
+  return Promise.all(
+    indexesToDelete.map(index => {
+      return el.indices.delete({ index });
+    })
+  );
+};
+
+export const reindex = async indexMaps => {
+  return Promise.all(
+    indexMaps.map(indexMap => {
+      return el.reindex({
+        timeout: '60m',
+        body: {
+          source: {
+            index: indexMap.source
+          },
+          dest: {
+            index: indexMap.dest
+          }
+        }
+      });
+    })
+  );
+};
+
+export const index = (indexName, documentBody) => {
+  logger.debug(`[ELASTICSEARCH] Indexing in ${indexName}`);
   el.index({
     index: indexName,
     id: documentBody.grakn_id,
-    type: documentType,
     body: documentBody
   }).catch(() => {
     return false;
   });
 };
 
-export const deleteEntity = async (indexName, documentType, documentId) => {
+export const deleteEntity = async (indexName, documentId) => {
   logger.debug(`[ELASTICSEARCH] deleteById ${documentId} on ${indexName}`);
   await el
     .delete({
       index: indexName,
-      id: documentId,
-      type: documentType
+      id: documentId
     })
     .catch(() => {
       return false;
@@ -68,13 +162,9 @@ export const deleteEntity = async (indexName, documentType, documentId) => {
 };
 
 export const countEntities = (indexName, options) => {
-  const {
-    endDate = null,
-    type = null,
-    types = null,
-  } = options;
+  const { endDate = null, type = null, types = null } = options;
   let must = [];
-  if (endDate !== null && endDate.length > 0) {
+  if (endDate !== null) {
     must = append(
       {
         range: {
@@ -120,14 +210,6 @@ export const countEntities = (indexName, options) => {
   const query = {
     index: indexName,
     body: {
-      aggs: {},
-      filter: [
-        {
-          match_all: {}
-        }
-      ],
-      should: [],
-      must_not: [],
       query: {
         bool: {
           must
@@ -135,16 +217,10 @@ export const countEntities = (indexName, options) => {
       }
     }
   };
-  console.log(query)
   logger.debug(`[ELASTICSEARCH] ${JSON.stringify(query)}`);
-  return el
-    .count(query)
-    .then(data => {
-      console.log(data)
-    })
-    .catch(() => {
-      return 0
-    });
+  return el.count(query).then(data => {
+    return data.body.count;
+  });
 };
 
 export const paginate = (indexName, options) => {
@@ -275,12 +351,11 @@ export const paginate = (indexName, options) => {
     });
 };
 
-export const getAttributes = (indexName, type, id) => {
+export const getAttributes = (indexName, id) => {
   logger.debug(`[ELASTICSEARCH] getById ${id} on ${indexName}`);
   return el
     .get({
       index: indexName,
-      type,
       id
     })
     .then(data => {

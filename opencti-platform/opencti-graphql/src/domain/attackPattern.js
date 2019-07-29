@@ -28,7 +28,7 @@ export const findAll = args => {
     );
   }
   return elPaginate(
-    'stix-domain-entities',
+    'stix_domain_entities',
     assoc('type', 'attack-pattern', args)
   );
   // paginate('match $a isa Attack-Pattern', args);
@@ -138,7 +138,7 @@ export const addAttackPattern = async (user, attackPattern) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-domain-entities', 'stix_domain_entity', created);
+    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

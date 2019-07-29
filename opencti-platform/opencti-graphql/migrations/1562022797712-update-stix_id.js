@@ -17,7 +17,6 @@ module.exports.up = async next => {
             }).then(stixDomainEntity => {
               index(
                 'stix-domain-entities',
-                'stix_domain_entity',
                 stixDomainEntity
               );
             });

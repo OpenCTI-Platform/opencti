@@ -6,6 +6,7 @@ import {
   createRelation,
   deleteEntityById,
   deleteRelationById,
+  getSingleValueNumber,
   updateAttribute,
   getById,
   dayFormat,
@@ -16,7 +17,8 @@ import {
   paginate,
   getObject,
   takeWriteTx,
-  commitWriteTx
+  commitWriteTx,
+  prepareDate
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -33,6 +35,19 @@ export const findAll = args => {
 };
 
 export const findById = workspaceId => getById(workspaceId);
+
+export const workspacesNumber = args => {
+  return {
+    count: getSingleValueNumber(
+      `match $x isa Workspace; ${
+        args.endDate
+          ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};`
+          : ''
+      } get $x; count;`
+    ),
+    total: getSingleValueNumber(`match $x isa Workspace; get $x; count;`)
+  };
+};
 
 export const ownedBy = workspaceId =>
   getObject(

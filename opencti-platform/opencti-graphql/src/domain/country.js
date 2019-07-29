@@ -16,7 +16,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
-  elPaginate('stix-domain-entities', assoc('type', 'country', args));
+  elPaginate('stix_domain_entities', assoc('type', 'country', args));
 // paginate('match $c isa Country', args);
 
 export const findById = countryId => getById(countryId);
@@ -74,7 +74,7 @@ export const addCountry = async (user, country) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-domain-entities', 'stix_domain_entity', created);
+    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

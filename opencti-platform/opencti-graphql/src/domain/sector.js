@@ -17,7 +17,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
-  elPaginate('stix-domain-entities', assoc('type', 'sector', args));
+  elPaginate('stix_domain_entities', assoc('type', 'sector', args));
 // paginate('match $s isa Sector', args);
 
 export const findById = sectorId => getById(sectorId);
@@ -91,7 +91,7 @@ export const addSector = async (user, sector) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-domain-entities', 'stix_domain_entity', created);
+    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

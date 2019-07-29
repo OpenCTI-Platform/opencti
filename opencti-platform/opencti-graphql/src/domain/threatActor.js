@@ -16,11 +16,11 @@ import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
-  elPaginate('stix-domain-entities', assoc('type', 'threat-actor', args));
+  elPaginate('stix_domain_entities', assoc('type', 'threat-actor', args));
 // paginate('match $t isa Threat-Actor', args);
 
 export const search = args =>
-  elPaginate('stix-domain-entities', assoc('type', 'threat-actor', args));
+  elPaginate('stix_domain_entities', assoc('type', 'threat-actor', args));
 /*
   paginate(
     `match $t isa Threat-Actor;
@@ -104,7 +104,7 @@ export const addThreatActor = async (user, threatActor) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-domain-entities', 'stix_domain_entity', created);
+    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

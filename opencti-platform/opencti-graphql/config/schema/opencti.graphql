@@ -105,6 +105,26 @@ type QueueMetrics {
   idle_since: DateTime
   message_stats: MessagesStats
 }
+type QueueTotals {
+  messages: Int
+  messages_ready: Int
+  messages_unacknowledged: Int
+}
+type ObjectTotals {
+  channels: Int
+  consumers: Int
+  queues: Int
+}
+type OverviewMetrics {
+  node: String
+  object_totals: ObjectTotals
+  queue_totals: QueueTotals
+  message_stats: MessagesStats
+}
+type RabbitMQMetrics {
+  queues: [QueueMetrics]
+  overview: OverviewMetrics
+}
 
 enum StatsOperation {
   count
@@ -2095,7 +2115,7 @@ type Query {
   settings: Settings
   attribute(id: String): Attribute @auth
   attributes(first: Int, type: String!): AttributeConnection @auth
-  queuesMetrics(prefix: String): [QueueMetrics] @auth(for: ROLE_ADMIN)
+  rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(
@@ -2135,6 +2155,7 @@ type Query {
     lastSeenStart: DateTime
     lastSeenStop: DateTime
   ): StixObservableConnection @auth
+  stixObservablesNumber(type: String, endDate: DateTime): Number @auth
   stixObservablesTimeSeries(type: String): [TimeSeries] @auth
   stixObservablesDistribution(type: String): [Distribution] @auth
   # StixRelations
@@ -2214,6 +2235,7 @@ type Query {
     search: String
     workspaceType: String
   ): WorkspaceConnection @auth
+  workspacesNumber(endDate: DateTime): Number @auth
   # Identities
   identity(id: String!): Identity @auth
   identities(

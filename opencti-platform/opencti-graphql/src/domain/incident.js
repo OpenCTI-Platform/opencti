@@ -18,7 +18,7 @@ import { BUS_TOPICS, logger } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
-  elPaginate('stix-domain-entities', assoc('type', 'incident', args));
+  elPaginate('stix_domain_entities', assoc('type', 'incident', args));
 // paginate('match $i isa Incident', args);
 
 export const incidentsTimeSeries = args =>
@@ -123,7 +123,7 @@ export const addIncident = async (user, incident) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-domain-entities', 'stix_domain_entity', created);
+    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

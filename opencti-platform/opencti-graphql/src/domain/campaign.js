@@ -18,11 +18,11 @@ import { BUS_TOPICS, logger } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
-  elPaginate('stix-domain-entities', assoc('type', 'campaign', args));
+  elPaginate('stix_domain_entities', assoc('type', 'campaign', args));
 // paginate('match $m isa Campaign', args);
 
 export const search = args =>
-  elPaginate('stix-domain-entities', assoc('type', 'campaign', args));
+  elPaginate('stix_domain_entities', assoc('type', 'campaign', args));
 /*
   paginate(
     `match $c isa Campaign; 
@@ -138,7 +138,7 @@ export const addCampaign = async (user, campaign) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-domain-entities', 'stix_domain_entity', created);
+    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
