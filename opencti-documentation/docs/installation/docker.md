@@ -100,7 +100,7 @@ ElasticSearch is also a JAVA process. In order to setup the JAVA memory allocati
 
 > The minimal recommended option today is `-Xms512M -Xmx512M`.
 
-You can find more information in the [official ElasticSearch documenation](ttps://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html).
+You can find more information in the [official ElasticSearch documenation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html).
 
 ### Redis
 
