@@ -28,11 +28,23 @@ export const send = (exchangeName, routingKey, message) => {
   }
 };
 
-export const statsQueues = () => {
+export const metrics = async () => {
   const baseURL = `http${
     conf.get('rabbitmq:management_ssl') === true ? 's' : ''
   }://${conf.get('rabbitmq:hostname')}:${conf.get('rabbitmq:port_management')}`;
-  return axios
+  const overview = await axios
+    .get('/api/overview', {
+      baseURL,
+      withCredentials: true,
+      auth: {
+        username: conf.get('rabbitmq:username'),
+        password: conf.get('rabbitmq:password')
+      }
+    })
+    .then(response => {
+      return response.data;
+    });
+  const queues = await axios
     .get('/api/queues', {
       baseURL,
       withCredentials: true,
@@ -44,4 +56,5 @@ export const statsQueues = () => {
     .then(response => {
       return response.data;
     });
+  return { overview, queues };
 };

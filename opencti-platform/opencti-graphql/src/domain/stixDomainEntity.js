@@ -1,4 +1,4 @@
-import { assoc, isNil, map, filter, propOr } from 'ramda';
+import { assoc, isNil, map, filter, propOr, dissoc } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
@@ -18,7 +18,6 @@ import {
   takeWriteTx,
   timeSeries,
   getObject,
-  getSingleValueNumber,
   prepareDate,
   queryOne,
   getId,
@@ -27,7 +26,8 @@ import {
 import {
   deleteEntity,
   index,
-  paginate as elPaginate
+  paginate as elPaginate,
+  countEntities,
 } from '../database/elasticSearch';
 
 import {
@@ -41,14 +41,14 @@ import {
 } from './stixRelation';
 import { send } from '../database/rabbitmq';
 
-export const findAll = args => elPaginate('stix-domain-entities', args);
+export const findAll = args => elPaginate('stix_domain_entities', args);
 /* paginate(
     `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'}`,
     args,
     false
   ); */
 
-export const search = args => elPaginate('stix-domain-entities', args);
+export const search = args => elPaginate('stix_domain_entities', args);
 /* paginate(
    `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'};
    $x has name $name;
@@ -66,7 +66,9 @@ export const stixDomainEntitiesTimeSeries = args =>
   );
 
 export const stixDomainEntitiesNumber = args => ({
-  count: getSingleValueNumber(
+  count: countEntities('stix_domain_entities', args),
+  total: countEntities('stix_domain_entities', dissoc('endDate', args))
+  /*count: getSingleValueNumber(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
     ${
       args.endDate
@@ -81,7 +83,7 @@ export const stixDomainEntitiesNumber = args => ({
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
     get $x;
     count;`
-  )
+  )*/
 });
 
 export const findById = stixDomainEntityId => getById(stixDomainEntityId);
@@ -317,14 +319,14 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-domain-entities', 'stix_domain_entity', created);
+    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
 
 export const stixDomainEntityDelete = async stixDomainEntityId => {
   const graknId = await getId(stixDomainEntityId);
-  await deleteEntity('stix-domain-entities', 'stix_domain_entity', graknId);
+  await deleteEntity('stix_domain_entities', graknId);
   return deleteEntityById(stixDomainEntityId);
 };
 
@@ -364,7 +366,7 @@ export const stixDomainEntityEditContext = (
 
 export const stixDomainEntityEditField = (user, stixDomainEntityId, input) =>
   updateAttribute(stixDomainEntityId, input).then(stixDomainEntity => {
-    index('stix-domain-entities', 'stix_domain_entity', stixDomainEntity);
+    index('stix_domain_entities', stixDomainEntity);
     return notify(
       BUS_TOPICS.StixDomainEntity.EDIT_TOPIC,
       stixDomainEntity,

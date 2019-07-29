@@ -32,7 +32,7 @@ services:
       - RABBITMQ_DEFAULT_PASS=guest    
     restart: always
   opencti:
-    image: opencti/platform:1.1.1
+    image: opencti/platform:1.1.0
     environment:
       - APP__PORT=8080
       - APP__ADMIN__EMAIL=admin@opencti.io
@@ -63,7 +63,7 @@ services:
       - rabbitmq
     restart: always
       worker-import:
-    image: opencti/worker:1.1.1
+    image: opencti/worker:1.1.0
     environment:
       - WORKER_TYPE=import
       - WORKER_LOG_LEVEL=info
@@ -82,7 +82,7 @@ services:
       replicas: 4
     restart: always
   worker-export:
-    image: opencti/worker:1.1.1
+    image: opencti/worker:1.1.0
     environment:
       - WORKER_TYPE=export
       - WORKER_LOG_LEVEL=info

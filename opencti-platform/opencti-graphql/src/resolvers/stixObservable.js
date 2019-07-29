@@ -6,6 +6,7 @@ import {
   findAll,
   findById,
   findByValue,
+  stixObservablesNumber,
   search,
   markingDefinitions,
   reports,
@@ -34,7 +35,8 @@ const stixObservableResolvers = {
       return findAll(args);
     },
     stixObservablesTimeSeries: (_, args) =>
-      stixObservablesTimeSeries(args)
+      stixObservablesTimeSeries(args),
+    stixObservablesNumber: (_, args) => stixObservablesNumber(args)
   },
   StixObservable: {
     createdByRef: (stixObservable, args) =>

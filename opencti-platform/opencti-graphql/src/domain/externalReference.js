@@ -26,7 +26,7 @@ import {
   paginate as elPaginate
 } from '../database/elasticSearch';
 
-export const findAll = args => elPaginate('external-references', args);
+export const findAll = args => elPaginate('external_references', args);
 //  paginate('match $e isa External-Reference', args);
 
 export const findByEntity = args =>
@@ -39,7 +39,7 @@ export const findByEntity = args =>
 
 export const findById = externalReferenceId => getById(externalReferenceId);
 
-export const search = args => elPaginate('external-references', args);
+export const search = args => elPaginate('external_references', args);
 /*  paginate(
     `match $e isa External-Reference; 
     $e has source_name $sn; 
@@ -121,14 +121,14 @@ export const addExternalReference = async (user, externalReference) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('external-references', 'external_reference', created);
+    index('external_references', created);
     return notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user);
   });
 };
 
 export const externalReferenceDelete = async externalReferenceId => {
   const graknId = await getId(externalReferenceId);
-  await deleteEntity('external-references', 'external_reference', graknId);
+  await deleteEntity('external_references', graknId);
   return deleteEntityById(externalReferenceId);
 };
 
@@ -172,7 +172,7 @@ export const externalReferenceEditContext = (
 
 export const externalReferenceEditField = (user, externalReferenceId, input) =>
   updateAttribute(externalReferenceId, input).then(externalReference => {
-    index('external-references', 'external_reference', externalReference);
+    index('external_references', externalReference);
     return notify(
       BUS_TOPICS.ExternalReference.EDIT_TOPIC,
       externalReference,

@@ -646,14 +646,14 @@ export const addStixRelation = async (user, stixRelation) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-relations', 'stix_relation', created);
+    index('stix_relations', created);
     return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
   });
 };
 
 export const stixRelationDelete = async stixRelationId => {
   const graknId = await getId(stixRelationId);
-  await deleteEntity('stix-relations', 'stix_relation', graknId);
+  await deleteEntity('stix_relations', graknId);
   return deleteById(stixRelationId);
 };
 
@@ -673,7 +673,7 @@ export const stixRelationEditContext = (user, stixRelationId, input) => {
 
 export const stixRelationEditField = (user, stixRelationId, input) =>
   updateAttribute(stixRelationId, input).then(stixRelation => {
-    index('stix-relations', 'stix_relation', stixRelation);
+    index('stix_relations', stixRelation);
     return notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user);
   });
 

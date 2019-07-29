@@ -16,7 +16,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
-  elPaginate('stix-domain-entities', assoc('type', 'tool', args));
+  elPaginate('stix_domain_entities', assoc('type', 'tool', args));
 // paginate('match $t isa Tool', args);
 
 export const findById = toolId => getById(toolId);
@@ -86,7 +86,7 @@ export const addTool = async (user, tool) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-domain-entities', 'stix_domain_entity', created);
+    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

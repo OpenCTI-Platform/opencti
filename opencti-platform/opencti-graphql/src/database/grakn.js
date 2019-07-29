@@ -287,8 +287,7 @@ export const getAttributes = async (concept, graknAttributes = false) => {
         parentTypeLabel === 'Identity')
     ) {
       const attributes = await elGetAttributes(
-        'stix-domain-entities',
-        'stix_domain_entity',
+        'stix_domain_entities',
         concept.id
       );
       if (!isEmpty(attributes) && !isNil(attributes)) {
@@ -309,8 +308,7 @@ export const getAttributes = async (concept, graknAttributes = false) => {
       parentTypeLabel === 'stix_relation'
     ) {
       const attributes = await elGetAttributes(
-        'stix-relations',
-        'stix_relation',
+        'stix_relations',
         concept.id
       );
       if (!isEmpty(attributes) && !isNil(attributes)) {

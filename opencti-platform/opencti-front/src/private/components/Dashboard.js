@@ -186,9 +186,27 @@ const dashboardStixDomainEntitiesNumberQuery = graphql`
   }
 `;
 
+const dashboardStixObservablesNumberQuery = graphql`
+  query DashboardStixObservablesNumberQuery($type: String, $endDate: DateTime) {
+    stixObservablesNumber(type: $type, endDate: $endDate) {
+      total
+      count
+    }
+  }
+`;
+
+const dashboardWorkspacesNumberQuery = graphql`
+  query DashboardWorkspacesNumberQuery($endDate: DateTime) {
+    workspacesNumber(endDate: $endDate) {
+      total
+      count
+    }
+  }
+`;
+
 class Dashboard extends Component {
   render() {
-    const { t, nsd, classes } = this.props;
+    const { t, n, nsd, classes } = this.props;
     const stixDomainEntitiesTimeSeriesVariables = {
       field: 'created_at',
       operation: 'count',
@@ -214,7 +232,7 @@ class Dashboard extends Component {
                     const difference = total - props.stixDomainEntitiesNumber.count;
                     return (
                       <CardContent>
-                        <div className={classes.number}>{total}</div>
+                        <div className={classes.number}>{n(total)}</div>
                         <ItemNumberDifference
                           difference={difference}
                           description="last 24h"
@@ -244,14 +262,14 @@ class Dashboard extends Component {
             >
               <QueryRenderer
                 query={dashboardStixDomainEntitiesNumberQuery}
-                variables={{ type: 'Report', endDate: dayAgo() }}
+                variables={{ type: 'report', endDate: dayAgo() }}
                 render={({ props }) => {
                   if (props && props.stixDomainEntitiesNumber) {
                     const { total } = props.stixDomainEntitiesNumber;
                     const difference = total - props.stixDomainEntitiesNumber.count;
                     return (
                       <CardContent>
-                        <div className={classes.number}>{total}</div>
+                        <div className={classes.number}>{n(total)}</div>
                         <ItemNumberDifference
                           difference={difference}
                           description="last 24h"
@@ -282,15 +300,15 @@ class Dashboard extends Component {
               style={{ height: 120 }}
             >
               <QueryRenderer
-                query={dashboardStixDomainEntitiesNumberQuery}
-                variables={{ type: 'Stix-Observable', endDate: dayAgo() }}
+                query={dashboardStixObservablesNumberQuery}
+                variables={{ endDate: dayAgo() }}
                 render={({ props }) => {
-                  if (props && props.stixDomainEntitiesNumber) {
-                    const { total } = props.stixDomainEntitiesNumber;
-                    const difference = total - props.stixDomainEntitiesNumber.count;
+                  if (props && props.stixObservablesNumber) {
+                    const { total } = props.stixObservablesNumber;
+                    const difference = total - props.stixObservablesNumber.count;
                     return (
                       <CardContent>
-                        <div className={classes.number}>{total}</div>
+                        <div className={classes.number}>{n(total)}</div>
                         <ItemNumberDifference
                           difference={difference}
                           description="last 24h"
@@ -319,15 +337,15 @@ class Dashboard extends Component {
               style={{ height: 120 }}
             >
               <QueryRenderer
-                query={dashboardStixDomainEntitiesNumberQuery}
-                variables={{ type: 'Workspace', endDate: dayAgo() }}
+                query={dashboardWorkspacesNumberQuery}
+                variables={{ endDate: dayAgo() }}
                 render={({ props }) => {
-                  if (props && props.stixDomainEntitiesNumber) {
-                    const { total } = props.stixDomainEntitiesNumber;
-                    const difference = total - props.stixDomainEntitiesNumber.count;
+                  if (props && props.workspacesNumber) {
+                    const { total } = props.workspacesNumber;
+                    const difference = total - props.workspacesNumber.count;
                     return (
                       <CardContent>
-                        <div className={classes.number}>{total}</div>
+                        <div className={classes.number}>{n(total)}</div>
                         <ItemNumberDifference
                           difference={difference}
                           description="last 24h"
@@ -580,6 +598,7 @@ class Dashboard extends Component {
 Dashboard.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
+  n: PropTypes.func,
   nsd: PropTypes.func,
   md: PropTypes.func,
   history: PropTypes.object,

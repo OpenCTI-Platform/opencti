@@ -1,11 +1,15 @@
 import React, { Component } from 'react';
 import { injectIntl } from 'react-intl';
+import { numberFormat } from '../utils/Number';
 
 const inject18n = (WrappedComponent) => {
   class InjectIntl extends Component {
     render() {
       const { children } = this.props;
       const translate = message => this.props.intl.formatMessage({ id: message });
+      const formatNumber = number => `${this.props.intl.formatNumber(numberFormat(number).number)}${
+        numberFormat(number).symbol
+      }`;
       const longDate = date => this.props.intl.formatDate(date, {
         day: 'numeric',
         month: 'long',
@@ -36,6 +40,7 @@ const inject18n = (WrappedComponent) => {
         <WrappedComponent
           {...this.props}
           {...{ t: translate }}
+          {...{ n: formatNumber }}
           {...{ fld: longDate }}
           {...{ fsd: shortDate }}
           {...{ nsd: shortNumericDate }}

@@ -4,6 +4,7 @@ import {
   workspaceDelete,
   findAll,
   findById,
+  workspacesNumber,
   markingDefinitions,
   ownedBy,
   objectRefs,
@@ -21,7 +22,8 @@ import { BUS_TOPICS } from '../config/conf';
 const workspaceResolvers = {
   Query: {
     workspace: (_, { id }) => findById(id),
-    workspaces: (_, args) => findAll(args)
+    workspaces: (_, args) => findAll(args),
+    workspacesNumber: (_, args) => workspacesNumber(args)
   },
   Workspace: {
     ownedBy: (workspace, args) => ownedBy(workspace.id, args),

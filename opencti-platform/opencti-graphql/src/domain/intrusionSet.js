@@ -16,11 +16,11 @@ import { index, paginate as elPaginate } from '../database/elasticSearch';
 import { BUS_TOPICS, logger } from '../config/conf';
 
 export const findAll = args =>
-  elPaginate('stix-domain-entities', assoc('type', 'intrusion-set', args));
+  elPaginate('stix_domain_entities', assoc('type', 'intrusion-set', args));
 // paginate('match $i isa Intrusion-Set', args);
 
 export const search = args =>
-  elPaginate('stix-domain-entities', assoc('type', 'intrusion-set', args));
+  elPaginate('stix_domain_entities', assoc('type', 'intrusion-set', args));
 /*
   paginate(
     `match $i isa Intrusion-Set; 
@@ -141,7 +141,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-domain-entities', 'stix_domain_entity', created);
+    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

@@ -45,7 +45,7 @@ export const findAll = args => {
       args
     );
   }
-  return elPaginate('stix-domain-entities', assoc('type', 'report', args));
+  return elPaginate('stix_domain_entities', assoc('type', 'report', args));
   /*
   return paginate(
     `match $r isa Report${
@@ -319,7 +319,7 @@ export const addReport = async (user, report) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-domain-entities', 'stix_domain_entity', created);
+    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

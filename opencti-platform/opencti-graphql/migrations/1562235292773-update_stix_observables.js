@@ -14,7 +14,7 @@ module.exports.up = async next => {
             key: 'stix_id',
             value: [entity.x.stix_id.replace(entityType, 'indicator')]
           }).then(stixDomainEntity => {
-            index('stix-observables', 'stix_observable', stixDomainEntity);
+            index('stix-observables', stixDomainEntity);
           });
         })
       );

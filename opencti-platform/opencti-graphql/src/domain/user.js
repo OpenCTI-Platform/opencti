@@ -151,7 +151,7 @@ export const addPerson = async (user, newUser) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-domain-entities', 'stix_domain_entity', created);
+    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
@@ -240,7 +240,7 @@ export const addUser = async (
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix-domain-entities', 'stix_domain_entity', created);
+    index('stix_domain_entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
@@ -330,7 +330,7 @@ export const userEditField = (user, userId, input) => {
     key === 'password' ? [bcrypt.hashSync(head(input.value), 10)] : input.value;
   const finalInput = { key, value };
   return updateAttribute(userId, finalInput).then(userToEdit => {
-    index('stix-domain-entities', 'stix_domain_entity', userToEdit);
+    index('stix_domain_entities', 'stix_domain_entity', userToEdit);
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
   });
 };
@@ -344,7 +344,7 @@ export const meEditField = (user, userId, input) => {
     key === 'password' ? [bcrypt.hashSync(head(input.value), 10)] : input.value;
   const finalInput = { key, value };
   return updateAttribute(userId, finalInput).then(userToEdit => {
-    index('stix-domain-entities', 'stix_domain_entity', userToEdit);
+    index('stix_domain_entities', 'stix_domain_entity', userToEdit);
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
   });
 };
