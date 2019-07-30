@@ -6,15 +6,15 @@ sidebar_label: Using Docker
 
 OpenCTI could be deployed using the *docker-compose* command.
 
-## Clone the repository
+## Download the release
 
 ```bash
-$ mkdir /path/to/your/app && cd /path/to/your/app
-$ git clone https://github.com/OpenCTI-Platform/opencti.git
-$ cd opencti/opencti-docker
+$ wget https://github.com/OpenCTI-Platform/opencti/releases/download/1.1.1/opencti-release.tar.gz
+$ tar xvzf opencti-release.tar.gz
+$ cd opencti/opencti-docker/
 ```
 
-### Configure the environement
+### Configure the environment
 
 Before running the docker-compose command, please change the admin token (this token must be a [valid UUID](https://www.uuidgenerator.net/)) and password of the application in the file `docker-compose.yml`:
 
