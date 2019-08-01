@@ -27,7 +27,7 @@ For instance, to enable the MISP connector, you can add a new service to your `d
 
 ```
   connector-misp:
-    image: opencti/connector-misp:{RELEASE_VERSION}
+    image: opencti/connector-misp:1.1.0
     environment:
       - RABBITMQ_HOSTNAME=localhost
       - RABBITMQ_PORT=5672 
@@ -47,12 +47,12 @@ For instance, to enable the MISP connector, you can add a new service to your `d
 
 ### Launch a standalone connector
 
-To launch standalone connector, you can use the `docker-compose.yml` file of the connector itself. Just download the [release](https://github.com/OpenCTI-Platform/connectors/archive/{RELEASE_VERSION}.zip) and start the connector:
+To launch standalone connector, you can use the `docker-compose.yml` file of the connector itself. Just download the [release](https://github.com/OpenCTI-Platform/connectors/archive/1.1.0.zip) and start the connector:
 
 ```
-$ wget https://github.com/OpenCTI-Platform/connectors/archive/{RELEASE_VERSION}.zip
-$ unzip {RELEASE_VERSION}.zip
-$ cd connectors-{RELEASE_VERSION}/misp/
+$ wget https://github.com/OpenCTI-Platform/connectors/archive/1.1.0.zip
+$ unzip 1.1.0.zip
+$ cd connectors-1.1.0/misp/
 ```
 
 Change the configuration in the `docker-compose.yml` according to the parameters of the platform and of the targeted service. RabbitMQ credentials are the only parameters that the connector need to send data to OpenCTI. Then launch the connector:
@@ -69,12 +69,12 @@ If you want to manually launch connector, you just have to install Python 3 and 
 $ apt install python3 python3-pip
 ```
 
-Download the [release](https://github.com/OpenCTI-Platform/connectors/archive/{RELEASE_VERSION}.zip) of the connectors:
+Download the [release](https://github.com/OpenCTI-Platform/connectors/archive/1.1.0.zip) of the connectors:
 
 ```
-$ wget https://github.com/OpenCTI-Platform/connectors/archive/{RELEASE_VERSION}.zip
-$ unzip {RELEASE_VERSION}.zip
-$ cd connectors-{RELEASE_VERSION}/misp/src/
+$ wget https://github.com/OpenCTI-Platform/connectors/archive/1.1.0.zip
+$ unzip 1.1.0.zip
+$ cd connectors-1.1.0/misp/src/
 ```
 
 Install dependencies and initialize the configuration:

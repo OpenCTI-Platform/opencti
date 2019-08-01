@@ -6,12 +6,10 @@ sidebar_label: Using Docker
 
 OpenCTI could be deployed using the *docker-compose* command.
 
-## Download the release
+## Download the docker compose definition
 
 ```bash
-$ wget https://github.com/OpenCTI-Platform/opencti/releases/download/{RELEASE_VERSION}/opencti-release.tar.gz
-$ tar xvzf opencti-release.tar.gz
-$ cd opencti/opencti-docker/
+$ wget https://raw.githubusercontent.com/OpenCTI-Platform/opencti/{RELEASE_VERSION}/opencti-docker/docker-compose.yml
 ```
 
 ### Configure the environment
@@ -29,7 +27,7 @@ And the change the variable `OPENCTI_TOKEN` (for `worker-import` and `worker-exp
 - OPENCTI_TOKEN=ChangeMe
 ```
 
-As OpenCTI has a dependency to ElasticSearch, you have to set the `vm.max_map_count` before running the containers, as mentionned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
+As OpenCTI has a dependency to ElasticSearch, you have to set the `vm.max_map_count` before running the containers, as mentioned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
 
 ```bash
 $ sysctl -w vm.max_map_count=262144 
@@ -50,7 +48,7 @@ $ docker stack deploy -c docker-compose.yml opencti
 $ docker-compose --compatibility up
 ```
 
-You can now go to http://localhost:8080 and log in with the crendetials configured in your environement variables.
+You can now go to http://localhost:8080 and log in with the credentials configured in your environment variables.
 
 ## Data persistence
 
