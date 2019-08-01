@@ -69,14 +69,15 @@ class OpenCTIConnectorHelper:
     def _create_queue(self):
         if self.channel is not None:
             config_encoded = base64.b64encode(json.dumps(self.config).encode('utf-8')).decode('utf-8')
-            self.channel.queue_delete(self.queue_name)
-            self.channel.queue_declare(self.queue_name, durable=True, arguments={'config': config_encoded})
+            check = self.channel.queue_declare(self.queue_name, durable=True, passive=True, arguments={'config': config_encoded})
+            if not check:
+                self.channel.queue_delete(self.queue_name)
+                self.channel.queue_declare(self.queue_name, durable=True, arguments={'config': config_encoded})
             self.channel.queue_bind(queue=self.queue_name, exchange=EXCHANGE_NAME, routing_key=self.routing_key)
 
     def _reconnect(self):
         self.connection = self._connect()
         self.channel = self._create_channel()
-        self._create_queue()
 
     def send_stix2_bundle(self, bundle, entities_types=[]):
         bundles = self.split_stix2_bundle(bundle)
@@ -89,7 +90,7 @@ class OpenCTIConnectorHelper:
             :param bundle: A valid STIX2 bundle
             :param entities_types: Entities types to ingest
         """
-        if not self.channel.is_open:
+        if self.channel is None or not self.channel.is_open:
             self._reconnect()
 
         # Validate the STIX 2 bundle

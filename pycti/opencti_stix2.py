@@ -356,7 +356,7 @@ class OpenCTIStix2:
                         title,
                         external_reference['description'] if 'description' in external_reference else None,
                         published,
-                        'external',
+                        'Threat Report',
                         2
                     )['id']
 
