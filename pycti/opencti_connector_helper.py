@@ -163,10 +163,11 @@ class OpenCTIConnectorHelper:
         object_marking_refs = []
         if 'object_marking_refs' in item:
             for object_marking_ref in item['object_marking_refs']:
-                object_marking_refs.append(self.cache_index[object_marking_ref])
+                if object_marking_ref in self.cache_index:
+                    object_marking_refs.append(self.cache_index[object_marking_ref])
         # Created by ref
         created_by_ref = None
-        if 'created_by_ref' in item:
+        if 'created_by_ref' in item and item['created_by_ref'] in self.cache_index:
             created_by_ref = self.cache_index[item['created_by_ref']]
 
         return {'object_marking_refs': object_marking_refs, 'created_by_ref': created_by_ref}
@@ -187,10 +188,16 @@ class OpenCTIConnectorHelper:
     def stix2_get_relationship_objects(self, relationship):
         items = [relationship]
         # Get source ref
-        items.append(self.cache_index[relationship['source_ref']])
+        if relationship['source_ref'] in self.cache_index:
+            items.append(self.cache_index[relationship['source_ref']])
+        else:
+            return []
 
         # Get target ref
-        items.append(self.cache_index[relationship['target_ref']])
+        if relationship['target_ref'] in self.cache_index:
+            items.append(self.cache_index[relationship['target_ref']])
+        else:
+            return []
 
         # Get embedded objects
         embedded_objects = self.stix2_get_embedded_objects(relationship)
