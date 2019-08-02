@@ -89,6 +89,11 @@ export default createPaginationContainer(
               ...IntrusionSetLine_node
             }
           }
+          pageInfo {
+            endCursor
+            hasNextPage
+            globalCount
+          }
         }
       }
     `,

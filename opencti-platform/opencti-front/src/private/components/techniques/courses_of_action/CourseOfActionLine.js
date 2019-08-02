@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
@@ -25,7 +25,12 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   goIcon: {
     position: 'absolute',
@@ -35,45 +40,24 @@ const styles = theme => ({
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },
+  placeholder: {
+    display: 'inline-block',
+    height: '1em',
+    backgroundColor: theme.palette.grey[700],
+  },
 });
-
-const inlineStyles = {
-  name: {
-    float: 'left',
-    width: '55%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  modified: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
 
 class CourseOfActionLineComponent extends Component {
   render() {
     const {
-      fd, classes, courseOfAction,
+      fd, classes, node, dataColumns,
     } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}`}
+        to={`/dashboard/techniques/courses_of_action/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ProgressWrench />
@@ -81,14 +65,23 @@ class CourseOfActionLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
-                {courseOfAction.name}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.name}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(courseOfAction.created)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fd(node.created)}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.modified}>
-                {fd(courseOfAction.modified)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
+                {fd(node.modified)}
               </div>
             </div>
           }
@@ -102,7 +95,8 @@ class CourseOfActionLineComponent extends Component {
 }
 
 CourseOfActionLineComponent.propTypes = {
-  courseOfAction: PropTypes.object,
+  dataColumns: PropTypes.object,
+  node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
@@ -110,8 +104,8 @@ CourseOfActionLineComponent.propTypes = {
 const CourseOfActionLineFragment = createFragmentContainer(
   CourseOfActionLineComponent,
   {
-    courseOfAction: graphql`
-      fragment CourseOfActionLine_courseOfAction on CourseOfAction {
+    node: graphql`
+      fragment CourseOfActionLine_node on CourseOfAction {
         id
         name
         created
@@ -128,7 +122,7 @@ export const CourseOfActionLine = compose(
 
 class CourseOfActionLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -137,13 +131,22 @@ class CourseOfActionLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.modified}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>
@@ -158,6 +161,7 @@ class CourseOfActionLineDummyComponent extends Component {
 }
 
 CourseOfActionLineDummyComponent.propTypes = {
+  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

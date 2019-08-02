@@ -78,7 +78,7 @@ const styles = theme => ({
 const courseOfActionMutation = graphql`
   mutation CourseOfActionCreationMutation($input: CourseOfActionAddInput!) {
     courseOfActionAdd(input: $input) {
-      ...CourseOfActionLine_courseOfAction
+      ...CourseOfActionLine_node
     }
   }
 `;

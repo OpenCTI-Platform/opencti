@@ -80,7 +80,7 @@ const styles = theme => ({
 const toolMutation = graphql`
   mutation ToolCreationMutation($input: ToolAddInput!) {
     toolAdd(input: $input) {
-      ...ToolLine_tool
+      ...ToolLine_node
     }
   }
 `;

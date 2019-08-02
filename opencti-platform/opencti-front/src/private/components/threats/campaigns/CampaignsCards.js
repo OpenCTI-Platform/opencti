@@ -88,6 +88,8 @@ export default createPaginationContainer(
             }
           }
           pageInfo {
+            endCursor
+            hasNextPage
             globalCount
           }
         }

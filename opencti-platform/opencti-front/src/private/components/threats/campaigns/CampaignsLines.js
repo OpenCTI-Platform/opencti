@@ -88,6 +88,11 @@ export default createPaginationContainer(
               ...CampaignLine_node
             }
           }
+          pageInfo {
+            endCursor
+            hasNextPage
+            globalCount
+          }
         }
       }
     `,

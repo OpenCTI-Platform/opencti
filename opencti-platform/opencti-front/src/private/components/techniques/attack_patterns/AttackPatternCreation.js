@@ -80,7 +80,7 @@ const styles = theme => ({
 const attackPatternMutation = graphql`
   mutation AttackPatternCreationMutation($input: AttackPatternAddInput!) {
     attackPatternAdd(input: $input) {
-      ...AttackPatternLine_attackPattern
+      ...AttackPatternLine_node
     }
   }
 `;

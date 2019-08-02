@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -25,7 +25,12 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   goIcon: {
     position: 'absolute',
@@ -42,49 +47,17 @@ const styles = theme => ({
   },
 });
 
-const inlineStyles = {
-  name: {
-    float: 'left',
-    width: '50%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  tool_version: {
-    float: 'left',
-    width: '20%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  modified: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
-
 class ToolLineComponent extends Component {
   render() {
-    const { fd, classes, tool } = this.props;
+    const {
+      fd, classes, node, dataColumns,
+    } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/techniques/tools/${tool.id}`}
+        to={`/dashboard/techniques/tools/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Application />
@@ -92,20 +65,29 @@ class ToolLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
-                {tool.name}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.name}
               </div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.tool_version}
+                style={{ width: dataColumns.tool_version.width }}
               >
-                {tool.tool_version}
+                {node.tool_version}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(tool.created)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fd(node.created)}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.modified}>
-                {fd(tool.modified)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
+                {fd(node.modified)}
               </div>
             </div>
           }
@@ -119,14 +101,15 @@ class ToolLineComponent extends Component {
 }
 
 ToolLineComponent.propTypes = {
-  tool: PropTypes.object,
+  dataColumns: PropTypes.object,
+  node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
 
 const ToolLineFragment = createFragmentContainer(ToolLineComponent, {
-  tool: graphql`
-    fragment ToolLine_tool on Tool {
+  node: graphql`
+    fragment ToolLine_node on Tool {
       id
       name
       tool_version
@@ -143,7 +126,7 @@ export const ToolLine = compose(
 
 class ToolLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -152,19 +135,28 @@ class ToolLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.tool_version}
+                style={{ width: dataColumns.tool_version.width }}
               >
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.modified}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>
@@ -179,6 +171,7 @@ class ToolLineDummyComponent extends Component {
 }
 
 ToolLineDummyComponent.propTypes = {
+  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

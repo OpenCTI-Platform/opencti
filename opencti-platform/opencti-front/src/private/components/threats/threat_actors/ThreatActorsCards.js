@@ -87,6 +87,11 @@ export default createPaginationContainer(
               ...ThreatActorCard_node
             }
           }
+          pageInfo {
+            endCursor
+            hasNextPage
+            globalCount
+          }
         }
       }
     `,

@@ -88,6 +88,11 @@ export default createPaginationContainer(
               ...IncidentLine_node
             }
           }
+          pageInfo {
+            endCursor
+            hasNextPage
+            globalCount
+          }
         }
       }
     `,
