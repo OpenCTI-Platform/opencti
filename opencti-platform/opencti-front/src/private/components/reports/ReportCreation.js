@@ -79,7 +79,7 @@ const styles = theme => ({
 const reportMutation = graphql`
   mutation ReportCreationMutation($input: ReportAddInput!) {
     reportAdd(input: $input) {
-      ...ReportLine_report
+      ...ReportLine_node
     }
   }
 `;

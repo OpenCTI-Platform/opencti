@@ -70,7 +70,7 @@ const styles = theme => ({
 const incidentMutation = graphql`
   mutation IncidentCreationMutation($input: IncidentAddInput!) {
     incidentAdd(input: $input) {
-      ...IncidentCard_incident
+      ...IncidentLine_node
     }
   }
 `;

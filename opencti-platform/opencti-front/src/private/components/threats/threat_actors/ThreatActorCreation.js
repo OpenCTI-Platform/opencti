@@ -70,7 +70,7 @@ const styles = theme => ({
 const threatActorMutation = graphql`
   mutation ThreatActorCreationMutation($input: ThreatActorAddInput!) {
     threatActorAdd(input: $input) {
-      ...ThreatActorCard_threatActor
+      ...ThreatActorCard_node
     }
   }
 `;

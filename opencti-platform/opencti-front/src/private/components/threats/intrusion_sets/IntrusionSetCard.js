@@ -77,29 +77,29 @@ const styles = theme => ({
 class IntrusionSetCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, intrusionSet,
+      t, fsd, classes, node,
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}`}
+          to={`/dashboard/threats/intrusion_sets/${node.id}`}
         >
           <CardHeader
             classes={{ root: classes.header }}
             avatar={
               <Avatar className={classes.avatar}>
-                {intrusionSet.name.charAt(0)}
+                {node.name.charAt(0)}
               </Avatar>
             }
-            title={intrusionSet.name}
-            subheader={`${t('Updated the')} ${fsd(intrusionSet.modified)}`}
+            title={node.name}
+            subheader={`${t('Updated the')} ${fsd(node.modified)}`}
             action={<Diamond className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.content }}>
             <Markdown
-              source={intrusionSet.description}
+              source={node.description}
               disallowedTypes={['link', 'linkReference']}
               unwrapDisallowed={true}
             />
@@ -111,7 +111,7 @@ class IntrusionSetCardComponent extends Component {
 }
 
 IntrusionSetCardComponent.propTypes = {
-  intrusionSet: PropTypes.object,
+  node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
@@ -120,8 +120,8 @@ IntrusionSetCardComponent.propTypes = {
 const IntrusionSetCardFragment = createFragmentContainer(
   IntrusionSetCardComponent,
   {
-    intrusionSet: graphql`
-      fragment IntrusionSetCard_intrusionSet on IntrusionSet {
+    node: graphql`
+      fragment IntrusionSetCard_node on IntrusionSet {
         id
         name
         description

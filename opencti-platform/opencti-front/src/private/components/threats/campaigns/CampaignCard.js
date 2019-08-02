@@ -72,29 +72,29 @@ const styles = theme => ({
 class CampaignCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, campaign,
+      t, fsd, classes, node,
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/threats/campaigns/${campaign.id}`}
+          to={`/dashboard/threats/campaigns/${node.id}`}
         >
           <CardHeader
             classes={{ root: classes.header }}
             avatar={
               <Avatar className={classes.avatar}>
-                {campaign.name.charAt(0)}
+                {node.name.charAt(0)}
               </Avatar>
             }
-            title={campaign.name}
-            subheader={`${t('Updated the')} ${fsd(campaign.modified)}`}
+            title={node.name}
+            subheader={`${t('Updated the')} ${fsd(node.modified)}`}
             action={<ChessKnight className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.content }}>
             <Markdown
-              source={campaign.description}
+              source={node.description}
               disallowedTypes={['link', 'linkReference']}
               unwrapDisallowed={true}
             />
@@ -106,15 +106,15 @@ class CampaignCardComponent extends Component {
 }
 
 CampaignCardComponent.propTypes = {
-  campaign: PropTypes.object,
+  node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
 };
 
 const CampaignCardFragment = createFragmentContainer(CampaignCardComponent, {
-  campaign: graphql`
-    fragment CampaignCard_campaign on Campaign {
+  node: graphql`
+    fragment CampaignCard_node on Campaign {
       id
       name
       description

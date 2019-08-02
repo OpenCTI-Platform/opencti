@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import IncidentHeader from './IncidentHeader';
-import EntityReports from '../../reports/EntityReports';
+import Reports from '../../reports/Reports';
 
 const styles = () => ({
   container: {
@@ -28,7 +28,7 @@ class IncidentReportsComponent extends Component {
       <div className={classes.container}>
         <IncidentHeader incident={incident} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={incident.id} />
+          <Reports objectId={incident.id} />
         </Paper>
       </div>
     );

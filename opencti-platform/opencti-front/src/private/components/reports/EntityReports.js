@@ -39,7 +39,6 @@ import { fetchQuery, QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { dateFormat } from '../../../utils/Time';
-import { exportReportsQuery } from './Reports';
 import ReportsLines, { reportsLinesQuery } from './ReportsLines';
 
 const styles = theme => ({
@@ -179,41 +178,6 @@ class EntityReports extends Component {
     this.setState({ exportCsvOpen: false, exportCsvData: null });
   }
 
-  handleDownloadCSV() {
-    this.handleCloseExport();
-    this.setState({ exportCsvOpen: true });
-    const paginationOptions = {
-      objectId: this.props.entityId,
-      reportClass: this.props.reportClass || '',
-      orderBy: this.state.sortBy,
-      orderMode: this.state.orderAsc ? 'asc' : 'desc',
-    };
-    fetchQuery(exportReportsQuery, { count: 10000, ...paginationOptions }).then(
-      (data) => {
-        const finalData = pipe(
-          map(n => n.node),
-          map(n => over(lensProp('description'), defaultTo('-'))(n)),
-          map(n => assoc('published', dateFormat(n.published))(n)),
-          map(n => assoc('created', dateFormat(n.created))(n)),
-          map(n => assoc('modified', dateFormat(n.modified))(n)),
-          map(n => assoc(
-            'createdByRef',
-            pathOr('-', ['createdByRef', 'node', 'name'], n),
-          )(n)),
-          map(n => assoc(
-            'markingDefinitions',
-            pipe(
-              pathOr([], ['markingDefinitions', 'edges']),
-              map(o => o.node.definition_name),
-              join(', '),
-            )(n),
-          )(n)),
-        )(data.reports.edges);
-        this.setState({ exportCsvData: finalData });
-      },
-    );
-  }
-
   render() {
     const {
       classes, t, entityId, authorId, reportClass,
@@ -266,7 +230,7 @@ class EntityReports extends Component {
               onClose={this.handleCloseExport.bind(this)}
               style={{ marginTop: 50 }}
             >
-              <MenuItem onClick={this.handleDownloadCSV.bind(this)}>
+              <MenuItem>
                 {t('CSV file')}
               </MenuItem>
             </Menu>

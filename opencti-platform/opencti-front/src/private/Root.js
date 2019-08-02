@@ -130,9 +130,14 @@ class Root extends Component {
                         />
                         <BoundaryRoute
                           exact
+                          path="/dashboard/reports/references"
+                          component={ExternalReferences}
+                        />
+                        <BoundaryRoute
+                          exact
                           path="/dashboard/reports/:reportClass"
                           render={routeProps => (
-                            <Reports {...routeProps} />
+                            <Reports displayCreate={true} {...routeProps} />
                           )}
                         />
                         <BoundaryRoute
@@ -140,11 +145,6 @@ class Root extends Component {
                           render={routeProps => (
                             <RootReport {...routeProps} me={props.me} />
                           )}
-                        />
-                        <BoundaryRoute
-                          exact
-                          path="/dashboard/reports/references"
-                          component={ExternalReferences}
                         />
                         <BoundaryRoute
                           path="/dashboard/entities"

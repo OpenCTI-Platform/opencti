@@ -48,6 +48,7 @@ class TopMenuReports extends Component {
               const reportClassesEdges = props.attributes.edges;
               return reportClassesEdges.map(reportClassEdge => (
                 <Button
+                  key={reportClassEdge.node.value}
                   component={Link}
                   to={`/dashboard/reports/${reportClassEdge.node.value.replace(
                     ' ',

@@ -70,7 +70,7 @@ const styles = theme => ({
 const campaignMutation = graphql`
   mutation CampaignCreationMutation($input: CampaignAddInput!) {
     campaignAdd(input: $input) {
-      ...CampaignCard_campaign
+      ...CampaignCard_node
     }
   }
 `;

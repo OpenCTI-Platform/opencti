@@ -70,7 +70,7 @@ const styles = theme => ({
 const intrusionSetMutation = graphql`
   mutation IntrusionSetCreationMutation($input: IntrusionSetAddInput!) {
     intrusionSetAdd(input: $input) {
-      ...IntrusionSetCard_intrusionSet
+      ...IntrusionSetCard_node
     }
   }
 `;

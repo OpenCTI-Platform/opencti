@@ -108,7 +108,14 @@ export const findByEntity = args => {
         args.reportClass
           ? `$r has report_class "${escapeString(args.reportClass)};"`
           : ''
-      } 
+      }
+      ${
+        args.search
+          ? `$r has name $name; $r has description $desc; { $name contains "${escapeString(
+              args.search
+            )}"; } or { $desc contains "${escapeString(args.search)}"; };`
+          : ''
+      }
       $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
       $so has internal_id "${escapeString(args.objectId)}";
       $relCreatedByRef(creator:$x, so:$r) isa created_by_ref`,
@@ -120,13 +127,20 @@ export const findByEntity = args => {
   }
   return paginate(
     `match $r isa Report; 
-    $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
-    $so has internal_id "${escapeString(args.objectId)}" ${
+    ${
       args.reportClass
-        ? `; 
-    $r has report_class "${escapeString(args.reportClass)}"`
+        ? `$r has report_class "${escapeString(args.reportClass)}";`
         : ''
-    }`,
+    }
+    ${
+      args.search
+        ? `$r has name $name; $r has description $desc; { $name contains "${escapeString(
+            args.search
+          )}"; } or { $desc contains "${escapeString(args.search)}"; };`
+        : ''
+    }
+    $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
+    $so has internal_id "${escapeString(args.objectId)}"`,
     args,
     true,
     null,
