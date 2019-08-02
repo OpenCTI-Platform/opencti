@@ -77,7 +77,8 @@ class ListLinesContent extends Component {
       dataList,
       LineComponent,
       DummyLineComponent,
-      orderAsc
+      paginationOptions,
+      entityLink,
     } = this.props;
     const edge = dataList[index];
     if (!edge) {
@@ -95,7 +96,8 @@ class ListLinesContent extends Component {
         {React.cloneElement(LineComponent, {
           dataColumns,
           node,
-          orderAsc,
+          paginationOptions,
+          entityLink,
         })}
       </div>
     );
@@ -170,7 +172,8 @@ ListLinesContent.propTypes = {
   DummyLineComponent: PropTypes.object,
   nbOfRowsToLoad: PropTypes.number,
   dataColumns: PropTypes.object.isRequired,
-  orderAsc: PropTypes.bool,
+  paginationOptions: PropTypes.object,
+  entityLink: PropTypes.string,
 };
 
 export default compose(

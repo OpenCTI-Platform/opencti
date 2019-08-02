@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import ToolHeader from './ToolHeader';
-import Reports from '../../reports/EntityReports';
+import Reports from '../../reports/Reports';
 
 const styles = () => ({
   container: {

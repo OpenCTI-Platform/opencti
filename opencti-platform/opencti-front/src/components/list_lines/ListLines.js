@@ -103,9 +103,13 @@ class ListLines extends Component {
     return (
       <div>
         <div className={classes.parameters}>
-          <div style={{ float: 'left', marginRight: 20 }}>
-            <SearchInput variant="small" onSubmit={handleSearch.bind(this)} />
-          </div>
+          {typeof handleSearch === 'function' ? (
+            <div style={{ float: 'left', marginRight: 20 }}>
+              <SearchInput variant="small" onSubmit={handleSearch.bind(this)} />
+            </div>
+          ) : (
+            ''
+          )}
         </div>
         <div className={classes.views}>
           <div style={{ float: 'right', marginTop: -20 }}>
@@ -176,7 +180,7 @@ ListLines.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   children: PropTypes.object,
-  handleSearch: PropTypes.func.isRequired,
+  handleSearch: PropTypes.func,
   handleSort: PropTypes.func.isRequired,
   handleChangeView: PropTypes.func,
   views: PropTypes.array,

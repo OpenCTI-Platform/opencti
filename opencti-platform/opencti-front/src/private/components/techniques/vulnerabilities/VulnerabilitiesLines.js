@@ -88,6 +88,11 @@ export default createPaginationContainer(
               ...VulnerabilityLine_node
             }
           }
+          pageInfo {
+            endCursor
+            hasNextPage
+            globalCount
+          }
         }
       }
     `,

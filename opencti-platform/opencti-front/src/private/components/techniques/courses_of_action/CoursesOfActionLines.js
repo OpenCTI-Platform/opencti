@@ -90,6 +90,11 @@ export default createPaginationContainer(
               ...CourseOfActionLine_node
             }
           }
+          pageInfo {
+            endCursor
+            hasNextPage
+            globalCount
+          }
         }
       }
     `,

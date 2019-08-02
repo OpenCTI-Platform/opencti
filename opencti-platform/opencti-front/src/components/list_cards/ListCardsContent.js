@@ -107,7 +107,11 @@ class ListCardsContent extends Component {
     columnIndex, key, rowIndex, style,
   }) {
     const {
-      classes, dataList, CardComponent, DummyCardComponent, initialLoading
+      classes,
+      dataList,
+      CardComponent,
+      DummyCardComponent,
+      initialLoading,
     } = this.props;
     const index = rowIndex * this.numberOfCardsPerLine() + columnIndex;
     let className = classes.bottomPad;

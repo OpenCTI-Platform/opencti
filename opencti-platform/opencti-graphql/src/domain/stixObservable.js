@@ -76,7 +76,7 @@ export const findAll = args => {
 export const stixObservablesNumber = args => ({
   count: countEntities('stix_observables', args),
   total: countEntities('stix_observables', dissoc('endDate', args))
-  /*count: getSingleValueNumber(
+  /* count: getSingleValueNumber(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
     ${
       args.endDate
@@ -91,7 +91,7 @@ export const stixObservablesNumber = args => ({
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
     get $x;
     count;`
-  )*/
+  ) */
 });
 
 export const stixObservablesTimeSeries = args =>
