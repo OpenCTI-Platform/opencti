@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import { CityVariant } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
@@ -24,7 +25,12 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   goIcon: {
     position: 'absolute',
@@ -34,38 +40,17 @@ const styles = theme => ({
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },
+  placeholder: {
+    display: 'inline-block',
+    height: '1em',
+    backgroundColor: theme.palette.grey[700],
+  },
 });
-
-const inlineStyles = {
-  name: {
-    float: 'left',
-    width: '60%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created_at: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  updated_at: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
 
 class CityLineComponent extends Component {
   render() {
     const {
-      fd, classes, city, paginationOptions,
+      fd, classes, dataColumns, node, paginationOptions,
     } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
@@ -75,28 +60,38 @@ class CityLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
-                {city.name}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.name}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created_at}>
-                {fd(city.created_at)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fd(node.created)}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-                {fd(city.updated_at)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
+                {fd(node.modified)}
               </div>
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <CityPopover cityId={city.id} paginationOptions={paginationOptions} />
-        </ListItemIcon>
+        <ListItemSecondaryAction>
+          <CityPopover cityId={node.id} paginationOptions={paginationOptions} />
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
 }
 
 CityLineComponent.propTypes = {
-  city: PropTypes.object,
+  dataColumns: PropTypes.object,
+  node: PropTypes.object,
   paginationOptions: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
@@ -104,12 +99,12 @@ CityLineComponent.propTypes = {
 };
 
 const CityLineFragment = createFragmentContainer(CityLineComponent, {
-  city: graphql`
-    fragment CityLine_city on City {
+  node: graphql`
+    fragment CityLine_node on City {
       id
       name
-      created_at
-      updated_at
+      created
+      modified
     }
   `,
 });
@@ -121,7 +116,7 @@ export const CityLine = compose(
 
 class CityLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -130,27 +125,37 @@ class CityLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
                 <div className="fakeItem" style={{ width: 80 }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.updated_at}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
                 <div className="fakeItem" style={{ width: 80 }} />
               </div>
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
           <MoreVert />
-        </ListItemIcon>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
 }
 
 CityLineDummyComponent.propTypes = {
+  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

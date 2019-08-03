@@ -18,7 +18,7 @@ import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
-import EntityReports from '../../reports/EntityReports';
+import Reports from '../../reports/Reports';
 import StixRelationEdition, {
   stixRelationEditionDeleteMutation,
 } from './StixRelationEdition';
@@ -98,6 +98,12 @@ const styles = () => ({
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
+    borderRadius: 6,
+  },
+  paperReports: {
+    minHeight: '100%',
+    margin: '10px 0 0 0',
+    padding: '25px 15px 15px 15px',
     borderRadius: 6,
   },
 });
@@ -377,8 +383,8 @@ class StixRelationContainer extends Component {
               <Typography variant="h4" gutterBottom={true}>
                 {t('Reports')}
               </Typography>
-              <Paper classes={{ root: classes.paper }} elevation={2}>
-                <EntityReports entityId={stixRelation.id} />
+              <Paper classes={{ root: classes.paperReports }} elevation={2}>
+                <Reports objectId={stixRelation.id} />
               </Paper>
             </div>
           )}
@@ -485,15 +491,6 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
         description
         ... on StixObservable {
           observable_value
-        }
-      }
-      reports {
-        edges {
-          node {
-            name
-            description
-            published
-          }
         }
       }
     }

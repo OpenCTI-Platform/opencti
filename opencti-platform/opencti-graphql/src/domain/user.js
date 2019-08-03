@@ -1,4 +1,4 @@
-import { head, isNil, join, map } from 'ramda';
+import { assoc, head, isNil, join, map, pathOr } from 'ramda';
 import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
@@ -29,7 +29,7 @@ import {
   commitWriteTx,
   deleteEntityById
 } from '../database/grakn';
-import { index } from '../database/elasticSearch';
+import { index, paginate as elPaginate } from '../database/elasticSearch';
 import { stixDomainEntityDelete } from './stixDomainEntity';
 
 // Security related
@@ -57,11 +57,14 @@ export const setAuthenticationCookie = (token, res) => {
 
 export const findAll = args => {
   const { first, after, orderBy = 'email', isUser } = args;
-  return paginate(`match $m isa User${isUser ? '; $m has email $e' : ''}`, {
-    first,
-    after,
-    orderBy
-  });
+  if (isUser) {
+    return paginate(`match $m isa User${isUser ? '; $m has email $e' : ''}`, {
+      first,
+      after,
+      orderBy
+    });
+  }
+  return elPaginate('stix_domain_entities', assoc('type', 'user', args));
 };
 
 export const findById = userId => getById(userId);
@@ -109,7 +112,7 @@ export const getTokenId = userId => {
     )}"; get $x, $rel; offset 0; limit 1;`,
     'x',
     'rel'
-  ).then(result => result.node.id);
+  ).then(result => pathOr(null, ['node', 'id'], result));
 };
 
 export const addPerson = async (user, newUser) => {
@@ -351,7 +354,9 @@ export const meEditField = (user, userId, input) => {
 
 export const userDelete = async userId => {
   const tokenId = await getTokenId(userId);
-  await deleteEntityById(tokenId);
+  if (tokenId) {
+    await deleteEntityById(tokenId);
+  }
   return stixDomainEntityDelete(userId);
 };
 

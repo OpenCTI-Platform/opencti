@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import OrganizationHeader from './OrganizationHeader';
-import EntityReports from '../../reports/EntityReports';
+import Reports from '../../reports/Reports';
 
 const styles = () => ({
   container: {
@@ -16,7 +16,7 @@ const styles = () => ({
   paper: {
     minHeight: '100%',
     margin: '5px 0 0 0',
-    padding: '15px',
+    padding: '25px 15px 15px 15px',
     borderRadius: 6,
   },
 });
@@ -31,7 +31,7 @@ class OrganizationReportsComponent extends Component {
         <div className={classes.container}>
           <OrganizationHeader organization={organization}/>
           <Paper classes={{ root: classes.paper }} elevation={2}>
-            <EntityReports authorId={organization.id}/>
+            <Reports authorId={organization.id}/>
           </Paper>
         </div>
       );
@@ -40,7 +40,7 @@ class OrganizationReportsComponent extends Component {
       <div className={classes.container}>
         <OrganizationHeader organization={organization}/>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={organization.id}/>
+          <Reports pbjectId={organization.id}/>
         </Paper>
       </div>
     );

@@ -62,7 +62,7 @@ const styles = theme => ({
 const personMutation = graphql`
   mutation PersonCreationMutation($input: PersonAddInput!) {
     personAdd(input: $input) {
-      ...PersonLine_person
+      ...PersonLine_node
     }
   }
 `;

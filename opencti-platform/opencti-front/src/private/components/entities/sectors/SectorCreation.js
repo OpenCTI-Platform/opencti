@@ -70,7 +70,7 @@ const styles = theme => ({
 const sectorMutation = graphql`
   mutation SectorCreationMutation($input: SectorAddInput!) {
     sectorAdd(input: $input) {
-      ...SectorCard_sector
+      ...SectorCard_node
     }
   }
 `;

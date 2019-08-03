@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import CountryHeader from './CountryHeader';
-import EntityReports from '../../reports/EntityReports';
+import Reports from '../../reports/Reports';
 
 const styles = () => ({
   container: {
@@ -16,7 +16,7 @@ const styles = () => ({
   paper: {
     minHeight: '100%',
     margin: '5px 0 0 0',
-    padding: '15px',
+    padding: '25px 15px 15px 15px',
     borderRadius: 6,
   },
 });
@@ -28,7 +28,7 @@ class CountryReportsComponent extends Component {
       <div className={classes.container}>
         <CountryHeader country={country} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={country.id} />
+          <Reports objectId={country.id} />
         </Paper>
       </div>
     );

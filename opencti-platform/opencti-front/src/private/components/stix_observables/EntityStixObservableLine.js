@@ -8,6 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert, Help } from '@material-ui/icons';
 import { Tag } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
@@ -39,10 +40,7 @@ const styles = theme => ({
     right: 10,
     marginRight: 0,
   },
-  goIconDisabled: {
-    position: 'absolute',
-    right: 10,
-    marginRight: 0,
+  itemIconDisabled: {
     color: theme.palette.grey[700],
   },
   placeholder: {
@@ -114,13 +112,13 @@ class EntityStixObservableLineComponent extends Component {
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemSecondaryAction>
           <StixRelationPopover
             stixRelationId={node.id}
             paginationOptions={paginationOptions}
             disabled={node.inferred}
           />
-        </ListItemIcon>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
@@ -211,9 +209,9 @@ class EntityStixObservableLineDummyComponent extends Component {
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIconDisabled }}>
+        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
           <MoreVert />
-        </ListItemIcon>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }

@@ -28,7 +28,7 @@ import {
 } from '../../../../relay/environment';
 import { now } from '../../../../utils/Time';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
-import { sectorsLinesSearchQuery } from './SectorsLines';
+import { sectorsSearchQuery } from '../Sectors';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
@@ -170,7 +170,7 @@ class SectorEditionOverviewComponent extends Component {
   }
 
   searchSubsector(event) {
-    fetchQuery(sectorsLinesSearchQuery, {
+    fetchQuery(sectorsSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const subsectors = pipe(

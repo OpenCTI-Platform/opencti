@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -15,7 +15,6 @@ const styles = theme => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
     '&:hover': {
       background: 'rgba(0, 0, 0, 0.1)',
     },
@@ -24,7 +23,12 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   goIcon: {
     position: 'absolute',
@@ -41,41 +45,16 @@ const styles = theme => ({
   },
 });
 
-const inlineStyles = {
-  name: {
-    float: 'left',
-    width: '70%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  modified: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
 
 class SectorLineComponent extends Component {
   render() {
-    const { fd, classes, sector } = this.props;
+    const { fd, classes, dataColumns, node } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/entities/sectors/${sector.id}`}
+        to={`/dashboard/entities/sectors/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Domain />
@@ -83,14 +62,23 @@ class SectorLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
-                {sector.name}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.name}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(sector.created)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fd(node.created)}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.modified}>
-                {fd(sector.modified)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
+                {fd(node.modified)}
               </div>
             </div>
           }
@@ -104,14 +92,15 @@ class SectorLineComponent extends Component {
 }
 
 SectorLineComponent.propTypes = {
-  sector: PropTypes.object,
+  dataColumns: PropTypes.object,
+  node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
 
 const SectorLineFragment = createFragmentContainer(SectorLineComponent, {
-  sector: graphql`
-    fragment SectorLine_sector on Sector {
+  node: graphql`
+    fragment SectorLine_node on Sector {
       id
       name
       created
@@ -127,7 +116,7 @@ export const SectorLine = compose(
 
 class SectorLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -136,13 +125,22 @@ class SectorLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.modified}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>
@@ -157,6 +155,7 @@ class SectorLineDummyComponent extends Component {
 }
 
 SectorLineDummyComponent.propTypes = {
+  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

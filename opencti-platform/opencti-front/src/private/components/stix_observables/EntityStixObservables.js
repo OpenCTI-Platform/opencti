@@ -111,6 +111,7 @@ class EntityStixObservables extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         displayImport={false}
+        secondaryAction={true}
       >
         <QueryRenderer
           query={entityStixObservablesLinesQuery}

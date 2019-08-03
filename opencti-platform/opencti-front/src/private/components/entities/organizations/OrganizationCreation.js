@@ -72,7 +72,7 @@ const styles = theme => ({
 const organizationMutation = graphql`
   mutation OrganizationCreationMutation($input: OrganizationAddInput!) {
     organizationAdd(input: $input) {
-      ...OrganizationLine_organization
+      ...OrganizationLine_node
     }
   }
 `;

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -15,7 +15,6 @@ const styles = theme => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
     '&:hover': {
       background: 'rgba(0, 0, 0, 0.1)',
     },
@@ -24,7 +23,12 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   goIcon: {
     position: 'absolute',
@@ -41,41 +45,15 @@ const styles = theme => ({
   },
 });
 
-const inlineStyles = {
-  name: {
-    float: 'left',
-    width: '60%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  modified: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
-
 class RegionLineComponent extends Component {
   render() {
-    const { fd, classes, region } = this.props;
+    const { fd, classes, dataColumns, node } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/entities/regions/${region.id}`}
+        to={`/dashboard/entities/regions/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Map />
@@ -83,14 +61,23 @@ class RegionLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
-                {region.name}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.name}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(region.created)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fd(node.created)}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.modified}>
-                {fd(region.modified)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
+                {fd(node.modified)}
               </div>
             </div>
           }
@@ -104,14 +91,15 @@ class RegionLineComponent extends Component {
 }
 
 RegionLineComponent.propTypes = {
-  region: PropTypes.object,
+  dataColumns: PropTypes.object,
+  node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
 
 const RegionLineFragment = createFragmentContainer(RegionLineComponent, {
-  region: graphql`
-    fragment RegionLine_region on Region {
+  node: graphql`
+    fragment RegionLine_node on Region {
       id
       name
       created
@@ -127,7 +115,7 @@ export const RegionLine = compose(
 
 class RegionLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -136,13 +124,22 @@ class RegionLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.modified}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>
@@ -157,6 +154,7 @@ class RegionLineDummyComponent extends Component {
 }
 
 RegionLineDummyComponent.propTypes = {
+  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

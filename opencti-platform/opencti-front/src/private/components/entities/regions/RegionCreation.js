@@ -70,7 +70,7 @@ const styles = theme => ({
 const regionMutation = graphql`
   mutation RegionCreationMutation($input: RegionAddInput!) {
     regionAdd(input: $input) {
-      ...RegionLine_region
+      ...RegionLine_node
     }
   }
 `;

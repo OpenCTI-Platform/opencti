@@ -8,6 +8,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import {
   ArrowDropDown,
@@ -98,6 +99,7 @@ class ListLines extends Component {
       handleChangeView,
       dataColumns,
       displayImport,
+      secondaryAction,
       children,
     } = this.props;
     return (
@@ -168,6 +170,11 @@ class ListLines extends Component {
                 </div>
               }
             />
+            {secondaryAction ? (
+              <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
+            ) : (
+              ''
+            )}
           </ListItem>
           {children}
         </List>
@@ -189,6 +196,7 @@ ListLines.propTypes = {
   sortBy: PropTypes.string.isRequired,
   orderAsc: PropTypes.bool.isRequired,
   dataColumns: PropTypes.object.isRequired,
+  secondaryAction: PropTypes.bool,
 };
 
 export default compose(

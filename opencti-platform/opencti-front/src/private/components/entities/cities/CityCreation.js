@@ -62,7 +62,7 @@ const styles = theme => ({
 const cityMutation = graphql`
   mutation CityCreationMutation($input: CityAddInput!) {
     cityAdd(input: $input) {
-      ...CityLine_city
+      ...CityLine_node
     }
   }
 `;

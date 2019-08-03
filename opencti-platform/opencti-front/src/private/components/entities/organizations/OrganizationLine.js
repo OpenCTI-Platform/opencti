@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -15,7 +15,6 @@ const styles = theme => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
     '&:hover': {
       background: 'rgba(0, 0, 0, 0.1)',
     },
@@ -24,7 +23,12 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   goIcon: {
     position: 'absolute',
@@ -34,53 +38,24 @@ const styles = theme => ({
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },
+  placeholder: {
+    display: 'inline-block',
+    height: '1em',
+    backgroundColor: theme.palette.grey[700],
+  },
 });
-
-const inlineStyles = {
-  name: {
-    float: 'left',
-    width: '40%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  organization_class: {
-    float: 'left',
-    width: '20%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  modified: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
 
 class OrganizationLineComponent extends Component {
   render() {
     const {
-      t, fd, classes, organization,
+      t, fd, classes, dataColumns, node,
     } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/entities/organizations/${organization.id}`}
+        to={`/dashboard/entities/organizations/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <AccountBalance />
@@ -88,17 +63,31 @@ class OrganizationLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
-                {organization.name}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.name}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.organization_class}>
-                {organization.organization_class ? t(`organization_${organization.organization_class}`) : ''}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.organization_class.width }}
+              >
+                {node.organization_class
+                  ? t(`organization_${node.organization_class}`)
+                  : ''}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(organization.created)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fd(node.created)}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.modified}>
-                {fd(organization.modified)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
+                {fd(node.modified)}
               </div>
             </div>
           }
@@ -112,7 +101,8 @@ class OrganizationLineComponent extends Component {
 }
 
 OrganizationLineComponent.propTypes = {
-  organization: PropTypes.object,
+  dataColumns: PropTypes.object,
+  node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
@@ -120,8 +110,8 @@ OrganizationLineComponent.propTypes = {
 const OrganizationLineFragment = createFragmentContainer(
   OrganizationLineComponent,
   {
-    organization: graphql`
-      fragment OrganizationLine_organization on Organization {
+    node: graphql`
+      fragment OrganizationLine_node on Organization {
         id
         organization_class
         name
@@ -139,7 +129,7 @@ export const OrganizationLine = compose(
 
 class OrganizationLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -148,16 +138,28 @@ class OrganizationLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.organization_class}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.organization_class.width }}
+              >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.modified}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>
@@ -172,6 +174,7 @@ class OrganizationLineDummyComponent extends Component {
 }
 
 OrganizationLineDummyComponent.propTypes = {
+  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

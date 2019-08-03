@@ -70,7 +70,7 @@ const styles = theme => ({
 const countryMutation = graphql`
   mutation CountryCreationMutation($input: CountryAddInput!) {
     countryAdd(input: $input) {
-      ...CountryLine_country
+      ...CountryLine_node
     }
   }
 `;

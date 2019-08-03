@@ -79,6 +79,7 @@ class ListLinesContent extends Component {
       DummyLineComponent,
       paginationOptions,
       entityLink,
+      me,
     } = this.props;
     const edge = dataList[index];
     if (!edge) {
@@ -98,6 +99,7 @@ class ListLinesContent extends Component {
           node,
           paginationOptions,
           entityLink,
+          me,
         })}
       </div>
     );
@@ -167,6 +169,7 @@ ListLinesContent.propTypes = {
   hasMore: PropTypes.func,
   isLoading: PropTypes.func,
   dataList: PropTypes.array,
+  me: PropTypes.object,
   globalCount: PropTypes.number,
   LineComponent: PropTypes.object,
   DummyLineComponent: PropTypes.object,
