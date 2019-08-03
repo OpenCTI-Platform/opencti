@@ -90,7 +90,7 @@ class ListLines extends Component {
       );
     }
     return (
-      <div className={classes.headerItem} style={{ width }}>
+      <div className={classes.headerItem} style={{ width }} key={field}>
         <span>{t(label)}</span>
       </div>
     );
