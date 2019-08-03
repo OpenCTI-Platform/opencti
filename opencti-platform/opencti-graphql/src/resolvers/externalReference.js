@@ -23,9 +23,6 @@ const externalReferenceResolvers = {
       if (args.objectId && args.objectId.length > 0) {
         return findByEntity(args);
       }
-      if (args.search && args.search.length > 0) {
-        return search(args);
-      }
       return findAll(args);
     }
   },

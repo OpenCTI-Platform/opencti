@@ -18,7 +18,6 @@ import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'sector', args));
-// paginate('match $s isa Sector', args);
 
 export const findById = sectorId => getById(sectorId);
 

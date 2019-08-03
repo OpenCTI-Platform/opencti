@@ -17,21 +17,6 @@ import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'threat-actor', args));
-// paginate('match $t isa Threat-Actor', args);
-
-export const search = args =>
-  elPaginate('stix_domain_entities', assoc('type', 'threat-actor', args));
-/*
-  paginate(
-    `match $t isa Threat-Actor;
-    $t has name $name;
-    $t has alias $alias;
-    { $name contains "${escapeString(args.search)}"; } or
-    { $alias contains "${escapeString(args.search)}"; }`,
-    args,
-    false
-  );
-*/
 
 export const findById = threatActorId => getById(threatActorId);
 

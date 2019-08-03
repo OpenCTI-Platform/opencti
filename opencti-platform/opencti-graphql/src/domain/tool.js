@@ -17,7 +17,6 @@ import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'tool', args));
-// paginate('match $t isa Tool', args);
 
 export const findById = toolId => getById(toolId);
 

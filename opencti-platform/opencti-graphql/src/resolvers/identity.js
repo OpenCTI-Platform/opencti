@@ -1,4 +1,4 @@
-import { addIdentity, findAll, findById, search } from '../domain/identity';
+import { addIdentity, findAll, findById } from '../domain/identity';
 import {
   createdByRef,
   markingDefinitions,
@@ -16,12 +16,7 @@ import {
 const identityResolvers = {
   Query: {
     identity: (_, { id }) => findById(id),
-    identities: (_, args) => {
-      if (args.search && args.search.length > 0) {
-        return search(args);
-      }
-      return findAll(args);
-    }
+    identities: (_, args) => findAll(args),
   },
   Identity: {
     __resolveType(obj) {

@@ -8,7 +8,6 @@ import {
   findByStixId,
   findByName,
   findByExternalReference,
-  search,
   markingDefinitions,
   stixDomainEntitiesTimeSeries,
   stixDomainEntitiesNumber,
@@ -30,9 +29,6 @@ const stixDomainEntityResolvers = {
   Query: {
     stixDomainEntity: (_, { id }) => findById(id),
     stixDomainEntities: (_, args) => {
-      if (args.search && args.search.length > 0) {
-        return search(args);
-      }
       if (args.stix_id && args.stix_id.length > 0) {
         return findByStixId(args);
       }

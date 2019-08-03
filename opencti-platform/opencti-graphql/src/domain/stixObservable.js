@@ -58,20 +58,6 @@ export const findAll = args => {
     return assoc('edges', observablesEdges, relations);
   });
 };
-/*
-  paginate(
-    `match ${
-      args.types
-        ? `${join(
-            ' ',
-            map(type => `{ $x isa ${type}; } or`, args.types)
-          )} { $x isa ${head(args.types)}; }`
-        : '$x isa Stix-Observable'
-    }`,
-    args,
-    false
-  );
-*/
 
 export const stixObservablesNumber = args => ({
   count: countEntities('stix_observables', args),

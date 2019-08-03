@@ -19,7 +19,6 @@ import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'incident', args));
-// paginate('match $i isa Incident', args);
 
 export const incidentsTimeSeries = args =>
   timeSeries('match $i isa Incident', args);
