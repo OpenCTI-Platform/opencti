@@ -46,16 +46,6 @@ export const findAll = args => {
     );
   }
   return elPaginate('stix_domain_entities', assoc('type', 'report', args));
-  /*
-  return paginate(
-    `match $r isa Report${
-      args.reportClass
-        ? `; 
-    $r has report_class "${escapeString(args.reportClass)}"`
-        : ''
-    }`,
-    args
-  ); */
 };
 
 export const reportsTimeSeries = args =>

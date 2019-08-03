@@ -27,7 +27,6 @@ import {
 } from '../database/elasticSearch';
 
 export const findAll = args => elPaginate('external_references', args);
-//  paginate('match $e isa External-Reference', args);
 
 export const findByEntity = args =>
   paginate(
@@ -38,20 +37,6 @@ export const findByEntity = args =>
   );
 
 export const findById = externalReferenceId => getById(externalReferenceId);
-
-export const search = args => elPaginate('external_references', args);
-/*  paginate(
-    `match $e isa External-Reference; 
-    $e has source_name $sn; 
-    $e has description $desc; 
-    $e has url $url; 
-    { $sn contains "${escapeString(args.search)}"; } or
-    { $desc contains "${escapeString(args.search)}"; } or
-    { $url contains "${escapeString(args.search)}"; }`,
-    args,
-    false
-  );
-*/
 
 export const addExternalReference = async (user, externalReference) => {
   const wTx = await takeWriteTx();

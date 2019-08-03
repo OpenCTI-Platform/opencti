@@ -17,21 +17,6 @@ import { BUS_TOPICS, logger } from '../config/conf';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'intrusion-set', args));
-// paginate('match $i isa Intrusion-Set', args);
-
-export const search = args =>
-  elPaginate('stix_domain_entities', assoc('type', 'intrusion-set', args));
-/*
-  paginate(
-    `match $i isa Intrusion-Set; 
-    $i has name $name; 
-    $i has alias $alias; 
-    { $name contains "${escapeString(args.search)}"; } or
-    { $alias contains "${escapeString(args.search)}"; }`,
-    args,
-    false
-  );
-*/
 
 export const findById = intrusionSetId => getById(intrusionSetId);
 

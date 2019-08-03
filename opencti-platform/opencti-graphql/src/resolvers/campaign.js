@@ -1,7 +1,6 @@
 import {
   addCampaign,
   findAll,
-  search,
   findById,
   campaignsTimeSeries,
   campaignsTimeSeriesByEntity
@@ -25,9 +24,6 @@ const campaignResolvers = {
   Query: {
     campaign: (_, { id }) => findById(id),
     campaigns: (_, args) => {
-      if (args.search && args.search.length > 0) {
-        return search(args);
-      }
       return findAll(args);
     },
     campaignsTimeSeries: (_, args) => {

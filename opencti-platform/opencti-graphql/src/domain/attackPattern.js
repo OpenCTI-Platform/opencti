@@ -31,7 +31,6 @@ export const findAll = args => {
     'stix_domain_entities',
     assoc('type', 'attack-pattern', args)
   );
-  // paginate('match $a isa Attack-Pattern', args);
 };
 
 export const findById = attackPatternId => getById(attackPatternId);

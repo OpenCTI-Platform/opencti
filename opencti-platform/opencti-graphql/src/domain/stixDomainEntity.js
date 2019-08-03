@@ -42,22 +42,6 @@ import {
 import { send } from '../database/rabbitmq';
 
 export const findAll = args => elPaginate('stix_domain_entities', args);
-/* paginate(
-    `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'}`,
-    args,
-    false
-  ); */
-
-export const search = args => elPaginate('stix_domain_entities', args);
-/* paginate(
-   `match $x isa ${args.type ? args.type : 'Stix-Domain-Entity'};
-   $x has name $name;
-   $x has alias $alias;
-   { $name contains "${escapeString(args.search)}"; } or
-   { $alias contains "${escapeString(args.search)}"; }`,
-   args,
-   false
- ); */
 
 export const stixDomainEntitiesTimeSeries = args =>
   timeSeries(

@@ -18,10 +18,6 @@ import { index, paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'course-of-action', args));
-// paginate('match $c isa Course-Of-Action', args);
-
-export const search = args =>
-  elPaginate('stix_domain_entities', assoc('type', 'course-of-action', args));
 
 export const findByEntity = args =>
   paginate(

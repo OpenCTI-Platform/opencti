@@ -1,8 +1,6 @@
-/* eslint-disable no-undef */
 import {
   addIntrusionSet,
   findAll,
-  search,
   findById
 } from '../domain/intrusionSet';
 import {
@@ -23,12 +21,7 @@ import { fetchEditContext } from '../database/redis';
 const intrusionSetResolvers = {
   Query: {
     intrusionSet: (_, { id }) => findById(id),
-    intrusionSets: (_, args) => {
-      if (args.search && args.search.length > 0) {
-        return search(args);
-      }
-      return findAll(args);
-    }
+    intrusionSets: (_, args) => findAll(args),
   },
   IntrusionSet: {
     createdByRef: (intrusionSet, args) => createdByRef(intrusionSet.id, args),
