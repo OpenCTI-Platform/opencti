@@ -47,7 +47,9 @@ const styles = theme => ({
 
 class RegionLineComponent extends Component {
   render() {
-    const { fd, classes, dataColumns, node } = this.props;
+    const {
+      fd, classes, dataColumns, node,
+    } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}

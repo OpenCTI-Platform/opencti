@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Avatar from '@material-ui/core/Avatar';
 import { MoreVert } from '@material-ui/icons';
 import { compose } from 'ramda';
@@ -33,7 +34,12 @@ const styles = theme => ({
     height: 24,
   },
   bodyItem: {
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   goIcon: {
     position: 'absolute',
@@ -50,50 +56,16 @@ const styles = theme => ({
   },
 });
 
-const inlineStyles = {
-  source_name: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  external_id: {
-    float: 'left',
-    width: '10%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  url: {
-    float: 'left',
-    width: '50%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
-
 class ExternalReferenceLineComponent extends Component {
   render() {
     const {
-      fd, classes, externalReference, paginationOptions,
+      fd, classes, dataColumns, node, paginationOptions,
     } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Avatar classes={{ root: classes.avatar }}>
-            {externalReference.source_name.substring(0, 1)}
+            {node.source_name.substring(0, 1)}
           </Avatar>
         </ListItemIcon>
         <ListItemText
@@ -101,38 +73,45 @@ class ExternalReferenceLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.source_name}
+                style={{ width: dataColumns.source_name.width }}
               >
-                {externalReference.source_name}
+                {node.source_name}
               </div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.external_id}
+                style={{ width: dataColumns.external_id.width }}
               >
-                {externalReference.external_id}
+                {node.external_id}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.url}>
-                {externalReference.url}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.url.width }}
+              >
+                {node.url}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(externalReference.created)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fd(node.created)}
               </div>
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemSecondaryAction>
           <ExternalReferencePopover
-            externalReferenceId={externalReference.id}
+            externalReferenceId={node.id}
             paginationOptions={paginationOptions}
           />
-        </ListItemIcon>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
 }
 
 ExternalReferenceLineComponent.propTypes = {
-  externalReference: PropTypes.object,
+  dataColumns: PropTypes.object,
+  node: PropTypes.object,
   paginationOptions: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
@@ -142,8 +121,8 @@ ExternalReferenceLineComponent.propTypes = {
 const ExternalReferenceLineFragment = createFragmentContainer(
   ExternalReferenceLineComponent,
   {
-    externalReference: graphql`
-      fragment ExternalReferenceLine_externalReference on ExternalReference {
+    node: graphql`
+      fragment ExternalReferenceLine_node on ExternalReference {
         id
         source_name
         external_id
@@ -161,7 +140,7 @@ export const ExternalReferenceLine = compose(
 
 class ExternalReferenceLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -172,34 +151,41 @@ class ExternalReferenceLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.source_name}
+                style={{ width: dataColumns.source_name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.external_id}
+                style={{ width: dataColumns.external_id.width }}
               >
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.url}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.url.width }}
+              >
                 <div className="fakeItem" style={{ width: '60%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
           <MoreVert />
-        </ListItemIcon>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
 }
 
 ExternalReferenceLineDummyComponent.propTypes = {
+  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

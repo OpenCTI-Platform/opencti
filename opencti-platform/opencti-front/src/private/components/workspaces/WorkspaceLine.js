@@ -16,7 +16,6 @@ const styles = theme => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
     '&:hover': {
       background: 'rgba(0, 0, 0, 0.1)',
     },
@@ -25,8 +24,12 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: '100%',
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   goIcon: {
     position: 'absolute',
@@ -43,50 +46,17 @@ const styles = theme => ({
   },
 });
 
-const inlineStyles = {
-  name: {
-    float: 'left',
-    width: '45%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  owner: {
-    float: 'left',
-    width: '25%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created_at: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  marking: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
-
 class WorkspaceLineComponent extends Component {
   render() {
-    const { fd, classes, workspace } = this.props;
-
+    const {
+      fd, classes, dataColumns, node,
+    } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/${workspace.workspace_type}/${workspace.id}`}
+        to={`/dashboard/${node.workspace_type}/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Work />
@@ -94,26 +64,37 @@ class WorkspaceLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
-                {workspace.name}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.name}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.owner}>
-                {pathOr('', ['ownedBy', 'node', 'name'], workspace)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.owner.width }}
+              >
+                {pathOr('', ['ownedBy', 'node', 'name'], node)}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created_at}>
-                {fd(workspace.created_at)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created_at.width }}
+              >
+                {fd(node.created_at)}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.marking}>
-                {take(
-                  1,
-                  pathOr([], ['markingDefinitions', 'edges'], workspace),
-                ).map(markingDefinition => (
-                  <ItemMarking
-                    key={markingDefinition.node.id}
-                    variant="inList"
-                    label={markingDefinition.node.definition}
-                  />
-                ))}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.marking.width }}
+              >
+                {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
+                  markingDefinition => (
+                    <ItemMarking
+                      key={markingDefinition.node.id}
+                      variant="inList"
+                      label={markingDefinition.node.definition}
+                    />
+                  ),
+                )}
               </div>
             </div>
           }
@@ -127,14 +108,15 @@ class WorkspaceLineComponent extends Component {
 }
 
 WorkspaceLineComponent.propTypes = {
-  workspace: PropTypes.object,
+  dataColumns: PropTypes.object,
+  node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
 
 const WorkspaceLineFragment = createFragmentContainer(WorkspaceLineComponent, {
-  workspace: graphql`
-    fragment WorkspaceLine_workspace on Workspace {
+  node: graphql`
+    fragment WorkspaceLine_node on Workspace {
       id
       workspace_type
       name
@@ -163,7 +145,7 @@ export const WorkspaceLine = compose(
 
 class WorkspaceLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -172,16 +154,28 @@ class WorkspaceLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.owner}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.owner.width }}
+              >
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created_at.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.marking}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.marking.width }}
+              >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>
             </div>
@@ -196,6 +190,7 @@ class WorkspaceLineDummyComponent extends Component {
 }
 
 WorkspaceLineDummyComponent.propTypes = {
+  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

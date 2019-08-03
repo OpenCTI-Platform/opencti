@@ -69,7 +69,7 @@ const styles = theme => ({
 const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
     workspaceAdd(input: $input) {
-      ...WorkspaceLine_workspace
+      ...WorkspaceLine_node
     }
   }
 `;
