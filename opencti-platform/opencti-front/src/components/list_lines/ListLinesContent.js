@@ -33,7 +33,10 @@ class ListLinesContent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.initialLoading !== prevProps.initialLoading) {
+    if (
+      this.props.initialLoading !== prevProps.initialLoading
+      || this.props.dataList.length !== prevProps.dataList.length
+    ) {
       this.listRef.forceUpdateGrid();
     }
   }

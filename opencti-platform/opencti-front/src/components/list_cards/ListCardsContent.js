@@ -38,9 +38,16 @@ class ListCardsContent extends Component {
     this._cellRenderer = this._cellRenderer.bind(this);
     this._setRef = this._setRef.bind(this);
     this._resetLoadingCardCount = this._resetLoadingCardCount.bind(this);
+    this.gridRef = React.createRef();
     this.state = {
       loadingCardCount: 0,
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.dataList.length !== prevProps.dataList.length) {
+      this.gridRef.forceUpdate();
+    }
   }
 
   numberOfCardsPerLine() {
@@ -134,7 +141,11 @@ class ListCardsContent extends Component {
     }
     const edge = dataList[index];
     if (!edge) {
-      return <div key={key}>&nbsp;</div>;
+      return (
+        <div key={key} style={style}>
+          &nbsp;
+        </div>
+      );
     }
     const { node } = edge;
     return (
@@ -148,13 +159,20 @@ class ListCardsContent extends Component {
 
   render() {
     const {
-      dataList, globalCount, initialLoading, isLoading,
+      dataList,
+      globalCount,
+      initialLoading,
+      isLoading,
+      nbOfCardsToLoad,
     } = this.props;
     const nbLineForCards = Math.ceil(
       dataList.length / this.numberOfCardsPerLine(),
     );
+    const nbOfLinesToLoad = Math.ceil(
+      nbOfCardsToLoad / this.numberOfCardsPerLine(),
+    );
     const rowCount = initialLoading
-      ? 5
+      ? nbOfLinesToLoad
       : isLoading()
         ? nbLineForCards + this.state.loadingCardCount
         : nbLineForCards;
@@ -169,7 +187,7 @@ class ListCardsContent extends Component {
               loadMoreRows={this._loadMoreRows}
               rowCount={globalCount}
             >
-              {({ onRowsRendered }) => {
+              {({ onRowsRendered, registerChild }) => {
                 this._onRowsRendered = onRowsRendered;
                 return (
                   <AutoSizer disableHeight>
@@ -182,8 +200,9 @@ class ListCardsContent extends Component {
                       >
                         {({ adjustedWidth, columnWidth }) => (
                           <Grid
-                            ref={(el) => {
-                              window.listEl = el;
+                            ref={(ref) => {
+                              this.gridRef = ref;
+                              registerChild(ref);
                             }}
                             autoHeight={true}
                             height={height}

@@ -20,13 +20,13 @@ All connectors have 2 mandatory configuration parameters, the `name` and the `co
 
 You can either directly run the Docker image of connectors or add them to your current `docker-compose.yml` file.
 
-### Add a connector to your deployement
+### Add a connector to your deployment
 
 For instance, to enable the MISP connector, you can add a new service to your `docker-compose.yml` file:
 
 ```
   connector-misp:
-    image: opencti/connector-misp:1.1.0
+    image: opencti/connector-misp:{RELEASE_VERSION}
     environment:
       - RABBITMQ_HOSTNAME=localhost
       - RABBITMQ_PORT=5672 
@@ -46,14 +46,15 @@ For instance, to enable the MISP connector, you can add a new service to your `d
 
 ### Launch a standalone connector
 
-To launch standalone connector, you can use the `docker-compose.yml` file of the connector itself. Just pull the [dedicated repository](https://github.com/OpenCTI-Platform/connectors) and start the connector:
+To launch standalone connector, you can use the `docker-compose.yml` file of the connector itself. Just download the [release](https://github.com/OpenCTI-Platform/connectors/archive/{RELEASE_VERSION}.zip) and start the connector:
 
 ```
-$ git clone https://github.com/OpenCTI-Platform/connectors
-$ cd misp
+$ wget https://github.com/OpenCTI-Platform/connectors/archive/{RELEASE_VERSION}.zip
+$ unzip {RELEASE_VERSION}.zip
+$ cd connectors-{RELEASE_VERSION}/misp/
 ```
 
-Change the configuration in the `docker-compose.yml` accoarding to the parameters of the platform and of the targeted service. RabbitMQ credentials are the only parameters that the connector need to send data to OpenCTI. Then launch the connector:
+Change the configuration in the `docker-compose.yml` according to the parameters of the platform and of the targeted service. RabbitMQ credentials are the only parameters that the connector need to send data to OpenCTI. Then launch the connector:
 
 ```
 $ docker-compose up
@@ -67,11 +68,12 @@ If you want to manually launch connector, you just have to install Python 3 and 
 $ apt install python3 python3-pip
 ```
 
-Clone the [repository](https://github.com/OpenCTI-Platform/connectors) of the connectors:
+Download the [release](https://github.com/OpenCTI-Platform/connectors/archive/{RELEASE_VERSION}.zip) of the connectors:
 
 ```
-$ git clone https://github.com/OpenCTI-Platform/connectors
-$ cd misp/src
+$ wget https://github.com/OpenCTI-Platform/connectors/archive/{RELEASE_VERSION}.zip
+$ unzip {RELEASE_VERSION}.zip
+$ cd connectors-{RELEASE_VERSION}/misp/src/
 ```
 
 Install dependencies and initialize the configuration:

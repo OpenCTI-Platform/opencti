@@ -10,13 +10,12 @@ services:
   redis:
     image: redis:5.0.5
     restart: always
-  elasticsearch-01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.1
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
     volumes:
       - esdata:/usr/share/elasticsearch/data
-    container_name: elasticsearch-01
     environment:
-      - cluster.initial_master_nodes=elasticsearch-01
+      - discovery.type=single-node
     restart: always
     ulimits:
       memlock:
@@ -32,7 +31,7 @@ services:
       - RABBITMQ_DEFAULT_PASS=guest    
     restart: always
   opencti:
-    image: opencti/platform:1.1.0
+    image: opencti/platform:1.1.1
     environment:
       - APP__PORT=8080
       - APP__ADMIN__EMAIL=admin@opencti.io
@@ -46,8 +45,7 @@ services:
       - GRAKN__TIMEOUT=30000
       - REDIS__HOSTNAME=redis
       - REDIS__PORT=6379
-      - ELASTICSEARCH__HOSTNAME=elasticsearch
-      - ELASTICSEARCH__PORT=9200
+      - ELASTICSEARCH__URL=http://elasticsearch:9200
       - RABBITMQ__HOSTNAME=rabbitmq
       - RABBITMQ__PORT=5672
       - RABBITMQ__PORT_MANAGEMENT=15672
@@ -62,7 +60,7 @@ services:
       - elasticsearch
       - rabbitmq
     restart: always
-      worker-import:
+  worker-import:
     image: opencti/worker:1.1.0
     environment:
       - WORKER_TYPE=import
@@ -82,7 +80,7 @@ services:
       replicas: 4
     restart: always
   worker-export:
-    image: opencti/worker:1.1.0
+    image: opencti/worker:1.1.1
     environment:
       - WORKER_TYPE=export
       - WORKER_LOG_LEVEL=info
