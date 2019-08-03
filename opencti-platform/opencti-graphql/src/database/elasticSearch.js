@@ -114,7 +114,9 @@ export const deleteIndexes = async (indexes = null) => {
   }
   return Promise.all(
     indexesToDelete.map(index => {
-      return el.indices.delete({ index });
+      return el.indices.delete({ index }).catch(() => {
+        return false;
+      });
     })
   );
 };
@@ -122,17 +124,21 @@ export const deleteIndexes = async (indexes = null) => {
 export const reindex = async indexMaps => {
   return Promise.all(
     indexMaps.map(indexMap => {
-      return el.reindex({
-        timeout: '60m',
-        body: {
-          source: {
-            index: indexMap.source
-          },
-          dest: {
-            index: indexMap.dest
+      return el
+        .reindex({
+          timeout: '60m',
+          body: {
+            source: {
+              index: indexMap.source
+            },
+            dest: {
+              index: indexMap.dest
+            }
           }
-        }
-      });
+        })
+        .catch(() => {
+          return false;
+        });
     })
   );
 };
@@ -142,6 +148,7 @@ export const index = (indexName, documentBody) => {
   el.index({
     index: indexName,
     id: documentBody.grakn_id,
+    refresh: true,
     body: documentBody
   }).catch(() => {
     return false;
@@ -153,7 +160,8 @@ export const deleteEntity = async (indexName, documentId) => {
   await el
     .delete({
       index: indexName,
-      id: documentId
+      id: documentId,
+      refresh: true
     })
     .catch(() => {
       return false;
