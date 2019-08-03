@@ -30,7 +30,7 @@ services:
       - 9300:9300
   opencti-dev-rabbitmq:
     container_name: opencti-dev-rabbitmq
-    image: rabbitmq:3.7.16-management
+    image: rabbitmq:3.7.17-management
     restart: always
     ports:
       - 5672:5672

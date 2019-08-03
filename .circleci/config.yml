@@ -32,7 +32,7 @@ jobs:
           GRAKN__HOSTNAME: 127.0.0.1
           ELASTICSEARCH__HOSTNAME: 127.0.0.1
       - image: graknlabs/grakn:1.5.7
-      - image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+      - image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
         environment:
           - "discovery.type=single-node"
           - "ES_JAVA_OPTS=-Xms512m -Xmx512m"

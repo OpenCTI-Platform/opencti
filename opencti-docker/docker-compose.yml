@@ -25,7 +25,7 @@ services:
         soft: 65536
         hard: 65536
   rabbitmq:
-    image: rabbitmq:3.7.16-management
+    image: rabbitmq:3.7.17-management
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest    
@@ -61,7 +61,7 @@ services:
       - rabbitmq
     restart: always
   worker-import:
-    image: opencti/worker:1.1.0
+    image: opencti/worker:1.1.1
     environment:
       - WORKER_TYPE=import
       - WORKER_LOG_LEVEL=info
@@ -99,7 +99,7 @@ services:
       replicas: 2      
     restart: always
   connector-opencti:
-    image: opencti/connector-opencti:1.1.0
+    image: opencti/connector-opencti:1.1.1
     environment:
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672 
@@ -115,7 +115,7 @@ services:
       - opencti
     restart: always
   connector-mitre:
-    image: opencti/connector-mitre:1.1.0
+    image: opencti/connector-mitre:1.1.1
     environment:
       - RABBITMQ_HOSTNAME=rabbitmq
       - RABBITMQ_PORT=5672 
