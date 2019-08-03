@@ -15,7 +15,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Avatar from '@material-ui/core/Avatar';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { groupsLinesSearchQuery } from '../groups/GroupsLines';
+import { groupsSearchQuery } from '../Groups';
 
 const styles = theme => ({
   list: {
@@ -91,7 +91,7 @@ class UserEditionGroupsComponent extends Component {
     return (
       <div>
         <QueryRenderer
-          query={groupsLinesSearchQuery}
+          query={groupsSearchQuery}
           variables={{ search: '' }}
           render={({ props }) => {
             if (props) {

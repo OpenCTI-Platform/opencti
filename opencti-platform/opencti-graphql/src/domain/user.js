@@ -55,17 +55,8 @@ export const setAuthenticationCookie = (token, res) => {
   }
 };
 
-export const findAll = args => {
-  const { first, after, orderBy = 'email', isUser } = args;
-  if (isUser) {
-    return paginate(`match $m isa User${isUser ? '; $m has email $e' : ''}`, {
-      first,
-      after,
-      orderBy
-    });
-  }
-  return elPaginate('stix_domain_entities', assoc('type', 'user', args));
-};
+export const findAll = args =>
+  elPaginate('stix_domain_entities', assoc('type', 'user', args));
 
 export const findById = userId => getById(userId);
 

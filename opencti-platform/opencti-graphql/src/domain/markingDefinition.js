@@ -20,7 +20,17 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = args =>
-  paginate('match $m isa Marking-Definition', args);
+  paginate(
+    `match $m isa Marking-Definition ${
+      args.search
+        ? `; $m has definition_type $type;
+   $m has definition $definition;
+   { $type contains "${escapeString(args.search)}"; } or
+   { $definition contains "${escapeString(args.search)}"; }`
+        : ''
+    }`,
+    args
+  );
 
 export const findByEntity = args =>
   paginate(

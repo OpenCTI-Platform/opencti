@@ -25,7 +25,7 @@ import {
   fetchQuery,
   WS_ACTIVATED,
 } from '../../../relay/environment';
-import { markingDefinitionsLinesSearchQuery } from '../settings/marking_definitions/MarkingDefinitionsLines';
+import { markingDefinitionsSearchQuery } from '../settings/MarkingDefinitions';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
@@ -153,7 +153,7 @@ class StixObservableEditionOverviewComponent extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
+    fetchQuery(markingDefinitionsSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(

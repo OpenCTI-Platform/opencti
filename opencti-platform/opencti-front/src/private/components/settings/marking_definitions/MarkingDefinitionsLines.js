@@ -1,165 +1,42 @@
-/* eslint-disable no-underscore-dangle,no-nested-ternary */
-// TODO Remove no-nested-ternary
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import {
-  AutoSizer,
-  InfiniteLoader,
-  List,
-  WindowScroller,
-} from 'react-virtualized';
+import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
   MarkingDefinitionLine,
   MarkingDefinitionLineDummy,
 } from './MarkingDefinitionLine';
 
-const styles = () => ({
-  windowScrollerWrapper: {
-    flex: '1 1 auto',
-  },
-  item: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-  },
-  title: {
-    float: 'left',
-  },
-  search: {
-    float: 'right',
-    marginTop: '-10px',
-  },
-});
+const nbOfRowsToLoad = 25;
 
 class MarkingDefinitionsLines extends Component {
-  constructor(props) {
-    super(props);
-    this._isRowLoaded = this._isRowLoaded.bind(this);
-    this._loadMore = this._loadMore.bind(this);
-    this._rowRenderer = this._rowRenderer.bind(this);
-    this._setRef = this._setRef.bind(this);
-    this.state = {
-      scrollToIndex: -1,
-      showHeaderText: true,
-    };
-  }
-
-  componentDidUpdate(prevProps) {
-    if (this.props.searchTerm !== prevProps.searchTerm) {
-      this._loadMore();
-    }
-  }
-
-  _setRef(windowScroller) {
-    // noinspection JSUnusedGlobalSymbols
-    this._windowScroller = windowScroller;
-  }
-
-  _loadMore() {
-    if (!this.props.relay.hasMore() || this.props.relay.isLoading()) {
-      return;
-    }
-    this.props.relay.loadMore(this.props.searchTerm.length > 0 ? 90000 : 25);
-  }
-
-  _isRowLoaded({ index }) {
-    if (this.props.dummy) {
-      return true;
-    }
-    const list = pathOr([], ['markingDefinitions', 'edges'], this.props.data);
-    return !this.props.relay.hasMore() || index < list.length;
-  }
-
-  _rowRenderer({ index, key, style }) {
-    const { dummy } = this.props;
-    if (dummy) {
-      return (
-        <div key={key} style={style}>
-          <MarkingDefinitionLineDummy />
-        </div>
-      );
-    }
-
-    const list = pathOr([], ['markingDefinitions', 'edges'], this.props.data);
-    if (!this._isRowLoaded({ index })) {
-      return (
-        <div key={key} style={style}>
-          <MarkingDefinitionLineDummy />
-        </div>
-      );
-    }
-    const markingDefinitionNode = list[index];
-    if (!markingDefinitionNode) {
-      return <div key={key}>&nbsp;</div>;
-    }
-    const markingDefinition = markingDefinitionNode.node;
-    return (
-      <div key={key} style={style}>
-        <MarkingDefinitionLine
-          key={markingDefinition.id}
-          markingDefinition={markingDefinition}
-          paginationOptions={this.props.paginationOptions}
-        />
-      </div>
-    );
-  }
-
   render() {
-    const { dummy } = this.props;
-    const { scrollToIndex } = this.state;
-    const list = dummy
-      ? []
-      : pathOr([], ['markingDefinitions', 'edges'], this.props.data);
-    const listLength = this.props.relay.isLoading()
-      ? list.length + 25
-      : list.length;
-    const rowCount = dummy
-      ? listLength > 0
-        ? listLength - 1
-        : 24
-      : listLength;
+    const {
+      initialLoading,
+      dataColumns,
+      relay,
+      paginationOptions,
+    } = this.props;
     return (
-      <WindowScroller ref={this._setRef} scrollElement={window}>
-        {({
-          height, isScrolling, onChildScroll, scrollTop,
-        }) => (
-          <div className={styles.windowScrollerWrapper}>
-            <InfiniteLoader
-              isRowLoaded={this._isRowLoaded}
-              loadMoreRows={this._loadMore}
-              rowCount={Number.MAX_SAFE_INTEGER}
-            >
-              {({ onRowsRendered }) => (
-                <AutoSizer disableHeight>
-                  {({ width }) => (
-                    <List
-                      ref={(el) => {
-                        window.listEl = el;
-                      }}
-                      autoHeight
-                      height={height}
-                      onRowsRendered={onRowsRendered}
-                      isScrolling={isScrolling}
-                      onScroll={onChildScroll}
-                      overscanRowCount={2}
-                      rowCount={rowCount}
-                      rowHeight={50}
-                      rowRenderer={this._rowRenderer}
-                      scrollToIndex={scrollToIndex}
-                      scrollTop={scrollTop}
-                      width={width}
-                    />
-                  )}
-                </AutoSizer>
-              )}
-            </InfiniteLoader>
-          </div>
+      <ListLinesContent
+        initialLoading={initialLoading}
+        loadMore={relay.loadMore.bind(this)}
+        hasMore={relay.hasMore.bind(this)}
+        isLoading={relay.isLoading.bind(this)}
+        dataList={pathOr([], ['markingDefinitions', 'edges'], this.props.data)}
+        globalCount={pathOr(
+          nbOfRowsToLoad,
+          ['markingDefinitions', 'pageInfo', 'globalCount'],
+          this.props.data,
         )}
-      </WindowScroller>
+        LineComponent={<MarkingDefinitionLine />}
+        DummyLineComponent={<MarkingDefinitionLineDummy />}
+        dataColumns={dataColumns}
+        nbOfRowsToLoad={nbOfRowsToLoad}
+        paginationOptions={paginationOptions}
+      />
     );
   }
 }
@@ -167,15 +44,16 @@ class MarkingDefinitionsLines extends Component {
 MarkingDefinitionsLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
+  dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
   markingDefinitions: PropTypes.object,
-  dummy: PropTypes.bool,
-  searchTerm: PropTypes.string,
+  initialLoading: PropTypes.bool,
 };
 
 export const markingDefinitionsLinesQuery = graphql`
   query MarkingDefinitionsLinesPaginationQuery(
+    $search: String
     $count: Int!
     $cursor: ID
     $orderBy: MarkingDefinitionsOrdering
@@ -183,6 +61,7 @@ export const markingDefinitionsLinesQuery = graphql`
   ) {
     ...MarkingDefinitionsLines_data
       @arguments(
+        search: $search
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -191,70 +70,62 @@ export const markingDefinitionsLinesQuery = graphql`
   }
 `;
 
-export const markingDefinitionsLinesSearchQuery = graphql`
-  query MarkingDefinitionsLinesSearchQuery($search: String) {
-    markingDefinitions(search: $search) {
-      edges {
-        node {
-          id
-          definition_type
-          definition
-        }
-      }
-    }
-  }
-`;
-
-export default withStyles(styles)(
-  createPaginationContainer(
-    MarkingDefinitionsLines,
-    {
-      data: graphql`
-        fragment MarkingDefinitionsLines_data on Query
-          @argumentDefinitions(
-            count: { type: "Int", defaultValue: 25 }
-            cursor: { type: "ID" }
-            orderBy: {
-              type: "MarkingDefinitionsOrdering"
-              defaultValue: "definition"
-            }
-            orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          ) {
-          markingDefinitions(
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-          ) @connection(key: "Pagination_markingDefinitions") {
-            edges {
-              node {
-                ...MarkingDefinitionLine_markingDefinition
-              }
+export default createPaginationContainer(
+  MarkingDefinitionsLines,
+  {
+    data: graphql`
+      fragment MarkingDefinitionsLines_data on Query
+        @argumentDefinitions(
+          search: { type: "String" }
+          count: { type: "Int", defaultValue: 25 }
+          cursor: { type: "ID" }
+          orderBy: {
+            type: "MarkingDefinitionsOrdering"
+            defaultValue: "definition"
+          }
+          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+        ) {
+        markingDefinitions(
+          search: $search
+          first: $count
+          after: $cursor
+          orderBy: $orderBy
+          orderMode: $orderMode
+        ) @connection(key: "Pagination_markingDefinitions") {
+          edges {
+            node {
+              ...MarkingDefinitionLine_node
             }
           }
+          pageInfo {
+            endCursor
+            hasNextPage
+            globalCount
+          }
         }
-      `,
+      }
+    `,
+  },
+  {
+    direction: 'forward',
+    getConnectionFromProps(props) {
+      return props.data && props.data.markingDefinitions;
     },
-    {
-      direction: 'forward',
-      getConnectionFromProps(props) {
-        return props.data && props.data.markingDefinitions;
-      },
-      getFragmentVariables(prevVars, totalCount) {
-        return {
-          ...prevVars,
-          count: totalCount,
-        };
-      },
-      getVariables(props, { count, cursor }, fragmentVariables) {
-        return {
-          count,
-          cursor,
-          orderBy: fragmentVariables.orderBy,
-          orderMode: fragmentVariables.orderMode,
-        };
-      },
-      query: markingDefinitionsLinesQuery,
+    getFragmentVariables(prevVars, totalCount) {
+      return {
+        ...prevVars,
+        count: totalCount,
+      };
     },
-  ),
+    getVariables(props, { count, cursor }, fragmentVariables) {
+      return {
+        search: fragmentVariables.search,
+        count,
+        cursor,
+        orderBy: fragmentVariables.orderBy,
+        orderMode: fragmentVariables.orderMode,
+      };
+    },
+    query: markingDefinitionsLinesQuery,
+  },
 );

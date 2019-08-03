@@ -62,7 +62,7 @@ const styles = theme => ({
 const groupMutation = graphql`
   mutation GroupCreationMutation($input: GroupAddInput!) {
     groupAdd(input: $input) {
-      ...GroupLine_group
+      ...GroupLine_node
     }
   }
 `;

@@ -1,161 +1,108 @@
-/* eslint-disable no-nested-ternary */
-// TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
+import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../../relay/environment';
-import KillChainPhasesLines, {
-  killChainPhasesLinesQuery,
-} from './kill_chain_phases/KillChainPhasesLines';
 import inject18n from '../../../components/i18n';
+import ListLines from '../../../components/list_lines/ListLines';
+import KillChainPhasesLines, { killChainPhasesLinesQuery } from './kill_chain_phases/KillChainPhasesLines';
 import KillChainPhaseCreation from './kill_chain_phases/KillChainPhaseCreation';
 
-const styles = () => ({
-  linesContainer: {
-    marginTop: 0,
-    paddingTop: 0,
-  },
-  item: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-  },
-  inputLabel: {
-    float: 'left',
-  },
-  sortIcon: {
-    float: 'left',
-    margin: '-5px 0 0 15px',
-  },
-});
-
-const inlineStyles = {
-  iconSort: {
-    position: 'absolute',
-    margin: '0 0 0 5px',
-    padding: 0,
-    top: '0px',
-  },
-  kill_chain_name: {
-    float: 'left',
-    width: '30%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  phase_name: {
-    float: 'left',
-    width: '35%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  phase_order: {
-    float: 'left',
-    width: '10%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  created: {
-    float: 'left',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-};
+export const killChainPhasesSearchQuery = graphql`
+  query KillChainPhasesSearchQuery($search: String) {
+    killChainPhases(search: $search) {
+      edges {
+        node {
+          id
+          kill_chain_name
+          phase_name
+        }
+      }
+    }
+  }
+`;
 
 class KillChainPhases extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'kill_chain_name', orderAsc: true };
+    this.state = {
+      sortBy: 'phase_order',
+      orderAsc: true,
+      searchTerm: '',
+      view: 'lines',
+    };
   }
 
-  reverseBy(field) {
-    this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
+  handleSearch(value) {
+    this.setState({ searchTerm: value });
   }
 
-  SortHeader(field, label) {
-    const { t } = this.props;
+  handleSort(field, orderAsc) {
+    this.setState({ sortBy: field, orderAsc });
+  }
+
+  renderLines(paginationOptions) {
+    const { sortBy, orderAsc } = this.state;
+    const dataColumns = {
+      kill_chain_name: {
+        label: 'Kill chain name',
+        width: '30%',
+        isSortable: true,
+      },
+      phase_name: {
+        label: 'Phase name',
+        width: '35%',
+        isSortable: true,
+      },
+      phase_order: {
+        label: 'Order',
+        width: '10%',
+        isSortable: true,
+      },
+      created: {
+        label: 'Creation date',
+        width: '15%',
+        isSortable: true,
+      },
+    };
     return (
-      <div
-        style={inlineStyles[field]}
-        onClick={this.reverseBy.bind(this, field)}
+      <ListLines
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={this.handleSort.bind(this)}
+        handleSearch={this.handleSearch.bind(this)}
+        displayImport={false}
+        secondaryAction={true}
       >
-        <span>{t(label)}</span>
-        {this.state.sortBy === field ? (
-          this.state.orderAsc ? (
-            <ArrowDropDown style={inlineStyles.iconSort} />
-          ) : (
-            <ArrowDropUp style={inlineStyles.iconSort} />
-          )
-        ) : (
-          ''
-        )}
-      </div>
+        <QueryRenderer
+          query={killChainPhasesLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ props }) => (
+            <KillChainPhasesLines
+              data={props}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              initialLoading={props === null}
+            />
+          )}
+        />
+      </ListLines>
     );
   }
 
   render() {
-    const { classes } = this.props;
+    const {
+      view, sortBy, orderAsc, searchTerm,
+    } = this.state;
     const paginationOptions = {
-      orderBy: this.state.sortBy,
-      orderMode: this.state.orderAsc ? 'asc' : 'desc',
+      search: searchTerm,
+      orderBy: sortBy,
+      orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
       <div>
-        <List classes={{ root: classes.linesContainer }}>
-          <ListItem
-            classes={{ root: classes.item }}
-            divider={false}
-            style={{ paddingTop: 0 }}
-          >
-            <ListItemIcon>
-              <span
-                style={{
-                  padding: '0 8px 0 8px',
-                  fontWeight: 700,
-                  fontSize: 12,
-                }}
-              >
-                #
-              </span>
-            </ListItemIcon>
-            <ListItemText
-              primary={
-                <div>
-                  {this.SortHeader('kill_chain_name', 'Kill chain')}
-                  {this.SortHeader('phase_name', 'Phase name')}
-                  {this.SortHeader('phase_order', 'Order')}
-                  {this.SortHeader('created', 'Creation date')}
-                </div>
-              }
-            />
-          </ListItem>
-          <QueryRenderer
-            query={killChainPhasesLinesQuery}
-            variables={{
-              count: 25,
-              orderBy: this.state.sortBy,
-              orderMode: this.state.orderAsc ? 'asc' : 'desc',
-            }}
-            render={({ props }) => {
-              if (props) {
-                // Done
-                return (
-                  <KillChainPhasesLines
-                    data={props}
-                    paginationOptions={paginationOptions}
-                  />
-                );
-              }
-              // Loading
-              return <KillChainPhasesLines data={null} dummy={true} />;
-            }}
-          />
-        </List>
+        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <KillChainPhaseCreation paginationOptions={paginationOptions} />
       </div>
     );
@@ -163,12 +110,8 @@ class KillChainPhases extends Component {
 }
 
 KillChainPhases.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(KillChainPhases);
+export default compose(inject18n)(KillChainPhases);

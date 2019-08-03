@@ -20,7 +20,19 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $k isa Kill-Chain-Phase', args);
+export const findAll = args =>
+  paginate(
+    `match $k isa Kill-Chain-Phase ${
+      args.search
+        ? `; $k has kill_chain_name $name;
+   $k has phase_name $phase;
+   { $name contains "${escapeString(args.search)}"; } or
+   { $phase contains "${escapeString(args.search)}"; }`
+        : ''
+      }`,
+    args
+  );
+
 export const findByEntity = args =>
   paginate(
     `match $k isa Kill-Chain-Phase; 

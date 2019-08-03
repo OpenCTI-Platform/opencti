@@ -230,6 +230,7 @@ export const paginate = (indexName, options) => {
     type = null,
     types = null,
     reportClass = null,
+    isUser = null,
     search = null,
     orderBy = null,
     orderMode = 'asc'
@@ -303,6 +304,16 @@ export const paginate = (indexName, options) => {
           report_class: {
             query: reportClass
           }
+        }
+      },
+      must
+    );
+  }
+  if (isUser !== null && isUser === true) {
+    must = append(
+      {
+        exists: {
+          field: 'email'
         }
       },
       must

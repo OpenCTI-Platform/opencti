@@ -28,8 +28,8 @@ import {
   fetchQuery,
   WS_ACTIVATED,
 } from '../../../../relay/environment';
-import { killChainPhasesLinesSearchQuery } from '../../settings/kill_chain_phases/KillChainPhasesLines';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
+import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
+import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
@@ -157,7 +157,7 @@ class AttackPatternEditionOverviewComponent extends Component {
   }
 
   searchKillChainPhases(event) {
-    fetchQuery(killChainPhasesLinesSearchQuery, {
+    fetchQuery(killChainPhasesSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const killChainPhases = pipe(
@@ -175,7 +175,7 @@ class AttackPatternEditionOverviewComponent extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
+    fetchQuery(markingDefinitionsSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(

@@ -64,7 +64,7 @@ const markingDefinitionMutation = graphql`
     $input: MarkingDefinitionAddInput!
   ) {
     markingDefinitionAdd(input: $input) {
-      ...MarkingDefinitionLine_markingDefinition
+      ...MarkingDefinitionLine_node
     }
   }
 `;

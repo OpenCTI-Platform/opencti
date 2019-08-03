@@ -878,6 +878,7 @@ export const paginate = (
   computeCount = true
 ) => {
   try {
+    console.log(query);
     const { first = 200, after, orderBy = null, orderMode = 'asc' } = options;
     const offset = after ? cursorToOffset(after) : 0;
     const instanceKey = /match\s(?:\$|{\s\$)(\w+)[\s]/i.exec(query)[1]; // We need to resolve the key instance used in query.

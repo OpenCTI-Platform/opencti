@@ -1,37 +1,12 @@
-/* eslint-disable no-nested-ternary */
-// TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import ReportsLines, { reportsLinesQuery } from './ReportsLines';
 import inject18n from '../../../components/i18n';
 import ReportCreation from './ReportCreation';
-
-const styles = () => ({
-  header: {
-    margin: '0 0 10px 0',
-  },
-  linesContainer: {
-    marginTop: 0,
-    paddingTop: 0,
-  },
-  item: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-  },
-  inputLabel: {
-    float: 'left',
-  },
-  sortIcon: {
-    float: 'left',
-    margin: '-5px 0 0 15px',
-  },
-});
 
 class Reports extends Component {
   constructor(props) {
@@ -141,7 +116,6 @@ class Reports extends Component {
 Reports.propTypes = {
   objectId: PropTypes.string,
   authorId: PropTypes.string,
-  classes: PropTypes.object,
   match: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
@@ -151,5 +125,4 @@ Reports.propTypes = {
 export default compose(
   inject18n,
   withRouter,
-  withStyles(styles),
 )(Reports);

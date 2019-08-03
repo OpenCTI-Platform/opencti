@@ -28,8 +28,8 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import Autocomplete from '../../../../components/Autocomplete';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import TextField from '../../../../components/TextField';
-import { killChainPhasesLinesSearchQuery } from '../../settings/kill_chain_phases/KillChainPhasesLines';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
+import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
+import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
@@ -146,7 +146,7 @@ class ToolCreation extends Component {
   }
 
   searchKillchainPhases(event) {
-    fetchQuery(killChainPhasesLinesSearchQuery, {
+    fetchQuery(killChainPhasesSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const killChainPhases = pipe(
@@ -164,7 +164,7 @@ class ToolCreation extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
+    fetchQuery(markingDefinitionsSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(

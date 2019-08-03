@@ -1,146 +1,105 @@
-/* eslint-disable no-nested-ternary */
-// TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
+import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../../relay/environment';
-import GroupsLines, { groupsLinesQuery } from './groups/GroupsLines';
 import inject18n from '../../../components/i18n';
+import ListLines from '../../../components/list_lines/ListLines';
+import GroupsLines, { groupsLinesQuery } from './groups/GroupsLines';
 import GroupCreation from './groups/GroupCreation';
 
-const styles = () => ({
-  linesContainer: {
-    marginTop: 0,
-    paddingTop: 0,
-  },
-  item: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-  },
-  inputLabel: {
-    float: 'left',
-  },
-  sortIcon: {
-    float: 'left',
-    margin: '-5px 0 0 15px',
-  },
-});
-
-const inlineStyles = {
-  iconSort: {
-    position: 'absolute',
-    margin: '0 0 0 5px',
-    padding: 0,
-    top: '0px',
-  },
-  name: {
-    float: 'left',
-    width: '60%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  created_at: {
-    float: 'left',
-    width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  updated_at: {
-    float: 'left',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-};
+export const groupsSearchQuery = graphql`
+  query GroupsSearchQuery($search: String) {
+    groups(search: $search) {
+      edges {
+        node {
+          id
+          name
+          description
+          created_at
+          updated_at
+        }
+      }
+    }
+  }
+`;
 
 class Groups extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'name', orderAsc: true };
+    this.state = {
+      sortBy: 'name',
+      orderAsc: true,
+      searchTerm: '',
+      view: 'lines',
+    };
   }
 
-  reverseBy(field) {
-    this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
+  handleSearch(value) {
+    this.setState({ searchTerm: value });
   }
 
-  SortHeader(field, label) {
-    const { t } = this.props;
+  handleSort(field, orderAsc) {
+    this.setState({ sortBy: field, orderAsc });
+  }
+
+  renderLines(paginationOptions) {
+    const { sortBy, orderAsc } = this.state;
+    const dataColumns = {
+      name: {
+        label: 'Name',
+        width: '60%',
+        isSortable: true,
+      },
+      created_at: {
+        label: 'Creation date',
+        width: '15%',
+        isSortable: true,
+      },
+      updated_at: {
+        label: 'Modification date',
+        width: '15%',
+        isSortable: true,
+      },
+    };
     return (
-      <div
-        style={inlineStyles[field]}
-        onClick={this.reverseBy.bind(this, field)}
+      <ListLines
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={this.handleSort.bind(this)}
+        handleSearch={this.handleSearch.bind(this)}
+        displayImport={false}
+        secondaryAction={true}
       >
-        <span>{t(label)}</span>
-        {this.state.sortBy === field ? (
-          this.state.orderAsc ? (
-            <ArrowDropDown style={inlineStyles.iconSort} />
-          ) : (
-            <ArrowDropUp style={inlineStyles.iconSort} />
-          )
-        ) : (
-          ''
-        )}
-      </div>
+        <QueryRenderer
+          query={groupsLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ props }) => (
+            <GroupsLines
+              data={props}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              initialLoading={props === null}
+            />
+          )}
+        />
+      </ListLines>
     );
   }
 
   render() {
-    const { classes } = this.props;
+    const {
+      view, sortBy, orderAsc, searchTerm,
+    } = this.state;
     const paginationOptions = {
-      orderBy: this.state.sortBy,
-      orderMode: this.state.orderAsc ? 'asc' : 'desc',
+      search: searchTerm,
+      orderBy: sortBy,
+      orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
       <div>
-        <List classes={{ root: classes.linesContainer }}>
-          <ListItem
-            classes={{ root: classes.item }}
-            divider={false}
-            style={{ paddingTop: 0 }}
-          >
-            <ListItemIcon>
-              <span
-                style={{
-                  padding: '0 8px 0 8px',
-                  fontWeight: 700,
-                  fontSize: 12,
-                }}
-              >
-                #
-              </span>
-            </ListItemIcon>
-            <ListItemText
-              primary={
-                <div>
-                  {this.SortHeader('name', 'Name')}
-                  {this.SortHeader('created_at', 'Creation date')}
-                  {this.SortHeader('updated_at', 'Modification date')}
-                </div>
-              }
-            />
-          </ListItem>
-          <QueryRenderer
-            query={groupsLinesQuery}
-            variables={{ count: 25, ...paginationOptions }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <GroupsLines
-                    data={props}
-                    paginationOptions={paginationOptions}
-                  />
-                );
-              }
-              return <GroupsLines data={null} dummy={true} />;
-            }}
-          />
-        </List>
+        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <GroupCreation paginationOptions={paginationOptions} />
       </div>
     );
@@ -148,12 +107,8 @@ class Groups extends Component {
 }
 
 Groups.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Groups);
+export default compose(inject18n)(Groups);

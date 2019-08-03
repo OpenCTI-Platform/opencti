@@ -2,40 +2,13 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
-import SectorsCards, {
-  sectorsCardsQuery,
-} from './sectors/SectorsCards';
-import SectorsLines, {
-  sectorsLinesQuery,
-} from './sectors/SectorsLines';
+import SectorsCards, { sectorsCardsQuery } from './sectors/SectorsCards';
+import SectorsLines, { sectorsLinesQuery } from './sectors/SectorsLines';
 import SectorCreation from './sectors/SectorCreation';
-
-const styles = () => ({
-  header: {
-    margin: '0 0 10px 0',
-  },
-  linesContainer: {
-    marginTop: 0,
-    paddingTop: 0,
-  },
-  item: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-  },
-  inputLabel: {
-    float: 'left',
-  },
-  sortIcon: {
-    float: 'left',
-    margin: '-5px 0 0 15px',
-  },
-});
 
 export const sectorsSearchQuery = graphql`
   query SectorsSearchQuery($search: String) {
@@ -176,12 +149,8 @@ class Sectors extends Component {
 }
 
 Sectors.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Sectors);
+export default compose(inject18n)(Sectors);
