@@ -30,7 +30,7 @@ Download and extract the latest release file.
 
 ```bash
 $ mkdir /path/to/your/app && cd /path/to/your/app
-$ wget https://github.com/OpenCTI-Platform/opencti/releases/download/{RELEASE_VERSION}/opencti-release.tar.gz
+$ wget https://github.com/OpenCTI-Platform/opencti/releases/download/1.1.0/opencti-release.tar.gz
 $ tar xvfz opencti-release.tar.gz
 ```
 
