@@ -95,7 +95,7 @@ class OrganizationHeaderComponent extends Component {
       t, classes, variant, organization,
     } = this.props;
     return (
-      <div>
+      <div style={{ paddingRight: variant === 'rightNav' ? 260 : 0 }}>
         <Typography
           variant="h1"
           gutterBottom={true}

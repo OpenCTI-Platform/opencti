@@ -29,8 +29,12 @@ const styles = () => ({
     float: 'right',
   },
   linesContainer: {
-    marginTop: 10,
-    paddingTop: 0,
+    margin: '10px 0 0 0',
+    padding: 0,
+  },
+  linesContainerBottomNav: {
+    margin: '10px 0 90px 0',
+    padding: 0,
   },
   item: {
     paddingLeft: 10,
@@ -100,6 +104,7 @@ class ListLines extends Component {
       dataColumns,
       displayImport,
       secondaryAction,
+      bottomNav,
       children,
     } = this.props;
     return (
@@ -141,7 +146,13 @@ class ListLines extends Component {
           </div>
         </div>
         <div className="clearfix" />
-        <List classes={{ root: classes.linesContainer }}>
+        <List
+          classes={{
+            root: bottomNav
+              ? classes.linesContainerBottomNav
+              : classes.linesContainer,
+          }}
+        >
           <ListItem
             classes={{ root: classes.item }}
             divider={false}
@@ -197,6 +208,7 @@ ListLines.propTypes = {
   orderAsc: PropTypes.bool.isRequired,
   dataColumns: PropTypes.object.isRequired,
   secondaryAction: PropTypes.bool,
+  bottomNav: PropTypes.bool,
 };
 
 export default compose(

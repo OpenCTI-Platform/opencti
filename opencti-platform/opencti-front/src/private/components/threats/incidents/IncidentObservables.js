@@ -36,15 +36,13 @@ class IncidentObservablesComponent extends Component {
       <div
         className={
           location.pathname.includes(
-            `/dashboard/threats/incidents/${
-              incident.id
-            }/observables/relations/`,
+            `/dashboard/threats/incidents/${incident.id}/observables/relations/`,
           )
             ? classes.containerWithoutPadding
             : classes.container
         }
       >
-        <IncidentHeader incident={incident} variant="noalias" />
+        <IncidentHeader incident={incident} />
         <Route
           exact
           path="/dashboard/threats/incidents/:incidentId/observables/relations/:relationId"

@@ -30,10 +30,7 @@ import EntityPortFactory from '../../../../components/graph_node/EntityPortFacto
 import { stixRelationEditionFocus } from './StixRelationEditionOverview';
 import StixRelationInferences from './StixRelationInferences';
 
-const observableParentTypes = [
-  'Stix-Observable',
-  'File',
-];
+const observableParentTypes = ['Stix-Observable', 'File'];
 
 const styles = () => ({
   container: {
@@ -180,10 +177,14 @@ class StixRelationContainer extends Component {
       : stixRelation.fromRole;
     const to = linkedEntity.id === entityId ? stixRelation.from : stixRelation.to;
     const linkTo = resolveLink(
-      includes(to.parent_type, observableParentTypes) ? 'observable' : to.entity_type,
+      includes(to.parent_type, observableParentTypes)
+        ? 'observable'
+        : to.entity_type,
     );
     const linkFrom = resolveLink(
-      includes(from.parent_type, observableParentTypes) ? 'observable' : from.entity_type,
+      includes(from.parent_type, observableParentTypes)
+        ? 'observable'
+        : from.entity_type,
     );
 
     return (
@@ -247,7 +248,10 @@ class StixRelationContainer extends Component {
             {stixRelation.relationship_type === 'indicates'
             && !stixRelation.inferred ? (
               <span>
-                <br /> {stixRelation.role_played ? t(stixRelation.role_played) : t('Unknown')}
+                <br />{' '}
+                {stixRelation.role_played
+                  ? t(stixRelation.role_played)
+                  : t('Unknown')}
               </span>
               ) : (
                 ''

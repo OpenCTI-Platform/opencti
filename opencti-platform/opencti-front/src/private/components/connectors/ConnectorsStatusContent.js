@@ -118,7 +118,9 @@ class ConnectorsStatusComponent extends Component {
   }
 
   render() {
-    const { classes, t, n, data } = this.props;
+    const {
+      classes, t, n, data,
+    } = this.props;
     const sort = sortWith([
       descend(path(['arguments', 'config', 'confidence_level'])),
     ]);
@@ -137,14 +139,22 @@ class ConnectorsStatusComponent extends Component {
       <div>
         <Grid container={true} spacing={2} style={{ paddingBottom: 0 }}>
           <Grid item={true} lg={3} xs={5} style={{ paddingBottom: 28 }}>
-            <Card raised={true} classes={{ root: classes.card }} style={{ maxHeight: '100vh', height: '100%' }}>
+            <Card
+              raised={true}
+              classes={{ root: classes.card }}
+              style={{ maxHeight: '100vh', height: '100%' }}
+            >
               <CardHeader
                 avatar={<MultilineChart className={classes.icon} />}
                 title={t('Global statistics')}
                 style={{ paddingBottom: 0 }}
               />
               <CardContent style={{ paddingTop: 0, height: '100%' }}>
-                <Grid container={true} spacing={2} style={{ paddingBottom: 0, height: '100%' }}>
+                <Grid
+                  container={true}
+                  spacing={2}
+                  style={{ paddingBottom: 0, height: '100%' }}
+                >
                   <Grid item={true} lg={12} xs={12} style={{ height: '25%' }}>
                     <div className={classes.metric}>
                       <div className={classes.number}>
@@ -183,7 +193,9 @@ class ConnectorsStatusComponent extends Component {
                   <Grid item={true} lg={12} xs={12} style={{ height: '25%' }}>
                     <div className={classes.metric}>
                       <div className={classes.number}>
-                        {n(pathOr(0, ['message_stats', 'ack'], overviewMetrics))}
+                        {n(
+                          pathOr(0, ['message_stats', 'ack'], overviewMetrics),
+                        )}
                       </div>
                       <div className={classes.title}>
                         {t('Total processed messages')}
@@ -267,7 +279,9 @@ class ConnectorsStatusComponent extends Component {
                         <Grid item={true} lg={3} xs={6}>
                           <div className={classes.metric}>
                             <div className={classes.number}>
-                              {n(pathOr(0, ['message_stats', 'ack'], queueMetric))}
+                              {n(
+                                pathOr(0, ['message_stats', 'ack'], queueMetric),
+                              )}
                             </div>
                             <div className={classes.title}>
                               {t('Total processed messages')}

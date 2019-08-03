@@ -130,9 +130,7 @@ class StixDomainEntitiesImportData extends Component {
                 onChange={this.handleChangeType.bind(this)}
                 value={this.state.type}
               >
-                <MenuItem value="stix2bundle">
-                  {t('STIX2 bundle')}
-                </MenuItem>
+                <MenuItem value="stix2bundle">{t('STIX2 bundle')}</MenuItem>
               </Select>
             </FormControl>
             <input

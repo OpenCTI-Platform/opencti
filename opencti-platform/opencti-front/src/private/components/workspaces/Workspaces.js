@@ -41,12 +41,12 @@ class Workspaces extends Component {
     };
   }
 
-  handleSearch(value) {
-    this.setState({ searchTerm: value });
-  }
-
   handleSort(field, orderAsc) {
     this.setState({ sortBy: field, orderAsc });
+  }
+
+  handleSearch(value) {
+    this.setState({ searchTerm: value });
   }
 
   renderLines(paginationOptions) {

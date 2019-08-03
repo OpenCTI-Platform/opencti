@@ -5,7 +5,9 @@ import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
-import KillChainPhasesLines, { killChainPhasesLinesQuery } from './kill_chain_phases/KillChainPhasesLines';
+import KillChainPhasesLines, {
+  killChainPhasesLinesQuery,
+} from './kill_chain_phases/KillChainPhasesLines';
 import KillChainPhaseCreation from './kill_chain_phases/KillChainPhaseCreation';
 
 export const killChainPhasesSearchQuery = graphql`

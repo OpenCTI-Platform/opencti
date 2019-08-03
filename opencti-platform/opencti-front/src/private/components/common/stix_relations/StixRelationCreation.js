@@ -19,7 +19,10 @@ import { fetchQuery, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
-import { resolveRoles, resolveRelationsTypes } from '../../../../utils/Relation';
+import {
+  resolveRoles,
+  resolveRelationsTypes,
+} from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import Select from '../../../../components/Select';

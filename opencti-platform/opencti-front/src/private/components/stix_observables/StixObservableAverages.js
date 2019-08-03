@@ -27,8 +27,7 @@ class StixObservableAveragesComponent extends Component {
     } = this.props;
     const scores = stixObservable.stixRelations.edges.map(n => n.node.score);
     const expirations = stixObservable.stixRelations.edges.map(n => moment(n.node.expiration));
-    const weights = stixObservable.stixRelations.edges.map(n => n.node.weight
-    );
+    const weights = stixObservable.stixRelations.edges.map(n => n.node.weight);
     const minExpiration = moment.min(expirations);
     return (
       <div style={{ height: '100%' }}>

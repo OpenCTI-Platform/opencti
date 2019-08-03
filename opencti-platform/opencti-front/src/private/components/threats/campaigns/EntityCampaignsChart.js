@@ -93,7 +93,9 @@ class EntityCampaignsChart extends Component {
   }
 
   renderContent() {
-    const { t, md, entityId, variant } = this.props;
+    const {
+      t, md, entityId, variant,
+    } = this.props;
     const campaignsTimeSeriesVariables = {
       objectId: entityId,
       field: 'first_seen',
@@ -109,7 +111,10 @@ class EntityCampaignsChart extends Component {
         render={({ props }) => {
           if (props && props.campaignsTimeSeries) {
             return (
-              <ResponsiveContainer height={variant === 'explore' ? '90%' : 330} width="100%">
+              <ResponsiveContainer
+                height={variant === 'explore' ? '90%' : 330}
+                width="100%"
+              >
                 <LineChart
                   data={props.campaignsTimeSeries}
                   margin={{

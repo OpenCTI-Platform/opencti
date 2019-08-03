@@ -21,9 +21,7 @@ class Root extends Component {
         <BoundaryRoute
           exact
           path="/dashboard/threats"
-          render={() => (
-            <Redirect to="/dashboard/threats/threat_actors" />
-          )}
+          render={() => <Redirect to="/dashboard/threats/threat_actors" />}
         />
         <BoundaryRoute
           exact
@@ -32,9 +30,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/threats/threat_actors/:threatActorId"
-          render={routeProps => (
-            <RootThreatActor {...routeProps} me={me} />
-          )}
+          render={routeProps => <RootThreatActor {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
@@ -43,9 +39,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/threats/intrusion_sets/:intrusionSetId"
-          render={routeProps => (
-            <RootIntrusionSet {...routeProps} me={me} />
-          )}
+          render={routeProps => <RootIntrusionSet {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact

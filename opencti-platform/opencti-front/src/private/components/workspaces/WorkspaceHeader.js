@@ -44,7 +44,10 @@ class WorkspaceHeaderComponent extends Component {
           {workspace.name}
         </Typography>
         <div className={classes.popover}>
-          <WorkspacePopover workspaceId={workspace.id} workspaceType={workspace.workspace_type} />
+          <WorkspacePopover
+            workspaceId={workspace.id}
+            workspaceType={workspace.workspace_type}
+          />
         </div>
         <div className={classes.marking}>
           {pathOr([], ['markingDefinitions', 'edges'], workspace).map(

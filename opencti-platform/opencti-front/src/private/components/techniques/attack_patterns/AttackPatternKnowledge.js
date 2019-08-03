@@ -15,9 +15,7 @@ import AttackPatternKnowledgeBar from './AttackPatternKnowledgeBar';
 const styles = () => ({
   container: {
     margin: 0,
-  },
-  content: {
-    paddingRight: 260,
+    padding: '0 260px 0 0',
   },
 });
 
@@ -26,103 +24,99 @@ const inversedRoles = ['usage'];
 class AttackPatternKnowledgeComponent extends Component {
   render() {
     const { classes, attackPattern } = this.props;
-    const link = `/dashboard/techniques/attack_patterns/${
-      attackPattern.id
-    }/knowledge`;
+    const link = `/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <AttackPatternHeader attackPattern={attackPattern} variant="noalias" />
+        <AttackPatternHeader attackPattern={attackPattern} />
         <AttackPatternKnowledgeBar attackPatternId={attackPattern.id} />
-        <div className={classes.content}>
-          <Route
-            exact
-            path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/relations/:relationId"
-            render={routeProps => (
-              <StixRelation
-                entityId={attackPattern.id}
-                inversedRoles={inversedRoles}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/overview"
-            render={routeProps => (
-              <StixDomainEntityKnowledge
-                stixDomainEntityId={attackPattern.id}
-                stixDomainEntityType='attack-pattern'
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/intrusion_sets"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={attackPattern.id}
-                relationType="uses"
-                targetEntityTypes={['Intrusion-Set']}
-                entityLink={link}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/campaigns"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={attackPattern.id}
-                relationType="uses"
-                targetEntityTypes={['Campaign']}
-                entityLink={link}
-                {...routeProps}
-              />
-            )}
-          />
+        <Route
+          exact
+          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/relations/:relationId"
+          render={routeProps => (
+            <StixRelation
+              entityId={attackPattern.id}
+              inversedRoles={inversedRoles}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/overview"
+          render={routeProps => (
+            <StixDomainEntityKnowledge
+              stixDomainEntityId={attackPattern.id}
+              stixDomainEntityType="attack-pattern"
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/intrusion_sets"
+          render={routeProps => (
+            <EntityStixRelations
+              entityId={attackPattern.id}
+              relationType="uses"
+              targetEntityTypes={['Intrusion-Set']}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/campaigns"
+          render={routeProps => (
+            <EntityStixRelations
+              entityId={attackPattern.id}
+              relationType="uses"
+              targetEntityTypes={['Campaign']}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
 
-          <Route
-            exact
-            path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/incidents"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={attackPattern.id}
-                relationType="uses"
-                targetEntityTypes={['Incident']}
-                entityLink={link}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/malwares"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={attackPattern.id}
-                relationType="uses"
-                targetEntityTypes={['Malware']}
-                entityLink={link}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/tools"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={attackPattern.id}
-                relationType="uses"
-                targetEntityTypes={['Tools']}
-                entityLink={link}
-                {...routeProps}
-              />
-            )}
-          />
-        </div>
+        <Route
+          exact
+          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/incidents"
+          render={routeProps => (
+            <EntityStixRelations
+              entityId={attackPattern.id}
+              relationType="uses"
+              targetEntityTypes={['Incident']}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/malwares"
+          render={routeProps => (
+            <EntityStixRelations
+              entityId={attackPattern.id}
+              relationType="uses"
+              targetEntityTypes={['Malware']}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/tools"
+          render={routeProps => (
+            <EntityStixRelations
+              entityId={attackPattern.id}
+              relationType="uses"
+              targetEntityTypes={['Tools']}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
       </div>
     );
   }

@@ -17,5 +17,8 @@ export const numberFormat = (number, digits = 2) => {
       break;
     }
   }
-  return { number: (number / si[i].value).toFixed(digits).replace(rx, '$1'), symbol: si[i].symbol };
+  return {
+    number: (number / si[i].value).toFixed(digits).replace(rx, '$1'),
+    symbol: si[i].symbol,
+  };
 };

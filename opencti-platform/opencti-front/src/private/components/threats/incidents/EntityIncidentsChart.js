@@ -47,12 +47,12 @@ const styles = () => ({
 
 const entityIncidentsChartIncidentsTimeSeriesQuery = graphql`
   query EntityIncidentsChartIncidentsTimeSeriesQuery(
-  $objectId: String
-  $field: String!
-  $operation: StatsOperation!
-  $startDate: DateTime!
-  $endDate: DateTime!
-  $interval: String!
+    $objectId: String
+    $field: String!
+    $operation: StatsOperation!
+    $startDate: DateTime!
+    $endDate: DateTime!
+    $interval: String!
   ) {
     incidentsTimeSeries(
       objectId: $objectId
@@ -93,7 +93,9 @@ class EntityIncidentsChart extends Component {
   }
 
   renderContent() {
-    const { t, md, entityId, variant } = this.props;
+    const {
+      t, md, entityId, variant,
+    } = this.props;
     const incidentsTimeSeriesVariables = {
       objectId: entityId,
       field: 'first_seen',
@@ -109,7 +111,10 @@ class EntityIncidentsChart extends Component {
         render={({ props }) => {
           if (props && props.incidentsTimeSeries) {
             return (
-              <ResponsiveContainer height={variant === 'explore' ? '90%' : 330} width="100%">
+              <ResponsiveContainer
+                height={variant === 'explore' ? '90%' : 330}
+                width="100%"
+              >
                 <LineChart
                   data={props.incidentsTimeSeries}
                   margin={{

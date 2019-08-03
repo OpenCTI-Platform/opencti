@@ -63,14 +63,20 @@ class RootWorkspace extends Component {
                     exact
                     path="/dashboard/explore/:workspaceId"
                     render={routeProps => (
-                      <WorkspaceExplore {...routeProps} workspace={props.workspace} />
+                      <WorkspaceExplore
+                        {...routeProps}
+                        workspace={props.workspace}
+                      />
                     )}
                   />
                   <Route
                     exact
                     path="/dashboard/investigate/:workspaceId"
                     render={routeProps => (
-                      <WorkspaceExplore {...routeProps} workspace={props.workspace} />
+                      <WorkspaceExplore
+                        {...routeProps}
+                        workspace={props.workspace}
+                      />
                     )}
                   />
                 </div>

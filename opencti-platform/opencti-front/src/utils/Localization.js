@@ -65,7 +65,8 @@ const i18n = {
         'Souhaitez-vous supprimer cet observable ?',
       'Do you want to remove the entity from this report?':
         'Souhaitez-vous retirer cette entité de ce rapport ?',
-      'Do you want to delete this attribute?': 'Souhaitez-vous supprimer cet attribut ?',
+      'Do you want to delete this attribute?':
+        'Souhaitez-vous supprimer cet attribut ?',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
       'Last observables': 'Derniers observables',
@@ -105,7 +106,8 @@ const i18n = {
       'This person is now a user':
         'Cette personne est maintenant un utilisateur',
       'This field is required': 'Ce champ est requis',
-      'This field must only contain alphanumeric chars, dashes and space': 'Ce champ ne peut contenir que des caractères alphanumériques, des tirets et des espaces',
+      'This field must only contain alphanumeric chars, dashes and space':
+        'Ce champ ne peut contenir que des caractères alphanumériques, des tirets et des espaces',
       'The value is too short': 'La valeur est trop courte',
       'The value is too long': 'La valeur est trop longue',
       'The value must be a number': 'La valeur doit être un nombre',
@@ -180,7 +182,8 @@ const i18n = {
       'Settings have been updated': 'Les paramètres ont été mis à jour',
       'Export the entity': "Exporter l'entité",
       'Display demo credentials': 'Afficher les identifiants de démo',
-      'No connectors are enabled on this platform.': "Aucun connecteur n'est actif sur cette plateforme",
+      'No connectors are enabled on this platform.':
+        "Aucun connecteur n'est actif sur cette plateforme",
       // Menu
       Dashboard: 'Tableau de bord',
       Visualization: 'Visualisation',
@@ -458,7 +461,8 @@ const i18n = {
       '[Campaigns] Timeseries': '[Campagnes] Séries temporelles',
       '[Incidents] Timeseries': '[Incidents] Séries temporelles',
       '[TTPs] Distribution': '[TTPs] Répartition',
-      '[Killchain] Tactics and procedures': '[Killchain] Tactiques et procédures',
+      '[Killchain] Tactics and procedures':
+        '[Killchain] Tactiques et procédures',
       'No widget in this workspace': 'Aucun widget dans cet espace de travail',
       'Averages of context relations': 'Moyennes des relations de contexte',
       Score: 'Score',
@@ -481,7 +485,7 @@ const i18n = {
       'Line chart': 'Graphique linéaire',
       Timeline: 'Chronologie',
       'Total pending inserts': "Nombre d'insertions en attente",
-      'Context relations with threats': 'Relations de contexte avec des menaces',
+      'Context relations': 'Relations de contexte',
       'Direct relations creations': 'Créations de relations directes',
       'Number of target relations': 'Nombre de relations de ciblage',
       'Total entities': "Nombre d'entités",
@@ -526,7 +530,8 @@ const i18n = {
       'Targeted entities types': "Types d'entités ciblées",
       'Targeted entities through time': "Ciblages d'entités à travers le temps",
       'Number of targeting': 'Nombre de ciblages',
-      'Related entities (generic relation "related-to")': 'Entités liées (relation générique "lié à")',
+      'Related entities (generic relation "related-to")':
+        'Entités liées (relation générique "lié à")',
       Platforms: "Systèmes d'exploitation",
       Platform: "Système d'exploitation",
       'Required permissions': 'Permissions requises',

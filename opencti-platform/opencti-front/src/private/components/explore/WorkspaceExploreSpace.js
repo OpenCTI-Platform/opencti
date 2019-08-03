@@ -107,11 +107,7 @@ class WorkspaceExploreSpaceComponent extends Component {
     const workspaceData = this.decodeWorkspaceData();
     const finalWorkspaceData = assoc(
       'widgets',
-      assoc(
-        newValues.id,
-        newValues,
-        workspaceData.widgets,
-      ),
+      assoc(newValues.id, newValues, workspaceData.widgets),
       workspaceData,
     );
     this.saveWorkspace(finalWorkspaceData);

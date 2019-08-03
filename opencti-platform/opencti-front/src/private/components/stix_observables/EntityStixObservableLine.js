@@ -146,7 +146,7 @@ const EntityStixObservableLineFragment = createFragmentContainer(
         description
         inferred
         to {
-          ...on StixObservable {
+          ... on StixObservable {
             id
             entity_type
             observable_value

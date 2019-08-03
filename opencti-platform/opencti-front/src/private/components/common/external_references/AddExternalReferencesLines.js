@@ -184,9 +184,7 @@ class AddExternalReferencesLinesContainer extends Component {
                 )}
               </ListItemIcon>
               <ListItemText
-                primary={`${
-                  externalReference.source_name
-                } ${externalReferenceId}`}
+                primary={`${externalReference.source_name} ${externalReferenceId}`}
                 secondary={truncate(
                   externalReference.description !== null
                     && externalReference.description.length > 0

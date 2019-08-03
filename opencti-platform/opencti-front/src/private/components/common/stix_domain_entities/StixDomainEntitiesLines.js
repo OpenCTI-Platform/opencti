@@ -184,9 +184,9 @@ class StixDomainEntitiesContainer extends Component {
       );
     }
     return (
-        <div className={classes.noResult}>
-         {t('No entities were found for this search.')}
-        </div>
+      <div className={classes.noResult}>
+        {t('No entities were found for this search.')}
+      </div>
     );
   }
 }

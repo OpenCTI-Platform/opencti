@@ -45,10 +45,11 @@ const styles = theme => ({
   },
 });
 
-
 class SectorLineComponent extends Component {
   render() {
-    const { fd, classes, dataColumns, node } = this.props;
+    const {
+      fd, classes, dataColumns, node,
+    } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}

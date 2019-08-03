@@ -5,7 +5,9 @@ import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
-import ExternalReferencesLines, { externalReferencesLinesQuery } from './ExternalReferencesLines';
+import ExternalReferencesLines, {
+  externalReferencesLinesQuery,
+} from './ExternalReferencesLines';
 import ExternalReferenceCreation from './ExternalReferenceCreation';
 
 const styles = () => ({

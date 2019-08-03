@@ -31,22 +31,18 @@ const styles = () => ({
 class ThreatActorObservablesComponent extends Component {
   render() {
     const { classes, threatActor, location } = this.props;
-    const link = `/dashboard/threats/threat_actors/${
-      threatActor.id
-    }/observables`;
+    const link = `/dashboard/threats/threat_actors/${threatActor.id}/observables`;
     return (
       <div
         className={
           location.pathname.includes(
-            `/dashboard/threats/threat_actors/${
-              threatActor.id
-            }/observables/relations/`,
+            `/dashboard/threats/threat_actors/${threatActor.id}/observables/relations/`,
           )
             ? classes.containerWithoutPadding
             : classes.container
         }
       >
-        <ThreatActorHeader threatActor={threatActor} variant="noalias" />
+        <ThreatActorHeader threatActor={threatActor} />
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/observables/relations/:relationId"

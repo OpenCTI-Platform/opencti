@@ -49,7 +49,12 @@ const styles = theme => ({
 class PersonLineComponent extends Component {
   render() {
     const {
-      fd, classes, dataColumns, node, me, paginationOptions,
+      fd,
+      classes,
+      dataColumns,
+      node,
+      me,
+      paginationOptions,
     } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>

@@ -21,9 +21,7 @@ class Root extends Component {
         <BoundaryRoute
           exact
           path="/dashboard/entities"
-          render={() => (
-            <Redirect to="/dashboard/entities/sectors" />
-          )}
+          render={() => <Redirect to="/dashboard/entities/sectors" />}
         />
         <BoundaryRoute
           exact
@@ -32,9 +30,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/entities/sectors/:sectorId"
-          render={routeProps => (
-            <RootSector {...routeProps} me={me} />
-          )}
+          render={routeProps => <RootSector {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
@@ -43,9 +39,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/entities/regions/:regionId"
-          render={routeProps => (
-            <RootRegion {...routeProps} me={me} />
-          )}
+          render={routeProps => <RootRegion {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
@@ -54,9 +48,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/entities/countries/:countryId"
-          render={routeProps => (
-            <RootCountry {...routeProps} me={me} />
-          )}
+          render={routeProps => <RootCountry {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
@@ -70,9 +62,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/entities/organizations/:organizationId"
-          render={routeProps => (
-            <RootOrganization {...routeProps} me={me} />
-          )}
+          render={routeProps => <RootOrganization {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact

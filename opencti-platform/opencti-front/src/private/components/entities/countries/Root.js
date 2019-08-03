@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Redirect, withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
+import {
+  QueryRenderer,
+  requestSubscription,
+} from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Country from './Country';
 import CountryReports from './CountryReports';

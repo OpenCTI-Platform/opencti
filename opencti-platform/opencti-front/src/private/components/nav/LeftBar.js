@@ -10,7 +10,6 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
-import logo from '../../../resources/images/logo_text.png';
 import {
   Dashboard,
   Explore,
@@ -27,6 +26,7 @@ import { Settings, Database, Binoculars } from 'mdi-material-ui';
 import { compose, includes, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
+import logo from '../../../resources/images/logo_text.png';
 import inject18n from '../../../components/i18n';
 
 const styles = theme => ({

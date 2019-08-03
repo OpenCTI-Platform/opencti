@@ -32,7 +32,11 @@ class OrganizationOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Organization type')}
           </Typography>
-          {t(organization.organization_class ? `organization_${organization.organization_class}` : 'organization_other')}
+          {t(
+            organization.organization_class
+              ? `organization_${organization.organization_class}`
+              : 'organization_other',
+          )}
           <Typography
             variant="h3"
             gutterBottom={true}

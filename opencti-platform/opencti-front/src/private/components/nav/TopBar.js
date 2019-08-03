@@ -175,13 +175,11 @@ class TopBar extends Component {
               ) : (
                 ''
               )}
-            {location.pathname.includes(
-              '/dashboard/threats/threat_actors/',
-            ) ? (
+            {location.pathname.includes('/dashboard/threats/threat_actors/') ? (
               <TopMenuThreatActor />
-              ) : (
-                ''
-              )}
+            ) : (
+              ''
+            )}
             {location.pathname.includes(
               '/dashboard/threats/intrusion_sets/',
             ) ? (

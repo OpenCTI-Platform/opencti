@@ -26,21 +26,23 @@ const organizationTypesForAuthorMode = ['vendor', 'csirt', 'partner'];
 class OrganizationReportsComponent extends Component {
   render() {
     const { classes, organization } = this.props;
-    if (contains(organization.organization_class, organizationTypesForAuthorMode)) {
+    if (
+      contains(organization.organization_class, organizationTypesForAuthorMode)
+    ) {
       return (
         <div className={classes.container}>
-          <OrganizationHeader organization={organization}/>
+          <OrganizationHeader organization={organization} />
           <Paper classes={{ root: classes.paper }} elevation={2}>
-            <Reports authorId={organization.id}/>
+            <Reports authorId={organization.id} />
           </Paper>
         </div>
       );
     }
     return (
       <div className={classes.container}>
-        <OrganizationHeader organization={organization}/>
+        <OrganizationHeader organization={organization} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Reports pbjectId={organization.id}/>
+          <Reports pbjectId={organization.id} />
         </Paper>
       </div>
     );

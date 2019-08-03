@@ -5,7 +5,9 @@ import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
-import MarkingDefinitionsLines, { markingDefinitionsLinesQuery } from './marking_definitions/MarkingDefinitionsLines';
+import MarkingDefinitionsLines, {
+  markingDefinitionsLinesQuery,
+} from './marking_definitions/MarkingDefinitionsLines';
 import MarkingDefinitionCreation from './marking_definitions/MarkingDefinitionCreation';
 
 export const markingDefinitionsSearchQuery = graphql`

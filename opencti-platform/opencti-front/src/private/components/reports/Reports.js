@@ -107,7 +107,11 @@ class Reports extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        {displayCreate === true ? <ReportCreation paginationOptions={paginationOptions} /> : ''}
+        {displayCreate === true ? (
+          <ReportCreation paginationOptions={paginationOptions} />
+        ) : (
+          ''
+        )}
       </div>
     );
   }

@@ -45,7 +45,6 @@ const styles = theme => ({
   },
 });
 
-
 class CountryLineComponent extends Component {
   render() {
     const {

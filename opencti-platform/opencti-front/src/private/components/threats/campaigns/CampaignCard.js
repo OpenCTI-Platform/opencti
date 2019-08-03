@@ -84,9 +84,7 @@ class CampaignCardComponent extends Component {
           <CardHeader
             classes={{ root: classes.header }}
             avatar={
-              <Avatar className={classes.avatar}>
-                {node.name.charAt(0)}
-              </Avatar>
+              <Avatar className={classes.avatar}>{node.name.charAt(0)}</Avatar>
             }
             title={node.name}
             subheader={`${t('Updated the')} ${fsd(node.modified)}`}

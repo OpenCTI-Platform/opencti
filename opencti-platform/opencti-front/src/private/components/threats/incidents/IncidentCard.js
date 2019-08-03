@@ -90,9 +90,7 @@ class IncidentCardComponent extends Component {
           <CardHeader
             classes={{ root: classes.header }}
             avatar={
-              <Avatar className={classes.avatar}>
-                {node.name.charAt(0)}
-              </Avatar>
+              <Avatar className={classes.avatar}>{node.name.charAt(0)}</Avatar>
             }
             title={truncate(node.name, 50)}
             subheader={`${t('Updated the')} ${fsd(node.modified)}`}

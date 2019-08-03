@@ -18,13 +18,13 @@ class IncidentsTimeseries extends Component {
     switch (configuration.graph_type) {
       case 'table':
         return (
-            <EntityIncidentsTableTime
-              variant="explore"
-              configuration={configuration}
-              handleOpenConfig={handleOpenConfig.bind(this)}
-              title={propOr('Widget', 'title', configuration)}
-              entityId={pathOr(null, ['entity', 'id'], configuration)}
-            />
+          <EntityIncidentsTableTime
+            variant="explore"
+            configuration={configuration}
+            handleOpenConfig={handleOpenConfig.bind(this)}
+            title={propOr('Widget', 'title', configuration)}
+            entityId={pathOr(null, ['entity', 'id'], configuration)}
+          />
         );
       case 'line':
         return (
@@ -38,13 +38,13 @@ class IncidentsTimeseries extends Component {
         );
       default:
         return (
-            <EntityIncidentsChart
-              variant="explore"
-              configuration={configuration}
-              handleOpenConfig={handleOpenConfig.bind(this)}
-              title={propOr('Widget', 'title', configuration)}
-              entityId={pathOr(null, ['entity', 'id'], configuration)}
-            />
+          <EntityIncidentsChart
+            variant="explore"
+            configuration={configuration}
+            handleOpenConfig={handleOpenConfig.bind(this)}
+            title={propOr('Widget', 'title', configuration)}
+            entityId={pathOr(null, ['entity', 'id'], configuration)}
+          />
         );
     }
   }

@@ -15,9 +15,7 @@ import IncidentKnowledgeBar from './IncidentKnowledgeBar';
 const styles = () => ({
   container: {
     margin: 0,
-  },
-  content: {
-    paddingRight: 260,
+    padding: '0 260px 0 0',
   },
 });
 
@@ -29,142 +27,134 @@ class IncidentKnowledgeComponent extends Component {
     const link = `/dashboard/threats/incidents/${incident.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <IncidentHeader incident={incident} variant="noalias" />
+        <IncidentHeader incident={incident} />
         <IncidentKnowledgeBar incidentId={incident.id} />
-        <div className={classes.content}>
-          <Route
-            exact
-            path="/dashboard/threats/incidents/:incidentId/knowledge/relations/:relationId"
-            render={routeProps => (
-              <StixRelation
-                entityId={incident.id}
-                inversedRoles={inversedRoles}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/threats/incidents/:incidentId/knowledge/overview"
-            render={routeProps => (
-              <StixDomainEntityKnowledge
-                stixDomainEntityId={incident.id}
-                stixDomainEntityType='incident'
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/threats/incidents/:incidentId/knowledge/attribution"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={incident.id}
-                relationType="attributed-to"
-                targetEntityTypes={[
-                  'Threat-Actor',
-                  'Intrusion-Set',
-                  'Campaign',
-                ]}
-                entityLink={link}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/threats/incidents/:incidentId/knowledge/malwares"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={incident.id}
-                relationType="uses"
-                targetEntityTypes={['Malware']}
-                entityLink={link}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/threats/incidents/:incidentId/knowledge/victimology"
-            render={routeProps => (
-              <EntityStixRelations
-                resolveRelationType="attributed-to"
-                resolveRelationRole="origin"
-                resolveViaTypes={[
-                  {
-                    entityType: 'Organization',
-                    relationType: 'gathering',
-                    relationRole: 'part_of',
-                  },
-                  {
-                    entityType: 'Organization',
-                    relationType: 'localization',
-                    relationRole: 'localized',
-                  },
-                  {
-                    entityType: 'Country',
-                    relationType: 'localization',
-                    relationRole: 'localized',
-                  },
-                ]}
-                entityId={incident.id}
-                relationType="targets"
-                targetEntityTypes={[
-                  'Organization',
-                  'Sector',
-                  'Country',
-                  'Region',
-                ]}
-                entityLink={link}
-                exploreLink={`/dashboard/explore/victimology/${incident.id}`}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/threats/incidents/:incidentId/knowledge/ttp"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={incident.id}
-                relationType="uses"
-                targetEntityTypes={['Attack-Pattern']}
-                entityLink={link}
-                exploreLink={`/dashboard/explore/attack_patterns/${
-                  incident.id
-                }`}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/threats/incidents/:incidentId/knowledge/tools"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={incident.id}
-                relationType="uses"
-                targetEntityTypes={['Tool']}
-                entityLink={link}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/threats/incidents/:incidentId/knowledge/vulnerabilities"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={incident.id}
-                relationType="targets"
-                targetEntityTypes={['Vulnerability']}
-                entityLink={link}
-                {...routeProps}
-              />
-            )}
-          />
-        </div>
+        <Route
+          exact
+          path="/dashboard/threats/incidents/:incidentId/knowledge/relations/:relationId"
+          render={routeProps => (
+            <StixRelation
+              entityId={incident.id}
+              inversedRoles={inversedRoles}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/incidents/:incidentId/knowledge/overview"
+          render={routeProps => (
+            <StixDomainEntityKnowledge
+              stixDomainEntityId={incident.id}
+              stixDomainEntityType="incident"
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/incidents/:incidentId/knowledge/attribution"
+          render={routeProps => (
+            <EntityStixRelations
+              entityId={incident.id}
+              relationType="attributed-to"
+              targetEntityTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign']}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/incidents/:incidentId/knowledge/malwares"
+          render={routeProps => (
+            <EntityStixRelations
+              entityId={incident.id}
+              relationType="uses"
+              targetEntityTypes={['Malware']}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/incidents/:incidentId/knowledge/victimology"
+          render={routeProps => (
+            <EntityStixRelations
+              resolveRelationType="attributed-to"
+              resolveRelationRole="origin"
+              resolveViaTypes={[
+                {
+                  entityType: 'Organization',
+                  relationType: 'gathering',
+                  relationRole: 'part_of',
+                },
+                {
+                  entityType: 'Organization',
+                  relationType: 'localization',
+                  relationRole: 'localized',
+                },
+                {
+                  entityType: 'Country',
+                  relationType: 'localization',
+                  relationRole: 'localized',
+                },
+              ]}
+              entityId={incident.id}
+              relationType="targets"
+              targetEntityTypes={[
+                'Organization',
+                'Sector',
+                'Country',
+                'Region',
+              ]}
+              entityLink={link}
+              exploreLink={`/dashboard/explore/victimology/${incident.id}`}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/incidents/:incidentId/knowledge/ttp"
+          render={routeProps => (
+            <EntityStixRelations
+              entityId={incident.id}
+              relationType="uses"
+              targetEntityTypes={['Attack-Pattern']}
+              entityLink={link}
+              exploreLink={`/dashboard/explore/attack_patterns/${incident.id}`}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/incidents/:incidentId/knowledge/tools"
+          render={routeProps => (
+            <EntityStixRelations
+              entityId={incident.id}
+              relationType="uses"
+              targetEntityTypes={['Tool']}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/incidents/:incidentId/knowledge/vulnerabilities"
+          render={routeProps => (
+            <EntityStixRelations
+              entityId={incident.id}
+              relationType="targets"
+              targetEntityTypes={['Vulnerability']}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
       </div>
     );
   }

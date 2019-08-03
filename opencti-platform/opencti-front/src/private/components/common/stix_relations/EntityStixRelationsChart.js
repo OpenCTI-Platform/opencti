@@ -133,7 +133,10 @@ class EntityStixRelationsChart extends Component {
       toTypes: toTypes || null,
       field: field || 'first_seen',
       operation: 'count',
-      startDate: variant === 'explore' && startDate ? startDate : monthsAgo(this.state.period),
+      startDate:
+        variant === 'explore' && startDate
+          ? startDate
+          : monthsAgo(this.state.period),
       endDate: variant === 'explore' && endDate ? endDate : now(),
       interval: 'month',
       inferred,
@@ -150,7 +153,10 @@ class EntityStixRelationsChart extends Component {
         render={({ props }) => {
           if (props && props.stixRelationsTimeSeries) {
             return (
-              <ResponsiveContainer height={variant === 'explore' ? '90%' : 330} width="100%">
+              <ResponsiveContainer
+                height={variant === 'explore' ? '90%' : 330}
+                width="100%"
+              >
                 <AreaChart
                   data={props.stixRelationsTimeSeries}
                   margin={{
