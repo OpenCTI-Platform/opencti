@@ -12,7 +12,7 @@
     "migrate": "babel-node ./src/database/migration.js",
     "migrate:add": "migrate create",
     "lint": "eslint .",
-    "test": "yarn build && yarn schema --e test && jest --coverage --e test --testTimeout=15000",
+    "test": "yarn build && yarn schema --e test && jest --coverage --e test",
     "clean": "babel-node ./src/database/clean.js"
   },
   "bin": "./dist/server.js",
