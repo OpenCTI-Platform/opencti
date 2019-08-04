@@ -574,6 +574,7 @@ const ReportEditionOverview = createFragmentContainer(
           node {
             id
             name
+            entity_type
           }
           relation {
             id
