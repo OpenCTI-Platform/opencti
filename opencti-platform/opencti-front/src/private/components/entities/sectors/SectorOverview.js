@@ -83,7 +83,9 @@ const SectorOverview = createFragmentContainer(SectorOverviewComponent, {
       modified
       createdByRef {
         node {
+          id
           name
+          entity_type
         }
       }
     }

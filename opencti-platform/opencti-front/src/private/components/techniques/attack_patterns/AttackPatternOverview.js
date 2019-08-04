@@ -85,7 +85,9 @@ const AttackPatternOverview = createFragmentContainer(
         modified
         createdByRef {
           node {
+            id
             name
+            entity_type
           }
         }
       }

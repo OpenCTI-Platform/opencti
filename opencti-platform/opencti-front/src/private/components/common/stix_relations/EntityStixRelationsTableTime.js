@@ -68,6 +68,7 @@ const entityStixRelationsTableTimeStixRelationTimeSeriesQuery = graphql`
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
+    $inferred: Boolean
     $interval: String!
   ) {
     stixRelationsTimeSeries(
@@ -84,6 +85,7 @@ const entityStixRelationsTableTimeStixRelationTimeSeriesQuery = graphql`
       operation: $operation
       startDate: $startDate
       endDate: $endDate
+      inferred: $inferred
       interval: $interval
     ) {
       date
@@ -112,6 +114,7 @@ class EntityStixRelationsTableTime extends Component {
       entityId,
       startDate,
       endDate,
+      inferred = true,
       toTypes,
       relationType,
       resolveInferences,
@@ -135,6 +138,7 @@ class EntityStixRelationsTableTime extends Component {
       operation: 'count',
       startDate: finalStartDate,
       endDate: variant === 'explore' && endDate ? endDate : now(),
+      inferred,
       interval: this.state.interval,
       resolveInferences,
       resolveRelationType,
@@ -333,6 +337,7 @@ EntityStixRelationsTableTime.propTypes = {
   entityId: PropTypes.string,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
+  inferred: PropTypes.bool,
   relationType: PropTypes.string,
   resolveInferences: PropTypes.bool,
   resolveRelationType: PropTypes.string,

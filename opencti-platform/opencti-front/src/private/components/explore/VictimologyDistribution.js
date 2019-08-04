@@ -38,9 +38,17 @@ class VictimologyDistribution extends Component {
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}
-            resolveInferences={true}
-            resolveRelationType="attributed-to"
-            resolveRelationRole="origin"
+            resolveInferences={inferred}
+            resolveRelationType={
+              pathOr(null, ['entity', 'type'], configuration) === 'malware'
+                ? 'uses'
+                : 'attributed-to'
+            }
+            resolveRelationRole={
+              pathOr(null, ['entity', 'type'], configuration) === 'malware'
+                ? 'usage'
+                : 'origin'
+            }
             resolveViaTypes={[
               {
                 entityType: 'Organization',
@@ -64,9 +72,17 @@ class VictimologyDistribution extends Component {
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}
-            resolveInferences={true}
-            resolveRelationType="attributed-to"
-            resolveRelationRole="origin"
+            resolveInferences={inferred}
+            resolveRelationType={
+              pathOr(null, ['entity', 'type'], configuration) === 'malware'
+                ? 'uses'
+                : 'attributed-to'
+            }
+            resolveRelationRole={
+              pathOr(null, ['entity', 'type'], configuration) === 'malware'
+                ? 'usage'
+                : 'origin'
+            }
             resolveViaTypes={[
               {
                 entityType: 'Organization',
@@ -90,9 +106,17 @@ class VictimologyDistribution extends Component {
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}
-            resolveInferences={true}
-            resolveRelationType="attributed-to"
-            resolveRelationRole="origin"
+            resolveInferences={inferred}
+            resolveRelationType={
+              pathOr(null, ['entity', 'type'], configuration) === 'malware'
+                ? 'uses'
+                : 'attributed-to'
+            }
+            resolveRelationRole={
+              pathOr(null, ['entity', 'type'], configuration) === 'malware'
+                ? 'usage'
+                : 'origin'
+            }
             resolveViaTypes={[
               {
                 entityType: 'Organization',
@@ -116,9 +140,17 @@ class VictimologyDistribution extends Component {
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}
-            resolveInferences={true}
-            resolveRelationType="attributed-to"
-            resolveRelationRole="origin"
+            resolveInferences={inferred}
+            resolveRelationType={
+              pathOr(null, ['entity', 'type'], configuration) === 'malware'
+                ? 'uses'
+                : 'attributed-to'
+            }
+            resolveRelationRole={
+              pathOr(null, ['entity', 'type'], configuration) === 'malware'
+                ? 'usage'
+                : 'origin'
+            }
             resolveViaTypes={[
               {
                 entityType: 'Organization',

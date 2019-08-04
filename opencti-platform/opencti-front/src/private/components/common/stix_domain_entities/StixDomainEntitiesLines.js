@@ -227,6 +227,7 @@ export const stixDomainEntitiesLinesSearchQuery = graphql`
         node {
           id
           name
+          entity_type
         }
       }
     }

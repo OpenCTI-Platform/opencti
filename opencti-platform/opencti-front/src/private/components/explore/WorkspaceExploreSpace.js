@@ -165,7 +165,6 @@ class WorkspaceExploreSpaceComponent extends Component {
   render() {
     const { classes, t } = this.props;
     const workspaceData = this.decodeWorkspaceData();
-
     return (
       <div className={classes.container}>
         <Drawer

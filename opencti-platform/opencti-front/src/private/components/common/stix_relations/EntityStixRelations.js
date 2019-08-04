@@ -93,32 +93,32 @@ class EntityStixRelations extends Component {
 
   renderLines(paginationOptions) {
     const { sortBy, orderAsc } = this.state;
-    const { entityLink } = this.props;
+    const { entityLink, resolveRelationType } = this.props;
     const dataColumns = {
       name: {
         label: 'Name',
         width: '30%',
-        isSortable: true,
+        isSortable: false,
       },
       entity_type: {
         label: 'Entity type',
         width: '20%',
-        isSortable: true,
+        isSortable: false,
       },
       first_seen: {
         label: 'First obs.',
         width: '15%',
-        isSortable: this.state.resolveInferences,
+        isSortable: this.state.resolveInferences || !resolveRelationType,
       },
       last_seen: {
         label: 'Last obs.',
         width: '15%',
-        isSortable: this.state.resolveInferences,
+        isSortable: this.state.resolveInferences || !resolveRelationType,
       },
       weight: {
         label: 'Confidence level',
         width: '10%',
-        isSortable: this.state.resolveInferences,
+        isSortable: this.state.resolveInferences || !resolveRelationType,
       },
     };
     return (
@@ -187,7 +187,7 @@ class EntityStixRelations extends Component {
     };
 
     const displayTypes = targetEntityTypes.length > 1;
-    const displayInferences = resolveRelationType;
+    const displayInferences = !!resolveRelationType;
     const displayDetails = this.state.inferred
       && resolveRelationType
       && (this.state.toType !== 'All' || targetEntityTypes.length === 1);
