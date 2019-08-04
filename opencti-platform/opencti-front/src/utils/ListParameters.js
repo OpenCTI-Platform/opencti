@@ -1,8 +1,12 @@
-import { mergeLeft } from 'ramda';
+import { mergeLeft, dissoc } from 'ramda';
 
 export const saveParams = (history, location, localStorageKey, params) => {
-  localStorage.setItem(localStorageKey, JSON.stringify(params));
-  history.push(`${location.pathname}?${new URLSearchParams(params).toString()}`);
+  const localStorageParams = dissoc('search', params);
+  localStorage.setItem(localStorageKey, JSON.stringify(localStorageParams));
+  const urlParams = dissoc('view', params);
+  history.push(
+    `${location.pathname}?${new URLSearchParams(urlParams).toString()}`,
+  );
   return params;
 };
 
