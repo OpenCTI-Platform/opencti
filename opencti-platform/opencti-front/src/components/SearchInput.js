@@ -38,15 +38,25 @@ const styles = theme => ({
 class SearchInput extends Component {
   render() {
     const {
-      t, classes, onChange, onSubmit, variant, keyword, location
+      t,
+      classes,
+      onChange,
+      onSubmit,
+      variant,
+      keyword,
+      location,
     } = this.props;
     const queryParams = Object.fromEntries(
       new URLSearchParams(location.search.substring(1)),
     );
+    let finalKeyword = keyword;
+    if (variant === 'small') {
+      finalKeyword = keyword || propOr('', 'searchTerm', queryParams);
+    }
     return (
       <Input
         name="keyword"
-        defaultValue={keyword || propOr('', 'searchTerm', queryParams)}
+        defaultValue={finalKeyword}
         placeholder={`${t('Search')}...`}
         onChange={(event) => {
           const { value } = event.target;
