@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, propOr } from 'ramda';
+import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
+import { getParams, saveParams } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -16,24 +18,38 @@ import IncidentCreation from './incidents/IncidentCreation';
 class Incidents extends Component {
   constructor(props) {
     super(props);
+    const params = getParams(
+      props.history,
+      props.location,
+      'Incidents-view',
+    );
     this.state = {
-      sortBy: 'name',
-      orderAsc: true,
-      searchTerm: '',
-      view: 'cards',
+      sortBy: propOr('name', 'sortBy', params),
+      orderAsc: propOr(true, 'orderAsc', params),
+      searchTerm: propOr('', 'searchTerm', params),
+      view: propOr('lines', 'view', params),
     };
   }
 
+  saveView() {
+    saveParams(
+      this.props.history,
+      this.props.location,
+      'Incidents-view',
+      this.state,
+    );
+  }
+
   handleChangeView(mode) {
-    this.setState({ view: mode });
+    this.setState({ view: mode }, () => this.saveView());
   }
 
   handleSearch(value) {
-    this.setState({ searchTerm: value });
+    this.setState({ searchTerm: value }, () => this.saveView());
   }
 
   handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
   renderCards(paginationOptions) {
@@ -141,6 +157,10 @@ class Incidents extends Component {
 Incidents.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
+  location: PropTypes.object,
 };
 
-export default compose(inject18n)(Incidents);
+export default compose(
+  inject18n,
+  withRouter,
+)(Incidents);

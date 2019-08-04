@@ -70,13 +70,15 @@ export const attributeUpdate = async (id, input) => {
         const entity = answer.map().get('e');
         const entityAttributes = await getAttributes(entity, true);
         if (entityAttributes.entity_type === 'stix_relation') {
-          return index('stix_relations', entityAttributes);
+          await index('stix_relations', entityAttributes);
+          return Promise.resolve(true);
         }
         if (
           entityAttributes.parent_type === 'Stix-Domain-Entity' ||
           entityAttributes.parent_type === 'Identity'
         ) {
-          return index('stix_domain_entities', entityAttributes);
+          await index('stix_domain_entities', entityAttributes);
+          return Promise.resolve(true);
         }
         return null;
       })

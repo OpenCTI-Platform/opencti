@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, propOr } from 'ramda';
+import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
+import { getParams, saveParams } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import OrganizationsLines, {
@@ -12,20 +14,34 @@ import OrganizationCreation from './organizations/OrganizationCreation';
 class Organizations extends Component {
   constructor(props) {
     super(props);
+    const params = getParams(
+      props.history,
+      props.location,
+      'Organizations-view',
+    );
     this.state = {
-      sortBy: 'name',
-      orderAsc: true,
-      searchTerm: '',
-      view: 'lines',
+      sortBy: propOr('name', 'sortBy', params),
+      orderAsc: propOr(true, 'orderAsc', params),
+      searchTerm: propOr('', 'searchTerm', params),
+      view: propOr('lines', 'view', params),
     };
   }
 
+  saveView() {
+    saveParams(
+      this.props.history,
+      this.props.location,
+      'Organizations-view',
+      this.state,
+    );
+  }
+
   handleSearch(value) {
-    this.setState({ searchTerm: value });
+    this.setState({ searchTerm: value }, () => this.saveView());
   }
 
   handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
   renderLines(paginationOptions) {
@@ -37,7 +53,7 @@ class Organizations extends Component {
         isSortable: true,
       },
       organization_class: {
-        label: 'Name',
+        label: 'Type',
         width: '20%',
         isSortable: true,
       },
@@ -96,9 +112,12 @@ class Organizations extends Component {
 }
 
 Organizations.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  location: PropTypes.object,
 };
 
-export default compose(inject18n)(Organizations);
+export default compose(
+  inject18n,
+  withRouter,
+)(Organizations);

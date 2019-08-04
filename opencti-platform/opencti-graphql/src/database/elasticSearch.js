@@ -14,6 +14,8 @@ const dateFields = [
   'published'
 ];
 
+const numberFields = ['object_status'];
+
 const defaultIndexes = [
   'stix_domain_entities',
   'stix_relations',
@@ -330,7 +332,9 @@ export const paginate = (indexName, options) => {
   if (orderBy !== null && orderBy.length > 0) {
     const order = {};
     order[
-      dateFields.includes(orderBy) ? orderBy : `${orderBy}.keyword`
+      dateFields.includes(orderBy) || numberFields.includes(orderBy)
+        ? orderBy
+        : `${orderBy}.keyword`
     ] = orderMode;
     ordering = append(order, ordering);
   }

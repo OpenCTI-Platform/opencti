@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
+import { getParams, saveParams } from '../../../utils/ListParameters';
 import ListLines from '../../../components/list_lines/ListLines';
 import ReportsLines, { reportsLinesQuery } from './ReportsLines';
 import inject18n from '../../../components/i18n';
@@ -11,20 +12,34 @@ import ReportCreation from './ReportCreation';
 class Reports extends Component {
   constructor(props) {
     super(props);
+    const params = getParams(
+      props.history,
+      props.location,
+      'Reports-view',
+    );
     this.state = {
-      sortBy: 'published',
-      orderAsc: false,
-      searchTerm: '',
-      view: 'lines',
+      sortBy: propOr('published', 'sortBy', params),
+      orderAsc: propOr('false', 'orderAsc', params) === 'true',
+      searchTerm: propOr('', 'searchTerm', params),
+      view: propOr('lines', 'view', params),
     };
   }
 
+  saveView() {
+    saveParams(
+      this.props.history,
+      this.props.location,
+      'Reports-view',
+      this.state,
+    );
+  }
+
   handleSearch(value) {
-    this.setState({ searchTerm: value });
+    this.setState({ searchTerm: value }, () => this.saveView());
   }
 
   handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
   renderLines(paginationOptions) {
@@ -53,7 +68,7 @@ class Reports extends Component {
       marking: {
         label: 'Marking',
         width: '15%',
-        isSortable: true,
+        isSortable: false,
       },
     };
     return (
@@ -120,9 +135,10 @@ class Reports extends Component {
 Reports.propTypes = {
   objectId: PropTypes.string,
   authorId: PropTypes.string,
-  match: PropTypes.object,
   t: PropTypes.func,
+  match: PropTypes.object,
   history: PropTypes.object,
+  location: PropTypes.object,
   displayCreate: PropTypes.bool,
 };
 
