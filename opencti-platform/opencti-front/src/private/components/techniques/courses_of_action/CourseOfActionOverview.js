@@ -89,7 +89,9 @@ const CourseOfActionOverview = createFragmentContainer(
         modified
         createdByRef {
           node {
+            id
             name
+            entity_type
           }
         }
       }

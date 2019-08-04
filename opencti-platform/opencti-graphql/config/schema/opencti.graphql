@@ -2188,6 +2188,7 @@ type Query {
   stixRelationsTimeSeries(
     fromId: String
     relationType: String
+    inferred: Boolean
     resolveInferences: Boolean
     resolveRelationType: String
     resolveRelationRole: String

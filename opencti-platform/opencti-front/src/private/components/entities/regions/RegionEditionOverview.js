@@ -424,6 +424,7 @@ const RegionEditionOverview = createFragmentContainer(
           node {
             id
             name
+            entity_type
           }
           relation {
             id

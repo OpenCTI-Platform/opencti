@@ -6,24 +6,26 @@ sidebar_label: Using Docker
 
 OpenCTI could be deployed using the *docker-compose* command.
 
-## Download the docker compose definition
+## Clone the repository
 
 ```bash
-$ wget https://raw.githubusercontent.com/OpenCTI-Platform/opencti/{RELEASE_VERSION}/opencti-docker/docker-compose.yml
+$ mkdir /path/to/your/app && cd /path/to/your/app
+$ git clone https://github.com/OpenCTI-Platform/docker.git
+$ cd doker
 ```
 
 ### Configure the environment
 
 Before running the docker-compose command, please change the admin token (this token must be a [valid UUID](https://www.uuidgenerator.net/)) and password of the application in the file `docker-compose.yml`:
 
-```bash
+```yaml
 - APP__ADMIN__PASSWORD=ChangeMe
 - APP__ADMIN__TOKEN=ChangeMe
 ```
 
-And the change the variable `OPENCTI_TOKEN` (for `worker-import` and `worker-export`) according to the value of `APP__ADMIN__TOKEN`
+And change the variable `OPENCTI_TOKEN` (for `worker-import` and `worker-export`) according to the value of `APP__ADMIN__TOKEN`
 
-```bash
+```yaml
 - OPENCTI_TOKEN=ChangeMe
 ```
 
@@ -35,10 +37,10 @@ $ sysctl -w vm.max_map_count=262144
 
 ## Run
 
-In order to have the best experience with docker, we recommend to use the docker stack feature. 
-In this mode we will have the capacity to easily scale your deployment.
+In order to have the best experience with Docker, we recommend to use the Docker stack feature. In this mode we will have the capacity to easily scale your deployment.
 
 ### In Swarm or Kubernetes
+
 ```bash
 $ docker stack deploy -c docker-compose.yml opencti
 ```

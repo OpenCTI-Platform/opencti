@@ -41,10 +41,10 @@ The implemented rules are expressed here in pseudo-code.
 </code></pre>
 
 <pre><code>when {
-	A uses B
-	B targets C
+	A targets B
+	A uses C
 }, then {
-	A targets C
+	C targets A
 }
 </code></pre>
 

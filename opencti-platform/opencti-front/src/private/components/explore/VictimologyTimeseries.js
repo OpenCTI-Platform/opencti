@@ -36,7 +36,7 @@ class VictimologyDistribution extends Component {
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}
-            resolveInferences={true}
+            resolveInferences={inferred}
             resolveRelationType="attributed-to"
             resolveRelationRole="origin"
             resolveViaTypes={[
@@ -60,6 +60,7 @@ class VictimologyDistribution extends Component {
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}
+            resolveInferences={inferred}
             resolveRelationType="attributed-to"
             resolveRelationRole="origin"
             resolveViaTypes={[
@@ -83,6 +84,7 @@ class VictimologyDistribution extends Component {
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}
+            resolveInferences={inferred}
             resolveRelationType="attributed-to"
             resolveRelationRole="origin"
             resolveViaTypes={[

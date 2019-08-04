@@ -56,8 +56,6 @@ class CountryKnowledgeComponent extends Component {
           path="/dashboard/entities/countries/:countryId/knowledge/cities"
           render={routeProps => (
             <EntityStixRelations
-              resolveRelationType="localization"
-              resolveRelationRole="location"
               entityId={country.id}
               relationType="localization"
               targetEntityTypes={['City']}

@@ -83,7 +83,9 @@ const ToolOverview = createFragmentContainer(ToolOverviewComponent, {
       modified
       createdByRef {
         node {
+          id
           name
+          entity_type
         }
       }
     }

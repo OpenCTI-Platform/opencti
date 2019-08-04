@@ -83,7 +83,9 @@ const RegionOverview = createFragmentContainer(RegionOverviewComponent, {
       modified
       createdByRef {
         node {
+          id
           name
+          entity_type
         }
       }
     }

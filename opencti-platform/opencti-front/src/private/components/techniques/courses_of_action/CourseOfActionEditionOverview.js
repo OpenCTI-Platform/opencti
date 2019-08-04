@@ -444,6 +444,7 @@ const CourseOfActionEditionOverview = createFragmentContainer(
           node {
             id
             name
+            entity_type
           }
           relation {
             id
