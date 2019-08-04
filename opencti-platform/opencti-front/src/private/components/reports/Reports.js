@@ -90,6 +90,8 @@ class Reports extends Component {
       objectId,
       authorId,
     } = this.props;
+    console.log(objectId)
+    console.log(authorId)
     const {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;

@@ -29,6 +29,7 @@ class OrganizationReportsComponent extends Component {
     if (
       contains(organization.organization_class, organizationTypesForAuthorMode)
     ) {
+      console.log('La')
       return (
         <div className={classes.container}>
           <OrganizationHeader organization={organization} />
@@ -42,7 +43,7 @@ class OrganizationReportsComponent extends Component {
       <div className={classes.container}>
         <OrganizationHeader organization={organization} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Reports pbjectId={organization.id} />
+          <Reports objectId={organization.id} />
         </Paper>
       </div>
     );
