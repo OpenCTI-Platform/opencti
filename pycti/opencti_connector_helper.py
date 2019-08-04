@@ -69,8 +69,10 @@ class OpenCTIConnectorHelper:
     def _create_queue(self):
         if self.channel is not None:
             config_encoded = base64.b64encode(json.dumps(self.config).encode('utf-8')).decode('utf-8')
-            check = self.channel.queue_declare(self.queue_name, durable=True, passive=True, arguments={'config': config_encoded})
-            if not check:
+            try:
+                self.channel.queue_declare(self.queue_name, durable=True, passive=True, arguments={'config': config_encoded})
+            except:
+                self.channel = self._create_channel()
                 self.channel.queue_delete(self.queue_name)
                 self.channel.queue_declare(self.queue_name, durable=True, arguments={'config': config_encoded})
             self.channel.queue_bind(queue=self.queue_name, exchange=EXCHANGE_NAME, routing_key=self.routing_key)
