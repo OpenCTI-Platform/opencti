@@ -1,7 +1,4 @@
-import {
-  createIndexes,
-  reindex
-} from '../src/database/elasticSearch';
+import { createIndexes, reindex } from '../src/database/elasticSearch';
 import { logger } from '../src/config/conf';
 
 module.exports.up = async next => {
