@@ -74,7 +74,7 @@ jobs:
       - run: mkdir release
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
       - run: cp -a ./opencti-worker/src release/opencti/worker
-      - run: cp -a ./opencti-docker release/opencti/docker
+      - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/docker
       - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/connectors
       - run:
           working_directory: ~/opencti/release
