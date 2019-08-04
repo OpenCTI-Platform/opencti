@@ -152,7 +152,6 @@ export const write = async query => {
     await commitWriteTx(wTx);
   } catch (err) {
     logger.error(err);
-    await closeWriteTx(wTx);
   }
 };
 

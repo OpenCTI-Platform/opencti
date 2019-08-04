@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose, pathOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -8,6 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
+import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
@@ -48,7 +49,9 @@ class CountryOverviewComponent extends Component {
           >
             {t('Creator')}
           </Typography>
-          {pathOr('-', ['createdByRef', 'node', 'name'], country)}
+          <ItemCreator
+            createdByRef={pathOr(null, ['createdByRef', 'node'], country)}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -80,7 +83,9 @@ const CountryOverview = createFragmentContainer(CountryOverviewComponent, {
       modified
       createdByRef {
         node {
+          id
           name
+          entity_type
         }
       }
     }

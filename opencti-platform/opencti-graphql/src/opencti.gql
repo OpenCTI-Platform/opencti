@@ -880,12 +880,12 @@ define
       (source: $origin, target: $target) isa targets;
     };
 
-    UsageTargetsRule sub rule,
+    UserTargetsRule sub rule,
     when {
-      (user: $user, usage: $entity) isa uses;
-      (source: $entity, target: $target) isa targets;
+      (source: $source, target: $target) isa targets;
+      (user: $source, usage: $entity) isa uses;
     }, then {
-      (source: $user, target: $target) isa targets;
+      (source: $entity, target: $target) isa targets;
     };
 
     GatheringTargetsRule sub rule,

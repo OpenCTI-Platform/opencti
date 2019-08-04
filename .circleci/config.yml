@@ -32,7 +32,7 @@ jobs:
           GRAKN__HOSTNAME: 127.0.0.1
           ELASTICSEARCH__HOSTNAME: 127.0.0.1
       - image: graknlabs/grakn:1.5.7
-      - image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+      - image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
         environment:
           - "discovery.type=single-node"
           - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -74,7 +74,7 @@ jobs:
       - run: mkdir release
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
       - run: cp -a ./opencti-worker/src release/opencti/worker
-      - run: cp -a ./opencti-docker release/opencti/docker
+      - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/docker
       - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/connectors
       - run:
           working_directory: ~/opencti/release

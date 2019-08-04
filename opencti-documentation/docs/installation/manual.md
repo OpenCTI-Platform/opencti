@@ -113,3 +113,14 @@ Change the *config.yml* file according to your OpenCTI token and RabbitMQ config
 $ python3 worker.py &
 $ python3 worker.py &
 ```
+
+## Upgrade the platform
+
+When upgrading the platform, you have to replace all files and run the migrations and the schema commands to get updates:
+
+```bash
+$ npm run schema
+$ npm run migrate
+```
+
+Then start the platform.

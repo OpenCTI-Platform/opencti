@@ -8,6 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
+import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
@@ -48,7 +49,9 @@ class AttackPatternOverviewComponent extends Component {
           >
             {t('Creator')}
           </Typography>
-          {pathOr('-', ['createdByRef', 'node', 'name'], attackPattern)}
+          <ItemCreator
+            createdByRef={pathOr(null, ['createdByRef', 'node'], attackPattern)}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -82,7 +85,9 @@ const AttackPatternOverview = createFragmentContainer(
         modified
         createdByRef {
           node {
+            id
             name
+            entity_type
           }
         }
       }

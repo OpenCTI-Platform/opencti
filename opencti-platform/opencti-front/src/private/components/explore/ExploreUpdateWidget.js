@@ -82,7 +82,7 @@ class ExploreUpdateWidget extends Component {
     }).then((data) => {
       const entities = pipe(
         pathOr([], ['stixDomainEntities', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
+        map(n => ({ label: n.node.name, value: n.node.id, type: n.node.entity_type })),
       )(data);
       this.setState({ entities: union(this.state.entities, entities) });
     });
@@ -91,7 +91,7 @@ class ExploreUpdateWidget extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
       assoc('id', this.props.configuration.id),
-      assoc('entity', { id: values.entity.value, name: values.entity.label }),
+      assoc('entity', { id: values.entity.value, name: values.entity.label, type: values.entity.type }),
     )(values);
     this.props.handleUpdate(finalValues);
     setSubmitting(false);

@@ -520,6 +520,7 @@ const SectorEditionOverview = createFragmentContainer(
           node {
             id
             name
+            entity_type
           }
           relation {
             id

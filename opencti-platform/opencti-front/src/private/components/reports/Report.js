@@ -8,7 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import ReportHeader from './ReportHeader';
 import ReportOverview from './ReportOverview';
-import ReportIdentity from './ReportIdentity';
+import ReportIdentity from './ReportDetails';
 import ReportEdition from './ReportEdition';
 import EntityExternalReferences from '../common/external_references/EntityExternalReferences';
 import EntityStixRelationsDonut from '../common/stix_relations/EntityStixRelationsDonut';
@@ -97,7 +97,7 @@ const Report = createFragmentContainer(ReportComponent, {
       id
       ...ReportHeader_report
       ...ReportOverview_report
-      ...ReportIdentity_report
+      ...ReportDetails_report
     }
   `,
 });

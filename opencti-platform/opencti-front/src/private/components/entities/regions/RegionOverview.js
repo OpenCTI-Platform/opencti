@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose, pathOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -8,8 +8,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
+import ItemCreator from '../../../../components/ItemCreator';
 
-const styles = theme => ({
+const styles = () => ({
   paper: {
     minHeight: '100%',
     margin: '10px 0 0 0',
@@ -48,7 +49,9 @@ class RegionOverviewComponent extends Component {
           >
             {t('Creator')}
           </Typography>
-          {pathOr('-', ['createdByRef', 'node', 'name'], region)}
+          <ItemCreator
+            createdByRef={pathOr(null, ['createdByRef', 'node'], region)}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -80,7 +83,9 @@ const RegionOverview = createFragmentContainer(RegionOverviewComponent, {
       modified
       createdByRef {
         node {
+          id
           name
+          entity_type
         }
       }
     }
