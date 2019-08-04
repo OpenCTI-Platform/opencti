@@ -1,52 +1,48 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import { compose, propOr } from 'ramda';
+import { withRouter } from 'react-router-dom';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import WorkspacesLines, { workspacesLinesQuery } from './WorkspacesLines';
 import WorkspaceCreation from './WorkspaceCreation';
 
-const styles = () => ({
-  header: {
-    margin: '0 0 10px 0',
-  },
-  linesContainer: {
-    marginTop: 0,
-    paddingTop: 0,
-  },
-  item: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-  },
-  inputLabel: {
-    float: 'left',
-  },
-  sortIcon: {
-    float: 'left',
-    margin: '-5px 0 0 15px',
-  },
-});
-
 class Workspaces extends Component {
   constructor(props) {
     super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      'Workspaces-view',
+    );
     this.state = {
-      sortBy: 'name',
-      orderAsc: true,
-      searchTerm: '',
-      view: 'lines',
+      sortBy: propOr('name', 'sortBy', params),
+      orderAsc: propOr(false, 'orderAsc', params),
+      searchTerm: propOr('', 'searchTerm', params),
+      view: propOr('lines', 'view', params),
     };
   }
 
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      'Workspaces-view',
+      this.state,
+    );
+  }
+
   handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
   handleSearch(value) {
-    this.setState({ searchTerm: value });
+    this.setState({ searchTerm: value }, () => this.saveView());
   }
 
   renderLines(paginationOptions) {
@@ -116,12 +112,12 @@ class Workspaces extends Component {
 }
 
 Workspaces.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  location: PropTypes.object,
 };
 
 export default compose(
   inject18n,
-  withStyles(styles),
+  withRouter,
 )(Workspaces);

@@ -50,7 +50,9 @@ class IncidentOverviewComponent extends Component {
           >
             {t('Creator')}
           </Typography>
-          <ItemCreator createdByRef={pathOr(null, ['createdByRef', 'node'], incident)} />
+          <ItemCreator
+            createdByRef={pathOr(null, ['createdByRef', 'node'], incident)}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}

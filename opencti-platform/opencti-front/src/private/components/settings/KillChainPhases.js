@@ -4,7 +4,10 @@ import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import KillChainPhasesLines, {
@@ -60,7 +63,7 @@ class KillChainPhases extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc } = this.state;
+    const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
       kill_chain_name: {
         label: 'Kill chain name',
@@ -92,6 +95,7 @@ class KillChainPhases extends Component {
         handleSearch={this.handleSearch.bind(this)}
         displayImport={false}
         secondaryAction={true}
+        keyword={searchTerm}
       >
         <QueryRenderer
           query={killChainPhasesLinesQuery}

@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Input from '@material-ui/core/Input';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import { Search } from '@material-ui/icons';
-import { compose, propOr } from 'ramda';
+import { compose } from 'ramda';
 import inject18n from './i18n';
 
 const styles = theme => ({
@@ -38,25 +37,12 @@ const styles = theme => ({
 class SearchInput extends Component {
   render() {
     const {
-      t,
-      classes,
-      onChange,
-      onSubmit,
-      variant,
-      keyword,
-      location,
+      t, classes, onChange, onSubmit, variant, keyword,
     } = this.props;
-    const queryParams = Object.fromEntries(
-      new URLSearchParams(location.search.substring(1)),
-    );
-    let finalKeyword = keyword;
-    if (variant === 'small') {
-      finalKeyword = keyword || propOr('', 'searchTerm', queryParams);
-    }
     return (
       <Input
         name="keyword"
-        defaultValue={finalKeyword}
+        defaultValue={keyword}
         placeholder={`${t('Search')}...`}
         onChange={(event) => {
           const { value } = event.target;
@@ -96,11 +82,9 @@ SearchInput.propTypes = {
   onChange: PropTypes.func,
   onSubmit: PropTypes.func,
   variant: PropTypes.string,
-  location: PropTypes.object,
 };
 
 export default compose(
   inject18n,
   withStyles(styles),
-  withRouter,
 )(SearchInput);

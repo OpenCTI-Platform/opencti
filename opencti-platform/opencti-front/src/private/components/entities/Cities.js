@@ -3,7 +3,10 @@ import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import CitiesLines, { citiesLinesQuery } from './cities/CitiesLines';
@@ -44,7 +47,7 @@ class Cities extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc } = this.state;
+    const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -71,6 +74,7 @@ class Cities extends Component {
         handleSearch={this.handleSearch.bind(this)}
         displayImport={true}
         secondaryAction={true}
+        keyword={searchTerm}
       >
         <QueryRenderer
           query={citiesLinesQuery}

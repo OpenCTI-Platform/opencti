@@ -1,8 +1,12 @@
 import { mergeLeft, dissoc } from 'ramda';
 
-export const saveViewParameters = (history, location, localStorageKey, params) => {
-  const localStorageParams = params;
-  localStorage.setItem(localStorageKey, JSON.stringify(localStorageParams));
+export const saveViewParameters = (
+  history,
+  location,
+  localStorageKey,
+  params,
+) => {
+  localStorage.setItem(localStorageKey, JSON.stringify(params));
   const urlParams = dissoc('view', params);
   history.replace(
     `${location.pathname}?${new URLSearchParams(urlParams).toString()}`,
@@ -10,7 +14,11 @@ export const saveViewParameters = (history, location, localStorageKey, params) =
   return params;
 };
 
-export const buildViewParamsFromUrlAndStorage = (history, location, localStorageKey) => {
+export const buildViewParamsFromUrlAndStorage = (
+  history,
+  location,
+  localStorageKey,
+) => {
   const queryParams = Object.fromEntries(
     new URLSearchParams(location.search.substring(1)),
   );

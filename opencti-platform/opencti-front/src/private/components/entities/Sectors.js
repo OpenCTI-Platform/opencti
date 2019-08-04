@@ -4,7 +4,10 @@ import { compose, propOr } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -63,7 +66,7 @@ class Sectors extends Component {
   }
 
   renderCards(paginationOptions) {
-    const { sortBy, orderAsc } = this.state;
+    const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -84,6 +87,7 @@ class Sectors extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
         displayImport={true}
+        keyword={searchTerm}
       >
         <QueryRenderer
           query={sectorsCardsQuery}
@@ -101,7 +105,7 @@ class Sectors extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc } = this.state;
+    const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -128,6 +132,7 @@ class Sectors extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
         displayImport={true}
+        keyword={searchTerm}
       >
         <QueryRenderer
           query={sectorsLinesQuery}
