@@ -104,6 +104,7 @@ class ListLines extends Component {
       dataColumns,
       displayImport,
       secondaryAction,
+      keyword,
       bottomNav,
       children,
     } = this.props;
@@ -112,7 +113,11 @@ class ListLines extends Component {
         <div className={classes.parameters}>
           {typeof handleSearch === 'function' ? (
             <div style={{ float: 'left', marginRight: 20 }}>
-              <SearchInput variant="small" onSubmit={handleSearch.bind(this)} />
+              <SearchInput
+                variant="small"
+                onSubmit={handleSearch.bind(this)}
+                keyword={keyword}
+              />
             </div>
           ) : (
             ''
@@ -204,6 +209,7 @@ ListLines.propTypes = {
   views: PropTypes.array,
   displayExport: PropTypes.bool,
   displayImport: PropTypes.bool,
+  keyword: PropTypes.string,
   sortBy: PropTypes.string.isRequired,
   orderAsc: PropTypes.bool.isRequired,
   dataColumns: PropTypes.object.isRequired,

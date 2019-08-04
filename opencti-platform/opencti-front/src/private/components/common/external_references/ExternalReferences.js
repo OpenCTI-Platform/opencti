@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import { compose, propOr } from 'ramda';
+import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ExternalReferencesLines, {
@@ -10,49 +14,41 @@ import ExternalReferencesLines, {
 } from './ExternalReferencesLines';
 import ExternalReferenceCreation from './ExternalReferenceCreation';
 
-const styles = () => ({
-  header: {
-    margin: '0 0 10px 0',
-  },
-  linesContainer: {
-    marginTop: 0,
-    paddingTop: 0,
-  },
-  item: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-  },
-  inputLabel: {
-    float: 'left',
-  },
-  sortIcon: {
-    float: 'left',
-    margin: '-5px 0 0 15px',
-  },
-});
-
 class ExternalReferences extends Component {
   constructor(props) {
     super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      'ExternalReferences-view',
+    );
     this.state = {
-      sortBy: 'created',
-      orderAsc: false,
-      searchTerm: '',
-      view: 'lines',
+      sortBy: propOr('created', 'sortBy', params),
+      orderAsc: propOr(false, 'orderAsc', params),
+      searchTerm: propOr('', 'searchTerm', params),
+      view: propOr('lines', 'view', params),
     };
   }
 
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      'ExternalReferences-view',
+      this.state,
+    );
+  }
+
   handleSearch(value) {
-    this.setState({ searchTerm: value });
+    this.setState({ searchTerm: value }, () => this.saveView());
   }
 
   handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc } = this.state;
+    const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
       source_name: {
         label: 'Source name',
@@ -84,6 +80,7 @@ class ExternalReferences extends Component {
         handleSearch={this.handleSearch.bind(this)}
         displayImport={true}
         secondaryAction={true}
+        keyword={searchTerm}
       >
         <QueryRenderer
           query={externalReferencesLinesQuery}
@@ -120,12 +117,12 @@ class ExternalReferences extends Component {
 }
 
 ExternalReferences.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  location: PropTypes.object,
 };
 
 export default compose(
   inject18n,
-  withStyles(styles),
+  withRouter,
 )(ExternalReferences);

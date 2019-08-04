@@ -42,7 +42,7 @@ class OrganizationReportsComponent extends Component {
       <div className={classes.container}>
         <OrganizationHeader organization={organization} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Reports pbjectId={organization.id} />
+          <Reports objectId={organization.id} />
         </Paper>
       </div>
     );
@@ -61,6 +61,7 @@ const OrganizationReports = createFragmentContainer(
     organization: graphql`
       fragment OrganizationReports_organization on Organization {
         id
+        organization_class
         ...OrganizationHeader_organization
       }
     `,

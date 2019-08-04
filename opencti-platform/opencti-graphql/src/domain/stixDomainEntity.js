@@ -52,22 +52,6 @@ export const stixDomainEntitiesTimeSeries = args =>
 export const stixDomainEntitiesNumber = args => ({
   count: countEntities('stix_domain_entities', args),
   total: countEntities('stix_domain_entities', dissoc('endDate', args))
-  /*count: getSingleValueNumber(
-    `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
-    ${
-      args.endDate
-        ? `$x has created_at $date;
-    $date < ${prepareDate(args.endDate)};`
-        : ''
-    }
-    get $x;
-    count;`
-  ),
-  total: getSingleValueNumber(
-    `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
-    get $x;
-    count;`
-  )*/
 });
 
 export const findById = stixDomainEntityId => getById(stixDomainEntityId);

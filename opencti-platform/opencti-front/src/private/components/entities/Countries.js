@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, propOr } from 'ramda';
+import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import CountriesLines, {
@@ -12,24 +17,39 @@ import CountryCreation from './countries/CountryCreation';
 class Countries extends Component {
   constructor(props) {
     super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      'Countries-view',
+      'entities/countries',
+    );
     this.state = {
-      sortBy: 'name',
-      orderAsc: true,
-      searchTerm: '',
-      view: 'lines',
+      sortBy: propOr('name', 'sortBy', params),
+      orderAsc: propOr(true, 'orderAsc', params),
+      searchTerm: propOr('', 'searchTerm', params),
+      view: propOr('lines', 'view', params),
     };
   }
 
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      'Countries-view',
+      this.state,
+    );
+  }
+
   handleSearch(value) {
-    this.setState({ searchTerm: value });
+    this.setState({ searchTerm: value }, () => this.saveView());
   }
 
   handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc } = this.state;
+    const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -55,6 +75,7 @@ class Countries extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         displayImport={true}
+        keyword={searchTerm}
       >
         <QueryRenderer
           query={countriesLinesQuery}
@@ -93,6 +114,10 @@ class Countries extends Component {
 Countries.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
+  location: PropTypes.object,
 };
 
-export default compose(inject18n)(Countries);
+export default compose(
+  inject18n,
+  withRouter,
+)(Countries);

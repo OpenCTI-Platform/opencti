@@ -1,8 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, propOr } from 'ramda';
+import { withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../../relay/environment';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import KillChainPhasesLines, {
@@ -27,24 +32,38 @@ export const killChainPhasesSearchQuery = graphql`
 class KillChainPhases extends Component {
   constructor(props) {
     super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      'KillChainPhases-view',
+    );
     this.state = {
-      sortBy: 'phase_order',
-      orderAsc: true,
-      searchTerm: '',
-      view: 'lines',
+      sortBy: propOr('phase_order', 'sortBy', params),
+      orderAsc: propOr(true, 'orderAsc', params),
+      searchTerm: propOr('', 'searchTerm', params),
+      view: propOr('lines', 'view', params),
     };
   }
 
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      'KillChainPhases-view',
+      this.state,
+    );
+  }
+
   handleSearch(value) {
-    this.setState({ searchTerm: value });
+    this.setState({ searchTerm: value }, () => this.saveView());
   }
 
   handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc } = this.state;
+    const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
       kill_chain_name: {
         label: 'Kill chain name',
@@ -76,6 +95,7 @@ class KillChainPhases extends Component {
         handleSearch={this.handleSearch.bind(this)}
         displayImport={false}
         secondaryAction={true}
+        keyword={searchTerm}
       >
         <QueryRenderer
           query={killChainPhasesLinesQuery}
@@ -114,6 +134,10 @@ class KillChainPhases extends Component {
 KillChainPhases.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
+  location: PropTypes.object,
 };
 
-export default compose(inject18n)(KillChainPhases);
+export default compose(
+  inject18n,
+  withRouter,
+)(KillChainPhases);

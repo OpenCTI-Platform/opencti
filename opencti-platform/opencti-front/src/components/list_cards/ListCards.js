@@ -45,7 +45,7 @@ const styles = () => ({
   },
 });
 
-class Listcards extends Component {
+class ListCards extends Component {
   sortBy(event) {
     this.props.handleSort(event.target.value, this.props.orderAsc);
   }
@@ -61,6 +61,7 @@ class Listcards extends Component {
       handleSearch,
       handleChangeView,
       dataColumns,
+      keyword,
       sortBy,
       orderAsc,
       displayImport,
@@ -70,7 +71,11 @@ class Listcards extends Component {
       <div>
         <div className={classes.parameters}>
           <div style={{ float: 'left', marginRight: 20 }}>
-            <SearchInput variant="small" onSubmit={handleSearch.bind(this)} />
+            <SearchInput
+              variant="small"
+              onSubmit={handleSearch.bind(this)}
+              keyword={keyword}
+            />
           </div>
           <InputLabel classes={{ root: classes.sortFieldLabel }}>
             {t('Sort by')}
@@ -132,7 +137,7 @@ class Listcards extends Component {
   }
 }
 
-Listcards.propTypes = {
+ListCards.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   children: PropTypes.object,
@@ -140,8 +145,9 @@ Listcards.propTypes = {
   handleSort: PropTypes.func.isRequired,
   handleChangeView: PropTypes.func,
   views: PropTypes.array,
-  export: PropTypes.object,
-  import: PropTypes.object,
+  displayExport: PropTypes.bool,
+  displayImport: PropTypes.bool,
+  keyword: PropTypes.string,
   sortBy: PropTypes.string.isRequired,
   orderAsc: PropTypes.bool.isRequired,
   dataColumns: PropTypes.object.isRequired,
@@ -150,4 +156,4 @@ Listcards.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(Listcards);
+)(ListCards);
