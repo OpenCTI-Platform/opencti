@@ -29,7 +29,6 @@ class OrganizationReportsComponent extends Component {
     if (
       contains(organization.organization_class, organizationTypesForAuthorMode)
     ) {
-      console.log('La')
       return (
         <div className={classes.container}>
           <OrganizationHeader organization={organization} />
@@ -62,6 +61,7 @@ const OrganizationReports = createFragmentContainer(
     organization: graphql`
       fragment OrganizationReports_organization on Organization {
         id
+        organization_class
         ...OrganizationHeader_organization
       }
     `,

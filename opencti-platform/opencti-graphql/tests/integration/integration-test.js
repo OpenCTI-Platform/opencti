@@ -16,6 +16,8 @@ const server = new ApolloServer({
 });
 export const { query } = createTestClient(server);
 
+jest.setTimeout(15000);
+
 require('./database/grakn');
 require('./resolvers/user');
 require('./resolvers/threatActor');
