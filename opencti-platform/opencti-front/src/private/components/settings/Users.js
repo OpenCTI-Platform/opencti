@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
-import { getParams, saveParams } from '../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import UsersLines, { usersLinesQuery } from './users/UsersLines';
@@ -12,7 +12,7 @@ import UserCreation from './users/UserCreation';
 class Users extends Component {
   constructor(props) {
     super(props);
-    const params = getParams(props.history, props.location, 'Users-view');
+    const params = buildViewParamsFromUrlAndStorage(props.history, props.location, 'Users-view');
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
       orderAsc: propOr(true, 'orderAsc', params),
@@ -22,7 +22,7 @@ class Users extends Component {
   }
 
   saveView() {
-    saveParams(
+    saveViewParameters(
       this.props.history,
       this.props.location,
       'Users-view',

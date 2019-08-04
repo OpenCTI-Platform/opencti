@@ -4,7 +4,7 @@ import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../../relay/environment';
-import { getParams, saveParams } from '../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import GroupsLines, { groupsLinesQuery } from './groups/GroupsLines';
@@ -29,7 +29,7 @@ export const groupsSearchQuery = graphql`
 class Groups extends Component {
   constructor(props) {
     super(props);
-    const params = getParams(props.history, props.location, 'Groups-view');
+    const params = buildViewParamsFromUrlAndStorage(props.history, props.location, 'Groups-view');
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
       orderAsc: propOr(true, 'orderAsc', params),
@@ -39,7 +39,7 @@ class Groups extends Component {
   }
 
   saveView() {
-    saveParams(
+    saveViewParameters(
       this.props.history,
       this.props.location,
       'KillChainPhases-view',
