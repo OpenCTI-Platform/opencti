@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "main": "src/server.js",
   "author": "Luatix",
   "license": "AGPL-3.0-or-later",
@@ -12,7 +12,7 @@
     "migrate": "babel-node ./src/database/migration.js",
     "migrate:add": "migrate create",
     "lint": "eslint .",
-    "test": "yarn build && yarn schema --e test && jest --testTimeout=15000 --coverage --e test",
+    "test": "yarn build && yarn schema --e test && jest --coverage --e test --testTimeout=15000",
     "clean": "babel-node ./src/database/clean.js"
   },
   "bin": "./dist/server.js",
