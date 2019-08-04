@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
@@ -78,29 +78,27 @@ const styles = theme => ({
 class IncidentCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, incident,
+      t, fsd, classes, node,
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/threats/incidents/${incident.id}`}
+          to={`/dashboard/threats/incidents/${node.id}`}
         >
           <CardHeader
             classes={{ root: classes.header }}
             avatar={
-              <Avatar className={classes.avatar}>
-                {incident.name.charAt(0)}
-              </Avatar>
+              <Avatar className={classes.avatar}>{node.name.charAt(0)}</Avatar>
             }
-            title={truncate(incident.name, 50)}
-            subheader={`${t('Updated the')} ${fsd(incident.modified)}`}
+            title={truncate(node.name, 50)}
+            subheader={`${t('Updated the')} ${fsd(node.modified)}`}
             action={<Fire className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.content }}>
             <Markdown
-              source={truncate(incident.description, 50)}
+              source={truncate(node.description, 50)}
               disallowedTypes={['link', 'linkReference']}
               unwrapDisallowed={true}
             />
@@ -112,15 +110,15 @@ class IncidentCardComponent extends Component {
 }
 
 IncidentCardComponent.propTypes = {
-  incident: PropTypes.object,
+  node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
 };
 
 const IncidentCardFragment = createFragmentContainer(IncidentCardComponent, {
-  incident: graphql`
-    fragment IncidentCard_incident on Incident {
+  node: graphql`
+    fragment IncidentCard_node on Incident {
       id
       name
       description

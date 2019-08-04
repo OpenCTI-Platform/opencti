@@ -118,7 +118,9 @@ class AttributePopover extends Component {
   }
 
   render() {
-    const { classes, t, paginationOptions, attributeId } = this.props;
+    const {
+      classes, t, paginationOptions, attributeId,
+    } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">

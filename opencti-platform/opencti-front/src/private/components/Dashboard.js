@@ -206,7 +206,9 @@ const dashboardWorkspacesNumberQuery = graphql`
 
 class Dashboard extends Component {
   render() {
-    const { t, n, nsd, classes } = this.props;
+    const {
+      t, n, nsd, classes,
+    } = this.props;
     const stixDomainEntitiesTimeSeriesVariables = {
       field: 'created_at',
       operation: 'count',

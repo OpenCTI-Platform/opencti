@@ -18,13 +18,13 @@ class CampaignsTimeseries extends Component {
     switch (configuration.graph_type) {
       case 'table':
         return (
-            <EntityCampaignsTableTime
-              variant="explore"
-              configuration={configuration}
-              handleOpenConfig={handleOpenConfig.bind(this)}
-              title={propOr('Widget', 'title', configuration)}
-              entityId={pathOr(null, ['entity', 'id'], configuration)}
-            />
+          <EntityCampaignsTableTime
+            variant="explore"
+            configuration={configuration}
+            handleOpenConfig={handleOpenConfig.bind(this)}
+            title={propOr('Widget', 'title', configuration)}
+            entityId={pathOr(null, ['entity', 'id'], configuration)}
+          />
         );
       case 'line':
         return (
@@ -38,13 +38,13 @@ class CampaignsTimeseries extends Component {
         );
       default:
         return (
-            <EntityCampaignsChart
-              variant="explore"
-              configuration={configuration}
-              handleOpenConfig={handleOpenConfig.bind(this)}
-              title={propOr('Widget', 'title', configuration)}
-              entityId={pathOr(null, ['entity', 'id'], configuration)}
-            />
+          <EntityCampaignsChart
+            variant="explore"
+            configuration={configuration}
+            handleOpenConfig={handleOpenConfig.bind(this)}
+            title={propOr('Widget', 'title', configuration)}
+            entityId={pathOr(null, ['entity', 'id'], configuration)}
+          />
         );
     }
   }

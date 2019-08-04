@@ -27,8 +27,8 @@ import {
   WS_ACTIVATED,
 } from '../../../../relay/environment';
 import { now } from '../../../../utils/Time';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
-import { sectorsLinesSearchQuery } from './SectorsLines';
+import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import { sectorsSearchQuery } from '../Sectors';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
@@ -153,7 +153,7 @@ class SectorEditionOverviewComponent extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
+    fetchQuery(markingDefinitionsSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(
@@ -170,7 +170,7 @@ class SectorEditionOverviewComponent extends Component {
   }
 
   searchSubsector(event) {
-    fetchQuery(sectorsLinesSearchQuery, {
+    fetchQuery(sectorsSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const subsectors = pipe(

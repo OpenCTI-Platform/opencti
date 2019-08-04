@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert, CenterFocusStrong } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -23,7 +24,12 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   goIcon: {
     position: 'absolute',
@@ -40,52 +46,10 @@ const styles = theme => ({
   },
 });
 
-const inlineStyles = {
-  definition_type: {
-    float: 'left',
-    width: '25%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  definition: {
-    float: 'left',
-    width: '25%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  color: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  level: {
-    float: 'left',
-    width: '10%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
-
 class MarkingDefinitionLineComponent extends Component {
   render() {
     const {
-      fd, classes, markingDefinition, paginationOptions,
+      fd, classes, node, dataColumns, paginationOptions,
     } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
@@ -97,38 +61,51 @@ class MarkingDefinitionLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.definition_type}
+                style={{ width: dataColumns.definition_type.width }}
               >
-                {markingDefinition.definition_type}
+                {node.definition_type}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.definition}>
-                {markingDefinition.definition}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.definition.width }}
+              >
+                {node.definition}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.color}>
-                {markingDefinition.color}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.color.width }}
+              >
+                {node.color}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.level}>
-                {markingDefinition.level}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.level.width }}
+              >
+                {node.level}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(markingDefinition.created)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fd(node.created)}
               </div>
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemSecondaryAction>
           <MarkingDefinitionPopover
-            markingDefinitionId={markingDefinition.id}
+            markingDefinitionId={node.id}
             paginationOptions={paginationOptions}
           />
-        </ListItemIcon>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
 }
 
 MarkingDefinitionLineComponent.propTypes = {
-  markingDefinition: PropTypes.object,
+  dataColumns: PropTypes.object,
+  node: PropTypes.object,
   paginationOptions: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
@@ -138,8 +115,8 @@ MarkingDefinitionLineComponent.propTypes = {
 const MarkingDefinitionLineFragment = createFragmentContainer(
   MarkingDefinitionLineComponent,
   {
-    markingDefinition: graphql`
-      fragment MarkingDefinitionLine_markingDefinition on MarkingDefinition {
+    node: graphql`
+      fragment MarkingDefinitionLine_node on MarkingDefinition {
         id
         definition_type
         definition
@@ -159,7 +136,7 @@ export const MarkingDefinitionLine = compose(
 
 class MarkingDefinitionLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -170,34 +147,47 @@ class MarkingDefinitionLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.definition_type}
+                style={{ width: dataColumns.definition_type.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.definition}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.definition.width }}
+              >
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.color}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.color.width }}
+              >
                 <div className="fakeItem" style={{ width: '60%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.level}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.level.width }}
+              >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
           <MoreVert />
-        </ListItemIcon>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
 }
 
 MarkingDefinitionLineDummyComponent.propTypes = {
+  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

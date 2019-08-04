@@ -36,7 +36,9 @@ const styles = theme => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
 
 const stixRelationPopoverDeletionMutation = graphql`
   mutation StixRelationPopoverDeletionMutation($id: ID!) {

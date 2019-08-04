@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import { Launch } from 'mdi-material-ui';
 import { compose } from 'ramda';
@@ -24,7 +25,12 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   goIcon: {
     position: 'absolute',
@@ -41,44 +47,10 @@ const styles = theme => ({
   },
 });
 
-const inlineStyles = {
-  kill_chain_name: {
-    float: 'left',
-    width: '30%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  phase_name: {
-    float: 'left',
-    width: '35%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  phase_order: {
-    float: 'left',
-    width: '10%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
-
 class KillChainPhaseLineComponent extends Component {
   render() {
     const {
-      fd, classes, killChainPhase, paginationOptions,
+      fd, classes, node, dataColumns, paginationOptions,
     } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
@@ -90,38 +62,45 @@ class KillChainPhaseLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.kill_chain_name}
+                style={{ width: dataColumns.kill_chain_name.width }}
               >
-                {killChainPhase.kill_chain_name}
-              </div>
-              <div className={classes.bodyItem} style={inlineStyles.phase_name}>
-                {killChainPhase.phase_name}
+                {node.kill_chain_name}
               </div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.phase_order}
+                style={{ width: dataColumns.phase_name.width }}
               >
-                {killChainPhase.phase_order}
+                {node.phase_name}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(killChainPhase.created)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.phase_order.width }}
+              >
+                {node.phase_order}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fd(node.created)}
               </div>
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemSecondaryAction>
           <KillChainPhasePopover
-            killChainPhaseId={killChainPhase.id}
+            killChainPhaseId={node.id}
             paginationOptions={paginationOptions}
           />
-        </ListItemIcon>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
 }
 
 KillChainPhaseLineComponent.propTypes = {
-  killChainPhase: PropTypes.object,
+  dataColumns: PropTypes.object,
+  node: PropTypes.object,
   paginationOptions: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
@@ -131,8 +110,8 @@ KillChainPhaseLineComponent.propTypes = {
 const KillChainPhaseLineFragment = createFragmentContainer(
   KillChainPhaseLineComponent,
   {
-    killChainPhase: graphql`
-      fragment KillChainPhaseLine_killChainPhase on KillChainPhase {
+    node: graphql`
+      fragment KillChainPhaseLine_node on KillChainPhase {
         id
         kill_chain_name
         phase_name
@@ -151,7 +130,7 @@ export const KillChainPhaseLine = compose(
 
 class KillChainPhaseLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -162,34 +141,41 @@ class KillChainPhaseLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.kill_chain_name}
+                style={{ width: dataColumns.kill_chain_name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.phase_name}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.phase_name.width }}
+              >
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.phase_order}
+                style={{ width: dataColumns.phase_order.width }}
               >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
           <MoreVert />
-        </ListItemIcon>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
 }
 
 KillChainPhaseLineDummyComponent.propTypes = {
+  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

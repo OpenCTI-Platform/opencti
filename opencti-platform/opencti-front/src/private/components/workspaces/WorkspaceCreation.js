@@ -18,7 +18,7 @@ import inject18n from '../../../components/i18n';
 import { fetchQuery, commitMutation } from '../../../relay/environment';
 import Autocomplete from '../../../components/Autocomplete';
 import TextField from '../../../components/TextField';
-import { markingDefinitionsLinesSearchQuery } from '../settings/marking_definitions/MarkingDefinitionsLines';
+import { markingDefinitionsSearchQuery } from '../settings/MarkingDefinitions';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../common/identities/IdentityCreation';
@@ -69,7 +69,7 @@ const styles = theme => ({
 const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
     workspaceAdd(input: $input) {
-      ...WorkspaceLine_workspace
+      ...WorkspaceLine_node
     }
   }
 `;
@@ -131,7 +131,7 @@ class WorkspaceCreation extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
+    fetchQuery(markingDefinitionsSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(

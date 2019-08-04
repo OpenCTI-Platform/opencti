@@ -28,7 +28,9 @@ const organizationTypesForAuthorMode = ['vendor', 'csirt', 'partner'];
 class OrganizationComponent extends Component {
   render() {
     const { classes, organization } = this.props;
-    if (contains(organization.organization_class, organizationTypesForAuthorMode)) {
+    if (
+      contains(organization.organization_class, organizationTypesForAuthorMode)
+    ) {
       return (
         <div className={classes.container}>
           <OrganizationHeader organization={organization} />

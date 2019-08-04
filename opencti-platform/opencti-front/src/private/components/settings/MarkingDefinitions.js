@@ -1,168 +1,115 @@
-/* eslint-disable no-nested-ternary */
-// TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
+import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../../relay/environment';
+import inject18n from '../../../components/i18n';
+import ListLines from '../../../components/list_lines/ListLines';
 import MarkingDefinitionsLines, {
   markingDefinitionsLinesQuery,
 } from './marking_definitions/MarkingDefinitionsLines';
-import inject18n from '../../../components/i18n';
 import MarkingDefinitionCreation from './marking_definitions/MarkingDefinitionCreation';
 
-const styles = () => ({
-  linesContainer: {
-    marginTop: 0,
-    paddingTop: 0,
-  },
-  item: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-  },
-  inputLabel: {
-    float: 'left',
-  },
-  sortIcon: {
-    float: 'left',
-    margin: '-5px 0 0 15px',
-  },
-});
-
-const inlineStyles = {
-  iconSort: {
-    position: 'absolute',
-    margin: '0 0 0 5px',
-    padding: 0,
-    top: '0px',
-  },
-  definition_type: {
-    float: 'left',
-    width: '25%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  definition: {
-    float: 'left',
-    width: '25%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  color: {
-    float: 'left',
-    width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  level: {
-    float: 'left',
-    width: '10%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  created: {
-    float: 'left',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-};
+export const markingDefinitionsSearchQuery = graphql`
+  query MarkingDefinitionsSearchQuery($search: String) {
+    markingDefinitions(search: $search) {
+      edges {
+        node {
+          id
+          definition_type
+          definition
+        }
+      }
+    }
+  }
+`;
 
 class MarkingDefinitions extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'definition_type', orderAsc: true };
+    this.state = {
+      sortBy: 'definition',
+      orderAsc: true,
+      searchTerm: '',
+      view: 'lines',
+    };
   }
 
-  reverseBy(field) {
-    this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
+  handleSearch(value) {
+    this.setState({ searchTerm: value });
   }
 
-  SortHeader(field, label) {
-    const { t } = this.props;
+  handleSort(field, orderAsc) {
+    this.setState({ sortBy: field, orderAsc });
+  }
+
+  renderLines(paginationOptions) {
+    const { sortBy, orderAsc } = this.state;
+    const dataColumns = {
+      definition_type: {
+        label: 'Definition type',
+        width: '25%',
+        isSortable: true,
+      },
+      definition: {
+        label: 'Definition',
+        width: '25%',
+        isSortable: true,
+      },
+      color: {
+        label: 'Color',
+        width: '15%',
+        isSortable: true,
+      },
+      level: {
+        label: 'Level',
+        width: '10%',
+        isSortable: true,
+      },
+      created: {
+        label: 'Creation date',
+        width: '15%',
+        isSortable: true,
+      },
+    };
     return (
-      <div
-        style={inlineStyles[field]}
-        onClick={this.reverseBy.bind(this, field)}
+      <ListLines
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={this.handleSort.bind(this)}
+        handleSearch={this.handleSearch.bind(this)}
+        displayImport={false}
+        secondaryAction={true}
       >
-        <span>{t(label)}</span>
-        {this.state.sortBy === field ? (
-          this.state.orderAsc ? (
-            <ArrowDropDown style={inlineStyles.iconSort} />
-          ) : (
-            <ArrowDropUp style={inlineStyles.iconSort} />
-          )
-        ) : (
-          ''
-        )}
-      </div>
+        <QueryRenderer
+          query={markingDefinitionsLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ props }) => (
+            <MarkingDefinitionsLines
+              data={props}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              initialLoading={props === null}
+            />
+          )}
+        />
+      </ListLines>
     );
   }
 
   render() {
-    const { classes } = this.props;
+    const {
+      view, sortBy, orderAsc, searchTerm,
+    } = this.state;
     const paginationOptions = {
-      orderBy: this.state.sortBy,
-      orderMode: this.state.orderAsc ? 'asc' : 'desc',
+      search: searchTerm,
+      orderBy: sortBy,
+      orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
       <div>
-        <List classes={{ root: classes.linesContainer }}>
-          <ListItem
-            classes={{ root: classes.item }}
-            divider={false}
-            style={{ paddingTop: 0 }}
-          >
-            <ListItemIcon>
-              <span
-                style={{
-                  padding: '0 8px 0 8px',
-                  fontWeight: 700,
-                  fontSize: 12,
-                }}
-              >
-                #
-              </span>
-            </ListItemIcon>
-            <ListItemText
-              primary={
-                <div>
-                  {this.SortHeader('definition_type', 'Type')}
-                  {this.SortHeader('definition', 'Definition')}
-                  {this.SortHeader('color', 'Color')}
-                  {this.SortHeader('level', 'Level')}
-                  {this.SortHeader('created', 'Creation date')}
-                </div>
-              }
-            />
-          </ListItem>
-          <QueryRenderer
-            query={markingDefinitionsLinesQuery}
-            variables={{
-              count: 25,
-              orderBy: this.state.sortBy,
-              orderMode: this.state.orderAsc ? 'asc' : 'desc',
-            }}
-            render={({ props }) => {
-              if (props) {
-                // Done
-                return (
-                  <MarkingDefinitionsLines
-                    data={props}
-                    paginationOptions={paginationOptions}
-                  />
-                );
-              }
-              // Loading
-              return <MarkingDefinitionsLines data={null} dummy={true} />;
-            }}
-          />
-        </List>
+        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <MarkingDefinitionCreation paginationOptions={paginationOptions} />
       </div>
     );
@@ -170,12 +117,8 @@ class MarkingDefinitions extends Component {
 }
 
 MarkingDefinitions.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(MarkingDefinitions);
+export default compose(inject18n)(MarkingDefinitions);

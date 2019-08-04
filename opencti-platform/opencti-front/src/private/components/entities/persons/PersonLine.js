@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert, Person } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import PersonPopover from './PersonPopover';
@@ -23,7 +24,12 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   goIcon: {
     position: 'absolute',
@@ -40,36 +46,15 @@ const styles = theme => ({
   },
 });
 
-const inlineStyles = {
-  name: {
-    float: 'left',
-    width: '60%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created_at: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  updated_at: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
-
 class PersonLineComponent extends Component {
   render() {
     const {
-      fd, classes, person, me, paginationOptions,
+      fd,
+      classes,
+      dataColumns,
+      node,
+      me,
+      paginationOptions,
     } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
@@ -79,32 +64,42 @@ class PersonLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
-                {person.name}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.name}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created_at}>
-                {fd(person.created_at)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fd(node.created)}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-                {fd(person.updated_at)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
+                {fd(node.modified)}
               </div>
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemSecondaryAction>
           <PersonPopover
-            personId={person.id}
+            personId={node.id}
             paginationOptions={paginationOptions}
             disabled={!includes('ROLE_ADMIN', propOr([], 'grant', me))}
           />
-        </ListItemIcon>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
 }
 
 PersonLineComponent.propTypes = {
-  person: PropTypes.object,
+  dataColumns: PropTypes.object,
+  node: PropTypes.object,
   paginationOptions: PropTypes.object,
   me: PropTypes.object,
   classes: PropTypes.object,
@@ -112,12 +107,12 @@ PersonLineComponent.propTypes = {
 };
 
 const PersonLineFragment = createFragmentContainer(PersonLineComponent, {
-  person: graphql`
-    fragment PersonLine_person on User {
+  node: graphql`
+    fragment PersonLine_node on User {
       id
       name
-      created_at
-      updated_at
+      created
+      modified
     }
   `,
   me: graphql`
@@ -134,7 +129,7 @@ export const PersonLine = compose(
 
 class PersonLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -143,27 +138,37 @@ class PersonLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created_at}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
                 <div className="fakeItem" style={{ width: 80 }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.updated_at}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
                 <div className="fakeItem" style={{ width: 80 }} />
               </div>
             </div>
           }
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
           <MoreVert />
-        </ListItemIcon>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
 }
 
 PersonLineDummyComponent.propTypes = {
+  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

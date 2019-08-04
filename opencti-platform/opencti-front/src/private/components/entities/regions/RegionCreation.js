@@ -19,7 +19,7 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import Autocomplete from '../../../../components/Autocomplete';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import TextField from '../../../../components/TextField';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
+import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
@@ -70,7 +70,7 @@ const styles = theme => ({
 const regionMutation = graphql`
   mutation RegionCreationMutation($input: RegionAddInput!) {
     regionAdd(input: $input) {
-      ...RegionLine_region
+      ...RegionLine_node
     }
   }
 `;
@@ -135,7 +135,7 @@ class RegionCreation extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
+    fetchQuery(markingDefinitionsSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(

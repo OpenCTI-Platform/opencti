@@ -38,7 +38,9 @@ const styles = theme => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
 
 const WorkspacePopoverDeletionMutation = graphql`
   mutation WorkspacePopoverDeletionMutation($id: ID!) {
@@ -86,7 +88,7 @@ class WorkspacePopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/' + this.props.workspaceType);
+        this.props.history.push(`/dashboard/${this.props.workspaceType}`);
       },
     });
   }

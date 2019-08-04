@@ -19,7 +19,7 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import Autocomplete from '../../../../components/Autocomplete';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import TextField from '../../../../components/TextField';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
+import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
@@ -70,7 +70,7 @@ const styles = theme => ({
 const campaignMutation = graphql`
   mutation CampaignCreationMutation($input: CampaignAddInput!) {
     campaignAdd(input: $input) {
-      ...CampaignCard_campaign
+      ...CampaignCard_node
     }
   }
 `;
@@ -135,7 +135,7 @@ class CampaignCreation extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
+    fetchQuery(markingDefinitionsSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(

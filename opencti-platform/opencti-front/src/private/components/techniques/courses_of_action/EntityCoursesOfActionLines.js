@@ -185,6 +185,11 @@ const EntityCoursesOfActionLines = createPaginationContainer(
               id
             }
           }
+          pageInfo {
+            endCursor
+            hasNextPage
+            globalCount
+          }
         }
       }
     `,
@@ -202,6 +207,7 @@ const EntityCoursesOfActionLines = createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
+        objectId: fragmentVariables.objectId,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,

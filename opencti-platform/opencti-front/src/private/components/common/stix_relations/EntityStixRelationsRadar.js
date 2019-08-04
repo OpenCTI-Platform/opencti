@@ -39,20 +39,20 @@ const styles = () => ({
 
 const entityStixRelationsRadarStixRelationDistributionQuery = graphql`
   query EntityStixRelationsRadarStixRelationDistributionQuery(
-  $fromId: String
-  $toTypes: [String]
-  $entityTypes: [String]
-  $relationType: String
-  $inferred: Boolean
-  $startDate: DateTime
-  $endDate: DateTime
-  $resolveInferences: Boolean
-  $resolveRelationType: String
-  $resolveRelationRole: String
-  $resolveRelationToTypes: [String]
-  $resolveViaTypes: [EntityRelation]
-  $field: String!
-  $operation: StatsOperation!
+    $fromId: String
+    $toTypes: [String]
+    $entityTypes: [String]
+    $relationType: String
+    $inferred: Boolean
+    $startDate: DateTime
+    $endDate: DateTime
+    $resolveInferences: Boolean
+    $resolveRelationType: String
+    $resolveRelationRole: String
+    $resolveRelationToTypes: [String]
+    $resolveViaTypes: [EntityRelation]
+    $field: String!
+    $operation: StatsOperation!
   ) {
     stixRelationsDistribution(
       fromId: $fromId

@@ -58,25 +58,11 @@ export const findAll = args => {
     return assoc('edges', observablesEdges, relations);
   });
 };
-/*
-  paginate(
-    `match ${
-      args.types
-        ? `${join(
-            ' ',
-            map(type => `{ $x isa ${type}; } or`, args.types)
-          )} { $x isa ${head(args.types)}; }`
-        : '$x isa Stix-Observable'
-    }`,
-    args,
-    false
-  );
-*/
 
 export const stixObservablesNumber = args => ({
   count: countEntities('stix_observables', args),
   total: countEntities('stix_observables', dissoc('endDate', args))
-  /*count: getSingleValueNumber(
+  /* count: getSingleValueNumber(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
     ${
       args.endDate
@@ -91,7 +77,7 @@ export const stixObservablesNumber = args => ({
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
     get $x;
     count;`
-  )*/
+  ) */
 });
 
 export const stixObservablesTimeSeries = args =>

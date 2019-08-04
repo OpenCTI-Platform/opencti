@@ -15,7 +15,18 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => paginate('match $g isa Group', args);
+export const findAll = args =>
+  paginate(
+    `match $g isa Group ${
+      args.search
+        ? `; $g has name $name;
+   $g has description $description;
+   { $name contains "${escapeString(args.search)}"; } or
+   { $description contains "${escapeString(args.search)}"; }`
+        : ''
+    }`,
+    args
+  );
 
 export const findById = groupId => getById(groupId);
 

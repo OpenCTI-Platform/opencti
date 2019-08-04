@@ -66,8 +66,8 @@ const styles = theme => ({
 
 const stixDomainEntityKnowledgeReportsNumberQuery = graphql`
   query StixDomainEntityKnowledgeReportsNumberQuery(
-  $objectId: String
-  $endDate: DateTime
+    $objectId: String
+    $endDate: DateTime
   ) {
     reportsNumber(objectId: $objectId, endDate: $endDate) {
       total
@@ -78,10 +78,10 @@ const stixDomainEntityKnowledgeReportsNumberQuery = graphql`
 
 const stixDomainEntityKnowledgeStixRelationsNumberQuery = graphql`
   query StixDomainEntityKnowledgeStixRelationsNumberQuery(
-  $type: String
-  $fromId: String
-  $endDate: DateTime
-  $inferred: Boolean
+    $type: String
+    $fromId: String
+    $endDate: DateTime
+    $inferred: Boolean
   ) {
     stixRelationsNumber(
       type: $type
@@ -100,7 +100,9 @@ class StixDomainEntityKnowledge extends Component {
     const {
       t, classes, stixDomainEntityId, stixDomainEntityType,
     } = this.props;
-    const link = `${resolveLink(stixDomainEntityType)}/${stixDomainEntityId}/knowledge`;
+    const link = `${resolveLink(
+      stixDomainEntityType,
+    )}/${stixDomainEntityId}/knowledge`;
     return (
       <div>
         <Grid container={true} spacing={2}>
@@ -127,19 +129,19 @@ class StixDomainEntityKnowledge extends Component {
                           difference={difference}
                           description="last month"
                         />
-                        <div className="clearfix"/>
+                        <div className="clearfix" />
                         <div className={classes.title}>
                           {t('Total reports')}
                         </div>
                         <div className={classes.icon}>
-                          <Assignment color="inherit" fontSize="large"/>
+                          <Assignment color="inherit" fontSize="large" />
                         </div>
                       </CardContent>
                     );
                   }
                   return (
                     <div style={{ textAlign: 'center', paddingTop: 35 }}>
-                      <CircularProgress size={40} thickness={2}/>
+                      <CircularProgress size={40} thickness={2} />
                     </div>
                   );
                 }}
@@ -170,19 +172,19 @@ class StixDomainEntityKnowledge extends Component {
                           difference={difference}
                           description="last month"
                         />
-                        <div className="clearfix"/>
+                        <div className="clearfix" />
                         <div className={classes.title}>
                           {t('Total direct relations')}
                         </div>
                         <div className={classes.icon}>
-                          <DeviceHub color="inherit" fontSize="large"/>
+                          <DeviceHub color="inherit" fontSize="large" />
                         </div>
                       </CardContent>
                     );
                   }
                   return (
                     <div style={{ textAlign: 'center', paddingTop: 35 }}>
-                      <CircularProgress size={40} thickness={2}/>
+                      <CircularProgress size={40} thickness={2} />
                     </div>
                   );
                 }}
@@ -192,7 +194,7 @@ class StixDomainEntityKnowledge extends Component {
         </Grid>
         <Grid container={true} spacing={2}>
           <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
-            <EntityReportsPie entityId={stixDomainEntityId}/>
+            <EntityReportsPie entityId={stixDomainEntityId} />
           </Grid>
           <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
             <EntityStixRelationsDonut
@@ -210,7 +212,7 @@ class StixDomainEntityKnowledge extends Component {
               entityId={stixDomainEntityId}
               entityType="Stix-Domain-Entity"
               title={t('Direct relations creations')}
-              field='created_at'
+              field="created_at"
             />
           </Grid>
           <Grid item={true} xs={6} style={{ marginBottom: 50 }}>

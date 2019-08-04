@@ -1,123 +1,22 @@
-/* eslint-disable no-nested-ternary */
-// TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  assoc, compose, defaultTo, lensProp, map, over, pipe,
-} from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import IconButton from '@material-ui/core/IconButton';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import {
-  ArrowDropDown,
-  ArrowDropUp,
-  ArrowUpward,
-  ArrowDownward,
-  Dashboard,
-  TableChart,
-} from '@material-ui/icons';
+import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { fetchQuery, QueryRenderer } from '../../../relay/environment';
+import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
-import SearchInput from '../../../components/SearchInput';
-import StixDomainEntitiesImportData from '../common/stix_domain_entities/StixDomainEntitiesImportData';
-import StixDomainEntitiesExportData from '../common/stix_domain_entities/StixDomainEntitiesExportData';
+import ListCards from '../../../components/list_cards/ListCards';
+import ListLines from '../../../components/list_lines/ListLines';
+import SectorsCards, { sectorsCardsQuery } from './sectors/SectorsCards';
 import SectorsLines, { sectorsLinesQuery } from './sectors/SectorsLines';
-import SectorsCards, {
-  sectorsCardsQuery,
-  nbCardsToLoad,
-} from './sectors/SectorsCards';
 import SectorCreation from './sectors/SectorCreation';
-import { dateFormat } from '../../../utils/Time';
 
-const styles = () => ({
-  linesContainer: {
-    marginTop: 10,
-    paddingTop: 0,
-  },
-  item: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-  },
-  parameters: {
-    float: 'left',
-    marginTop: -10,
-  },
-  views: {
-    float: 'right',
-    marginTop: -20,
-  },
-  inputLabel: {
-    float: 'left',
-  },
-  sortField: {
-    float: 'left',
-  },
-  sortFieldLabel: {
-    margin: '10px 15px 0 0',
-    fontSize: 14,
-    float: 'left',
-  },
-  sortIcon: {
-    float: 'left',
-    margin: '-5px 0 0 15px',
-  },
-});
-
-const inlineStyles = {
-  iconSort: {
-    position: 'absolute',
-    margin: '0 0 0 5px',
-    padding: 0,
-    top: '0px',
-  },
-  name: {
-    float: 'left',
-    width: '70%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  created: {
-    float: 'left',
-    width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  modified: {
-    float: 'left',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-};
-
-const exportSectorsQuery = graphql`
-  query SectorsExportSectorsQuery(
-    $count: Int!
-    $cursor: ID
-    $orderBy: SectorsOrdering
-    $orderMode: OrderingMode
-  ) {
-    sectors(
-      first: $count
-      after: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    ) @connection(key: "Pagination_sectors") {
+export const sectorsSearchQuery = graphql`
+  query SectorsSearchQuery($search: String) {
+    sectors(search: $search) {
       edges {
         node {
           id
           name
-          description
-          created
-          modified
         }
       }
     }
@@ -128,11 +27,10 @@ class Sectors extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      view: 'cards',
       sortBy: 'name',
       orderAsc: true,
       searchTerm: '',
-      csvData: null,
+      view: 'cards',
     };
   }
 
@@ -144,240 +42,115 @@ class Sectors extends Component {
     this.setState({ searchTerm: value });
   }
 
-  handleChangeSortBy(event) {
-    this.setState({ sortBy: event.target.value });
+  handleSort(field, orderAsc) {
+    this.setState({ sortBy: field, orderAsc });
   }
 
-  reverse() {
-    this.setState({ orderAsc: !this.state.orderAsc });
-  }
-
-  reverseBy(field) {
-    this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
-  }
-
-  SortHeader(field, label) {
-    const { t } = this.props;
-    return (
-      <div
-        style={inlineStyles[field]}
-        onClick={this.reverseBy.bind(this, field)}
-      >
-        <span>{t(label)}</span>
-        {this.state.sortBy === field ? (
-          this.state.orderAsc ? (
-            <ArrowDropDown style={inlineStyles.iconSort} />
-          ) : (
-            <ArrowDropUp style={inlineStyles.iconSort} />
-          )
-        ) : (
-          ''
-        )}
-      </div>
-    );
-  }
-
-  handleGenerateCSV() {
-    this.setState({ csvData: null });
-    const paginationOptions = {
-      orderBy: this.state.sortBy,
-      orderMode: this.state.orderAsc ? 'asc' : 'desc',
+  renderCards(paginationOptions) {
+    const { sortBy, orderAsc } = this.state;
+    const dataColumns = {
+      name: {
+        label: 'Name',
+      },
+      created: {
+        label: 'Creation date',
+      },
+      modified: {
+        label: 'Modification date',
+      },
     };
-    fetchQuery(exportSectorsQuery, {
-      count: 90000,
-      ...paginationOptions,
-    }).then((data) => {
-      const finalData = pipe(
-        map(n => n.node),
-        map(n => over(lensProp('description'), defaultTo('-'))(n)),
-        map(n => assoc('created', dateFormat(n.created))(n)),
-        map(n => assoc('modified', dateFormat(n.modified))(n)),
-      )(data.sectors.edges);
-      this.setState({ csvData: finalData });
-    });
-  }
-
-  renderCardParameters() {
-    const { t, classes } = this.props;
     return (
-      <div>
-        <div style={{ float: 'left', marginRight: 20 }}>
-          <SearchInput
-            variant="small"
-            onChange={this.handleSearch.bind(this)}
-          />
-        </div>
-        <InputLabel classes={{ root: classes.sortFieldLabel }}>
-          {t('Sort by')}
-        </InputLabel>
-        <FormControl classes={{ root: classes.sortField }}>
-          <Select
-            name="sort-by"
-            value={this.state.sortBy}
-            onChange={this.handleChangeSortBy.bind(this)}
-            inputProps={{
-              name: 'sort-by',
-              id: 'sort-by',
-            }}
-          >
-            <MenuItem value="name">{t('Name')}</MenuItem>
-            <MenuItem value="created">{t('Creation date')}</MenuItem>
-            <MenuItem value="modified">{t('Modification date')}</MenuItem>
-          </Select>
-        </FormControl>
-        <IconButton
-          aria-label="Sort by"
-          onClick={this.reverse.bind(this)}
-          classes={{ root: classes.sortIcon }}
-        >
-          {this.state.orderAsc ? <ArrowDownward /> : <ArrowUpward />}
-        </IconButton>
-      </div>
-    );
-  }
-
-  renderCards() {
-    return (
-      <QueryRenderer
-        query={sectorsCardsQuery}
-        variables={{
-          count: nbCardsToLoad,
-          orderBy: this.state.sortBy,
-          orderMode: this.state.orderAsc ? 'asc' : 'desc',
-        }}
-        render={({ props }) => {
-          if (props) {
-            return (
-              <SectorsCards
-                data={props}
-                dummy={false}
-                searchTerm={this.state.searchTerm}
-              />
-            );
-          }
-          return (
+      <ListCards
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={this.handleSort.bind(this)}
+        handleSearch={this.handleSearch.bind(this)}
+        handleChangeView={this.handleChangeView.bind(this)}
+        displayImport={true}
+      >
+        <QueryRenderer
+          query={sectorsCardsQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ props }) => (
             <SectorsCards
-              data={null}
-              dummy={true}
-              searchTerm={this.state.searchTerm}
+              data={props}
+              paginationOptions={paginationOptions}
+              initialLoading={props === null}
             />
-          );
-        }}
-      />
+          )}
+        />
+      </ListCards>
     );
   }
 
-  renderLinesParameters() {
+  renderLines(paginationOptions) {
+    const { sortBy, orderAsc } = this.state;
+    const dataColumns = {
+      name: {
+        label: 'Name',
+        width: '60%',
+        isSortable: true,
+      },
+      created: {
+        label: 'Creation date',
+        width: '15%',
+        isSortable: true,
+      },
+      modified: {
+        label: 'Modification date',
+        width: '15%',
+        isSortable: true,
+      },
+    };
     return (
-      <div>
-        <SearchInput variant="small" onChange={this.handleSearch.bind(this)} />
-      </div>
-    );
-  }
-
-  renderLines() {
-    const { classes } = this.props;
-    return (
-      <List classes={{ root: classes.linesContainer }}>
-        <ListItem
-          classes={{ root: classes.item }}
-          divider={false}
-          style={{ paddingTop: 0 }}
-        >
-          <ListItemIcon>
-            <span
-              style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}
-            >
-              #
-            </span>
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <div>
-                {this.SortHeader('name', 'Name')}
-                {this.SortHeader('created', 'Creation date')}
-                {this.SortHeader('modified', 'Modification date')}
-              </div>
-            }
-          />
-        </ListItem>
+      <ListLines
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={this.handleSort.bind(this)}
+        handleSearch={this.handleSearch.bind(this)}
+        handleChangeView={this.handleChangeView.bind(this)}
+        displayImport={true}
+      >
         <QueryRenderer
           query={sectorsLinesQuery}
-          variables={{
-            count: 25,
-            orderBy: this.state.sortBy,
-            orderMode: this.state.orderAsc ? 'asc' : 'desc',
-          }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <SectorsLines data={props} searchTerm={this.state.searchTerm} />
-              );
-            }
-            return (
-              <SectorsLines
-                data={null}
-                dummy={true}
-                searchTerm={this.state.searchTerm}
-              />
-            );
-          }}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ props }) => (
+            <SectorsLines
+              data={props}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              initialLoading={props === null}
+            />
+          )}
         />
-      </List>
+      </ListLines>
     );
   }
 
   render() {
-    const { classes } = this.props;
+    const {
+      view, sortBy, orderAsc, searchTerm,
+    } = this.state;
+    const paginationOptions = {
+      search: searchTerm,
+      orderBy: sortBy,
+      orderMode: orderAsc ? 'asc' : 'desc',
+    };
     return (
       <div>
-        <div className={classes.parameters}>
-          {this.state.view === 'cards' ? this.renderCardParameters() : ''}
-          {this.state.view === 'lines' ? this.renderLinesParameters() : ''}
-        </div>
-        <div className={classes.views}>
-          <IconButton
-            color={this.state.view === 'cards' ? 'secondary' : 'primary'}
-            classes={{ root: classes.button }}
-            onClick={this.handleChangeView.bind(this, 'cards')}
-          >
-            <Dashboard />
-          </IconButton>
-          <IconButton
-            color={this.state.view === 'lines' ? 'secondary' : 'primary'}
-            classes={{ root: classes.button }}
-            onClick={this.handleChangeView.bind(this, 'lines')}
-          >
-            <TableChart />
-          </IconButton>
-          <StixDomainEntitiesImportData />
-          <StixDomainEntitiesExportData
-            fileName="Sectors"
-            handleGenerateCSV={this.handleGenerateCSV.bind(this)}
-            csvData={this.state.csvData}
-          />
-        </div>
-        <div className="clearfix" />
-        {this.state.view === 'cards' ? this.renderCards() : ''}
-        {this.state.view === 'lines' ? this.renderLines() : ''}
-        <SectorCreation
-          paginationOptions={{
-            orderBy: this.state.sortBy,
-            orderMode: this.state.orderAsc ? 'asc' : 'desc',
-          }}
-        />
+        {view === 'cards' ? this.renderCards(paginationOptions) : ''}
+        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        <SectorCreation paginationOptions={paginationOptions} />
       </div>
     );
   }
 }
 
 Sectors.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Sectors);
+export default compose(inject18n)(Sectors);

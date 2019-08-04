@@ -19,9 +19,7 @@ class Root extends Component {
         <BoundaryRoute
           exact
           path="/dashboard/techniques"
-          render={() => (
-            <Redirect to="/dashboard/techniques/attack_patterns" />
-          )}
+          render={() => <Redirect to="/dashboard/techniques/attack_patterns" />}
         />
         <BoundaryRoute
           exact
@@ -30,9 +28,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/techniques/attack_patterns/:attackPatternId"
-          render={routeProps => (
-            <RootAttackPattern {...routeProps} me={me} />
-          )}
+          render={routeProps => <RootAttackPattern {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
@@ -41,9 +37,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/techniques/courses_of_action/:courseOfActionId"
-          render={routeProps => (
-            <RootCourseOfAction {...routeProps} me={me} />
-          )}
+          render={routeProps => <RootCourseOfAction {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
@@ -52,9 +46,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/techniques/tools/:toolId"
-          render={routeProps => (
-            <RootTool {...routeProps} me={me} />
-          )}
+          render={routeProps => <RootTool {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
@@ -63,12 +55,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/techniques/vulnerabilities/:vulnerabilityId"
-          render={routeProps => (
-            <RootVulnerabilities
-              {...routeProps}
-              me={me}
-            />
-          )}
+          render={routeProps => <RootVulnerabilities {...routeProps} me={me} />}
         />
       </Switch>
     );

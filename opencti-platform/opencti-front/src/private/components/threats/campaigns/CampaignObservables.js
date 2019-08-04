@@ -36,15 +36,13 @@ class CampaignObservablesComponent extends Component {
       <div
         className={
           location.pathname.includes(
-            `/dashboard/threats/campaigns/${
-              campaign.id
-            }/observables/relations/`,
+            `/dashboard/threats/campaigns/${campaign.id}/observables/relations/`,
           )
             ? classes.containerWithoutPadding
             : classes.container
         }
       >
-        <CampaignHeader campaign={campaign} variant="noalias" />
+        <CampaignHeader campaign={campaign} />
         <Route
           exact
           path="/dashboard/threats/campaigns/:campaignId/observables/relations/:relationId"

@@ -20,6 +20,7 @@ const styles = theme => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
+    cursor: 'pointer',
     '&:hover': {
       background: 'rgba(0, 0, 0, 0.1)',
     },
@@ -28,8 +29,12 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: '100%',
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   goIcon: {
     position: 'absolute',
@@ -46,69 +51,19 @@ const styles = theme => ({
   },
 });
 
-const inlineStyles = {
-  entity_type: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  name: {
-    float: 'left',
-    width: '22%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  role_played: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  first_seen: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  last_seen: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  weight: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
-
 class StixObservableEntityLineComponent extends Component {
   render() {
     const {
       nsd,
       t,
       classes,
-      stixRelation,
-      stixDomainEntity,
+      dataColumns,
+      node,
       paginationOptions,
     } = this.props;
-    const link = `${resolveLink(stixDomainEntity.entity_type)}/${
-      stixDomainEntity.id
-    }/observables/relations/${stixRelation.id}`;
+    const link = `${resolveLink(node.to.entity_type)}/${
+      node.to.id
+    }/observables/relations/${node.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -125,28 +80,44 @@ class StixObservableEntityLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.entity_type}
+                style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`entity_${stixDomainEntity.entity_type}`)}
-              </div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
-                {stixDomainEntity.name}
+                {t(`entity_${node.to.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.role_played}
+                style={{ width: dataColumns.name.width }}
               >
-                {stixRelation.inferred ? '-' : stixRelation.role_played ? t(stixRelation.role_played) : t('Unknown')}
+                {node.to.name}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.first_seen}>
-                {stixRelation.inferred ? '-' : nsd(stixRelation.first_seen)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.role_played.width }}
+              >
+                {node.inferred
+                  ? '-'
+                  : node.role_played
+                    ? t(node.role_played)
+                    : t('Unknown')}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.last_seen}>
-                {stixRelation.inferred ? '-' : nsd(stixRelation.last_seen)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.first_seen.width }}
+              >
+                {node.inferred ? '-' : nsd(node.first_seen)}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.weight}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.last_seen.width }}
+              >
+                {node.inferred ? '-' : nsd(node.last_seen)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.weight.width }}
+              >
                 <ItemConfidenceLevel
-                  level={stixRelation.inferred ? 99 : stixRelation.weight}
+                  level={node.inferred ? 99 : node.weight}
                   variant="inList"
                 />
               </div>
@@ -155,9 +126,9 @@ class StixObservableEntityLineComponent extends Component {
         />
         <ListItemSecondaryAction>
           <StixRelationPopover
-            stixRelationId={stixRelation.id}
+            stixRelationId={node.id}
             paginationOptions={paginationOptions}
-            disabled={stixRelation.inferred}
+            disabled={node.inferred}
           />
         </ListItemSecondaryAction>
       </ListItem>
@@ -166,12 +137,9 @@ class StixObservableEntityLineComponent extends Component {
 }
 
 StixObservableEntityLineComponent.propTypes = {
-  entityId: PropTypes.string,
-  entityLink: PropTypes.string,
+  dataColumns: PropTypes.object,
   paginationOptions: PropTypes.object,
-  stixRelation: PropTypes.object,
-  stixDomainEntity: PropTypes.object,
-  stixObservable: PropTypes.object,
+  node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,
@@ -180,8 +148,8 @@ StixObservableEntityLineComponent.propTypes = {
 const StixObservableEntityLineFragment = createFragmentContainer(
   StixObservableEntityLineComponent,
   {
-    stixRelation: graphql`
-      fragment StixObservableEntityLine_stixRelation on StixRelation {
+    node: graphql`
+      fragment StixObservableEntityLine_node on StixRelation {
         id
         weight
         first_seen
@@ -189,26 +157,16 @@ const StixObservableEntityLineFragment = createFragmentContainer(
         description
         role_played
         inferred
-      }
-    `,
-    stixDomainEntity: graphql`
-      fragment StixObservableEntityLine_stixDomainEntity on StixDomainEntity {
-        id
-        entity_type
-        name
-        description
-        created_at
-        updated_at
-      }
-    `,
-    stixObservable: graphql`
-      fragment StixObservableEntityLine_stixObservable on StixObservable {
-        id
-        entity_type
-        observable_value
-        description
-        created_at
-        updated_at
+        to {
+          ... on StixDomainEntity {
+            id
+            entity_type
+            name
+            description
+            created_at
+            updated_at
+          }
+        }
       }
     `,
   },
@@ -221,7 +179,7 @@ export const StixObservableEntityLine = compose(
 
 class StixObservableEntityLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -232,26 +190,38 @@ class StixObservableEntityLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.entity_type}
+                style={{ width: dataColumns.entity_type.width }}
               >
-                <div className="fakeItem" style={{ width: '80%' }} />
-              </div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.role_played}
+                style={{ width: dataColumns.name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.first_seen}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.role_played.width }}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.first_seen.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.last_seen}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.last_seen.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.weight}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.weight.width }}
+              >
                 <div className="fakeItem" style={{ width: 100 }} />
               </div>
             </div>
@@ -266,6 +236,7 @@ class StixObservableEntityLineDummyComponent extends Component {
 }
 
 StixObservableEntityLineDummyComponent.propTypes = {
+  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

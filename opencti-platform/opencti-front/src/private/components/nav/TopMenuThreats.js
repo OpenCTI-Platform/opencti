@@ -46,7 +46,10 @@ class TopMenuThreats extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Public className={width > 950 ? classes.icon : ''} fontSize="small" />
+          <Public
+            className={width > 950 ? classes.icon : ''}
+            fontSize="small"
+          />
           {width > 950 ? t('Threat actors') : ''}
         </Button>
         <Button
@@ -65,7 +68,10 @@ class TopMenuThreats extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Diamond className={width > 950 ? classes.icon : ''} fontSize="small" />
+          <Diamond
+            className={width > 950 ? classes.icon : ''}
+            fontSize="small"
+          />
           {width > 950 ? t('Intrusion sets') : ''}
         </Button>
         <Button
@@ -84,7 +90,10 @@ class TopMenuThreats extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <ChessKnight className={width > 950 ? classes.icon : ''} fontSize="small" />
+          <ChessKnight
+            className={width > 950 ? classes.icon : ''}
+            fontSize="small"
+          />
           {width > 950 ? t('Campaigns') : ''}
         </Button>
         <Button
@@ -122,7 +131,10 @@ class TopMenuThreats extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Biohazard className={width > 950 ? classes.icon : ''} fontSize="small" />
+          <Biohazard
+            className={width > 950 ? classes.icon : ''}
+            fontSize="small"
+          />
           {width > 950 ? t('Malwares') : ''}
         </Button>
       </div>

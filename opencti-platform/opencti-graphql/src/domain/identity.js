@@ -9,33 +9,18 @@ import {
   yearFormat,
   notify,
   now,
-  paginate,
   takeWriteTx,
   commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { index, paginate as elPaginate } from '../database/elasticSearch';
 
-export const findAll = args => paginate('match $i isa Identity', args, false);
+export const findAll = args => elPaginate(
+  'stix_domain_entities',
+  assoc('types', ['user', 'organization', 'region', 'country', 'city'], args)
+);
 
 export const findById = identityId => getById(identityId);
-
-export const search = args =>
-  elPaginate(
-    'stix_domain_entities',
-    assoc('types', ['user', 'organization', 'region', 'country', 'city'], args)
-  );
-/*
-  paginate(
-    `match $i isa Identity; 
-    $i has name $name; 
-    $i has alias $alias; 
-    { $name contains "${escapeString(args.search)}"; } or
-    { $alias contains "${escapeString(args.search)}"; }`,
-    args,
-    false
-  );
-*/
 
 export const addIdentity = async (user, identity) => {
   const wTx = await takeWriteTx();

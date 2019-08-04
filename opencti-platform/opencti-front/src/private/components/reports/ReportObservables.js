@@ -344,7 +344,9 @@ class ReportObservablesComponent extends Component {
                         className={classes.bodyItem}
                         style={inlineStyles.role_played}
                       >
-                        {relationRef.role_played ? t(relationRef.role_played) : t('Unknown')}
+                        {relationRef.role_played
+                          ? t(relationRef.role_played)
+                          : t('Unknown')}
                       </div>
                       <div
                         className={classes.bodyItem}

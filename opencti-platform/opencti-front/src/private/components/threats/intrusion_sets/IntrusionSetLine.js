@@ -25,7 +25,12 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   goIcon: {
     position: 'absolute',
@@ -42,41 +47,17 @@ const styles = theme => ({
   },
 });
 
-const inlineStyles = {
-  name: {
-    float: 'left',
-    width: '70%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  modified: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
-
 class IntrusionSetLineComponent extends Component {
   render() {
-    const { fd, classes, intrusionSet } = this.props;
+    const {
+      fd, classes, node, dataColumns,
+    } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}`}
+        to={`/dashboard/threats/intrusion_sets/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Diamond />
@@ -84,14 +65,23 @@ class IntrusionSetLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
-                {intrusionSet.name}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.name}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(intrusionSet.created)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fd(node.created)}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.modified}>
-                {fd(intrusionSet.modified)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
+                {fd(node.modified)}
               </div>
             </div>
           }
@@ -105,7 +95,8 @@ class IntrusionSetLineComponent extends Component {
 }
 
 IntrusionSetLineComponent.propTypes = {
-  intrusionSet: PropTypes.object,
+  dataColumns: PropTypes.object,
+  node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
@@ -113,8 +104,8 @@ IntrusionSetLineComponent.propTypes = {
 const IntrusionSetLineFragment = createFragmentContainer(
   IntrusionSetLineComponent,
   {
-    intrusionSet: graphql`
-      fragment IntrusionSetLine_intrusionSet on IntrusionSet {
+    node: graphql`
+      fragment IntrusionSetLine_node on IntrusionSet {
         id
         name
         created
@@ -131,7 +122,7 @@ export const IntrusionSetLine = compose(
 
 class IntrusionSetLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -140,13 +131,22 @@ class IntrusionSetLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.modified}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>
@@ -162,6 +162,7 @@ class IntrusionSetLineDummyComponent extends Component {
 
 IntrusionSetLineDummyComponent.propTypes = {
   classes: PropTypes.object,
+  dataColumns: PropTypes.object,
 };
 
 export const IntrusionSetLineDummy = compose(

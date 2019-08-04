@@ -29,6 +29,13 @@ export const findAll = args => {
         ? `; 
     $w has workspace_type "${escapeString(args.workspaceType)}"`
         : ''
+    }${
+      args.search
+        ? `; $w has name $name;
+   $w has description $description;
+   { $name contains "${escapeString(args.search)}"; } or
+   { $description contains "${escapeString(args.search)}"; }`
+        : ''
     }`,
     args
   );

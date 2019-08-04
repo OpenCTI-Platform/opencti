@@ -27,7 +27,12 @@ const styles = theme => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   goIcon: {
     position: 'absolute',
@@ -37,59 +42,30 @@ const styles = theme => ({
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },
+  placeholder: {
+    display: 'inline-block',
+    height: '1em',
+    backgroundColor: theme.palette.grey[700],
+  },
 });
-
-const inlineStyles = {
-  killChainPhases: {
-    float: 'left',
-    width: '25%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  name: {
-    float: 'left',
-    width: '45%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  created: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  modified: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
 
 class AttackPatternLineComponent extends Component {
   render() {
     const {
-      fd, classes, attackPattern, orderAsc,
+      fd, classes, node, dataColumns, orderAsc,
     } = this.props;
     const killchainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map(n => n.node.phase_name),
       sort((a, b) => (orderAsc ? a.localeCompare(b) : b.localeCompare(a))),
       join(', '),
-    )(attackPattern);
+    )(node);
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         component={Link}
-        to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
+        to={`/dashboard/techniques/attack_patterns/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <LockPattern />
@@ -99,18 +75,27 @@ class AttackPatternLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.killChainPhases}
+                style={{ width: dataColumns.killChainPhases.width }}
               >
                 {killchainPhases}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
-                {attackPattern.name}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.name}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
-                {fd(attackPattern.created)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fd(node.created)}
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.modified}>
-                {fd(attackPattern.modified)}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
+                {fd(node.modified)}
               </div>
             </div>
           }
@@ -124,7 +109,8 @@ class AttackPatternLineComponent extends Component {
 }
 
 AttackPatternLineComponent.propTypes = {
-  attackPattern: PropTypes.object,
+  dataColumns: PropTypes.object,
+  node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
   orderAsc: PropTypes.bool,
@@ -133,8 +119,8 @@ AttackPatternLineComponent.propTypes = {
 const AttackPatternLineFragment = createFragmentContainer(
   AttackPatternLineComponent,
   {
-    attackPattern: graphql`
-      fragment AttackPatternLine_attackPattern on AttackPattern {
+    node: graphql`
+      fragment AttackPatternLine_node on AttackPattern {
         id
         name
         created
@@ -160,7 +146,7 @@ export const AttackPatternLine = compose(
 
 class AttackPatternLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
@@ -171,17 +157,26 @@ class AttackPatternLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={inlineStyles.killChainPhases}
+                style={{ width: dataColumns.killChainPhases.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.created}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
-              <div className={classes.bodyItem} style={inlineStyles.modified}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>
@@ -196,6 +191,7 @@ class AttackPatternLineDummyComponent extends Component {
 }
 
 AttackPatternLineDummyComponent.propTypes = {
+  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

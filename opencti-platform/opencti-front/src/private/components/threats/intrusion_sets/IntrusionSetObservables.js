@@ -31,22 +31,18 @@ const styles = () => ({
 class IntrusionSetObservablesComponent extends Component {
   render() {
     const { classes, intrusionSet, location } = this.props;
-    const link = `/dashboard/threats/intrusion_sets/${
-      intrusionSet.id
-    }/observables`;
+    const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/observables`;
     return (
       <div
         className={
           location.pathname.includes(
-            `/dashboard/threats/intrusion_sets/${
-              intrusionSet.id
-            }/observables/relations/`,
+            `/dashboard/threats/intrusion_sets/${intrusionSet.id}/observables/relations/`,
           )
             ? classes.containerWithoutPadding
             : classes.container
         }
       >
-        <IntrusionSetHeader intrusionSet={intrusionSet} variant="noalias" />
+        <IntrusionSetHeader intrusionSet={intrusionSet} />
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/observables/relations/:relationId"

@@ -7,16 +7,16 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import ThreatActorHeader from './ThreatActorHeader';
-import EntityReports from '../../reports/EntityReports';
+import Reports from '../../reports/Reports';
 
-const styles = theme => ({
+const styles = () => ({
   container: {
     margin: 0,
   },
   paper: {
     minHeight: '100%',
     margin: '5px 0 0 0',
-    padding: '15px',
+    padding: '25px 15px 15px 15px',
     borderRadius: 6,
   },
 });
@@ -28,7 +28,7 @@ class ThreatActorReportsComponent extends Component {
       <div className={classes.container}>
         <ThreatActorHeader threatActor={threatActor} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={threatActor.id} />
+          <Reports objectId={threatActor.id} />
         </Paper>
       </div>
     );

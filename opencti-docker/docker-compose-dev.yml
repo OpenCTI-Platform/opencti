@@ -12,12 +12,11 @@ services:
     restart: always
     ports:
       - 6379:6379
-  opencti-dev-elasticsearch-01:
+  opencti-dev-elasticsearch:
     container_name: opencti-dev-elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
-    container_name: opencti-dev-elasticsearch-01
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
     environment:
-      - cluster.initial_master_nodes=opencti-dev-elasticsearch-01
+      - discovery.type=single-node
     restart: always
     ulimits:
       memlock:
@@ -28,6 +27,7 @@ services:
         hard: 65536
     ports:
       - 9200:9200
+      - 9300:9300
   opencti-dev-rabbitmq:
     container_name: opencti-dev-rabbitmq
     image: rabbitmq:3.7.16-management

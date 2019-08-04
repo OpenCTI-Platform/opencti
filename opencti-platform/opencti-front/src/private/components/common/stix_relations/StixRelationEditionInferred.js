@@ -166,9 +166,7 @@ class StixRelationEditionInferred extends Component {
                 variant="contained"
                 color="primary"
                 component={Link}
-                to={`${link}/${
-                  stixDomainEntity.id
-                }/knowledge/relations/${stixRelationId}`}
+                to={`${link}/${stixDomainEntity.id}/knowledge/relations/${stixRelationId}`}
                 classes={{ root: classes.buttonLeft }}
               >
                 {t('Details')}

@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import AttackPatternHeader from './AttackPatternHeader';
-import EntityReports from '../../reports/EntityReports';
+import Reports from '../../reports/Reports';
 
 const styles = () => ({
   container: {
@@ -16,7 +16,7 @@ const styles = () => ({
   paper: {
     minHeight: '100%',
     margin: '5px 0 0 0',
-    padding: '15px',
+    padding: '25px 15px 15px 15px',
     borderRadius: 6,
   },
 });
@@ -28,7 +28,7 @@ class AttackPatternReportsComponent extends Component {
       <div className={classes.container}>
         <AttackPatternHeader attackPattern={attackPattern} />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <EntityReports entityId={attackPattern.id} />
+          <Reports objectId={attackPattern.id} />
         </Paper>
       </div>
     );

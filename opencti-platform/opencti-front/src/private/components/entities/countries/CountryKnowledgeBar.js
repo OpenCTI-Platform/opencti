@@ -9,9 +9,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { AccountBalance } from '@material-ui/icons';
-import {
-  Gauge, TargetVariant, CityVariant,
-} from 'mdi-material-ui';
+import { Gauge, TargetVariant, CityVariant } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
 const styles = theme => ({

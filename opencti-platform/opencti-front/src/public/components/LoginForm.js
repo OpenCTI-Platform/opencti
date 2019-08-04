@@ -55,7 +55,10 @@ class LoginForm extends Component {
     return (
       <div className={classes.login}>
         <Formik
-          initialValues={{ email: demo ? 'demo@opencti.io' : '', password: demo ? 'demo' : '' }}
+          initialValues={{
+            email: demo ? 'demo@opencti.io' : '',
+            password: demo ? 'demo' : '',
+          }}
           validationSchema={loginValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           render={({ submitForm, isSubmitting }) => (

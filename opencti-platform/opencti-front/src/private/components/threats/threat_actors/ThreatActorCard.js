@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
@@ -77,29 +77,27 @@ const styles = theme => ({
 class ThreatActorCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, threatActor,
+      t, fsd, classes, node,
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/threats/threat_actors/${threatActor.id}`}
+          to={`/dashboard/threats/threat_actors/${node.id}`}
         >
           <CardHeader
             classes={{ root: classes.header }}
             avatar={
-              <Avatar className={classes.avatar}>
-                {threatActor.name.charAt(0)}
-              </Avatar>
+              <Avatar className={classes.avatar}>{node.name.charAt(0)}</Avatar>
             }
-            title={threatActor.name}
-            subheader={`${t('Updated the')} ${fsd(threatActor.modified)}`}
+            title={node.name}
+            subheader={`${t('Updated the')} ${fsd(node.modified)}`}
             action={<Public className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.content }}>
             <Markdown
-              source={threatActor.description}
+              source={node.description}
               disallowedTypes={['link', 'linkReference']}
               unwrapDisallowed={true}
             />
@@ -111,7 +109,7 @@ class ThreatActorCardComponent extends Component {
 }
 
 ThreatActorCardComponent.propTypes = {
-  threatActor: PropTypes.object,
+  node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
@@ -120,8 +118,8 @@ ThreatActorCardComponent.propTypes = {
 const ThreatActorCardFragment = createFragmentContainer(
   ThreatActorCardComponent,
   {
-    threatActor: graphql`
-      fragment ThreatActorCard_threatActor on ThreatActor {
+    node: graphql`
+      fragment ThreatActorCard_node on ThreatActor {
         id
         name
         description

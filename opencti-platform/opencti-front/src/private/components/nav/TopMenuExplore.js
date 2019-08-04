@@ -24,15 +24,11 @@ class TopMenuExplore extends Component {
           component={Link}
           to="/dashboard/investigate"
           variant={
-            location.pathname === '/dashboard/explore'
-              ? 'contained'
-              : 'text'
+            location.pathname === '/dashboard/explore' ? 'contained' : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/explore'
-              ? 'primary'
-              : 'inherit'
+            location.pathname === '/dashboard/explore' ? 'primary' : 'inherit'
           }
           classes={{ root: classes.button }}
         >

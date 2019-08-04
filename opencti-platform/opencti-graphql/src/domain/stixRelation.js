@@ -84,8 +84,8 @@ export const findByStixId = args =>
 export const search = args =>
   paginateRelationships(
     `match $rel($from, $to) isa relation;
-    $rel has name $name;
-    $rel has description $desc;
+    $to has name $name;
+    $to has description $desc;
     { $name contains "${escapeString(args.search)}"; } or
     { $desc contains "${escapeString(args.search)}"; }`,
     args

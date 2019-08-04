@@ -77,29 +77,27 @@ const styles = theme => ({
 class SectorCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, sector,
+      t, fsd, classes, node,
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/entities/sectors/${sector.id}`}
+          to={`/dashboard/entities/sectors/${node.id}`}
         >
           <CardHeader
             classes={{ root: classes.header }}
             avatar={
-              <Avatar className={classes.avatar}>
-                {sector.name.charAt(0)}
-              </Avatar>
+              <Avatar className={classes.avatar}>{node.name.charAt(0)}</Avatar>
             }
-            title={sector.name}
-            subheader={`${t('Updated the')} ${fsd(sector.modified)}`}
+            title={node.name}
+            subheader={`${t('Updated the')} ${fsd(node.modified)}`}
             action={<Domain className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.content }}>
             <Markdown
-              source={sector.description}
+              source={node.description}
               disallowedTypes={['link', 'linkReference']}
               unwrapDisallowed={true}
             />
@@ -111,15 +109,15 @@ class SectorCardComponent extends Component {
 }
 
 SectorCardComponent.propTypes = {
-  sector: PropTypes.object,
+  node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
 };
 
 const SectorCardFragment = createFragmentContainer(SectorCardComponent, {
-  sector: graphql`
-    fragment SectorCard_sector on Sector {
+  node: graphql`
+    fragment SectorCard_node on Sector {
       id
       name
       description

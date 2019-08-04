@@ -41,7 +41,9 @@ const styles = theme => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
 
 const cityPopoverCleanContext = graphql`
   mutation CityPopoverCleanContextMutation($id: ID!) {

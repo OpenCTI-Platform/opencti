@@ -15,9 +15,7 @@ import ToolKnowledgeBar from './ToolKnowledgeBar';
 const styles = () => ({
   container: {
     margin: 0,
-  },
-  content: {
-    paddingRight: 260,
+    padding: '0 260px 0 0',
   },
 });
 
@@ -29,84 +27,82 @@ class ToolKnowledgeComponent extends Component {
     const link = `/dashboard/techniques/tools/${tool.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <ToolHeader tool={tool} variant="noalias" />
+        <ToolHeader tool={tool} />
         <ToolKnowledgeBar toolId={tool.id} />
-        <div className={classes.content}>
-          <Route
-            exact
-            path="/dashboard/techniques/tools/:toolId/knowledge/relations/:relationId"
-            render={routeProps => (
-              <StixRelation
-                entityId={tool.id}
-                inversedRoles={inversedRoles}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/tools/:toolId/knowledge/overview"
-            render={routeProps => (
-              <StixDomainEntityKnowledge
-                stixDomainEntityId={tool.id}
-                stixDomainEntityType='tool'
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/tools/:toolId/knowledge/intrusion_sets"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={tool.id}
-                relationType="uses"
-                targetEntityTypes={['Intrusion-Set']}
-                entityLink={link}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/tools/:toolId/knowledge/campaigns"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={tool.id}
-                relationType="uses"
-                targetEntityTypes={['Campaign']}
-                entityLink={link}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/tools/:toolId/knowledge/incidents"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={tool.id}
-                relationType="uses"
-                targetEntityTypes={['Incident']}
-                entityLink={link}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/tools/:toolId/knowledge/malwares"
-            render={routeProps => (
-              <EntityStixRelations
-                entityId={tool.id}
-                relationType="uses"
-                targetEntityTypes={['Malware']}
-                entityLink={link}
-                {...routeProps}
-              />
-            )}
-          />
-        </div>
+        <Route
+          exact
+          path="/dashboard/techniques/tools/:toolId/knowledge/relations/:relationId"
+          render={routeProps => (
+            <StixRelation
+              entityId={tool.id}
+              inversedRoles={inversedRoles}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/techniques/tools/:toolId/knowledge/overview"
+          render={routeProps => (
+            <StixDomainEntityKnowledge
+              stixDomainEntityId={tool.id}
+              stixDomainEntityType="tool"
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/techniques/tools/:toolId/knowledge/intrusion_sets"
+          render={routeProps => (
+            <EntityStixRelations
+              entityId={tool.id}
+              relationType="uses"
+              targetEntityTypes={['Intrusion-Set']}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/techniques/tools/:toolId/knowledge/campaigns"
+          render={routeProps => (
+            <EntityStixRelations
+              entityId={tool.id}
+              relationType="uses"
+              targetEntityTypes={['Campaign']}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/techniques/tools/:toolId/knowledge/incidents"
+          render={routeProps => (
+            <EntityStixRelations
+              entityId={tool.id}
+              relationType="uses"
+              targetEntityTypes={['Incident']}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/techniques/tools/:toolId/knowledge/malwares"
+          render={routeProps => (
+            <EntityStixRelations
+              entityId={tool.id}
+              relationType="uses"
+              targetEntityTypes={['Malware']}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
       </div>
     );
   }
