@@ -3,8 +3,10 @@
 </h1>
 <p align="center">
   <a href="https://www.opencti.io" alt="Website"><img src="https://img.shields.io/badge/website-opencti.io-blue.svg" /></a>
+  <a href="https://opencti-platform.github.io/docs" alt="Documentation"><img src="https://img.shields.io/badge/Documentation-RTFM-orange.svg" /></a>
   <a href="https://circleci.com/gh/OpenCTI-Platform/opencti" alt="CICD"><img src="https://circleci.com/gh/OpenCTI-Platform/opencti.svg?style=shield" /></a>
   <a href="https://github.com/OpenCTI-Platform/opencti/releases/latest" alt="Releases"><img src="https://img.shields.io/github/release/OpenCTI-Platform/opencti.svg" /></a>
+  <a href="https://hub.docker.com/u/opencti" alt="Docker pulls"><img src="https://img.shields.io/docker/pulls/opencti/platform" /></a>
   <a href="https://slack.luatix.org" alt="Slack"><img src="https://slack.luatix.org/badge.svg" /></a>
 </p>
 
