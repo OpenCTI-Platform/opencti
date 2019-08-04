@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Start log
 /etc/init.d/rsyslog start
