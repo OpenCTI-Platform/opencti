@@ -3,6 +3,14 @@
 # Start log
 /etc/init.d/rsyslog start
 
+# Extract ElasticSearch information
+proto="$(echo ${ELASTICSEARCH__URL} | grep :// | sed -e's,^\(.*://\).*,\1,g')"
+url="$(echo ${ELASTICSEARCH__URL/$proto/})"
+hostport="$(echo ${url/$user@/} | cut -d/ -f1)"
+ELASTICSEARCH__HOSTNAME="$(echo $hostport | sed -e 's,:.*,,g')"
+ELASTICSEARCH__PORT="$(echo $hostport | sed -e 's,^.*:,:,g' -e 's,.*:\([0-9]*\).*,\1,g' -e 's,[^0-9],,g')"
+[ -z "$ELASTICSEARCH__PORT" ] && ELASTICSEARCH__PORT=80
+
 # Wait launching
 while ! nc -z ${ELASTICSEARCH__HOSTNAME} ${ELASTICSEARCH__PORT}; do
   echo "Waiting ElasticSearch to launch..."
