@@ -20,7 +20,7 @@ const organizationResolvers = {
     organizations: (_, args) => findAll(args)
   },
   Organization: {
-    createdByRef: (organization, args) => createdByRef(organization.id, args),
+    createdByRef: organization => createdByRef(organization.id),
     markingDefinitions: (organization, args) =>
       markingDefinitions(organization.id, args),
     reports: (organization, args) => reports(organization.id, args),

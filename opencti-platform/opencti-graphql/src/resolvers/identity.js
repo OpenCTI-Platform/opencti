@@ -16,9 +16,10 @@ import {
 const identityResolvers = {
   Query: {
     identity: (_, { id }) => findById(id),
-    identities: (_, args) => findAll(args),
+    identities: (_, args) => findAll(args)
   },
   Identity: {
+    // eslint-disable-next-line no-underscore-dangle
     __resolveType(obj) {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) =>
@@ -27,7 +28,7 @@ const identityResolvers = {
       }
       return 'Unknown';
     },
-    createdByRef: (identity, args) => createdByRef(identity.id, args),
+    createdByRef: identity => createdByRef(identity.id),
     markingDefinitions: (identity, args) =>
       markingDefinitions(identity.id, args),
     reports: (identity, args) => reports(identity.id, args),

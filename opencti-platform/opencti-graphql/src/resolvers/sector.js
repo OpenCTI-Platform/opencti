@@ -22,7 +22,7 @@ const sectorResolvers = {
   },
   Sector: {
     subsectors: (sector, args) => subsectors(sector.id, args),
-    createdByRef: (sector, args) => createdByRef(sector.id, args),
+    createdByRef: sector => createdByRef(sector.id),
     markingDefinitions: (sector, args) => markingDefinitions(sector.id, args),
     reports: (sector, args) => reports(sector.id, args),
     exports: (sector, args) => exports(sector.id, args),

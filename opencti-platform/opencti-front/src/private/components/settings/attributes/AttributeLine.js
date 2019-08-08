@@ -1,5 +1,3 @@
-/* eslint-disable no-underscore-dangle,no-nested-ternary */
-// TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer } from 'react-relay';

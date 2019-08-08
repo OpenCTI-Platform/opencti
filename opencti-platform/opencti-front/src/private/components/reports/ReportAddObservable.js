@@ -216,7 +216,7 @@ const reportMutationRelationAdd = graphql`
     reportEdit(id: $id) {
       relationAdd(input: $input) {
         node {
-          ...ReportObservables_report
+          ...ReportObservables_report @arguments(relationType: $relationType)
         }
         relation {
           id

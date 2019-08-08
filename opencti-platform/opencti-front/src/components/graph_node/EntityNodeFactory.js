@@ -8,11 +8,11 @@ export default class EntityNodeFactory extends SRD.AbstractNodeFactory {
     super('entity');
   }
 
-  generateReactWidget(diagramEngine, node) {
+  static generateReactWidget(diagramEngine, node) {
     return <EntityNodeWidget node={node} />;
   }
 
-  getNewInstance() {
-    return new EntityNodeModel();
+  static getNewInstance(initialConfig) {
+    return new EntityNodeModel(initialConfig);
   }
 }

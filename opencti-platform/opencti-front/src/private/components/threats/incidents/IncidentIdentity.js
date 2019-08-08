@@ -9,7 +9,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 
-const styles = theme => ({
+const styles = () => ({
   paper: {
     minHeight: '100%',
     margin: '10px 0 0 0',

@@ -19,7 +19,7 @@ export default class EntityPortModel extends PortModel {
     this.position = data.position;
   }
 
-  createLinkModel() {
+  static createLinkModel() {
     return new EntityLinkModel();
   }
 }

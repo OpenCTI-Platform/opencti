@@ -180,10 +180,7 @@ AddCoursesOfActionLinesContainer.propTypes = {
   entityCoursesOfAction: PropTypes.array,
   entityPaginationOptions: PropTypes.object,
   data: PropTypes.object,
-  limit: PropTypes.number,
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
 };
 
 export const addCoursesOfActionLinesQuery = graphql`

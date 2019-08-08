@@ -15,7 +15,7 @@ export const MissingElement = createError('MissingElement', {
   data: { type: TYPE_BUSINESS }
 });
 
-export const ConstraintFailure = field => {
+export const buildValidationError = field => {
   const ErrorType = createError('Functional', {
     message: `Validation error for ${field}`,
     data: { type: TYPE_BUSINESS }
@@ -31,12 +31,6 @@ export const AuthRequired = createError('AuthRequired', {
 
 export const ForbiddenAccess = createError('ForbiddenAccess', {
   message: 'You are not allowed to do this.',
-  data: { type: TYPE_AUTH }
-});
-
-// TODO Remove
-export const AlreadyAuth = createError('AlreadyAuth', {
-  message: 'You are already authenticated.',
   data: { type: TYPE_AUTH }
 });
 

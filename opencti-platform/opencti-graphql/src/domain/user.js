@@ -25,11 +25,11 @@ import {
   dayFormat,
   monthFormat,
   yearFormat,
-  queryOne,
+  load,
   commitWriteTx,
   deleteEntityById
 } from '../database/grakn';
-import { index, paginate as elPaginate } from '../database/elasticSearch';
+import { paginate as elPaginate } from '../database/elasticSearch';
 import { stixDomainEntityDelete } from './stixDomainEntity';
 
 // Security related
@@ -61,13 +61,11 @@ export const findAll = args =>
 export const findById = userId => getById(userId);
 
 export const findByEmail = async userEmail => {
-  const result = await queryOne(
+  const result = await load(
     `match $user isa User, has email "${escapeString(userEmail)}"; get;`,
     ['user']
   );
-  if (result) {
-    return result.user;
-  }
+  if (result) return result.user;
   return null;
 };
 
@@ -130,7 +128,7 @@ export const addPerson = async (user, newUser) => {
     has created_at_year "${yearFormat(now())}", 
     has updated_at ${now()};
   `;
-  logger.debug(`[GRAKN - infer: false] ${query}`);
+  logger.debug(`[GRAKN - infer: false] addPerson > ${query}`);
   const userIterator = await wTx.tx.query(query);
   const createUser = await userIterator.next();
   const createdUserId = await createUser.map().get('user').id;
@@ -145,7 +143,6 @@ export const addPerson = async (user, newUser) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
@@ -199,7 +196,7 @@ export const addUser = async (
     has created_at_year "${yearFormat(now())}" ,    
     has updated_at ${now()};
   `;
-  logger.debug(`[GRAKN - infer: false] ${query}`);
+  logger.debug(`[GRAKN - infer: false] addUser > ${query}`);
   const userIterator = await wTx.tx.query(query);
 
   const createUser = await userIterator.next();
@@ -234,14 +231,13 @@ export const addUser = async (
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix_domain_entities', 'stix_domain_entity', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
 
 // User related
 export const loginFromProvider = async (email, name) => {
-  const result = await queryOne(
+  const result = await load(
     `match $client isa User, has email "${escapeString(
       email
     )}"; (authorization:$token, client:$client); get;`,
@@ -261,7 +257,7 @@ export const loginFromProvider = async (email, name) => {
 };
 
 export const login = async (email, password) => {
-  const result = await queryOne(
+  const result = await load(
     `match $client isa User, has email "${escapeString(
       email
     )}"; (authorization:$token, client:$client); get;`,
@@ -324,7 +320,6 @@ export const userEditField = (user, userId, input) => {
     key === 'password' ? [bcrypt.hashSync(head(input.value), 10)] : input.value;
   const finalInput = { key, value };
   return updateAttribute(userId, finalInput).then(userToEdit => {
-    index('stix_domain_entities', 'stix_domain_entity', userToEdit);
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
   });
 };
@@ -338,7 +333,6 @@ export const meEditField = (user, userId, input) => {
     key === 'password' ? [bcrypt.hashSync(head(input.value), 10)] : input.value;
   const finalInput = { key, value };
   return updateAttribute(userId, finalInput).then(userToEdit => {
-    index('stix_domain_entities', 'stix_domain_entity', userToEdit);
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
   });
 };
@@ -353,7 +347,7 @@ export const userDelete = async userId => {
 
 // Token related
 export const findByTokenUUID = async tokenValue => {
-  const result = await queryOne(
+  const result = await load(
     `match $token isa Token,
     has uuid "${escapeString(tokenValue)}",
     has revoked false;

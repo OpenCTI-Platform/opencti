@@ -2,7 +2,7 @@ import { filter, map, assoc } from 'ramda';
 import moment from 'moment';
 import { metrics } from '../database/rabbitmq';
 
-const dateFormat = 'YYYY-MM-DDTHH:mm:ss';
+export const dateFormat = 'YYYY-MM-DDTHH:mm:ss';
 
 export const getMetrics = async args => {
   const stats = await metrics();

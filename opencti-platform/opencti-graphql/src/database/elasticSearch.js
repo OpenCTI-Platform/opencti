@@ -145,21 +145,25 @@ export const reindex = async indexMaps => {
   );
 };
 
-export const index = (indexName, documentBody) => {
-  logger.debug(`[ELASTICSEARCH] Indexing in ${indexName}`);
-  el.index({
+export const index = async (indexName, documentBody) => {
+  const stixId = documentBody.stix_id;
+  const entityType = documentBody.entity_type;
+  logger.debug(
+    `[ELASTICSEARCH] index > ${entityType} ${stixId} in ${indexName}`
+  );
+  await el.index({
     index: indexName,
     id: documentBody.grakn_id,
     refresh: true,
     body: documentBody
-  }).catch(() => {
-    return false;
   });
+  return documentBody;
 };
 
 export const deleteEntity = async (indexName, documentId) => {
-  logger.debug(`[ELASTICSEARCH] deleteById ${documentId} on ${indexName}`);
-  await el
+  logger.debug(`[ELASTICSEARCH] deleteEntity > ${documentId} on ${indexName}`);
+  // noinspection UnnecessaryLocalVariableJS
+  const deletePromise = await el
     .delete({
       index: indexName,
       id: documentId,
@@ -168,7 +172,7 @@ export const deleteEntity = async (indexName, documentId) => {
     .catch(() => {
       return false;
     });
-  return true;
+  return deletePromise;
 };
 
 export const countEntities = (indexName, options) => {
@@ -227,7 +231,7 @@ export const countEntities = (indexName, options) => {
       }
     }
   };
-  logger.debug(`[ELASTICSEARCH] ${JSON.stringify(query)}`);
+  logger.debug(`[ELASTICSEARCH] countEntities > ${JSON.stringify(query)}`);
   return el.count(query).then(data => {
     return data.body.count;
   });
@@ -339,6 +343,7 @@ export const paginate = (indexName, options) => {
     ordering = append(order, ordering);
   }
 
+  /* eslint-disable no-underscore-dangle */
   const query = {
     index: indexName,
     body: {
@@ -352,7 +357,7 @@ export const paginate = (indexName, options) => {
       }
     }
   };
-  logger.debug(`[ELASTICSEARCH] ${JSON.stringify(query)}`);
+  logger.debug(`[ELASTICSEARCH] paginate > ${JSON.stringify(query)}`);
   return el
     .search(query)
     .then(data => {
@@ -372,19 +377,18 @@ export const paginate = (indexName, options) => {
     .catch(() => {
       return buildPagination(first, offset, [], 0);
     });
+  /* eslint-enable no-underscore-dangle */
 };
 
 export const getAttributes = (indexName, id) => {
-  logger.debug(`[ELASTICSEARCH] getById ${id} on ${indexName}`);
   return el
-    .get({
-      index: indexName,
-      id
-    })
+    .get({ id, index: indexName })
     .then(data => {
-      return data._source;
+      // eslint-disable-next-line no-underscore-dangle
+      return data.body._source;
     })
-    .catch(() => {
-      return Promise.resolve({});
+    .catch(e => {
+      logger.error(`[ELASTICSEARCH] getAttributes > error getting ${id}`, e);
+      return null;
     });
 };

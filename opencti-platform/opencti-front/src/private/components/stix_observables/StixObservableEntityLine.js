@@ -94,11 +94,9 @@ class StixObservableEntityLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.role_played.width }}
               >
-                {node.inferred
-                  ? '-'
-                  : node.role_played
-                    ? t(node.role_played)
-                    : t('Unknown')}
+                {/* eslint-disable-next-line no-nested-ternary */}
+                {node.inferred ? '-' : node.role_played
+                  ? t(node.role_played) : t('Unknown')}
               </div>
               <div
                 className={classes.bodyItem}

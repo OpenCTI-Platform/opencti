@@ -135,10 +135,7 @@ class ReportAddObjectRefsLinesContainer extends Component {
     if (numberOfEntities === 1) {
       return true;
     }
-    if (numberOfTypes === 1) {
-      return true;
-    }
-    return false;
+    return numberOfTypes === 1;
   }
 
   render() {

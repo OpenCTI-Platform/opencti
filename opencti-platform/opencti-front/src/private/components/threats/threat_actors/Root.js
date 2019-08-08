@@ -11,6 +11,7 @@ import ThreatActor from './ThreatActor';
 import ThreatActorReports from './ThreatActorReports';
 import ThreatActorKnowledge from './ThreatActorKnowledge';
 import ThreatActorObservables from './ThreatActorObservables';
+import Loader from '../../../Loader';
 
 const subscription = graphql`
   subscription RootThreatActorSubscription($id: ID!) {
@@ -122,7 +123,7 @@ class RootThreatActor extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

@@ -18,7 +18,7 @@ import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
 import Switch from '../../../components/Switch';
 
-const styles = theme => ({
+const styles = () => ({
   paper: {
     width: '100%',
     height: '100%',

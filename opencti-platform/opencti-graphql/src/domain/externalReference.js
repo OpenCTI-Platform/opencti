@@ -22,7 +22,6 @@ import {
 import { BUS_TOPICS, logger } from '../config/conf';
 import {
   deleteEntity,
-  index,
   paginate as elPaginate
 } from '../database/elasticSearch';
 
@@ -73,7 +72,7 @@ export const addExternalReference = async (user, externalReference) => {
     has created_at_year "${yearFormat(now())}",  
     has updated_at ${now()};
   `;
-  logger.debug(`[GRAKN - infer: false] ${query}`);
+  logger.debug(`[GRAKN - infer: false] addExternalReference > ${query}`);
   const externalReferenceIterator = await wTx.tx.query(query);
   const createExternalReference = await externalReferenceIterator.next();
   const createdExternalReferenceId = await createExternalReference
@@ -106,7 +105,6 @@ export const addExternalReference = async (user, externalReference) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('external_references', created);
     return notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user);
   });
 };
@@ -157,7 +155,6 @@ export const externalReferenceEditContext = (
 
 export const externalReferenceEditField = (user, externalReferenceId, input) =>
   updateAttribute(externalReferenceId, input).then(externalReference => {
-    index('external_references', externalReference);
     return notify(
       BUS_TOPICS.ExternalReference.EDIT_TOPIC,
       externalReference,

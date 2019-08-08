@@ -15,7 +15,7 @@ import {
   commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { index, paginate as elPaginate } from '../database/elasticSearch';
+import { paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'incident', args));
@@ -50,7 +50,9 @@ export const addIncident = async (user, incident) => {
     has internal_id "${internalId}",
     has entity_type "incident",
     has stix_id "${
-      incident.stix_id ? escapeString(incident.stix_id) : `x-opencti-incident--${uuid()}`
+      incident.stix_id
+        ? escapeString(incident.stix_id)
+        : `x-opencti-incident--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -91,7 +93,7 @@ export const addIncident = async (user, incident) => {
     has created_at_year "${yearFormat(now())}", 
     has updated_at ${now()};
   `;
-  logger.debug(`[GRAKN - infer: false] ${query}`);
+  logger.debug(`[GRAKN - infer: false] addIncident > ${query}`);
   const incidentIterator = await wTx.tx.query(query);
   const createdIncident = await incidentIterator.next();
   const createdIncidentId = await createdIncident.map().get('incident').id;
@@ -122,7 +124,6 @@ export const addIncident = async (user, incident) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

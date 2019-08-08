@@ -84,8 +84,7 @@ class ThreatActorCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/threats/threat_actors/${node.id}`}
-        >
+          to={`/dashboard/threats/threat_actors/${node.id}`}>
           <CardHeader
             classes={{ root: classes.header }}
             avatar={

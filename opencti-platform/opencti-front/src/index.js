@@ -11,7 +11,6 @@ import {
 } from 'react-router-dom';
 import 'storm-react-diagrams/dist/style.min.css';
 import 'react-grid-layout/css/styles.css';
-import 'react-resizable/css/styles.css';
 import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { createMuiTheme } from '@material-ui/core/styles';

@@ -160,7 +160,6 @@ class IntrusionSets extends Component {
 }
 
 IntrusionSets.propTypes = {
-  t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };

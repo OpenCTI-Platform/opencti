@@ -30,8 +30,7 @@ const courseOfActionResolvers = {
     }
   },
   CourseOfAction: {
-    createdByRef: (courseOfAction, args) =>
-      createdByRef(courseOfAction.id, args),
+    createdByRef: courseOfAction => createdByRef(courseOfAction.id),
     markingDefinitions: (courseOfAction, args) =>
       markingDefinitions(courseOfAction.id, args),
     reports: (courseOfAction, args) => reports(courseOfAction.id, args),

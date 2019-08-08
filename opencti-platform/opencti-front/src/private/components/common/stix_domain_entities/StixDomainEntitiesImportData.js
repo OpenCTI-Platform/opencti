@@ -1,5 +1,3 @@
-/* eslint-disable no-nested-ternary */
-// TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -66,12 +64,11 @@ class StixDomainEntitiesImportData extends Component {
 
   handleUpload(event) {
     if (event.target.files.length === 0) {
-      return false;
+      return;
     }
     const file = event.target.files[0];
     const reader = new FileReader();
     reader.readAsDataURL(file);
-
     reader.onload = () => {
       const fileInfo = {
         name: file.name,
@@ -90,7 +87,6 @@ class StixDomainEntitiesImportData extends Component {
         },
       });
     };
-    return true;
   }
 
   onReset() {
@@ -105,15 +101,13 @@ class StixDomainEntitiesImportData extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          color="primary"
-        >
+          color="primary">
           <FileUploadOutline />
         </IconButton>
         <Dialog
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
-          fullWidth={true}
-        >
+          fullWidth={true}>
           <DialogTitle>{t('Import data')}</DialogTitle>
           <DialogContent>
             <FormControl fullWidth={true} margin="none">
@@ -128,13 +122,12 @@ class StixDomainEntitiesImportData extends Component {
                   id: 'type',
                 }}
                 onChange={this.handleChangeType.bind(this)}
-                value={this.state.type}
-              >
+                value={this.state.type}>
                 <MenuItem value="stix2bundle">{t('STIX2 bundle')}</MenuItem>
               </Select>
             </FormControl>
             <input
-              ref={ref => (this.uploadRef = ref)}
+              ref={(ref) => { this.uploadRef = ref; }}
               type="file"
               style={{ display: 'none' }}
               onChange={this.handleUpload.bind(this)}
@@ -144,16 +137,14 @@ class StixDomainEntitiesImportData extends Component {
             <Button
               variant="contained"
               onClick={this.handleClose.bind(this)}
-              classes={{ root: classes.button }}
-            >
+              classes={{ root: classes.button }}>
               {t('Cancel')}
             </Button>
             <Button
               variant="contained"
               color="primary"
               classes={{ root: classes.button }}
-              onClick={this.handleOpenUpload.bind(this)}
-            >
+              onClick={this.handleOpenUpload.bind(this)}>
               Upload
               <CloudUpload className={classes.rightIcon} />
             </Button>
@@ -166,9 +157,7 @@ class StixDomainEntitiesImportData extends Component {
 
 StixDomainEntitiesImportData.propTypes = {
   classes: PropTypes.object,
-  reportClass: PropTypes.string,
   t: PropTypes.func,
-  history: PropTypes.object,
 };
 
 export default compose(

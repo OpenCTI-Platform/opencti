@@ -40,6 +40,7 @@ const styles = theme => ({
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
+Transition.displayName = 'TransitionSlide';
 
 const markingDefinitionPopoverDeletionMutation = graphql`
   mutation MarkingDefinitionPopoverDeletionMutation($id: ID!) {

@@ -1,5 +1,4 @@
-/* eslint-disable no-underscore-dangle,no-nested-ternary */
-// TODO Remove no-nested-ternary
+/* eslint-disable no-underscore-dangle */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -116,11 +115,10 @@ class ListLinesContent extends Component {
       isLoading,
       nbOfRowsToLoad,
     } = this.props;
-    const rowCount = initialLoading
-      ? nbOfRowsToLoad
-      : isLoading()
-        ? dataList.length + this.state.loadingRowCount
-        : dataList.length;
+    const countWithLoading = isLoading()
+      ? dataList.length + this.state.loadingRowCount
+      : dataList.length;
+    const rowCount = initialLoading ? nbOfRowsToLoad : countWithLoading;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
         {({

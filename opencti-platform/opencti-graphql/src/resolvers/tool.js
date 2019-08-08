@@ -21,7 +21,7 @@ const toolResolvers = {
     tools: (_, args) => findAll(args)
   },
   Tool: {
-    createdByRef: (tool, args) => createdByRef(tool.id, args),
+    createdByRef: tool => createdByRef(tool.id),
     markingDefinitions: (tool, args) => markingDefinitions(tool.id, args),
     killChainPhases: (tool, args) => killChainPhases(tool.id, args),
     reports: (tool, args) => reports(tool.id, args),

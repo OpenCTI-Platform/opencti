@@ -1,5 +1,3 @@
-/* eslint-disable no-nested-ternary */
-// TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, toPairs } from 'ramda';
@@ -88,8 +86,7 @@ class ListCards extends Component {
               inputProps={{
                 name: 'sort-by',
                 id: 'sort-by',
-              }}
-            >
+              }}>
               {toPairs(dataColumns).map(dataColumn => (
                 <MenuItem key={dataColumn[0]} value={dataColumn[0]}>
                   {t(dataColumn[1].label)}
@@ -100,8 +97,7 @@ class ListCards extends Component {
           <IconButton
             aria-label="Sort by"
             onClick={this.reverse.bind(this)}
-            classes={{ root: classes.sortIcon }}
-          >
+            classes={{ root: classes.sortIcon }}>
             {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
           </IconButton>
         </div>
@@ -110,8 +106,7 @@ class ListCards extends Component {
             {typeof handleChangeView === 'function' ? (
               <IconButton
                 color="secondary"
-                onClick={handleChangeView.bind(this, 'cards')}
-              >
+                onClick={handleChangeView.bind(this, 'cards')}>
                 <Dashboard />
               </IconButton>
             ) : (
@@ -120,8 +115,7 @@ class ListCards extends Component {
             {typeof handleChangeView === 'function' ? (
               <IconButton
                 color="primary"
-                onClick={handleChangeView.bind(this, 'lines')}
-              >
+                onClick={handleChangeView.bind(this, 'lines')}>
                 <TableChart />
               </IconButton>
             ) : (

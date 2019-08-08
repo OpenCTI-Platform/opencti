@@ -1,13 +1,13 @@
 import uuid from 'uuid/v4';
 import { isNil, isEmpty, head, map, filter } from 'ramda';
 import migrate from 'migrate';
-import { queryOne, queryMultiple, write } from './grakn';
+import { load, find, write } from './grakn';
 import { logger } from '../config/conf';
 
 // noinspection JSUnusedGlobalSymbols
 const graknStateStorage = {
   async load(fn) {
-    const result = await queryMultiple(
+    const result = await find(
       `match $x isa MigrationStatus; 
       (status:$x, state:$y); 
       get;`,
@@ -37,10 +37,9 @@ const graknStateStorage = {
     const mig = head(filter(m => m.title === set.lastRun, set.migrations));
 
     // Get the MigrationStatus. If exist, update last run, if not create it
-    const migrationStatus = await queryOne(
-      `match $x isa MigrationStatus; get;`,
-      ['x']
-    );
+    const migrationStatus = await load(`match $x isa MigrationStatus; get;`, [
+      'x'
+    ]);
     if (!isNil(migrationStatus)) {
       await write(
         `match $x isa MigrationStatus, 

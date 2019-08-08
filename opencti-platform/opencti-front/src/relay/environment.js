@@ -152,6 +152,8 @@ export const commitMutation = ({
 });
 
 const deactivateSubscription = { dispose: () => undefined };
-export const requestSubscription = args => (WS_ACTIVATED ? RS(environment, args) : deactivateSubscription);
+export const requestSubscription = args => (WS_ACTIVATED
+  ? RS(environment, args)
+  : deactivateSubscription);
 
 export const fetchQuery = (query, args) => FQ(environment, query, args);

@@ -34,8 +34,7 @@ const stixObservableResolvers = {
       }
       return findAll(args);
     },
-    stixObservablesTimeSeries: (_, args) =>
-      stixObservablesTimeSeries(args),
+    stixObservablesTimeSeries: (_, args) => stixObservablesTimeSeries(args),
     stixObservablesNumber: (_, args) => stixObservablesNumber(args)
   },
   StixObservable: {

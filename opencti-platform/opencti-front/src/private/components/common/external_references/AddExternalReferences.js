@@ -194,7 +194,6 @@ AddExternalReferences.propTypes = {
   entityPaginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
 };
 
 export default compose(

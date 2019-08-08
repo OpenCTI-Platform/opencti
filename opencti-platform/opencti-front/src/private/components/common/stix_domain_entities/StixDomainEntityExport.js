@@ -39,6 +39,7 @@ const styles = () => ({
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
+Transition.displayName = 'TransitionSlide';
 
 class StixDomainEntityExport extends Component {
   render() {

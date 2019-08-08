@@ -12,7 +12,7 @@ export const numberFormat = (number, digits = 2) => {
   ];
   const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
   let i;
-  for (i = si.length - 1; i > 0; i--) {
+  for (i = si.length - 1; i > 0; i -= 1) {
     if (number >= si[i].value) {
       break;
     }

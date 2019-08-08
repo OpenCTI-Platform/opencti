@@ -26,7 +26,7 @@ const workspaceResolvers = {
     workspacesNumber: (_, args) => workspacesNumber(args)
   },
   Workspace: {
-    ownedBy: (workspace, args) => ownedBy(workspace.id, args),
+    ownedBy: workspace => ownedBy(workspace.id),
     markingDefinitions: (workspace, args) =>
       markingDefinitions(workspace.id, args),
     objectRefs: (workspace, args) => objectRefs(workspace.id, args),

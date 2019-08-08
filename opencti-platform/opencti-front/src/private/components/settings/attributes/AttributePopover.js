@@ -40,6 +40,7 @@ const styles = theme => ({
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
+Transition.displayName = 'TransitionSlide';
 
 const attributeEditionQuery = graphql`
   query AttributePopoverEditionQuery($id: String!) {

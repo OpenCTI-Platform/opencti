@@ -6,19 +6,15 @@ import {
   takeWriteTx,
   commitWriteTx,
   closeWriteTx,
-  getByGraknId,
-  getAttributes
+  getAttributes,
+  takeReadTx,
+  closeReadTx
 } from '../database/grakn';
 import { logger } from '../config/conf';
-import { index } from '../database/elasticSearch';
 
-export const findById = attributeId => {
-  return queryAttributeValueById(attributeId);
-};
+export const findById = attributeId => queryAttributeValueById(attributeId);
 
-export const findAll = args => {
-  return queryAttributeValues(args.type);
-};
+export const findAll = args => queryAttributeValues(args.type);
 
 export const addAttribute = async attribute => {
   const wTx = await takeWriteTx();
@@ -26,7 +22,7 @@ export const addAttribute = async attribute => {
     const query = `insert $attribute isa ${
       attribute.type
     }; $attribute "${escapeString(attribute.value)}";`;
-    logger.debug(`[GRAKN - infer: false] ${query}`);
+    logger.debug(`[GRAKN - infer: false] addAttribute > ${query}`);
     const attributeIterator = await wTx.tx.query(query);
     const createdAttribute = await attributeIterator.next();
     const createdAttributeId = await createdAttribute.map().get('attribute').id;
@@ -39,7 +35,7 @@ export const addAttribute = async attribute => {
   } catch (err) {
     logger.error(err);
     await closeWriteTx(wTx);
-    return Promise.resolve({});
+    return {};
   }
 };
 
@@ -48,53 +44,53 @@ export const attributeDelete = async id => {
 };
 
 export const attributeUpdate = async (id, input) => {
+  // Add the new attribute
+  const newAttribute = await addAttribute({
+    type: input.type,
+    value: input.newValue
+  });
+
+  // region Link new attribute to every entities
   const wTx = await takeWriteTx();
   try {
-    // Add the new attribute
-    const newAttribute = await addAttribute({
-      type: input.type,
-      value: input.newValue
-    });
-
-    // Replace all attributes
-    const query = `match $e isa entity, has ${escape(
+    const writeQuery = `match $e isa entity, has ${escape(
       input.type
     )} $a; $a "${escapeString(input.value)}"; insert $e has ${escape(
       input.type
     )} $attribute; $attribute "${escapeString(input.newValue)}";`;
-    logger.debug(`[GRAKN - infer: false] ${query}`);
-    const iterator = await wTx.tx.query(query);
-    const answers = await iterator.collect();
-    const entitiesIndexPromise = Promise.all(
-      answers.map(async answer => {
-        const entity = answer.map().get('e');
-        const entityAttributes = await getAttributes(entity, true);
-        if (entityAttributes.entity_type === 'stix_relation') {
-          await index('stix_relations', entityAttributes);
-          return Promise.resolve(true);
-        }
-        if (
-          entityAttributes.parent_type === 'Stix-Domain-Entity' ||
-          entityAttributes.parent_type === 'Identity'
-        ) {
-          await index('stix_domain_entities', entityAttributes);
-          return Promise.resolve(true);
-        }
-        return null;
-      })
-    );
-    await Promise.resolve(entitiesIndexPromise);
-
+    logger.debug(`[GRAKN - infer: false] attributeUpdate > ${writeQuery}`);
+    await wTx.tx.query(writeQuery);
     await commitWriteTx(wTx);
-
-    // Delete old attribute
-    await deleteAttributeById(id);
-
-    // Return the new attribute
-    return Promise.resolve(newAttribute);
   } catch (err) {
     logger.error(err);
     await closeWriteTx(wTx);
-    return Promise.resolve({});
   }
+  // endregion
+
+  // Delete old attribute
+  await deleteAttributeById(id);
+
+  // region Reindex all entities using this attribute
+  const rTx = await takeReadTx();
+  try {
+    const readQuery = `match $x isa entity, has ${escape(
+      input.type
+    )} $a; get $x;`;
+    const iterator = await rTx.tx.query(readQuery);
+    const answers = await iterator.collect();
+    await Promise.all(
+      answers.map(answer => {
+        const entity = answer.map().get('x');
+        return getAttributes(entity, true);
+      })
+    );
+    await closeReadTx(rTx);
+  } catch (err) {
+    logger.error(err);
+    await closeReadTx(wTx);
+  }
+  // endregion
+
+  // Return the new attribute
+  return newAttribute;
 };

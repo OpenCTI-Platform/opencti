@@ -19,15 +19,14 @@ import {
   timeSeries,
   getObject,
   prepareDate,
-  queryOne,
+  load,
   getId,
   commitWriteTx
 } from '../database/grakn';
 import {
   deleteEntity,
-  index,
   paginate as elPaginate,
-  countEntities,
+  countEntities
 } from '../database/elasticSearch';
 
 import {
@@ -154,7 +153,6 @@ export const stixRelations = (stixDomainEntityId, args) => {
 
 export const exports = (stixDomainEntityId, args) => {
   const { types } = args;
-
   const result = Promise.all(
     types.map(type => {
       const query = `match $e isa Export; $e has export_type "${escapeString(
@@ -162,7 +160,7 @@ export const exports = (stixDomainEntityId, args) => {
       )}"; $e has created_at $c; (export: $e, exported: $x) isa exports; $x has internal_id "${escapeString(
         stixDomainEntityId
       )}"; get $e, $c; sort $c desc;`;
-      return queryOne(query, ['e']).then(data => {
+      return load(query, ['e']).then(data => {
         return propOr(null, 'e', data);
       });
     })
@@ -287,7 +285,6 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
@@ -334,7 +331,6 @@ export const stixDomainEntityEditContext = (
 
 export const stixDomainEntityEditField = (user, stixDomainEntityId, input) =>
   updateAttribute(stixDomainEntityId, input).then(stixDomainEntity => {
-    index('stix_domain_entities', stixDomainEntity);
     return notify(
       BUS_TOPICS.StixDomainEntity.EDIT_TOPIC,
       stixDomainEntity,

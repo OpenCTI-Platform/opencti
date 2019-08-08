@@ -1,6 +1,5 @@
 import { query } from '../integration-test';
 import { authentication } from '../../../src/server';
-import { write } from '../../../src/database/grakn';
 
 // region queries
 const CREATE_QUERY = `

@@ -7,31 +7,14 @@ export default class EntityLinkFactory extends SRD.AbstractLinkFactory {
     super('entity');
   }
 
-  generateReactWidget(diagramEngine, link) {
+  static generateReactWidget(diagramEngine, link) {
     return React.createElement(SRD.DefaultLinkWidget, {
       link,
       diagramEngine,
     });
   }
 
-  getNewInstance() {
-    return new EntityLinkModel();
-  }
-
-  generateLinkSegment(model, widget, selected, path) {
-    return (
-      <path
-        className={
-          model.inferred
-            ? widget.bem('--path-inferred')
-            : selected
-              ? widget.bem('--path-selected')
-              : ''
-        }
-        strokeWidth={model.width}
-        stroke={model.color}
-        d={path}
-      />
-    );
+  static getNewInstance(initialConfig) {
+    return new EntityLinkModel(initialConfig);
   }
 }

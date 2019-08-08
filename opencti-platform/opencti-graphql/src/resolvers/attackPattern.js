@@ -22,7 +22,7 @@ const attackPatternResolvers = {
     attackPatterns: (_, args) => findAll(args)
   },
   AttackPattern: {
-    createdByRef: (attackPattern, args) => createdByRef(attackPattern.id, args),
+    createdByRef: attackPattern => createdByRef(attackPattern.id),
     markingDefinitions: (attackPattern, args) =>
       markingDefinitions(attackPattern.id, args),
     externalReferences: (attackPattern, args) =>

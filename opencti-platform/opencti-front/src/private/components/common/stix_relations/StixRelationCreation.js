@@ -624,6 +624,7 @@ class StixRelationCreation extends Component {
     );
   }
 
+  // eslint-disable-next-line
   renderLoader() {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -632,8 +633,7 @@ class StixRelationCreation extends Component {
             display: 'table-cell',
             verticalAlign: 'middle',
             textAlign: 'center',
-          }}
-        >
+          }}>
           <CircularProgress size={80} thickness={2} />
         </span>
       </div>

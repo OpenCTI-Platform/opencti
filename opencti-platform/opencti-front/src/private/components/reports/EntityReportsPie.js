@@ -32,7 +32,6 @@ const renderCustomizedLabel = ({
   innerRadius,
   outerRadius,
   percent,
-  index,
 }) => {
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -168,7 +167,6 @@ EntityReportsPie.propTypes = {
   entityId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
 };
 
 export default compose(

@@ -6,7 +6,7 @@ export default class EntityPortFactory extends AbstractPortFactory {
     super('entity');
   }
 
-  getNewInstance() {
-    return new EntityPortModel();
+  static getNewInstance(initialConfig) {
+    return new EntityPortModel(initialConfig);
   }
 }

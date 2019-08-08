@@ -1,28 +1,17 @@
-const colors = [
-  '#EF5350',
-  '#AB47BC',
-  '#EC407A',
-  '#7E57C2',
-  '#5C6BC0',
-  '#42A5F5',
-  '#26A69A',
-  '#66BB6A',
-];
-
-export const pickColor = index => colors[index];
-
+/* eslint-disable no-bitwise */
 export const stringToColour = (str) => {
   let hash = 0;
-  for (let i = 0; i < str.length; i++) {
+  for (let i = 0; i < str.length; i += 1) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
   let colour = '#';
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 3; i += 1) {
     const value = (hash >> (i * 8)) & 0xff;
     colour += `00${value.toString(16)}`.substr(-2);
   }
   return colour;
 };
+/* eslint-enable no-bitwise */
 
 export const itemColor = (type, dark) => {
   switch (type) {

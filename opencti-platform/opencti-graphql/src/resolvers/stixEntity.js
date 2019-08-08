@@ -2,6 +2,7 @@ import { importData } from '../domain/stixEntity';
 
 const stixEntityResolvers = {
   StixEntity: {
+    // eslint-disable-next-line
     __resolveType(obj) {
       if (obj.observable_value) {
         return 'StixObservable';

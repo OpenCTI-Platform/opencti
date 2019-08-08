@@ -97,11 +97,8 @@ class EntityIncidentsTableTime extends Component {
       startDate,
       endDate,
     } = this.props;
-    const finalStartDate = variant === 'explore' && startDate
-      ? startDate
-      : this.state.interval === 'month'
-        ? monthsAgo(6)
-        : monthsAgo(12 * 5);
+    const monthInterval = this.state.interval === 'month' ? monthsAgo(6) : monthsAgo(12 * 5);
+    const finalStartDate = (variant === 'explore' && startDate) ? startDate : monthInterval;
     const incidentsTimeSeriesVariables = {
       objectId: entityId,
       field: 'first_seen',

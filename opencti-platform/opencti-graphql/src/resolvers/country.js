@@ -20,7 +20,7 @@ const countryResolvers = {
     countries: (_, args) => findAll(args)
   },
   Country: {
-    createdByRef: (country, args) => createdByRef(country.id, args),
+    createdByRef: country => createdByRef(country.id),
     markingDefinitions: (country, args) => markingDefinitions(country.id, args),
     reports: (country, args) => reports(country.id, args),
     exports: (country, args) => exports(country.id, args),

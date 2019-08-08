@@ -8,11 +8,11 @@ export default class EntityLabelFactory extends SRD.AbstractLabelFactory {
     super('entity');
   }
 
-  generateReactWidget(diagramEngine, label) {
+  static generateReactWidget(diagramEngine, label) {
     return <EntityLabelWidget model={label} />;
   }
 
-  getNewInstance() {
-    return new EntityLabelModel();
+  static getNewInstance(initialConfig) {
+    return new EntityLabelModel(initialConfig);
   }
 }

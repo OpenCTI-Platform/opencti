@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Switch } from 'react-router-dom';
 import Settings from './Settings';
 import Users from './Users';
@@ -8,39 +8,30 @@ import KillChainPhases from './KillChainPhases';
 import Attributes from './Attributes';
 import { BoundaryRoute } from '../Error';
 
-class Root extends Component {
-  render() {
-    return (
+const Root = () => (
       <Switch>
         <BoundaryRoute exact path="/dashboard/settings" component={Settings} />
         <BoundaryRoute
           exact
           path="/dashboard/settings/users"
-          component={Users}
-        />
+          component={Users}/>
         <BoundaryRoute
           exact
           path="/dashboard/settings/groups"
-          component={Groups}
-        />
+          component={Groups}/>
         <BoundaryRoute
           exact
           path="/dashboard/settings/marking"
-          component={MarkingDefinitions}
-        />
+          component={MarkingDefinitions}/>
         <BoundaryRoute
           exact
           path="/dashboard/settings/killchains"
-          component={KillChainPhases}
-        />
+          component={KillChainPhases}/>
         <BoundaryRoute
           exact
           path="/dashboard/settings/attributes"
-          component={Attributes}
-        />
+          component={Attributes}/>
       </Switch>
-    );
-  }
-}
+);
 
 export default Root;

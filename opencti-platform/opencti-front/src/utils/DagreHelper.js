@@ -28,7 +28,7 @@ function mapEdges(model) {
     );
 }
 
-function distributeGraph(model) {
+export function distributeGraph(model) {
   const nodes = mapElements(model);
   const edges = mapEdges(model);
   const graph = new dagre.graphlib.Graph();

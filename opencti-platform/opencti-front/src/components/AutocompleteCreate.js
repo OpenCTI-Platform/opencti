@@ -185,8 +185,6 @@ const components = {
 };
 
 class AutocompleteCreate extends Component {
-  handleCreateCallback(handleCreate, callback) {}
-
   render() {
     const {
       required,
@@ -253,10 +251,10 @@ class AutocompleteCreate extends Component {
             options={options}
             components={components}
             value={values[field.name]}
-            onChange={(values) => {
-              setFieldValue(field.name, values);
+            onChange={(changeValues) => {
+              setFieldValue(field.name, changeValues);
               if (typeof onChange === 'function') {
-                onChange(field.name, values);
+                onChange(field.name, changeValues);
               }
             }}
             onFocus={() => {

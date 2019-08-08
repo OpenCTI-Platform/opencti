@@ -30,8 +30,6 @@ import EntityPortFactory from '../../../../components/graph_node/EntityPortFacto
 import { stixRelationEditionFocus } from './StixRelationEditionOverview';
 import StixRelationInferences from './StixRelationInferences';
 
-const observableParentTypes = ['Stix-Observable', 'File'];
-
 const styles = () => ({
   container: {
     position: 'relative',
@@ -176,28 +174,18 @@ class StixRelationContainer extends Component {
       ? stixRelation.toRole
       : stixRelation.fromRole;
     const to = linkedEntity.id === entityId ? stixRelation.from : stixRelation.to;
-    const linkTo = resolveLink(
-      includes(to.parent_type, observableParentTypes)
-        ? 'observable'
-        : to.entity_type,
-    );
-    const linkFrom = resolveLink(
-      includes(from.parent_type, observableParentTypes)
-        ? 'observable'
-        : from.entity_type,
-    );
+    const linkTo = resolveLink(to.parent_type === 'Stix-Observable' ? 'observable' : to.entity_type);
+    const linkFrom = resolveLink(from.parent_type === 'Stix-Observable' ? 'observable' : from.entity_type);
 
     return (
       <div className={classes.container}>
         <Link to={`${linkFrom}/${from.id}`}>
-          <div
-            className={classes.item}
+          <div className={classes.item}
             style={{
               backgroundColor: itemColor(from.entity_type, true),
               top: 10,
               left: 0,
-            }}
-          >
+            }}>
             <div className={classes.itemHeader}>
               <div className={classes.icon}>
                 <ItemIcon
@@ -207,33 +195,30 @@ class StixRelationContainer extends Component {
                 />
               </div>
               <div className={classes.type}>
-                {includes(from.parent_type, observableParentTypes)
+                {from.parent_type === 'Stix-Observable'
                   ? t(`observable_${from.entity_type}`)
                   : t(`entity_${from.entity_type}`)}
               </div>
             </div>
             <div className={classes.content}>
               <span className={classes.name}>
-                {truncate(
-                  includes(from.parent_type, observableParentTypes)
-                    ? from.observable_value
-                    : from.name,
-                  120,
-                )}
+                {truncate(from.parent_type === 'Stix-Observable'
+                  ? from.observable_value
+                  : from.name,
+                120)}
               </span>
             </div>
           </div>
         </Link>
         <div className={classes.middle}>
-          {includes(fromRole, inversedRoles)
-          || includes(to.parent_type, observableParentTypes) ? (
+          {includes(fromRole, inversedRoles) || (to.parent_type === 'Stix-Observable') ? (
             <ArrowRightAlt
               fontSize="large"
               style={{ transform: 'rotate(180deg)' }}
             />
-            ) : (
+          ) : (
             <ArrowRightAlt fontSize="large" />
-            )}
+          )}
           <br />
           <div
             style={{
@@ -259,14 +244,12 @@ class StixRelationContainer extends Component {
           </div>
         </div>
         <Link to={`${linkTo}/${to.id}`}>
-          <div
-            className={classes.item}
+          <div className={classes.item}
             style={{
               backgroundColor: itemColor(to.entity_type, true),
               top: 10,
               right: 0,
-            }}
-          >
+            }}>
             <div className={classes.itemHeader}>
               <div className={classes.icon}>
                 <ItemIcon
@@ -276,17 +259,14 @@ class StixRelationContainer extends Component {
                 />
               </div>
               <div className={classes.type}>
-                {includes(to.parent_type, observableParentTypes)
-                  ? t(`observable_${to.entity_type}`)
+                {to.parent_type === 'Stix-Observable' ? t(`observable_${to.entity_type}`)
                   : t(`entity_${to.entity_type}`)}
               </div>
             </div>
             <div className={classes.content}>
               <span className={classes.name}>
                 {truncate(
-                  includes(to.parent_type, observableParentTypes)
-                    ? to.observable_value
-                    : to.name,
+                  to.parent_type === 'Stix-Observable' ? to.observable_value : to.name,
                   120,
                 )}
               </span>

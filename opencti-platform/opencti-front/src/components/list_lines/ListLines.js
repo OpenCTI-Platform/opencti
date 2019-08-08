@@ -1,5 +1,3 @@
-/* eslint-disable no-nested-ternary */
-// TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, toPairs } from 'ramda';
@@ -69,23 +67,17 @@ class ListLines extends Component {
       classes, t, sortBy, orderAsc,
     } = this.props;
     if (isSortable) {
+      const orderComponent = orderAsc
+        ? <ArrowDropDown classes={{ root: classes.sortIcon }} />
+        : <ArrowDropUp classes={{ root: classes.sortIcon }} />;
       return (
         <div
           key={field}
           className={classes.sortableHeaderItem}
           style={{ width }}
-          onClick={this.reverseBy.bind(this, field)}
-        >
+          onClick={this.reverseBy.bind(this, field)}>
           <span>{t(label)}</span>
-          {sortBy === field ? (
-            orderAsc ? (
-              <ArrowDropDown classes={{ root: classes.sortIcon }} />
-            ) : (
-              <ArrowDropUp classes={{ root: classes.sortIcon }} />
-            )
-          ) : (
-            ''
-          )}
+          {sortBy === field ? orderComponent : ''}
         </div>
       );
     }

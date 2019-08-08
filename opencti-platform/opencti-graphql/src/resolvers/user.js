@@ -11,7 +11,7 @@ import {
   meEditField,
   userRenewToken,
   setAuthenticationCookie,
-  userDelete,
+  userDelete
 } from '../domain/user';
 import {
   createdByRef,
@@ -33,7 +33,7 @@ const userResolvers = {
     me: (_, args, { user }) => findById(user.id)
   },
   User: {
-    createdByRef: (user, args) => createdByRef(user.id, args),
+    createdByRef: user => createdByRef(user.id),
     groups: (user, args) => groups(user.id, args),
     token: (user, args, context) => token(user.id, args, context),
     markingDefinitions: (user, args) => markingDefinitions(user.id, args),

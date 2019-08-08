@@ -9,7 +9,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, pathOr, pipe, map, pluck, union,
+  compose, pathOr, pipe, map, pluck, union, evolve, path,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -152,13 +152,14 @@ class IntrusionSetCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // TODO @sam, fix that
-    values.createdByRef = values.createdByRef.value;
-    values.markingDefinitions = pluck('value', values.markingDefinitions);
+    const adaptedValues = evolve({
+      createdByRef: path(['value']),
+      markingDefinitions: pluck('value'),
+    }, values);
     commitMutation({
       mutation: intrusionSetMutation,
       variables: {
-        input: values,
+        input: adaptedValues,
       },
       updater: (store) => {
         const payload = store.getRootField('intrusionSetAdd');

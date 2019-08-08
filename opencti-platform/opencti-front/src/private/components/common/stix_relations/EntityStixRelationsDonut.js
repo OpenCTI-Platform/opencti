@@ -80,6 +80,7 @@ class EntityStixRelationsDonut extends Component {
     this.renderLabel = this.renderLabel.bind(this);
   }
 
+  // eslint-disable-next-line class-methods-use-this
   renderLabel(props) {
     const RADIAN = Math.PI / 180;
     const {
@@ -261,8 +262,7 @@ class EntityStixRelationsDonut extends Component {
           <Typography
             variant="h4"
             gutterBottom={true}
-            style={{ float: 'left', padding: '10px 0 0 10px' }}
-          >
+            style={{ float: 'left', padding: '10px 0 0 10px' }}>
             {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
           </Typography>
           <IconButton
@@ -270,8 +270,7 @@ class EntityStixRelationsDonut extends Component {
             aria-label="Update"
             size="small"
             classes={{ root: classes.updateButton }}
-            onClick={handleOpenConfig.bind(this, configuration)}
-          >
+            onClick={handleOpenConfig.bind(this, configuration)}>
             <SettingsInputComponent fontSize="inherit" />
           </IconButton>
           <div className="clearfix" />

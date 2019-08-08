@@ -1,5 +1,6 @@
 const globalObjectResolvers = {
   GlobalObject: {
+    // eslint-disable-next-line no-underscore-dangle
     __resolveType(obj) {
       if (obj.observable_value) {
         return 'StixObservable';
