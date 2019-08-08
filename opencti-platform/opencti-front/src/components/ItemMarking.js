@@ -37,22 +37,13 @@ const inlineStyles = {
 class ItemMarking extends Component {
   render() {
     const { classes, variant } = this.props;
-    let style = classes.chip;
-    switch (variant) {
-      case 'inList':
-        style = this.props.classes.chipInList;
-        break;
-      default:
-        style = classes.chip;
-    }
-
+    const style = (variant === 'inList') ? this.props.classes.chipInList : classes.chip;
     if (this.props.color) {
       return (
         <Chip
           classes={{ root: style }}
           style={{ backgroundColor: this.props.color }}
-          label={this.props.label}
-        />
+          label={this.props.label}/>
       );
     }
 

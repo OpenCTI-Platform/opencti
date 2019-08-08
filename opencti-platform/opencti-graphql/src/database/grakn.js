@@ -501,7 +501,7 @@ export const getRelationById = async id => {
       fromPromise,
       toPromise
     ]).then(([relation, from, to]) => {
-      if (isInversed(relation.relationship_type, fromRoleLabel, toRoleLabel)) {
+      if (isInversed(relation.relationship_type, fromRoleLabel)) {
         return pipe(
           assoc('from', to),
           assoc('fromRole', toRoleLabel),
@@ -679,7 +679,7 @@ export const getRelationInferredById = async id => {
       toPromise,
       inferencesPromises
     ]).then(([fromResult, toResult, relationInferences]) => {
-      if (isInversed(relation.relationship_type, fromRoleLabel, toRoleLabel)) {
+      if (isInversed(relation.relationship_type, fromRoleLabel)) {
         return pipe(
           assoc('from', toResult),
           assoc('fromRole', toRoleLabel),
@@ -948,7 +948,7 @@ export const getRelations = async (
         ]).then(([node, from, to, relation]) => {
           if (
             enforceDirection &&
-            isInversed(node.relationship_type, fromRoleLabel, toRoleLabel)
+            isInversed(node.relationship_type, fromRoleLabel)
           ) {
             return {
               node: pipe(

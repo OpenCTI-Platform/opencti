@@ -90,7 +90,7 @@ class EntityStixRelationsChart extends Component {
   }
 
   changePeriod(period) {
-    let interval = 2;
+    let interval;
     switch (period) {
       case 12:
         interval = 0;
