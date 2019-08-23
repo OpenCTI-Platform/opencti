@@ -53,7 +53,8 @@
     "subscriptions-transport-ws": "^0.9.16",
     "typeface-roboto": "^0.0.54",
     "uuid": "^3.3.2",
-    "yup": "^0.27.0"
+    "yup": "^0.27.0",
+    "snyk": "^1.217.3"
   },
   "devDependencies": {
     "@storybook/addon-actions": "^5.0.11",
@@ -83,7 +84,9 @@
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 9009 -s public",
     "build-storybook": "build-storybook -s public",
-    "relay": "relay-compiler --watchman false --src ./src --schema ../opencti-graphql/config/schema/opencti.graphql --extensions js jsx"
+    "relay": "relay-compiler --watchman false --src ./src --schema ../opencti-graphql/config/schema/opencti.graphql --extensions js jsx",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -94,5 +97,6 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "main": "index.js"
+  "main": "index.js",
+  "snyk": true
 }
