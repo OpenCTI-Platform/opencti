@@ -25,6 +25,18 @@ const defaultIndexes = [
 
 export const el = new Client({ node: conf.get('elasticsearch:url') });
 
+export const elasticIsAlive = async () => {
+  try {
+    await el.info().then(info => {
+      if (info.meta.connection.status !== 'alive')
+        throw new Error('elastic seems down');
+      return true;
+    });
+  } catch (e) {
+    throw new Error('elastic seems down');
+  }
+};
+
 export const createIndexes = async () => {
   return Promise.all(
     defaultIndexes.map(index => {
