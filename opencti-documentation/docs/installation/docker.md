@@ -52,6 +52,16 @@ $ docker-compose --compatibility up
 
 You can now go to http://localhost:8080 and log in with the credentials configured in your environment variables.
 
+### Behind a reverse proxy
+
+If you want to use OpenCTI behind a reverse proxy with a context path, like `https://myproxy.com/opencti`, please change the base_path configuration.
+
+```yaml
+- APP__BASE_PATH=/opencti
+```
+By default OpenCTI use Websockets so dont forget to configure your proxy for this usage.
+
+
 ## Data persistence
 
 If you wish your OpenCTI data to be persistent in production, you should be aware of the  `volumes` section for both `Grakn` and `ElasticSearch` services in the `docker-compose.yml`.
