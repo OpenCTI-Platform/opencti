@@ -11,7 +11,6 @@ import {
 } from 'react-router-dom';
 import 'storm-react-diagrams/dist/style.min.css';
 import 'react-grid-layout/css/styles.css';
-import 'react-resizable/css/styles.css';
 import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { createMuiTheme } from '@material-ui/core/styles';
@@ -22,7 +21,7 @@ import theme from './components/Theme';
 import Login from './public/components/Login';
 import RootPrivate from './private/Root';
 import { BoundaryRoute } from './private/components/Error';
-import { MESSAGING$ } from './relay/environment';
+import { APP_BASE_PATH, MESSAGING$ } from './relay/environment';
 
 class RedirectManagerComponent extends Component {
   componentDidMount() {
@@ -49,7 +48,7 @@ const RedirectManager = compose(withRouter)(RedirectManagerComponent);
 
 const App = () => (
   <MuiThemeProvider theme={createMuiTheme(theme)}>
-    <BrowserRouter>
+    <BrowserRouter basename={APP_BASE_PATH}>
       <RedirectManager>
         <CssBaseline />
         <Switch>
