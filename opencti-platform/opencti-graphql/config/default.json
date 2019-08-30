@@ -2,6 +2,7 @@
   "app": {
     "port": 4000,
     "logs": "./logs",
+    "logs_level": "info",
     "reactive": true,
     "cookie_secure": false,
     "default_roles": [],
