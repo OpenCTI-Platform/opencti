@@ -48,7 +48,7 @@ export const ACCESS_PROVIDERS = split(
 );
 
 // Network
-const envBasePath = window.BASE_PATH.startsWith('/')
+const envBasePath = isEmpty(window.BASE_PATH) || window.BASE_PATH.startsWith('/')
   ? window.BASE_PATH : `/${window.BASE_PATH}`;
 export const APP_BASE_PATH = IN_DEV_MODE ? '' : envBasePath;
 const networkFetch = (operation, variables) => fetch(`${APP_BASE_PATH}/graphql`, {

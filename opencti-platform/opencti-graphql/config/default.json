@@ -4,7 +4,7 @@
     "logs": "./logs",
     "reactive": true,
     "cookie_secure": false,
-    "base_path" : "/",
+    "base_path" : "",
     "default_roles": [],
     "admin": {
       "email": "admin@opencti.io",
