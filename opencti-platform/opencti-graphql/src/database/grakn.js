@@ -310,7 +310,7 @@ const inferIndexFromConceptTypes = async types => {
 /**
  * Load any grakn instance with internal grakn ID.
  * @param concept the concept to get attributes from
- * @param forceReindex if index need to be reindex
+ * @param forceReindex if index need to be updated
  * @returns {Promise}
  */
 export const getAttributes = async (concept, forceReindex = false) => {
@@ -403,17 +403,17 @@ export const getAttributes = async (concept, forceReindex = false) => {
 /**
  * Load any grakn instance with internal ID.
  * @param id element id to get
- * @param bypassIndex if index need to be bypass
+ * @param forceReindex if index need to be updated
  * @returns {Promise<any[] | never>}
  */
-export const getById = async (id, bypassIndex = false) => {
+export const getById = async (id, forceReindex = false) => {
   const rTx = await takeReadTx();
   try {
     const query = `match $x has internal_id "${escapeString(id)}"; get $x;`;
     const iterator = await rTx.tx.query(query);
     const answer = await iterator.next();
     const concept = answer.map().get('x');
-    const result = await getAttributes(concept, bypassIndex);
+    const result = await getAttributes(concept, forceReindex);
     await closeReadTx(rTx);
     return result;
   } catch (err) {
@@ -1199,7 +1199,7 @@ export const updateAttribute = async (id, input, tx = null) => {
     // Then commit the data
     await commitWriteTx(wTx);
     // Return the final result
-    return await getById(id);
+    return await getById(id, true);
   } catch (err) {
     logger.error(err);
     await closeWriteTx(wTx);

@@ -7,14 +7,31 @@ export default class EntityLinkFactory extends SRD.AbstractLinkFactory {
     super('entity');
   }
 
-  static generateReactWidget(diagramEngine, link) {
+  // eslint-disable-next-line class-methods-use-this
+  generateReactWidget(diagramEngine, link) {
     return React.createElement(SRD.DefaultLinkWidget, {
       link,
       diagramEngine,
     });
   }
 
-  static getNewInstance(initialConfig) {
-    return new EntityLinkModel(initialConfig);
+  // eslint-disable-next-line class-methods-use-this
+  getNewInstance() {
+    return new EntityLinkModel();
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  generateLinkSegment(model, widget, selected, path) {
+    const classNameNotInferred = selected ? widget.bem('--path-selected') : '';
+    return (
+      <path
+        className={
+          model.inferred ? widget.bem('--path-inferred') : classNameNotInferred
+        }
+        strokeWidth={model.width}
+        stroke={model.color}
+        d={path}
+      />
+    );
   }
 }
