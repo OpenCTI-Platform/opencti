@@ -32,7 +32,7 @@ const incidentResolvers = {
     }
   },
   Incident: {
-    createdByRef: (incident, args) => createdByRef(incident.id, args),
+    createdByRef: incident => createdByRef(incident.id),
     markingDefinitions: (incident, args) =>
       markingDefinitions(incident.id, args),
     reports: (incident, args) => reports(incident.id, args),

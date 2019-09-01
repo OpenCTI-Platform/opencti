@@ -18,7 +18,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 
-const styles = à => ({
+const styles = () => ({
   paper: {
     minHeight: 340,
     height: '100%',
@@ -124,11 +124,8 @@ class EntityStixRelationsTableTime extends Component {
       resolveRelationToTypes,
       resolveViaTypes,
     } = this.props;
-    const finalStartDate = variant === 'explore' && startDate
-      ? startDate
-      : this.state.interval === 'month'
-        ? monthsAgo(6)
-        : monthsAgo(12 * 5);
+    const monthInterval = this.state.interval === 'month' ? monthsAgo(6) : monthsAgo(12 * 5);
+    const finalStartDate = (variant === 'explore' && startDate) ? startDate : monthInterval;
     const stixRelationsTimeSeriesVariables = {
       fromId: entityId || null,
       entityTypes: entityTypes || null,

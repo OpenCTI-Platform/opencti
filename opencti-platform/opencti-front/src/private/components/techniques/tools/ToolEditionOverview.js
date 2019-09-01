@@ -495,8 +495,6 @@ class ToolEditionOverviewComponent extends Component {
 }
 
 ToolEditionOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
   t: PropTypes.func,
   tool: PropTypes.object,
   editUsers: PropTypes.array,

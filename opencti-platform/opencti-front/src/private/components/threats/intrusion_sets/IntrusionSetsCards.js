@@ -32,13 +32,9 @@ class IntrusionSetsCards extends Component {
 }
 
 IntrusionSetsCards.propTypes = {
-  classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
   data: PropTypes.object,
   relay: PropTypes.object,
-  intrusionSets: PropTypes.object,
   initialLoading: PropTypes.bool,
-  searchTerm: PropTypes.string,
 };
 
 export const intrusionSetsCardsQuery = graphql`

@@ -29,7 +29,6 @@ import {
 import {
   countEntities,
   deleteEntity,
-  index,
   paginate as elPaginate
 } from '../database/elasticSearch';
 
@@ -179,7 +178,7 @@ export const addStixObservable = async (user, stixObservable) => {
     has created_at_year "${yearFormat(now())}",      
     has updated_at ${now()};
   `;
-  logger.debug(`[GRAKN - infer: false] ${query}`);
+  logger.debug(`[GRAKN - infer: false] addStixObservable > ${query}`);
   const stixObservableIterator = await wTx.tx.query(query);
   const createStixObservable = await stixObservableIterator.next();
   const createdStixObservableId = await createStixObservable
@@ -212,7 +211,6 @@ export const addStixObservable = async (user, stixObservable) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix_observables', created);
     return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
   });
 };
@@ -255,6 +253,5 @@ export const stixObservableEditContext = (user, stixObservableId, input) => {
 
 export const stixObservableEditField = (user, stixObservableId, input) =>
   updateAttribute(stixObservableId, input).then(stixObservable => {
-    index('stix_observables', stixObservable);
     return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user);
   });

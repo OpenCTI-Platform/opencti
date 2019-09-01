@@ -22,7 +22,7 @@ import conf, {
 import passport, { ACCESS_PROVIDERS } from './config/security';
 import { findByTokenUUID, setAuthenticationCookie } from './domain/user';
 import schema from './schema/schema';
-import { ConstraintFailure, TYPE_AUTH, Unknown } from './config/errors';
+import { buildValidationError, TYPE_AUTH, Unknown } from './config/errors';
 
 // Init the http server
 const app = express();
@@ -107,7 +107,7 @@ const server = new ApolloServer({
       const errorCode = e.extensions.exception.code;
       if (errorCode === 'ERR_GRAPHQL_CONSTRAINT_VALIDATION') {
         const { fieldName } = e.extensions.exception;
-        const ConstraintError = new ConstraintFailure(fieldName);
+        const ConstraintError = buildValidationError(fieldName);
         e = apolloFormatError(ConstraintError);
       } else {
         e = apolloFormatError(new Unknown());

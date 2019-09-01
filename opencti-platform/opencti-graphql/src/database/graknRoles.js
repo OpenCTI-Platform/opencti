@@ -1,4 +1,4 @@
-const rolesMap = {
+export const rolesMap = {
   targets: {
     source: 'from',
     target: 'to'

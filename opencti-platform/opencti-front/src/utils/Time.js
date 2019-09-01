@@ -49,7 +49,7 @@ export const dateFormat = (data, specificFormat) => (data && data !== '-'
   : '');
 
 export const dateToISO = (date) => {
-  const momentDate = parse(date, defaultDateFormat, true);
+  const momentDate = parse(date);
   return momentDate.isValid() ? momentDate.format() : 'invalid-date';
 };
 

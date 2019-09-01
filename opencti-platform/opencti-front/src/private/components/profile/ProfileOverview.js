@@ -69,6 +69,7 @@ class ProfileOverviewComponent extends Component {
       .catch(() => false);
   }
 
+  // eslint-disable-next-line class-methods-use-this
   handleSubmitPasswords(values, { setSubmitting, resetForm }) {
     const field = { key: 'password', value: values.password };
     commitMutation({

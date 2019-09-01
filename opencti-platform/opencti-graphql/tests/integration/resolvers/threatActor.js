@@ -34,7 +34,7 @@ describe('Threat actor resolver standard behavior', () => {
     });
     expect(restCreation).not.toBeNull();
     expect(restCreation.data.threatActorAdd).not.toBeNull();
-    expect(restCreation.data.threatActorAdd.name).toEqual('Threat actor')
+    expect(restCreation.data.threatActorAdd.name).toEqual('Threat actor');
     const threatActorId = restCreation.data.threatActorAdd.id;
 
     const resSelect = await query({

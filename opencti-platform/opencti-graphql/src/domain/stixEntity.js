@@ -4,6 +4,7 @@ import {
   RABBITMQ_IMPORT_ROUTING_KEY
 } from '../config/conf';
 
+// eslint-disable-next-line
 export const importData = async (type, file) => {
   send(
     RABBITMQ_EXCHANGE_NAME,

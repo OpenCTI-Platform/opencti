@@ -19,6 +19,7 @@ export default class EntityPortModel extends PortModel {
     this.position = data.position;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   createLinkModel() {
     return new EntityLinkModel();
   }

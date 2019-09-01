@@ -47,7 +47,7 @@ if (conf.get('providers:facebook')) {
     facebookOptions,
     (accessToken, refreshToken, profile, done) => {
       // eslint-disable-next-line no-underscore-dangle
-      const data = profile._json; // TODO CHECK THAT
+      const data = profile._json;
       const name = `${data.last_name} ${data.first_name}`;
       const { email } = data;
       loginFromProvider(email, name)

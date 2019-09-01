@@ -38,6 +38,7 @@ const styles = theme => ({
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
+Transition.displayName = 'TransitionSlide';
 
 const reportRefPopoverDeletionMutation = graphql`
   mutation ReportRefPopoverDeletionMutation(
@@ -49,7 +50,7 @@ const reportRefPopoverDeletionMutation = graphql`
       relationDelete(relationId: $relationId) {
         node {
           ...ReportEntities_report
-          ...ReportObservables_report
+          ...ReportObservables_report @arguments(relationType: $relationType)
         }
       }
     }

@@ -34,13 +34,11 @@ const stixObservableResolvers = {
       }
       return findAll(args);
     },
-    stixObservablesTimeSeries: (_, args) =>
-      stixObservablesTimeSeries(args),
+    stixObservablesTimeSeries: (_, args) => stixObservablesTimeSeries(args),
     stixObservablesNumber: (_, args) => stixObservablesNumber(args)
   },
   StixObservable: {
-    createdByRef: (stixObservable, args) =>
-      createdByRef(stixObservable.id, args),
+    createdByRef: (stixObservable) => createdByRef(stixObservable.id),
     markingDefinitions: (stixObservable, args) =>
       markingDefinitions(stixObservable.id, args),
     reports: (stixObservable, args) => reports(stixObservable.id, args),

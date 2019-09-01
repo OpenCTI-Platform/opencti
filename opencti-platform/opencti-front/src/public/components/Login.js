@@ -139,16 +139,12 @@ class Login extends Component {
           if (props && props.settings) {
             return (
               <ConnectedIntlProvider
-                me={props && props.me ? props.me : null}
-                settings={props && props.settings ? props.settings : null}
-              >
-                <ConnectedDocumentTitle
-                  settings={props && props.settings ? props.settings : null}
-                >
+                me={props.me ? props.me : null}
+                settings={props.settings}>
+                <ConnectedDocumentTitle settings={props.settings}>
                   <div
                     className={this.props.classes.container}
-                    style={{ marginTop }}
-                  >
+                    style={{ marginTop }}>
                     <img
                       src={logo}
                       alt="logo"

@@ -14,7 +14,7 @@ import {
   commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { index, paginate as elPaginate } from '../database/elasticSearch';
+import { paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args => {
   if (args.orderBy === 'killChainPhases') {
@@ -90,7 +90,7 @@ export const addAttackPattern = async (user, attackPattern) => {
     has created_at_year "${yearFormat(now())}",
     has updated_at ${now()};
   `;
-  logger.debug(`[GRAKN - infer: false] ${query}`);
+  logger.debug(`[GRAKN - infer: false] addAttackPattern > ${query}`);
   const attackPatternIterator = await wTx.tx.query(query);
   const createAttackPattern = await attackPatternIterator.next();
   const createdAttackPatternId = await createAttackPattern
@@ -137,7 +137,6 @@ export const addAttackPattern = async (user, attackPattern) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

@@ -75,7 +75,7 @@ class EntityCampaignsChart extends Component {
   }
 
   changePeriod(period) {
-    let interval = 2;
+    let interval;
     switch (period) {
       case 12:
         interval = 0;
@@ -258,7 +258,6 @@ EntityCampaignsChart.propTypes = {
   entityId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
   md: PropTypes.func,
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,

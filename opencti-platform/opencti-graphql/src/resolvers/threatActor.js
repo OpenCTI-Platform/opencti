@@ -1,8 +1,4 @@
-import {
-  addThreatActor,
-  findAll,
-  findById
-} from '../domain/threatActor';
+import { addThreatActor, findAll, findById } from '../domain/threatActor';
 import {
   createdByRef,
   markingDefinitions,
@@ -21,10 +17,10 @@ import { fetchEditContext } from '../database/redis';
 const threatActorResolvers = {
   Query: {
     threatActor: (_, { id }) => findById(id),
-    threatActors: (_, args) => findAll(args),
+    threatActors: (_, args) => findAll(args)
   },
   ThreatActor: {
-    createdByRef: (threatActor, args) => createdByRef(threatActor.id, args),
+    createdByRef: threatActor => createdByRef(threatActor.id),
     markingDefinitions: (threatActor, args) =>
       markingDefinitions(threatActor.id, args),
     reports: (threatActor, args) => reports(threatActor.id, args),

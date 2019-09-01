@@ -20,7 +20,7 @@ const cityResolvers = {
     cities: (_, args) => findAll(args)
   },
   City: {
-    createdByRef: (city, args) => createdByRef(city.id, args),
+    createdByRef: city => createdByRef(city.id),
     markingDefinitions: (city, args) => markingDefinitions(city.id, args),
     reports: (city, args) => reports(city.id, args),
     exports: (city, args) => exports(city.id, args),

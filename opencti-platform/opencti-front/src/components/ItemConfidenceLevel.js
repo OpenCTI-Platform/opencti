@@ -48,15 +48,7 @@ class ItemConfidenceLevel extends Component {
     const {
       t, level, classes, variant,
     } = this.props;
-    let style = classes.chip;
-    switch (variant) {
-      case 'inList':
-        style = classes.chipInList;
-        break;
-      default:
-        style = classes.chip;
-    }
-
+    const style = (variant === 'inList') ? classes.chipInList : classes.chip;
     switch (level) {
       case 1:
         return (

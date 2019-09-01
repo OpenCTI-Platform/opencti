@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 export const resolveLink = (type) => {
   switch (type) {
     case 'attack-pattern':

@@ -12,7 +12,7 @@ import {
   now,
   commitWriteTx
 } from '../database/grakn';
-import { index, paginate as elPaginate } from '../database/elasticSearch';
+import { paginate as elPaginate } from '../database/elasticSearch';
 import { BUS_TOPICS, logger } from '../config/conf';
 
 export const findAll = args =>
@@ -93,7 +93,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     has created_at_year "${yearFormat(now())}",       
     has updated_at ${now()};
   `;
-  logger.debug(`[GRAKN - infer: false] ${query}`);
+  logger.debug(`[GRAKN - infer: false] addIntrusionSet > ${query}`);
   const intrusionSetIterator = await wTx.tx.query(query);
   const createIntrusionSet = await intrusionSetIterator.next();
   const createdIntrusionSetId = await createIntrusionSet
@@ -126,7 +126,6 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

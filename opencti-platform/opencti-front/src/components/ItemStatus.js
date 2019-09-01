@@ -40,15 +40,7 @@ class ItemMarking extends Component {
     const {
       classes, label, status, variant,
     } = this.props;
-    let style = classes.chip;
-    switch (variant) {
-      case 'inList':
-        style = classes.chipInList;
-        break;
-      default:
-        style = classes.chip;
-    }
-
+    const style = (variant === 'inList') ? classes.chipInList : classes.chip;
     switch (status) {
       case 0:
         return (

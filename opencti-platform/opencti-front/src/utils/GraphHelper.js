@@ -1,5 +1,6 @@
 import { forEach, values } from 'ramda';
 
+// eslint-disable-next-line import/prefer-default-export
 export const serializeGraph = (model) => {
   const nodes = model.getNodes();
   const graphData = {};

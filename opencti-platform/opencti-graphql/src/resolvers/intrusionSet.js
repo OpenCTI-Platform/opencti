@@ -1,8 +1,4 @@
-import {
-  addIntrusionSet,
-  findAll,
-  findById
-} from '../domain/intrusionSet';
+import { addIntrusionSet, findAll, findById } from '../domain/intrusionSet';
 import {
   createdByRef,
   markingDefinitions,
@@ -21,10 +17,10 @@ import { fetchEditContext } from '../database/redis';
 const intrusionSetResolvers = {
   Query: {
     intrusionSet: (_, { id }) => findById(id),
-    intrusionSets: (_, args) => findAll(args),
+    intrusionSets: (_, args) => findAll(args)
   },
   IntrusionSet: {
-    createdByRef: (intrusionSet, args) => createdByRef(intrusionSet.id, args),
+    createdByRef: intrusionSet => createdByRef(intrusionSet.id),
     markingDefinitions: (intrusionSet, args) =>
       markingDefinitions(intrusionSet.id, args),
     reports: (intrusionSet, args) => reports(intrusionSet.id, args),

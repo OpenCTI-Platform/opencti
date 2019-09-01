@@ -253,8 +253,7 @@ class Autocomplete extends Component {
           error={hasError}
           required={required}
           disabled={isSubmitting}
-          style={{ marginTop: '20px' }}
-        >
+          style={{ marginTop: '20px' }}>
           <Select
             classes={classes}
             styles={selectStyles}
@@ -271,10 +270,10 @@ class Autocomplete extends Component {
             options={options}
             components={components}
             value={values[field.name]}
-            onChange={(values) => {
-              setFieldValue(field.name, values);
+            onChange={(changeValues) => {
+              setFieldValue(field.name, changeValues);
               if (typeof onChange === 'function') {
-                onChange(field.name, values);
+                onChange(field.name, changeValues);
               }
             }}
             onFocus={() => {

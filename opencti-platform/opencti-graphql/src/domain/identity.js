@@ -13,12 +13,13 @@ import {
   commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { index, paginate as elPaginate } from '../database/elasticSearch';
+import { paginate as elPaginate } from '../database/elasticSearch';
 
-export const findAll = args => elPaginate(
-  'stix_domain_entities',
-  assoc('types', ['user', 'organization', 'region', 'country', 'city'], args)
-);
+export const findAll = args =>
+  elPaginate(
+    'stix_domain_entities',
+    assoc('types', ['user', 'organization', 'region', 'country', 'city'], args)
+  );
 
 export const findById = identityId => getById(identityId);
 
@@ -49,7 +50,7 @@ export const addIdentity = async (user, identity) => {
     has updated_at ${now()};
   `;
   const identityIterator = await wTx.tx.query(query);
-  logger.debug(`[GRAKN - infer: false] ${query}`);
+  logger.debug(`[GRAKN - infer: false] addIdentity > ${query}`);
   const createIdentity = await identityIterator.next();
   const createdIdentityId = await createIdentity.map().get('identity').id;
 
@@ -79,7 +80,6 @@ export const addIdentity = async (user, identity) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

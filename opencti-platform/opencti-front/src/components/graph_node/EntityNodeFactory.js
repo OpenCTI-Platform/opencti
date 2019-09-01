@@ -8,10 +8,12 @@ export default class EntityNodeFactory extends SRD.AbstractNodeFactory {
     super('entity');
   }
 
+  // eslint-disable-next-line class-methods-use-this
   generateReactWidget(diagramEngine, node) {
     return <EntityNodeWidget node={node} />;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   getNewInstance() {
     return new EntityNodeModel();
   }

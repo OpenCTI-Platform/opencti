@@ -1,5 +1,3 @@
-/* eslint-disable no-nested-ternary */
-// TODO Remove no-nested-ternary
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
@@ -196,22 +194,16 @@ class ReportObservablesComponent extends Component {
 
   SortHeader(field, label, isSortable) {
     const { t } = this.props;
+    const sortComponent = this.state.orderAsc
+      ? <ArrowDropDown style={inlineStylesHeaders.iconSort} />
+      : <ArrowDropUp style={inlineStylesHeaders.iconSort} />;
     if (isSortable) {
       return (
         <div
           style={inlineStylesHeaders[field]}
-          onClick={this.reverseBy.bind(this, field)}
-        >
+          onClick={this.reverseBy.bind(this, field)}>
           <span>{t(label)}</span>
-          {this.state.sortBy === field ? (
-            this.state.orderAsc ? (
-              <ArrowDropDown style={inlineStylesHeaders.iconSort} />
-            ) : (
-              <ArrowDropUp style={inlineStylesHeaders.iconSort} />
-            )
-          ) : (
-            ''
-          )}
+          {this.state.sortBy === field ? sortComponent : ''}
         </div>
       );
     }
@@ -407,7 +399,7 @@ ReportObservablesComponent.propTypes = {
 
 const ReportObservables = createFragmentContainer(ReportObservablesComponent, {
   report: graphql`
-    fragment ReportObservables_report on Report {
+    fragment ReportObservables_report on Report @argumentDefinitions(relationType: { type: "String" }) {
       id
       published
       source_confidence_level

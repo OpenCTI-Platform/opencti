@@ -86,7 +86,7 @@ class AttackPatternEditionIdentityComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    attackPatternValidation(this.props.t)
+    attackPatternValidation()
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -118,7 +118,7 @@ class AttackPatternEditionIdentityComponent extends Component {
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={attackPatternValidation(t)}
+          validationSchema={attackPatternValidation()}
           onSubmit={() => true}
           render={() => (
             <div>

@@ -6,7 +6,6 @@ import {
   findAll,
   findByEntity,
   findById,
-  search,
   externalReferenceEditContext,
   externalReferenceEditField,
   externalReferenceAddRelation,

@@ -13,7 +13,7 @@ import {
   commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { index, paginate as elPaginate } from '../database/elasticSearch';
+import { paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'threat-actor', args));
@@ -59,10 +59,9 @@ export const addThreatActor = async (user, threatActor) => {
     has created_at_year "${yearFormat(now())}",        
     has updated_at ${now()};
   `);
-  const createThreatActor = await threatActorIterator.next();
-  const createThreatActorId = await createThreatActor.map().get('threatActor')
-    .id;
-
+  const txThreatActor = await threatActorIterator.next();
+  const createThreatActorId = await txThreatActor.map().get('threatActor').id;
+  // Create relation createdByRef
   if (threatActor.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createThreatActorId};
@@ -71,7 +70,7 @@ export const addThreatActor = async (user, threatActor) => {
       isa created_by_ref, has internal_id "${uuid()}";`
     );
   }
-
+  // Create Marking definitions relations
   if (threatActor.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
@@ -86,10 +85,11 @@ export const addThreatActor = async (user, threatActor) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
+  // Finalize the transaction for all objects
   await commitWriteTx(wTx);
 
+  // Return the data created
   return getById(internalId).then(created => {
-    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

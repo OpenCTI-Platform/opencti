@@ -8,10 +8,12 @@ export default class EntityLabelFactory extends SRD.AbstractLabelFactory {
     super('entity');
   }
 
+  // eslint-disable-next-line class-methods-use-this
   generateReactWidget(diagramEngine, label) {
     return <EntityLabelWidget model={label} />;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   getNewInstance() {
     return new EntityLabelModel();
   }

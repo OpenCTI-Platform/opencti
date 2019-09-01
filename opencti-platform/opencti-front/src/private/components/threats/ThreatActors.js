@@ -17,6 +17,7 @@ import ThreatActorsLines, {
   threatActorsLinesQuery,
 } from './threat_actors/ThreatActorsLines';
 import ThreatActorCreation from './threat_actors/ThreatActorCreation';
+import Loader from '../../Loader';
 
 class ThreatActors extends Component {
   constructor(props) {
@@ -77,18 +78,20 @@ class ThreatActors extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
         displayImport={true}
-        keyword={searchTerm}
-      >
+        keyword={searchTerm}>
         <QueryRenderer
           query={threatActorsCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <ThreatActorsCards
-              data={props}
-              paginationOptions={paginationOptions}
-              initialLoading={props === null}
-            />
-          )}
+          render={({ props }) => {
+            if (props) {
+              return <ThreatActorsCards
+                data={props}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                />;
+            }
+            return <Loader />;
+          }}
         />
       </ListCards>
     );
@@ -122,8 +125,7 @@ class ThreatActors extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
         displayImport={true}
-        keyword={searchTerm}
-      >
+        keyword={searchTerm}>
         <QueryRenderer
           query={threatActorsLinesQuery}
           variables={{ count: 25, ...paginationOptions }}

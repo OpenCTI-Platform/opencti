@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/prefer-default-export
 export const truncate = (str, limit) => {
   if (str === undefined || str === null || str.length <= limit) {
     return str;

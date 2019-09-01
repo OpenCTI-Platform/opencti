@@ -356,6 +356,7 @@ class ReportKnowledgeGraphComponent extends Component {
     });
   }
 
+  // eslint-disable-next-line class-methods-use-this
   handleSaveGraph() {
     GRAPHER$.next({ action: 'update' });
   }

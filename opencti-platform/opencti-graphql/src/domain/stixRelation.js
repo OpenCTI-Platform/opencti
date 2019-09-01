@@ -53,7 +53,7 @@ import {
 } from '../database/grakn';
 import { buildPagination } from '../database/utils';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { deleteEntity, index } from '../database/elasticSearch';
+import { deleteEntity } from '../database/elasticSearch';
 
 const sumBy = attribute => vals =>
   reduce(
@@ -611,7 +611,7 @@ export const addStixRelation = async (user, stixRelation) => {
     has created_at_year "${yearFormat(now())}",        
     has updated_at ${now()};
   `;
-  logger.debug(`[GRAKN - infer: false] ${query}`);
+  logger.debug(`[GRAKN - infer: false] addStixRelation > ${query}`);
   const stixRelationIterator = await wTx.tx.query(query);
   const createStixRelation = await stixRelationIterator.next();
   const createdStixRelationId = await createStixRelation
@@ -646,7 +646,6 @@ export const addStixRelation = async (user, stixRelation) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix_relations', created);
     return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
   });
 };
@@ -673,7 +672,6 @@ export const stixRelationEditContext = (user, stixRelationId, input) => {
 
 export const stixRelationEditField = (user, stixRelationId, input) =>
   updateAttribute(stixRelationId, input).then(stixRelation => {
-    index('stix_relations', stixRelation);
     return notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user);
   });
 

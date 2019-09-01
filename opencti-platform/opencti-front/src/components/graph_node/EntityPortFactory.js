@@ -6,6 +6,7 @@ export default class EntityPortFactory extends AbstractPortFactory {
     super('entity');
   }
 
+  // eslint-disable-next-line class-methods-use-this
   getNewInstance() {
     return new EntityPortModel();
   }

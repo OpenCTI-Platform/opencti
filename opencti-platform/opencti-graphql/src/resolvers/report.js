@@ -59,11 +59,11 @@ const reportResolvers = {
       if (args.objectId && args.objectId.length > 0) {
         return reportsDistributionByEntity(args);
       }
-      return reportsDistribution(args);
+      return [];
     }
   },
   Report: {
-    createdByRef: (report, args) => createdByRef(report.id, args),
+    createdByRef: report => createdByRef(report.id),
     markingDefinitions: (report, args) => markingDefinitions(report.id, args),
     externalReferences: (report, args) => externalReferences(report.id, args),
     objectRefs: (report, args) => objectRefs(report.id, args),

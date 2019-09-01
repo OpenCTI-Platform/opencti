@@ -45,6 +45,7 @@ const stixDomainEntityResolvers = {
     stixDomainEntitiesNumber: (_, args) => stixDomainEntitiesNumber(args)
   },
   StixDomainEntity: {
+    // eslint-disable-next-line no-underscore-dangle
     __resolveType(obj) {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) =>
@@ -53,8 +54,7 @@ const stixDomainEntityResolvers = {
       }
       return 'Unknown';
     },
-    createdByRef: (stixDomainEntity, args) =>
-      createdByRef(stixDomainEntity.id, args),
+    createdByRef: stixDomainEntity => createdByRef(stixDomainEntity.id),
     markingDefinitions: (stixDomainEntity, args) =>
       markingDefinitions(stixDomainEntity.id, args),
     stixRelations: (stixDomainEntity, args) =>

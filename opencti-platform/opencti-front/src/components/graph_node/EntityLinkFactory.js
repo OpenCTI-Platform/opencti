@@ -7,6 +7,7 @@ export default class EntityLinkFactory extends SRD.AbstractLinkFactory {
     super('entity');
   }
 
+  // eslint-disable-next-line class-methods-use-this
   generateReactWidget(diagramEngine, link) {
     return React.createElement(SRD.DefaultLinkWidget, {
       link,
@@ -14,19 +15,18 @@ export default class EntityLinkFactory extends SRD.AbstractLinkFactory {
     });
   }
 
+  // eslint-disable-next-line class-methods-use-this
   getNewInstance() {
     return new EntityLinkModel();
   }
 
+  // eslint-disable-next-line class-methods-use-this
   generateLinkSegment(model, widget, selected, path) {
+    const classNameNotInferred = selected ? widget.bem('--path-selected') : '';
     return (
       <path
         className={
-          model.inferred
-            ? widget.bem('--path-inferred')
-            : selected
-              ? widget.bem('--path-selected')
-              : ''
+          model.inferred ? widget.bem('--path-inferred') : classNameNotInferred
         }
         strokeWidth={model.width}
         stroke={model.color}

@@ -44,6 +44,7 @@ const styles = theme => ({
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
+Transition.displayName = 'TransitionSlide';
 
 const groupPopoverCleanContext = graphql`
   mutation GroupPopoverCleanContextMutation($id: ID!) {

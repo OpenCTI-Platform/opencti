@@ -27,8 +27,8 @@ export const buildViewParamsFromUrlAndStorage = (
     const localParams = JSON.parse(localStorage.getItem(localStorageKey));
     finalParams = mergeLeft(queryParams, localParams);
   }
-  if (finalParams.orderAsc === 'true') {
-    finalParams.orderAsc = true;
+  if (finalParams.orderAsc) {
+    finalParams.orderAsc = finalParams.orderAsc.toString() === 'true';
   }
   saveViewParameters(history, location, localStorageKey, finalParams);
   return finalParams;

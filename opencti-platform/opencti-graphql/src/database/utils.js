@@ -25,16 +25,16 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
   );
 
   const newData = [];
-  for (let i = 0; i <= elementsOfInterval; i++) {
-    let value = 0;
-    for (let j = 0; j < data.length; j++) {
+  for (let i = 0; i <= elementsOfInterval; i += 1) {
+    let dataValue = 0;
+    for (let j = 0; j < data.length; j += 1) {
       if (data[j].date === startDateParsed.format(dateFormat)) {
-        value = data[j].value;
+        dataValue = data[j].value;
       }
     }
     newData[i] = {
       date: startDateParsed.startOf(interval).format(),
-      value
+      value: dataValue
     };
     startDateParsed.add(1, `${interval}s`);
   }
@@ -43,7 +43,7 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
 
 export const randomKey = number => {
   let key = '';
-  for (let i = 0; i < number; i++) {
+  for (let i = 0; i < number; i += 1) {
     key += Math.floor(Math.random() * 10).toString();
   }
   return key;

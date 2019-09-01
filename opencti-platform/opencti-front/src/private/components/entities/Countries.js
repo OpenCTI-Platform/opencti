@@ -21,7 +21,6 @@ class Countries extends Component {
       props.history,
       props.location,
       'Countries-view',
-      'entities/countries',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),

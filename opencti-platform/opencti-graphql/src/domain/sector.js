@@ -14,7 +14,7 @@ import {
   commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { index, paginate as elPaginate } from '../database/elasticSearch';
+import { paginate as elPaginate } from '../database/elasticSearch';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'sector', args));
@@ -90,7 +90,6 @@ export const addSector = async (user, sector) => {
   await commitWriteTx(wTx);
 
   return getById(internalId).then(created => {
-    index('stix_domain_entities', created);
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

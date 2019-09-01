@@ -29,7 +29,7 @@ export const findAll = args =>
    { $name contains "${escapeString(args.search)}"; } or
    { $phase contains "${escapeString(args.search)}"; }`
         : ''
-      }`,
+    }`,
     args
   );
 

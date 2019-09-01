@@ -34,7 +34,7 @@ const campaignResolvers = {
     }
   },
   Campaign: {
-    createdByRef: (campaign, args) => createdByRef(campaign.id, args),
+    createdByRef: campaign => createdByRef(campaign.id),
     markingDefinitions: (campaign, args) =>
       markingDefinitions(campaign.id, args),
     reports: (campaign, args) => reports(campaign.id, args),

@@ -19,7 +19,6 @@ class Cities extends Component {
       props.history,
       props.location,
       'Cities-view',
-      'entities/cities',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),

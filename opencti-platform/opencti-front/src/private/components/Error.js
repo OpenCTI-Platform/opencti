@@ -1,7 +1,5 @@
 import React from 'react';
-import {
-  compose, difference, includes, isEmpty, map,
-} from 'ramda';
+import { compose, includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
 import { Redirect, Route, withRouter } from 'react-router-dom';
 import { ApplicationError, IN_DEV_MODE } from '../../relay/environment';
@@ -22,16 +20,8 @@ class ErrorBoundaryComponent extends React.Component {
       if (this.state.error instanceof ApplicationError) {
         const types = map(e => e.name, this.state.error.data);
         // Auth problem is always handled by a login redirect
-        if (
-          includes('AuthRequired', types)
-          || includes('ForbiddenAccess', types)
-        ) {
+        if (includes('AuthRequired', types) || includes('ForbiddenAccess', types)) {
           return <Redirect to="/login" />;
-        }
-        // If error is not part of managing declaration, propagate the error
-        if (this.props.managing) {
-          const unmanagedErrors = difference(types, this.props.managing || []);
-          if (!isEmpty(unmanagedErrors)) throw this.state.error;
         }
         // Return the error display element.
         return this.props.display;
@@ -49,9 +39,7 @@ class ErrorBoundaryComponent extends React.Component {
   }
 }
 ErrorBoundaryComponent.propTypes = {
-  history: PropTypes.object,
   display: PropTypes.object,
-  managing: PropTypes.array,
   children: PropTypes.node,
 };
 export const ErrorBoundary = compose(withRouter)(ErrorBoundaryComponent);

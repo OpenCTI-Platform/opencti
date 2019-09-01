@@ -47,15 +47,7 @@ const inlineStyles = {
 class ItemScore extends Component {
   render() {
     const { score, classes, variant } = this.props;
-    let style = classes.chip;
-    switch (variant) {
-      case 'inList':
-        style = classes.chipInList;
-        break;
-      default:
-        style = classes.chip;
-    }
-
+    const style = (variant === 'inList') ? classes.chipInList : classes.chip;
     if (score <= 20) {
       return (
         <Chip

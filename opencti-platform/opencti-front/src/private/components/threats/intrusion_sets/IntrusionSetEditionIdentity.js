@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
 import {
   assoc, compose, pick, pipe,
 } from 'ramda';
@@ -15,31 +14,6 @@ import Select from '../../../../components/Select';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
 import { dateFormat } from '../../../../utils/Time';
-
-const styles = theme => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionIdentityFieldPatchMutation(
@@ -229,8 +203,7 @@ class IntrusionSetEditionIdentityComponent extends Component {
                       users={editUsers}
                       fieldName="resource_level"
                     />
-                  }
-                >
+                  }>
                   <MenuItem key="none" value="">
                     {t('None')}
                   </MenuItem>
@@ -383,8 +356,6 @@ class IntrusionSetEditionIdentityComponent extends Component {
 }
 
 IntrusionSetEditionIdentityComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
   t: PropTypes.func,
   intrusionSet: PropTypes.object,
   editUsers: PropTypes.array,
@@ -408,7 +379,4 @@ const IntrusionSetEditionIdentity = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(IntrusionSetEditionIdentity);
+export default compose(inject18n)(IntrusionSetEditionIdentity);

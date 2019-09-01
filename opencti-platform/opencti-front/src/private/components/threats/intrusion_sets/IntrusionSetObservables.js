@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { Route, withRouter } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
-import inject18n from '../../../../components/i18n';
 import IntrusionSetHeader from './IntrusionSetHeader';
 import StixRelation from '../../common/stix_relations/StixRelation';
 import EntityStixObservables from '../../stix_observables/EntityStixObservables';
@@ -33,15 +32,13 @@ class IntrusionSetObservablesComponent extends Component {
     const { classes, intrusionSet, location } = this.props;
     const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/observables`;
     return (
-      <div
-        className={
+      <div className={
           location.pathname.includes(
             `/dashboard/threats/intrusion_sets/${intrusionSet.id}/observables/relations/`,
           )
             ? classes.containerWithoutPadding
             : classes.container
-        }
-      >
+        }>
         <IntrusionSetHeader intrusionSet={intrusionSet} />
         <Route
           exact
@@ -78,7 +75,6 @@ IntrusionSetObservablesComponent.propTypes = {
   intrusionSet: PropTypes.object,
   location: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
 };
 
 const IntrusionSetObservables = createFragmentContainer(
@@ -94,7 +90,6 @@ const IntrusionSetObservables = createFragmentContainer(
 );
 
 export default compose(
-  inject18n,
   withRouter,
   withStyles(styles),
 )(IntrusionSetObservables);

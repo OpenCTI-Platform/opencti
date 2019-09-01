@@ -1,5 +1,4 @@
-/* eslint-disable no-underscore-dangle,no-nested-ternary */
-// TODO Remove no-nested-ternary
+/* eslint-disable no-underscore-dangle */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import windowDimensions from 'react-window-dimensions';
@@ -171,11 +170,10 @@ class ListCardsContent extends Component {
     const nbOfLinesToLoad = Math.ceil(
       nbOfCardsToLoad / this.numberOfCardsPerLine(),
     );
-    const rowCount = initialLoading
-      ? nbOfLinesToLoad
-      : isLoading()
-        ? nbLineForCards + this.state.loadingCardCount
-        : nbLineForCards;
+    const nbLinesWithLoading = isLoading()
+      ? nbLineForCards + this.state.loadingCardCount
+      : nbLineForCards;
+    const rowCount = initialLoading ? nbOfLinesToLoad : nbLinesWithLoading;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
         {({

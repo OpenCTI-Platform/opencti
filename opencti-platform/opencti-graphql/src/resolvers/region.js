@@ -20,7 +20,7 @@ const regionResolvers = {
     regions: (_, args) => findAll(args)
   },
   Region: {
-    createdByRef: (region, args) => createdByRef(region.id, args),
+    createdByRef: region => createdByRef(region.id),
     markingDefinitions: (region, args) => markingDefinitions(region.id, args),
     reports: (region, args) => reports(region.id, args),
     exports: (region, args) => exports(region.id, args),

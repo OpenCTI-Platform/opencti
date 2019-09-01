@@ -126,10 +126,10 @@ class ConnectorsStatusComponent extends Component {
     ]);
     const overviewMetrics = data.rabbitMQMetrics.overview;
     const queuesMetrics = pipe(
-      map(n => assocPath(
+      map(queue => assocPath(
         ['arguments', 'config'],
         JSON.parse(
-          Buffer.from(n.arguments.config, 'base64').toString('ascii'),
+          Buffer.from(queue.arguments.config, 'base64').toString('ascii'),
         ),
         n,
       )),
@@ -244,7 +244,7 @@ class ConnectorsStatusComponent extends Component {
                         <Grid item={true} lg={3} xs={6}>
                           <div className={classes.metric}>
                             <div className={classes.number}>
-                              {n(queueMetric.messages_ready)}
+                              {n(propOr(0, 'messages_ready', queueMetric))}
                             </div>
                             <div className={classes.title}>
                               {t('Queued messages')}
@@ -254,7 +254,7 @@ class ConnectorsStatusComponent extends Component {
                         <Grid item={true} lg={3} xs={6}>
                           <div className={classes.metric}>
                             <div className={classes.number}>
-                              {n(queueMetric.messages_unacknowledged)}
+                              {n(propOr(0, 'messages_unacknowledged', queueMetric))}
                             </div>
                             <div className={classes.title}>
                               {t('In progress messages')}
@@ -311,8 +311,7 @@ class ConnectorsStatusComponent extends Component {
                     <Collapse
                       in={this.state.expanded[queueMetric.name]}
                       timeout="auto"
-                      unmountOnExit
-                    >
+                      unmountOnExit>
                       <CardContent style={{ paddingTop: 0 }}>
                         <Table>
                           <TableHead>
@@ -322,7 +321,7 @@ class ConnectorsStatusComponent extends Component {
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {filter(n => n[0] !== 'name', toPairs(config)).map(
+                            {filter(confElem => confElem[0] !== 'name', toPairs(config)).map(
                               conf => (
                                 <TableRow key={conf[0]} hover={true}>
                                   <TableCell align="left">{conf[0]}</TableCell>

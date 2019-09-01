@@ -125,6 +125,7 @@ class StixDomainEntityExportContentComponent extends Component {
             <ListItemText
               primary={t('STIX2 - Simple export')}
               secondary={
+                // eslint-disable-next-line no-nested-ternary
                 !exportStix2Simple
                   ? t('Never generated')
                   : exportStix2Simple.object_status === 0
@@ -170,6 +171,7 @@ class StixDomainEntityExportContentComponent extends Component {
             <ListItemText
               primary={t('STIX2 - Full export')}
               secondary={
+                // eslint-disable-next-line no-nested-ternary
                 !exportStix2Full
                   ? t('Never generated')
                   : exportStix2Full.object_status === 0
