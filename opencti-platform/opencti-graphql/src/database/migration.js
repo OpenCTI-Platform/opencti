@@ -3,10 +3,14 @@ import { isNil, isEmpty, head, map, filter } from 'ramda';
 import migrate from 'migrate';
 import { queryOne, queryMultiple, write } from './grakn';
 import { logger } from '../config/conf';
+import { elasticIsAlive } from './elasticSearch';
 
 // noinspection JSUnusedGlobalSymbols
 const graknStateStorage = {
   async load(fn) {
+    // Check if ES is alive
+    await elasticIsAlive();
+    // Get current status of migrations in Grakn
     const result = await queryMultiple(
       `match $x isa MigrationStatus; 
       (status:$x, state:$y); 
