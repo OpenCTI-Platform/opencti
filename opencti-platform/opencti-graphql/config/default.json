@@ -20,7 +20,7 @@
   "redis": {
     "hostname": "localhost",
     "port": 6379
-  },  
+  },
   "elasticsearch": {
     "url": "http://localhost:9200"
   },
