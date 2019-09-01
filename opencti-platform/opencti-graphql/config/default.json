@@ -2,8 +2,10 @@
   "app": {
     "port": 4000,
     "logs": "./logs",
+    "logs_level": "info",
     "reactive": true,
     "cookie_secure": false,
+    "base_path" : "",
     "default_roles": [],
     "admin": {
       "email": "admin@opencti.io",

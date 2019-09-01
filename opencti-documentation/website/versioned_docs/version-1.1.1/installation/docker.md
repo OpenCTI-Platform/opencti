@@ -12,7 +12,7 @@ OpenCTI could be deployed using the *docker-compose* command.
 ```bash
 $ mkdir /path/to/your/app && cd /path/to/your/app
 $ git clone https://github.com/OpenCTI-Platform/docker.git
-$ cd doker
+$ cd docker
 ```
 
 ### Configure the environment
@@ -33,7 +33,7 @@ And change the variable `OPENCTI_TOKEN` (for `worker-import` and `worker-export`
 As OpenCTI has a dependency to ElasticSearch, you have to set the `vm.max_map_count` before running the containers, as mentioned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
 
 ```bash
-$ sysctl -w vm.max_map_count=262144 
+$ sysctl -w vm.max_map_count=262144
 ```
 
 ## Run
@@ -83,13 +83,13 @@ OpenCTI platform is based on a NodeJS runtime, with a memory limit of **512MB by
 
 ### OpenCTI - Workers and connectors
 
-OpenCTI workers and connectors are Python processes. If you want to limit the memory of the process we recommend to directly use Docker to do that. You can find more information in the [official Docker documentation](https://docs.docker.com/compose/compose-file/). 
+OpenCTI workers and connectors are Python processes. If you want to limit the memory of the process we recommend to directly use Docker to do that. You can find more information in the [official Docker documentation](https://docs.docker.com/compose/compose-file/).
 
 > If you do not use Docker stack, think about `--compatibility` option.
 
-### Grakn 
+### Grakn
 
-Grakn is a JAVA process that rely on Cassandra (also a JAVA process). In order to setup the JAVA memory allocation, you can use the environment variable `SERVER_JAVAOPTS` and `STORAGE_JAVAOPTS`. 
+Grakn is a JAVA process that rely on Cassandra (also a JAVA process). In order to setup the JAVA memory allocation, you can use the environment variable `SERVER_JAVAOPTS` and `STORAGE_JAVAOPTS`.
 
 > The current recommendation is `-Xms4G` for both options.
 
@@ -97,7 +97,7 @@ You can find more information in the [official Grakn documentation](https://dev.
 
 ### ElasticSearch
 
-ElasticSearch is also a JAVA process. In order to setup the JAVA memory allocation, you can use the environment variable `ES_JAVA_OPTS`. 
+ElasticSearch is also a JAVA process. In order to setup the JAVA memory allocation, you can use the environment variable `ES_JAVA_OPTS`.
 
 > The minimal recommended option today is `-Xms512M -Xmx512M`.
 
@@ -105,7 +105,7 @@ You can find more information in the [official ElasticSearch documentation](http
 
 ### Redis
 
-Redis has a very small footprint and only provides an option to limit the maximum amount of memory that can be used by the process. You can use the option `--maxmemory` to limit the usage. 
+Redis has a very small footprint and only provides an option to limit the maximum amount of memory that can be used by the process. You can use the option `--maxmemory` to limit the usage.
 
 You can find more information in the [Redis docker hub](https://hub.docker.com/r/bitnami/redis/).
 

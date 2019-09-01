@@ -11,7 +11,7 @@ OpenCTI could be deployed using the *docker-compose* command.
 ```bash
 $ mkdir /path/to/your/app && cd /path/to/your/app
 $ git clone https://github.com/OpenCTI-Platform/docker.git
-$ cd doker
+$ cd docker
 ```
 
 ### Configure the environment
@@ -51,6 +51,16 @@ $ docker-compose --compatibility up
 ```
 
 You can now go to http://localhost:8080 and log in with the credentials configured in your environment variables.
+
+### Behind a reverse proxy
+
+If you want to use OpenCTI behind a reverse proxy with a context path, like `https://myproxy.com/opencti`, please change the base_path configuration.
+
+```yaml
+- APP__BASE_PATH=/opencti
+```
+By default OpenCTI use Websockets so dont forget to configure your proxy for this usage.
+
 
 ## Data persistence
 

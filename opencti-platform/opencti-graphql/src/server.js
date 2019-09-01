@@ -10,8 +10,9 @@ import { formatError as apolloFormatError } from 'apollo-errors';
 import { GraphQLError } from 'graphql';
 import compression from 'compression';
 import helmet from 'helmet';
-import { dissocPath, pipe, map, filter, isEmpty, not } from 'ramda';
+import { dissocPath, filter, isEmpty, map, not, pipe } from 'ramda';
 import path from 'path';
+import nconf from 'nconf';
 import conf, {
   DEV_MODE,
   isAppRealTime,
@@ -31,12 +32,25 @@ app.use(helmet());
 app.use(bodyParser.json({ limit: '100mb' }));
 
 // Static for generated fronted
-const pub = path.join(__dirname, '../public');
-// We serve the static content except the index (will be renderer if nothing match)
-app.use('/', express.static(pub, { index: 'no.html' }));
+const AppBasePath = nconf.get('app:base_path');
+const basePath =
+  isEmpty(AppBasePath) || AppBasePath.startsWith('/')
+    ? AppBasePath
+    : `/${AppBasePath}`;
+// -- Generated CSS with correct base path
+app.use('/static/css/*', (req, res) => {
+  const data = readFileSync(
+    path.join(__dirname, `../public${req.baseUrl}`),
+    'utf8'
+  );
+  const withBasePath = data.replace(/%BASE_PATH%/g, basePath);
+  res.header('Content-Type', 'text/css');
+  return res.send(withBasePath);
+});
+// -- render other statics in standard way
 app.use('/static', express.static(path.join(__dirname, '../public/static')));
 
-// #### Login
+// region Login
 const urlencodedParser = bodyParser.urlencoded({ extended: true });
 app.get('/auth/:provider', (req, res, next) => {
   const { provider } = req.params;
@@ -68,6 +82,7 @@ export const authentication = async token => {
 
 export const extractTokenFromBearer = bearer =>
   bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
+// endregion
 
 const server = new ApolloServer({
   schema,
@@ -133,6 +148,7 @@ server.applyMiddleware({ app });
 app.all('*', (req, res) => {
   const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
   const withOptionValued = data
+    .replace(/%BASE_PATH%/g, basePath)
     .replace(/%WS_ACTIVATED%/g, isAppRealTime)
     .replace(/%ACCESS_PROVIDERS%/g, ACCESS_PROVIDERS);
   res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
@@ -162,7 +178,11 @@ httpServer.listen(PORT, () => {
     onSignal,
     onShutdown
   });
-  logger.info(`🚀 Api ready on http://domain:${PORT}${server.graphqlPath}`);
+  logger.info(
+    `🚀 Api ready on http://domain:${PORT}${
+      server.graphqlPath
+    }, base path ${nconf.get('app:base_path')}`
+  );
   if (isAppRealTime) {
     logger.info(
       `🚀 WebSocket ready at ws://domain:${PORT}${server.subscriptionsPath}`

@@ -48,7 +48,10 @@ export const ACCESS_PROVIDERS = split(
 );
 
 // Network
-const networkFetch = (operation, variables) => fetch('/graphql', {
+const envBasePath = isEmpty(window.BASE_PATH) || window.BASE_PATH.startsWith('/')
+  ? window.BASE_PATH : `/${window.BASE_PATH}`;
+export const APP_BASE_PATH = IN_DEV_MODE ? '' : envBasePath;
+const networkFetch = (operation, variables) => fetch(`${APP_BASE_PATH}/graphql`, {
   method: 'POST',
   credentials: 'same-origin',
   headers: {
@@ -72,10 +75,10 @@ export const WS_ACTIVATED = IN_DEV_MODE
   ? process.env.REACT_APP_WS_ACTIVATED === 'true'
   : window.WS_ACTIVATED === 'true';
 if (WS_ACTIVATED) {
+  const loc = window.location;
+  const isSecure = loc.protocol === 'https:' ? 's' : '';
   const subscriptionClient = new SubscriptionClient(
-    `ws${window.location.protocol === 'https:' ? 's' : ''}://${
-      window.location.host
-    }/graphql`,
+    `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`,
     {
       reconnect: true,
     },
@@ -152,8 +155,7 @@ export const commitMutation = ({
 });
 
 const deactivateSubscription = { dispose: () => undefined };
-export const requestSubscription = args => (WS_ACTIVATED
-  ? RS(environment, args)
-  : deactivateSubscription);
+// eslint-disable-next-line max-len
+export const requestSubscription = args => (WS_ACTIVATED ? RS(environment, args) : deactivateSubscription);
 
 export const fetchQuery = (query, args) => FQ(environment, query, args);

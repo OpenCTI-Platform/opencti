@@ -21,7 +21,7 @@ import theme from './components/Theme';
 import Login from './public/components/Login';
 import RootPrivate from './private/Root';
 import { BoundaryRoute } from './private/components/Error';
-import { MESSAGING$ } from './relay/environment';
+import { APP_BASE_PATH, MESSAGING$ } from './relay/environment';
 
 class RedirectManagerComponent extends Component {
   componentDidMount() {
@@ -48,7 +48,7 @@ const RedirectManager = compose(withRouter)(RedirectManagerComponent);
 
 const App = () => (
   <MuiThemeProvider theme={createMuiTheme(theme)}>
-    <BrowserRouter>
+    <BrowserRouter basename={APP_BASE_PATH}>
       <RedirectManager>
         <CssBaseline />
         <Switch>

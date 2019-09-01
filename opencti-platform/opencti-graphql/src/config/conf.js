@@ -101,16 +101,17 @@ export const logger = winston.createLogger({
   ]
 });
 
+// Force debug in development.
 export const DEV_MODE = environment !== 'production';
 logger.add(
   new winston.transports.Console({
     format: winston.format.simple(),
-    level: DEV_MODE ? 'debug' : 'warning'
+    level: DEV_MODE ? 'debug' : nconf.get('app:logs_level')
   })
 );
 
 // eslint-disable-next-line
-console.log(`🚀 OpenCTI started in ${environment} mode with ${externalConfigurationFile ? 'external' : 'embedded'} file`);
+logger.info(`🚀 OpenCTI started in ${environment} mode with ${externalConfigurationFile ? 'external' : 'embedded'} file`);
 export const isAppRealTime =
   nconf.get('app:reactive') && JSON.parse(nconf.get('app:reactive'));
 export default nconf;
