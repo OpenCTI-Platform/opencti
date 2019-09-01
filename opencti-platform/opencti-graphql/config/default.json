@@ -4,7 +4,7 @@
     "logs": "./logs",
     "reactive": true,
     "cookie_secure": false,
-    "base_path" : "/proxy",
+    "base_path" : "/",
     "default_roles": [],
     "admin": {
       "email": "admin@opencti.io",
@@ -20,7 +20,7 @@
   "redis": {
     "hostname": "localhost",
     "port": 6379
-  },
+  },  
   "elasticsearch": {
     "url": "http://localhost:9200"
   },
