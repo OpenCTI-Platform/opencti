@@ -28,8 +28,9 @@ import { getAttributes as elGetAttributes, index } from './elasticSearch';
 const indexableTypes = [
   'Stix-Observable',
   'Stix-Domain-Entity',
-  'stix_relation',
-  'external_references'
+  'External-Reference',
+  'Stix-Observable',
+  'stix_relation'
 ];
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss';
 const String = 'String';
@@ -300,7 +301,9 @@ export const conceptTypes = async (concept, currentType = null, acc = []) => {
 const inferIndexFromConceptTypes = async types => {
   if (includes('Stix-Observable', types)) return 'stix_observables';
   if (includes('Stix-Domain-Entity', types)) return 'stix_domain_entities';
-  if (includes('stix_relation', types)) return 'stix_relation';
+  if (includes('External-Reference', types)) return 'external_references';
+  if (includes('Stix-Observable', types)) return 'stix_observables';
+  if (includes('stix_relation', types)) return 'stix_relations';
   return undefined;
 };
 
