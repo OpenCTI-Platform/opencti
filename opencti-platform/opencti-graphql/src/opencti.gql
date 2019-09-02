@@ -601,7 +601,6 @@ define
     has platform,
     has required_permission,
     plays phase_belonging,
-    plays source,
     plays user,
     plays usage,
     plays problem,
@@ -879,15 +878,7 @@ define
     }, then {
       (source: $origin, target: $target) isa targets;
     };
-
-    UserTargetsRule sub rule,
-    when {
-      (source: $source, target: $target) isa targets;
-      (user: $source, usage: $entity) isa uses;
-    }, then {
-      (source: $entity, target: $target) isa targets;
-    };
-
+    
     GatheringTargetsRule sub rule,
     when {
       (gather: $parent, part_of: $entity) isa gathering;

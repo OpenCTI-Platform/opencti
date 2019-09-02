@@ -18,7 +18,7 @@ class Reports extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Reports-view',
+      `Reports-view${this.props.objectId ? `-${this.props.objectId}` : ''}`,
     );
     this.state = {
       sortBy: propOr('published', 'sortBy', params),
@@ -32,7 +32,7 @@ class Reports extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Reports-view',
+      `Reports-view${this.props.objectId ? `-${this.props.objectId}` : ''}`,
       this.state,
     );
   }
@@ -117,8 +117,7 @@ class Reports extends Component {
       authorId,
       reportClass:
         reportClass !== 'all' && reportClass !== undefined
-          ? reportClass.replace('_', ' ')
-          : '',
+          ? reportClass.replace(/_/g, ' ') : '',
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',

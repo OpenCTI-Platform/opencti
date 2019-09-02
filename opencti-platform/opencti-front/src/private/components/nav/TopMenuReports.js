@@ -46,38 +46,17 @@ class TopMenuReports extends Component {
           render={({ props }) => {
             if (props && props.attributes) {
               const reportClassesEdges = props.attributes.edges;
-              return reportClassesEdges.map(reportClassEdge => (
-                <Button
-                  key={reportClassEdge.node.value}
-                  component={Link}
-                  to={`/dashboard/reports/${reportClassEdge.node.value.replace(
-                    ' ',
-                    '_',
-                  )}`}
-                  variant={
-                    location.pathname
-                    === `/dashboard/reports/${reportClassEdge.node.value.replace(
-                      ' ',
-                      '_',
-                    )}`
-                      ? 'contained'
-                      : 'text'
-                  }
-                  size="small"
-                  color={
-                    location.pathname
-                    === `/dashboard/reports/${reportClassEdge.node.value.replace(
-                      ' ',
-                      '_',
-                    )}`
-                      ? 'primary'
-                      : 'inherit'
-                  }
-                  classes={{ root: classes.button }}
-                >
-                  {reportClassEdge.node.value}
-                </Button>
-              ));
+              return reportClassesEdges.map((reportClassEdge) => {
+                const uri = reportClassEdge.node.value.replace(/\s/g, '_');
+                return <Button key={uri} component={Link}
+                          to={`/dashboard/reports/${uri}`}
+                          variant={ location.pathname === `/dashboard/reports/${uri}` ? 'contained' : 'text' }
+                          size="small"
+                          color={ location.pathname === `/dashboard/reports/${uri}` ? 'primary' : 'inherit' }
+                          classes={{ root: classes.button }}>
+                          {reportClassEdge.node.value}
+                      </Button>;
+              });
             }
             return <span>&nbsp;</span>;
           }}
