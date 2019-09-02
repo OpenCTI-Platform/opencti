@@ -90,7 +90,7 @@ export const stixDomainEntityEditionFocus = graphql`
   ) {
     stixDomainEntityEdit(id: $id) {
       contextPatch(input: $input) {
-        ...StixDomainEntityEditionOverview_stixDomainEntity
+        id
       }
     }
   }

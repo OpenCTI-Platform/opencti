@@ -1,16 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, includes, propOr } from 'ramda';
+import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert, Person } from '@material-ui/icons';
+import { KeyboardArrowRight, Person } from '@material-ui/icons';
+import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
-import PersonPopover from './PersonPopover';
 
 const styles = theme => ({
   item: {
@@ -49,15 +48,15 @@ const styles = theme => ({
 class PersonLineComponent extends Component {
   render() {
     const {
-      fd,
-      classes,
-      dataColumns,
-      node,
-      me,
-      paginationOptions,
+      fd, classes, dataColumns, node,
     } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        component={Link}
+        to={`/dashboard/entities/persons/${node.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Person />
         </ListItemIcon>
@@ -85,13 +84,9 @@ class PersonLineComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction>
-          <PersonPopover
-            personId={node.id}
-            paginationOptions={paginationOptions}
-            disabled={!includes('ROLE_ADMIN', propOr([], 'grant', me))}
-          />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRight />
+        </ListItemIcon>
       </ListItem>
     );
   }
@@ -100,8 +95,6 @@ class PersonLineComponent extends Component {
 PersonLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
-  paginationOptions: PropTypes.object,
-  me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
@@ -113,11 +106,6 @@ const PersonLineFragment = createFragmentContainer(PersonLineComponent, {
       name
       created
       modified
-    }
-  `,
-  me: graphql`
-    fragment PersonLine_me on User {
-      grant
     }
   `,
 });
@@ -148,20 +136,20 @@ class PersonLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}
               >
-                <div className="fakeItem" style={{ width: 80 }} />
+                <div className="fakeItem" style={{ width: 140 }} />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.modified.width }}
               >
-                <div className="fakeItem" style={{ width: 80 }} />
+                <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRight />
+        </ListItemIcon>
       </ListItem>
     );
   }

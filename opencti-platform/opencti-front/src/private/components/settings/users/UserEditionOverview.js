@@ -50,7 +50,7 @@ const userEditionOverviewFocus = graphql`
   mutation UserEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     userEdit(id: $id) {
       contextPatch(input: $input) {
-        ...UserEditionOverview_user
+        id
       }
     }
   }

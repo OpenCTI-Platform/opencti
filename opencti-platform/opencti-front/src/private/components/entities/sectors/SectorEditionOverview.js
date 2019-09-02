@@ -76,7 +76,7 @@ export const sectorEditionOverviewFocus = graphql`
   mutation SectorEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     sectorEdit(id: $id) {
       contextPatch(input: $input) {
-        ...SectorEditionOverview_sector
+        id
       }
     }
   }

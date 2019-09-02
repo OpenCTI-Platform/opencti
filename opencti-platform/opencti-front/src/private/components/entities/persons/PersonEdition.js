@@ -1,268 +1,123 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
-import {
-  compose, insert, find, propEq, pick,
-} from 'ramda';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import Button from '@material-ui/core/Button';
-import { Close } from '@material-ui/icons';
-import * as Yup from 'yup';
-import inject18n from '../../../../components/i18n';
+import Drawer from '@material-ui/core/Drawer';
+import Fab from '@material-ui/core/Fab';
+import { Edit } from '@material-ui/icons';
+import graphql from 'babel-plugin-relay/macro';
 import {
   commitMutation,
-  requestSubscription,
+  QueryRenderer,
   WS_ACTIVATED,
-  MESSAGING$,
 } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
-import {
-  SubscriptionAvatars,
-  SubscriptionFocus,
-} from '../../../../components/Subscription';
+import inject18n from '../../../../components/i18n';
+import PersonEditionContainer from './PersonEditionContainer';
+import { personEditionOverviewFocus } from './PersonEditionOverview';
 
 const styles = theme => ({
-  header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    padding: '20px 20px 20px 60px',
+  editButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
   },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  appBar: {
-    width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
+  drawerPaper: {
+    minHeight: '100vh',
+    width: '50%',
+    position: 'fixed',
+    overflow: 'auto',
     backgroundColor: theme.palette.navAlt.background,
-    color: theme.palette.header.text,
-    borderBottom: '1px solid #5c5c5c',
-  },
-  title: {
-    float: 'left',
-  },
-  button: {
-    float: 'right',
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    padding: 0,
   },
 });
 
-const subscription = graphql`
-  subscription PersonEditionSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
-      ... on User {
-        ...PersonEdition_person
-      }
+export const personEditionQuery = graphql`
+  query PersonEditionContainerQuery($id: String!) {
+    user(id: $id) {
+      ...PersonEditionContainer_person
+    }
+    me {
+      ...PersonEditionContainer_me
     }
   }
 `;
 
-const personMutationFieldPatch = graphql`
-  mutation PersonEditionFieldPatchMutation($id: ID!, $input: EditInput!) {
-    userEdit(id: $id) {
-      fieldPatch(input: $input) {
-        ...PersonEdition_person
-      }
-    }
-  }
-`;
-
-const personEditionFocus = graphql`
-  mutation PersonEditionFocusMutation($id: ID!, $input: EditContext!) {
-    userEdit(id: $id) {
-      contextPatch(input: $input) {
-        ...PersonEdition_person
-      }
-    }
-  }
-`;
-
-const personValidation = t => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string(),
-});
-
-class PersonEditionContainer extends Component {
-  componentDidMount() {
-    const sub = requestSubscription({
-      subscription,
-      variables: { id: this.props.person.id },
-    });
-    this.setState({ sub });
+class PersonEdition extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { open: false };
   }
 
-  componentWillUnmount() {
-    this.state.sub.dispose();
+  handleOpen() {
+    this.setState({ open: true });
   }
 
-  handleChangeFocus(name) {
+  handleClose() {
     if (WS_ACTIVATED) {
       commitMutation({
-        mutation: personEditionFocus,
+        mutation: personEditionOverviewFocus,
         variables: {
-          id: this.props.person.id,
-          input: {
-            focusOn: name,
-          },
+          id: this.props.personId,
+          input: { focusOn: '' },
         },
       });
     }
-  }
-
-  handleSubmitField(name, value) {
-    personValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: personMutationFieldPatch,
-          variables: { id: this.props.person.id, input: { key: name, value } },
-        });
-      })
-      .catch(() => false);
-  }
-
-  handleTurnToUser() {
-    commitMutation({
-      mutation: personMutationFieldPatch,
-      variables: {
-        id: this.props.person.id,
-        input: { key: 'email', value: `${this.props.person.name}@opencti.io` },
-      },
-      onCompleted: () => {
-        MESSAGING$.notifySuccess('This person is now a user');
-      },
-    });
+    this.setState({ open: false });
   }
 
   render() {
-    const {
-      t, classes, handleClose, person, me,
-    } = this.props;
-    const { editContext } = person;
-    // Add current user to the context if is not available yet.
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
-    const initialValues = pick(['name', 'description'], person);
+    const { classes, personId } = this.props;
     return (
       <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
-            <Close fontSize="small" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a person')}
-          </Typography>
-          <SubscriptionAvatars users={editUsers} />
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
-          <Formik
-            enableReinitialize={true}
-            initialValues={initialValues}
-            validationSchema={personValidation(t)}
-            render={() => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  name="name"
-                  component={TextField}
-                  label={t('Name')}
-                  fullWidth={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="name"
-                    />
-                  }
-                />
-                <Field
-                  name="description"
-                  component={TextField}
-                  label={t('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows={4}
-                  style={{ marginTop: 10 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
-                  }
-                />
-              </Form>
-            )}
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Edit"
+          className={classes.editButton}
+        >
+          <Edit />
+        </Fab>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
+          <QueryRenderer
+            query={personEditionQuery}
+            variables={{ id: personId }}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <PersonEditionContainer
+                    me={props.me}
+                    person={props.user}
+                    handleClose={this.handleClose.bind(this)}
+                  />
+                );
+              }
+              return <div> &nbsp; </div>;
+            }}
           />
-          {person.email === null ? (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={this.handleTurnToUser.bind(this)}
-              classes={{ root: classes.button }}
-            >
-              {t('Turn to user')}
-            </Button>
-          ) : (
-            ''
-          )}
-        </div>
+        </Drawer>
       </div>
     );
   }
 }
 
-PersonEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  classes: PropTypes.object,
-  person: PropTypes.object,
+PersonEdition.propTypes = {
+  personId: PropTypes.string,
   me: PropTypes.object,
+  classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
 
-const PersonEditionFragment = createFragmentContainer(PersonEditionContainer, {
-  person: graphql`
-    fragment PersonEdition_person on User {
-      id
-      name
-      description
-      email
-      editContext {
-        name
-        focusOn
-      }
-    }
-  `,
-  me: graphql`
-    fragment PersonEdition_me on User {
-      email
-    }
-  `,
-});
-
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(PersonEditionFragment);
+)(PersonEdition);

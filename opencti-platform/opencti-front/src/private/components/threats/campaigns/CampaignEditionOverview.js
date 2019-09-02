@@ -76,7 +76,7 @@ export const campaignEditionOverviewFocus = graphql`
   ) {
     campaignEdit(id: $id) {
       contextPatch(input: $input) {
-        ...CampaignEditionOverview_campaign
+        id
       }
     }
   }

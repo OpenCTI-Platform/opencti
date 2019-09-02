@@ -76,7 +76,7 @@ export const stixObservableEditionOverviewFocus = graphql`
   ) {
     stixObservableEdit(id: $id) {
       contextPatch(input: $input) {
-        ...StixObservableEditionOverview_stixObservable
+        id
       }
     }
   }

@@ -60,7 +60,7 @@ const campaignEditionIdentityFocus = graphql`
   ) {
     campaignEdit(id: $id) {
       contextPatch(input: $input) {
-        ...CampaignEditionIdentity_campaign
+        id
       }
     }
   }

@@ -94,7 +94,7 @@ class EntityLastReports extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Last reports')}
+          {authorId ? t('Last reports wrote by the entity') : t('Last reports about the entity')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer

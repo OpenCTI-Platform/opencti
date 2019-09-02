@@ -60,7 +60,7 @@ const incidentEditionIdentityFocus = graphql`
   ) {
     incidentEdit(id: $id) {
       contextPatch(input: $input) {
-        ...IncidentEditionIdentity_incident
+        id
       }
     }
   }

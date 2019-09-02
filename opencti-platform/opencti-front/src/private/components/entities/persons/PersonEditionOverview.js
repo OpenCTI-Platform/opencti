@@ -56,25 +56,22 @@ const styles = theme => ({
   },
 });
 
-const intrusionSetMutationFieldPatch = graphql`
-  mutation IntrusionSetEditionOverviewFieldPatchMutation(
+const personMutationFieldPatch = graphql`
+  mutation PersonEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
-    intrusionSetEdit(id: $id) {
+    userEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...IntrusionSetEditionOverview_intrusionSet
+        ...PersonEditionOverview_person
       }
     }
   }
 `;
 
-export const intrusionSetEditionOverviewFocus = graphql`
-  mutation IntrusionSetEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
-    intrusionSetEdit(id: $id) {
+export const personEditionOverviewFocus = graphql`
+  mutation PersonEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
+    userEdit(id: $id) {
       contextPatch(input: $input) {
         id
       }
@@ -82,37 +79,37 @@ export const intrusionSetEditionOverviewFocus = graphql`
   }
 `;
 
-const intrusionSetMutationRelationAdd = graphql`
-  mutation IntrusionSetEditionOverviewRelationAddMutation(
+const personMutationRelationAdd = graphql`
+  mutation PersonEditionOverviewRelationAddMutation(
     $id: ID!
     $input: RelationAddInput!
   ) {
-    intrusionSetEdit(id: $id) {
+    userEdit(id: $id) {
       relationAdd(input: $input) {
         node {
-          ...IntrusionSetEditionOverview_intrusionSet
+          ...PersonEditionOverview_person
         }
       }
     }
   }
 `;
 
-const intrusionSetMutationRelationDelete = graphql`
-  mutation IntrusionSetEditionOverviewRelationDeleteMutation(
+const personMutationRelationDelete = graphql`
+  mutation PersonEditionOverviewRelationDeleteMutation(
     $id: ID!
     $relationId: ID!
   ) {
-    intrusionSetEdit(id: $id) {
+    userEdit(id: $id) {
       relationDelete(relationId: $relationId) {
         node {
-          ...IntrusionSetEditionOverview_intrusionSet
+          ...PersonEditionOverview_person
         }
       }
     }
   }
 `;
 
-const intrusionSetValidation = t => Yup.object().shape({
+const personValidation = t => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -120,7 +117,7 @@ const intrusionSetValidation = t => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-class IntrusionSetEditionOverviewComponent extends Component {
+class PersonEditionOverviewComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -172,9 +169,9 @@ class IntrusionSetEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
     if (WS_ACTIVATED) {
       commitMutation({
-        mutation: intrusionSetEditionOverviewFocus,
+        mutation: personEditionOverviewFocus,
         variables: {
-          id: this.props.intrusionSet.id,
+          id: this.props.person.id,
           input: {
             focusOn: name,
           },
@@ -184,36 +181,33 @@ class IntrusionSetEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    intrusionSetValidation(this.props.t)
+    personValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: intrusionSetMutationFieldPatch,
-          variables: {
-            id: this.props.intrusionSet.id,
-            input: { key: name, value },
-          },
+          mutation: personMutationFieldPatch,
+          variables: { id: this.props.person.id, input: { key: name, value } },
         });
       })
       .catch(() => false);
   }
 
   handleChangeCreatedByRef(name, value) {
-    const { intrusionSet } = this.props;
+    const { person } = this.props;
     const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], intrusionSet),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], intrusionSet),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], intrusionSet),
+      label: pathOr(null, ['createdByRef', 'node', 'name'], person),
+      value: pathOr(null, ['createdByRef', 'node', 'id'], person),
+      relation: pathOr(null, ['createdByRef', 'relation', 'id'], person),
     };
 
     if (currentCreatedByRef.value === null) {
       commitMutation({
-        mutation: intrusionSetMutationRelationAdd,
+        mutation: personMutationRelationAdd,
         variables: {
           id: value.value,
           input: {
             fromRole: 'creator',
-            toId: this.props.intrusionSet.id,
+            toId: this.props.person.id,
             toRole: 'so',
             through: 'created_by_ref',
           },
@@ -221,19 +215,19 @@ class IntrusionSetEditionOverviewComponent extends Component {
       });
     } else if (currentCreatedByRef.value !== value.value) {
       commitMutation({
-        mutation: intrusionSetMutationRelationDelete,
+        mutation: personMutationRelationDelete,
         variables: {
-          id: this.props.intrusionSet.id,
+          id: this.props.person.id,
           relationId: currentCreatedByRef.relation,
         },
       });
       commitMutation({
-        mutation: intrusionSetMutationRelationAdd,
+        mutation: personMutationRelationAdd,
         variables: {
           id: value.value,
           input: {
             fromRole: 'creator',
-            toId: this.props.intrusionSet.id,
+            toId: this.props.person.id,
             toRole: 'so',
             through: 'created_by_ref',
           },
@@ -243,7 +237,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
   }
 
   handleChangeMarkingDefinition(name, values) {
-    const { intrusionSet } = this.props;
+    const { person } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map(n => ({
@@ -251,18 +245,19 @@ class IntrusionSetEditionOverviewComponent extends Component {
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(intrusionSet);
+    )(person);
+
     const added = difference(values, currentMarkingDefinitions);
     const removed = difference(currentMarkingDefinitions, values);
 
     if (added.length > 0) {
       commitMutation({
-        mutation: intrusionSetMutationRelationAdd,
+        mutation: personMutationRelationAdd,
         variables: {
           id: head(added).value,
           input: {
             fromRole: 'marking',
-            toId: this.props.intrusionSet.id,
+            toId: this.props.person.id,
             toRole: 'so',
             through: 'object_marking_refs',
           },
@@ -272,9 +267,9 @@ class IntrusionSetEditionOverviewComponent extends Component {
 
     if (removed.length > 0) {
       commitMutation({
-        mutation: intrusionSetMutationRelationDelete,
+        mutation: personMutationRelationDelete,
         variables: {
-          id: this.props.intrusionSet.id,
+          id: this.props.person.id,
           relationId: head(removed).relationId,
         },
       });
@@ -283,27 +278,15 @@ class IntrusionSetEditionOverviewComponent extends Component {
 
   render() {
     const {
-      t, intrusionSet, editUsers, me,
+      t, person, editUsers, me,
     } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], intrusionSet) === null
+    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], person) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], intrusionSet),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], intrusionSet),
-        relation: pathOr(
-          null,
-          ['createdByRef', 'relation', 'id'],
-          intrusionSet,
-        ),
+        label: pathOr(null, ['createdByRef', 'node', 'name'], person),
+        value: pathOr(null, ['createdByRef', 'node', 'id'], person),
+        relation: pathOr(null, ['createdByRef', 'relation', 'id'], person),
       };
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map(n => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-        relationId: n.relation.id,
-      })),
-    )(intrusionSet);
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map(n => ({
@@ -311,25 +294,18 @@ class IntrusionSetEditionOverviewComponent extends Component {
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(intrusionSet);
+    )(person);
     const initialValues = pipe(
       assoc('createdByRef', createdByRef),
-      assoc('killChainPhases', killChainPhases),
       assoc('markingDefinitions', markingDefinitions),
-      pick([
-        'name',
-        'description',
-        'createdByRef',
-        'killChainPhases',
-        'markingDefinitions',
-      ]),
-    )(intrusionSet);
+      pick(['name', 'description', 'createdByRef', 'markingDefinitions']),
+    )(person);
     return (
       <div>
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={intrusionSetValidation(t)}
+          validationSchema={personValidation(t)}
           onSubmit={() => true}
           render={({ setFieldValue }) => (
             <div>
@@ -427,20 +403,20 @@ class IntrusionSetEditionOverviewComponent extends Component {
   }
 }
 
-IntrusionSetEditionOverviewComponent.propTypes = {
+PersonEditionOverviewComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  intrusionSet: PropTypes.object,
+  person: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
 };
 
-const IntrusionSetEditionOverview = createFragmentContainer(
-  IntrusionSetEditionOverviewComponent,
+const PersonEditionOverview = createFragmentContainer(
+  PersonEditionOverviewComponent,
   {
-    intrusionSet: graphql`
-      fragment IntrusionSetEditionOverview_intrusionSet on IntrusionSet {
+    person: graphql`
+      fragment PersonEditionOverview_person on User {
         id
         name
         description
@@ -474,4 +450,4 @@ const IntrusionSetEditionOverview = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(IntrusionSetEditionOverview);
+)(PersonEditionOverview);

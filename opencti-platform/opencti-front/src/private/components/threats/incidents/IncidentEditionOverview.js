@@ -76,7 +76,7 @@ export const incidentEditionOverviewFocus = graphql`
   ) {
     incidentEdit(id: $id) {
       contextPatch(input: $input) {
-        ...IncidentEditionOverview_incident
+        id
       }
     }
   }

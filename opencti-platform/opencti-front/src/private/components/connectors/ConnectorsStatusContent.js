@@ -131,7 +131,7 @@ class ConnectorsStatusComponent extends Component {
         JSON.parse(
           Buffer.from(queue.arguments.config, 'base64').toString('ascii'),
         ),
-        n,
+        queue,
       )),
       sort,
     )(data.rabbitMQMetrics.queues);
@@ -254,7 +254,13 @@ class ConnectorsStatusComponent extends Component {
                         <Grid item={true} lg={3} xs={6}>
                           <div className={classes.metric}>
                             <div className={classes.number}>
-                              {n(propOr(0, 'messages_unacknowledged', queueMetric))}
+                              {n(
+                                propOr(
+                                  0,
+                                  'messages_unacknowledged',
+                                  queueMetric,
+                                ),
+                              )}
                             </div>
                             <div className={classes.title}>
                               {t('In progress messages')}
@@ -311,7 +317,8 @@ class ConnectorsStatusComponent extends Component {
                     <Collapse
                       in={this.state.expanded[queueMetric.name]}
                       timeout="auto"
-                      unmountOnExit>
+                      unmountOnExit
+                    >
                       <CardContent style={{ paddingTop: 0 }}>
                         <Table>
                           <TableHead>
@@ -321,18 +328,19 @@ class ConnectorsStatusComponent extends Component {
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {filter(confElem => confElem[0] !== 'name', toPairs(config)).map(
-                              conf => (
-                                <TableRow key={conf[0]} hover={true}>
-                                  <TableCell align="left">{conf[0]}</TableCell>
-                                  <TableCell align="left">
-                                    {Array.isArray(conf[1])
-                                      ? conf[1].join(',')
-                                      : conf[1]}
-                                  </TableCell>
-                                </TableRow>
-                              ),
-                            )}
+                            {filter(
+                              confElem => confElem[0] !== 'name',
+                              toPairs(config),
+                            ).map(conf => (
+                              <TableRow key={conf[0]} hover={true}>
+                                <TableCell align="left">{conf[0]}</TableCell>
+                                <TableCell align="left">
+                                  {Array.isArray(conf[1])
+                                    ? conf[1].join(',')
+                                    : conf[1]}
+                                </TableCell>
+                              </TableRow>
+                            ))}
                           </TableBody>
                         </Table>
                       </CardContent>
