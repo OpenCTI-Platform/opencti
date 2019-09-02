@@ -9,7 +9,7 @@ Do not hesitate to shoot us an [email](mailto:contact@opencti.io) or join us on 
 
 ## Why contribute?
 
-OpenCTI is an open source project aiming at building a platform for threat intelligence analysts, allowing them to capitalise, structure, organise and visualise amouts of information. It allows analysts to leverage knowlegde from these information while keeping track of each and every source of information (if you want to know more about OpenCTI, you can read the [detailed documentation](https://opencti-platform.github.io/docs/introduction) or try it on the [demonstration plateform](https://demo.opencti.io/)). 
+OpenCTI is an open source project aiming at building a platform for threat intelligence analysts, allowing them to capitalise, structure, organise and visualise amouts of information. It allows analysts to leverage knowlegde from these information while keeping track of each and every source of information (if you want to know more about OpenCTI, you can read the [detailed documentation](https://opencti-platform.github.io/docs/getting-started/introduction) or try it on the [demonstration plateform](https://demo.opencti.io/)). 
 
 Whether you are an organisation or an individual working or studying in the field of cybersecurity and cyberdefense, or simply as an individual looking for a technical challenge, contributing to the OpenCTI project may represent a great opportunity for you.
 
@@ -31,7 +31,7 @@ Now that the first version of the tool has been released, our goal for the futur
 
 ## Code of Conduct 
 
-OpenCTI has adopted a Code of Conduct that we expect project participants to adhere to. Please read the [full text](https://github.com/LuatixHQ/opencti/blob/master/CODE_OF_CONDUCT.md) so that you can understand which actions will and will not be tolerated.
+OpenCTI has adopted a Code of Conduct that we expect project participants to adhere to. Please read the [full text](https://github.com/OpenCTI-Platform/opencti/blob/master/CODE_OF_CONDUCT.md) so that you can understand which actions will and will not be tolerated.
 
 
 ## How can you contribute ?
@@ -46,7 +46,7 @@ For general suggestions or questions about the project or the documentation, you
 
 * You can look through opened issues and help triage them (ask for more information, suggest workarounds, suggest label, flag issues etc.)
 
-* If you are interested in contributing to developping OpenCTI, please refer to the [detailed documentation](https://opencti-platform.github.io/docs/introduction). It can be either a to fix an issue which is meaningful to you, or to develop a feature requested by others.
+* If you are interested in contributing to developping OpenCTI, please refer to the [detailed documentation](https://opencti-platform.github.io/docs/getting-started/introduction). It can be either a to fix an issue which is meaningful to you, or to develop a feature requested by others.
 
 * All commits messages must be formatted as: `[component] Message (#issuenumber)` where component should be:
   * api
