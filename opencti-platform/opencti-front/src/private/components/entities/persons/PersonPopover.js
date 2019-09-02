@@ -165,7 +165,7 @@ class PersonPopover extends Component {
                 return (
                   <PersonEditionContainer
                     me={props.me}
-                    person={props.person}
+                    person={props.user}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );
