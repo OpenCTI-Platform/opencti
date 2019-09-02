@@ -117,8 +117,7 @@ class Reports extends Component {
       authorId,
       reportClass:
         reportClass !== 'all' && reportClass !== undefined
-          ? reportClass.replace('_', ' ')
-          : '',
+          ? reportClass.replace(/_/g, ' ') : '',
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
