@@ -92,8 +92,13 @@ class EntityStixRelations extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc } = this.state;
-    const { entityLink, resolveRelationType } = this.props;
+    const {
+      sortBy, orderAsc, inferred, resolveInferences,
+    } = this.state;
+    const { entityLink, resolveRelationType, targetEntityTypes } = this.props;
+    const displayDetails = this.state.inferred
+      && resolveRelationType
+      && (this.state.toType !== 'All' || targetEntityTypes.length === 1);
     const dataColumns = {
       name: {
         label: 'Name',
@@ -108,17 +113,17 @@ class EntityStixRelations extends Component {
       first_seen: {
         label: 'First obs.',
         width: '15%',
-        isSortable: this.state.resolveInferences || !resolveRelationType,
+        isSortable: resolveInferences || !inferred || !displayDetails,
       },
       last_seen: {
         label: 'Last obs.',
         width: '15%',
-        isSortable: this.state.resolveInferences || !resolveRelationType,
+        isSortable: resolveInferences || !inferred || !displayDetails,
       },
       weight: {
         label: 'Confidence level',
         width: '10%',
-        isSortable: this.state.resolveInferences || !resolveRelationType,
+        isSortable: resolveInferences || !inferred || !displayDetails,
       },
     };
     return (
@@ -171,6 +176,12 @@ class EntityStixRelations extends Component {
       resolveInferences,
     } = this.state;
 
+    const displayTypes = targetEntityTypes.length > 1;
+    const displayInferences = !!resolveRelationType;
+    const displayDetails = this.state.inferred
+      && resolveRelationType
+      && (this.state.toType !== 'All' || targetEntityTypes.length === 1);
+
     const paginationOptions = {
       resolveInferences: this.state.resolveInferences,
       resolveRelationType,
@@ -182,15 +193,11 @@ class EntityStixRelations extends Component {
       fromId: entityId,
       relationType,
       search: searchTerm,
-      orderBy: resolveInferences ? sortBy : null,
+      orderBy:
+        resolveInferences || !inferred || !displayDetails ? sortBy : null,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
 
-    const displayTypes = targetEntityTypes.length > 1;
-    const displayInferences = !!resolveRelationType;
-    const displayDetails = this.state.inferred
-      && resolveRelationType
-      && (this.state.toType !== 'All' || targetEntityTypes.length === 1);
     return (
       <div className={classes.container}>
         {displayTypes || displayInferences || displayDetails ? (

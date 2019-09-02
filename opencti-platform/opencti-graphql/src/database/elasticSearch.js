@@ -158,10 +158,10 @@ export const reindex = async indexMaps => {
 };
 
 export const index = async (indexName, documentBody) => {
-  const stixId = documentBody.stix_id;
+  const internalId = documentBody.internal_id;
   const entityType = documentBody.entity_type;
   logger.debug(
-    `[ELASTICSEARCH] index > ${entityType} ${stixId} in ${indexName}`
+    `[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`
   );
   await el.index({
     index: indexName,
@@ -265,15 +265,16 @@ export const paginate = (indexName, options) => {
   let must = [];
   let ordering = [];
   if (search !== null && search.length > 0) {
+    const trimedSearch = search.trim();
     let finalSearch;
-    if (search.includes('http://') || search.includes('https://')) {
-      finalSearch = `"*${search
+    if (trimedSearch.includes('http://') || trimedSearch.includes('https://')) {
+      finalSearch = `"*${trimedSearch
         .replace('http://', '')
         .replace('https://', '')}*"`;
-    } else if (!search.startsWith('"')) {
-      finalSearch = `*${search}*`;
+    } else if (!trimedSearch.startsWith('"')) {
+      finalSearch = `*${trimedSearch}*`;
     } else {
-      finalSearch = `${search}`;
+      finalSearch = `${trimedSearch}`;
     }
     must = append(
       {

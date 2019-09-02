@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
 import {
-  compose, propOr, filter, append, take,
+  compose, propOr, filter, append,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -108,7 +108,7 @@ class IntrusionSetHeaderComponent extends Component {
         </div>
         {variant !== 'noalias' ? (
           <div className={classes.aliases}>
-            {take(6, propOr([], 'alias', intrusionSet)).map(label => (label.length > 0 ? (
+            {propOr([], 'alias', intrusionSet).map(label => (label.length > 0 ? (
                 <Chip
                   key={label}
                   classes={{ root: classes.alias }}
