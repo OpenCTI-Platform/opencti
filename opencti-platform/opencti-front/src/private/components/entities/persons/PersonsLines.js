@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr, propOr } from 'ramda';
+import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { PersonLine, PersonLineDummy } from './PersonLine';
 
@@ -33,7 +33,6 @@ class PersonsLines extends Component {
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
-        me={propOr(null, 'me', this.props.data)}
       />
     );
   }
@@ -45,7 +44,7 @@ PersonsLines.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
-  users: PropTypes.object,
+  persons: PropTypes.object,
   initialLoading: PropTypes.bool,
 };
 
@@ -95,14 +94,6 @@ export default createPaginationContainer(
               ...PersonLine_node
             }
           }
-          pageInfo {
-            endCursor
-            hasNextPage
-            globalCount
-          }
-        }
-        me {
-          ...PersonLine_me
         }
       }
     `,
@@ -110,7 +101,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.users;
+      return props.data && props.data.persons;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -120,7 +111,6 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        search: fragmentVariables.search,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,
