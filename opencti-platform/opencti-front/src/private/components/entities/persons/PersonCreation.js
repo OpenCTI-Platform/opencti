@@ -8,13 +8,21 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { compose } from 'ramda';
+import {
+  compose, pathOr, pipe, map, pluck, union, assoc,
+} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import Autocomplete from '../../../../components/Autocomplete';
+import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import TextField from '../../../../components/TextField';
+import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import IdentityCreation, {
+  identityCreationIdentitiesSearchQuery,
+} from '../../common/identities/IdentityCreation';
 
 const styles = theme => ({
   drawerPaper: {
@@ -69,7 +77,10 @@ const personMutation = graphql`
 
 const personValidation = t => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  description: Yup.string(),
+  description: Yup.string()
+    .min(3, t('The value is too short'))
+    .max(5000, t('The value is too long'))
+    .required(t('This field is required')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -85,7 +96,13 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 class PersonCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
+    this.state = {
+      open: false,
+      identities: [],
+      identityCreation: false,
+      identityInput: '',
+      markingDefinitions: [],
+    };
   }
 
   handleOpen() {
@@ -96,11 +113,53 @@ class PersonCreation extends Component {
     this.setState({ open: false });
   }
 
+  searchIdentities(event) {
+    fetchQuery(identityCreationIdentitiesSearchQuery, {
+      search: event.target.value,
+      first: 10,
+    }).then((data) => {
+      const identities = pipe(
+        pathOr([], ['identities', 'edges']),
+        map(n => ({ label: n.node.name, value: n.node.id })),
+      )(data);
+      this.setState({ identities: union(this.state.identities, identities) });
+    });
+  }
+
+  handleOpenIdentityCreation(inputValue) {
+    this.setState({ identityCreation: true, identityInput: inputValue });
+  }
+
+  handleCloseIdentityCreation() {
+    this.setState({ identityCreation: false });
+  }
+
+  searchMarkingDefinitions(event) {
+    fetchQuery(markingDefinitionsSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
+      const markingDefinitions = pipe(
+        pathOr([], ['markingDefinitions', 'edges']),
+        map(n => ({ label: n.node.definition, value: n.node.id })),
+      )(data);
+      this.setState({
+        markingDefinitions: union(
+          this.state.markingDefinitions,
+          markingDefinitions,
+        ),
+      });
+    });
+  }
+
   onSubmit(values, { setSubmitting, resetForm }) {
+    const finalValues = pipe(
+      assoc('createdByRef', values.createdByRef.value),
+      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+    )(values);
     commitMutation({
       mutation: personMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       updater: (store) => {
         const payload = store.getRootField('personAdd');
@@ -156,47 +215,88 @@ class PersonCreation extends Component {
           </div>
           <div className={classes.container}>
             <Formik
-              initialValues={{ name: '', description: '' }}
+              initialValues={{
+                name: '',
+                description: '',
+                createdByRef: '',
+                markingDefinitions: [],
+              }}
               validationSchema={personValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
-              render={({ submitForm, handleReset, isSubmitting }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    name="name"
-                    component={TextField}
-                    label={t('Name')}
-                    fullWidth={true}
+              render={({
+                submitForm,
+                handleReset,
+                isSubmitting,
+                setFieldValue,
+              }) => (
+                <div>
+                  <Form style={{ margin: '20px 0 20px 0' }}>
+                    <Field
+                      name="name"
+                      component={TextField}
+                      label={t('Name')}
+                      fullWidth={true}
+                    />
+                    <Field
+                      name="description"
+                      component={TextField}
+                      label={t('Description')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      style={{ marginTop: 20 }}
+                    />
+                    <Field
+                      name="createdByRef"
+                      component={AutocompleteCreate}
+                      multiple={false}
+                      handleCreate={this.handleOpenIdentityCreation.bind(this)}
+                      label={t('Author')}
+                      options={this.state.identities}
+                      onInputChange={this.searchIdentities.bind(this)}
+                    />
+                    <Field
+                      name="markingDefinitions"
+                      component={Autocomplete}
+                      multiple={true}
+                      label={t('Marking')}
+                      options={this.state.markingDefinitions}
+                      onInputChange={this.searchMarkingDefinitions.bind(this)}
+                    />
+                    <div className={classes.buttons}>
+                      <Button
+                        variant="contained"
+                        onClick={handleReset}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Create')}
+                      </Button>
+                    </div>
+                  </Form>
+                  <IdentityCreation
+                    contextual={true}
+                    inputValue={this.state.identityInput}
+                    open={this.state.identityCreation}
+                    handleClose={this.handleCloseIdentityCreation.bind(this)}
+                    creationCallback={(data) => {
+                      setFieldValue('createdByRef', {
+                        label: data.identityAdd.name,
+                        value: data.identityAdd.id,
+                      });
+                    }}
                   />
-                  <Field
-                    name="description"
-                    component={TextField}
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows={4}
-                    style={{ marginTop: 20 }}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
+                </div>
               )}
             />
           </div>

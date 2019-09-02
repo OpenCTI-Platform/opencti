@@ -12,6 +12,7 @@ import Cities from './Cities';
 import Organizations from './Organizations';
 import RootOrganization from './organizations/Root';
 import Persons from './Persons';
+import RootPerson from './persons/Root';
 
 class Root extends Component {
   render() {
@@ -68,6 +69,10 @@ class Root extends Component {
           exact
           path="/dashboard/entities/persons"
           component={Persons}
+        />
+        <BoundaryRoute
+          path="/dashboard/entities/persons/:personId"
+          render={routeProps => <RootPerson {...routeProps} me={me} />}
         />
       </Switch>
     );
