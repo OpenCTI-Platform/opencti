@@ -213,7 +213,6 @@ class ConnectorsStatusComponent extends Component {
               />
             ) : (
               queuesMetrics.map((queueMetric) => {
-                console.log(queueMetric);
                 const { config } = queueMetric.arguments;
                 return (
                   <Card
