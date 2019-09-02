@@ -58,7 +58,7 @@ const threatActorEditionIdentityFocus = graphql`
   ) {
     threatActorEdit(id: $id) {
       contextPatch(input: $input) {
-        ...ThreatActorEditionIdentity_threatActor
+        id
       }
     }
   }

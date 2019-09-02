@@ -78,7 +78,7 @@ export const organizationEditionOverviewFocus = graphql`
   ) {
     organizationEdit(id: $id) {
       contextPatch(input: $input) {
-        ...OrganizationEditionOverview_organization
+        id
       }
     }
   }

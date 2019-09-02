@@ -76,7 +76,7 @@ export const courseOfActionEditionOverviewFocus = graphql`
   ) {
     courseOfActionEdit(id: $id) {
       contextPatch(input: $input) {
-        ...CourseOfActionEditionOverview_courseOfAction
+        id
       }
     }
   }

@@ -111,7 +111,6 @@ class CourseOfActionEdition extends Component {
 
 CourseOfActionEdition.propTypes = {
   courseOfActionId: PropTypes.string,
-  me: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

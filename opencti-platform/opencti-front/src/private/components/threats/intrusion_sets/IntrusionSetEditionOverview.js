@@ -76,7 +76,7 @@ export const intrusionSetEditionOverviewFocus = graphql`
   ) {
     intrusionSetEdit(id: $id) {
       contextPatch(input: $input) {
-        ...IntrusionSetEditionOverview_intrusionSet
+        id
       }
     }
   }
@@ -252,7 +252,6 @@ class IntrusionSetEditionOverviewComponent extends Component {
         relationId: n.relation.id,
       })),
     )(intrusionSet);
-
     const added = difference(values, currentMarkingDefinitions);
     const removed = difference(currentMarkingDefinitions, values);
 

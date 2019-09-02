@@ -70,7 +70,7 @@ class PersonKnowledgeComponent extends Component {
           render={routeProps => (
             <EntityStixRelations
               entityId={person.id}
-              relationType="localized-in"
+              relationType="localization"
               targetEntityTypes={['City', 'Country', 'Region']}
               entityLink={link}
               {...routeProps}

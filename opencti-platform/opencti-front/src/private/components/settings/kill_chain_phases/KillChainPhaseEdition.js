@@ -85,7 +85,7 @@ const killChainPhaseEditionFocus = graphql`
   mutation KillChainPhaseEditionFocusMutation($id: ID!, $input: EditContext!) {
     killChainPhaseEdit(id: $id) {
       contextPatch(input: $input) {
-        ...KillChainPhaseEdition_killChainPhase
+        id
       }
     }
   }

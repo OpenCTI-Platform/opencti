@@ -35,7 +35,7 @@ const intrusionSetEditionIdentityFocus = graphql`
   ) {
     intrusionSetEdit(id: $id) {
       contextPatch(input: $input) {
-        ...IntrusionSetEditionIdentity_intrusionSet
+        id
       }
     }
   }

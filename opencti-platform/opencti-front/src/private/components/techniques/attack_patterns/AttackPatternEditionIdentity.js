@@ -59,7 +59,7 @@ export const attackPatternEditionIdentityFocus = graphql`
   ) {
     attackPatternEdit(id: $id) {
       contextPatch(input: $input) {
-        ...AttackPatternEditionIdentity_attackPattern
+        id
       }
     }
   }

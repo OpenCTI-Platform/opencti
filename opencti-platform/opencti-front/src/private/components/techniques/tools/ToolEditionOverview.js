@@ -74,7 +74,7 @@ export const toolEditionOverviewFocus = graphql`
   mutation ToolEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     toolEdit(id: $id) {
       contextPatch(input: $input) {
-        ...ToolEditionOverview_tool
+        id
       }
     }
   }

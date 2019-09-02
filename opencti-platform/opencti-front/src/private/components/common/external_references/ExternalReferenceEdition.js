@@ -80,7 +80,7 @@ const externalReferenceEditionFocus = graphql`
   ) {
     externalReferenceEdit(id: $id) {
       contextPatch(input: $input) {
-        ...ExternalReferenceEdition_externalReference
+        id
       }
     }
   }

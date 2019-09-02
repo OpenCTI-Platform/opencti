@@ -53,7 +53,7 @@ const groupEditionOverviewFocus = graphql`
   mutation GroupEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     groupEdit(id: $id) {
       contextPatch(input: $input) {
-        ...GroupEditionOverview_group
+        id
       }
     }
   }

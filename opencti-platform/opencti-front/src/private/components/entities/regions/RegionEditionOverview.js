@@ -73,7 +73,7 @@ export const regionEditionOverviewFocus = graphql`
   mutation RegionEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     regionEdit(id: $id) {
       contextPatch(input: $input) {
-        ...RegionEditionOverview_region
+        id
       }
     }
   }

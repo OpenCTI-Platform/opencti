@@ -76,13 +76,6 @@ const settingsFocus = graphql`
     settingsEdit(id: $id) {
       contextPatch(input: $input) {
         id
-        platform_title
-        platform_email
-        platform_url
-        platform_language
-        platform_external_auth
-        platform_registration
-        platform_demo
       }
     }
   }

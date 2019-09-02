@@ -73,7 +73,7 @@ export const personEditionOverviewFocus = graphql`
   mutation PersonEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     userEdit(id: $id) {
       contextPatch(input: $input) {
-        ...PersonEditionOverview_person
+        id
       }
     }
   }

@@ -115,7 +115,7 @@ export const stixRelationEditionFocus = graphql`
   ) {
     stixRelationEdit(id: $id) {
       contextPatch(input: $input) {
-        ...StixRelationEditionOverview_stixRelation
+        id
       }
     }
   }

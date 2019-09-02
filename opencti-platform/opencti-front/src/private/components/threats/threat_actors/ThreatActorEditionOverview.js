@@ -76,7 +76,7 @@ export const threatActorEditionOverviewFocus = graphql`
   ) {
     threatActorEdit(id: $id) {
       contextPatch(input: $input) {
-        ...ThreatActorEditionOverview_threatActor
+        id
       }
     }
   }

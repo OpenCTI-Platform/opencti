@@ -81,7 +81,7 @@ const markingDefinitionEditionFocus = graphql`
   ) {
     markingDefinitionEdit(id: $id) {
       contextPatch(input: $input) {
-        ...MarkingDefinitionEdition_markingDefinition
+        id
       }
     }
   }

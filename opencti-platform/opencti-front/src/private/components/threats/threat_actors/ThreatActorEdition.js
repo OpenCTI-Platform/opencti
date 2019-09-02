@@ -111,7 +111,6 @@ class ThreatActorEdition extends Component {
 
 ThreatActorEdition.propTypes = {
   threatActorId: PropTypes.string,
-  me: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

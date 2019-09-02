@@ -71,7 +71,7 @@ export const workspaceEditionOverviewFocus = graphql`
   ) {
     workspaceEdit(id: $id) {
       contextPatch(input: $input) {
-        ...WorkspaceEditionOverview_workspace
+        id
       }
     }
   }

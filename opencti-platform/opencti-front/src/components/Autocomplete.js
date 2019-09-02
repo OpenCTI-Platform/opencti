@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, defaultTo } from 'ramda';
 import classNames from 'classnames';
 import Select from 'react-select';
 import { withStyles } from '@material-ui/core/styles';
@@ -253,7 +253,8 @@ class Autocomplete extends Component {
           error={hasError}
           required={required}
           disabled={isSubmitting}
-          style={{ marginTop: '20px' }}>
+          style={{ marginTop: '20px' }}
+        >
           <Select
             classes={classes}
             styles={selectStyles}
@@ -271,9 +272,9 @@ class Autocomplete extends Component {
             components={components}
             value={values[field.name]}
             onChange={(changeValues) => {
-              setFieldValue(field.name, changeValues);
+              setFieldValue(field.name, changeValues || []);
               if (typeof onChange === 'function') {
-                onChange(field.name, changeValues);
+                onChange(field.name, changeValues || []);
               }
             }}
             onFocus={() => {

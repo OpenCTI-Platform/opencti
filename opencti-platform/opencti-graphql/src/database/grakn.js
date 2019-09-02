@@ -554,11 +554,17 @@ export const getRelationInferredById = async id => {
     const roles = rolePlayersMap.keys();
     const fromRole = roles.next().value;
     // eslint-disable-next-line prettier/prettier
-    const fromObject = rolePlayersMap.get(fromRole).values().next().value;
+    const fromObject = rolePlayersMap
+      .get(fromRole)
+      .values()
+      .next().value;
     const fromRoleLabel = await fromRole.label();
     const toRole = roles.next().value;
     // eslint-disable-next-line prettier/prettier
-    const toObject = rolePlayersMap.get(toRole).values().next().value;
+    const toObject = rolePlayersMap
+      .get(toRole)
+      .values()
+      .next().value;
     const toRoleLabel = await toRole.label();
     const relation = {
       id,
@@ -1088,7 +1094,6 @@ export const paginateRelationships = (
  * Create a relation between to element in the model without restriction.
  * @param id
  * @param input
- * @returns {Promise<any[] | never>}
  */
 export const createRelation = async (id, input) => {
   const wTx = await takeWriteTx();
@@ -1117,18 +1122,13 @@ export const createRelation = async (id, input) => {
       input.last_seen ? `, has last_seen ${prepareDate(input.last_seen)}` : ''
     } ${input.weight ? `, has weight ${escape(input.weight)}` : ''};`;
     logger.debug(`[GRAKN - infer: false] createRelation > ${query}`);
-    const nodePromise = getById(input.toId);
+    const node = await getById(input.toId);
     const iterator = await wTx.tx.query(query);
     const answer = await iterator.next();
     const createdRelation = await answer.map().get('rel');
-    const relationPromise = getAttributes(createdRelation);
+    const relation = await getAttributes(createdRelation);
     await commitWriteTx(wTx);
-    return Promise.all([nodePromise, relationPromise]).then(
-      ([node, relation]) => ({
-        node,
-        relation
-      })
-    );
+    return { node, relation };
   } catch (err) {
     logger.error(err);
     await closeWriteTx(wTx);
@@ -1152,8 +1152,13 @@ export const updateAttribute = async (id, input, tx = null) => {
     const labelIterator = await wTx.tx.query(labelTypeQuery);
     const labelAnswer = await labelIterator.next();
     /* eslint-disable prettier/prettier */
-    const attrType = await labelAnswer.map().get('x').dataType();
-    const deleteQuery = `match $x has internal_id "${escapeString(id)}", has ${escapedKey} $del via $d; delete $d;`;
+    const attrType = await labelAnswer
+      .map()
+      .get('x')
+      .dataType();
+    const deleteQuery = `match $x has internal_id "${escapeString(
+      id
+    )}", has ${escapedKey} $del via $d; delete $d;`;
     /* eslint-enable prettier/prettier */
     logger.debug(
       `[GRAKN - infer: false] updateAttribute - delete > ${deleteQuery}`

@@ -77,7 +77,7 @@ const cityEditionFocus = graphql`
   mutation CityEditionFocusMutation($id: ID!, $input: EditContext!) {
     cityEdit(id: $id) {
       contextPatch(input: $input) {
-        ...CityEdition_city
+        id
       }
     }
   }
