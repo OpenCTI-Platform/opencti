@@ -69,6 +69,8 @@ const i18n = {
         'Souhaitez-vous supprimer cet attribut ?',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
+      'Last reports wrote by the entity': 'Derniers rapports écrits par cette entité',
+      'Last reports about this entity': 'Derniers rapports à propos de cette entité',
       'Last observables': 'Derniers observables',
       'Last modified entities': 'Dernières entités modifiées',
       'Global parameters': 'Paramètres généraux',
