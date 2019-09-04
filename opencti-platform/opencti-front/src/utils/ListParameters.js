@@ -19,9 +19,9 @@ export const buildViewParamsFromUrlAndStorage = (
   location,
   localStorageKey,
 ) => {
-  const queryParams = Object.fromEntries(
-    new URLSearchParams(location.search.substring(1)),
-  );
+  const queryParams = [
+    ...new URLSearchParams(location.search).entries(),
+  ].reduce((q, [k, v]) => Object.assign(q, { [k]: v }), {});
   let finalParams = queryParams;
   if (localStorage.getItem(localStorageKey)) {
     const localParams = JSON.parse(localStorage.getItem(localStorageKey));
