@@ -43,7 +43,7 @@ AttributesList.propTypes = {
 };
 
 export const attributesListQuery = graphql`
-  query AttributesListQuery($type: String!, $count: Int!) {
+  query AttributesListQuery($type: String!, $count: Int) {
     ...AttributesList_data @arguments(type: $type, count: $count)
   }
 `;
