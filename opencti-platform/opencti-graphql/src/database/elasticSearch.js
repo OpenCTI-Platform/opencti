@@ -401,7 +401,10 @@ export const getAttributes = (indexName, id) => {
       return data.body._source;
     })
     .catch(e => {
-      logger.error(`[ELASTICSEARCH] getAttributes > error getting ${id}`, e);
+      if (e.meta.statusCode !== 404) {
+        // If another error than not found.
+        logger.error(`[ELASTICSEARCH] getAttributes > error getting ${id}`, e);
+      }
       return null;
     });
 };

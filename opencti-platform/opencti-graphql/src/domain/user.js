@@ -169,7 +169,7 @@ export const addUser = async (
     has email "${escapeString(newUser.email)}",
     ${
       newUser.password
-        ? `has password "${bcrypt.hashSync(newUser.password)}",`
+        ? `has password "${bcrypt.hashSync(newUser.password.toString())}",`
         : ''
     }
     has firstname "${escapeString(newUser.firstname)}",
@@ -332,7 +332,9 @@ export const meEditField = (user, userId, input) => {
     throw new ForbiddenAccess();
   }
   const value =
-    key === 'password' ? [bcrypt.hashSync(head(input.value), 10)] : input.value;
+    key === 'password'
+      ? [bcrypt.hashSync(head(input.value).toString(), 10)]
+      : input.value;
   const finalInput = { key, value };
   return updateAttribute(userId, finalInput).then(userToEdit => {
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
