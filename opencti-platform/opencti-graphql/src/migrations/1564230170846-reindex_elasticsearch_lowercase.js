@@ -1,12 +1,14 @@
-import { createIndexes, reindex } from '../src/database/elasticSearch';
-import { logger } from '../src/config/conf';
+import { createIndexes, reindex } from '../database/elasticSearch';
+import { logger } from '../config/conf';
 
 module.exports.up = async next => {
   try {
     // create new indexes
     await createIndexes();
   } catch (err) {
-    logger.info('Index already exists');
+    logger.info(
+      '[MIGRATION] reindex_elasticsearch_lowercase > Index already exists'
+    );
   }
   try {
     // Reindex
@@ -16,9 +18,13 @@ module.exports.up = async next => {
       { source: 'stix-observables', dest: 'stix_observables' },
       { source: 'external-references', dest: 'external_references' }
     ]);
-    logger.info('Migration reindex');
+    logger.info(
+      '[MIGRATION] reindex_elasticsearch_lowercase > Migration reindex'
+    );
   } catch (err) {
-    logger.info('Nothing to reindex');
+    logger.info(
+      '[MIGRATION] reindex_elasticsearch_lowercase > Nothing to reindex'
+    );
   }
   next();
 };

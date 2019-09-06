@@ -5,17 +5,17 @@
   "author": "Luatix",
   "license": "AGPL-3.0-or-later",
   "scripts": {
-    "start": "yarn schema --env=development && yarn migrate --env=development && babel-node -r node_modules/dotenv/config ./src/server.js --e development",
+    "start": "babel-node -r node_modules/dotenv/config ./src/server.js --e development",
     "build": "babel --out-dir ./dist ./src",
     "serv": "node dist/server.js",
-    "schema": "babel-node ./src/schema/schema-init.js",
-    "migrate": "babel-node ./src/database/migration.js",
     "migrate:add": "migrate create",
     "lint": "eslint .",
     "test": "yarn build && yarn schema --e test && jest --coverage --e test",
     "clean": "babel-node ./src/database/clean.js"
   },
-  "bin": "./dist/server.js",
+  "bin": {
+    "opencti-graphql": "./dist/server.js"
+  },
   "pkg": {
     "scripts": "dist/**/*.js",
     "assets": [
@@ -93,5 +93,10 @@
   },
   "jest": {
     "testRegex": "/tests/.*/.*-test.js$"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "keywords": [],
+  "description": ""
 }

@@ -1,36 +1,42 @@
 import passport from 'passport/lib';
-import validator from 'validator';
 import FacebookStrategy from 'passport-facebook';
 import GithubStrategy from 'passport-github';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
-import { join, head, isEmpty, anyPass, isNil } from 'ramda';
+import { join, head, anyPass, isNil, isEmpty } from 'ramda';
+import validator from 'validator';
 import { initAdmin, loginFromProvider } from '../domain/user';
-import conf from './conf';
+import conf, { logger } from './conf';
 
 // Admin user initialization
-const empty = anyPass([isNil, isEmpty]);
-const DEFAULT_CONF_VALUE = 'ChangeMe';
-const adminEmail = conf.get('app:admin:email');
-const adminPassword = conf.get('app:admin:password');
-const adminToken = conf.get('app:admin:token');
-if (
-  empty(adminEmail) ||
-  empty(adminPassword) ||
-  empty(adminToken) ||
-  adminPassword === DEFAULT_CONF_VALUE ||
-  adminToken === DEFAULT_CONF_VALUE
-) {
-  throw new Error('Admin setup > You need to configure the environment vars');
-} else {
-  // Check fields
-  if (!validator.isEmail(adminEmail))
-    throw new Error('Admin setup > email must be a valid email address');
-  if (!validator.isUUID(adminToken))
-    throw new Error('Admin setup > Token must be a valid UUID');
-  // Initialize the admin account
-  // noinspection JSIgnoredPromiseFromCall
-  initAdmin(adminEmail, adminPassword, adminToken);
-}
+export const initializeAdminUser = async () => {
+  logger.info(`[ADMIN_SETUP] > initializeAdminUser`);
+  const empty = anyPass([isNil, isEmpty]);
+  const DEFAULT_CONF_VALUE = 'ChangeMe';
+  const adminEmail = conf.get('app:admin:email');
+  const adminPassword = conf.get('app:admin:password');
+  const adminToken = conf.get('app:admin:token');
+  if (
+    empty(adminEmail) ||
+    empty(adminPassword) ||
+    empty(adminToken) ||
+    adminPassword === DEFAULT_CONF_VALUE ||
+    adminToken === DEFAULT_CONF_VALUE
+  ) {
+    throw new Error(
+      '[ADMIN_SETUP] > You need to configure the environment vars'
+    );
+  } else {
+    // Check fields
+    if (!validator.isEmail(adminEmail))
+      throw new Error('[ADMIN_SETUP] > email must be a valid email address');
+    if (!validator.isUUID(adminToken))
+      throw new Error('[ADMIN_SETUP] > Token must be a valid UUID');
+    // Initialize the admin account
+    // noinspection JSIgnoredPromiseFromCall
+    await initAdmin(adminEmail, adminPassword, adminToken);
+    logger.info(`[ADMIN_SETUP] admin user initialize`);
+  }
+};
 
 // Providers definition
 const providers = [];

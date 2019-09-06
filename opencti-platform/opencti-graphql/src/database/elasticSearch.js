@@ -28,11 +28,14 @@ export const el = new Client({ node: conf.get('elasticsearch:url') });
 export const elasticIsAlive = async () => {
   try {
     await el.info().then(info => {
-      if (info.meta.connection.status !== 'alive')
+      if (info.meta.connection.status !== 'alive') {
+        logger.error(`[ELASTICSEARCH] Seems down`);
         throw new Error('elastic seems down');
+      }
       return true;
     });
   } catch (e) {
+    logger.error(`[ELASTICSEARCH] Seems down`);
     throw new Error('elastic seems down');
   }
 };

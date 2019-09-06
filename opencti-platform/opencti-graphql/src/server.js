@@ -23,6 +23,7 @@ import passport, { ACCESS_PROVIDERS } from './config/security';
 import { findByTokenUUID, setAuthenticationCookie } from './domain/user';
 import schema from './schema/schema';
 import { buildValidationError, TYPE_AUTH, Unknown } from './config/errors';
+import init from './initialization';
 
 // Init the http server
 const app = express();
@@ -75,7 +76,7 @@ export const authentication = async token => {
   try {
     return await findByTokenUUID(token);
   } catch (err) {
-    logger.error(token, err);
+    logger.error(`[OPENCTI] Authentication error ${token} > `, err);
     return undefined;
   }
 };
@@ -101,7 +102,7 @@ const server = new ApolloServer({
   },
   tracing: DEV_MODE,
   formatError: error => {
-    logger.error(error); // Log the complete error.
+    logger.error('[OPENCTI] Technical error > ', error); // Log the complete error.
     let e = apolloFormatError(error);
     if (e instanceof GraphQLError) {
       const errorCode = e.extensions.exception.code;
@@ -171,23 +172,32 @@ function onShutdown() {
 }
 
 const PORT = conf.get('app:port');
-httpServer.listen(PORT, () => {
-  createTerminus(httpServer, {
-    signal: 'SIGINT',
-    timeout: 1000,
-    onSignal,
-    onShutdown
+init()
+  .then(() => {
+    httpServer.listen(PORT, () => {
+      createTerminus(httpServer, {
+        signal: 'SIGINT',
+        timeout: 1000,
+        onSignal,
+        onShutdown
+      });
+      logger.info(
+        `🚀 Api ready on http://domain:${PORT}${
+          server.graphqlPath
+        }, base path ${nconf.get('app:base_path')}`
+      );
+      if (isAppRealTime) {
+        logger.info(
+          `🚀 WebSocket ready at ws://domain:${PORT}${server.subscriptionsPath}`
+        );
+      } else {
+        logger.info(
+          `🚀 WebSocket deactivated, config your redis and activate it`
+        );
+      }
+    });
+  })
+  .catch(e => {
+    logger.error('[OPENCTI] Start error > ', e);
+    process.exit(1);
   });
-  logger.info(
-    `🚀 Api ready on http://domain:${PORT}${
-      server.graphqlPath
-    }, base path ${nconf.get('app:base_path')}`
-  );
-  if (isAppRealTime) {
-    logger.info(
-      `🚀 WebSocket ready at ws://domain:${PORT}${server.subscriptionsPath}`
-    );
-  } else {
-    logger.info(`🚀 WebSocket deactivated, config your redis and activate it`);
-  }
-});

@@ -71,6 +71,7 @@ nconf.add('argv', {
 const DEFAULT_ENV = 'production';
 const DEFAULT_CONF_PATH = path.join(__dirname, '../../config/');
 const environment = nconf.get('env') || nconf.get('node_env') || DEFAULT_ENV;
+export const DEV_MODE = environment !== 'production';
 const externalConfigurationFile = nconf.get('conf');
 let configurationFile;
 if (externalConfigurationFile) {
@@ -101,12 +102,11 @@ export const logger = winston.createLogger({
   ]
 });
 
-// Force debug in development.
-export const DEV_MODE = environment !== 'production';
+// Console logging
 logger.add(
   new winston.transports.Console({
     format: winston.format.simple(),
-    level: DEV_MODE ? 'debug' : nconf.get('app:logs_level')
+    level: nconf.get('app:logs_level')
   })
 );
 

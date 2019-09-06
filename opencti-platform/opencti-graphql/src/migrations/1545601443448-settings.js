@@ -1,5 +1,5 @@
-import { addSettings } from '../src/domain/settings';
-import { addMarkingDefinition } from '../src/domain/markingDefinition';
+import { addSettings } from '../domain/settings';
+import { addMarkingDefinition } from '../domain/markingDefinition';
 
 module.exports.up = async next => {
   await addSettings(
