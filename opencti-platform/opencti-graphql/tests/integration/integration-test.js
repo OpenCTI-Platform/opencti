@@ -1,7 +1,16 @@
 import { createTestClient } from 'apollo-server-testing';
 import { ApolloServer } from 'apollo-server-express';
 import schema from '../../src/schema/schema';
+import { initializeSchema } from '../../src/initialization';
+import applyMigration from '../../src/database/migration';
 
+// Initialize schema before tests
+beforeAll(async () => {
+  await initializeSchema();
+  return applyMigration();
+}, 60000);
+
+// Setup the configuration
 export const USER_ID = 'V1234';
 const server = new ApolloServer({
   schema,
@@ -15,9 +24,9 @@ const server = new ApolloServer({
   })
 });
 export const { query } = createTestClient(server);
-
 jest.setTimeout(15000);
 
+// Starting tests
 require('./database/grakn');
 require('./resolvers/user');
 require('./resolvers/threatActor');

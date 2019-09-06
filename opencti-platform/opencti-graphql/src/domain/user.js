@@ -368,6 +368,17 @@ export const findByTokenUUID = async tokenValue => {
   return result.client;
 };
 
+// Authentication process
+export const authentication = async tokenUUID => {
+  if (!tokenUUID) return undefined;
+  try {
+    return await findByTokenUUID(tokenUUID);
+  } catch (err) {
+    logger.error(`[OPENCTI] Authentication error ${tokenUUID} > `, err);
+    return undefined;
+  }
+};
+
 // The static admin account internal ID
 const OPENCTI_ADMIN_DNS = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
 /**

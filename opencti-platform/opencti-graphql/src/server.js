@@ -20,7 +20,7 @@ import conf, {
   OPENCTI_TOKEN
 } from './config/conf';
 import passport, { ACCESS_PROVIDERS } from './config/security';
-import { findByTokenUUID, setAuthenticationCookie } from './domain/user';
+import { authentication, setAuthenticationCookie } from './domain/user';
 import schema from './schema/schema';
 import { buildValidationError, TYPE_AUTH, Unknown } from './config/errors';
 import init from './initialization';
@@ -71,17 +71,7 @@ app.get(
   }
 );
 
-export const authentication = async token => {
-  if (!token) return undefined;
-  try {
-    return await findByTokenUUID(token);
-  } catch (err) {
-    logger.error(`[OPENCTI] Authentication error ${token} > `, err);
-    return undefined;
-  }
-};
-
-export const extractTokenFromBearer = bearer =>
+const extractTokenFromBearer = bearer =>
   bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
 // endregion
 

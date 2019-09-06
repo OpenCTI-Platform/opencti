@@ -8,7 +8,7 @@ import { initializeAdminUser } from './config/security';
 const fs = require('fs');
 
 // Check every dependencies
-const checkSystemDependencies = async () => {
+export const checkSystemDependencies = async () => {
   // Check if Grakn is available
   await graknIsAlive();
   logger.info(`[PRE-CHECK] > Grakn is alive`);
@@ -18,7 +18,7 @@ const checkSystemDependencies = async () => {
 };
 
 // Initialize
-const initializeSchema = async () => {
+export const initializeSchema = async () => {
   // Inject grakn schema
   const schema = fs.readFileSync('./src/opencti.gql', 'utf8');
   await write(schema);
