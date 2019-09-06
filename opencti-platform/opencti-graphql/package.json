@@ -10,7 +10,7 @@
     "serv": "node dist/server.js",
     "migrate:add": "migrate create",
     "lint": "eslint .",
-    "test": "yarn build && yarn schema --e test && jest --coverage --e test",
+    "test": "yarn build && jest --coverage --e test",
     "clean": "babel-node ./src/database/clean.js"
   },
   "bin": {
