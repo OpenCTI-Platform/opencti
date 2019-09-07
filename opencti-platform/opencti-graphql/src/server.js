@@ -134,7 +134,15 @@ const server = new ApolloServer({
   }
 });
 
-server.applyMiddleware({ app });
+server.applyMiddleware({
+  app,
+  onHealthCheck: () =>
+    new Promise(resolve => {
+      // TODO @JRI Implements a real health function
+      // Check grakn and ES connection?
+      resolve();
+    })
+});
 
 app.all('*', (req, res) => {
   const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
@@ -172,22 +180,25 @@ init()
         onShutdown
       });
       logger.info(
-        `🚀 Api ready on http://domain:${PORT}${
+        `[API] Bootstrap > ready on http://localhost:${PORT}${
           server.graphqlPath
         }, base path ${nconf.get('app:base_path')}`
       );
+      logger.info(
+        `[API] Bootstrap > Health check available at: http://localhost:${PORT}/.well-known/apollo/server-health`
+      );
       if (isAppRealTime) {
         logger.info(
-          `🚀 WebSocket ready at ws://domain:${PORT}${server.subscriptionsPath}`
+          `[API] Bootstrap > WebSocket ready at ws://domain:${PORT}${server.subscriptionsPath}`
         );
       } else {
         logger.info(
-          `🚀 WebSocket deactivated, config your redis and activate it`
+          `[API] Bootstrap > WebSocket deactivated, config your redis and activate it`
         );
       }
     });
   })
   .catch(e => {
-    logger.error('[OPENCTI] Start error > ', e);
+    logger.error('[API] Bootstrap error > ', e);
     process.exit(1);
   });
