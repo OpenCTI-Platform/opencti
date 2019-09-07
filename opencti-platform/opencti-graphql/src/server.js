@@ -189,7 +189,7 @@ init()
       );
       if (isAppRealTime) {
         logger.info(
-          `[API] Bootstrap > WebSocket ready at ws://domain:${PORT}${server.subscriptionsPath}`
+          `[API] Bootstrap > WebSocket ready at ws://localhost:${PORT}${server.subscriptionsPath}`
         );
       } else {
         logger.info(
