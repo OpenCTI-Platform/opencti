@@ -225,7 +225,7 @@ export const queryAttributeValues = async type => {
     return buildPagination(5000, 0, result, 5000);
   } catch (err) {
     logger.error('[GRAKN] queryAttributeValues error > ', err);
-    await closeReadTx('[GRAKN] getAttributeValues error > ', rTx);
+    await closeReadTx(rTx);
     return {};
   }
 };
