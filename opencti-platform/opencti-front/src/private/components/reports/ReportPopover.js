@@ -125,8 +125,7 @@ class ReportPopover extends Component {
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
-        >
+          style={{ marginTop: 50 }}>
           <MenuItem onClick={this.handleOpenExport.bind(this)}>
             {t('Export')}
           </MenuItem>
@@ -140,8 +139,7 @@ class ReportPopover extends Component {
         <Dialog
           open={this.state.displayDelete}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
-        >
+          onClose={this.handleCloseDelete.bind(this)}>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this report?')}
@@ -151,8 +149,7 @@ class ReportPopover extends Component {
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}
-            >
+              disabled={this.state.deleting}>
               {t('Cancel')}
             </Button>
             <Button

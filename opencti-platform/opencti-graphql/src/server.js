@@ -169,6 +169,7 @@ function onShutdown() {
   logger.info('Cleanup finished, OpenCTI shutdown');
 }
 
+// isStorageAlive();
 const PORT = conf.get('app:port');
 init()
   .then(() => {

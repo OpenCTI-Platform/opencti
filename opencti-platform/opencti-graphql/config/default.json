@@ -25,6 +25,11 @@
   "elasticsearch": {
     "url": "http://localhost:9200"
   },
+  "minio": {
+    "endpoint": "localhost",
+    "accessKey": "ChangeMe",
+    "secretKey": "ChangeMe"
+  },
   "rabbitmq": {
     "hostname": "localhost",
     "port": 5672,

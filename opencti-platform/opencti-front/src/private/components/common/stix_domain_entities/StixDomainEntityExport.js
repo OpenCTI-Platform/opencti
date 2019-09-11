@@ -56,8 +56,7 @@ class StixDomainEntityExport extends Component {
         open={open}
         fullWidth={true}
         TransitionComponent={Transition}
-        onClose={handleClose.bind(this)}
-      >
+        onClose={handleClose.bind(this)}>
         <DialogTitle>{t('Export the entity')}</DialogTitle>
         <DialogContent>
           <QueryRenderer

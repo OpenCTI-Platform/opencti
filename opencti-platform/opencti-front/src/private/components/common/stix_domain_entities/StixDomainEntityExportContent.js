@@ -109,8 +109,7 @@ class StixDomainEntityExportContentComponent extends Component {
               exportStix2Simple && exportStix2Simple.object_status === 1
                 ? this.handleDownload.bind(this, exportStix2Simple.raw_data)
                 : undefined
-            }
-          >
+            }>
             <ListItemIcon>
               {exportStix2Simple && exportStix2Simple.object_status === 0 ? (
                 <CircularProgress

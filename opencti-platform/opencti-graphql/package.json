@@ -60,6 +60,7 @@
     "jsonwebtoken": "^8.5.1",
     "merge-graphql-schemas": "^1.7.0",
     "migrate": "^1.6.2",
+    "minio": "^7.0.12",
     "moment": "^2.24.0",
     "nconf": "^0.10.0",
     "passport": "^0.4.0",

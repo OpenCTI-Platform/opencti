@@ -165,11 +165,19 @@ export const exports = (stixDomainEntityId, args) => {
       });
     })
   );
+  // Filter null result?
   return result.then(data => {
     return filter(n => !isNil(n), data);
   });
 };
 
+/**
+ * Create export element waiting for completion
+ * @param stixDomainEntityId
+ * @param stixDomainEntityType
+ * @param type
+ * @returns {Promise<any[]|never>}
+ */
 export const stixDomainEntityRefreshExport = async (
   stixDomainEntityId,
   stixDomainEntityType,
@@ -215,7 +223,8 @@ export const stixDomainEntityExportPush = async (
   exportId,
   rawData
 ) => {
-  await updateAttribute(exportId, { key: 'raw_data', value: [rawData] });
+  // await updateAttribute(exportId, { key: 'raw_data', value: [rawData] });
+
   await updateAttribute(exportId, { key: 'object_status', value: [1] });
   return getById(stixDomainEntityId).then(stixDomainEntity => {
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user);
