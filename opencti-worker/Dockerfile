@@ -4,8 +4,8 @@ FROM python:3.7.4-alpine3.10
 COPY src /opt/opencti-worker
 
 # Install Python modules
-RUN BUILD_WORKER=noninteractive \
-    apk add build-base && \
+# hadolint ignore=DL3003
+RUN apk --no-cache add build-base=0.5-r1 && \
     cd /opt/opencti-worker && \
     pip3 install --no-cache-dir -r requirements.txt && \
     apk del build-base
