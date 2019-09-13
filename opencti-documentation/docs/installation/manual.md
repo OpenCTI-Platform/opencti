@@ -9,7 +9,7 @@ sidebar_label: Manual deployment
 - Node.JS (>= 10)
 - Grakn (>= 1.5.7)
 - Redis (>= 3.0)
-- ElasticSearch (== 6.x.x)
+- ElasticSearch (>= 7.x)
 - RabbitMQ (>= 3.7)
 
 
@@ -29,8 +29,8 @@ Download and extract the latest release file.
 
 ```bash
 $ mkdir /path/to/your/app && cd /path/to/your/app
-$ wget https://github.com/OpenCTI-Platform/opencti/releases/download/{RELEASE_VERSION}/opencti-release.tar.gz
-$ tar xvfz opencti-release.tar.gz
+$ wget https://github.com/OpenCTI-Platform/opencti/releases/download/{RELEASE_VERSION}/opencti-release-{RELEASE_VERSION}.tar.gz
+$ tar xvfz opencti-release-{RELEASE_VERSION}.tar.gz
 ```
 
 ## Install the main platform
@@ -78,6 +78,7 @@ Just copy the worker directory to a new one, named `worker-import`.
 ```bash
 $ cp -a worker worker-import
 $ cd worker-import
+$ pip3 install -r requirements.txt
 $ cp config.yml.sample config.yml
 ```
 
