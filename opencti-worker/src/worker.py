@@ -16,10 +16,10 @@ from pycti import OpenCTIApiClient
 
 EXCHANGE_NAME = 'amqp.opencti'
 
-
 class Consumer(threading.Thread):
-    def __init__(self, queue_name):
+    def __init__(self, queue_name, api):
         threading.Thread.__init__(self)
+        self.api = api
         self.queue_name = queue_name
         # Get configuration
         config_file_path = os.path.dirname(os.path.abspath(__file__)) + '/config.yml'
@@ -50,9 +50,6 @@ class Consumer(threading.Thread):
             self.DEFAULT_QUEUE_NAME = 'export-platform'
             self.DEFAULT_ROUTING_KEY = 'export.platform'
             self.CONNECTOR_QUEUE_PREFIX = 'export-connectors-'
-
-        # Initialize OpenCTI client
-        self.opencti_api_client = OpenCTIApiClient(self.opencti_url, self.opencti_token)
 
         # Connect to RabbitMQ
         self.connection = self._connect()
@@ -111,26 +108,23 @@ class Consumer(threading.Thread):
         try:
             if data['type'] == 'stix2-bundle' or data['type'] == 'stix2bundle':
                 content = base64.b64decode(data['content']).decode('utf-8')
-                self.opencti_api_client.stix2_import_bundle(content, True, data['entities_types'] if 'entities_types' in data else [])
+                self.api.stix2_import_bundle(content, True, data['entities_types'] if 'entities_types' in data else [])
             if data['type'] == 'stix2-bundle-simple':
-                bundle = self.opencti_api_client.stix2_export_entity(data['entity_type'], data['entity_id'], 'simple')
+                bundle = self.api.stix2_export_entity(data['entity_type'], data['entity_id'], 'simple')
                 if bundle is not None:
                     bundle = base64.b64encode(bytes(json.dumps(bundle, indent=4), 'utf-8')).decode('utf-8')
-                    self.opencti_api_client.push_stix_domain_entity_export(data['entity_id'], data['export_id'], bundle)
+                    self.api.push_stix_domain_entity_export(data['entity_id'], data['export_id'], bundle)
             if data["type"] == 'stix2-bundle-full':
-                bundle = self.opencti_api_client.stix2_export_entity(data['entity_type'], data['entity_id'], 'full')
+                bundle = self.api.stix2_export_entity(data['entity_type'], data['entity_id'], 'full')
                 if bundle is not None:
                     bundle = base64.b64encode(bytes(json.dumps(bundle, indent=4), 'utf-8')).decode('utf-8')
-                    self.opencti_api_client.push_stix_domain_entity_export(data['entity_id'], data['export_id'], bundle)
+                    self.api.push_stix_domain_entity_export(data['entity_id'], data['export_id'], bundle)
         except Exception as e:
             logging.error('An unexpected error occurred: { ' + str(e) + ' }')
             return False
 
     def run(self):
         try:
-            if len(self.opencti_token) == 0 or self.opencti_token == '<Must be the same as APP__ADMIN__TOKEN>':
-                raise ValueError('Configuration not found')
-
             # Consume the queue
             logging.info('Thread for queue ' + self.queue_name + ' started')
             self.channel.basic_consume(queue=self.queue_name, on_message_callback=self._process_message)
@@ -138,7 +132,6 @@ class Consumer(threading.Thread):
         finally:
             self.channel.stop_consuming()
             logging.info('Thread for queue ' + self.queue_name + ' terminated')
-
 
 class Worker:
     def __init__(self):
@@ -150,7 +143,10 @@ class Worker:
             config = yaml.load(open(config_file_path), Loader=yaml.FullLoader)
             self.type = config['worker']['type']
             self.log_level = config['worker']['log_level']
+            self.opencti_url = config['opencti']['url']
+            self.opencti_token = config['opencti']['token']
             self.rabbitmq_hostname = config['rabbitmq']['hostname']
+            self.rabbitmq_port = config['rabbitmq']['port']
             self.rabbitmq_port_management = config['rabbitmq']['port_management']
             self.rabbitmq_management_ssl = config['rabbitmq']['management_ssl']
             self.rabbitmq_username = config['rabbitmq']['username']
@@ -168,6 +164,14 @@ class Worker:
             self.rabbitmq_password = os.getenv('RABBITMQ_PASSWORD', 'guest')
 
         # Check configuration
+        if len(self.opencti_token) == 0 or self.opencti_token == 'ChangeMe':
+            raise ValueError('Token configuration must be the same as APP__ADMIN__TOKEN')
+
+        # Check if openCTI is available
+        self.api = OpenCTIApiClient(self.opencti_url, self.opencti_token)
+        if not self.api.health_check():
+            raise ValueError('OpenCTI API seems down')
+
         if self.type == 'import':
             self.DEFAULT_QUEUE_NAME = 'import-platform'
             self.DEFAULT_ROUTING_KEY = 'import.platform'
@@ -216,10 +220,10 @@ class Worker:
                     if queue in self.consumer_threads:
                         if not self.consumer_threads[queue].is_alive():
                             logging.info('Thread for queue ' + queue + ' not alive, creating a new one...')
-                            self.consumer_threads[queue] = Consumer(queue)
+                            self.consumer_threads[queue] = Consumer(queue, self.api)
                             self.consumer_threads[queue].start()
                     else:
-                        self.consumer_threads[queue] = Consumer(queue)
+                        self.consumer_threads[queue] = Consumer(queue, self.api)
                         self.consumer_threads[queue].start()
 
                 # Check if some threads must be stopped
@@ -243,9 +247,8 @@ class Worker:
 
 if __name__ == '__main__':
     worker = Worker()
-    while True:
-        try:
-            worker.start()
-        except Exception as e:
-            logging.error(e)
-            time.sleep(5)
+    try:
+        worker.start()
+    except Exception as e:
+        logging.error(e)
+        exit(1)

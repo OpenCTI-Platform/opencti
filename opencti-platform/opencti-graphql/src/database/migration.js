@@ -1,15 +1,13 @@
 import uuid from 'uuid/v4';
 import { isNil, isEmpty, head, map, filter } from 'ramda';
 import migrate from 'migrate';
+import path from 'path';
 import { load, find, write } from './grakn';
 import { logger } from '../config/conf';
-import { elasticIsAlive } from './elasticSearch';
 
 // noinspection JSUnusedGlobalSymbols
 const graknStateStorage = {
   async load(fn) {
-    // Check if ES is alive
-    await elasticIsAlive();
     // Get current status of migrations in Grakn
     const result = await find(
       `match $x isa MigrationStatus; 
@@ -19,7 +17,8 @@ const graknStateStorage = {
     );
     if (isEmpty(result)) {
       logger.info(
-        'Cannot read migrations from database. If this is the first time you run migrations, then this is normal.'
+        '[MIGRATION] Cannot read migrations from database. If this is the first time you run migrations,' +
+          ' then this is normal.'
       );
       return fn(null, {});
     }
@@ -36,10 +35,8 @@ const graknStateStorage = {
     return fn(null, migrationStatus);
   },
   async save(set, fn) {
-    logger.info('OpenCTI Migration: Saving current configuration');
     // Get current done migration
     const mig = head(filter(m => m.title === set.lastRun, set.migrations));
-
     // Get the MigrationStatus. If exist, update last run, if not create it
     const migrationStatus = await load(`match $x isa MigrationStatus; get;`, [
       'x'
@@ -72,20 +69,30 @@ const graknStateStorage = {
       $ref isa MigrationReference, has title "${mig.title}"; 
       insert (status: $status, state: $ref) isa migrate, has internal_id "${uuid()}";`
     );
-    fn();
+    logger.info(`[MIGRATION] Saving current configuration, ${mig.title}`);
+    return fn();
   }
 };
 
-migrate.load({ stateStore: graknStateStorage }, (err, set) => {
-  if (err) {
-    throw err;
-  }
-  logger.info('Migration state successfully updated, starting migrations');
-  set.up(err2 => {
-    if (err2) {
-      throw err2;
-    }
-    logger.info('Migrations successfully ran');
-    process.exit(0);
+const applyMigration = () => {
+  logger.info('[MIGRATION] Starting migration process');
+  return new Promise((resolve, reject) => {
+    const migrationsDirectory = path.join(__dirname, '../migrations');
+    migrate.load(
+      { stateStore: graknStateStorage, migrationsDirectory },
+      async (err, set) => {
+        if (err) reject(err);
+        logger.info(
+          '[MIGRATION] Migration state successfully updated, starting migrations'
+        );
+        set.up(err2 => {
+          if (err2) reject(err2);
+          logger.info('[MIGRATION] Migrations successfully ran');
+          resolve(true);
+        });
+      }
+    );
   });
-});
+};
+
+export default applyMigration;

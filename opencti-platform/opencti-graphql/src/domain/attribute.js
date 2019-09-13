@@ -33,7 +33,7 @@ export const addAttribute = async attribute => {
       value: attribute.value
     };
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] addAttribute error > ', err);
     await closeWriteTx(wTx);
     return {};
   }
@@ -49,7 +49,6 @@ export const attributeUpdate = async (id, input) => {
     type: input.type,
     value: input.newValue
   });
-
   // region Link new attribute to every entities
   const wTx = await takeWriteTx();
   try {
@@ -62,7 +61,7 @@ export const attributeUpdate = async (id, input) => {
     await wTx.tx.query(writeQuery);
     await commitWriteTx(wTx);
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] attributeUpdate error > ', err);
     await closeWriteTx(wTx);
   }
   // endregion
@@ -86,7 +85,7 @@ export const attributeUpdate = async (id, input) => {
     );
     await closeReadTx(rTx);
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] attributeUpdate error > ', err);
     await closeReadTx(wTx);
   }
   // endregion

@@ -2,7 +2,7 @@ import {
   takeWriteTx,
   commitWriteTx,
   closeWriteTx
-} from '../src/database/grakn';
+} from '../database/grakn';
 
 module.exports.up = async next => {
   const wTx = await takeWriteTx();

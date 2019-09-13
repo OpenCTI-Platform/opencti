@@ -1,4 +1,4 @@
-import { addAttribute } from '../src/domain/attribute';
+import { addAttribute } from '../domain/attribute';
 
 module.exports.up = async next => {
   await addAttribute({

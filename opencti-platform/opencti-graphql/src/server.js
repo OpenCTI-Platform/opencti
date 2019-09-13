@@ -20,9 +20,10 @@ import conf, {
   OPENCTI_TOKEN
 } from './config/conf';
 import passport, { ACCESS_PROVIDERS } from './config/security';
-import { findByTokenUUID, setAuthenticationCookie } from './domain/user';
+import { authentication, setAuthenticationCookie } from './domain/user';
 import schema from './schema/schema';
 import { buildValidationError, TYPE_AUTH, Unknown } from './config/errors';
+import init from './initialization';
 
 // Init the http server
 const app = express();
@@ -70,17 +71,7 @@ app.get(
   }
 );
 
-export const authentication = async token => {
-  if (!token) return undefined;
-  try {
-    return await findByTokenUUID(token);
-  } catch (err) {
-    logger.error(token, err);
-    return undefined;
-  }
-};
-
-export const extractTokenFromBearer = bearer =>
+const extractTokenFromBearer = bearer =>
   bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
 // endregion
 
@@ -101,7 +92,7 @@ const server = new ApolloServer({
   },
   tracing: DEV_MODE,
   formatError: error => {
-    logger.error(error); // Log the complete error.
+    logger.error('[OPENCTI] Technical error > ', error); // Log the complete error.
     let e = apolloFormatError(error);
     if (e instanceof GraphQLError) {
       const errorCode = e.extensions.exception.code;
@@ -143,7 +134,15 @@ const server = new ApolloServer({
   }
 });
 
-server.applyMiddleware({ app });
+server.applyMiddleware({
+  app,
+  onHealthCheck: () =>
+    new Promise(resolve => {
+      // TODO @JRI Implements a real health function
+      // Check grakn and ES connection?
+      resolve();
+    })
+});
 
 app.all('*', (req, res) => {
   const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
@@ -171,23 +170,35 @@ function onShutdown() {
 }
 
 const PORT = conf.get('app:port');
-httpServer.listen(PORT, () => {
-  createTerminus(httpServer, {
-    signal: 'SIGINT',
-    timeout: 1000,
-    onSignal,
-    onShutdown
+init()
+  .then(() => {
+    httpServer.listen(PORT, () => {
+      createTerminus(httpServer, {
+        signal: 'SIGINT',
+        timeout: 1000,
+        onSignal,
+        onShutdown
+      });
+      logger.info(
+        `[API] Bootstrap > ready on http://localhost:${PORT}${
+          server.graphqlPath
+        }, base path ${nconf.get('app:base_path')}`
+      );
+      logger.info(
+        `[API] Bootstrap > Health check available at: http://localhost:${PORT}/.well-known/apollo/server-health`
+      );
+      if (isAppRealTime) {
+        logger.info(
+          `[API] Bootstrap > WebSocket ready at ws://localhost:${PORT}${server.subscriptionsPath}`
+        );
+      } else {
+        logger.info(
+          `[API] Bootstrap > WebSocket deactivated, config your redis and activate it`
+        );
+      }
+    });
+  })
+  .catch(e => {
+    logger.error('[API] Bootstrap error > ', e);
+    process.exit(1);
   });
-  logger.info(
-    `🚀 Api ready on http://domain:${PORT}${
-      server.graphqlPath
-    }, base path ${nconf.get('app:base_path')}`
-  );
-  if (isAppRealTime) {
-    logger.info(
-      `🚀 WebSocket ready at ws://domain:${PORT}${server.subscriptionsPath}`
-    );
-  } else {
-    logger.info(`🚀 WebSocket deactivated, config your redis and activate it`);
-  }
-});

@@ -21,7 +21,7 @@ export const pubsub = isAppRealTime
 const client = isAppRealTime && new Redis(redisOptions);
 if (client) {
   client.on('error', error => {
-    logger.error(error);
+    logger.error('[REDIS] An error occurred on redis > ', error);
   });
 }
 const isActive = () => client && client.status === 'ready';

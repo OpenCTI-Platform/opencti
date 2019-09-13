@@ -84,7 +84,7 @@ export const takeReadTx = async (retry = false) => {
     const tx = await session.transaction().read();
     return { session, tx };
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] TakeReadTx error > ', err);
     if (retry === false) {
       session = null;
       return takeReadTx(true);
@@ -97,7 +97,17 @@ export const closeReadTx = async rTx => {
   try {
     await rTx.tx.close();
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] CloseReadTx error > ', err);
+  }
+};
+
+export const graknIsAlive = async () => {
+  try {
+    const rtx = await takeReadTx();
+    await closeReadTx(rtx);
+  } catch (e) {
+    logger.error(`[GRAKN] Seems down`);
+    throw new Error('Grakn seems down');
   }
 };
 
@@ -109,7 +119,7 @@ export const takeWriteTx = async (retry = false) => {
     const tx = await session.transaction().write();
     return { session, tx };
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] TakeWriteTx error > ', err);
     if (retry === false) {
       session = null;
       return takeWriteTx(true);
@@ -122,7 +132,7 @@ export const commitWriteTx = async wTx => {
   try {
     await wTx.tx.commit();
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] CommitWriteTx error > ', err);
   }
 };
 
@@ -130,7 +140,7 @@ export const closeWriteTx = async wTx => {
   try {
     await wTx.tx.close();
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] CloseWriteTx error > ', err);
   }
 };
 
@@ -144,7 +154,7 @@ export const read = async query => {
   try {
     await rTx.tx.query(query);
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] Read error > ', err);
   }
   await closeReadTx(rTx);
 };
@@ -155,7 +165,7 @@ export const write = async query => {
     await wTx.tx.query(query);
     await commitWriteTx(wTx);
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] Write error > ', err);
   }
 };
 
@@ -177,7 +187,7 @@ export const getId = async internalId => {
     await closeReadTx(rTx);
     return concept.id;
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] getId error > ', err);
     await closeReadTx(rTx);
     return null;
   }
@@ -214,7 +224,7 @@ export const queryAttributeValues = async type => {
     await closeReadTx(rTx);
     return buildPagination(5000, 0, result, 5000);
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] queryAttributeValues error > ', err);
     await closeReadTx(rTx);
     return {};
   }
@@ -244,7 +254,7 @@ export const queryAttributeValueById = async id => {
       value: replacedValue
     };
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] queryAttributeValueById error > ', err);
     await closeReadTx(rTx);
     return { edges: [] };
   }
@@ -264,7 +274,7 @@ export const deleteAttributeById = async id => {
     await commitWriteTx(wTx);
     return id;
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] deleteAttributeById error > ', err);
     await closeWriteTx(wTx);
     return null;
   }
@@ -417,7 +427,7 @@ export const getById = async (id, forceReindex = false) => {
     await closeReadTx(rTx);
     return result;
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] getById error > ', err);
     await closeReadTx(rTx);
     return null;
   }
@@ -448,7 +458,7 @@ export const find = async (query, entities) => {
     await closeReadTx(rTx);
     return result;
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] find error > ', err);
     await closeReadTx(rTx);
     return [];
   }
@@ -523,7 +533,7 @@ export const getRelationById = async id => {
     await closeReadTx(rTx);
     return result;
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] getRelationById error > ', err);
     await closeReadTx(rTx);
     return null;
   }
@@ -708,7 +718,7 @@ export const getRelationInferredById = async id => {
     await closeReadTx(rTx);
     return result;
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] getRelationInferredById error > ', err);
     await closeReadTx(rTx);
     return null;
   }
@@ -730,7 +740,7 @@ export const getSingleValue = async (query, infer = false) => {
     await closeReadTx(rTx);
     return result;
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] getSingleValue error > ', err);
     await closeReadTx(rTx);
     return null;
   }
@@ -799,7 +809,7 @@ export const getObjects = async (
     await closeReadTx(rTx);
     return result;
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] getObjects error > ', err);
     await closeReadTx(rTx);
     return [];
   }
@@ -873,7 +883,7 @@ export const paginate = (
       return buildPagination(first, offset, instances, globalCount);
     });
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] paginate error > ', err);
     return Promise.resolve(null);
   }
 };
@@ -985,7 +995,7 @@ export const getRelations = async (
     await closeReadTx(rTx);
     return result;
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] getRelations error > ', err);
     await closeReadTx(rTx);
     return Promise.resolve(null);
   }
@@ -1085,7 +1095,7 @@ export const paginateRelationships = (
       return { globalCount, instances };
     });
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] paginateRelationships error > ', err);
     return null;
   }
 };
@@ -1130,7 +1140,7 @@ export const createRelation = async (id, input) => {
     await commitWriteTx(wTx);
     return { node, relation };
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] createRelation error > ', err);
     await closeWriteTx(wTx);
     return null;
   }
@@ -1206,7 +1216,7 @@ export const updateAttribute = async (id, input, tx = null) => {
     // Return the final result
     return await getById(id, true);
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] updateAttribute error > ', err);
     await closeWriteTx(wTx);
     return null;
   }
@@ -1228,7 +1238,7 @@ export const deleteEntityById = async id => {
     await commitWriteTx(wTx);
     return id;
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] deleteEntityById error > ', err);
     await closeWriteTx(wTx);
     return null;
   }
@@ -1248,7 +1258,7 @@ export const deleteById = async id => {
     await commitWriteTx(wTx);
     return id;
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] deleteById error > ', err);
     await closeWriteTx(wTx);
     return null;
   }
@@ -1274,7 +1284,7 @@ export const deleteRelationById = async (id, relationId) => {
       relation: { id: relationId }
     }));
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] deleteRelationById error > ', err);
     await closeWriteTx(wTx);
     return null;
   }
@@ -1312,7 +1322,7 @@ export const timeSeries = async (query, options) => {
     await closeReadTx(rTx);
     return result;
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] timeSeries error > ', err);
     await closeReadTx(rTx);
     return null;
   }
@@ -1349,7 +1359,7 @@ export const distribution = async (query, options) => {
     await closeReadTx(rTx);
     return result;
   } catch (err) {
-    logger.error(err);
+    logger.error('[GRAKN] distribution error > ', err);
     await closeReadTx(rTx);
     return null;
   }

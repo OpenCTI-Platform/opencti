@@ -1,5 +1,5 @@
 import { query } from '../integration-test';
-import { authentication } from '../../../src/server';
+import { authentication } from '../../../src/domain/user';
 
 // region queries
 const CREATE_QUERY = `

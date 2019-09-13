@@ -78,7 +78,7 @@
   },
   "scripts": {
     "start": "yarn relay && react-scripts start",
-    "generate": "cross-env PUBLIC_URL=%BASE_PATH% react-scripts --max_old_space_size=4096 build",
+    "generate": "cross-env GENERATE_SOURCEMAP=false PUBLIC_URL=%BASE_PATH% react-scripts build",
     "build": "yarn relay && yarn generate && node src/setupBuild.js",
     "lint": "eslint .",
     "test": "react-scripts test",
