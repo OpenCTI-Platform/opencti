@@ -22,31 +22,21 @@ directive @constraint(
 scalar DateTime
 scalar ConstraintString
 scalar ConstraintNumber
-
-### Upload
-input Upload {
-  name: String!
-  type: String!
-  size: Int!
-  base64: String!
-}
+scalar Upload
 
 ### Relations
 type RelationEmbedded {
   id: ID!
   entity_type: String!
 }
-
 type RelationData {
   node: GlobalObject
   relation: RelationEmbedded
 }
-
 type createdByRef {
   node: Identity
   relation: RelationEmbedded
 }
-
 type ownedBy {
   node: User
   relation: RelationEmbedded
@@ -192,7 +182,40 @@ input AttributeEditInput {
   newValue: String!
 }
 
-### Export
+### Files
+input FileUpload {
+  file: Upload! # File content
+  uploadType: String! # mime type like application/stix+json
+  entityId: String # Entity Id, Stix or internal (for non stix2 entity)
+  entityType: String # Type of this entity
+}
+enum FileCategory {
+  import
+  export
+}
+type FileMetadata {
+  category: FileCategory!
+  uploadtype: String!
+  encoding: String!
+  mimetype: String!
+  entityid: String # Entity Id, Stix or internal (for non stix2 entity)
+  entitytype: String # Type of this entity
+}
+type File {
+  id: ID!
+  name: String
+  size: Int
+  lastModified: DateTime
+  metaData: FileMetadata
+}
+type FileEdge {
+  cursor: String!
+  node: File!
+}
+type FileConnection {
+  pageInfo: PageInfo!
+  edges: [FileEdge]
+}
 type Export {
   id: ID!
   description: String
@@ -2116,6 +2139,7 @@ type Query {
   attribute(id: String): Attribute @auth
   attributes(first: Int, type: String!): AttributeConnection @auth
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)
+  files(category: FileCategory!, first: Int, entityId: String, entityType: String): FileConnection @auth
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(
@@ -2774,8 +2798,9 @@ type Mutation {
   # Attribute
   attributeAdd(input: AttributeAddInput): Attribute @auth(for: ROLE_ADMIN)
   attributeEdit(id: ID!): AttributeEditMutations @auth(for: ROLE_ADMIN)
-  # Import data
-  importData(type: String!, file: Upload!): Boolean @auth
+  # File management
+  deleteFile(fileName: String): Boolean
+  uploadFile(input: FileUpload): File @auth
   # StixDomainEntity
   stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth
   stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations @auth

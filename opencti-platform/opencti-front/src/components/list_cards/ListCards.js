@@ -13,7 +13,6 @@ import {
   TableChart,
   Dashboard,
 } from '@material-ui/icons';
-import StixDomainEntitiesImportData from '../../private/components/common/stix_domain_entities/StixDomainEntitiesImportData';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 
@@ -62,7 +61,6 @@ class ListCards extends Component {
       keyword,
       sortBy,
       orderAsc,
-      displayImport,
       children,
     } = this.props;
     return (
@@ -121,7 +119,6 @@ class ListCards extends Component {
             ) : (
               ''
             )}
-            {displayImport ? <StixDomainEntitiesImportData /> : ''}
           </div>
         </div>
         <div className="clearfix" />

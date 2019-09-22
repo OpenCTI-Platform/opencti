@@ -1,5 +1,5 @@
 import {
-  Environment, Network, RecordSource, Store,
+  Environment, RecordSource, Store,
 } from 'relay-runtime';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { installRelayDevTools } from 'relay-devtools';
@@ -19,6 +19,8 @@ import * as PropTypes from 'prop-types';
 import {
   map, isEmpty, difference, filter, split,
 } from 'ramda';
+import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
+import uploadMiddleware from './uploadMiddleware';
 
 // Dev tools
 export const IN_DEV_MODE = process.env.NODE_ENV === 'development';
@@ -51,24 +53,7 @@ export const ACCESS_PROVIDERS = split(
 const envBasePath = isEmpty(window.BASE_PATH) || window.BASE_PATH.startsWith('/')
   ? window.BASE_PATH : `/${window.BASE_PATH}`;
 export const APP_BASE_PATH = IN_DEV_MODE ? '' : envBasePath;
-const networkFetch = (operation, variables) => fetch(`${APP_BASE_PATH}/graphql`, {
-  method: 'POST',
-  credentials: 'same-origin',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    query: operation.text,
-    variables,
-  }),
-})
-  .then(response => response.json())
-  .then((json) => {
-    if (json.errors) {
-      return Promise.reject(json.errors);
-    }
-    return Promise.resolve(json);
-  });
+
 // Subscription
 let networkSubscriptions = null;
 export const WS_ACTIVATED = IN_DEV_MODE
@@ -89,8 +74,20 @@ if (WS_ACTIVATED) {
     variables,
   });
 }
+
+const network = new RelayNetworkLayer(
+  [
+    urlMiddleware({
+      url: `${APP_BASE_PATH}/graphql`,
+      credentials: 'same-origin',
+    }),
+    uploadMiddleware(),
+  ],
+  { subscribeFn: networkSubscriptions },
+);
+
 export const environment = new Environment({
-  network: Network.create(networkFetch, networkSubscriptions),
+  network,
   store: new Store(new RecordSource()),
 });
 

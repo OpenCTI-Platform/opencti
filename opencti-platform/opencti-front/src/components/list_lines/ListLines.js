@@ -14,7 +14,6 @@ import {
   TableChart,
   Dashboard,
 } from '@material-ui/icons';
-import StixDomainEntitiesImportData from '../../private/components/common/stix_domain_entities/StixDomainEntitiesImportData';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 
@@ -94,7 +93,6 @@ class ListLines extends Component {
       handleSearch,
       handleChangeView,
       dataColumns,
-      displayImport,
       secondaryAction,
       keyword,
       bottomNav,
@@ -121,8 +119,7 @@ class ListLines extends Component {
               <IconButton
                 color="primary"
                 classes={{ root: classes.button }}
-                onClick={handleChangeView.bind(this, 'cards')}
-              >
+                onClick={handleChangeView.bind(this, 'cards')}>
                 <Dashboard />
               </IconButton>
             ) : (
@@ -132,14 +129,12 @@ class ListLines extends Component {
               <IconButton
                 color="secondary"
                 classes={{ root: classes.button }}
-                onClick={handleChangeView.bind(this, 'lines')}
-              >
+                onClick={handleChangeView.bind(this, 'lines')}>
                 <TableChart />
               </IconButton>
             ) : (
               ''
             )}
-            {displayImport ? <StixDomainEntitiesImportData /> : ''}
           </div>
         </div>
         <div className="clearfix" />

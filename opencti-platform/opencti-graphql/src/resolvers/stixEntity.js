@@ -1,4 +1,5 @@
-import { importData } from '../domain/stixEntity';
+import { uploadFile } from '../domain/stixEntity';
+import { deleteFile } from '../database/minio';
 
 const stixEntityResolvers = {
   StixEntity: {
@@ -16,7 +17,8 @@ const stixEntityResolvers = {
     }
   },
   Mutation: {
-    importData: (_, { type, file }) => importData(type, file)
+    uploadFile: (_, { input }) => uploadFile(input),
+    deleteFile: (_, { fileName }) => deleteFile(fileName)
   }
 };
 

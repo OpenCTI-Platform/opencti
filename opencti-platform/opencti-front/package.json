@@ -15,6 +15,7 @@
     "classnames": "^2.2.6",
     "countdown": "^2.6.0",
     "dagre": "^0.8.4",
+    "extract-files": "^5.0.1",
     "formik": "^1.5.8",
     "formik-material-ui": "^0.0.20",
     "graphql": "^14.4.1",
@@ -38,7 +39,7 @@
     "react-markdown": "^4.1.0",
     "react-particles-js": "^2.6.0",
     "react-relay": "^5.0.0",
-    "react-relay-network-modern": "^4.0.2",
+    "react-relay-network-modern": "^4.0.4",
     "react-router-dom": "^5.0.1",
     "react-scripts": "^3.0.1",
     "react-select": "^3.0.4",
@@ -71,18 +72,18 @@
     "eslint-plugin-react": "^7.13.0",
     "fs-extra": "^8.0.1",
     "prettier": "^1.17.1",
+    "react-app-rewired": "^2.1.3",
     "relay-devtools": "^1.4.0"
   },
   "engines": {
     "node": ">= 10.* || 8.*"
   },
   "scripts": {
-    "start": "yarn relay && react-scripts start",
-    "generate": "cross-env GENERATE_SOURCEMAP=false PUBLIC_URL=%BASE_PATH% react-scripts build",
+    "start": "yarn relay && react-app-rewired start",
+    "generate": "cross-env GENERATE_SOURCEMAP=false PUBLIC_URL=%BASE_PATH% react-app-rewired build",
     "build": "yarn relay && yarn generate && node src/setupBuild.js",
     "lint": "eslint .",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "test": "react-app-rewired test",
     "storybook": "start-storybook -p 9009 -s public",
     "build-storybook": "build-storybook -s public",
     "relay": "relay-compiler --watchman false --src ./src --schema ../opencti-graphql/config/schema/opencti.graphql --extensions js jsx"

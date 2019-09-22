@@ -8,6 +8,7 @@ import Report from './Report';
 import ReportEntities from './ReportEntities';
 import ReportKnowledge from './ReportKnowledge';
 import ReportObservables from './ReportObservables';
+import FileManager from '../common/files/FileManager';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -24,6 +25,7 @@ const subscription = graphql`
 const reportQuery = graphql`
   query RootReportQuery($id: String!, $relationType: String) {
     report(id: $id) {
+      entity_type
       ...Report_report
       ...ReportHeader_report
       ...ReportOverview_report
@@ -105,15 +107,19 @@ class RootReport extends Component {
                       />
                     )}
                   />
-                  <Route
-                    exact
-                    path="/dashboard/reports/all/:reportId/observables"
+                  <Route exact path="/dashboard/reports/all/:reportId/observables"
                     render={routeProps => (
                       <ReportObservables
                         {...routeProps}
                         report={props.report}
                         me={props.me}
                       />
+                    )}
+                  />
+                  <Route exact path="/dashboard/reports/all/:reportId/files"
+                    render={routeProps => (
+                        <FileManager {...routeProps} entityId={reportId} report={props.report}
+                                     entityType={props.report.entity_type}/>
                     )}
                   />
                 </div>
