@@ -8,8 +8,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import { CloudUpload } from '@material-ui/icons';
 import IconButton from '@material-ui/core/IconButton';
 import { ConnectionHandler } from 'relay-runtime';
-import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import inject18n from '../../../../components/i18n';
 
 const styles = theme => ({
   button: {
@@ -69,27 +69,26 @@ const FileUploader = (props) => {
       },
     });
   };
-  return <div style={{ display: 'inline-block' }}>
-    Upload a new file of type &nbsp;&nbsp;
-    <Select style={{ width: '200px', marginBottom: 20 }}
-        name="type" label={t('Import type')}
-        fullWidth={true}
-        inputProps={{ name: 'type', id: 'type' }}
-        onChange={handleChangeType}
-        value={type}>
+  return <React.Fragment>
+    <Select style={{ width: '200px', marginBottom: 5 }}
+            name="type" label={t('Import type')}
+            fullWidth={true}
+            inputProps={{ name: 'type', id: 'type' }}
+            onChange={handleChangeType}
+            value={type}>
       <MenuItem value="application/stix+json">{t('application/stix+json')}</MenuItem>
       <MenuItem value="application/pdf">{t('application/pdf')}</MenuItem>
     </Select>
     <input ref={uploadRef} type="file" style={{ display: 'none' }}
-        onChange={({ target: { validity, files: [file] } }) =>
-          // eslint-disable-next-line implicit-arrow-linebreak
-          validity.valid && handleUpload(file)
-        }
+           onChange={({ target: { validity, files: [file] } }) =>
+           // eslint-disable-next-line implicit-arrow-linebreak
+             validity.valid && handleUpload(file)
+           }
     />
     <IconButton onClick={handleOpenUpload} aria-haspopup="true" color="primary">
       <CloudUpload className={classes.rightIcon} />
     </IconButton>
-  </div>;
+</React.Fragment>;
 };
 
 FileUploader.propTypes = {

@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import IconButton from '@material-ui/core/IconButton';
-import { Delete, GetApp } from '@material-ui/icons';
+import { Delete, GetApp, ChangeHistory } from '@material-ui/icons';
 import { ConnectionHandler } from 'relay-runtime';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 
@@ -46,7 +46,7 @@ const FileViewerComponent = ({ entityId, entityType, files }) => {
           <IconButton href={`/storage/get/${value.id}`} aria-haspopup="true" color="primary">
             <GetApp />
           </IconButton>
-      </div>) : <div>No file</div>}
+      </div>) : <div style={{ padding: 10 }}>No file</div>}
   </React.Fragment>;
 };
 

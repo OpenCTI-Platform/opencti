@@ -6,11 +6,13 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import { withStyles } from '@material-ui/core';
-import ReportHeader from '../../reports/ReportHeader';
-import { QueryRenderer } from '../../../../relay/environment';
-import FileViewer from './FileViewer';
-import FileUploader from './FileUploader';
+import IconButton from '@material-ui/core/IconButton';
+import { DonutSmall, DonutLarge } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
+import FileUploader from './FileUploader';
+import FileViewer from './FileViewer';
+import { QueryRenderer } from '../../../../relay/environment';
+import ReportHeader from '../../reports/ReportHeader';
 
 const FileManagerQuery = graphql`
     query FileManagerQuery($first: Int, $category: FileCategory!, $entityType: String, $entityId: String) {
@@ -42,50 +44,73 @@ const styles = () => ({
 
 const FileManager = ({
   report, entityId, entityType, t, classes,
-}) => <div>
-    <ReportHeader report={report} />
-    <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
-        <Grid item={true} xs={6}>
-            <Typography variant="h4" gutterBottom={true}>
-                {t('Uploaded / Imported files')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
-                <FileUploader entityId={entityId} uploadType='import' entityType={entityType}/>
-                <QueryRenderer query={FileManagerQuery}
-                               variables={{ category: 'import', entityId, entityType }}
-                               render={({ props }) => {
-                                 if (props) {
-                                   const files = map(e => e.node, props.files.edges);
-                                   return <FileViewer entityId={entityId}
-                                                      entityType={entityType} files={files}/>;
-                                 }
-                                 return <div>Loading</div>;
-                               }}/>
-            </Paper>
+}) => {
+  const exportPartial = () => { console.log('exportPartial'); };
+  const exportComplete = () => { console.log('exportComplete'); };
+  return <div>
+        <ReportHeader report={report} />
+        <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
+            <Grid item={true} xs={6}>
+                <div>
+                    <div style={{ float: 'left' }}>
+                        <Typography variant="h2" style={{ paddingTop: 15 }} gutterBottom={true}>
+                            {t('Uploaded / Imported files')}
+                        </Typography>
+                    </div>
+                    <div style={{ float: 'right' }}>
+                        <FileUploader entityId={entityId} uploadType='import' entityType={entityType}/>
+                    </div>
+                    <div className="clearfix" />
+                </div>
+                <Paper classes={{ root: classes.paper }} elevation={2}>
+                    <QueryRenderer query={FileManagerQuery}
+                        variables={{ category: 'import', entityId, entityType }}
+                        render={({ props }) => {
+                          if (props) {
+                            const files = map(e => e.node, props.files.edges);
+                            return <FileViewer entityId={entityId}
+                                                   entityType={entityType} files={files}/>;
+                          }
+                          return <div>Loading</div>;
+                        }}/>
+                </Paper>
+            </Grid>
+            <Grid item={true} xs={6}>
+                <div style={{ float: 'left' }}>
+                    <Typography variant="h2" style={{ paddingTop: 15 }} gutterBottom={true}>
+                        {t('Generated / Exported files')}
+                    </Typography>
+                </div>
+                <div style={{ float: 'right' }}>
+                    <IconButton onClick={exportPartial} aria-haspopup="true" color="primary">
+                        <DonutLarge/>
+                    </IconButton>
+                    <IconButton onClick={exportComplete} aria-haspopup="true" color="primary">
+                        <DonutSmall/>
+                    </IconButton>
+                </div>
+                <div className="clearfix" />
+                <Paper classes={{ root: classes.paper }} elevation={2}>
+                    <QueryRenderer query={FileManagerQuery}
+                        variables={{ category: 'export', entityId, entityType }}
+                        render={({ props }) => {
+                          if (props) {
+                            const files = map(e => e.node, props.files.edges);
+                            return <FileViewer entityId={entityId}
+                                                   entityType={entityType} files={files}/>;
+                          }
+                          return <div>Loading</div>;
+                        }}/>
+                </Paper>
+            </Grid>
         </Grid>
-        <Grid item={true} xs={6}>
-            <Typography variant="h4" gutterBottom={true}>
-                {t('Generated / Exported files')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
-                <QueryRenderer query={FileManagerQuery}
-                               variables={{ category: 'export', entityId, entityType }}
-                               render={({ props }) => {
-                                 if (props) {
-                                   const files = map(e => e.node, props.files.edges);
-                                   return <FileViewer entityId={entityId}
-                                                          entityType={entityType} files={files}/>;
-                                 }
-                                 return <div>Loading</div>;
-                               }}/>
-            </Paper>
-        </Grid>
-    </Grid>
-</div>;
+    </div>;
+};
 
 FileManager.propTypes = {
   entityId: PropTypes.string,
   entityType: PropTypes.string,
+  nsdt: PropTypes.func,
   report: PropTypes.object,
 };
 
