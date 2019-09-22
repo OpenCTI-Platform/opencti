@@ -97,15 +97,20 @@ class Workspaces extends Component {
     const {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;
+    const { workspaceType } = this.props;
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
+      workspaceType,
     };
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <WorkspaceCreation paginationOptions={paginationOptions} />
+        <WorkspaceCreation
+          paginationOptions={paginationOptions}
+          workspaceType={workspaceType}
+        />
       </div>
     );
   }
@@ -115,6 +120,7 @@ Workspaces.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
+  workspaceType: PropTypes.string,
 };
 
 export default compose(
