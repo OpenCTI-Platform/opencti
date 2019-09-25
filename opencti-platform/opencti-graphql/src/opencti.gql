@@ -36,7 +36,6 @@ define
   object_status sub attribute, datatype long;
   export_type sub attribute, datatype string;
   export_mode sub attribute, datatype string;
-  raw_data sub attribute, datatype string;
   score sub attribute, datatype long;
 
   # STIX common properties
@@ -486,8 +485,6 @@ define
     has internal_id,
     has description,
     has export_type,
-    has object_status,
-    has raw_data,
     has created_at,
     has created_at_day,
     has created_at_month,

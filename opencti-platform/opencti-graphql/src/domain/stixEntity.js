@@ -1,5 +1,5 @@
 import { upload } from '../database/minio';
 
 // eslint-disable-next-line
-export const uploadFile = async ({ file, uploadType, entityId, entityType }) =>
-  upload(file, uploadType, entityType, entityId);
+export const uploadFile = async ({ file, uploadType, entityId }) =>
+  upload('import', file, uploadType, entityId);

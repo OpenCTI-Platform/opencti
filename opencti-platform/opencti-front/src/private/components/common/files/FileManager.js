@@ -15,8 +15,8 @@ import { QueryRenderer } from '../../../../relay/environment';
 import ReportHeader from '../../reports/ReportHeader';
 
 const FileManagerQuery = graphql`
-    query FileManagerQuery($first: Int, $category: FileCategory!, $entityType: String, $entityId: String) {
-        files(category: $category, first: $first, entityId: $entityId, entityType: $entityType) 
+    query FileManagerQuery($category: FileCategory!, $entityId: String!, $first: Int) {
+        files(category: $category, entityId: $entityId , first: $first) 
                 @connection(key: "Pagination_files") {
             edges {
                 node {
@@ -58,18 +58,17 @@ const FileManager = ({
                         </Typography>
                     </div>
                     <div style={{ float: 'right' }}>
-                        <FileUploader entityId={entityId} uploadType='import' entityType={entityType}/>
+                        <FileUploader entityId={entityId}/>
                     </div>
                     <div className="clearfix" />
                 </div>
                 <Paper classes={{ root: classes.paper }} elevation={2}>
                     <QueryRenderer query={FileManagerQuery}
-                        variables={{ category: 'import', entityId, entityType }}
+                        variables={{ category: 'import', entityId }}
                         render={({ props }) => {
                           if (props) {
                             const files = map(e => e.node, props.files.edges);
-                            return <FileViewer entityId={entityId}
-                                                   entityType={entityType} files={files}/>;
+                            return <FileViewer entityId={entityId} files={files}/>;
                           }
                           return <div>Loading</div>;
                         }}/>
@@ -92,12 +91,11 @@ const FileManager = ({
                 <div className="clearfix" />
                 <Paper classes={{ root: classes.paper }} elevation={2}>
                     <QueryRenderer query={FileManagerQuery}
-                        variables={{ category: 'export', entityId, entityType }}
+                        variables={{ category: 'export', entityId }}
                         render={({ props }) => {
                           if (props) {
                             const files = map(e => e.node, props.files.edges);
-                            return <FileViewer entityId={entityId}
-                                                   entityType={entityType} files={files}/>;
+                            return <FileViewer entityId={entityId} files={files}/>;
                           }
                           return <div>Loading</div>;
                         }}/>

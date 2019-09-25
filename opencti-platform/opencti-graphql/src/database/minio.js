@@ -1,6 +1,7 @@
 import * as Minio from 'minio';
 import { assoc, filter, includes, isEmpty, map, mergeDeepLeft } from 'ramda';
 import conf from '../config/conf';
+import { getById } from './grakn';
 
 export const SUFFIX_IMPORT = '.import.';
 const bucketName = conf.get('minio:bucketName') || 'opencti-bucket';
@@ -75,9 +76,10 @@ const rawFilesListing = directory => {
   );
 };
 
-export const filesListing = async (category, entityId, entityType) => {
+export const filesListing = async (category, entityId) => {
+  const entity = await getById(entityId);
   const rawFiles = await rawFilesListing(
-    `${category}/${extractName(entityId, entityType)}`
+    `${category}/${extractName(entityId, entity.entity_type)}`
   );
   const originalFiles = filter(e => !includes(SUFFIX_IMPORT, e.name), rawFiles);
   // For each file, find suffixed files to enrich the data
@@ -113,18 +115,23 @@ export const fetchFileToImport = async (connectorName, directory) => {
   return availableFiles;
 };
 
-export const upload = async (file, uploadType, entityType, entityId) => {
+export const upload = async (category, file, uploadType, entityId) => {
+  const entity = await getById(entityId);
   const { createReadStream, filename, mimetype, encoding } = await file;
   const metadata = {
     filename,
-    category: 'import',
+    category,
     uploadtype: uploadType,
     mimetype,
     encoding,
-    entitytype: entityType,
+    entitytype: entity.entity_type,
     entityid: entityId
   };
-  const fileDirName = `import/${extractName(entityId, entityType, filename)}`;
+  const fileDirName = `${category}/${extractName(
+    entityId,
+    entity.entity_type,
+    filename
+  )}`;
   // Upload the file in the storage
   return new Promise((resolve, reject) => {
     minioClient.putObject(

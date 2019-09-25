@@ -187,7 +187,6 @@ input FileUpload {
   file: Upload! # File content
   uploadType: String! # mime type like application/stix+json
   entityId: String # Entity Id, Stix or internal (for non stix2 entity)
-  entityType: String # Type of this entity
 }
 enum FileCategory {
   import
@@ -2139,7 +2138,7 @@ type Query {
   attribute(id: String): Attribute @auth
   attributes(first: Int, type: String!): AttributeConnection @auth
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)
-  files(category: FileCategory!, first: Int, entityId: String, entityType: String): FileConnection @auth
+  files(category: FileCategory!, entityId: String!, first: Int): FileConnection @auth
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(
@@ -2542,7 +2541,7 @@ type StixDomainEntityEditMutations {
   relationAdd(input: RelationAddInput): RelationData
   relationDelete(relationId: ID!): RelationData
   refreshExport(entityType: String!, type: String!): StixDomainEntity
-  exportPush(exportId: String!, rawData: String!): Boolean
+  exportPush(exportId: String!, file: Upload!): Boolean
     @auth(for: ROLE_ADMIN)
 }
 

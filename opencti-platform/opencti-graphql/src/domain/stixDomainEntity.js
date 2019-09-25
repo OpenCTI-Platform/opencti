@@ -39,6 +39,7 @@ import {
   search as relationSearch
 } from './stixRelation';
 import { send } from '../database/rabbitmq';
+import { upload } from '../database/minio';
 
 export const findAll = args => elPaginate('stix_domain_entities', args);
 
@@ -151,6 +152,7 @@ export const stixRelations = (stixDomainEntityId, args) => {
   return relationFindAll(finalArgs);
 };
 
+// @deprecated
 export const exports = (stixDomainEntityId, args) => {
   const { types } = args;
   const result = Promise.all(
@@ -178,6 +180,7 @@ export const exports = (stixDomainEntityId, args) => {
  * @param type
  * @returns {Promise<any[]|never>}
  */
+// @deprecated
 export const stixDomainEntityRefreshExport = async (
   stixDomainEntityId,
   stixDomainEntityType,
@@ -188,8 +191,6 @@ export const stixDomainEntityRefreshExport = async (
   const query = `insert $export isa Export, 
   has internal_id "${internalId}",
   has export_type "${escapeString(type)}",
-  has object_status 0,
-  has raw_data "",
   has created_at ${now()},
   has created_at_day "${dayFormat(now())}",
   has created_at_month "${monthFormat(now())}",
@@ -217,15 +218,17 @@ export const stixDomainEntityRefreshExport = async (
   return getById(stixDomainEntityId);
 };
 
+// @deprecated
 export const stixDomainEntityExportPush = async (
   user,
   stixDomainEntityId,
   exportId,
-  rawData
+  file
 ) => {
-  // await updateAttribute(exportId, { key: 'raw_data', value: [rawData] });
-
-  await updateAttribute(exportId, { key: 'object_status', value: [1] });
+  // Upload the document in minio
+  await upload('export', file, 'application/stix+json', stixDomainEntityId);
+  // Delete the export placeholder
+  await deleteEntityById(exportId);
   return getById(stixDomainEntityId).then(stixDomainEntity => {
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user);
     return true;

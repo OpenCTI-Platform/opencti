@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import IconButton from '@material-ui/core/IconButton';
-import { Delete, GetApp, ChangeHistory } from '@material-ui/icons';
+import { Delete, GetApp } from '@material-ui/icons';
 import { ConnectionHandler } from 'relay-runtime';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 
@@ -13,18 +13,17 @@ const FileViewerDeleteMutation = graphql`
     }
 `;
 
-const FileViewerComponent = ({ entityId, entityType, files }) => {
+const FileViewerComponent = ({ entityId, files }) => {
   const handleRemove = (name, category) => {
     commitMutation({
       mutation: FileViewerDeleteMutation,
       variables: { fileName: name },
       updater: (store) => {
         const rootStore = store.getRoot();
-        console.log('test', category, entityId, entityType);
         const conn = ConnectionHandler.getConnection(
           rootStore,
           'Pagination_files',
-          { category, entityId, entityType },
+          { category, entityId },
         );
         ConnectionHandler.deleteNode(conn, name);
       },
@@ -52,7 +51,6 @@ const FileViewerComponent = ({ entityId, entityType, files }) => {
 
 FileViewerComponent.propTypes = {
   entityId: PropTypes.string,
-  entityType: PropTypes.string,
   files: PropTypes.array,
 };
 

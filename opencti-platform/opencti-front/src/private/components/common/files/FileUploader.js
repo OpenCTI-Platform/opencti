@@ -32,19 +32,17 @@ const FileUploaderMutation = graphql`
 `;
 
 const FileUploader = (props) => {
-  const {
-    entityId, entityType, uploadType, t, classes,
-  } = props;
-  const [type, setType] = useState('application/stix+json');
+  const { entityId, t, classes } = props;
+  const [uploadType, setUploadType] = useState('application/stix+json');
   const uploadRef = useRef(null);
-  const handleChangeType = event => setType(event.target.value);
+  const handleChangeType = event => setUploadType(event.target.value);
   const handleOpenUpload = () => uploadRef.current.click();
   const handleUpload = (file) => {
     commitMutation({
       mutation: FileUploaderMutation,
       variables: {
         input: {
-          uploadType: type, file, entityId, entityType,
+          uploadType, file, entityId,
         },
       },
       updater: (store) => {
@@ -54,7 +52,7 @@ const FileUploader = (props) => {
         const conn = ConnectionHandler.getConnection(
           rootStore,
           'Pagination_files',
-          { category: uploadType, entityId, entityType },
+          { category: 'import', entityId },
         );
         // Insert element only if not exists in the current listing
         const fileId = payload.getDataID();
@@ -75,7 +73,7 @@ const FileUploader = (props) => {
             fullWidth={true}
             inputProps={{ name: 'type', id: 'type' }}
             onChange={handleChangeType}
-            value={type}>
+            value={uploadType}>
       <MenuItem value="application/stix+json">{t('application/stix+json')}</MenuItem>
       <MenuItem value="application/pdf">{t('application/pdf')}</MenuItem>
     </Select>
@@ -93,8 +91,6 @@ const FileUploader = (props) => {
 
 FileUploader.propTypes = {
   entityId: PropTypes.string,
-  entityType: PropTypes.string,
-  uploadType: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
