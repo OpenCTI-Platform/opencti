@@ -9,8 +9,9 @@ import inject18n from '../../../../components/i18n';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
 import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import OrganizationHeader from './OrganizationHeader';
+import OrganizationPopover from './OrganizationPopover';
 import OrganizationKnowledgeBar from './OrganizationKnowledgeBar';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -27,7 +28,10 @@ class OrganizationKnowledgeComponent extends Component {
     const link = `/dashboard/entities/organizations/${organization.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <OrganizationHeader organization={organization} />
+        <StixDomainEntityHeader
+          stixDomainEntity={organization}
+          PopoverComponent={<OrganizationPopover />}
+        />
         <OrganizationKnowledgeBar organizationId={organization.id} />
         <Route
           exact
@@ -151,7 +155,8 @@ const OrganizationKnowledge = createFragmentContainer(
     organization: graphql`
       fragment OrganizationKnowledge_organization on Organization {
         id
-        ...OrganizationHeader_organization
+        name
+        alias
       }
     `,
   },

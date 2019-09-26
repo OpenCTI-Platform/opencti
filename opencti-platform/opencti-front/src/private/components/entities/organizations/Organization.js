@@ -6,13 +6,14 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import OrganizationHeader from './OrganizationHeader';
 import OrganizationOverview from './OrganizationOverview';
 import OrganizationEdition from './OrganizationEdition';
+import OrganizationPopover from './OrganizationPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -33,7 +34,10 @@ class OrganizationComponent extends Component {
     ) {
       return (
         <div className={classes.container}>
-          <OrganizationHeader organization={organization} />
+          <StixDomainEntityHeader
+            stixDomainEntity={organization}
+            PopoverComponent={<OrganizationPopover />}
+          />
           <Grid
             container={true}
             spacing={3}
@@ -62,7 +66,10 @@ class OrganizationComponent extends Component {
     }
     return (
       <div className={classes.container}>
-        <OrganizationHeader organization={organization} />
+        <StixDomainEntityHeader
+          stixDomainEntity={organization}
+          PopoverComponent={<OrganizationPopover />}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -108,7 +115,8 @@ const Organization = createFragmentContainer(OrganizationComponent, {
     fragment Organization_organization on Organization {
       id
       organization_class
-      ...OrganizationHeader_organization
+      name
+      alias
       ...OrganizationOverview_organization
     }
   `,

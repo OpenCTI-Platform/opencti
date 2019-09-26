@@ -26,7 +26,6 @@ const countryQuery = graphql`
   query RootCountryQuery($id: String!) {
     country(id: $id) {
       ...Country_country
-      ...CountryHeader_country
       ...CountryOverview_country
       ...CountryReports_country
       ...CountryKnowledge_country

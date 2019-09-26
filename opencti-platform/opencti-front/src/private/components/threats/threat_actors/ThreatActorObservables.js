@@ -7,9 +7,10 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import ThreatActorHeader from './ThreatActorHeader';
+import ThreatActorPopover from './ThreatActorPopover';
 import StixRelation from '../../common/stix_relations/StixRelation';
 import EntityStixObservables from '../../stix_observables/EntityStixObservables';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -42,7 +43,10 @@ class ThreatActorObservablesComponent extends Component {
             : classes.container
         }
       >
-        <ThreatActorHeader threatActor={threatActor} />
+        <StixDomainEntityHeader
+          stixDomainEntity={threatActor}
+          PopoverComponent={<ThreatActorPopover />}
+        />
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/observables/relations/:relationId"
@@ -87,7 +91,8 @@ const ThreatActorObservables = createFragmentContainer(
     threatActor: graphql`
       fragment ThreatActorObservables_threatActor on ThreatActor {
         id
-        ...ThreatActorHeader_threatActor
+        name
+        alias
       }
     `,
   },

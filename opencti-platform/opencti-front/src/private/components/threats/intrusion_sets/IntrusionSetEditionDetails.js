@@ -16,20 +16,20 @@ import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
 import { dateFormat } from '../../../../utils/Time';
 
 const intrusionSetMutationFieldPatch = graphql`
-  mutation IntrusionSetEditionIdentityFieldPatchMutation(
+  mutation IntrusionSetEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
     intrusionSetEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...IntrusionSetEditionIdentity_intrusionSet
+        ...IntrusionSetEditionDetails_intrusionSet
       }
     }
   }
 `;
 
-const intrusionSetEditionIdentityFocus = graphql`
-  mutation IntrusionSetEditionIdentityFocusMutation(
+const intrusionSetEditionDetailsFocus = graphql`
+  mutation IntrusionSetEditionDetailsFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
@@ -55,11 +55,11 @@ const intrusionSetValidation = t => Yup.object().shape({
   goal: Yup.string(),
 });
 
-class IntrusionSetEditionIdentityComponent extends Component {
+class IntrusionSetEditionDetailsComponent extends Component {
   handleChangeFocus(name) {
     if (WS_ACTIVATED) {
       commitMutation({
-        mutation: intrusionSetEditionIdentityFocus,
+        mutation: intrusionSetEditionDetailsFocus,
         variables: {
           id: this.props.intrusionSet.id,
           input: {
@@ -355,18 +355,18 @@ class IntrusionSetEditionIdentityComponent extends Component {
   }
 }
 
-IntrusionSetEditionIdentityComponent.propTypes = {
+IntrusionSetEditionDetailsComponent.propTypes = {
   t: PropTypes.func,
   intrusionSet: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
 };
 
-const IntrusionSetEditionIdentity = createFragmentContainer(
-  IntrusionSetEditionIdentityComponent,
+const IntrusionSetEditionDetails = createFragmentContainer(
+  IntrusionSetEditionDetailsComponent,
   {
     intrusionSet: graphql`
-      fragment IntrusionSetEditionIdentity_intrusionSet on IntrusionSet {
+      fragment IntrusionSetEditionDetails_intrusionSet on IntrusionSet {
         id
         first_seen
         last_seen
@@ -379,4 +379,4 @@ const IntrusionSetEditionIdentity = createFragmentContainer(
   },
 );
 
-export default compose(inject18n)(IntrusionSetEditionIdentity);
+export default compose(inject18n)(IntrusionSetEditionDetails);

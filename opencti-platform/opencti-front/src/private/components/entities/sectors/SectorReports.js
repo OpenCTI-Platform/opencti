@@ -6,8 +6,9 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import SectorHeader from './SectorHeader';
+import SectorPopover from './SectorPopover';
 import Reports from '../../reports/Reports';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -26,7 +27,10 @@ class SectorReportsComponent extends Component {
     const { classes, sector } = this.props;
     return (
       <div className={classes.container}>
-        <SectorHeader sector={sector} />
+        <StixDomainEntityHeader
+          stixDomainEntity={sector}
+          PopoverComponent={<SectorPopover />}
+        />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Reports objectId={sector.id} />
         </Paper>
@@ -45,7 +49,8 @@ const SectorReports = createFragmentContainer(SectorReportsComponent, {
   sector: graphql`
     fragment SectorReports_sector on Sector {
       id
-      ...SectorHeader_sector
+      name
+      alias
     }
   `,
 });

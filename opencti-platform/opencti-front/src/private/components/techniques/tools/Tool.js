@@ -1,18 +1,19 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import ToolHeader from './ToolHeader';
 import ToolOverview from './ToolOverview';
 import ToolEdition from './ToolEdition';
+import ToolPopover from './ToolPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityStixRelationsRadar from '../../common/stix_relations/EntityStixRelationsRadar';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -28,7 +29,10 @@ class ToolComponent extends Component {
     const { classes, tool } = this.props;
     return (
       <div className={classes.container}>
-        <ToolHeader tool={tool} />
+        <StixDomainEntityHeader
+          stixDomainEntity={tool}
+          PopoverComponent={<ToolPopover />}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -87,7 +91,8 @@ const Tool = createFragmentContainer(ToolComponent, {
   tool: graphql`
     fragment Tool_tool on Tool {
       id
-      ...ToolHeader_tool
+      name
+      alias
       ...ToolOverview_tool
     }
   `,

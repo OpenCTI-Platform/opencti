@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import ThreatActorHeader from './ThreatActorHeader';
+import ThreatActorPopover from './ThreatActorPopover';
 import Reports from '../../reports/Reports';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -26,7 +27,10 @@ class ThreatActorReportsComponent extends Component {
     const { classes, threatActor } = this.props;
     return (
       <div className={classes.container}>
-        <ThreatActorHeader threatActor={threatActor} />
+        <StixDomainEntityHeader
+          stixDomainEntity={threatActor}
+          PopoverComponent={<ThreatActorPopover />}
+        />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Reports objectId={threatActor.id} />
         </Paper>
@@ -47,7 +51,8 @@ const ThreatActorReports = createFragmentContainer(
     threatActor: graphql`
       fragment ThreatActorReports_threatActor on ThreatActor {
         id
-        ...ThreatActorHeader_threatActor
+        name
+        alias
       }
     `,
   },

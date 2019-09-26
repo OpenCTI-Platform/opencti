@@ -6,14 +6,15 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import IncidentHeader from './IncidentHeader';
 import IncidentOverview from './IncidentOverview';
 import IncidentIdentity from './IncidentIdentity';
 import IncidentEdition from './IncidentEdition';
+import IncidentPopover from './IncidentPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityStixRelationsRadar from '../../common/stix_relations/EntityStixRelationsRadar';
 import EntityStixRelationsDonut from '../../common/stix_relations/EntityStixRelationsDonut';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -29,7 +30,10 @@ class IncidentComponent extends Component {
     const { classes, incident } = this.props;
     return (
       <div className={classes.container}>
-        <IncidentHeader incident={incident} />
+        <StixDomainEntityHeader
+          stixDomainEntity={incident}
+          PopoverComponent={<IncidentPopover />}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -90,7 +94,8 @@ const Incident = createFragmentContainer(IncidentComponent, {
   incident: graphql`
     fragment Incident_incident on Incident {
       id
-      ...IncidentHeader_incident
+      name
+      alias
       ...IncidentOverview_incident
       ...IncidentIdentity_incident
     }

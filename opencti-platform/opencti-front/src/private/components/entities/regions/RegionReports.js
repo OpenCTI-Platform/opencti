@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import RegionHeader from './RegionHeader';
+import RegionPopover from './RegionPopover';
 import Reports from '../../reports/Reports';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -26,7 +27,10 @@ class RegionReportsComponent extends Component {
     const { classes, region } = this.props;
     return (
       <div className={classes.container}>
-        <RegionHeader region={region} />
+        <StixDomainEntityHeader
+          stixDomainEntity={region}
+          PopoverComponent={<RegionPopover />}
+        />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Reports objectId={region.id} />
         </Paper>
@@ -45,7 +49,8 @@ const RegionReports = createFragmentContainer(RegionReportsComponent, {
   region: graphql`
     fragment RegionReports_region on Region {
       id
-      ...RegionHeader_region
+      name
+      alias
     }
   `,
 });
