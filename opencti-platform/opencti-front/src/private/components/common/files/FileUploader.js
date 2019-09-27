@@ -45,6 +45,27 @@ const FileUploader = (props) => {
           uploadType, file, entityId,
         },
       },
+      optimisticUpdater: (store) => {
+        const idFile = `root:file:${Math.random() * 1000}`;
+        const idMeta = `root:meta:${Math.random() * 1000}`;
+        const fileNode = store.create(idFile, 'File');
+        fileNode.setValue(idFile, 'id');
+        fileNode.setValue(file.name, 'name');
+        fileNode.setValue('inProgress', 'uploadStatus');
+        const metaNode = store.create(idMeta, 'metaData');
+        metaNode.setValue(uploadType, 'uploadtype');
+        metaNode.setValue('import', 'category');
+        metaNode.setValue('-', 'mimetype');
+        fileNode.setLinkedRecord(metaNode, 'metaData');
+        const newEdge = store.create(
+          `client:fileEdge:${Math.random() * 1000}`,
+          'FileEdge',
+        );
+        newEdge.setLinkedRecord(fileNode, 'node');
+        const entity = store.get(entityId);
+        const conn = ConnectionHandler.getConnection(entity, 'Pagination_importFiles');
+        ConnectionHandler.insertEdgeBefore(conn, newEdge);
+      },
       updater: (store) => {
         const payload = store.getRootField('uploadFile');
         const newEdge = payload.setLinkedRecord(payload, 'node');
@@ -59,6 +80,7 @@ const FileUploader = (props) => {
         }
       },
       onCompleted: () => {
+        uploadRef.current.value = null; // Reset the upload input
         MESSAGING$.notifySuccess('File successfully uploaded');
       },
     });

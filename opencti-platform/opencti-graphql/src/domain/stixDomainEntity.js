@@ -192,10 +192,15 @@ export const stixDomainEntityAskExport = async (domainEntityId, exportType) => {
   return exportProgressFile(internalId, filename, creation);
 };
 
-// @deprecated
 export const stixDomainEntityExportPush = async (user, entityId, file) => {
   // Upload the document in minio
-  const up = await upload('export', file, 'application/stix+json', entityId);
+  const up = await upload(
+    user,
+    'export',
+    file,
+    'application/stix+json',
+    entityId
+  );
   // Delete the export placeholder
   await deleteEntityById(up.id);
   return getById(entityId).then(stixDomainEntity => {

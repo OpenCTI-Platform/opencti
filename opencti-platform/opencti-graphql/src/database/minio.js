@@ -9,7 +9,7 @@ import {
   pipe,
   mergeDeepLeft
 } from 'ramda';
-import conf from '../config/conf';
+import conf, { logger } from '../config/conf';
 import { escapeString, find, getById } from './grakn';
 import { buildPagination } from './utils';
 
@@ -46,7 +46,10 @@ const extractName = (entityId, entityType, filename = '') => {
     : `${entityType}/${entityId}/${filename}`;
 };
 
-export const deleteFile = id => minioClient.removeObject(bucketName, id);
+export const deleteFile = (id, user) => {
+  logger.debug(`FileManager > delete file${id} by ${user.email}`);
+  return minioClient.removeObject(bucketName, id);
+};
 
 export const downloadFile = id => minioClient.getObject(bucketName, id);
 
@@ -161,9 +164,10 @@ export const fetchFileToImport = async (connectorName, directory) => {
   return availableFiles;
 };
 
-export const upload = async (category, file, uploadType, entityId) => {
+export const upload = async (user, category, file, uploadType, entityId) => {
   const entity = await getById(entityId);
   const { createReadStream, filename, mimetype, encoding } = await file;
+  logger.debug(`FileManager > upload file ${filename} by ${user.email}`);
   const metadata = {
     filename,
     category,

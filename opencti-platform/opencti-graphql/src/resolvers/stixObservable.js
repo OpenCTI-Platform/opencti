@@ -38,7 +38,7 @@ const stixObservableResolvers = {
     stixObservablesNumber: (_, args) => stixObservablesNumber(args)
   },
   StixObservable: {
-    createdByRef: (stixObservable) => createdByRef(stixObservable.id),
+    createdByRef: stixObservable => createdByRef(stixObservable.id),
     markingDefinitions: (stixObservable, args) =>
       markingDefinitions(stixObservable.id, args),
     reports: (stixObservable, args) => reports(stixObservable.id, args),

@@ -6,30 +6,16 @@ import { interval } from 'rxjs';
 import FileLine from './FileLine';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 
-/*
-  componentDidMount() {
-    this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetch({
-        id: this.props.stixDomainEntity.id,
-        types: ['stix2-bundle-simple', 'stix2-bundle-full'],
-      });
-    });
-  }
-
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
-  }
- */
 const interval$ = interval(FIVE_SECONDS);
 
 const FileExportViewerComponent = ({ entity, relay }) => {
   const { internalId, exportFiles } = entity;
   const { edges } = exportFiles;
   useEffect(() => {
+    // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {
       relay.refetch({ id: internalId });
     });
-    // Specify how to clean up after this effect:
     return function cleanup() {
       subscription.unsubscribe();
     };

@@ -126,6 +126,7 @@ export const commitMutation = ({
   variables,
   updater,
   optimisticUpdater,
+  optimisticResponse,
   onCompleted,
   onError,
   setSubmitting,
@@ -134,6 +135,7 @@ export const commitMutation = ({
   variables,
   updater,
   optimisticUpdater,
+  optimisticResponse,
   onCompleted,
   onError: (errors) => {
     if (setSubmitting) setSubmitting(false);

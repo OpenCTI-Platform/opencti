@@ -17,8 +17,8 @@ const stixEntityResolvers = {
     }
   },
   Mutation: {
-    uploadFile: (_, { input }) => uploadFile(input),
-    deleteFile: (_, { fileName }) => deleteFile(fileName)
+    uploadFile: (_, { input }, { user }) => uploadFile(input, user),
+    deleteFile: (_, { fileName }, { user }) => deleteFile(fileName, user)
   }
 };
 

@@ -35,8 +35,9 @@ const FileLineComponent = (props) => {
                 onClick={() => handleRemove(file.id, file.metaData.category)} color="primary">
         <Delete />
     </IconButton>
-    {/* eslint-disable-next-line react/jsx-no-target-blank */}
-    <a href={`/storage/view/${file.id}`} target="_blank">{file.name}</a>
+    {file.uploadStatus === 'inProgress'
+      ? <span>{file.name}</span>
+      : <a href={`/storage/view/${file.id}`} target="_blank" rel='noopener noreferrer'>{file.name}</a>}
     &nbsp;&nbsp;<span style={{ fontSize: 10 }}>({file.metaData.uploadtype})</span>
     {file.uploadStatus === 'inProgress'
       ? <IconButton aria-haspopup="true" color="primary">
