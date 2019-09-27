@@ -1,10 +1,6 @@
 import { addTool, findAll, findById } from '../domain/tool';
 import {
-  createdByRef,
   killChainPhases,
-  markingDefinitions,
-  reports,
-  stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
@@ -12,7 +8,6 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
-import { fetchEditContext } from '../database/redis';
 
 const toolResolvers = {
   Query: {
@@ -20,12 +15,7 @@ const toolResolvers = {
     tools: (_, args) => findAll(args)
   },
   Tool: {
-    createdByRef: tool => createdByRef(tool.id),
-    markingDefinitions: (tool, args) => markingDefinitions(tool.id, args),
-    killChainPhases: (tool, args) => killChainPhases(tool.id, args),
-    reports: (tool, args) => reports(tool.id, args),
-    stixRelations: (threatActor, args) => stixRelations(threatActor.id, args),
-    editContext: tool => fetchEditContext(tool.id)
+    killChainPhases: (tool, args) => killChainPhases(tool.id, args)
   },
   Mutation: {
     toolEdit: (_, { id }, { user }) => ({

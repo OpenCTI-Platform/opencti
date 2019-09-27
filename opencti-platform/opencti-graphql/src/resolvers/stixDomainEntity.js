@@ -1,5 +1,4 @@
 import { withFilter } from 'graphql-subscriptions';
-import { map } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixDomainEntity,
@@ -20,12 +19,13 @@ import {
   stixDomainEntityAskExport,
   stixDomainEntityExportPush,
   stixRelations,
-  createdByRef
+  createdByRef,
+  reports
 } from '../domain/stixDomainEntity';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
-import { filesListing } from '../database/minio';
-import { buildPagination } from '../database/utils';
+import { deleteFile, filesListing } from '../database/minio';
+import { uploadFile } from '../domain/stixEntity';
 
 const stixDomainEntityResolvers = {
   Query: {
@@ -56,16 +56,13 @@ const stixDomainEntityResolvers = {
       }
       return 'Unknown';
     },
-    createdByRef: stixDomainEntity => createdByRef(stixDomainEntity.id),
-    markingDefinitions: (stixDomainEntity, args) =>
-      markingDefinitions(stixDomainEntity.id, args),
-    stixRelations: (stixDomainEntity, args) =>
-      stixRelations(stixDomainEntity.id, args),
-    editContext: stixDomainEntity => fetchEditContext(stixDomainEntity.id),
-    importFiles: (stixDomainEntity, { first }) =>
-      filesListing(first, 'import', stixDomainEntity),
-    exportFiles: (stixDomainEntity, { first }) =>
-      filesListing(first, 'export', stixDomainEntity)
+    createdByRef: entity => createdByRef(entity.id),
+    markingDefinitions: (entity, args) => markingDefinitions(entity.id, args),
+    stixRelations: (entity, args) => stixRelations(entity.id, args),
+    editContext: entity => fetchEditContext(entity.id),
+    reports: (entity, args) => reports(entity.id, args),
+    importFiles: (entity, { first }) => filesListing(first, 'import', entity),
+    exportFiles: (entity, { first }) => filesListing(first, 'export', entity)
   },
   Mutation: {
     stixDomainEntityEdit: (_, { id }, { user }) => ({
@@ -80,7 +77,9 @@ const stixDomainEntityResolvers = {
       exportPush: ({ file }) => stixDomainEntityExportPush(user, id, file)
     }),
     stixDomainEntityAdd: (_, { input }, { user }) =>
-      addStixDomainEntity(user, input)
+      addStixDomainEntity(user, input),
+    uploadFile: (_, { input }, { user }) => uploadFile(input, user),
+    deleteFile: (_, { fileName }, { user }) => deleteFile(fileName, user)
   },
   Subscription: {
     stixDomainEntity: {

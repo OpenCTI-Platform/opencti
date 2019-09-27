@@ -1,6 +1,3 @@
-import { uploadFile } from '../domain/stixEntity';
-import { deleteFile } from '../database/minio';
-
 const stixEntityResolvers = {
   StixEntity: {
     // eslint-disable-next-line
@@ -15,10 +12,6 @@ const stixEntityResolvers = {
       }
       return 'Unknown';
     }
-  },
-  Mutation: {
-    uploadFile: (_, { input }, { user }) => uploadFile(input, user),
-    deleteFile: (_, { fileName }, { user }) => deleteFile(fileName, user)
   }
 };
 

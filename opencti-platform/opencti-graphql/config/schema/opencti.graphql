@@ -270,6 +270,7 @@ interface StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  reports: ReportConnection
   stixRelations(
     first: Int
     after: ID
@@ -2073,6 +2074,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  reports: ReportConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   externalReferences: ExternalReferenceConnection

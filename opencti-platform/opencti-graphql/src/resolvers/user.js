@@ -14,16 +14,11 @@ import {
   userDelete
 } from '../domain/user';
 import {
-  createdByRef,
-  markingDefinitions,
-  reports,
-  stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityAddRelation,
   stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
-import { fetchEditContext } from '../database/redis';
 
 const userResolvers = {
   Query: {
@@ -32,13 +27,8 @@ const userResolvers = {
     me: (_, args, { user }) => findById(user.id)
   },
   User: {
-    createdByRef: user => createdByRef(user.id),
     groups: (user, args) => groups(user.id, args),
-    token: (user, args, context) => token(user.id, args, context),
-    markingDefinitions: (user, args) => markingDefinitions(user.id, args),
-    reports: (user, args) => reports(user.id, args),
-    stixRelations: (user, args) => stixRelations(user.id, args),
-    editContext: user => fetchEditContext(user.id)
+    token: (user, args, context) => token(user.id, args, context)
   },
   Mutation: {
     token: (_, { input }, context) =>

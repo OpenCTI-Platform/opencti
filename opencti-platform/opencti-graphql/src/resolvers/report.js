@@ -15,8 +15,6 @@ import {
   relationRefs
 } from '../domain/report';
 import {
-  createdByRef,
-  markingDefinitions,
   externalReferences,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -25,7 +23,6 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
-import { fetchEditContext } from '../database/redis';
 
 const reportResolvers = {
   Query: {
@@ -65,8 +62,7 @@ const reportResolvers = {
     externalReferences: (report, args) => externalReferences(report.id, args),
     objectRefs: (report, args) => objectRefs(report.id, args),
     observableRefs: (report, args) => observableRefs(report.id, args),
-    relationRefs: (report, args) => relationRefs(report.id, args),
-    editContext: report => fetchEditContext(report.id)
+    relationRefs: (report, args) => relationRefs(report.id, args)
   },
   Mutation: {
     reportEdit: (_, { id }, { user }) => ({

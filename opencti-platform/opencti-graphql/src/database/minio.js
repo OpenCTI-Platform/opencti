@@ -47,7 +47,7 @@ const extractName = (entityId, entityType, filename = '') => {
 };
 
 export const deleteFile = (id, user) => {
-  logger.debug(`FileManager > delete file${id} by ${user.email}`);
+  logger.debug(`FileManager > delete file ${id} by ${user.email}`);
   return minioClient.removeObject(bucketName, id);
 };
 
@@ -146,7 +146,8 @@ export const filesListing = async (first, category, entity) => {
   return buildPagination(first, 0, fileNodes, allFiles.length);
 };
 
-// Suffix: <file.extension>.import.<connector_name>
+// TODO Manage this Suffix: <file.extension>.import.<connector_name>
+/*
 export const fetchFileToImport = async (connectorName, directory) => {
   const suffix = `${SUFFIX_IMPORT}${connectorName}`;
   // The idea is to get a file available for processing.
@@ -163,6 +164,7 @@ export const fetchFileToImport = async (connectorName, directory) => {
   // Try to
   return availableFiles;
 };
+*/
 
 export const upload = async (user, category, file, uploadType, entityId) => {
   const entity = await getById(entityId);

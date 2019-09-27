@@ -1,9 +1,5 @@
 import { addThreatActor, findAll, findById } from '../domain/threatActor';
 import {
-  createdByRef,
-  markingDefinitions,
-  reports,
-  stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
@@ -11,20 +7,11 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
-import { fetchEditContext } from '../database/redis';
 
 const threatActorResolvers = {
   Query: {
     threatActor: (_, { id }) => findById(id),
     threatActors: (_, args) => findAll(args)
-  },
-  ThreatActor: {
-    createdByRef: threatActor => createdByRef(threatActor.id),
-    markingDefinitions: (threatActor, args) =>
-      markingDefinitions(threatActor.id, args),
-    reports: (threatActor, args) => reports(threatActor.id, args),
-    stixRelations: (threatActor, args) => stixRelations(threatActor.id, args),
-    editContext: threatActor => fetchEditContext(threatActor.id)
   },
   Mutation: {
     threatActorEdit: (_, { id }, { user }) => ({
