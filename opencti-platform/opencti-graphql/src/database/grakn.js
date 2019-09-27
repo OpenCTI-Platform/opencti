@@ -376,7 +376,9 @@ export const getAttributes = async (concept, forceReindex = false) => {
           let transformedVal = attribute.value;
           const type = attribute['data-type'];
           if (type === Date) {
-            transformedVal = `${moment(attribute.value).format(dateFormat)}Z`;
+            transformedVal = `${moment(attribute.value)
+              .utc()
+              .format(dateFormat)}Z`;
           }
           if (type === String) {
             transformedVal = attribute.value

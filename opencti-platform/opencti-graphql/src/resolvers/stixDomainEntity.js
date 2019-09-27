@@ -26,6 +26,7 @@ import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { deleteFile, filesListing } from '../database/minio';
 import { uploadFile } from '../domain/stixEntity';
+import { deleteById } from '../database/grakn';
 
 const stixDomainEntityResolvers = {
   Query: {
@@ -79,7 +80,8 @@ const stixDomainEntityResolvers = {
     stixDomainEntityAdd: (_, { input }, { user }) =>
       addStixDomainEntity(user, input),
     uploadFile: (_, { input }, { user }) => uploadFile(input, user),
-    deleteFile: (_, { fileName }, { user }) => deleteFile(fileName, user)
+    deleteFile: (_, { fileName }, { user }) => deleteFile(fileName, user),
+    resetExport: (_, { exportId }) => deleteById(exportId)
   },
   Subscription: {
     stixDomainEntity: {

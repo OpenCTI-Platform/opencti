@@ -93,7 +93,7 @@ const FileManager = ({
                             <DonutLarge/>
                         </IconButton>
                     </Tooltip>
-                    <Tooltip title="Simple export" aria-label="Complete export">
+                    <Tooltip title="Complete export" aria-label="Complete export">
                         <IconButton onClick={exportComplete} aria-haspopup="true" color="primary">
                             <DonutSmall/>
                         </IconButton>

@@ -6,9 +6,9 @@ import {
   isEmpty,
   concat,
   map,
-  pipe,
   mergeDeepLeft
 } from 'ramda';
+import moment from 'moment';
 import conf, { logger } from '../config/conf';
 import { escapeString, find, getById } from './grakn';
 import { buildPagination } from './utils';
@@ -53,6 +53,13 @@ export const deleteFile = (id, user) => {
 
 export const downloadFile = id => minioClient.getObject(bucketName, id);
 
+const fileModifiedSinceMin = lastModified => {
+  const now = moment().utc();
+  const diff = now.diff(moment(lastModified));
+  const duration = moment.duration(diff);
+  return Math.floor(duration.asMinutes());
+};
+
 export const loadFile = async filename => {
   const stat = await minioClient.statObject(bucketName, filename);
   return {
@@ -60,6 +67,7 @@ export const loadFile = async filename => {
     name: stat.metaData.filename,
     size: stat.size,
     lastModified: stat.lastModified,
+    lastModifiedSinceMin: fileModifiedSinceMin(stat.lastModified),
     metaData: stat.metaData,
     uploadStatus: 'complete'
   };
@@ -71,26 +79,7 @@ const rawFilesListing = directory => {
     const stream = minioClient.listObjectsV2(bucketName, directory, true);
     stream.on('data', async obj => files.push(assoc('id', obj.name, obj)));
     stream.on('end', () => resolve(files));
-  }).then(files =>
-    Promise.all(
-      map(
-        elem =>
-          new Promise(resolve => {
-            minioClient
-              .statObject(bucketName, elem.name)
-              .then(stat => {
-                const namedFile = pipe(
-                  assoc('name', stat.metaData.filename),
-                  assoc('uploadStatus', 'complete')
-                )(elem);
-                return mergeDeepLeft(namedFile, stat);
-              })
-              .then(completeFile => resolve(completeFile));
-          }),
-        files
-      )
-    )
-  );
+  }).then(files => Promise.all(map(elem => loadFile(elem.name), files)));
 };
 
 export const exportProgressFile = (id, name, lastModified) => {
@@ -99,10 +88,10 @@ export const exportProgressFile = (id, name, lastModified) => {
     name,
     size: 0,
     lastModified,
+    lastModifiedSinceMin: fileModifiedSinceMin(lastModified),
     uploadStatus: 'inProgress',
     metaData: {
-      category: 'export',
-      uploadtype: 'application/stix+json'
+      category: 'export'
     }
   };
 };
@@ -166,14 +155,13 @@ export const fetchFileToImport = async (connectorName, directory) => {
 };
 */
 
-export const upload = async (user, category, file, uploadType, entityId) => {
+export const upload = async (user, category, file, entityId) => {
   const entity = await getById(entityId);
   const { createReadStream, filename, mimetype, encoding } = await file;
   logger.debug(`FileManager > upload file ${filename} by ${user.email}`);
   const metadata = {
     filename,
     category,
-    uploadtype: uploadType,
     mimetype,
     encoding,
     entitytype: entity.entity_type,

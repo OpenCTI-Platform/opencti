@@ -162,7 +162,7 @@ export const stixDomainEntityAskExport = async (domainEntityId, exportType) => {
   const creation = now();
   // Start transaction
   const wTx = await takeWriteTx();
-  const filename = `${creation}_${entity.entity_type}_${entity.name}_${exportType}.json`;
+  const filename = `${creation}Z_${entity.entity_type}_${entity.name}_${exportType}.json`;
   const internalId = `export/${entity.entity_type}/${domainEntityId}/${filename}`;
   const query = `insert $export isa Export, 
   has internal_id "${internalId}",
@@ -189,18 +189,12 @@ export const stixDomainEntityAskExport = async (domainEntityId, exportType) => {
       export_id: internalId
     })
   );
-  return exportProgressFile(internalId, filename, creation);
+  return exportProgressFile(internalId, filename, `${creation}Z`);
 };
 
 export const stixDomainEntityExportPush = async (user, entityId, file) => {
   // Upload the document in minio
-  const up = await upload(
-    user,
-    'export',
-    file,
-    'application/stix+json',
-    entityId
-  );
+  const up = await upload(user, 'export', file, entityId);
   // Delete the export placeholder
   await deleteEntityById(up.id);
   return getById(entityId).then(stixDomainEntity => {

@@ -185,7 +185,6 @@ input AttributeEditInput {
 ### Files
 input FileUpload {
   file: Upload! # File content
-  uploadType: String! # mime type like application/stix+json
   entityId: String # Entity Id, Stix or internal (for non stix2 entity)
 }
 enum FileCategory {
@@ -199,7 +198,6 @@ enum UploadStatus {
 }
 type FileMetadata {
   category: FileCategory!
-  uploadtype: String!
   encoding: String
   mimetype: String
   entityid: String # Entity Id, Stix or internal (for non stix2 entity)
@@ -210,6 +208,7 @@ type File {
   name: String
   size: Int
   lastModified: DateTime
+  lastModifiedSinceMin: Int
   metaData: FileMetadata
   uploadStatus: UploadStatus!
 }
@@ -2813,6 +2812,7 @@ type Mutation {
   # File management
   deleteFile(fileName: String): Boolean
   uploadFile(input: FileUpload): File @auth
+  resetExport(exportId: ID!): ID!
   # StixDomainEntity
   stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth
   stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations @auth
