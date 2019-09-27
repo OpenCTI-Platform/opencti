@@ -17,7 +17,6 @@ import {
   createdByRef,
   markingDefinitions,
   reports,
-  exports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -38,7 +37,6 @@ const userResolvers = {
     token: (user, args, context) => token(user.id, args, context),
     markingDefinitions: (user, args) => markingDefinitions(user.id, args),
     reports: (user, args) => reports(user.id, args),
-    exports: (user, args) => exports(user.id, args),
     stixRelations: (user, args) => stixRelations(user.id, args),
     editContext: user => fetchEditContext(user.id)
   },

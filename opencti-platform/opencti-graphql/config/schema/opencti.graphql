@@ -192,11 +192,16 @@ enum FileCategory {
   import
   export
 }
+enum UploadStatus {
+    wait
+    inProgress
+    complete
+}
 type FileMetadata {
   category: FileCategory!
   uploadtype: String!
-  encoding: String!
-  mimetype: String!
+  encoding: String
+  mimetype: String
   entityid: String # Entity Id, Stix or internal (for non stix2 entity)
   entitytype: String # Type of this entity
 }
@@ -206,6 +211,7 @@ type File {
   size: Int
   lastModified: DateTime
   metaData: FileMetadata
+  uploadStatus: UploadStatus!
 }
 type FileEdge {
   cursor: String!
@@ -214,14 +220,6 @@ type FileEdge {
 type FileConnection {
   pageInfo: PageInfo!
   edges: [FileEdge]
-}
-type Export {
-  id: ID!
-  description: String
-  object_status: Int
-  export_type: String
-  raw_data: String
-  created_at: DateTime
 }
 
 ### Global objects
@@ -272,7 +270,6 @@ interface StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -298,6 +295,8 @@ interface StixDomainEntity {
     search: String
     infrastructure: Boolean
   ): StixRelationConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -345,7 +344,6 @@ type StixObservable implements GlobalObject & StixEntity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -557,7 +555,6 @@ interface Identity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -640,10 +637,11 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   token: String
   groups: GroupConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -737,8 +735,9 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -817,8 +816,9 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -894,8 +894,9 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -971,8 +972,9 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1048,8 +1050,9 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1311,10 +1314,11 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   externalReferences: ExternalReferenceConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1393,8 +1397,9 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1475,8 +1480,9 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1564,8 +1570,9 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1653,8 +1660,9 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1737,8 +1745,9 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1816,9 +1825,10 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1895,9 +1905,10 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1974,8 +1985,9 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   reports: ReportConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -2061,11 +2073,12 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
   externalReferences: ExternalReferenceConnection
   objectRefs: StixDomainEntityConnection
   observableRefs: StixObservableConnection
   relationRefs(relationType: String): StixRelationConnection
-  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -2138,7 +2151,6 @@ type Query {
   attribute(id: String): Attribute @auth
   attributes(first: Int, type: String!): AttributeConnection @auth
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)
-  files(category: FileCategory!, entityId: String!, first: Int): FileConnection @auth
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(
@@ -2540,9 +2552,8 @@ type StixDomainEntityEditMutations {
   contextClean: StixDomainEntity
   relationAdd(input: RelationAddInput): RelationData
   relationDelete(relationId: ID!): RelationData
-  refreshExport(entityType: String!, type: String!): StixDomainEntity
-  exportPush(exportId: String!, file: Upload!): Boolean
-    @auth(for: ROLE_ADMIN)
+  askExport(exportType: String!): File
+  exportPush(file: Upload!): Boolean @auth(for: ROLE_ADMIN)
 }
 
 # StixObservable

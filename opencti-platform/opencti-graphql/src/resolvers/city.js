@@ -3,7 +3,6 @@ import {
   createdByRef,
   markingDefinitions,
   reports,
-  exports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -23,7 +22,6 @@ const cityResolvers = {
     createdByRef: city => createdByRef(city.id),
     markingDefinitions: (city, args) => markingDefinitions(city.id, args),
     reports: (city, args) => reports(city.id, args),
-    exports: (city, args) => exports(city.id, args),
     stixRelations: (city, args) => stixRelations(city.id, args),
     editContext: city => fetchEditContext(city.id)
   },

@@ -483,12 +483,8 @@ define
 
   Export sub entity,
     has internal_id,
-    has description,
-    has export_type,
+    has name,
     has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
     has updated_at,
     plays export;
 

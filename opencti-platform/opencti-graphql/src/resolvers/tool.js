@@ -4,7 +4,6 @@ import {
   killChainPhases,
   markingDefinitions,
   reports,
-  exports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -25,7 +24,6 @@ const toolResolvers = {
     markingDefinitions: (tool, args) => markingDefinitions(tool.id, args),
     killChainPhases: (tool, args) => killChainPhases(tool.id, args),
     reports: (tool, args) => reports(tool.id, args),
-    exports: (tool, args) => exports(tool.id, args),
     stixRelations: (threatActor, args) => stixRelations(threatActor.id, args),
     editContext: tool => fetchEditContext(tool.id)
   },

@@ -17,7 +17,6 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../relay/environment';
-import StixDomainEntityExport from '../common/stix_domain_entities/StixDomainEntityExport';
 import { reportEditionQuery } from './ReportEdition';
 import ReportEditionContainer from './ReportEditionContainer';
 
@@ -184,12 +183,6 @@ class ReportPopover extends Component {
             }}
           />
         </Drawer>
-        <StixDomainEntityExport
-          stixDomainEntityId={reportId}
-          stixDomainEntityType="report"
-          handleClose={this.handleCloseExport.bind(this)}
-          open={this.state.displayExport}
-        />
       </div>
     );
   }

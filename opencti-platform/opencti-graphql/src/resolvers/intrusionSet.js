@@ -3,7 +3,6 @@ import {
   createdByRef,
   markingDefinitions,
   reports,
-  exports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -24,7 +23,6 @@ const intrusionSetResolvers = {
     markingDefinitions: (intrusionSet, args) =>
       markingDefinitions(intrusionSet.id, args),
     reports: (intrusionSet, args) => reports(intrusionSet.id, args),
-    exports: (intrusionSet, args) => exports(intrusionSet.id, args),
     stixRelations: (intrusionSet, args) => stixRelations(intrusionSet.id, args),
     editContext: intrusionSet => fetchEditContext(intrusionSet.id)
   },

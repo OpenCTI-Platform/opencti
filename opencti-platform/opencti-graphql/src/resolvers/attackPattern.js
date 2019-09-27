@@ -5,7 +5,6 @@ import {
   markingDefinitions,
   externalReferences,
   reports,
-  exports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -30,7 +29,6 @@ const attackPatternResolvers = {
     killChainPhases: (attackPattern, args) =>
       killChainPhases(attackPattern.id, args),
     reports: (attackPattern, args) => reports(attackPattern.id, args),
-    exports: (attackPattern, args) => exports(attackPattern.id, args),
     stixRelations: (attackPattern, args) =>
       stixRelations(attackPattern.id, args),
     editContext: attackPattern => fetchEditContext(attackPattern.id)

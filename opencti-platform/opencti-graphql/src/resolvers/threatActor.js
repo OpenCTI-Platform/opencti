@@ -3,7 +3,6 @@ import {
   createdByRef,
   markingDefinitions,
   reports,
-  exports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -24,7 +23,6 @@ const threatActorResolvers = {
     markingDefinitions: (threatActor, args) =>
       markingDefinitions(threatActor.id, args),
     reports: (threatActor, args) => reports(threatActor.id, args),
-    exports: (threatActor, args) => exports(threatActor.id, args),
     stixRelations: (threatActor, args) => stixRelations(threatActor.id, args),
     editContext: threatActor => fetchEditContext(threatActor.id)
   },

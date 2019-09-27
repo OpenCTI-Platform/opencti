@@ -1,4 +1,4 @@
-import { assoc, isNil, map, filter, propOr, dissoc } from 'ramda';
+import { assoc, map, dissoc } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
@@ -19,7 +19,6 @@ import {
   timeSeries,
   getObject,
   prepareDate,
-  load,
   getId,
   commitWriteTx
 } from '../database/grakn';
@@ -39,7 +38,7 @@ import {
   search as relationSearch
 } from './stixRelation';
 import { send } from '../database/rabbitmq';
-import { upload } from '../database/minio';
+import { exportProgressFile, upload } from '../database/minio';
 
 export const findAll = args => elPaginate('stix_domain_entities', args);
 
@@ -152,84 +151,54 @@ export const stixRelations = (stixDomainEntityId, args) => {
   return relationFindAll(finalArgs);
 };
 
-// @deprecated
-export const exports = (stixDomainEntityId, args) => {
-  const { types } = args;
-  const result = Promise.all(
-    types.map(type => {
-      const query = `match $e isa Export; $e has export_type "${escapeString(
-        type
-      )}"; $e has created_at $c; (export: $e, exported: $x) isa exports; $x has internal_id "${escapeString(
-        stixDomainEntityId
-      )}"; get $e, $c; sort $c desc;`;
-      return load(query, ['e']).then(data => {
-        return propOr(null, 'e', data);
-      });
-    })
-  );
-  // Filter null result?
-  return result.then(data => {
-    return filter(n => !isNil(n), data);
-  });
-};
-
 /**
  * Create export element waiting for completion
- * @param stixDomainEntityId
- * @param stixDomainEntityType
- * @param type
- * @returns {Promise<any[]|never>}
+ * @param domainEntityId
+ * @param exportType > stix2-bundle-full | stix2-bundle-simple
+ * @returns {*}
  */
-// @deprecated
-export const stixDomainEntityRefreshExport = async (
-  stixDomainEntityId,
-  stixDomainEntityType,
-  type
-) => {
+export const stixDomainEntityAskExport = async (domainEntityId, exportType) => {
+  const entity = await getById(domainEntityId);
+  const creation = now();
+  // Start transaction
   const wTx = await takeWriteTx();
-  const internalId = uuid();
+  const filename = `${creation}_${entity.entity_type}_${entity.name}_${exportType}.json`;
+  const internalId = `export/${entity.entity_type}/${domainEntityId}/${filename}`;
   const query = `insert $export isa Export, 
   has internal_id "${internalId}",
-  has export_type "${escapeString(type)}",
-  has created_at ${now()},
-  has created_at_day "${dayFormat(now())}",
-  has created_at_month "${monthFormat(now())}",
-  has created_at_year "${yearFormat(now())}",
-  has updated_at ${now()};`;
+  has name "${filename}",
+  has created_at ${creation},
+  has updated_at ${creation};`;
   const exportIterator = await wTx.tx.query(query);
   const createdExport = await exportIterator.next();
   const createdExportId = await createdExport.map().get('export').id;
   await wTx.tx.query(
     `match $from id ${createdExportId}; $to has internal_id "${escapeString(
-      stixDomainEntityId
+      domainEntityId
     )}"; insert (export: $from, exported: $to) isa exports, has internal_id "${uuid()}";`
   );
   await commitWriteTx(wTx);
+  // Send ask to broker
   send(
     RABBITMQ_EXCHANGE_NAME,
     RABBITMQ_EXPORT_ROUTING_KEY,
     JSON.stringify({
-      type,
-      entity_type: stixDomainEntityType,
-      entity_id: stixDomainEntityId,
+      type: exportType,
+      entity_type: entity.entity_type,
+      entity_id: domainEntityId,
       export_id: internalId
     })
   );
-  return getById(stixDomainEntityId);
+  return exportProgressFile(internalId, filename, creation);
 };
 
 // @deprecated
-export const stixDomainEntityExportPush = async (
-  user,
-  stixDomainEntityId,
-  exportId,
-  file
-) => {
+export const stixDomainEntityExportPush = async (user, entityId, file) => {
   // Upload the document in minio
-  await upload('export', file, 'application/stix+json', stixDomainEntityId);
+  const up = await upload('export', file, 'application/stix+json', entityId);
   // Delete the export placeholder
-  await deleteEntityById(exportId);
-  return getById(stixDomainEntityId).then(stixDomainEntity => {
+  await deleteEntityById(up.id);
+  return getById(entityId).then(stixDomainEntity => {
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user);
     return true;
   });

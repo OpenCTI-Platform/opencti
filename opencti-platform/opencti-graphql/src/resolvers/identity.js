@@ -3,7 +3,6 @@ import {
   createdByRef,
   markingDefinitions,
   reports,
-  exports,
   stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -32,7 +31,6 @@ const identityResolvers = {
     markingDefinitions: (identity, args) =>
       markingDefinitions(identity.id, args),
     reports: (identity, args) => reports(identity.id, args),
-    exports: (identity, args) => exports(identity.id, args),
     stixRelations: (identity, args) => stixRelations(identity.id, args)
   },
   Mutation: {

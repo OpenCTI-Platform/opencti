@@ -1,7 +1,17 @@
 import * as Minio from 'minio';
-import { assoc, filter, includes, isEmpty, map, mergeDeepLeft } from 'ramda';
+import {
+  assoc,
+  filter,
+  includes,
+  isEmpty,
+  concat,
+  map,
+  pipe,
+  mergeDeepLeft
+} from 'ramda';
 import conf from '../config/conf';
-import { getById } from './grakn';
+import { escapeString, find, getById } from './grakn';
+import { buildPagination } from './utils';
 
 export const SUFFIX_IMPORT = '.import.';
 const bucketName = conf.get('minio:bucketName') || 'opencti-bucket';
@@ -47,7 +57,8 @@ export const loadFile = async filename => {
     name: stat.metaData.filename,
     size: stat.size,
     lastModified: stat.lastModified,
-    metaData: stat.metaData
+    metaData: stat.metaData,
+    uploadStatus: 'complete'
   };
 };
 
@@ -65,7 +76,10 @@ const rawFilesListing = directory => {
             minioClient
               .statObject(bucketName, elem.name)
               .then(stat => {
-                const namedFile = assoc('name', stat.metaData.filename, elem);
+                const namedFile = pipe(
+                  assoc('name', stat.metaData.filename),
+                  assoc('uploadStatus', 'complete')
+                )(elem);
                 return mergeDeepLeft(namedFile, stat);
               })
               .then(completeFile => resolve(completeFile));
@@ -76,10 +90,33 @@ const rawFilesListing = directory => {
   );
 };
 
-export const filesListing = async (category, entityId) => {
-  const entity = await getById(entityId);
+export const exportProgressFile = (id, name, lastModified) => {
+  return {
+    id,
+    name,
+    size: 0,
+    lastModified,
+    uploadStatus: 'inProgress',
+    metaData: {
+      category: 'export',
+      uploadtype: 'application/stix+json'
+    }
+  };
+};
+
+export const exports = stixDomainEntityId => {
+  const query = `match $e isa Export; $e has created_at $c; 
+  (export: $e, exported: $x) isa exports; $x has internal_id "${escapeString(
+    stixDomainEntityId
+  )}"; get $e, $c; sort $c desc;`;
+  return find(query, ['e']).then(exps =>
+    map(i => exportProgressFile(i.e.id, i.e.name, i.e.updated_at), exps)
+  );
+};
+
+export const filesListing = async (first, category, entity) => {
   const rawFiles = await rawFilesListing(
-    `${category}/${extractName(entityId, entity.entity_type)}`
+    `${category}/${extractName(entity.id, entity.entity_type)}`
   );
   const originalFiles = filter(e => !includes(SUFFIX_IMPORT, e.name), rawFiles);
   // For each file, find suffixed files to enrich the data
@@ -94,7 +131,16 @@ export const filesListing = async (category, entityId) => {
     );
     return mergeDeepLeft(file, { connectors: extraConnectors });
   };
-  return map(fileEnrich, originalFiles);
+  const existingFiles = map(fileEnrich, originalFiles);
+  let allFiles;
+  if (category === 'export') {
+    const inExport = await exports(entity.id);
+    allFiles = concat(inExport, existingFiles);
+  } else {
+    allFiles = existingFiles;
+  }
+  const fileNodes = map(f => ({ node: f }), allFiles);
+  return buildPagination(first, 0, fileNodes, allFiles.length);
 };
 
 // Suffix: <file.extension>.import.<connector_name>

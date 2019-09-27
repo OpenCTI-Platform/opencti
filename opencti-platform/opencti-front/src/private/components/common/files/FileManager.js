@@ -1,31 +1,20 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { compose, map } from 'ramda';
+import { compose } from 'ramda';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import { withStyles } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { DonutSmall, DonutLarge } from '@material-ui/icons';
+import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import FileUploader from './FileUploader';
-import FileViewer from './FileViewer';
-import { QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import ReportHeader from '../../reports/ReportHeader';
-
-const FileManagerQuery = graphql`
-    query FileManagerQuery($category: FileCategory!, $entityId: String!, $first: Int) {
-        files(category: $category, entityId: $entityId , first: $first) 
-                @connection(key: "Pagination_files") {
-            edges {
-                node {
-                    ...FileViewer_files
-                }
-            }
-        }
-    }
-`;
+import FileImportViewer from './FileImportViewer';
+import FileExportViewer from './FileExportViewer';
 
 const styles = () => ({
   container: {
@@ -42,11 +31,37 @@ const styles = () => ({
   },
 });
 
-const FileManager = ({
-  report, entityId, entityType, t, classes,
-}) => {
-  const exportPartial = () => { console.log('exportPartial'); };
-  const exportComplete = () => { console.log('exportComplete'); };
+export const FileManagerExportMutation = graphql`
+    mutation FileManagerExportMutation($id: ID!, $exportType: String!) {
+        stixDomainEntityEdit(id: $id) {
+            askExport(exportType: $exportType) {
+                ...FileLine_file
+            }
+        }
+    }
+`;
+
+const FileManager = ({ report, t, classes }) => {
+  const { id, internalId } = report;
+  const askExport = (exportType) => {
+    commitMutation({
+      mutation: FileManagerExportMutation,
+      variables: { id: internalId, exportType },
+      updater: (store) => {
+        const root = store.getRootField('stixDomainEntityEdit');
+        const payload = root.getLinkedRecord('askExport', { exportType });
+        const newEdge = payload.setLinkedRecord(payload, 'node');
+        const entity = store.get(id);
+        const conn = ConnectionHandler.getConnection(entity, 'Pagination_exportFiles');
+        ConnectionHandler.insertEdgeBefore(conn, newEdge);
+      },
+      onCompleted: () => {
+        MESSAGING$.notifySuccess('Export successfully started');
+      },
+    });
+  };
+  const exportPartial = () => askExport('stix2-bundle-simple');
+  const exportComplete = () => askExport('stix2-bundle-full');
   return <div>
         <ReportHeader report={report} />
         <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
@@ -58,20 +73,12 @@ const FileManager = ({
                         </Typography>
                     </div>
                     <div style={{ float: 'right' }}>
-                        <FileUploader entityId={entityId}/>
+                        <FileUploader entityId={internalId}/>
                     </div>
                     <div className="clearfix" />
                 </div>
                 <Paper classes={{ root: classes.paper }} elevation={2}>
-                    <QueryRenderer query={FileManagerQuery}
-                        variables={{ category: 'import', entityId }}
-                        render={({ props }) => {
-                          if (props) {
-                            const files = map(e => e.node, props.files.edges);
-                            return <FileViewer entityId={entityId} files={files}/>;
-                          }
-                          return <div>Loading</div>;
-                        }}/>
+                    <FileImportViewer entity={report} />
                 </Paper>
             </Grid>
             <Grid item={true} xs={6}>
@@ -90,15 +97,7 @@ const FileManager = ({
                 </div>
                 <div className="clearfix" />
                 <Paper classes={{ root: classes.paper }} elevation={2}>
-                    <QueryRenderer query={FileManagerQuery}
-                        variables={{ category: 'export', entityId }}
-                        render={({ props }) => {
-                          if (props) {
-                            const files = map(e => e.node, props.files.edges);
-                            return <FileViewer entityId={entityId} files={files}/>;
-                          }
-                          return <div>Loading</div>;
-                        }}/>
+                    <FileExportViewer entity={report} />
                 </Paper>
             </Grid>
         </Grid>
@@ -106,8 +105,6 @@ const FileManager = ({
 };
 
 FileManager.propTypes = {
-  entityId: PropTypes.string,
-  entityType: PropTypes.string,
   nsdt: PropTypes.func,
   report: PropTypes.object,
 };

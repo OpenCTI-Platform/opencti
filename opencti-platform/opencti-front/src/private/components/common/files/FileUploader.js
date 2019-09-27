@@ -26,7 +26,7 @@ const styles = theme => ({
 const FileUploaderMutation = graphql`
   mutation FileUploaderMutation($input: FileUpload) {
     uploadFile(input: $input) {
-      ...FileViewer_files
+      ...FileLine_file
     }
   }
 `;
@@ -48,12 +48,8 @@ const FileUploader = (props) => {
       updater: (store) => {
         const payload = store.getRootField('uploadFile');
         const newEdge = payload.setLinkedRecord(payload, 'node');
-        const rootStore = store.getRoot();
-        const conn = ConnectionHandler.getConnection(
-          rootStore,
-          'Pagination_files',
-          { category: 'import', entityId },
-        );
+        const entity = store.get(entityId);
+        const conn = ConnectionHandler.getConnection(entity, 'Pagination_importFiles');
         // Insert element only if not exists in the current listing
         const fileId = payload.getDataID();
         const edges = conn.getLinkedRecords('edges');

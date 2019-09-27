@@ -112,12 +112,12 @@ class Consumer(threading.Thread):
             if data['type'] == 'stix2-bundle-simple':
                 bundle = self.api.stix2_export_entity(data['entity_type'], data['entity_id'], 'simple')
                 if bundle is not None:
-                    bundle = base64.b64encode(bytes(json.dumps(bundle, indent=4), 'utf-8')).decode('utf-8')
+                    bundle = json.dumps(bundle, indent=4)
                     self.api.push_stix_domain_entity_export(data['entity_id'], data['export_id'], bundle)
             if data["type"] == 'stix2-bundle-full':
                 bundle = self.api.stix2_export_entity(data['entity_type'], data['entity_id'], 'full')
                 if bundle is not None:
-                    bundle = base64.b64encode(bytes(json.dumps(bundle, indent=4), 'utf-8')).decode('utf-8')
+                    bundle = json.dumps(bundle, indent=4)
                     self.api.push_stix_domain_entity_export(data['entity_id'], data['export_id'], bundle)
         except Exception as e:
             logging.error('An unexpected error occurred: { ' + str(e) + ' }')
