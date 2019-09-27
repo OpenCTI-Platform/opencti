@@ -5,11 +5,11 @@ import graphql from 'babel-plugin-relay/macro';
 import FileLine from './FileLine';
 
 const FileImportViewerComponent = ({ entity }) => {
-  const { internalId, importFiles } = entity;
+  const { id, importFiles } = entity;
   const { edges } = importFiles;
   return <React.Fragment>
       {edges.length ? edges.map((file, index) => <div style={{ marginLeft: -15 }} key={index}>
-        <FileLine entityId={internalId} file={file.node}/>
+        <FileLine entityId={id} file={file.node}/>
       </div>) : <div style={{ padding: 10 }}>No file</div>}
   </React.Fragment>;
 };
@@ -17,7 +17,7 @@ const FileImportViewerComponent = ({ entity }) => {
 const FileImportViewer = createFragmentContainer(FileImportViewerComponent, {
   entity: graphql`
         fragment FileImportViewer_entity on StixDomainEntity {
-            internalId: internal_id
+            id
             importFiles(first: 1000) @connection(key: "Pagination_importFiles") {
                 edges {
                     node {

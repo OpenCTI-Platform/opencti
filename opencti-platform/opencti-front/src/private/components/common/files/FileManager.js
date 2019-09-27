@@ -9,10 +9,10 @@ import { withStyles } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { DonutSmall, DonutLarge } from '@material-ui/icons';
 import { ConnectionHandler } from 'relay-runtime';
+import Tooltip from '@material-ui/core/Tooltip';
 import inject18n from '../../../../components/i18n';
 import FileUploader from './FileUploader';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import ReportHeader from '../../reports/ReportHeader';
 import FileImportViewer from './FileImportViewer';
 import FileExportViewer from './FileExportViewer';
 
@@ -41,18 +41,19 @@ export const FileManagerExportMutation = graphql`
     }
 `;
 
-const FileManager = ({ report, t, classes }) => {
-  const { id, internalId } = report;
+const FileManager = ({
+  id, entity, t, classes,
+}) => {
   const askExport = (exportType) => {
     commitMutation({
       mutation: FileManagerExportMutation,
-      variables: { id: internalId, exportType },
+      variables: { id, exportType },
       updater: (store) => {
         const root = store.getRootField('stixDomainEntityEdit');
         const payload = root.getLinkedRecord('askExport', { exportType });
         const newEdge = payload.setLinkedRecord(payload, 'node');
-        const entity = store.get(id);
-        const conn = ConnectionHandler.getConnection(entity, 'Pagination_exportFiles');
+        const entityPage = store.get(id);
+        const conn = ConnectionHandler.getConnection(entityPage, 'Pagination_exportFiles');
         ConnectionHandler.insertEdgeBefore(conn, newEdge);
       },
       onCompleted: () => {
@@ -63,7 +64,6 @@ const FileManager = ({ report, t, classes }) => {
   const exportPartial = () => askExport('stix2-bundle-simple');
   const exportComplete = () => askExport('stix2-bundle-full');
   return <div>
-        <ReportHeader report={report} />
         <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
             <Grid item={true} xs={6}>
                 <div>
@@ -73,12 +73,12 @@ const FileManager = ({ report, t, classes }) => {
                         </Typography>
                     </div>
                     <div style={{ float: 'right' }}>
-                        <FileUploader entityId={internalId}/>
+                        <FileUploader entityId={id}/>
                     </div>
                     <div className="clearfix" />
                 </div>
                 <Paper classes={{ root: classes.paper }} elevation={2}>
-                    <FileImportViewer entity={report} />
+                    <FileImportViewer entity={entity} />
                 </Paper>
             </Grid>
             <Grid item={true} xs={6}>
@@ -88,16 +88,20 @@ const FileManager = ({ report, t, classes }) => {
                     </Typography>
                 </div>
                 <div style={{ float: 'right' }}>
-                    <IconButton onClick={exportPartial} aria-haspopup="true" color="primary">
-                        <DonutLarge/>
-                    </IconButton>
-                    <IconButton onClick={exportComplete} aria-haspopup="true" color="primary">
-                        <DonutSmall/>
-                    </IconButton>
+                    <Tooltip title="Simple export" aria-label="Simple export">
+                        <IconButton onClick={exportPartial} aria-haspopup="true" color="primary">
+                            <DonutLarge/>
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Simple export" aria-label="Complete export">
+                        <IconButton onClick={exportComplete} aria-haspopup="true" color="primary">
+                            <DonutSmall/>
+                        </IconButton>
+                    </Tooltip>
                 </div>
                 <div className="clearfix" />
                 <Paper classes={{ root: classes.paper }} elevation={2}>
-                    <FileExportViewer entity={report} />
+                    <FileExportViewer entity={entity} />
                 </Paper>
             </Grid>
         </Grid>
@@ -106,7 +110,8 @@ const FileManager = ({ report, t, classes }) => {
 
 FileManager.propTypes = {
   nsdt: PropTypes.func,
-  report: PropTypes.object,
+  id: PropTypes.string.isRequired,
+  entity: PropTypes.object.isRequired,
 };
 
 export default compose(

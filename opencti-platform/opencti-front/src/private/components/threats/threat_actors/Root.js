@@ -12,6 +12,8 @@ import ThreatActorReports from './ThreatActorReports';
 import ThreatActorKnowledge from './ThreatActorKnowledge';
 import ThreatActorObservables from './ThreatActorObservables';
 import Loader from '../../../Loader';
+import FileManager from '../../common/files/FileManager';
+import ThreatActorHeader from './ThreatActorHeader';
 
 const subscription = graphql`
   subscription RootThreatActorSubscription($id: ID!) {
@@ -20,6 +22,8 @@ const subscription = graphql`
         ...ThreatActor_threatActor
         ...ThreatActorEditionContainer_threatActor
       }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
     }
   }
 `;
@@ -34,6 +38,8 @@ const threatActorQuery = graphql`
       ...ThreatActorReports_threatActor
       ...ThreatActorKnowledge_threatActor
       ...ThreatActorObservables_threatActor
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
     }
   }
 `;
@@ -118,6 +124,15 @@ class RootThreatActor extends Component {
                         {...routeProps}
                         threatActor={props.threatActor}
                       />
+                    )}
+                  />
+                  <Route exact path="/dashboard/threats/threat_actors/:threatActorId/files"
+                    render={routeProps => (
+                       <React.Fragment>
+                           <ThreatActorHeader threatActor={props.threatActor} />
+                           <FileManager {...routeProps} id={threatActorId}
+                                        entity={props.threatActor}/>
+                       </React.Fragment>
                     )}
                   />
                 </div>

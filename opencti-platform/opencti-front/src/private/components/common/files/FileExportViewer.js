@@ -9,12 +9,12 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 const interval$ = interval(FIVE_SECONDS);
 
 const FileExportViewerComponent = ({ entity, relay }) => {
-  const { internalId, exportFiles } = entity;
+  const { id, exportFiles } = entity;
   const { edges } = exportFiles;
   useEffect(() => {
     // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {
-      relay.refetch({ id: internalId });
+      relay.refetch({ id });
     });
     return function cleanup() {
       subscription.unsubscribe();
@@ -22,7 +22,7 @@ const FileExportViewerComponent = ({ entity, relay }) => {
   });
   return <React.Fragment>
       {edges.length ? edges.map((file, index) => <div style={{ marginLeft: -15 }} key={index}>
-        <FileLine entityId={internalId} file={file.node}/>
+        <FileLine entityId={id} file={file.node}/>
       </div>) : <div style={{ padding: 10 }}>No file</div>}
   </React.Fragment>;
 };
@@ -40,7 +40,7 @@ const FileExportViewer = createRefetchContainer(
   {
     entity: graphql`
             fragment FileExportViewer_entity on StixDomainEntity {
-                internalId: internal_id
+                id
                 exportFiles(first: 1000) @connection(key: "Pagination_exportFiles") {
                     edges {
                         node {

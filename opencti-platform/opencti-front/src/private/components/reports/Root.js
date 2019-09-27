@@ -9,12 +9,11 @@ import ReportEntities from './ReportEntities';
 import ReportKnowledge from './ReportKnowledge';
 import ReportObservables from './ReportObservables';
 import FileManager from '../common/files/FileManager';
+import ReportHeader from './ReportHeader';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
     stixDomainEntity(id: $id) {
-      id
-      internalId: internal_id
       ... on Report {
         ...Report_report
         ...ReportKnowledgeGraph_report
@@ -29,9 +28,6 @@ const subscription = graphql`
 const reportQuery = graphql`
   query RootReportQuery($id: String!, $relationType: String) {
     report(id: $id) {
-      id
-      internalId: internal_id
-      entity_type
       ...Report_report
       ...ReportHeader_report
       ...ReportOverview_report
@@ -57,10 +53,7 @@ class RootReport extends Component {
     } = this.props;
     const sub = requestSubscription({
       subscription,
-      variables: {
-        id: reportId,
-        types: ['export.stix2.simple', 'export.stix2.full'],
-      },
+      variables: { id: reportId },
     });
     this.setState({ sub });
   }
@@ -126,7 +119,10 @@ class RootReport extends Component {
                   />
                   <Route exact path="/dashboard/reports/all/:reportId/files"
                     render={routeProps => (
-                        <FileManager {...routeProps} report={props.report}/>
+                        <React.Fragment>
+                            <ReportHeader report={props.report} />
+                            <FileManager {...routeProps} id={reportId} entity={props.report}/>
+                        </React.Fragment>
                     )}
                   />
                 </div>

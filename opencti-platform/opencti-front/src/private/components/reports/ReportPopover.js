@@ -104,15 +104,6 @@ class ReportPopover extends Component {
     this.setState({ displayEdit: false });
   }
 
-  handleOpenExport() {
-    this.setState({ displayExport: true });
-    this.handleClose();
-  }
-
-  handleCloseExport() {
-    this.setState({ displayExport: false });
-  }
-
   render() {
     const { classes, t, reportId } = this.props;
     return (
@@ -125,9 +116,6 @@ class ReportPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}>
-          <MenuItem onClick={this.handleOpenExport.bind(this)}>
-            {t('Export')}
-          </MenuItem>
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>

@@ -2,26 +2,14 @@ import React, { useRef, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, includes, map } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles/index';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import { CloudUpload } from '@material-ui/icons';
 import IconButton from '@material-ui/core/IconButton';
 import { ConnectionHandler } from 'relay-runtime';
+import Tooltip from '@material-ui/core/Tooltip';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-
-const styles = theme => ({
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  rightIcon: {
-    marginLeft: theme.spacing(1),
-  },
-  dialogActions: {
-    padding: '0 17px 20px 0',
-  },
-});
 
 const FileUploaderMutation = graphql`
   mutation FileUploaderMutation($input: FileUpload) {
@@ -32,7 +20,7 @@ const FileUploaderMutation = graphql`
 `;
 
 const FileUploader = (props) => {
-  const { entityId, t, classes } = props;
+  const { entityId, t } = props;
   const [uploadType, setUploadType] = useState('application/stix+json');
   const uploadRef = useRef(null);
   const handleChangeType = event => setUploadType(event.target.value);
@@ -97,23 +85,23 @@ const FileUploader = (props) => {
     </Select>
     <input ref={uploadRef} type="file" style={{ display: 'none' }}
            onChange={({ target: { validity, files: [file] } }) =>
-           // eslint-disable-next-line implicit-arrow-linebreak
+             // eslint-disable-next-line implicit-arrow-linebreak
              validity.valid && handleUpload(file)
            }
     />
-    <IconButton onClick={handleOpenUpload} aria-haspopup="true" color="primary">
-      <CloudUpload className={classes.rightIcon} />
-    </IconButton>
+    <Tooltip title="Select your file" aria-label="Select your file">
+      <IconButton onClick={handleOpenUpload} aria-haspopup="true" color="primary">
+        <CloudUpload/>
+      </IconButton>
+    </Tooltip>
 </React.Fragment>;
 };
 
 FileUploader.propTypes = {
   entityId: PropTypes.string,
-  classes: PropTypes.object,
   t: PropTypes.func,
 };
 
 export default compose(
   inject18n,
-  withStyles(styles),
 )(FileUploader);
