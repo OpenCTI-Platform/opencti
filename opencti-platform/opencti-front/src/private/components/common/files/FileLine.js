@@ -30,10 +30,20 @@ const FileLineComponent = (props) => {
     commitMutation({
       mutation,
       variables,
+      optimisticUpdater: (store) => {
+        const fileStore = store.get(file.id);
+        fileStore.setValue(0, 'lastModifiedSinceMin');
+        fileStore.setValue('inProgress', 'uploadStatus');
+      },
       updater: (store) => {
-        const entity = store.get(entityId);
-        const conn = ConnectionHandler.getConnection(entity, `Pagination_${category}Files`);
-        ConnectionHandler.deleteNode(conn, name);
+        const fileStore = store.get(file.id);
+        fileStore.setValue(0, 'lastModifiedSinceMin');
+        fileStore.setValue('inProgress', 'uploadStatus');
+        if (category === 'import') { // If export, just wait for the refresh
+          const entity = store.get(entityId);
+          const conn = ConnectionHandler.getConnection(entity, `Pagination_${category}Files`);
+          ConnectionHandler.deleteNode(conn, name);
+        }
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('File successfully removed');

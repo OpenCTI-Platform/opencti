@@ -27,6 +27,8 @@
   },
   "minio": {
     "endpoint": "localhost",
+    "port": 9000,
+    "useSSL": false,
     "accessKey": "ChangeMe",
     "secretKey": "ChangeMe"
   },
