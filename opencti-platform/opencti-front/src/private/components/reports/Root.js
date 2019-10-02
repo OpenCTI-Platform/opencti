@@ -41,6 +41,12 @@ const reportQuery = graphql`
     me {
       ...ReportKnowledge_me
     }
+    connectorsForExport {
+        id
+        name
+        connector_scope
+        updated_at
+    }
   }
 `;
 
@@ -76,6 +82,7 @@ class RootReport extends Component {
           query={reportQuery}
           variables={{ id: reportId, relationType: 'indicates' }}
           render={({ props }) => {
+              console.log(props)
             if (props && props.report) {
               return (
                 <div>
@@ -121,7 +128,9 @@ class RootReport extends Component {
                     render={routeProps => (
                         <React.Fragment>
                             <ReportHeader report={props.report} />
-                            <FileManager {...routeProps} id={reportId} entity={props.report}/>
+                            <FileManager {...routeProps} id={reportId}
+                                         exportConnectors={props.connectorsForExport}
+                                         entity={props.report}/>
                         </React.Fragment>
                     )}
                   />

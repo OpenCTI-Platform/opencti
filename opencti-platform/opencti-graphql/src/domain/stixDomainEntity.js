@@ -1,38 +1,34 @@
-import { assoc, map, dissoc } from 'ramda';
+import { assoc, dissoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
-  escape,
-  escapeString,
+  commitWriteTx,
   createRelation,
+  dayFormat,
   deleteEntityById,
   deleteRelationById,
-  updateAttribute,
+  escape,
+  escapeString,
   getById,
-  dayFormat,
+  getId,
+  getObject,
   monthFormat,
-  yearFormat,
   notify,
   now,
   paginate,
+  prepareDate,
   takeWriteTx,
   timeSeries,
-  getObject,
-  prepareDate,
-  getId,
-  commitWriteTx
+  updateAttribute,
+  yearFormat
 } from '../database/grakn';
 import {
+  countEntities,
   deleteEntity,
-  paginate as elPaginate,
-  countEntities
+  paginate as elPaginate
 } from '../database/elasticSearch';
 
-import {
-  BUS_TOPICS,
-  RABBITMQ_EXPORT_ROUTING_KEY,
-  RABBITMQ_EXCHANGE_NAME
-} from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import {
   findAll as relationFindAll,
   search as relationSearch
@@ -154,10 +150,15 @@ export const stixRelations = (stixDomainEntityId, args) => {
 /**
  * Create export element waiting for completion
  * @param domainEntityId
+ * @param format
  * @param exportType > stix2-bundle-full | stix2-bundle-simple
  * @returns {*}
  */
-export const stixDomainEntityAskExport = async (domainEntityId, exportType) => {
+export const stixDomainEntityAskExport = async (
+  domainEntityId,
+  format,
+  exportType
+) => {
   const entity = await getById(domainEntityId);
   const creation = now();
   // Start transaction
@@ -180,8 +181,8 @@ export const stixDomainEntityAskExport = async (domainEntityId, exportType) => {
   await commitWriteTx(wTx);
   // Send ask to broker
   send(
-    RABBITMQ_EXCHANGE_NAME,
-    RABBITMQ_EXPORT_ROUTING_KEY,
+    'amqp.connector.exchange',
+    `INTERNAL_EXPORT_FILE-${format}`,
     JSON.stringify({
       type: exportType,
       entity_type: entity.entity_type,

@@ -11,7 +11,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 
 const FileLineDeleteMutation = graphql`
     mutation FileLineDeleteMutation($fileName: String) {
-        deleteFile(fileName: $fileName)
+        deleteImport(fileName: $fileName)
     }
 `;
 

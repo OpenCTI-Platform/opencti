@@ -25,7 +25,7 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { deleteFile, filesListing } from '../database/minio';
-import { uploadFile } from '../domain/stixEntity';
+import { uploadImport } from '../domain/stixEntity';
 import { deleteById } from '../database/grakn';
 
 const stixDomainEntityResolvers = {
@@ -74,13 +74,14 @@ const stixDomainEntityResolvers = {
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId),
-      askExport: ({ exportType }) => stixDomainEntityAskExport(id, exportType),
+      askExport: ({ format, exportType }) =>
+        stixDomainEntityAskExport(id, format, exportType),
       exportPush: ({ file }) => stixDomainEntityExportPush(user, id, file)
     }),
     stixDomainEntityAdd: (_, { input }, { user }) =>
       addStixDomainEntity(user, input),
-    uploadFile: (_, { input }, { user }) => uploadFile(input, user),
-    deleteFile: (_, { fileName }, { user }) => deleteFile(fileName, user),
+    uploadImport: (_, { input }, { user }) => uploadImport(input, user),
+    deleteImport: (_, { fileName }, { user }) => deleteFile(fileName, user),
     resetExport: (_, { exportId }) => deleteById(exportId)
   },
   Subscription: {

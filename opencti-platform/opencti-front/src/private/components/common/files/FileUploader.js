@@ -10,7 +10,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 
 const FileUploaderMutation = graphql`
   mutation FileUploaderMutation($input: FileUpload) {
-    uploadFile(input: $input) {
+    uploadImport(input: $input) {
       ...FileLine_file
     }
   }

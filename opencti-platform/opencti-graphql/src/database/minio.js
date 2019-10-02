@@ -159,6 +159,8 @@ export const upload = async (user, category, file, entityId) => {
   const entity = await getById(entityId);
   const { createReadStream, filename, mimetype, encoding } = await file;
   logger.debug(`FileManager > upload file ${filename} by ${user.email}`);
+  // Minio does not support UpperCase un metadata
+  // noinspection SpellCheckingInspection
   const metadata = {
     filename,
     category,

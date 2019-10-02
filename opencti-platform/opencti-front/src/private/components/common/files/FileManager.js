@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { compose } from 'ramda';
+import {
+  compose, flatten, map, head,
+} from 'ramda';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
@@ -10,6 +12,8 @@ import IconButton from '@material-ui/core/IconButton';
 import { DonutSmall, DonutLarge } from '@material-ui/icons';
 import { ConnectionHandler } from 'relay-runtime';
 import Tooltip from '@material-ui/core/Tooltip';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
 import inject18n from '../../../../components/i18n';
 import FileUploader from './FileUploader';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -32,9 +36,9 @@ const styles = () => ({
 });
 
 export const FileManagerExportMutation = graphql`
-    mutation FileManagerExportMutation($id: ID!, $exportType: String!) {
+    mutation FileManagerExportMutation($id: ID!, $format: String!, $exportType: String!) {
         stixDomainEntityEdit(id: $id) {
-            askExport(exportType: $exportType) {
+            askExport(format: $format, exportType: $exportType) {
                 ...FileLine_file
             }
         }
@@ -42,15 +46,17 @@ export const FileManagerExportMutation = graphql`
 `;
 
 const FileManager = ({
-  id, entity, t, classes,
+  id, entity, t, classes, exportConnectors,
 }) => {
+  const scopes = flatten(map(c => c.connector_scope, exportConnectors));
+  const [format, setFormat] = useState(head(scopes));
   const askExport = (exportType) => {
     commitMutation({
       mutation: FileManagerExportMutation,
-      variables: { id, exportType },
+      variables: { id, format, exportType },
       updater: (store) => {
         const root = store.getRootField('stixDomainEntityEdit');
-        const payload = root.getLinkedRecord('askExport', { exportType });
+        const payload = root.getLinkedRecord('askExport', { format, exportType });
         const newEdge = payload.setLinkedRecord(payload, 'node');
         const entityPage = store.get(id);
         const conn = ConnectionHandler.getConnection(entityPage, 'Pagination_exportFiles');
@@ -61,8 +67,8 @@ const FileManager = ({
       },
     });
   };
-  const exportPartial = () => askExport('stix2-bundle-simple');
-  const exportComplete = () => askExport('stix2-bundle-full');
+  const exportPartial = () => askExport('simple');
+  const exportComplete = () => askExport('full');
   return <div>
         <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
             <Grid item={true} xs={6}>
@@ -88,16 +94,23 @@ const FileManager = ({
                     </Typography>
                 </div>
                 <div style={{ float: 'right' }}>
-                    <Tooltip title="Simple export" aria-label="Simple export">
-                        <IconButton onClick={exportPartial} aria-haspopup="true" color="primary">
-                            <DonutLarge/>
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Complete export" aria-label="Complete export">
-                        <IconButton onClick={exportComplete} aria-haspopup="true" color="primary">
-                            <DonutSmall/>
-                        </IconButton>
-                    </Tooltip>
+                    { format ? <React.Fragment>
+                        <Select value={format} onChange={e => setFormat(e.target.value)}>
+                            {scopes.map((value, i) => <MenuItem key={i} value={value}>
+                                {value}</MenuItem>)}
+                        </Select>
+                        <Tooltip title="Simple export" aria-label="Simple export">
+                            <IconButton onClick={exportPartial} aria-haspopup="true" color="primary">
+                                <DonutLarge/>
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Complete export" aria-label="Complete export">
+                            <IconButton onClick={exportComplete} aria-haspopup="true" color="primary">
+                                <DonutSmall/>
+                            </IconButton>
+                        </Tooltip>
+                    </React.Fragment> : <span>No exporter available</span>
+                        }
                 </div>
                 <div className="clearfix" />
                 <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -112,6 +125,7 @@ FileManager.propTypes = {
   nsdt: PropTypes.func,
   id: PropTypes.string.isRequired,
   entity: PropTypes.object.isRequired,
+  exportConnectors: PropTypes.array.isRequired,
 };
 
 export default compose(

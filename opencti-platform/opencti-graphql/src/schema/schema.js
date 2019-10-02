@@ -35,6 +35,7 @@ import toolResolvers from '../resolvers/tool';
 import vulnerabilityResolvers from '../resolvers/vulnerability';
 import reportResolvers from '../resolvers/report';
 import AuthDirectives, { AUTH_DIRECTIVE } from './authDirective';
+import connectorResolvers from '../resolvers/connector';
 
 const globalResolvers = {
   DateTime: GraphQLDateTime
@@ -48,6 +49,7 @@ const resolvers = mergeResolvers([
   settingsResolvers,
   attributeResolvers,
   rabbitmqMetricsResolvers,
+  connectorResolvers,
   globalObjectResolvers,
   stixEntityResolvers,
   stixDomainEntityResolvers,

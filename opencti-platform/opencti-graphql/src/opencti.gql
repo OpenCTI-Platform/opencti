@@ -59,6 +59,8 @@ define
   expiration_year sub attribute, datatype string;
   name sub attribute, datatype string;
   description sub attribute, datatype string;
+  connector_type sub attribute, datatype string;
+  connector_scope sub attribute, datatype string;
 
   # STIX SDO
   alias sub attribute, datatype string;
@@ -487,6 +489,14 @@ define
     has created_at,
     has updated_at,
     plays export;
+
+  Connector sub entity,
+    has internal_id,
+    has name,
+    has connector_type,
+    has connector_scope,
+    has created_at,
+    has updated_at;
 
   Group sub entity,
     has internal_id,

@@ -220,6 +220,47 @@ type FileConnection {
   pageInfo: PageInfo!
   edges: [FileEdge]
 }
+input InputReportElement {
+  elementId: ID!
+  elementType: String!
+}
+input InputReportInfo {
+  connectorName: ID!
+  importStatus: UploadStatus!
+  importedDate: DateTime
+  importedElements: [InputReportElement]
+}
+type ImportReport {
+    id: ID!
+}
+
+### Connectors
+enum ConnectorType {
+    EXTERNAL_IMPORT
+    INTERNAL_IMPORT_FILE
+    INTERNAL_ENRICHMENT
+    INTERNAL_EXPORT_FILE
+}
+input RegisterConnectorInput {
+    id: ID!
+    name: String!
+    type: ConnectorType!
+    scope: [String!]
+}
+type ConnectorConfig {
+    uri: String!
+    listen: String!
+    push: String!
+}
+type Connector {
+    id: ID!
+    name: String!
+    updated_at: DateTime
+    created_at: DateTime
+    connector_type: String!
+    connector_scope: [String!]
+    config: ConnectorConfig
+}
 
 ### Global objects
 interface GlobalObject {
@@ -2152,6 +2193,8 @@ type Query {
   attribute(id: String): Attribute @auth
   attributes(first: Int, type: String!): AttributeConnection @auth
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)
+  connectors: [Connector] @auth(for: ROLE_ADMIN)
+  connectorsForExport: [Connector] @auth(for: ROLE_ADMIN)
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(
@@ -2553,7 +2596,7 @@ type StixDomainEntityEditMutations {
   contextClean: StixDomainEntity
   relationAdd(input: RelationAddInput): RelationData
   relationDelete(relationId: ID!): RelationData
-  askExport(exportType: String!): File
+  askExport(format: String!, exportType: String!): File
   exportPush(file: Upload!): Boolean @auth(for: ROLE_ADMIN)
 }
 
@@ -2809,10 +2852,14 @@ type Mutation {
   # Attribute
   attributeAdd(input: AttributeAddInput): Attribute @auth(for: ROLE_ADMIN)
   attributeEdit(id: ID!): AttributeEditMutations @auth(for: ROLE_ADMIN)
+  # Connector
+  registerConnector(input: RegisterConnectorInput): Connector @auth(for: ROLE_ADMIN)
+  pingConnector(id: String!): Connector @auth(for: ROLE_ADMIN)
   # File management
-  deleteFile(fileName: String): Boolean
-  uploadFile(input: FileUpload): File @auth
-  resetExport(exportId: ID!): ID!
+  deleteImport(fileName: String): Boolean @auth
+  uploadImport(input: FileUpload): File @auth
+  reportImport(input: InputReportInfo): ImportReport @auth
+  resetExport(exportId: ID!): ID! @auth
   # StixDomainEntity
   stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth
   stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations @auth

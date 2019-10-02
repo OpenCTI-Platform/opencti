@@ -11,6 +11,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
+import Button from '@material-ui/core/Button';
 import logo from '../../../resources/images/logo.png';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
@@ -74,8 +75,17 @@ const styles = theme => ({
   },
   searchContainer: {
     position: 'absolute',
-    right: 80,
+    right: 150,
     top: 15,
+  },
+  button: {
+    position: 'absolute',
+    right: 60,
+    top: 18,
+    marginRight: theme.spacing(1),
+    padding: '2px 5px 2px 5px',
+    minHeight: 20,
+    textTransform: 'none',
   },
   menuButton: {
     position: 'absolute',
@@ -324,14 +334,22 @@ class TopBar extends Component {
               keyword={keyword}
             />
           </div>
+          <Button
+              component={Link}
+              to="/dashboard"
+              variant={location.pathname === '/dashboard' ? 'contained' : 'text'}
+              size="small"
+              color={location.pathname === '/dashboard' ? 'primary' : 'inherit'}
+              classes={{ root: classes.button }}>
+            {t('Files')}
+          </Button>
           <IconButton
             size="medium"
             classes={{ root: classes.menuButton }}
             aria-owns={this.state.open ? 'menu-appbar' : null}
             aria-haspopup="true"
             onClick={this.handleOpenMenu.bind(this)}
-            color="inherit"
-          >
+            color="inherit">
             <AccountCircle color="inherit" style={{ fontSize: 35 }} />
           </IconButton>
           <Menu

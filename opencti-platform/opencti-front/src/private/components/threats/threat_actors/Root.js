@@ -41,6 +41,12 @@ const threatActorQuery = graphql`
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
+    connectorsForExport {
+        id
+        name
+        connector_scope
+        updated_at
+    }
   }
 `;
 
@@ -131,6 +137,7 @@ class RootThreatActor extends Component {
                        <React.Fragment>
                            <ThreatActorHeader threatActor={props.threatActor} />
                            <FileManager {...routeProps} id={threatActorId}
+                                        exportConnectors={props.connectorsForExport}
                                         entity={props.threatActor}/>
                        </React.Fragment>
                     )}
