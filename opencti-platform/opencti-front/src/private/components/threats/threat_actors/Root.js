@@ -44,6 +44,7 @@ const threatActorQuery = graphql`
     connectorsForExport {
         id
         name
+        active
         connector_scope
         updated_at
     }

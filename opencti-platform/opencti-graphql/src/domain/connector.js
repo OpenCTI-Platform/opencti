@@ -1,5 +1,6 @@
-import { assoc, filter, map, pipe } from 'ramda';
+import { assoc, filter, includes, map, pipe } from 'ramda';
 import {
+  closeWriteTx,
   commitWriteTx,
   find,
   getById,
@@ -9,10 +10,10 @@ import {
 } from '../database/grakn';
 import { connectorConfig, registerConnectorQueues } from '../database/rabbitmq';
 
-// EXTERNAL_IMPORT = None
-// INTERNAL_IMPORT_FILE = Files mime types to support (application/json, ...) -> import-
-// INTERNAL_ENRICHMENT = Entity types to support (Report, Hash, ...) -> enrich-
-// INTERNAL_EXPORT_FILE = Files mime types to generate (application/pdf, ...) -> export-
+export const CONNECTOR_EXTERNAL_IMPORT = 'EXTERNAL_IMPORT'; // None
+export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
+export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
+export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files mime types to generate (application/pdf, ...) -> export-
 
 const completeConnector = connector => {
   return pipe(
@@ -28,33 +29,40 @@ export const connectors = () => {
   );
 };
 
-export const connectorsForExport = async () => {
+export const connectorsForExport = async mime => {
   const connects = await connectors();
-  return filter(c => c.connector_type === 'INTERNAL_EXPORT_FILE', connects);
+  const exportConnects = filter(
+    c => c.connector_type === 'INTERNAL_EXPORT_FILE',
+    connects
+  );
+  return mime
+    ? filter(c => includes(mime, c.connector_scope), exportConnects)
+    : exportConnects;
 };
 
 export const pingConnector = async id => {
   const creation = now();
-  await updateAttribute(id, {
+  return updateAttribute(id, {
     key: 'updated_at',
     value: [creation]
-  });
-  return getById(id).then(data => assoc('config', connectorConfig(id), data));
+  }).then(data => assoc('config', connectorConfig(id), data));
 };
 
 export const registerConnector = async ({ id, name, type, scope }) => {
   const connector = await getById(id);
   const creation = now();
   // Register queues
-  await registerConnectorQueues(id, type, scope);
+  await registerConnectorQueues(id, name, type, scope);
   if (connector) {
     // Simple connector update
-    await updateAttribute(id, { key: 'name', value: [name] });
-    await updateAttribute(id, { key: 'updated_at', value: [creation] });
-    await updateAttribute(id, {
-      key: 'connector_scope',
-      value: [scope.join(',')]
-    });
+    const wTx = await takeWriteTx();
+    const inputName = { key: 'name', value: [name] };
+    await updateAttribute(id, inputName, wTx);
+    const updatedInput = { key: 'updated_at', value: [creation] };
+    await updateAttribute(id, updatedInput, wTx);
+    const scopeInput = { key: 'connector_scope', value: [scope.join(',')] };
+    await updateAttribute(id, scopeInput, wTx);
+    await closeWriteTx(wTx);
   } else {
     // Need to create the connector
     // 01. Insert the connector

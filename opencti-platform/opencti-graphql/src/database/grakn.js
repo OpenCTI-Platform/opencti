@@ -39,6 +39,12 @@ export const now = () =>
   moment()
     .utc()
     .format(dateFormat); // Format that accept grakn
+export const sinceNowInMinutes = lastModified => {
+  const utc = moment().utc();
+  const diff = utc.diff(moment(lastModified));
+  const duration = moment.duration(diff);
+  return Math.floor(duration.asMinutes());
+};
 export const prepareDate = date =>
   moment(date)
     .utc()
@@ -450,7 +456,24 @@ export const find = async (query, entities) => {
     const result = await Promise.all(
       answers.map(async answer => {
         const entitiesPromises = await entities.map(async entity => {
-          return [entity, await getAttributes(answer.map().get(entity))];
+          const concept = answer.map().get(entity);
+          const conceptAttributes = await getAttributes(concept);
+          // eslint-disable-next-line
+          const attrsWithType = assoc('concept_type', concept.baseType, conceptAttributes);
+          if (concept.baseType === 'RELATION') {
+            const rolePlayers = await concept.rolePlayersMap();
+            const roleEntries = Array.from(rolePlayers.entries());
+            // eslint-disable-next-line
+            const roles = map(role => ({ id: head(role).id, role: head(role).label() }), roleEntries);
+            return [
+              entity,
+              pipe(
+                assoc('roles', roles),
+                assoc('inferred', concept.isInferred())
+              )(attrsWithType)
+            ];
+          }
+          return [entity, attrsWithType];
         });
         return Promise.all(entitiesPromises).then(data => {
           return fromPairs(data);

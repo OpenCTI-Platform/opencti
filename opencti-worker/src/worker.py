@@ -5,16 +5,12 @@ import yaml
 import pika
 import os
 import time
-import requests
 import json
 import base64
 import threading
 import ctypes
 
-from requests.auth import HTTPBasicAuth
 from pycti import OpenCTIApiClient
-
-EXCHANGE_NAME = 'amqp.worker.exchange'
 
 
 class Consumer(threading.Thread):

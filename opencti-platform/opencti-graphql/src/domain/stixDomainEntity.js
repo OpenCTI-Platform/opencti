@@ -1,5 +1,6 @@
 import { assoc, dissoc, map } from 'ramda';
 import uuid from 'uuid/v4';
+import mime from 'mime-types';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   commitWriteTx,
@@ -33,8 +34,13 @@ import {
   findAll as relationFindAll,
   search as relationSearch
 } from './stixRelation';
-import { send } from '../database/rabbitmq';
-import { exportProgressFile, upload } from '../database/minio';
+import { upload } from '../database/minio';
+import {
+  CONNECTOR_INTERNAL_EXPORT_FILE,
+  connectorsForExport
+} from './connector';
+import { createWork, workToExportFile } from './work';
+import { CONNECTOR_EXCHANGE, listenRouting, send } from '../database/rabbitmq';
 
 export const findAll = args => elPaginate('stix_domain_entities', args);
 
@@ -159,45 +165,53 @@ export const stixDomainEntityAskExport = async (
   format,
   exportType
 ) => {
-  const entity = await getById(domainEntityId);
   const creation = now();
-  // Start transaction
-  const wTx = await takeWriteTx();
-  const filename = `${creation}Z_${entity.entity_type}_${entity.name}_${exportType}.json`;
-  const internalId = `export/${entity.entity_type}/${domainEntityId}/${filename}`;
-  const query = `insert $export isa Export, 
-  has internal_id "${internalId}",
-  has name "${filename}",
-  has created_at ${creation},
-  has updated_at ${creation};`;
-  const exportIterator = await wTx.tx.query(query);
-  const createdExport = await exportIterator.next();
-  const createdExportId = await createdExport.map().get('export').id;
-  await wTx.tx.query(
-    `match $from id ${createdExportId}; $to has internal_id "${escapeString(
-      domainEntityId
-    )}"; insert (export: $from, exported: $to) isa exports, has internal_id "${uuid()}";`
+  const entity = await getById(domainEntityId);
+  const connectors = await connectorsForExport(format);
+  // Create job and send ask to broker
+  const workList = await Promise.all(
+    map(connector => {
+      return createWork(
+        connector.internal_id,
+        CONNECTOR_INTERNAL_EXPORT_FILE,
+        domainEntityId
+      );
+    }, connectors)
   );
-  await commitWriteTx(wTx);
-  // Send ask to broker
-  send(
-    'amqp.connector.exchange',
-    `INTERNAL_EXPORT_FILE-${format}`,
-    JSON.stringify({
-      type: exportType,
-      entity_type: entity.entity_type,
-      entity_id: domainEntityId,
-      export_id: internalId
-    })
+  // Send message to all correct connectors queues
+  await Promise.all(
+    map(data => {
+      const { connector, work } = data;
+      const fileExt = mime.extension(format);
+      const fileName = `${creation}Z_(${connector.name})_${entity.entity_type}_${entity.name}_${exportType}.${fileExt}`;
+      const message = {
+        job_id: work.internal_id, // job(id)
+        export_type: exportType, // simple or full
+        entity_type: entity.entity_type, // report, threat, ...
+        entity_id: domainEntityId, // report(id), thread(id), ...
+        file_name: fileName // Base path for the upload
+      };
+      return send(
+        CONNECTOR_EXCHANGE,
+        listenRouting(connector.internal_id),
+        JSON.stringify(message)
+      );
+    }, workList)
   );
-  return exportProgressFile(internalId, filename, `${creation}Z`);
+  // Return the work list to do
+  return map(w => workToExportFile(w.work, w.connector), workList);
 };
 
-export const stixDomainEntityExportPush = async (user, entityId, file) => {
+export const stixDomainEntityExportPush = async (
+  user,
+  entityId,
+  jobId,
+  file
+) => {
   // Upload the document in minio
-  const up = await upload(user, 'export', file, entityId);
+  await upload(user, 'export', file, entityId);
   // Delete the export placeholder
-  await deleteEntityById(up.id);
+  await deleteEntityById(jobId);
   return getById(entityId).then(stixDomainEntity => {
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user);
     return true;

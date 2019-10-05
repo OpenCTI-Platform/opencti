@@ -192,9 +192,9 @@ enum FileCategory {
   export
 }
 enum UploadStatus {
-    wait
     inProgress
     complete
+    error
 }
 type FileMetadata {
   category: FileCategory!
@@ -207,6 +207,7 @@ type File {
   id: ID!
   name: String
   size: Int
+  information: String
   lastModified: DateTime
   lastModifiedSinceMin: Int
   metaData: FileMetadata
@@ -219,19 +220,6 @@ type FileEdge {
 type FileConnection {
   pageInfo: PageInfo!
   edges: [FileEdge]
-}
-input InputReportElement {
-  elementId: ID!
-  elementType: String!
-}
-input InputReportInfo {
-  connectorName: ID!
-  importStatus: UploadStatus!
-  importedDate: DateTime
-  importedElements: [InputReportElement]
-}
-type ImportReport {
-    id: ID!
 }
 
 ### Connectors
@@ -250,12 +238,15 @@ input RegisterConnectorInput {
 type ConnectorConfig {
     uri: String!
     listen: String!
+    listen_exchange: String!
     push: String!
+    push_exchange: String!
 }
 type Connector {
     id: ID!
     name: String!
     updated_at: DateTime
+    active: Boolean
     created_at: DateTime
     connector_type: String!
     connector_scope: [String!]
@@ -2596,8 +2587,8 @@ type StixDomainEntityEditMutations {
   contextClean: StixDomainEntity
   relationAdd(input: RelationAddInput): RelationData
   relationDelete(relationId: ID!): RelationData
-  askExport(format: String!, exportType: String!): File
-  exportPush(file: Upload!): Boolean @auth(for: ROLE_ADMIN)
+  askExport(format: String!, exportType: String!): [File]
+  exportPush(jobId: ID!, file: Upload!): Boolean @auth(for: ROLE_ADMIN)
 }
 
 # StixObservable
@@ -2854,12 +2845,12 @@ type Mutation {
   attributeEdit(id: ID!): AttributeEditMutations @auth(for: ROLE_ADMIN)
   # Connector
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: ROLE_ADMIN)
-  pingConnector(id: String!): Connector @auth(for: ROLE_ADMIN)
+  pingConnector(id: ID!): Connector @auth(for: ROLE_ADMIN)
+  reportJobError(id: ID!, message: String!): Boolean @auth
+  resetJob(id: ID!): ID! @auth
   # File management
   deleteImport(fileName: String): Boolean @auth
   uploadImport(input: FileUpload): File @auth
-  reportImport(input: InputReportInfo): ImportReport @auth
-  resetExport(exportId: ID!): ID! @auth
   # StixDomainEntity
   stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth
   stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations @auth

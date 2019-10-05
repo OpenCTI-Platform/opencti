@@ -15,9 +15,10 @@ const graknStateStorage = {
       get;`,
       ['x', 'y']
     );
+    logger.info(`[MIGRATION] > Read ${result.length} from the database`);
     if (isEmpty(result)) {
       logger.info(
-        '[MIGRATION] Cannot read migrations from database. If this is the first time you run migrations,' +
+        '[MIGRATION] > Cannot read migrations from database. If this is the first time you run migrations,' +
           ' then this is normal.'
       );
       return fn(null, {});
@@ -69,13 +70,13 @@ const graknStateStorage = {
       $ref isa MigrationReference, has title "${mig.title}"; 
       insert (status: $status, state: $ref) isa migrate, has internal_id "${uuid()}";`
     );
-    logger.info(`[MIGRATION] Saving current configuration, ${mig.title}`);
+    logger.info(`[MIGRATION] > Saving current configuration, ${mig.title}`);
     return fn();
   }
 };
 
 const applyMigration = () => {
-  logger.info('[MIGRATION] Starting migration process');
+  logger.info('[MIGRATION] > Starting migration process');
   return new Promise((resolve, reject) => {
     const migrationsDirectory = path.join(__dirname, '../migrations');
     migrate.load(
@@ -83,11 +84,11 @@ const applyMigration = () => {
       async (err, set) => {
         if (err) reject(err);
         logger.info(
-          '[MIGRATION] Migration state successfully updated, starting migrations'
+          '[MIGRATION] > Migration state successfully updated, starting migrations'
         );
         set.up(err2 => {
           if (err2) reject(err2);
-          logger.info('[MIGRATION] Migrations successfully ran');
+          logger.info('[MIGRATION] > Migrations successfully ran');
           resolve(true);
         });
       }

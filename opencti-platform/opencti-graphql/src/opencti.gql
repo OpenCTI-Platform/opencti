@@ -34,8 +34,9 @@ define
   workspace_data sub attribute, datatype string;
   workspace_type sub attribute, datatype string;
   object_status sub attribute, datatype long;
-  export_type sub attribute, datatype string;
-  export_mode sub attribute, datatype string;
+  work_type sub attribute, datatype string;
+  work_status sub attribute, datatype string;
+  work_message sub attribute, datatype string;
   score sub attribute, datatype long;
 
   # STIX common properties
@@ -116,9 +117,10 @@ define
   status sub role;
   state sub role;
 
-  # Export
-  exported sub role;
-  export sub role;
+  # Work
+  work sub role;
+  carried sub role;
+  connector sub role;
 
   # OpenCTI roles
   author sub role;
@@ -209,11 +211,12 @@ define
     relates status,
     relates state;
 
-  # Export relationship
-  exports sub relation,
+  # Work job relationship
+  job sub relation,
     has internal_id,
-    relates export,
-    relates exported;
+    relates work,
+    relates connector,
+    relates carried;
 
   # Group membership relationships
   membership sub relation,
@@ -483,12 +486,14 @@ define
     has created_at_year,
     has updated_at;
 
-  Export sub entity,
+  Work sub entity,
     has internal_id,
-    has name,
+    has work_type,
+    has work_message,
+    has work_status,
     has created_at,
     has updated_at,
-    plays export;
+    plays work;
 
   Connector sub entity,
     has internal_id,
@@ -496,7 +501,8 @@ define
     has connector_type,
     has connector_scope,
     has created_at,
-    has updated_at;
+    has updated_at,
+    plays connector;
 
   Group sub entity,
     has internal_id,
@@ -561,8 +567,8 @@ define
     has updated_at,
     plays relate_from,
     plays relate_to,
-    plays so,
-    plays exported;
+    plays carried,
+    plays so;
 
   Stix-Domain-Entity sub Stix-Domain,
     abstract,
@@ -774,7 +780,7 @@ define
     plays so,
     plays soo,
     plays indicator,
-    plays exported,
+    plays carried,
     plays observable_group,
     plays observable_part_of;
 

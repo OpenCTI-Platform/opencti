@@ -16,17 +16,18 @@ const FileLineDeleteMutation = graphql`
 `;
 
 const FileLineAskDeleteMutation = graphql`
-    mutation FileLineAskDeleteMutation($exportId: ID!) {
-        resetExport(exportId: $exportId)
+    mutation FileLineAskDeleteMutation($workId: ID!) {
+        resetJob(id: $workId)
     }
 `;
 
 const FileLineComponent = (props) => {
   const { file, entityId } = props;
-  const { lastModifiedSinceMin } = file;
-  const isProgress = file.uploadStatus === 'inProgress';
-  const isOutdatedAsk = isProgress && lastModifiedSinceMin > 5;
-  const executeRemove = (mutation, variables, name, category) => {
+  const { information, lastModifiedSinceMin, uploadStatus } = file;
+  const isFail = uploadStatus === 'error';
+  const isProgress = uploadStatus === 'inProgress';
+  const isOutdated = isProgress && lastModifiedSinceMin > 5;
+  const executeRemove = (mutation, variables, id, category) => {
     commitMutation({
       mutation,
       variables,
@@ -42,7 +43,7 @@ const FileLineComponent = (props) => {
         if (category === 'import') { // If export, just wait for the refresh
           const entity = store.get(entityId);
           const conn = ConnectionHandler.getConnection(entity, `Pagination_${category}Files`);
-          ConnectionHandler.deleteNode(conn, name);
+          ConnectionHandler.deleteNode(conn, id);
         }
       },
       onCompleted: () => {
@@ -54,14 +55,14 @@ const FileLineComponent = (props) => {
     executeRemove(FileLineDeleteMutation,
       { fileName: name }, name, category);
   };
-  const handleRemoveAsk = (name, category) => {
+  const handleRemoveJob = (id, category) => {
     executeRemove(FileLineAskDeleteMutation,
-      { exportId: name }, name, category);
+      { workId: id }, id, category);
   };
   return <div>
-    {isOutdatedAsk
+    {isFail || isOutdated
       ? <IconButton color="secondary"
-                    onClick={() => handleRemoveAsk(file.id, file.metaData.category)}>
+                    onClick={() => handleRemoveJob(file.id, file.metaData.category)}>
             <Delete/>
         </IconButton>
       : <IconButton disabled={isProgress} color="primary"
@@ -69,14 +70,13 @@ const FileLineComponent = (props) => {
             <Delete/>
         </IconButton>
     }
-
     {isProgress
       ? <span>{file.name}</span>
       : <a href={`/storage/view/${file.id}`} target="_blank" rel='noopener noreferrer'>{file.name}</a>}
-
     {(() => {
-      if (isOutdatedAsk) {
-        return <Tooltip title="Technical failure" aria-label="Technical failure">
+      if (isFail || isOutdated) {
+        const message = isOutdated ? 'Processing timeout' : information;
+        return <Tooltip title={message} aria-label={message}>
             <IconButton aria-haspopup="true" color="secondary">
                 <Warning/>
             </IconButton>
@@ -98,6 +98,7 @@ const FileLine = createFragmentContainer(FileLineComponent, {
         fragment FileLine_file on File {
             id
             name
+            information
             uploadStatus
             lastModifiedSinceMin
             metaData {

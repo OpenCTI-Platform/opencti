@@ -1,7 +1,9 @@
 import amqp from 'amqplib';
 import axios from 'axios';
-import { map } from 'ramda';
-import conf, { logger } from '../config/conf';
+import conf from '../config/conf';
+
+export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
+export const WORKER_EXCHANGE = 'amqp.worker.exchange';
 
 const amqpUri = () => {
   const user = conf.get('rabbitmq:username');
@@ -17,7 +19,7 @@ const amqpExecute = execute => {
       .connect(amqpUri())
       .then(connection => {
         return connection
-          .createChannel()
+          .createConfirmChannel()
           .then(channel => {
             execute(channel)
               .then(response => {
@@ -34,29 +36,21 @@ const amqpExecute = execute => {
 };
 
 export const send = (exchangeName, routingKey, message) => {
-  if (exchangeName && routingKey && message) {
-    amqp
-      .connect(
-        `amqp://${conf.get('rabbitmq:username')}:${conf.get(
-          'rabbitmq:password'
-        )}@${conf.get('rabbitmq:hostname')}:${conf.get('rabbitmq:port')}`
-      )
-      .then(connection => {
-        return connection.createChannel().then(channel => {
-          logger.debug(
-            `[RABBITMQ] Sending ${message} to ${exchangeName} - ${routingKey}`
-          );
-          return channel
-            .assertExchange(exchangeName, 'direct', { durable: true })
-            .then(() => {
-              channel.publish(exchangeName, routingKey, Buffer.from(message));
-              setTimeout(() => {
-                connection.close();
-              }, 5000);
-            });
-        });
-      });
-  }
+  return amqpExecute(
+    channel =>
+      new Promise((resolve, reject) => {
+        channel.publish(
+          exchangeName,
+          routingKey,
+          Buffer.from(message),
+          {},
+          (err, ok) => {
+            if (err) reject(err);
+            resolve(ok);
+          }
+        );
+      })
+  );
 };
 
 export const metrics = async () => {
@@ -92,21 +86,25 @@ export const metrics = async () => {
 
 export const connectorConfig = id => ({
   uri: amqpUri(),
+  push: `push_${id}`,
+  push_exchange: 'amqp.worker.exchange',
   listen: `listen_${id}`,
-  push: `push_${id}`
+  listen_exchange: 'amqp.connector.exchange'
 });
 
-export const registerConnectorQueues = async (id, type, scope) => {
+export const listenRouting = connectorId => `listen_routing_${connectorId}`;
+
+export const pushRouting = connectorId => `push_routing_${connectorId}`;
+
+export const registerConnectorQueues = async (id, name, type, scope) => {
   // 01. Ensure exchange exists
-  const connectorExchangeTopic = 'amqp.connector.exchange';
   await amqpExecute(channel =>
-    channel.assertExchange(connectorExchangeTopic, 'direct', {
+    channel.assertExchange(CONNECTOR_EXCHANGE, 'direct', {
       durable: true
     })
   );
-  const workerExchangeTopic = 'amqp.worker.exchange';
   await amqpExecute(channel =>
-    channel.assertExchange(workerExchangeTopic, 'direct', {
+    channel.assertExchange(WORKER_EXCHANGE, 'direct', {
       durable: true
     })
   );
@@ -119,6 +117,7 @@ export const registerConnectorQueues = async (id, type, scope) => {
       durable: true,
       autoDelete: false,
       arguments: {
+        name,
         config: { id, type, scope }
       }
     })
@@ -126,8 +125,9 @@ export const registerConnectorQueues = async (id, type, scope) => {
 
   // 03. bind queue for the each connector scope
   // eslint-disable-next-line prettier/prettier
-  await Promise.all(map(s => amqpExecute(channel => channel.bindQueue(
-      listenQueue, connectorExchangeTopic, `${type}-${s}`)), scope));
+  await amqpExecute(c => c.bindQueue(
+      listenQueue, CONNECTOR_EXCHANGE, listenRouting(id))
+  );
 
   // 04. Create stix push queue
   const pushQueue = `push_${id}`;
@@ -137,6 +137,7 @@ export const registerConnectorQueues = async (id, type, scope) => {
       durable: true,
       autoDelete: false,
       arguments: {
+        name,
         config: { id, type, scope }
       }
     })
@@ -144,7 +145,7 @@ export const registerConnectorQueues = async (id, type, scope) => {
 
   // 05. Bind push queue to direct default exchange
   await amqpExecute(channel =>
-    channel.bindQueue(pushQueue, workerExchangeTopic, id)
+    channel.bindQueue(pushQueue, WORKER_EXCHANGE, pushRouting(id))
   );
 
   return connectorConfig(id);

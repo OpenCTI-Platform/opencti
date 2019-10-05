@@ -11,15 +11,15 @@ const interval$ = interval(FIVE_SECONDS);
 const FileExportViewerComponent = ({ entity, relay }) => {
   const { id, exportFiles } = entity;
   const { edges } = exportFiles;
-  useEffect(() => {
-    // Refresh the export viewer every interval
-    const subscription = interval$.subscribe(() => {
-      relay.refetch({ id });
-    });
-    return function cleanup() {
-      subscription.unsubscribe();
-    };
-  });
+  // useEffect(() => {
+  //   // Refresh the export viewer every interval
+  //   const subscription = interval$.subscribe(() => {
+  //     relay.refetch({ id });
+  //   });
+  //   return function cleanup() {
+  //     subscription.unsubscribe();
+  //   };
+  // });
   return <React.Fragment>
       {edges.length ? edges.map((file, index) => <div style={{ marginLeft: -15 }} key={index}>
         <FileLine entityId={id} file={file.node}/>

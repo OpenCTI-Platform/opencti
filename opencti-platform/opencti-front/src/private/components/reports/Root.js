@@ -44,6 +44,7 @@ const reportQuery = graphql`
     connectorsForExport {
         id
         name
+        active
         connector_scope
         updated_at
     }
@@ -82,7 +83,6 @@ class RootReport extends Component {
           query={reportQuery}
           variables={{ id: reportId, relationType: 'indicates' }}
           render={({ props }) => {
-              console.log(props)
             if (props && props.report) {
               return (
                 <div>

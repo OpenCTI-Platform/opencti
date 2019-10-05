@@ -76,13 +76,13 @@ const stixDomainEntityResolvers = {
         stixDomainEntityDeleteRelation(user, id, relationId),
       askExport: ({ format, exportType }) =>
         stixDomainEntityAskExport(id, format, exportType),
-      exportPush: ({ file }) => stixDomainEntityExportPush(user, id, file)
+      exportPush: ({ jobId, file }) =>
+        stixDomainEntityExportPush(user, id, jobId, file)
     }),
     stixDomainEntityAdd: (_, { input }, { user }) =>
       addStixDomainEntity(user, input),
     uploadImport: (_, { input }, { user }) => uploadImport(input, user),
-    deleteImport: (_, { fileName }, { user }) => deleteFile(fileName, user),
-    resetExport: (_, { exportId }) => deleteById(exportId)
+    deleteImport: (_, { fileName }, { user }) => deleteFile(fileName, user)
   },
   Subscription: {
     stixDomainEntity: {
