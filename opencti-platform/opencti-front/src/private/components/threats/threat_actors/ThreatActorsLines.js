@@ -10,7 +10,9 @@ const nbOfRowsToLoad = 25;
 
 class ThreatActorsLines extends Component {
   render() {
-    const { initialLoading, dataColumns, relay } = this.props;
+    const {
+      initialLoading, dataColumns, relay, onTagClick,
+    } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -27,6 +29,7 @@ class ThreatActorsLines extends Component {
         DummyLineComponent={<ThreatActorLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
+        onTagClick={onTagClick.bind(this)}
       />
     );
   }
@@ -40,11 +43,13 @@ ThreatActorsLines.propTypes = {
   relay: PropTypes.object,
   threatActors: PropTypes.object,
   initialLoading: PropTypes.bool,
+  onTagClick: PropTypes.func,
 };
 
 export const threatActorsLinesQuery = graphql`
   query ThreatActorsLinesPaginationQuery(
     $search: String
+    $filters: ThreatActorsFiltering
     $count: Int!
     $cursor: ID
     $orderBy: ThreatActorsOrdering
@@ -53,6 +58,7 @@ export const threatActorsLinesQuery = graphql`
     ...ThreatActorsLines_data
       @arguments(
         search: $search
+        filters: $filters
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -68,6 +74,7 @@ export default createPaginationContainer(
       fragment ThreatActorsLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
+          filters: { type: "ThreatActorsFiltering" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: { type: "ThreatActorsOrdering", defaultValue: "name" }
@@ -75,6 +82,7 @@ export default createPaginationContainer(
         ) {
         threatActors(
           search: $search
+          filters: $filters
           first: $count
           after: $cursor
           orderBy: $orderBy
@@ -111,6 +119,7 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         search: fragmentVariables.search,
+        filters: fragmentVariables.filters,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,

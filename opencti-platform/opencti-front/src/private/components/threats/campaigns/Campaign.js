@@ -8,7 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import CampaignHeader from './CampaignHeader';
 import CampaignOverview from './CampaignOverview';
-import CampaignIdentity from './CampaignIdentity';
+import CampaignDetails from './CampaignDetails';
 import CampaignEdition from './CampaignEdition';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityStixRelationsDonut from '../../common/stix_relations/EntityStixRelationsDonut';
@@ -39,7 +39,7 @@ class CampaignComponent extends Component {
             <CampaignOverview campaign={campaign} />
           </Grid>
           <Grid item={true} xs={3}>
-            <CampaignIdentity campaign={campaign} />
+            <CampaignDetails campaign={campaign} />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={campaign.id} />
@@ -84,7 +84,7 @@ const Campaign = createFragmentContainer(CampaignComponent, {
       id
       ...CampaignHeader_campaign
       ...CampaignOverview_campaign
-      ...CampaignIdentity_campaign
+      ...CampaignDetails_campaign
     }
   `,
 });

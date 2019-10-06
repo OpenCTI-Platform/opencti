@@ -7,11 +7,12 @@ const styles = () => ({
   chip: {
     fontSize: 12,
     height: 25,
-    marginRight: 7,
+    margin: '0 7px 7px 0',
   },
   chipInList: {
     fontSize: 12,
     height: 20,
+    float: 'left',
   },
 });
 
@@ -37,13 +38,17 @@ const inlineStyles = {
 class ItemMarking extends Component {
   render() {
     const { classes, variant } = this.props;
-    const style = (variant === 'inList') ? this.props.classes.chipInList : classes.chip;
+    const style = variant === 'inList' ? this.props.classes.chipInList : classes.chip;
     if (this.props.color) {
       return (
         <Chip
           classes={{ root: style }}
-          style={{ backgroundColor: this.props.color }}
-          label={this.props.label}/>
+          style={{
+            backgroundColor: this.props.color,
+            color: this.props.color === '#ffffff' ? '#2b2b2b' : 'inherit',
+          }}
+          label={this.props.label}
+        />
       );
     }
 

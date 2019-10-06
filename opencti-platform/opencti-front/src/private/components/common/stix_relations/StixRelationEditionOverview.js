@@ -42,7 +42,7 @@ import Select from '../../../../components/Select';
 import Autocomplete from '../../../../components/Autocomplete';
 import { stixDomainEntitiesLinesSearchQuery } from '../stix_domain_entities/StixDomainEntitiesLines';
 import DatePickerField from '../../../../components/DatePickerField';
-import { attributesQuery } from '../../settings/attributes/AttributesList';
+import { attributesQuery } from '../../settings/attributes/AttributesLines';
 
 const styles = theme => ({
   header: {

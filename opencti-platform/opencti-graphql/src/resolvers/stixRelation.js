@@ -16,6 +16,7 @@ import {
   search,
   reports,
   markingDefinitions,
+  tags,
   locations,
   stixRelationEditContext,
   stixRelationCleanContext,
@@ -75,6 +76,7 @@ const stixRelationResolvers = {
   StixRelation: {
     markingDefinitions: (stixRelation, args) =>
       markingDefinitions(stixRelation.id, args),
+    tags: (stixRelation, args) => tags(stixRelation.id, args),
     locations: (stixRelation, args) => locations(stixRelation.id, args),
     reports: (stixRelation, args) => {
       if (stixRelation.id.length !== 36) {

@@ -2,6 +2,7 @@ import { addOrganization, findAll, findById } from '../domain/organization';
 import {
   createdByRef,
   markingDefinitions,
+  tags,
   reports,
   exports,
   stixRelations,
@@ -23,6 +24,7 @@ const organizationResolvers = {
     createdByRef: organization => createdByRef(organization.id),
     markingDefinitions: (organization, args) =>
       markingDefinitions(organization.id, args),
+    tags: (organization, args) => tags(organization.id, args),
     reports: (organization, args) => reports(organization.id, args),
     exports: (organization, args) => exports(organization.id, args),
     stixRelations: (organization, args) => stixRelations(organization.id, args),

@@ -8,7 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import IncidentHeader from './IncidentHeader';
 import IncidentOverview from './IncidentOverview';
-import IncidentIdentity from './IncidentIdentity';
+import IncidentDetails from './IncidentDetails';
 import IncidentEdition from './IncidentEdition';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityReportsChart from '../../reports/EntityReportsChart';
@@ -39,7 +39,7 @@ class IncidentComponent extends Component {
             <IncidentOverview incident={incident} />
           </Grid>
           <Grid item={true} xs={3}>
-            <IncidentIdentity incident={incident} />
+            <IncidentDetails incident={incident} />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={incident.id} />
@@ -92,7 +92,7 @@ const Incident = createFragmentContainer(IncidentComponent, {
       id
       ...IncidentHeader_incident
       ...IncidentOverview_incident
-      ...IncidentIdentity_incident
+      ...IncidentDetails_incident
     }
   `,
 });

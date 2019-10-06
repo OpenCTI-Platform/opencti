@@ -3,6 +3,7 @@ import {
   createdByRef,
   killChainPhases,
   markingDefinitions,
+  tags,
   externalReferences,
   reports,
   exports,
@@ -25,6 +26,7 @@ const attackPatternResolvers = {
     createdByRef: attackPattern => createdByRef(attackPattern.id),
     markingDefinitions: (attackPattern, args) =>
       markingDefinitions(attackPattern.id, args),
+    tags: (attackPattern, args) => tags(attackPattern.id, args),
     externalReferences: (attackPattern, args) =>
       externalReferences(attackPattern.id, args),
     killChainPhases: (attackPattern, args) =>

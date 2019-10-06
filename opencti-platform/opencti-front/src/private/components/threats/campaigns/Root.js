@@ -29,7 +29,7 @@ const campaignQuery = graphql`
       ...Campaign_campaign
       ...CampaignHeader_campaign
       ...CampaignOverview_campaign
-      ...CampaignIdentity_campaign
+      ...CampaignDetails_campaign
       ...CampaignReports_campaign
       ...CampaignKnowledge_campaign
       ...CampaignObservables_campaign

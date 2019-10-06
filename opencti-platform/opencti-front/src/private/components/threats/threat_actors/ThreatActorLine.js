@@ -11,7 +11,7 @@ import { KeyboardArrowRight, Public } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
@@ -110,6 +110,27 @@ const ThreatActorLineFragment = createFragmentContainer(
         name
         created
         modified
+        tags {
+          edges {
+            node {
+              id
+              tag_type
+              value
+              color
+            }
+            relation {
+              id
+            }
+          }
+        }
+        markingDefinitions {
+          edges {
+            node {
+              id
+              definition
+            }
+          }
+        }
       }
     `,
   },

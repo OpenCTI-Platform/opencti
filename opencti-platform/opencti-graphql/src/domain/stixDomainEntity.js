@@ -118,6 +118,18 @@ export const markingDefinitions = (stixDomainEntityId, args) =>
     false
   );
 
+export const tags = (stixDomainEntityId, args) =>
+  paginate(
+    `match $t isa Tag; 
+    $rel(tagging:$t, so:$x) isa tagged; 
+    $x has internal_id "${escapeString(stixDomainEntityId)}"`,
+    args,
+    false,
+    null,
+    false,
+    false
+  );
+
 export const reports = (stixDomainEntityId, args) =>
   paginate(
     `match $r isa Report; 
@@ -300,6 +312,34 @@ export const stixDomainEntityAddRelation = (user, stixDomainEntityId, input) =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
+
+export const stixDomainEntityAddRelations = async (
+  user,
+  stixDomainEntityId,
+  input
+) => {
+  const finalInput = map(
+    n => ({
+      toId: n,
+      fromRole: input.fromRole,
+      toRole: input.toRole,
+      through: input.through
+    }),
+    input.toIds
+  );
+
+  const wTx = await takeWriteTx();
+  const createRelationPromise = relationInput =>
+    createRelation(stixDomainEntityId, relationInput);
+  const relationsPromises = map(createRelationPromise, finalInput);
+  await Promise.all(relationsPromises);
+
+  await commitWriteTx(wTx);
+
+  return getById(stixDomainEntityId, true).then(stixDomainEntity =>
+    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, stixDomainEntity, user)
+  );
+};
 
 export const stixDomainEntityDeleteRelation = (
   user,

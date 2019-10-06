@@ -10,7 +10,7 @@ const nbOfCardsToLoad = 25;
 
 class ThreatActorsCards extends Component {
   render() {
-    const { initialLoading, relay } = this.props;
+    const { initialLoading, relay, onTagClick } = this.props;
     return (
       <ListCardsContent
         initialLoading={initialLoading}
@@ -26,24 +26,23 @@ class ThreatActorsCards extends Component {
         CardComponent={<ThreatActorCard />}
         DummyCardComponent={<ThreatActorCardDummy />}
         nbOfCardsToLoad={nbOfCardsToLoad}
+        onTagClick={onTagClick.bind(this)}
       />
     );
   }
 }
 
 ThreatActorsCards.propTypes = {
-  classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
   data: PropTypes.object,
   relay: PropTypes.object,
-  threatActors: PropTypes.object,
   initialLoading: PropTypes.bool,
-  searchTerm: PropTypes.string,
+  onTagClick: PropTypes.func,
 };
 
 export const threatActorsCardsQuery = graphql`
   query ThreatActorsCardsPaginationQuery(
     $search: String
+    $filters: ThreatActorsFiltering
     $count: Int!
     $cursor: ID
     $orderBy: ThreatActorsOrdering
@@ -52,6 +51,7 @@ export const threatActorsCardsQuery = graphql`
     ...ThreatActorsCards_data
       @arguments(
         search: $search
+        filters: $filters
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -67,6 +67,7 @@ export default createPaginationContainer(
       fragment ThreatActorsCards_data on Query
         @argumentDefinitions(
           search: { type: "String" }
+          filters: { type: "ThreatActorsFiltering" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: { type: "ThreatActorsOrdering", defaultValue: "name" }
@@ -74,6 +75,7 @@ export default createPaginationContainer(
         ) {
         threatActors(
           search: $search
+          filters: $filters
           first: $count
           after: $cursor
           orderBy: $orderBy
@@ -110,6 +112,7 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         search: fragmentVariables.search,
+        filters: fragmentVariables.filters,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,

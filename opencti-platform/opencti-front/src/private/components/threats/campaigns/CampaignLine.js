@@ -108,6 +108,27 @@ const CampaignLineFragment = createFragmentContainer(CampaignLineComponent, {
       name
       created
       modified
+      tags {
+        edges {
+          node {
+            id
+            tag_type
+            value
+            color
+          }
+          relation {
+            id
+          }
+        }
+      }
+      markingDefinitions {
+        edges {
+          node {
+            id
+            definition
+          }
+        }
+      }
     }
   `,
 });

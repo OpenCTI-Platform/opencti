@@ -8,12 +8,12 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
-import { Tag } from 'mdi-material-ui';
+import { HexagonOutline } from 'mdi-material-ui';
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
@@ -62,7 +62,7 @@ class StixObservableLineComponent extends Component {
         to={`/dashboard/observables/all/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Tag />
+          <HexagonOutline />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -114,7 +114,7 @@ class StixObservableLineComponent extends Component {
                 style={{ width: dataColumns.marking.width }}
               >
                 {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
-                  markingDefinition => (
+                  (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}
                       variant="inList"
@@ -177,7 +177,7 @@ class StixObservableLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Tag />
+          <HexagonOutline />
         </ListItemIcon>
         <ListItemText
           primary={

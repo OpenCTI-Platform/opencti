@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
@@ -10,11 +11,11 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
-import { compose } from 'ramda';
 import { ChessKnight } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
+import StixDomainEntityElementTags from '../../common/stix_domain_entities/StixDomainEntityElementTags';
 
-const styles = theme => ({
+const styles = (theme) => ({
   card: {
     width: '100%',
     height: 170,
@@ -30,7 +31,7 @@ const styles = theme => ({
     backgroundColor: theme.palette.primary.main,
   },
   avatarDisabled: {
-    backgroundColor: theme.palette.grey[700],
+    backgroundColor: theme.palette.grey[600],
   },
   icon: {
     margin: '10px 20px 0 0',
@@ -42,18 +43,25 @@ const styles = theme => ({
     height: '100%',
   },
   header: {
+    height: 55,
     paddingBottom: 0,
     marginBottom: 0,
   },
   content: {
     width: '100%',
-    height: 87,
-    overflow: 'hidden',
     paddingTop: 0,
+  },
+  description: {
+    height: 70,
+    overflow: 'hidden',
+  },
+  tags: {
+    height: 45,
+    paddingTop: 7,
   },
   contentDummy: {
     width: '100%',
-    height: 87,
+    height: 120,
     overflow: 'hidden',
     marginTop: 15,
   },
@@ -66,6 +74,11 @@ const styles = theme => ({
     display: 'inline-block',
     height: '.8em',
     backgroundColor: theme.palette.grey[800],
+  },
+  placeholder: {
+    display: 'inline-block',
+    height: '1em',
+    backgroundColor: theme.palette.grey[700],
   },
 });
 
@@ -118,6 +131,27 @@ const CampaignCardFragment = createFragmentContainer(CampaignCardComponent, {
       description
       created
       modified
+      tags {
+        edges {
+          node {
+            id
+            tag_type
+            value
+            color
+          }
+          relation {
+            id
+          }
+        }
+      }
+      markingDefinitions {
+        edges {
+          node {
+            id
+            definition
+          }
+        }
+      }
     }
   `,
 });

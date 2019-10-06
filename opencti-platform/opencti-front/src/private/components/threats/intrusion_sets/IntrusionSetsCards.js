@@ -10,7 +10,7 @@ const nbOfCardsToLoad = 25;
 
 class IntrusionSetsCards extends Component {
   render() {
-    const { initialLoading, relay } = this.props;
+    const { initialLoading, relay, onTagClick } = this.props;
     return (
       <ListCardsContent
         initialLoading={initialLoading}
@@ -26,6 +26,7 @@ class IntrusionSetsCards extends Component {
         CardComponent={<IntrusionSetCard />}
         DummyCardComponent={<IntrusionSetCardDummy />}
         nbOfCardsToLoad={nbOfCardsToLoad}
+        onTagClick={onTagClick.bind(this)}
       />
     );
   }
@@ -35,6 +36,7 @@ IntrusionSetsCards.propTypes = {
   data: PropTypes.object,
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
+  onTagClick: PropTypes.func,
 };
 
 export const intrusionSetsCardsQuery = graphql`

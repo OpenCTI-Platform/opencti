@@ -3,37 +3,60 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
-import {
-  assoc, compose, pick, pipe,
-} from 'ramda';
+import { withStyles } from '@material-ui/core/styles';
+import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
-import DatePickerField from '../../../../components/DatePickerField';
+import TextField from '../../../../components/TextField';
 import Select from '../../../../components/Select';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
-import { dateFormat } from '../../../../utils/Time';
 
-const intrusionSetMutationFieldPatch = graphql`
-  mutation IntrusionSetEditionIdentityFieldPatchMutation(
+const styles = theme => ({
+  drawerPaper: {
+    minHeight: '100vh',
+    width: '50%',
+    position: 'fixed',
+    overflow: 'hidden',
+    backgroundColor: theme.palette.navAlt.background,
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    padding: '30px 30px 30px 30px',
+  },
+  createButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+  },
+  importButton: {
+    position: 'absolute',
+    top: 30,
+    right: 30,
+  },
+});
+
+const threatActorMutationFieldPatch = graphql`
+  mutation ThreatActorEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
-    intrusionSetEdit(id: $id) {
+    threatActorEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...IntrusionSetEditionIdentity_intrusionSet
+        ...ThreatActorEditionDetails_threatActor
       }
     }
   }
 `;
 
-const intrusionSetEditionIdentityFocus = graphql`
-  mutation IntrusionSetEditionIdentityFocusMutation(
+const threatActorEditionDetailsFocus = graphql`
+  mutation ThreatActorEditionDetailsFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
-    intrusionSetEdit(id: $id) {
+    threatActorEdit(id: $id) {
       contextPatch(input: $input) {
         id
       }
@@ -41,27 +64,21 @@ const intrusionSetEditionIdentityFocus = graphql`
   }
 `;
 
-const intrusionSetValidation = t => Yup.object().shape({
-  first_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
-  last_seen: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
-  sophistication: Yup.string(),
-  resource_level: Yup.string(),
-  primary_motivation: Yup.string(),
-  secondary_motivation: Yup.string(),
+const threatActorValidation = t => Yup.object().shape({
+  sophistication: Yup.string().required(t('This field is required')),
+  resource_level: Yup.string().required(t('This field is required')),
+  primary_motivation: Yup.string().required(t('This field is required')),
+  secondary_motivation: Yup.string().required(t('This field is required')),
   goal: Yup.string(),
 });
 
-class IntrusionSetEditionIdentityComponent extends Component {
+class ThreatActorEditionDetailsComponent extends Component {
   handleChangeFocus(name) {
     if (WS_ACTIVATED) {
       commitMutation({
-        mutation: intrusionSetEditionIdentityFocus,
+        mutation: threatActorEditionDetailsFocus,
         variables: {
-          id: this.props.intrusionSet.id,
+          id: this.props.threatActor.id,
           input: {
             focusOn: name,
           },
@@ -71,13 +88,13 @@ class IntrusionSetEditionIdentityComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    intrusionSetValidation(this.props.t)
+    threatActorValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: intrusionSetMutationFieldPatch,
+          mutation: threatActorMutationFieldPatch,
           variables: {
-            id: this.props.intrusionSet.id,
+            id: this.props.threatActor.id,
             input: { key: name, value },
           },
         });
@@ -87,62 +104,29 @@ class IntrusionSetEditionIdentityComponent extends Component {
 
   render() {
     const {
-      t, intrusionSet, editUsers, me,
+      t, threatActor, editUsers, me,
     } = this.props;
-    const initialValues = pipe(
-      assoc('first_seen', dateFormat(intrusionSet.first_seen)),
-      assoc('last_seen', dateFormat(intrusionSet.last_seen)),
-      pick([
-        'first_seen',
-        'last_seen',
+    const initialValues = pick(
+      [
         'sophistication',
         'resource_level',
         'primary_motivation',
         'secondary_motivation',
-      ]),
-    )(intrusionSet);
+        'goal',
+      ],
+      threatActor,
+    );
 
     return (
       <div>
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={intrusionSetValidation(t)}
+          validationSchema={threatActorValidation(t)}
           onSubmit={() => true}
           render={() => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  name="first_seen"
-                  component={DatePickerField}
-                  label={t('First seen')}
-                  fullWidth={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="first_seen"
-                    />
-                  }
-                />
-                <Field
-                  name="last_seen"
-                  component={DatePickerField}
-                  label={t('Last seen')}
-                  fullWidth={true}
-                  style={{ marginTop: 10 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="last_seen"
-                    />
-                  }
-                />
                 <Field
                   name="sophistication"
                   component={Select}
@@ -203,7 +187,8 @@ class IntrusionSetEditionIdentityComponent extends Component {
                       users={editUsers}
                       fieldName="resource_level"
                     />
-                  }>
+                  }
+                >
                   <MenuItem key="none" value="">
                     {t('None')}
                   </MenuItem>
@@ -346,6 +331,24 @@ class IntrusionSetEditionIdentityComponent extends Component {
                     {t('motivation_unpredictable')}
                   </MenuItem>
                 </Field>
+                <Field
+                  name="goal"
+                  component={TextField}
+                  label={t('Goal')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows="4"
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="goal"
+                    />
+                  }
+                />
               </Form>
             </div>
           )}
@@ -355,28 +358,32 @@ class IntrusionSetEditionIdentityComponent extends Component {
   }
 }
 
-IntrusionSetEditionIdentityComponent.propTypes = {
+ThreatActorEditionDetailsComponent.propTypes = {
+  classes: PropTypes.object,
+  theme: PropTypes.object,
   t: PropTypes.func,
-  intrusionSet: PropTypes.object,
+  threatActor: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
 };
 
-const IntrusionSetEditionIdentity = createFragmentContainer(
-  IntrusionSetEditionIdentityComponent,
+const ThreatActorEditionDetails = createFragmentContainer(
+  ThreatActorEditionDetailsComponent,
   {
-    intrusionSet: graphql`
-      fragment IntrusionSetEditionIdentity_intrusionSet on IntrusionSet {
+    threatActor: graphql`
+      fragment ThreatActorEditionDetails_threatActor on ThreatActor {
         id
-        first_seen
-        last_seen
         sophistication
         resource_level
         primary_motivation
         secondary_motivation
+        goal
       }
     `,
   },
 );
 
-export default compose(inject18n)(IntrusionSetEditionIdentity);
+export default compose(
+  inject18n,
+  withStyles(styles, { withTheme: true }),
+)(ThreatActorEditionDetails);

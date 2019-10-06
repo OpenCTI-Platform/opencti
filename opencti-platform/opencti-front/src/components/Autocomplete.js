@@ -6,6 +6,7 @@ import Select from 'react-select';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
+import Popper from '@material-ui/core/Popper';
 import Paper from '@material-ui/core/Paper';
 import Chip from '@material-ui/core/Chip';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -15,7 +16,7 @@ import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import inject18n from './i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   root: {
     flexGrow: 1,
   },
@@ -53,20 +54,9 @@ const styles = theme => ({
     left: 2,
     fontSize: 16,
   },
-  paper: {
-    position: 'absolute',
-    zIndex: 1,
+  popper: {
+    zIndex: theme.zIndex.modal + 200,
     marginTop: theme.spacing(1),
-    left: 0,
-    right: 0,
-  },
-  paperReversed: {
-    position: 'absolute',
-    transform: 'translate(0, -340px)',
-    zIndex: 5000,
-    left: 0,
-    right: 0,
-    height: 300,
   },
   divider: {
     height: theme.spacing(2),
@@ -171,17 +161,23 @@ function MultiValue(props) {
 
 function Menu(props) {
   return (
-    <Paper
-      square
-      className={
-        props.selectProps.reverseMenu
-          ? props.selectProps.classes.paperReversed
-          : props.selectProps.classes.paper
-      }
-      {...props.innerProps}
+    <Popper
+      open={Boolean(props.children)}
+      anchorEl={props.selectProps.anchorEl.current}
+      className={props.selectProps.classes.popper}
     >
-      {props.children}
-    </Paper>
+      <Paper
+        square
+        {...props.innerProps}
+        style={{
+          width: props.selectProps.anchorEl.current
+            ? props.selectProps.anchorEl.current.clientWidth
+            : null,
+        }}
+      >
+        {props.children}
+      </Paper>
+    </Popper>
   );
 }
 
@@ -197,6 +193,11 @@ const components = {
 };
 
 class Autocomplete extends Component {
+  constructor(props) {
+    super(props);
+    this.anchorEl = React.createRef();
+  }
+
   render() {
     const {
       required,
@@ -217,12 +218,13 @@ class Autocomplete extends Component {
       labelDisplay,
       reverseMenu,
       variant,
+      noMargin,
     } = this.props;
     const errorText = errors[field.name];
     const hasError = dirty && errorText !== undefined && touched[field.name] !== undefined;
 
     const selectStyles = {
-      input: base => ({
+      input: (base) => ({
         ...base,
         '& input': {
           font: 'inherit',
@@ -247,13 +249,13 @@ class Autocomplete extends Component {
     }
 
     return (
-      <div className={classes.root}>
+      <div className={classes.root} ref={this.anchorEl}>
         <FormControl
           fullWidth
           error={hasError}
           required={required}
           disabled={isSubmitting}
-          style={{ marginTop: '20px' }}
+          style={{ marginTop: noMargin ? 0 : '20px' }}
         >
           <Select
             classes={classes}
@@ -285,6 +287,7 @@ class Autocomplete extends Component {
             placeholder={label}
             isMulti={multiple}
             openMenuOnClick={false}
+            anchorEl={this.anchorEl}
             reverseMenu={reverseMenu}
             isDisabled={isSubmitting}
             noOptionsMessage={() => (
@@ -322,6 +325,7 @@ Autocomplete.propTypes = {
   labelDisplay: PropTypes.bool,
   reverseMenu: PropTypes.bool,
   variant: PropTypes.string,
+  noMargin: PropTypes.bool,
 };
 
 export default compose(

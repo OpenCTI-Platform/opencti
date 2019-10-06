@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import {
+  compose, propOr, assoc, dissoc,
+} from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import {
@@ -17,7 +19,6 @@ import ThreatActorsLines, {
   threatActorsLinesQuery,
 } from './threat_actors/ThreatActorsLines';
 import ThreatActorCreation from './threat_actors/ThreatActorCreation';
-import Loader from '../../Loader';
 
 class ThreatActors extends Component {
   constructor(props) {
@@ -32,6 +33,7 @@ class ThreatActors extends Component {
       orderAsc: propOr(true, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('cards', 'view', params),
+      filters: {},
     };
   }
 
@@ -40,7 +42,7 @@ class ThreatActors extends Component {
       this.props.history,
       this.props.location,
       'ThreatActors-view',
-      this.state,
+      dissoc('filters', this.state),
     );
   }
 
@@ -56,8 +58,20 @@ class ThreatActors extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleAddFilter(key, value, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    this.setState({ filters: assoc(key, [value], this.state.filters) });
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: dissoc(key, this.state.filters) });
+  }
+
   renderCards(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm } = this.state;
+    const {
+      sortBy, orderAsc, searchTerm, filters,
+    } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -77,21 +91,22 @@ class ThreatActors extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         displayImport={true}
-        keyword={searchTerm}>
+        keyword={searchTerm}
+        filters={filters}
+      >
         <QueryRenderer
           query={threatActorsCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => {
-            if (props) {
-              return <ThreatActorsCards
-                data={props}
-                paginationOptions={paginationOptions}
-                initialLoading={props === null}
-                />;
-            }
-            return <Loader />;
-          }}
+          render={({ props }) => (
+            <ThreatActorsCards
+              data={props}
+              paginationOptions={paginationOptions}
+              initialLoading={props === null}
+              onTagClick={this.handleAddFilter.bind(this)}
+            />
+          )}
         />
       </ListCards>
     );
@@ -102,7 +117,7 @@ class ThreatActors extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '60%',
+        width: '40%',
         isSortable: true,
       },
       created: {
@@ -115,6 +130,11 @@ class ThreatActors extends Component {
         width: '15%',
         isSortable: true,
       },
+      tags: {
+        label: 'Tags',
+        width: '20%',
+        isSortable: false,
+      },
     };
     return (
       <ListLines
@@ -125,7 +145,8 @@ class ThreatActors extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
         displayImport={true}
-        keyword={searchTerm}>
+        keyword={searchTerm}
+      >
         <QueryRenderer
           query={threatActorsLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
@@ -135,6 +156,7 @@ class ThreatActors extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              onTagClick={this.handleAddFilter.bind(this)}
             />
           )}
         />
@@ -144,10 +166,11 @@ class ThreatActors extends Component {
 
   render() {
     const {
-      view, sortBy, orderAsc, searchTerm,
+      view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
     const paginationOptions = {
       search: searchTerm,
+      filters,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };

@@ -6,9 +6,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
-import { attributesQuery } from '../settings/attributes/AttributesList';
+import { attributesQuery } from '../settings/attributes/AttributesLines';
 
-const styles = theme => ({
+const styles = (theme) => ({
   button: {
     marginRight: theme.spacing(1),
     padding: '2px 5px 2px 5px',
@@ -48,14 +48,27 @@ class TopMenuReports extends Component {
               const reportClassesEdges = props.attributes.edges;
               return reportClassesEdges.map((reportClassEdge) => {
                 const uri = reportClassEdge.node.value.replace(/\s/g, '_');
-                return <Button key={uri} component={Link}
-                          to={`/dashboard/reports/${uri}`}
-                          variant={ location.pathname === `/dashboard/reports/${uri}` ? 'contained' : 'text' }
-                          size="small"
-                          color={ location.pathname === `/dashboard/reports/${uri}` ? 'primary' : 'inherit' }
-                          classes={{ root: classes.button }}>
-                          {reportClassEdge.node.value}
-                      </Button>;
+                return (
+                  <Button
+                    key={uri}
+                    component={Link}
+                    to={`/dashboard/reports/${uri}`}
+                    variant={
+                      location.pathname === `/dashboard/reports/${uri}`
+                        ? 'contained'
+                        : 'text'
+                    }
+                    size="small"
+                    color={
+                      location.pathname === `/dashboard/reports/${uri}`
+                        ? 'primary'
+                        : 'inherit'
+                    }
+                    classes={{ root: classes.button }}
+                  >
+                    {reportClassEdge.node.value}
+                  </Button>
+                );
               });
             }
             return <span>&nbsp;</span>;

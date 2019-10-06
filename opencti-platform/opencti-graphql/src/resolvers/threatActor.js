@@ -2,6 +2,7 @@ import { addThreatActor, findAll, findById } from '../domain/threatActor';
 import {
   createdByRef,
   markingDefinitions,
+  tags,
   reports,
   exports,
   stixRelations,
@@ -23,6 +24,7 @@ const threatActorResolvers = {
     createdByRef: threatActor => createdByRef(threatActor.id),
     markingDefinitions: (threatActor, args) =>
       markingDefinitions(threatActor.id, args),
+    tags: (threatActor, args) => tags(threatActor.id, args),
     reports: (threatActor, args) => reports(threatActor.id, args),
     exports: (threatActor, args) => exports(threatActor.id, args),
     stixRelations: (threatActor, args) => stixRelations(threatActor.id, args),

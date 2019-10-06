@@ -29,7 +29,7 @@ const intrusionSetQuery = graphql`
       ...IntrusionSet_intrusionSet
       ...IntrusionSetHeader_intrusionSet
       ...IntrusionSetOverview_intrusionSet
-      ...IntrusionSetIdentity_intrusionSet
+      ...IntrusionSetDetails_intrusionSet
       ...IntrusionSetReports_intrusionSet
       ...IntrusionSetKnowledge_intrusionSet
       ...IntrusionSetObservables_intrusionSet

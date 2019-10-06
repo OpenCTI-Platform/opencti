@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import {
+  assoc, compose, dissoc, propOr,
+} from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import {
@@ -31,6 +33,7 @@ class IntrusionSets extends Component {
       orderAsc: propOr(true, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('cards', 'view', params),
+      filters: {},
     };
   }
 
@@ -39,7 +42,7 @@ class IntrusionSets extends Component {
       this.props.history,
       this.props.location,
       'IntrusionSets-view',
-      this.state,
+      dissoc('filters', this.state),
     );
   }
 
@@ -55,8 +58,20 @@ class IntrusionSets extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleAddFilter(key, value, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    this.setState({ filters: assoc(key, [value], this.state.filters) });
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: dissoc(key, this.state.filters) });
+  }
+
   renderCards(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm } = this.state;
+    const {
+      sortBy, orderAsc, searchTerm, filters,
+    } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -76,8 +91,10 @@ class IntrusionSets extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         displayImport={true}
         keyword={searchTerm}
+        filters={filters}
       >
         <QueryRenderer
           query={intrusionSetsCardsQuery}
@@ -87,6 +104,7 @@ class IntrusionSets extends Component {
               data={props}
               paginationOptions={paginationOptions}
               initialLoading={props === null}
+              onTagClick={this.handleAddFilter.bind(this)}
             />
           )}
         />

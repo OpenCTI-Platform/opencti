@@ -8,6 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
+import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
 
 const styles = () => ({
   paper: {
@@ -18,7 +19,7 @@ const styles = () => ({
   },
 });
 
-class CampaignIdentityComponent extends Component {
+class CampaignDetailsComponent extends Component {
   render() {
     const {
       fld, t, classes, campaign,
@@ -26,10 +27,15 @@ class CampaignIdentityComponent extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Identity')}
+          {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant="h3" gutterBottom={true}>
+          <StixDomainEntityTags tags={campaign.tags} id={campaign.id} />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('First seen')}
           </Typography>
           {fld(campaign.first_seen)}
@@ -55,20 +61,33 @@ class CampaignIdentityComponent extends Component {
   }
 }
 
-CampaignIdentityComponent.propTypes = {
+CampaignDetailsComponent.propTypes = {
   campaign: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const CampaignIdentity = createFragmentContainer(CampaignIdentityComponent, {
+const CampaignDetails = createFragmentContainer(CampaignDetailsComponent, {
   campaign: graphql`
-    fragment CampaignIdentity_campaign on Campaign {
+    fragment CampaignDetails_campaign on Campaign {
       id
       first_seen
       last_seen
       objective
+      tags {
+        edges {
+          node {
+            id
+            tag_type
+            value
+            color
+          }
+          relation {
+            id
+          }
+        }
+      }
     }
   `,
 });
@@ -76,4 +95,4 @@ const CampaignIdentity = createFragmentContainer(CampaignIdentityComponent, {
 export default compose(
   inject18n,
   withStyles(styles),
-)(CampaignIdentity);
+)(CampaignDetails);

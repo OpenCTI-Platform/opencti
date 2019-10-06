@@ -533,6 +533,18 @@ export const markingDefinitions = (stixRelationId, args) =>
     false
   );
 
+export const tags = (stixRelationId, args) =>
+  paginate(
+    `match $tag isa Tag; 
+    $rel(tagging:$tag, so:$stixRelation) isa tagged; 
+    $stixRelation has internal_id "${escapeString(stixRelationId)}"`,
+    args,
+    false,
+    null,
+    false,
+    false
+  );
+
 export const reports = (stixRelationId, args) =>
   paginate(
     `match $report isa Report; 
