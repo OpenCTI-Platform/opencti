@@ -26,6 +26,7 @@ const courseOfActionQuery = graphql`
       ...CourseOfAction_courseOfAction
       ...CourseOfActionHeader_courseOfAction
       ...CourseOfActionOverview_courseOfAction
+      ...CourseOfActionDetails_courseOfAction
     }
   }
 `;

@@ -27,18 +27,29 @@ const styles = () => ({
     float: 'left',
     marginRight: 7,
   },
+  tagInSearch: {
+    height: 25,
+    fontSize: 12,
+    margin: '0 7px 0 0',
+  },
   tagInput: {
     margin: '4px 0 0 10px',
     float: 'right',
   },
 });
 
-class StixDomainEntityElementTags extends Component {
+class StixObjectTags extends Component {
   render() {
     const {
       classes, tags, t, onClick, variant,
     } = this.props;
-    const style = variant === 'inList' ? classes.tagInList : classes.tag;
+    let style = classes.tag;
+    if (variant === 'inList') {
+      style = classes.tagInList;
+    }
+    if (variant === 'inSearch') {
+      style = classes.tagInSearch;
+    }
     return (
       <div className={classes.tags}>
         {tags.edges.length > 0 ? (
@@ -49,7 +60,11 @@ class StixDomainEntityElementTags extends Component {
                 classes={{ root: style }}
                 label={tagEdge.node.value}
                 style={{ backgroundColor: tagEdge.node.color }}
-                onClick={onClick.bind(this, 'tags', tagEdge.node.value)}
+                onClick={
+                  typeof onClick === 'function'
+                    ? onClick.bind(this, 'tags', tagEdge.node.value)
+                    : ''
+                }
               />
             ),
             take(3, tags.edges),
@@ -59,7 +74,11 @@ class StixDomainEntityElementTags extends Component {
             classes={{ root: style }}
             label={t('No tag')}
             style={{ backgroundColor: '#ffffff', color: '#000000' }}
-            onClick={onClick.bind(this, 'tags', null)}
+            onClick={
+              typeof onClick === 'function'
+                ? onClick.bind(this, 'tags', null)
+                : ''
+            }
           />
         )}
       </div>
@@ -67,7 +86,7 @@ class StixDomainEntityElementTags extends Component {
   }
 }
 
-StixDomainEntityElementTags.propTypes = {
+StixObjectTags.propTypes = {
   classes: PropTypes.object.isRequired,
   t: PropTypes.func,
   variant: PropTypes.string,
@@ -78,4 +97,4 @@ StixDomainEntityElementTags.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixDomainEntityElementTags);
+)(StixObjectTags);

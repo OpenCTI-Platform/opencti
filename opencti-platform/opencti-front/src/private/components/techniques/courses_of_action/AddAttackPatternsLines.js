@@ -27,8 +27,8 @@ const styles = (theme) => ({
   },
 });
 
-const courseOfActionLinesMutationRelationAdd = graphql`
-  mutation AddCoursesOfActionLinesRelationAddMutation(
+const attackPatternsLinesMutationRelationAdd = graphql`
+  mutation AddAttackPatternsLinesRelationAddMutation(
     $id: ID!
     $input: RelationAddInput!
   ) {
@@ -49,8 +49,8 @@ const courseOfActionLinesMutationRelationAdd = graphql`
   }
 `;
 
-export const courseOfActionMutationRelationDelete = graphql`
-  mutation AddCoursesOfActionLinesRelationDeleteMutation(
+export const attackPatternsLinesMutationRelationDelete = graphql`
+  mutation AddAttackPatternsLinesRelationDeleteMutation(
     $id: ID!
     $relationId: ID!
   ) {
@@ -70,30 +70,36 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_coursesOfAction',
+    'Pagination_attackPatterns',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class AddCoursesOfActionLinesContainer extends Component {
-  toggleCourseOfAction(courseOfAction) {
+class AddAttackPatternsLinesContainer extends Component {
+  toggleAttackPattern(attackPattern) {
     const {
-      entityId,
-      entityCoursesOfAction,
-      entityPaginationOptions,
+      courseOfActionId,
+      courseOfActionAttackPatterns,
+      courseOfActionPaginationOptions,
     } = this.props;
-    const entityCoursesOfActionIds = map((n) => n.node.id, entityCoursesOfAction);
-    const alreadyAdded = entityCoursesOfActionIds.includes(courseOfAction.id);
+    const entityCoursesOfActionIds = map(
+      (n) => n.node.id,
+      courseOfActionAttackPatterns,
+    );
+    const alreadyAdded = entityCoursesOfActionIds.includes(attackPattern.id);
 
     if (alreadyAdded) {
       const existingCourseOfAction = head(
-        filter((n) => n.node.id === courseOfAction.id, entityCoursesOfAction),
+        filter(
+          (n) => n.node.id === attackPattern.id,
+          courseOfActionAttackPatterns,
+        ),
       );
       commitMutation({
-        mutation: courseOfActionMutationRelationDelete,
+        mutation: attackPatternsLinesMutationRelationDelete,
         variables: {
-          id: courseOfAction.id,
+          id: courseOfActionId,
           relationId: existingCourseOfAction.relation.id,
         },
         updater: (store) => {
@@ -102,22 +108,22 @@ class AddCoursesOfActionLinesContainer extends Component {
           const conn = ConnectionHandler.getConnection(
             userProxy,
             'Pagination_coursesOfAction',
-            entityPaginationOptions,
+            courseOfActionPaginationOptions,
           );
-          ConnectionHandler.deleteNode(conn, courseOfAction.id);
+          ConnectionHandler.deleteNode(conn, attackPattern.id);
         },
       });
     } else {
       const input = {
-        fromRole: 'problem',
-        toId: courseOfAction.id,
-        toRole: 'mitigation',
+        fromRole: 'mitigation',
+        toId: attackPattern.id,
+        toRole: 'problem',
         through: 'mitigates',
       };
       commitMutation({
-        mutation: courseOfActionLinesMutationRelationAdd,
+        mutation: attackPatternsLinesMutationRelationAdd,
         variables: {
-          id: entityId,
+          id: courseOfActionId,
           input,
         },
         updater: (store) => {
@@ -128,7 +134,7 @@ class AddCoursesOfActionLinesContainer extends Component {
           sharedUpdater(
             store,
             container.getDataID(),
-            entityPaginationOptions,
+            courseOfActionPaginationOptions,
             payload,
           );
         },
@@ -137,35 +143,38 @@ class AddCoursesOfActionLinesContainer extends Component {
   }
 
   render() {
-    const { classes, data, entityCoursesOfAction } = this.props;
-    const entityCoursesOfActionIds = map((n) => n.node.id, entityCoursesOfAction);
+    const { classes, data, courseOfActionAttackPatterns } = this.props;
+    const courseOfActionAttackPatternsIds = map(
+      (n) => n.node.id,
+      courseOfActionAttackPatterns,
+    );
     return (
       <List>
-        {data.coursesOfAction.edges.map((courseOfActionNode) => {
-          const courseOfAction = courseOfActionNode.node;
-          const alreadyAdded = entityCoursesOfActionIds.includes(
-            courseOfAction.id,
+        {data.attackPatterns.edges.map((attackPatternNode) => {
+          const attackPattern = attackPatternNode.node;
+          const alreadyAdded = courseOfActionAttackPatternsIds.includes(
+            attackPattern.id,
           );
           return (
             <ListItem
-              key={courseOfAction.id}
+              key={attackPattern.id}
               classes={{ root: classes.menuItem }}
               divider={true}
               button={true}
-              onClick={this.toggleCourseOfAction.bind(this, courseOfAction)}
+              onClick={this.toggleAttackPattern.bind(this, attackPattern)}
             >
               <ListItemIcon>
                 {alreadyAdded ? (
                   <CheckCircle classes={{ root: classes.icon }} />
                 ) : (
                   <Avatar classes={{ root: classes.avatar }}>
-                    {courseOfAction.name.substring(0, 1)}
+                    {attackPattern.name.substring(0, 1)}
                   </Avatar>
                 )}
               </ListItemIcon>
               <ListItemText
-                primary={courseOfAction.name}
-                secondary={truncate(courseOfAction.description, 120)}
+                primary={attackPattern.name}
+                secondary={truncate(attackPattern.description, 120)}
               />
             </ListItem>
           );
@@ -175,7 +184,7 @@ class AddCoursesOfActionLinesContainer extends Component {
   }
 }
 
-AddCoursesOfActionLinesContainer.propTypes = {
+AddAttackPatternsLinesContainer.propTypes = {
   entityId: PropTypes.string,
   entityCoursesOfAction: PropTypes.array,
   entityPaginationOptions: PropTypes.object,
@@ -183,29 +192,29 @@ AddCoursesOfActionLinesContainer.propTypes = {
   classes: PropTypes.object,
 };
 
-export const addCoursesOfActionLinesQuery = graphql`
-  query AddCoursesOfActionLinesQuery(
+export const addAttackPatternsLinesQuery = graphql`
+  query AddAttackPatternsLinesQuery(
     $search: String
     $count: Int!
     $cursor: ID
   ) {
-    ...AddCoursesOfActionLines_data
+    ...AddAttackPatternsLines_data
       @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
-const AddCoursesOfActionLines = createPaginationContainer(
-  AddCoursesOfActionLinesContainer,
+const AddAttackPatternsLines = createPaginationContainer(
+  AddAttackPatternsLinesContainer,
   {
     data: graphql`
-      fragment AddCoursesOfActionLines_data on Query
+      fragment AddAttackPatternsLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
         ) {
-        coursesOfAction(search: $search, first: $count, after: $cursor)
-          @connection(key: "Pagination_coursesOfAction") {
+        attackPatterns(search: $search, first: $count, after: $cursor)
+          @connection(key: "Pagination_attackPatterns") {
           edges {
             node {
               id
@@ -220,7 +229,7 @@ const AddCoursesOfActionLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.coursesOfAction;
+      return props.data && props.data.attackPatterns;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -236,11 +245,11 @@ const AddCoursesOfActionLines = createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: addCoursesOfActionLinesQuery,
+    query: addAttackPatternsLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(AddCoursesOfActionLines);
+)(AddAttackPatternsLines);

@@ -111,7 +111,7 @@ class StixObservableLineComponent extends Component {
               )}
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.marking.width }}
+                style={{ width: dataColumns.markingDefinitions.width }}
               >
                 {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
                   (markingDefinition) => (
@@ -226,7 +226,7 @@ class StixObservableLineDummyComponent extends Component {
               )}
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.marking.width }}
+                style={{ width: dataColumns.markingDefinitions.width }}
               >
                 <div className="fakeItem" style={{ width: 100 }} />
               </div>

@@ -271,6 +271,7 @@ enum StixDomainEntitiesOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input StixDomainEntitiesFiltering {
   tags: [String]
@@ -347,6 +348,7 @@ enum StixObservablesOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input StixObservablesFiltering {
   tags: [String]
@@ -642,6 +644,7 @@ enum UsersOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input UsersFiltering {
   tags: [String]
@@ -753,6 +756,7 @@ enum OrganizationsOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input OrganizationsFiltering {
   tags: [String]
@@ -838,6 +842,7 @@ enum SectorsOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input SectorsFiltering {
   tags: [String]
@@ -923,6 +928,7 @@ enum CitiesOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input CitiesFiltering {
   tags: [String]
@@ -1006,6 +1012,7 @@ enum CountriesOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input CountriesFiltering {
   tags: [String]
@@ -1089,6 +1096,7 @@ enum RegionsOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input RegionsFiltering {
   tags: [String]
@@ -1356,6 +1364,7 @@ enum AttackPatternsOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input AttackPatternsFiltering {
   tags: [String]
@@ -1367,6 +1376,7 @@ type AttackPatternConnection {
 type AttackPatternEdge {
   cursor: String!
   node: AttackPattern!
+  relation: RelationEmbedded!
 }
 type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
@@ -1445,6 +1455,7 @@ enum CoursesOfActionOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input CoursesOfActionFiltering {
   tags: [String]
@@ -1527,6 +1538,7 @@ enum ThreatActorsOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input ThreatActorsFiltering {
   tags: [String]
@@ -1622,6 +1634,7 @@ enum IntrusionSetsOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input IntrusionSetsFiltering {
   tags: [String]
@@ -1721,6 +1734,7 @@ enum CampaignsOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input CampaignsFiltering {
   tags: [String]
@@ -1811,6 +1825,7 @@ enum IncidentsOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input IncidentsFiltering {
   tags: [String]
@@ -1899,6 +1914,7 @@ enum MalwaresOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input MalwaresFiltering {
   tags: [String]
@@ -1983,6 +1999,7 @@ enum ToolsOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input ToolsFiltering {
   tags: [String]
@@ -2069,6 +2086,7 @@ enum VulnerabilitiesOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input VulnerabilitiesFiltering {
   tags: [String]
@@ -2154,6 +2172,7 @@ enum ReportsOrdering {
   created_at
   updated_at
   tags
+  markingDefinitions
 }
 input ReportsFiltering {
   tags: [String]
@@ -2545,6 +2564,7 @@ type Query {
     filters: AttackPatternsFiltering
     filterMode: FilterMode
     objectId: String
+    courseOfActionId: String
     search: String
   ): AttackPatternConnection @auth
   # CoursesOfAction

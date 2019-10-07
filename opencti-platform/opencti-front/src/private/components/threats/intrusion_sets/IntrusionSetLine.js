@@ -11,7 +11,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
 import { Diamond } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import StixDomainEntityElementTags from '../../common/stix_domain_entities/StixDomainEntityElementTags';
+import StixObjectTags from '../../common/stix_object/StixObjectTags';
 
 const styles = (theme) => ({
   item: {
@@ -76,7 +76,7 @@ class IntrusionSetLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.tags.width }}
               >
-                <StixDomainEntityElementTags
+                <StixObjectTags
                   variant="inList"
                   tags={node.tags}
                   onClick={onTagClick.bind(this)}

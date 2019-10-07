@@ -76,6 +76,9 @@ class ThreatActors extends Component {
       name: {
         label: 'Name',
       },
+      tags: {
+        label: 'Tags',
+      },
       created: {
         label: 'Creation date',
       },

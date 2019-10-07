@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import {
+  assoc, compose, dissoc, propOr,
+} from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import {
@@ -25,6 +27,7 @@ class Tools extends Component {
       orderAsc: propOr(true, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
+      filters: {},
     };
   }
 
@@ -33,7 +36,7 @@ class Tools extends Component {
       this.props.history,
       this.props.location,
       'Tools-view',
-      this.state,
+      dissoc('filters', this.state),
     );
   }
 
@@ -45,17 +48,34 @@ class Tools extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleAddFilter(key, value, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    this.setState({ filters: assoc(key, [value], this.state.filters) });
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: dissoc(key, this.state.filters) });
+  }
+
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm } = this.state;
+    const {
+      sortBy, orderAsc, searchTerm, filters,
+    } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '40%',
+        width: '27%',
         isSortable: true,
       },
       tool_version: {
         label: 'Version',
-        width: '20%',
+        width: '8%',
+        isSortable: true,
+      },
+      tags: {
+        label: 'Tags',
+        width: '25%',
         isSortable: true,
       },
       created: {
@@ -76,8 +96,10 @@ class Tools extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         displayImport={true}
         keyword={searchTerm}
+        filters={filters}
       >
         <QueryRenderer
           query={toolsLinesQuery}
@@ -88,6 +110,7 @@ class Tools extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              onTagClick={this.handleAddFilter.bind(this)}
             />
           )}
         />
@@ -97,12 +120,13 @@ class Tools extends Component {
 
   render() {
     const {
-      view, sortBy, orderAsc, searchTerm,
+      view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
+      filters,
     };
     return (
       <div>

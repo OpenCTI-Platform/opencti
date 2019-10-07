@@ -85,17 +85,17 @@ class AttributeEditionContainer extends Component {
           'Pagination_attributes',
           this.props.paginationOptions,
         );
-        const payload = store
+        /* const payload = store
           .getRootField('attributeEdit')
           .getLinkedRecord('update', { input });
-        const newEdge = ConnectionHandler.createEdge(
+         const newEdge = ConnectionHandler.createEdge(
           store,
           conn,
           payload,
           'AttributeEdge',
-        );
+        ); */
         ConnectionHandler.deleteNode(conn, this.props.attribute.id);
-        ConnectionHandler.insertEdgeBefore(conn, newEdge);
+        // ConnectionHandler.insertEdgeAfter(conn, newEdge);
         this.props.handleClose();
       },
       setSubmitting,

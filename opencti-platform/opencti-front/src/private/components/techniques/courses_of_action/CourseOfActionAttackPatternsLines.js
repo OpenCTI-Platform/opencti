@@ -4,8 +4,6 @@ import { createPaginationContainer } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -16,13 +14,14 @@ import Avatar from '@material-ui/core/Avatar';
 import { LinkOff } from '@material-ui/icons';
 import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
+import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
-import AddCoursesOfAction from './AddCoursesOfAction';
-import { courseOfActionMutationRelationDelete } from './AddCoursesOfActionLines';
+import { attackPatternsLinesMutationRelationDelete } from './AddAttackPatternsLines';
+import AddAttackPatterns from './AddAttackPatterns';
 
-const styles = theme => ({
+const styles = (theme) => ({
   paper: {
     minHeight: '100%',
     margin: '-4px 0 0 0',
@@ -48,87 +47,89 @@ const styles = theme => ({
   },
 });
 
-class EntityCoursesOfActionLinesContainer extends Component {
-  removeCourseOfAction(courseOfActionEdge) {
+class CourseOfActionAttackPatternsLinesContainer extends Component {
+  removeAttackPattern(attackPatternEdge) {
     commitMutation({
-      mutation: courseOfActionMutationRelationDelete,
+      mutation: attackPatternsLinesMutationRelationDelete,
       variables: {
-        id: courseOfActionEdge.node.id,
-        relationId: courseOfActionEdge.relation.id,
+        id: attackPatternEdge.node.id,
+        relationId: attackPatternEdge.relation.id,
       },
       updater: (store) => {
         const container = store.getRoot();
         const userProxy = store.get(container.getDataID());
         const conn = ConnectionHandler.getConnection(
           userProxy,
-          'Pagination_coursesOfAction',
+          'Pagination_attackPatterns',
           this.props.paginationOptions,
         );
-        ConnectionHandler.deleteNode(conn, courseOfActionEdge.node.id);
+        ConnectionHandler.deleteNode(conn, attackPatternEdge.node.id);
       },
     });
   }
 
   render() {
     const {
-      t, classes, entityId, data, paginationOptions,
+      t,
+      classes,
+      courseOfActionId,
+      paginationOptions,
+      data,
     } = this.props;
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Courses of action')}
+      <div style={{ marginTop: 20 }}>
+        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          {t('Mitigated TTPs')}
         </Typography>
-        <AddCoursesOfAction
-          entityId={entityId}
-          entityCoursesOfAction={data.coursesOfAction.edges}
-          entityPaginationOptions={paginationOptions}
+        <AddAttackPatterns
+          courseOfActionId={courseOfActionId}
+          courseOfActionAttackPatterns={data.attackPatterns.edges}
+          courseOfActionPaginationOptions={paginationOptions}
         />
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
-          <List classes={{ root: classes.list }}>
-            {data.coursesOfAction.edges.map((courseOfActionEdge) => {
-              const courseOfAction = courseOfActionEdge.node;
-              return (
-                <ListItem
-                  key={courseOfAction.id}
-                  dense={true}
-                  divider={true}
-                  button={true}
-                  component={Link}
-                  to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}`}
-                >
-                  <ListItemIcon>
-                    <Avatar classes={{ root: classes.avatar }}>
-                      {courseOfAction.name.substring(0, 1)}
-                    </Avatar>
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={courseOfAction.name}
-                    secondary={truncate(courseOfAction.description, 60)}
-                  />
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={this.removeCourseOfAction.bind(
-                        this,
-                        courseOfActionEdge,
-                      )}
-                    >
-                      <LinkOff />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              );
-            })}
-          </List>
-        </Paper>
+        <List classes={{ root: classes.list }}>
+          {data.attackPatterns.edges.map((attackPatternEdge) => {
+            const attackPattern = attackPatternEdge.node;
+            return (
+              <ListItem
+                key={attackPattern.id}
+                dense={true}
+                divider={true}
+                button={true}
+                component={Link}
+                to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
+              >
+                <ListItemIcon>
+                  <Avatar classes={{ root: classes.avatar }}>
+                    {attackPattern.name.substring(0, 1)}
+                  </Avatar>
+                </ListItemIcon>
+                <ListItemText
+                  primary={attackPattern.name}
+                  secondary={truncate(attackPattern.description, 60)}
+                />
+                <ListItemSecondaryAction>
+                  <IconButton
+                    aria-label="Remove"
+                    onClick={this.removeAttackPattern.bind(
+                      this,
+                      attackPatternEdge,
+                    )}
+                  >
+                    <LinkOff />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            );
+          })}
+        </List>
       </div>
     );
   }
 }
 
-EntityCoursesOfActionLinesContainer.propTypes = {
-  entityId: PropTypes.string,
+CourseOfActionAttackPatternsLinesContainer.propTypes = {
+  courseOfActionId: PropTypes.string,
   paginationOptions: PropTypes.object,
   data: PropTypes.object,
   limit: PropTypes.number,
@@ -137,17 +138,17 @@ EntityCoursesOfActionLinesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const entityCoursesOfActionLinesQuery = graphql`
-  query EntityCoursesOfActionLinesQuery(
-    $objectId: String!
+export const courseOfActionAttackPatternsLinesQuery = graphql`
+  query CourseOfActionAttackPatternsLinesQuery(
+    $courseOfActionId: String!
     $count: Int!
     $cursor: ID
-    $orderBy: CoursesOfActionOrdering
+    $orderBy: AttackPatternsOrdering
     $orderMode: OrderingMode
   ) {
-    ...EntityCoursesOfActionLines_data
+    ...CourseOfActionAttackPatternsLines_data
       @arguments(
-        objectId: $objectId
+        courseOfActionId: $courseOfActionId
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -156,25 +157,25 @@ export const entityCoursesOfActionLinesQuery = graphql`
   }
 `;
 
-const EntityCoursesOfActionLines = createPaginationContainer(
-  EntityCoursesOfActionLinesContainer,
+const CourseOfActionAttackPatternsLines = createPaginationContainer(
+  CourseOfActionAttackPatternsLinesContainer,
   {
     data: graphql`
-      fragment EntityCoursesOfActionLines_data on Query
+      fragment CourseOfActionAttackPatternsLines_data on Query
         @argumentDefinitions(
-          objectId: { type: "String!" }
+          courseOfActionId: { type: "String!" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "CoursesOfActionOrdering", defaultValue: "name" }
+          orderBy: { type: "AttackPatternsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
-        coursesOfAction(
-          objectId: $objectId
+        attackPatterns(
+          courseOfActionId: $courseOfActionId
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_coursesOfAction") {
+        ) @connection(key: "Pagination_attackPatterns") {
           edges {
             node {
               id
@@ -197,7 +198,7 @@ const EntityCoursesOfActionLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.coursesOfAction;
+      return props.data && props.data.attackPatterns;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -207,18 +208,18 @@ const EntityCoursesOfActionLines = createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        objectId: fragmentVariables.objectId,
+        courseOfActionId: fragmentVariables.courseOfActionId,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: entityCoursesOfActionLinesQuery,
+    query: courseOfActionAttackPatternsLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityCoursesOfActionLines);
+)(CourseOfActionAttackPatternsLines);

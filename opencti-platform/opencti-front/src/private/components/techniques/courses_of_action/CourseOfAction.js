@@ -8,6 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import CourseOfActionHeader from './CourseOfActionHeader';
 import CourseOfActionOverview from './CourseOfActionOverview';
+import CourseOfActionDetails from './CourseOfActionDetails';
 import CourseOfActionEdition from './CourseOfActionEdition';
 import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
 import EntityStixRelationsPie from '../../common/stix_relations/EntityStixRelationsPie';
@@ -34,10 +35,13 @@ class CourseOfActionComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={4}>
             <CourseOfActionOverview courseOfAction={courseOfAction} />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={4}>
+            <CourseOfActionDetails courseOfAction={courseOfAction} />
+          </Grid>
+          <Grid item={true} xs={4}>
             <EntityExternalReferences entityId={courseOfAction.id} />
           </Grid>
         </Grid>
@@ -82,6 +86,7 @@ const CourseOfAction = createFragmentContainer(CourseOfActionComponent, {
       id
       ...CourseOfActionHeader_courseOfAction
       ...CourseOfActionOverview_courseOfAction
+      ...CourseOfActionDetails_courseOfAction
     }
   `,
 });

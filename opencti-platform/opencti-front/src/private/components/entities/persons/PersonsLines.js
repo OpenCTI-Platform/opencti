@@ -15,6 +15,7 @@ class PersonsLines extends Component {
       dataColumns,
       relay,
       paginationOptions,
+      onTagClick,
     } = this.props;
     return (
       <ListLinesContent
@@ -33,6 +34,7 @@ class PersonsLines extends Component {
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
+        onTagClick={onTagClick.bind(this)}
       />
     );
   }
@@ -46,6 +48,7 @@ PersonsLines.propTypes = {
   relay: PropTypes.object,
   persons: PropTypes.object,
   initialLoading: PropTypes.bool,
+  onTagClick: PropTypes.func,
 };
 
 export const personsLinesQuery = graphql`
@@ -55,6 +58,7 @@ export const personsLinesQuery = graphql`
     $cursor: ID
     $orderBy: UsersOrdering
     $orderMode: OrderingMode
+    $filters: UsersFiltering
   ) {
     ...PersonsLines_data
       @arguments(
@@ -63,6 +67,7 @@ export const personsLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -78,6 +83,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "UsersOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "UsersFiltering" }
         ) {
         users(
           search: $search
@@ -85,6 +91,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_users") {
           edges {
             node {
@@ -115,6 +122,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: personsLinesQuery,

@@ -76,6 +76,9 @@ class IntrusionSets extends Component {
       name: {
         label: 'Name',
       },
+      tags: {
+        label: 'Tags',
+      },
       created: {
         label: 'Creation date',
       },

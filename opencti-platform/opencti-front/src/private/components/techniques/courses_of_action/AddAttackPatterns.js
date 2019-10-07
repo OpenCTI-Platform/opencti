@@ -14,10 +14,9 @@ import { Add, Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddCoursesOfActionLines, {
-  addCoursesOfActionLinesQuery,
-} from './AddCoursesOfActionLines';
-import CourseOfActionCreation from './CourseOfActionCreation';
+import AddAttackPatternsLines, {
+  addAttackPatternsLinesQuery,
+} from './AddAttackPatternsLines';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -30,10 +29,6 @@ const styles = (theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
-  },
-  createButton: {
-    float: 'left',
-    marginTop: -15,
   },
   title: {
     float: 'left',
@@ -64,7 +59,7 @@ const styles = (theme) => ({
   },
 });
 
-class AddCoursesOfAction extends Component {
+class AddAttackPatterns extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false, search: '' };
@@ -86,20 +81,17 @@ class AddCoursesOfAction extends Component {
     const {
       t,
       classes,
-      entityId,
-      entityCoursesOfAction,
-      entityPaginationOptions,
+      courseOfActionId,
+      courseOfActionAttackPatterns,
+      courseOfActionPaginationOptions,
     } = this.props;
-    const paginationOptions = {
-      search: this.state.search,
-    };
     return (
       <div>
         <IconButton
           color="secondary"
-          aria-label="Add"
+          aria-label="Attack Pattern"
           onClick={this.handleOpen.bind(this)}
-          classes={{ root: classes.createButton }}
+          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
         >
           <Add fontSize="small" />
         </IconButton>
@@ -118,7 +110,7 @@ class AddCoursesOfAction extends Component {
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('Add courses of action')}
+              {t('Add attack pattern')}
             </Typography>
             <div className={classes.search}>
               <SearchInput
@@ -130,7 +122,7 @@ class AddCoursesOfAction extends Component {
           </div>
           <div className={classes.container}>
             <QueryRenderer
-              query={addCoursesOfActionLinesQuery}
+              query={addAttackPatternsLinesQuery}
               variables={{
                 search: this.state.search,
                 count: 20,
@@ -138,10 +130,14 @@ class AddCoursesOfAction extends Component {
               render={({ props }) => {
                 if (props) {
                   return (
-                    <AddCoursesOfActionLines
-                      entityId={entityId}
-                      entityCoursesOfAction={entityCoursesOfAction}
-                      entityPaginationOptions={entityPaginationOptions}
+                    <AddAttackPatternsLines
+                      courseOfActionId={courseOfActionId}
+                      courseOfActionAttackPatterns={
+                        courseOfActionAttackPatterns
+                      }
+                      courseOfActionPaginationOptions={
+                        courseOfActionPaginationOptions
+                      }
                       data={props}
                     />
                   );
@@ -177,21 +173,15 @@ class AddCoursesOfAction extends Component {
             />
           </div>
         </Drawer>
-        <CourseOfActionCreation
-          display={this.state.open}
-          contextual={true}
-          inputValue={this.state.search}
-          paginationOptions={paginationOptions}
-        />
       </div>
     );
   }
 }
 
-AddCoursesOfAction.propTypes = {
-  entityId: PropTypes.string,
-  entityCoursesOfAction: PropTypes.array,
-  entityPaginationOptions: PropTypes.object,
+AddAttackPatterns.propTypes = {
+  courseOfActionId: PropTypes.string,
+  courseOfActionAttackPatterns: PropTypes.array,
+  courseOfActionPaginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
@@ -199,4 +189,4 @@ AddCoursesOfAction.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(AddCoursesOfAction);
+)(AddAttackPatterns);
