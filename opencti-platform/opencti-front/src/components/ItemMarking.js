@@ -13,6 +13,7 @@ const styles = () => ({
     fontSize: 12,
     height: 20,
     float: 'left',
+    marginRight: 7,
   },
 });
 
@@ -38,7 +39,7 @@ const inlineStyles = {
 class ItemMarking extends Component {
   render() {
     const { classes, variant } = this.props;
-    const style = variant === 'inList' ? this.props.classes.chipInList : classes.chip;
+    const style = variant === 'inList' ? classes.chipInList : classes.chip;
     if (this.props.color) {
       return (
         <Chip

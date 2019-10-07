@@ -270,6 +270,7 @@ enum StixDomainEntitiesOrdering {
   entity_type
   created_at
   updated_at
+  tags
 }
 input StixDomainEntitiesFiltering {
   tags: [String]
@@ -345,6 +346,7 @@ enum StixObservablesOrdering {
   value
   created_at
   updated_at
+  tags
 }
 input StixObservablesFiltering {
   tags: [String]
@@ -639,6 +641,7 @@ enum UsersOrdering {
   lastname
   created_at
   updated_at
+  tags
 }
 input UsersFiltering {
   tags: [String]
@@ -749,6 +752,7 @@ enum OrganizationsOrdering {
   modified
   created_at
   updated_at
+  tags
 }
 input OrganizationsFiltering {
   tags: [String]
@@ -833,6 +837,7 @@ enum SectorsOrdering {
   modified
   created_at
   updated_at
+  tags
 }
 input SectorsFiltering {
   tags: [String]
@@ -917,6 +922,7 @@ enum CitiesOrdering {
   modified
   created_at
   updated_at
+  tags
 }
 input CitiesFiltering {
   tags: [String]
@@ -999,6 +1005,7 @@ enum CountriesOrdering {
   modified
   created_at
   updated_at
+  tags
 }
 input CountriesFiltering {
   tags: [String]
@@ -1081,6 +1088,7 @@ enum RegionsOrdering {
   modified
   created_at
   updated_at
+  tags
 }
 input RegionsFiltering {
   tags: [String]
@@ -1347,6 +1355,7 @@ enum AttackPatternsOrdering {
   modified
   created_at
   updated_at
+  tags
 }
 input AttackPatternsFiltering {
   tags: [String]
@@ -1435,6 +1444,7 @@ enum CoursesOfActionOrdering {
   modified
   created_at
   updated_at
+  tags
 }
 input CoursesOfActionFiltering {
   tags: [String]
@@ -1516,6 +1526,7 @@ enum ThreatActorsOrdering {
   modified
   created_at
   updated_at
+  tags
 }
 input ThreatActorsFiltering {
   tags: [String]
@@ -1610,6 +1621,7 @@ enum IntrusionSetsOrdering {
   modified
   created_at
   updated_at
+  tags
 }
 input IntrusionSetsFiltering {
   tags: [String]
@@ -1708,6 +1720,7 @@ enum CampaignsOrdering {
   modified
   created_at
   updated_at
+  tags
 }
 input CampaignsFiltering {
   tags: [String]
@@ -1797,6 +1810,7 @@ enum IncidentsOrdering {
   modified
   created_at
   updated_at
+  tags
 }
 input IncidentsFiltering {
   tags: [String]
@@ -1884,6 +1898,7 @@ enum MalwaresOrdering {
   modified
   created_at
   updated_at
+  tags
 }
 input MalwaresFiltering {
   tags: [String]
@@ -1967,6 +1982,7 @@ enum ToolsOrdering {
   modified
   created_at
   updated_at
+  tags
 }
 input ToolsFiltering {
   tags: [String]
@@ -2052,6 +2068,7 @@ enum VulnerabilitiesOrdering {
   modified
   created_at
   updated_at
+  tags
 }
 input VulnerabilitiesFiltering {
   tags: [String]
@@ -2136,6 +2153,7 @@ enum ReportsOrdering {
   createdByRef
   created_at
   updated_at
+  tags
 }
 input ReportsFiltering {
   tags: [String]

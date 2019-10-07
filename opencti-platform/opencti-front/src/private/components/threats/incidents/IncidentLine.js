@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -9,10 +10,10 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
 import { Fire } from 'mdi-material-ui';
-import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
+import StixDomainEntityElementTags from '../../common/stix_domain_entities/StixDomainEntityElementTags';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
@@ -50,7 +51,7 @@ const styles = theme => ({
 class IncidentLineComponent extends Component {
   render() {
     const {
-      fd, classes, dataColumns, node,
+      fd, classes, dataColumns, node, onTagClick,
     } = this.props;
     return (
       <ListItem
@@ -70,6 +71,16 @@ class IncidentLineComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 {node.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <StixDomainEntityElementTags
+                  variant="inList"
+                  tags={node.tags}
+                  onClick={onTagClick.bind(this)}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -99,6 +110,7 @@ IncidentLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
+  onTagClick: PropTypes.func,
 };
 
 const IncidentLineFragment = createFragmentContainer(IncidentLineComponent, {
@@ -154,6 +166,12 @@ class IncidentLineDummyComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <div className="fakeItem" style={{ width: '90%' }} />
               </div>
               <div
                 className={classes.bodyItem}

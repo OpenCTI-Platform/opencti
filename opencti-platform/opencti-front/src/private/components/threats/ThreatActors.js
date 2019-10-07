@@ -113,11 +113,18 @@ class ThreatActors extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm } = this.state;
+    const {
+      sortBy, orderAsc, searchTerm, filters,
+    } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '40%',
+        width: '35%',
+        isSortable: true,
+      },
+      tags: {
+        label: 'Tags',
+        width: '25%',
         isSortable: true,
       },
       created: {
@@ -130,11 +137,6 @@ class ThreatActors extends Component {
         width: '15%',
         isSortable: true,
       },
-      tags: {
-        label: 'Tags',
-        width: '20%',
-        isSortable: false,
-      },
     };
     return (
       <ListLines
@@ -144,8 +146,10 @@ class ThreatActors extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         displayImport={true}
         keyword={searchTerm}
+        filters={filters}
       >
         <QueryRenderer
           query={threatActorsLinesQuery}
@@ -170,9 +174,9 @@ class ThreatActors extends Component {
     } = this.state;
     const paginationOptions = {
       search: searchTerm,
-      filters,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
+      filters,
     };
     return (
       <div>

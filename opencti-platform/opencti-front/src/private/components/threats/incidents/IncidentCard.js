@@ -85,7 +85,7 @@ const styles = (theme) => ({
 class IncidentCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, node,
+      t, fsd, classes, node, onTagClick,
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
@@ -103,12 +103,20 @@ class IncidentCardComponent extends Component {
             subheader={`${t('Updated the')} ${fsd(node.modified)}`}
             action={<Fire className={classes.icon} />}
           />
-          <CardContent classes={{ root: classes.content }}>
-            <Markdown
-              source={node.description}
-              disallowedTypes={['link', 'linkReference']}
-              unwrapDisallowed={true}
-            />
+          <CardContent className={classes.content}>
+            <div className={classes.description}>
+              <Markdown
+                source={node.description}
+                disallowedTypes={['link', 'linkReference']}
+                unwrapDisallowed={true}
+              />
+            </div>
+            <div className={classes.tags}>
+              <StixDomainEntityElementTags
+                tags={node.tags}
+                onClick={onTagClick.bind(this)}
+              />
+            </div>
           </CardContent>
         </CardActionArea>
       </Card>
@@ -121,6 +129,7 @@ IncidentCardComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
+  onTagClick: PropTypes.func,
 };
 
 const IncidentCardFragment = createFragmentContainer(IncidentCardComponent, {

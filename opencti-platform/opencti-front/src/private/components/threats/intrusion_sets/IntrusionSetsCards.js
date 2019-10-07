@@ -46,6 +46,7 @@ export const intrusionSetsCardsQuery = graphql`
     $cursor: ID
     $orderBy: IntrusionSetsOrdering
     $orderMode: OrderingMode
+    $filters: IntrusionSetsFiltering
   ) {
     ...IntrusionSetsCards_data
       @arguments(
@@ -54,6 +55,7 @@ export const intrusionSetsCardsQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -69,6 +71,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "IntrusionSetsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "IntrusionSetsFiltering" }
         ) {
         intrusionSets(
           search: $search
@@ -76,6 +79,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_intrusionSets") {
           edges {
             node {
@@ -112,6 +116,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: intrusionSetsCardsQuery,

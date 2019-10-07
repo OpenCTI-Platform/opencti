@@ -113,11 +113,18 @@ class IntrusionSets extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm } = this.state;
+    const {
+      sortBy, orderAsc, searchTerm, filters,
+    } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '60%',
+        width: '35%',
+        isSortable: true,
+      },
+      tags: {
+        label: 'Tags',
+        width: '25%',
         isSortable: true,
       },
       created: {
@@ -139,8 +146,10 @@ class IntrusionSets extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         displayImport={true}
         keyword={searchTerm}
+        filters={filters}
       >
         <QueryRenderer
           query={intrusionSetsLinesQuery}
@@ -151,6 +160,7 @@ class IntrusionSets extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              onTagClick={this.handleAddFilter.bind(this)}
             />
           )}
         />
@@ -160,12 +170,13 @@ class IntrusionSets extends Component {
 
   render() {
     const {
-      view, sortBy, orderAsc, searchTerm,
+      view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
+      filters,
     };
     return (
       <div>

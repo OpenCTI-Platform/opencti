@@ -21,6 +21,12 @@ const styles = () => ({
     fontSize: 12,
     margin: '0 7px 7px 0',
   },
+  tagInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    marginRight: 7,
+  },
   tagInput: {
     margin: '4px 0 0 10px',
     float: 'right',
@@ -30,8 +36,9 @@ const styles = () => ({
 class StixDomainEntityElementTags extends Component {
   render() {
     const {
-      classes, tags, t, onClick,
+      classes, tags, t, onClick, variant,
     } = this.props;
+    const style = variant === 'inList' ? classes.tagInList : classes.tag;
     return (
       <div className={classes.tags}>
         {tags.edges.length > 0 ? (
@@ -39,7 +46,7 @@ class StixDomainEntityElementTags extends Component {
             (tagEdge) => (
               <Chip
                 key={tagEdge.node.id}
-                classes={{ root: classes.tag }}
+                classes={{ root: style }}
                 label={tagEdge.node.value}
                 style={{ backgroundColor: tagEdge.node.color }}
                 onClick={onClick.bind(this, 'tags', tagEdge.node.value)}
@@ -49,7 +56,7 @@ class StixDomainEntityElementTags extends Component {
           )
         ) : (
           <Chip
-            classes={{ root: classes.tag }}
+            classes={{ root: style }}
             label={t('No tag')}
             style={{ backgroundColor: '#ffffff', color: '#000000' }}
             onClick={onClick.bind(this, 'tags', null)}
@@ -63,6 +70,7 @@ class StixDomainEntityElementTags extends Component {
 StixDomainEntityElementTags.propTypes = {
   classes: PropTypes.object.isRequired,
   t: PropTypes.func,
+  variant: PropTypes.string,
   onClick: PropTypes.func,
   tags: PropTypes.object,
 };

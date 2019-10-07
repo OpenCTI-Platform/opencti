@@ -240,7 +240,9 @@ class TagCreation extends Component {
   }
 
   renderContextual() {
-    const { t, classes, open, inputValue } = this.props;
+    const {
+      t, classes, open, inputValue, handleClose,
+    } = this.props;
     return (
       <div>
         <Formik
@@ -257,7 +259,7 @@ class TagCreation extends Component {
             <Form>
               <Dialog
                 open={open}
-                onClose={this.handleClose.bind(this)}
+                onClose={handleClose.bind(this)}
                 fullWidth={true}
               >
                 <DialogTitle>{t('Create a tag')}</DialogTitle>

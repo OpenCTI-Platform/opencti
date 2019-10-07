@@ -42,20 +42,20 @@ ThreatActorsCards.propTypes = {
 export const threatActorsCardsQuery = graphql`
   query ThreatActorsCardsPaginationQuery(
     $search: String
-    $filters: ThreatActorsFiltering
     $count: Int!
     $cursor: ID
     $orderBy: ThreatActorsOrdering
     $orderMode: OrderingMode
+    $filters: ThreatActorsFiltering
   ) {
     ...ThreatActorsCards_data
       @arguments(
         search: $search
-        filters: $filters
         count: $count
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -67,19 +67,19 @@ export default createPaginationContainer(
       fragment ThreatActorsCards_data on Query
         @argumentDefinitions(
           search: { type: "String" }
-          filters: { type: "ThreatActorsFiltering" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: { type: "ThreatActorsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "ThreatActorsFiltering" }
         ) {
         threatActors(
           search: $search
-          filters: $filters
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_threatActors") {
           edges {
             node {
@@ -112,11 +112,11 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         search: fragmentVariables.search,
-        filters: fragmentVariables.filters,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: threatActorsCardsQuery,

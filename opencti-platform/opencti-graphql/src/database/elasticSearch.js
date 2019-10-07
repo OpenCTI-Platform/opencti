@@ -409,11 +409,15 @@ export const paginate = async (indexName, options) => {
     );
   }
   if (orderBy !== null && orderBy.length > 0) {
+    let finalOrderBy = orderBy;
+    if (indexedRelations.includes(orderBy)) {
+      finalOrderBy = `${orderBy}_indexed`;
+    }
     const order = {};
     order[
-      dateFields.includes(orderBy) || numberFields.includes(orderBy)
-        ? orderBy
-        : `${orderBy}.keyword`
+      dateFields.includes(finalOrderBy) || numberFields.includes(finalOrderBy)
+        ? finalOrderBy
+        : `${finalOrderBy}.keyword`
     ] = orderMode;
     ordering = append(order, ordering);
   }
