@@ -18,6 +18,7 @@ import {
   WS_ACTIVATED,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
+import ColorPickerField from '../../../../components/ColorPickerField';
 import {
   SubscriptionAvatars,
   SubscriptionFocus,
@@ -139,10 +140,7 @@ class TagEditionContainer extends Component {
     const editUsers = missingMe
       ? insert(0, { name: me.email }, editContext)
       : editContext;
-    const initialValues = pick(
-      ['tag_type', 'value', 'color'],
-      tag,
-    );
+    const initialValues = pick(['tag_type', 'value', 'color'], tag);
     return (
       <div>
         <div className={classes.header}>
@@ -199,7 +197,7 @@ class TagEditionContainer extends Component {
                 />
                 <Field
                   name="color"
-                  component={TextField}
+                  component={ColorPickerField}
                   label={t('Color')}
                   fullWidth={true}
                   style={{ marginTop: 10 }}

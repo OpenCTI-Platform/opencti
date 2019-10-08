@@ -28,6 +28,7 @@ const personQuery = graphql`
       ...Person_person
       ...PersonHeader_person
       ...PersonOverview_person
+      ...PersonDetails_person
       ...PersonReports_person
       ...PersonKnowledge_person
     }

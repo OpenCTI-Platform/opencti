@@ -1370,7 +1370,7 @@ export const deleteRelationById = async (id, relationId) => {
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
     await wTx.tx.query(query, { infer: false });
     await commitWriteTx(wTx);
-    return getById(id).then(data => ({
+    return getById(id, true).then(data => ({
       node: data,
       relation: { id: relationId }
     }));

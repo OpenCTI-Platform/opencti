@@ -17,6 +17,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import TextField from '../../../../components/TextField';
+import ColorPickerField from '../../../../components/ColorPickerField';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 
@@ -206,7 +207,7 @@ class TagCreation extends Component {
                   />
                   <Field
                     name="color"
-                    component={TextField}
+                    component={ColorPickerField}
                     label={t('Color')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
@@ -279,7 +280,7 @@ class TagCreation extends Component {
                   />
                   <Field
                     name="color"
-                    component={TextField}
+                    component={ColorPickerField}
                     label={t('Color')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
