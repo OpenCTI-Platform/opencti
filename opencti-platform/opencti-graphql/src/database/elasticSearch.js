@@ -3,7 +3,6 @@ import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import { map, append, assoc, mapObjIndexed } from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
-import { multipleAttributes } from './grakn';
 
 const dateFields = [
   'created',

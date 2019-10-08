@@ -8,7 +8,6 @@ import {
   findById,
   findByPhaseName,
   markingDefinitions,
-  tags,
   killChainPhaseEditContext,
   killChainPhaseEditField,
   killChainPhaseAddRelation,
@@ -34,7 +33,6 @@ const killChainPhaseResolvers = {
   KillChainPhase: {
     markingDefinitions: (killChainPhase, args) =>
       markingDefinitions(killChainPhase.id, args),
-    tags: (killChainPhase, args) => tags(killChainPhase.id, args),
     editContext: killChainPhase => fetchEditContext(killChainPhase.id)
   },
   Mutation: {

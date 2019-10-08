@@ -1337,7 +1337,6 @@ type KillChainPhase implements GlobalObject {
   revoked: Boolean
   editContext: [EditUserContext]
   markingDefinitions: MarkingDefinitionConnection
-  tags: TagConnection
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1348,7 +1347,6 @@ input KillChainPhaseAddInput {
   phase_name: String!
   phase_order: Int!
   markingDefinitions: [String]
-  tags: [String]
   clientMutationId: String
   created: DateTime
   modified: DateTime
