@@ -84,6 +84,15 @@ type EditUserContext {
   focusOn: String # Field name
 }
 
+### Info
+type Info {
+  app_version: String
+  grakn_version: String
+  elasticsearch_version: String
+  rabbitmq_version: String
+  redis_version: String
+}
+
 ### Stats
 type AckDetails {
   rate: Float
@@ -2113,6 +2122,7 @@ input RelationsAddInput {
 type Query {
   # Technical
   settings: Settings
+  info: Info @auth
   attribute(id: String): Attribute @auth
   attributes(first: Int, type: String!): AttributeConnection @auth
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)

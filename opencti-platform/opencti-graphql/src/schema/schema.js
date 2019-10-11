@@ -34,6 +34,7 @@ import malwareResolvers from '../resolvers/malware';
 import toolResolvers from '../resolvers/tool';
 import vulnerabilityResolvers from '../resolvers/vulnerability';
 import reportResolvers from '../resolvers/report';
+import infoResolvers from '../resolvers/info';
 import AuthDirectives, { AUTH_DIRECTIVE } from './authDirective';
 
 const globalResolvers = {
@@ -74,7 +75,8 @@ const resolvers = mergeResolvers([
   malwareResolvers,
   toolResolvers,
   vulnerabilityResolvers,
-  reportResolvers
+  reportResolvers,
+  infoResolvers
 ]);
 
 const schema = makeExecutableSchema({
