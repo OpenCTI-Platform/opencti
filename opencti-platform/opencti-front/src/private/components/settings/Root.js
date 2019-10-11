@@ -5,6 +5,7 @@ import Users from './Users';
 import Groups from './Groups';
 import MarkingDefinitions from './MarkingDefinitions';
 import KillChainPhases from './KillChainPhases';
+import About from './About';
 import Attributes from './Attributes';
 import { BoundaryRoute } from '../Error';
 
@@ -31,6 +32,10 @@ const Root = () => (
           exact
           path="/dashboard/settings/attributes"
           component={Attributes}/>
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/about"
+          component={About}/>
       </Switch>
 );
 
