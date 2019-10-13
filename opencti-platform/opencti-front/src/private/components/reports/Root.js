@@ -22,7 +22,7 @@ const subscription = graphql`
 `;
 
 const reportQuery = graphql`
-  query RootReportQuery($id: String!, $relationType: String) {
+  query RootReportQuery($id: String!) {
     report(id: $id) {
       ...Report_report
       ...ReportHeader_report
@@ -70,7 +70,7 @@ class RootReport extends Component {
         <TopBar me={me || null} />
         <QueryRenderer
           query={reportQuery}
-          variables={{ id: reportId, relationType: 'indicates' }}
+          variables={{ id: reportId }}
           render={({ props }) => {
             if (props && props.report) {
               return (
@@ -108,11 +108,7 @@ class RootReport extends Component {
                     exact
                     path="/dashboard/reports/all/:reportId/observables"
                     render={routeProps => (
-                      <ReportObservables
-                        {...routeProps}
-                        report={props.report}
-                        me={props.me}
-                      />
+                      <ReportObservables {...routeProps} reportId={reportId} />
                     )}
                   />
                 </div>
