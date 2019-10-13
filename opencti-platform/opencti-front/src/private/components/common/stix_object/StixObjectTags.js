@@ -62,7 +62,12 @@ class StixObjectTags extends Component {
                 style={{ backgroundColor: tagEdge.node.color }}
                 onClick={
                   typeof onClick === 'function'
-                    ? onClick.bind(this, 'tags', tagEdge.node.value)
+                    ? onClick.bind(
+                      this,
+                      'tags',
+                      tagEdge.node.id,
+                      tagEdge.node.value,
+                    )
                     : ''
                 }
               />

@@ -77,17 +77,17 @@ export const relationsToIndex = {
     {
       key: 'tags_indexed',
       query:
-        'match $t isa Tag, has value $value; (so: $x, tagging: $t) isa tagged;'
+        'match $t isa Tag, has internal_id $value; (so: $x, tagging: $t) isa tagged;'
     },
     {
       key: 'createdByRef_indexed',
       query:
-        'match $i isa Identity, has name $value; (so: $x, creator: $i) isa created_by_ref;'
+        'match $i isa Identity, has internal_id $value; (so: $x, creator: $i) isa created_by_ref;'
     },
     {
       key: 'markingDefinitions_indexed',
       query:
-        'match $m isa Marking-Definition, has definition $value; (so: $x, marking: $m) isa object_marking_refs;'
+        'match $m isa Marking-Definition, has internal_id $value; (so: $x, marking: $m) isa object_marking_refs;'
     }
   ],
   'Stix-Observable': [

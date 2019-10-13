@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc, compose, dissoc, propOr,
+  compose, propOr, assoc, dissoc, mapObjIndexed, map,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
@@ -48,10 +48,12 @@ class Tools extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
-  handleAddFilter(key, value, event) {
+  handleAddFilter(key, id, value, event) {
     event.stopPropagation();
     event.preventDefault();
-    this.setState({ filters: assoc(key, [value], this.state.filters) });
+    this.setState({
+      filters: assoc(key, [{ id, value }], this.state.filters),
+    });
   }
 
   handleRemoveFilter(key) {
@@ -126,7 +128,7 @@ class Tools extends Component {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
-      filters,
+      filters: mapObjIndexed((value) => map((n) => n.id, value), filters),
     };
     return (
       <div>
