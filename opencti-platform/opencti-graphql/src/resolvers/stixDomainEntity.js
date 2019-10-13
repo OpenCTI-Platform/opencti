@@ -25,8 +25,8 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { deleteFile, filesListing } from '../database/minio';
-import { uploadImport } from '../domain/stixEntity';
-import { deleteById } from '../database/grakn';
+import { askJobImport, uploadImport } from '../domain/stixEntity';
+import { loadFileWorks } from '../domain/work';
 
 const stixDomainEntityResolvers = {
   Query: {
@@ -65,6 +65,9 @@ const stixDomainEntityResolvers = {
     importFiles: (entity, { first }) => filesListing(first, 'import', entity),
     exportFiles: (entity, { first }) => filesListing(first, 'export', entity)
   },
+  File: {
+    jobs: file => loadFileWorks(file.id)
+  },
   Mutation: {
     stixDomainEntityEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainEntityDelete(id),
@@ -82,7 +85,8 @@ const stixDomainEntityResolvers = {
     stixDomainEntityAdd: (_, { input }, { user }) =>
       addStixDomainEntity(user, input),
     uploadImport: (_, { input }, { user }) => uploadImport(input, user),
-    deleteImport: (_, { fileName }, { user }) => deleteFile(fileName, user)
+    deleteImport: (_, { fileName }, { user }) => deleteFile(fileName, user),
+    askJobImport: (_, { fileName }, { user }) => askJobImport(fileName, user)
   },
   Subscription: {
     stixDomainEntity: {

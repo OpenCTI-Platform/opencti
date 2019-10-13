@@ -72,9 +72,7 @@ export const attributeUpdate = async (id, input) => {
   // region Reindex all entities using this attribute
   const rTx = await takeReadTx();
   try {
-    const readQuery = `match $x isa entity, has ${escape(
-      input.type
-    )} $a; get $x;`;
+    const readQuery = `match $x isa entity, has ${escape(input.type)} $a; get;`;
     const iterator = await rTx.tx.query(readQuery);
     const answers = await iterator.collect();
     await Promise.all(

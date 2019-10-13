@@ -8,7 +8,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   takeWriteTx,
   commitWriteTx
 } from '../database/grakn';
@@ -35,14 +35,14 @@ export const addRegion = async (user, region) => {
     has alias "",
     has name "${escapeString(region.name)}",
     has description "${escapeString(region.description)}",
-    has created ${region.created ? prepareDate(region.created) : now()},
-    has modified ${region.modified ? prepareDate(region.modified) : now()},
+    has created ${region.created ? prepareDate(region.created) : graknNow()},
+    has modified ${region.modified ? prepareDate(region.modified) : graknNow()},
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",
+    has updated_at ${graknNow()};
   `);
   const createRegion = await regionIterator.next();
   const createdRegionId = await createRegion.map().get('region').id;

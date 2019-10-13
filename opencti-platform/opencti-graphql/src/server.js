@@ -53,6 +53,7 @@ app.use('/static/css/*', (req, res) => {
 app.use('/static', express.static(path.join(__dirname, '../public/static')));
 // -- File download
 app.use('/storage/get/:file(*)', async (req, res) => {
+  // TODO Add Authentication
   const { file } = req.params;
   const stream = await downloadFile(file);
   res.attachment(file);
@@ -60,6 +61,7 @@ app.use('/storage/get/:file(*)', async (req, res) => {
 });
 // -- File view
 app.use('/storage/view/:file(*)', async (req, res) => {
+  // TODO Add Authentication
   const { file } = req.params;
   const data = await loadFile(file);
   res.setHeader('Content-disposition', `inline; filename="${data.name}"`);

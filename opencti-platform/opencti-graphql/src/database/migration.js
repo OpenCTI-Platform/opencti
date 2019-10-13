@@ -1,8 +1,8 @@
 import uuid from 'uuid/v4';
-import { isNil, isEmpty, head, map, filter } from 'ramda';
+import { isEmpty, head, map, filter } from 'ramda';
 import migrate from 'migrate';
 import path from 'path';
-import { load, find, write } from './grakn';
+import { find, write } from './grakn';
 import { logger } from '../config/conf';
 
 // noinspection JSUnusedGlobalSymbols
@@ -10,10 +10,8 @@ const graknStateStorage = {
   async load(fn) {
     // Get current status of migrations in Grakn
     const result = await find(
-      `match $x isa MigrationStatus; 
-      (status:$x, state:$y); 
-      get;`,
-      ['x', 'y']
+      `match $from isa MigrationStatus; $rel(status:$from, state:$to); get;`,
+      ['rel', 'from', 'to']
     );
     logger.info(`[MIGRATION] > Read ${result.length} from the database`);
     if (isEmpty(result)) {
@@ -21,14 +19,17 @@ const graknStateStorage = {
         '[MIGRATION] > Cannot read migrations from database. If this is the first time you run migrations,' +
           ' then this is normal.'
       );
+      await write(
+        `insert $x isa MigrationStatus, has internal_id "${uuid()}";`
+      );
       return fn(null, {});
     }
     const migrationStatus = {
-      lastRun: head(result).x.lastRun,
+      lastRun: head(result).from.lastRun,
       migrations: map(
         record => ({
-          title: record.y.title,
-          timestamp: record.y.timestamp
+          title: record.to.title,
+          timestamp: record.to.timestamp
         }),
         result
       )
@@ -38,33 +39,20 @@ const graknStateStorage = {
   async save(set, fn) {
     // Get current done migration
     const mig = head(filter(m => m.title === set.lastRun, set.migrations));
-    // Get the MigrationStatus. If exist, update last run, if not create it
-    const migrationStatus = await load(`match $x isa MigrationStatus; get;`, [
-      'x'
-    ]);
-    if (!isNil(migrationStatus)) {
-      await write(
-        `match $x isa MigrationStatus, 
-        has lastRun $run; 
-        delete $run;`
-      );
-      await write(
-        `match $x isa MigrationStatus; 
-        insert $x has lastRun "${set.lastRun}";`
-      );
-    } else {
-      await write(
-        `insert $x isa MigrationStatus,
-        has internal_id "${uuid()}",
-        has lastRun "${set.lastRun}";`
-      );
-    }
+    // We have only one instance of migration status.
+    await write(`match $x isa MigrationStatus, has lastRun $run; delete $run;`);
+    await write(
+      `match $x isa MigrationStatus; insert $x has lastRun "${set.lastRun}";`
+    );
+
+    // Insert the migration reference
     await write(
       `insert $x isa MigrationReference,
       has internal_id "${uuid()}",
       has title "${mig.title}",
       has timestamp ${mig.timestamp};`
     );
+    // Attach the reference to the migration status.
     await write(
       `match $status isa MigrationStatus; 
       $ref isa MigrationReference, has title "${mig.title}"; 

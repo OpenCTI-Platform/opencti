@@ -10,6 +10,7 @@ import ReportKnowledge from './ReportKnowledge';
 import ReportObservables from './ReportObservables';
 import FileManager from '../common/files/FileManager';
 import ReportHeader from './ReportHeader';
+import Loader from '../../Loader';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -42,11 +43,10 @@ const reportQuery = graphql`
       ...ReportKnowledge_me
     }
     connectorsForExport {
-        id
-        name
-        active
-        connector_scope
-        updated_at
+        ...FileManager_connectorsExport
+    }
+    connectorsForImport {
+        ...FileManager_connectorsImport
     }
   }
 `;
@@ -129,7 +129,8 @@ class RootReport extends Component {
                         <React.Fragment>
                             <ReportHeader report={props.report} />
                             <FileManager {...routeProps} id={reportId}
-                                         exportConnectors={props.connectorsForExport}
+                                         connectorsExport={props.connectorsForExport}
+                                         connectorsImport={props.connectorsForImport}
                                          entity={props.report}/>
                         </React.Fragment>
                     )}
@@ -137,7 +138,7 @@ class RootReport extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader/>;
           }}
         />
       </div>

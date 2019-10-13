@@ -43,7 +43,7 @@ export const send = (exchangeName, routingKey, message) => {
           exchangeName,
           routingKey,
           Buffer.from(message),
-          {},
+          {}, // No option
           (err, ok) => {
             if (err) reject(err);
             resolve(ok);
@@ -149,4 +149,12 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
   );
 
   return connectorConfig(id);
+};
+
+export const pushToConnector = (connector, message) => {
+  return send(
+    CONNECTOR_EXCHANGE,
+    listenRouting(connector.internal_id),
+    JSON.stringify(message)
+  );
 };

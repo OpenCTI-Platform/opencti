@@ -13,7 +13,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   paginate,
   takeWriteTx,
   getId,
@@ -42,6 +42,7 @@ export const addExternalReference = async (user, externalReference) => {
   const internalId = externalReference.internal_id
     ? escapeString(externalReference.internal_id)
     : uuid();
+  const now = graknNow();
   const query = `insert $externalReference isa External-Reference,
     has internal_id "${internalId}",
     has entity_type "external-reference",
@@ -58,19 +59,17 @@ export const addExternalReference = async (user, externalReference) => {
     has hash "${escapeString(externalReference.hash)}",
     has external_id "${escapeString(externalReference.external_id)}",
     has created ${
-      externalReference.created ? prepareDate(externalReference.created) : now()
+      externalReference.created ? prepareDate(externalReference.created) : now
     },
     has modified ${
-      externalReference.modified
-        ? prepareDate(externalReference.modified)
-        : now()
+      externalReference.modified ? prepareDate(externalReference.modified) : now
     },
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",  
-    has updated_at ${now()};
+    has created_at ${now},
+    has created_at_day "${dayFormat(now)}",
+    has created_at_month "${monthFormat(now)}",
+    has created_at_year "${yearFormat(now)}",  
+    has updated_at ${now};
   `;
   logger.debug(`[GRAKN - infer: false] addExternalReference > ${query}`);
   const externalReferenceIterator = await wTx.tx.query(query);

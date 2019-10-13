@@ -25,6 +25,7 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { stixDomainEntityDeleteRelation } from '../domain/stixDomainEntity';
+import { getByGraknId } from '../database/grakn';
 
 const stixRelationResolvers = {
   Query: {
@@ -82,7 +83,9 @@ const stixRelationResolvers = {
       }
       return reports(stixRelation.id, args);
     },
-    editContext: stixRelation => fetchEditContext(stixRelation.id)
+    editContext: stixRelation => fetchEditContext(stixRelation.id),
+    from: rel => rel.from || getByGraknId(rel.fromId),
+    to: rel => rel.to || getByGraknId(rel.toId)
   },
   Mutation: {
     stixRelationEdit: (_, { id }, { user }) => ({

@@ -1,6 +1,5 @@
 import { assoc, dissoc, map } from 'ramda';
 import uuid from 'uuid/v4';
-import mime from 'mime-types';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   commitWriteTx,
@@ -15,7 +14,7 @@ import {
   getObject,
   monthFormat,
   notify,
-  now,
+  graknNow,
   paginate,
   prepareDate,
   takeWriteTx,
@@ -34,13 +33,10 @@ import {
   findAll as relationFindAll,
   search as relationSearch
 } from './stixRelation';
-import { upload } from '../database/minio';
-import {
-  CONNECTOR_INTERNAL_EXPORT_FILE,
-  connectorsForExport
-} from './connector';
+import { generateFileExportName, upload } from '../database/minio';
+import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
-import { CONNECTOR_EXCHANGE, listenRouting, send } from '../database/rabbitmq';
+import { pushToConnector } from '../database/rabbitmq';
 
 export const findAll = args => elPaginate('stix_domain_entities', args);
 
@@ -93,7 +89,7 @@ export const createdByRef = stixDomainEntityId =>
     $rel(creator:$i, so:$x) isa created_by_ref; 
     $x has internal_id "${escapeString(
       stixDomainEntityId
-    )}"; get $i, $rel; offset 0; limit 1;`,
+    )}"; get; offset 0; limit 1;`,
     'i',
     'rel'
   );
@@ -153,6 +149,40 @@ export const stixRelations = (stixDomainEntityId, args) => {
   return relationFindAll(finalArgs);
 };
 
+const askJobExports = async (entity, format, exportType) => {
+  const connectors = await connectorsForExport(format, true);
+  // Create job for
+  const workList = await Promise.all(
+    map(connector => {
+      const fileName = generateFileExportName(
+        format,
+        connector,
+        exportType,
+        entity
+      );
+      return createWork(connector, entity.id, fileName).then(work => ({
+        connector,
+        work
+      }));
+    }, connectors)
+  );
+  // Send message to all correct connectors queues
+  await Promise.all(
+    map(data => {
+      const { connector, work } = data;
+      const message = {
+        job_id: work.internal_id, // job(id)
+        export_type: exportType, // simple or full
+        entity_type: entity.entity_type, // report, threat, ...
+        entity_id: entity.id, // report(id), thread(id), ...
+        file_name: work.work_file // Base path for the upload
+      };
+      return pushToConnector(connector, message);
+    }, workList)
+  );
+  return workList;
+};
+
 /**
  * Create export element waiting for completion
  * @param domainEntityId
@@ -165,39 +195,8 @@ export const stixDomainEntityAskExport = async (
   format,
   exportType
 ) => {
-  const creation = now();
   const entity = await getById(domainEntityId);
-  const connectors = await connectorsForExport(format);
-  // Create job and send ask to broker
-  const workList = await Promise.all(
-    map(connector => {
-      return createWork(
-        connector.internal_id,
-        CONNECTOR_INTERNAL_EXPORT_FILE,
-        domainEntityId
-      );
-    }, connectors)
-  );
-  // Send message to all correct connectors queues
-  await Promise.all(
-    map(data => {
-      const { connector, work } = data;
-      const fileExt = mime.extension(format);
-      const fileName = `${creation}Z_(${connector.name})_${entity.entity_type}_${entity.name}_${exportType}.${fileExt}`;
-      const message = {
-        job_id: work.internal_id, // job(id)
-        export_type: exportType, // simple or full
-        entity_type: entity.entity_type, // report, threat, ...
-        entity_id: domainEntityId, // report(id), thread(id), ...
-        file_name: fileName // Base path for the upload
-      };
-      return send(
-        CONNECTOR_EXCHANGE,
-        listenRouting(connector.internal_id),
-        JSON.stringify(message)
-      );
-    }, workList)
-  );
+  const workList = await askJobExports(entity, format, exportType);
   // Return the work list to do
   return map(w => workToExportFile(w.work, w.connector), workList);
 };
@@ -210,8 +209,6 @@ export const stixDomainEntityExportPush = async (
 ) => {
   // Upload the document in minio
   await upload(user, 'export', file, entityId);
-  // Delete the export placeholder
-  await deleteEntityById(jobId);
   return getById(entityId).then(stixDomainEntity => {
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user);
     return true;
@@ -237,17 +234,21 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     has name "${escapeString(stixDomainEntity.name)}",
     has description "${escapeString(stixDomainEntity.description)}",
     has created ${
-      stixDomainEntity.created ? prepareDate(stixDomainEntity.created) : now()
+      stixDomainEntity.created
+        ? prepareDate(stixDomainEntity.created)
+        : graknNow()
     },
     has modified ${
-      stixDomainEntity.modified ? prepareDate(stixDomainEntity.modified) : now()
+      stixDomainEntity.modified
+        ? prepareDate(stixDomainEntity.modified)
+        : graknNow()
     },
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",      
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",      
+    has updated_at ${graknNow()};
   `);
   const createStixDomainEntity = await stixDomainEntityIterator.next();
   const createdStixDomainEntityId = await createStixDomainEntity

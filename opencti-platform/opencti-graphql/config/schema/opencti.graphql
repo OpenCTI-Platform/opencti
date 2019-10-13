@@ -23,6 +23,12 @@ scalar DateTime
 scalar ConstraintString
 scalar ConstraintNumber
 scalar Upload
+enum Status {
+  wait
+  progress
+  complete
+  error
+}
 
 ### Relations
 type RelationEmbedded {
@@ -182,7 +188,55 @@ input AttributeEditInput {
   newValue: String!
 }
 
+### Connectors
+enum ConnectorType {
+  EXTERNAL_IMPORT
+  INTERNAL_IMPORT_FILE
+  INTERNAL_ENRICHMENT
+  INTERNAL_EXPORT_FILE
+}
+input RegisterConnectorInput {
+  id: ID!
+  name: String!
+  type: ConnectorType!
+  scope: [String!]
+}
+type ConnectorConfig {
+  uri: String!
+  listen: String!
+  listen_exchange: String!
+  push: String!
+  push_exchange: String!
+}
+type Connector {
+  id: ID!
+  name: String!
+  updated_at: DateTime
+  active: Boolean
+  created_at: DateTime
+  connector_type: String!
+  connector_scope: [String!]
+  config: ConnectorConfig
+}
+
 ### Files
+type Work {
+  id: ID!
+  connector: Connector!
+  work_type: String!
+  work_message: String!
+  work_status: Status!
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+type WorkEdge {
+  cursor: String!
+  node: Work!
+}
+type WorkConnection {
+  pageInfo: PageInfo!
+  edges: [WorkEdge]
+}
 input FileUpload {
   file: Upload! # File content
   entityId: String # Entity Id, Stix or internal (for non stix2 entity)
@@ -190,11 +244,6 @@ input FileUpload {
 enum FileCategory {
   import
   export
-}
-enum UploadStatus {
-    inProgress
-    complete
-    error
 }
 type FileMetadata {
   category: FileCategory!
@@ -211,7 +260,8 @@ type File {
   lastModified: DateTime
   lastModifiedSinceMin: Int
   metaData: FileMetadata
-  uploadStatus: UploadStatus!
+  uploadStatus: Status!
+  jobs: [Work]
 }
 type FileEdge {
   cursor: String!
@@ -220,37 +270,6 @@ type FileEdge {
 type FileConnection {
   pageInfo: PageInfo!
   edges: [FileEdge]
-}
-
-### Connectors
-enum ConnectorType {
-    EXTERNAL_IMPORT
-    INTERNAL_IMPORT_FILE
-    INTERNAL_ENRICHMENT
-    INTERNAL_EXPORT_FILE
-}
-input RegisterConnectorInput {
-    id: ID!
-    name: String!
-    type: ConnectorType!
-    scope: [String!]
-}
-type ConnectorConfig {
-    uri: String!
-    listen: String!
-    listen_exchange: String!
-    push: String!
-    push_exchange: String!
-}
-type Connector {
-    id: ID!
-    name: String!
-    updated_at: DateTime
-    active: Boolean
-    created_at: DateTime
-    connector_type: String!
-    connector_scope: [String!]
-    config: ConnectorConfig
 }
 
 ### Global objects
@@ -401,6 +420,8 @@ type StixObservable implements GlobalObject & StixEntity {
     search: String
     infrastructure: Boolean
   ): StixRelationConnection
+  jobs(first: Int): WorkConnection
+  connectors(onlyAlive: Boolean): [Connector]
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2184,8 +2205,10 @@ type Query {
   attribute(id: String): Attribute @auth
   attributes(first: Int, type: String!): AttributeConnection @auth
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)
-  connectors: [Connector] @auth(for: ROLE_ADMIN)
-  connectorsForExport: [Connector] @auth(for: ROLE_ADMIN)
+  connectors: [Connector] @auth
+  connectorsForExport: [Connector] @auth
+  connectorsForImport: [Connector] @auth
+  fileInformation(id: ID!): File @auth
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(
@@ -2846,11 +2869,12 @@ type Mutation {
   # Connector
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: ROLE_ADMIN)
   pingConnector(id: ID!): Connector @auth(for: ROLE_ADMIN)
-  reportJobError(id: ID!, message: String!): Boolean @auth
+  reportJobStatus(id: ID!, status: Status!, message: String): Work @auth
   resetJob(id: ID!): ID! @auth
   # File management
   deleteImport(fileName: String): Boolean @auth
   uploadImport(input: FileUpload): File @auth
+  askJobImport(fileName: ID!): File @auth
   # StixDomainEntity
   stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth
   stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations @auth

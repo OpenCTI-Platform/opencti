@@ -8,7 +8,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   takeWriteTx,
   commitWriteTx
 } from '../database/grakn';
@@ -33,14 +33,14 @@ export const addTool = async (user, tool) => {
     has alias "",
     has name "${escapeString(tool.name)}",
     has description "${escapeString(tool.description)}",
-    has created ${tool.created ? prepareDate(tool.created) : now()},
-    has modified ${tool.modified ? prepareDate(tool.modified) : now()},
+    has created ${tool.created ? prepareDate(tool.created) : graknNow()},
+    has modified ${tool.modified ? prepareDate(tool.modified) : graknNow()},
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",      
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",      
+    has updated_at ${graknNow()};
   `);
   const createTool = await toolIterator.next();
   const createdToolId = await createTool.map().get('tool').id;

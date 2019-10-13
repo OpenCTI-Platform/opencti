@@ -8,7 +8,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   takeWriteTx,
   commitWriteTx
 } from '../database/grakn';
@@ -25,6 +25,7 @@ export const addCountry = async (user, country) => {
   const internalId = country.internal_id
     ? escapeString(country.internal_id)
     : uuid();
+  const now = graknNow();
   const countryIterator = await wTx.tx.query(`insert $country isa Country,
     has internal_id "${internalId}",
     has entity_type "country",
@@ -35,14 +36,14 @@ export const addCountry = async (user, country) => {
     has alias "",
     has name "${escapeString(country.name)}",
     has description "${escapeString(country.description)}",
-    has created ${country.created ? prepareDate(country.created) : now()},
-    has modified ${country.modified ? prepareDate(country.modified) : now()},
+    has created ${country.created ? prepareDate(country.created) : now},
+    has modified ${country.modified ? prepareDate(country.modified) : now},
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",
-    has updated_at ${now()};
+    has created_at ${now},
+    has created_at_day "${dayFormat(now)}",
+    has created_at_month "${monthFormat(now)}",
+    has created_at_year "${yearFormat(now)}",
+    has updated_at ${now};
   `);
   const createCountry = await countryIterator.next();
   const createdCountryId = await createCountry.map().get('country').id;

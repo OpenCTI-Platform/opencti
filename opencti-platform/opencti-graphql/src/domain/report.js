@@ -5,7 +5,7 @@ import {
   escapeString,
   getById,
   notify,
-  now,
+  graknNow,
   paginate,
   paginateRelationships,
   prepareDate,
@@ -197,7 +197,7 @@ export const reportsNumberByEntity = args => ({
     $date < ${prepareDate(args.endDate)};`
         : ''
     }
-    get $x;
+    get;
     count;`
   ),
   total: getSingleValueNumber(
@@ -209,7 +209,7 @@ export const reportsNumberByEntity = args => ({
     $x has report_class "${escapeString(args.reportClass)}"`
         : ';'
     }
-    get $x;
+    get;
     count;`
   )
 });
@@ -285,14 +285,14 @@ export const addReport = async (user, report) => {
         : 3
     },
     has graph_data "${escapeString(report.graph_data)}",
-    has created ${report.created ? prepareDate(report.created) : now()},
-    has modified ${report.modified ? prepareDate(report.modified) : now()},
+    has created ${report.created ? prepareDate(report.created) : graknNow()},
+    has modified ${report.modified ? prepareDate(report.modified) : graknNow()},
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",        
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",        
+    has updated_at ${graknNow()};
   `);
   const createdReport = await reportIterator.next();
   const createdReportId = await createdReport.map().get('report').id;

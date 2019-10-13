@@ -1,6 +1,14 @@
 import moment from 'moment/moment';
 import { head, last, mapObjIndexed, pipe, values } from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
+import uuid from 'uuid/v5';
+
+const OPENCTI_NAMESPACE = 'ed50f831-ec69-4ca9-ab66-c30745dd56dd';
+
+export const stableUUID = key => {
+  const name = key.toLowerCase();
+  return uuid(name, OPENCTI_NAMESPACE);
+};
 
 export const fillTimeSeries = (startDate, endDate, interval, data) => {
   const startDateParsed = moment(startDate);

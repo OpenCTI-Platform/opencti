@@ -8,7 +8,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   takeWriteTx,
   commitWriteTx,
   paginate
@@ -34,6 +34,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
   const internalId = courseOfAction.internal_id
     ? escapeString(courseOfAction.internal_id)
     : uuid();
+  const now = graknNow();
   const courseOfActionIterator = await wTx.tx
     .query(`insert $courseOfAction isa Course-Of-Action,
     has internal_id "${internalId}",
@@ -48,17 +49,17 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     has name "${escapeString(courseOfAction.name)}",
     has description "${escapeString(courseOfAction.description)}",
     has created ${
-      courseOfAction.created ? prepareDate(courseOfAction.created) : now()
+      courseOfAction.created ? prepareDate(courseOfAction.created) : now
     },
     has modified ${
-      courseOfAction.modified ? prepareDate(courseOfAction.modified) : now()
+      courseOfAction.modified ? prepareDate(courseOfAction.modified) : now
     },
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",  
-    has updated_at ${now()};
+    has created_at ${now},
+    has created_at_day "${dayFormat(now)}",
+    has created_at_month "${monthFormat(now)}",
+    has created_at_year "${yearFormat(now)}",  
+    has updated_at ${now};
   `);
   const createCourseOfAction = await courseOfActionIterator.next();
   const createdCourseOfActionId = await createCourseOfAction

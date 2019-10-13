@@ -8,7 +8,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   paginate,
   takeWriteTx,
   commitWriteTx
@@ -46,7 +46,7 @@ export const addAttackPattern = async (user, attackPattern) => {
     has stix_id "${
       attackPattern.stix_id
         ? escapeString(attackPattern.stix_id)
-        : `attack-patern--${uuid()}`
+        : `attack-pattern--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -78,17 +78,17 @@ export const addAttackPattern = async (user, attackPattern) => {
         : ''
     }
     has created ${
-      attackPattern.created ? prepareDate(attackPattern.created) : now()
+      attackPattern.created ? prepareDate(attackPattern.created) : graknNow()
     },
     has modified ${
-      attackPattern.modified ? prepareDate(attackPattern.modified) : now()
+      attackPattern.modified ? prepareDate(attackPattern.modified) : graknNow()
     },
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",
+    has updated_at ${graknNow()};
   `;
   logger.debug(`[GRAKN - infer: false] addAttackPattern > ${query}`);
   const attackPatternIterator = await wTx.tx.query(query);

@@ -7,7 +7,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   paginate,
   prepareDate,
   takeWriteTx,
@@ -46,6 +46,7 @@ export const addCampaign = async (user, campaign) => {
   const internalId = campaign.internal_id
     ? escapeString(campaign.internal_id)
     : uuid();
+  const now = graknNow();
   const query = `insert $campaign isa Campaign,
     has internal_id "${internalId}",
     has entity_type "campaign",
@@ -58,39 +59,35 @@ export const addCampaign = async (user, campaign) => {
     has description "${escapeString(campaign.description)}",
     has objective "${escapeString(campaign.objective)}",
     has first_seen ${
-      campaign.first_seen ? prepareDate(campaign.first_seen) : now()
+      campaign.first_seen ? prepareDate(campaign.first_seen) : now
     },
     has first_seen_day "${
-      campaign.first_seen ? dayFormat(campaign.first_seen) : dayFormat(now())
+      campaign.first_seen ? dayFormat(campaign.first_seen) : dayFormat(now)
     }",
     has first_seen_month "${
-      campaign.first_seen
-        ? monthFormat(campaign.first_seen)
-        : monthFormat(now())
+      campaign.first_seen ? monthFormat(campaign.first_seen) : monthFormat(now)
     }",
     has first_seen_year "${
-      campaign.first_seen ? yearFormat(campaign.first_seen) : yearFormat(now())
+      campaign.first_seen ? yearFormat(campaign.first_seen) : yearFormat(now)
     }",
-    has last_seen ${
-      campaign.last_seen ? prepareDate(campaign.last_seen) : now()
-    },
+    has last_seen ${campaign.last_seen ? prepareDate(campaign.last_seen) : now},
     has last_seen_day "${
-      campaign.last_seen ? dayFormat(campaign.last_seen) : dayFormat(now())
+      campaign.last_seen ? dayFormat(campaign.last_seen) : dayFormat(now)
     }",
     has last_seen_month "${
-      campaign.last_seen ? monthFormat(campaign.last_seen) : monthFormat(now())
+      campaign.last_seen ? monthFormat(campaign.last_seen) : monthFormat(now)
     }",
     has last_seen_year "${
-      campaign.last_seen ? yearFormat(campaign.last_seen) : yearFormat(now())
+      campaign.last_seen ? yearFormat(campaign.last_seen) : yearFormat(now)
     }",
-    has created ${campaign.created ? prepareDate(campaign.created) : now()},
-    has modified ${campaign.modified ? prepareDate(campaign.modified) : now()},
+    has created ${campaign.created ? prepareDate(campaign.created) : now},
+    has modified ${campaign.modified ? prepareDate(campaign.modified) : now},
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",
-    has updated_at ${now()};
+    has created_at ${now},
+    has created_at_day "${dayFormat(now)}",
+    has created_at_month "${monthFormat(now)}",
+    has created_at_year "${yearFormat(now)}",
+    has updated_at ${now};
   `;
   logger.debug(`[GRAKN - infer: false] addCampaign > ${query}`);
   const campaignIterator = await wTx.tx.query(query);

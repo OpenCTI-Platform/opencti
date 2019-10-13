@@ -8,7 +8,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   takeWriteTx,
   commitWriteTx
 } from '../database/grakn';
@@ -28,6 +28,7 @@ export const addIdentity = async (user, identity) => {
   const internalId = identity.internal_id
     ? escapeString(identity.internal_id)
     : uuid();
+  const now = graknNow();
   const query = `insert $identity isa ${identity.type},
     has internal_id "${internalId}",
     has entity_type "${identity.type.toLowerCase()}",
@@ -40,14 +41,14 @@ export const addIdentity = async (user, identity) => {
     has alias "",
     has name "${escapeString(identity.name)}",
     has description "${escapeString(identity.description)}",
-    has created ${identity.created ? prepareDate(identity.created) : now()},
-    has modified ${identity.modified ? prepareDate(identity.modified) : now()},
+    has created ${identity.created ? prepareDate(identity.created) : now},
+    has modified ${identity.modified ? prepareDate(identity.modified) : now},
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}", 
-    has updated_at ${now()};
+    has created_at ${now},
+    has created_at_day "${dayFormat(now)}",
+    has created_at_month "${monthFormat(now)}",
+    has created_at_year "${yearFormat(now)}", 
+    has updated_at ${now};
   `;
   const identityIterator = await wTx.tx.query(query);
   logger.debug(`[GRAKN - infer: false] addIdentity > ${query}`);

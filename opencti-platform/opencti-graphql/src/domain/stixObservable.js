@@ -13,7 +13,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   paginate,
   takeWriteTx,
   timeSeries,
@@ -31,6 +31,10 @@ import {
   deleteEntity,
   paginate as elPaginate
 } from '../database/elasticSearch';
+import { stableUUID } from '../database/utils';
+import { connectorsForEnrichment } from './connector';
+import { createWork } from './work';
+import { pushToConnector } from '../database/rabbitmq';
 
 export const findAll = args => {
   if (
@@ -61,39 +65,25 @@ export const findAll = args => {
 export const stixObservablesNumber = args => ({
   count: countEntities('stix_observables', args),
   total: countEntities('stix_observables', dissoc('endDate', args))
-  /* count: getSingleValueNumber(
-    `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
-    ${
-      args.endDate
-        ? `$x has created_at $date;
-    $date < ${prepareDate(args.endDate)};`
-        : ''
-    }
-    get $x;
-    count;`
-  ),
-  total: getSingleValueNumber(
-    `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
-    get $x;
-    count;`
-  ) */
 });
 
-export const stixObservablesTimeSeries = args =>
-  timeSeries(
+export const stixObservablesTimeSeries = args => {
+  return timeSeries(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'}`,
     args
   );
+};
 
 export const findById = stixObservableId => getById(stixObservableId);
 
-export const findByValue = args =>
-  paginate(
+export const findByValue = args => {
+  return paginate(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
     $x has observable_value "${escapeString(args.observableValue)}"`,
     args,
     false
   );
+};
 
 export const search = args => elPaginate('stix_observables', args);
 /*
@@ -108,20 +98,21 @@ export const search = args => elPaginate('stix_observables', args);
   );
 */
 
-export const createdByRef = stixObservableId =>
-  getObject(
+export const createdByRef = stixObservableId => {
+  return getObject(
     `match $i isa Identity;
     $rel(creator:$i, so:$x) isa created_by_ref; 
     $x has internal_id "${escapeString(stixObservableId)}"; 
-    get $i, $rel; 
+    get; 
     offset 0; 
     limit 1;`,
     'i',
     'rel'
   );
+};
 
-export const markingDefinitions = (stixObservableId, args) =>
-  paginate(
+export const markingDefinitions = (stixObservableId, args) => {
+  return paginate(
     `match $m isa Marking-Definition;
     $rel(marking:$m, so:$x) isa object_marking_refs; 
     $x has internal_id "${escapeString(stixObservableId)}"`,
@@ -131,22 +122,25 @@ export const markingDefinitions = (stixObservableId, args) =>
     false,
     false
   );
+};
 
-export const reports = (stixObservableId, args) =>
-  paginate(
+export const reports = (stixObservableId, args) => {
+  return paginate(
     `match $r isa Report; 
     $rel(knowledge_aggregation:$r, so:$x) isa object_refs; 
     $x has internal_id "${escapeString(stixObservableId)}"`,
     args
   );
+};
 
-export const reportsTimeSeries = (stixObservableId, args) =>
-  timeSeries(
+export const reportsTimeSeries = (stixObservableId, args) => {
+  return timeSeries(
     `match $x isa Report; 
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs;
     $so has internal_id "${escapeString(stixObservableId)}"`,
     args
   );
+};
 
 export const stixRelations = (stixObservableId, args) => {
   const finalArgs = assoc('fromId', stixObservableId, args);
@@ -156,27 +150,50 @@ export const stixRelations = (stixObservableId, args) => {
   return relationFindAll(finalArgs);
 };
 
+const askEnrich = async (observableId, scope) => {
+  const targetConnectors = await connectorsForEnrichment(scope, true);
+  // Create job for
+  const workList = await Promise.all(
+    map(
+      connector =>
+        createWork(connector, observableId).then(work => ({ connector, work })),
+      targetConnectors
+    )
+  );
+  // Send message to all correct connectors queues
+  await Promise.all(
+    map(data => {
+      const { connector, work } = data;
+      const message = { job_id: work.internal_id, entity_id: observableId };
+      return pushToConnector(connector, message);
+    }, workList)
+  );
+  return workList;
+};
+
 export const addStixObservable = async (user, stixObservable) => {
   const wTx = await takeWriteTx();
+  const stixId = stixObservable.stix_id;
+  const observableValue = stixObservable.observable_value;
   const internalId = stixObservable.internal_id
     ? escapeString(stixObservable.internal_id)
     : uuid();
   const query = `insert $stixObservable isa ${escape(stixObservable.type)},
     has internal_id "${internalId}",
     has stix_id "${
-      stixObservable.stix_id
-        ? escapeString(stixObservable.stix_id)
-        : `indicator--${uuid()}`
+      stixId
+        ? escapeString(stixId)
+        : `indicator--${stableUUID(observableValue)}`
     }",
     has entity_type "${escapeString(stixObservable.type.toLowerCase())}",
     has name "",
     has description "${escapeString(stixObservable.description)}",
-    has observable_value "${escapeString(stixObservable.observable_value)}",
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",      
-    has updated_at ${now()};
+    has observable_value "${escapeString(observableValue)}",
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",      
+    has updated_at ${graknNow()};
   `;
   logger.debug(`[GRAKN - infer: false] addStixObservable > ${query}`);
   const stixObservableIterator = await wTx.tx.query(query);
@@ -210,6 +227,9 @@ export const addStixObservable = async (user, stixObservable) => {
 
   await commitWriteTx(wTx);
 
+  // Enqueue enrich job
+  await askEnrich(internalId, stixObservable.type);
+
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
   });
@@ -221,21 +241,23 @@ export const stixObservableDelete = async stixObservableId => {
   return deleteEntityById(stixObservableId);
 };
 
-export const stixObservableAddRelation = (user, stixObservableId, input) =>
-  createRelation(stixObservableId, input).then(relationData => {
+export const stixObservableAddRelation = (user, stixObservableId, input) => {
+  return createRelation(stixObservableId, input).then(relationData => {
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
+};
 
 export const stixObservableDeleteRelation = (
   user,
   stixObservableId,
   relationId
-) =>
-  deleteRelationById(stixObservableId, relationId).then(relationData => {
+) => {
+  return deleteRelationById(stixObservableId, relationId).then(relationData => {
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
+};
 
 export const stixObservableCleanContext = (user, stixObservableId) => {
   delEditContext(user, stixObservableId);
@@ -251,7 +273,8 @@ export const stixObservableEditContext = (user, stixObservableId, input) => {
   );
 };
 
-export const stixObservableEditField = (user, stixObservableId, input) =>
-  updateAttribute(stixObservableId, input).then(stixObservable => {
+export const stixObservableEditField = (user, stixObservableId, input) => {
+  return updateAttribute(stixObservableId, input).then(stixObservable => {
     return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user);
   });
+};

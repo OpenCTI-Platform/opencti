@@ -86,9 +86,12 @@ const network = new RelayNetworkLayer(
   { subscribeFn: networkSubscriptions },
 );
 
+const store = new Store(new RecordSource());
+// Activate the read from store then network
+store.holdGC();
 export const environment = new Environment({
   network,
-  store: new Store(new RecordSource()),
+  store,
 });
 
 // Components
@@ -102,6 +105,7 @@ export class QueryRenderer extends Component {
         environment={environment}
         query={query}
         variables={variables}
+        fetchPolicy='store-and-network'
         render={(data) => {
           const { error } = data;
           const types = error ? map(e => e.name, error) : [];

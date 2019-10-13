@@ -5,7 +5,7 @@ import {
   takeWriteTx,
   getById,
   notify,
-  now,
+  graknNow,
   prepareDate,
   dayFormat,
   monthFormat,
@@ -47,17 +47,17 @@ export const addThreatActor = async (user, threatActor) => {
     )}",
     has personal_motivation "${escapeString(threatActor.personal_motivation)}",
     has created ${
-      threatActor.created ? prepareDate(threatActor.created) : now()
+      threatActor.created ? prepareDate(threatActor.created) : graknNow()
     },
     has modified ${
-      threatActor.modified ? prepareDate(threatActor.modified) : now()
+      threatActor.modified ? prepareDate(threatActor.modified) : graknNow()
     },
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",        
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",        
+    has updated_at ${graknNow()};
   `);
   const txThreatActor = await threatActorIterator.next();
   const createThreatActorId = await txThreatActor.map().get('threatActor').id;

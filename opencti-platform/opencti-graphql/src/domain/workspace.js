@@ -13,7 +13,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   paginate,
   getObject,
   takeWriteTx,
@@ -50,9 +50,9 @@ export const workspacesNumber = args => {
         args.endDate
           ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};`
           : ''
-      } get $x; count;`
+      } get; count;`
     ),
-    total: getSingleValueNumber(`match $x isa Workspace; get $x; count;`)
+    total: getSingleValueNumber(`match $x isa Workspace; get; count;`)
   };
 };
 
@@ -62,7 +62,7 @@ export const ownedBy = workspaceId =>
     $rel(owner:$x, to:$workspace) isa owned_by; 
     $workspace has internal_id "${escapeString(
       workspaceId
-    )}"; get $x, $rel; offset 0; limit 1;`,
+    )}"; get; offset 0; limit 1;`,
     'x',
     'rel'
   );
@@ -96,11 +96,11 @@ export const addWorkspace = async (user, workspace) => {
     has workspace_type "${escapeString(workspace.workspace_type)}",
     has name "${escapeString(workspace.name)}",
     has description "${escapeString(workspace.description)}",
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",          
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",          
+    has updated_at ${graknNow()};
   `);
   const createdWorkspace = await workspaceIterator.next();
   const createdWorkspaceId = await createdWorkspace.map().get('workspace').id;

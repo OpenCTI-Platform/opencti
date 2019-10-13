@@ -8,7 +8,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   paginate,
   takeWriteTx,
   commitWriteTx
@@ -56,11 +56,11 @@ export const addGroup = async (user, group) => {
     has entity_type "group",
     has name "${escapeString(group.name)}",
     has description "${escapeString(group.description)}",
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",  
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",  
+    has updated_at ${graknNow()};
   `);
   const createGroup = await groupIterator.next();
   const createdGroupId = await createGroup.map().get('group').id;

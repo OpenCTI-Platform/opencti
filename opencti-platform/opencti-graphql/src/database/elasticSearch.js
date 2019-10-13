@@ -162,7 +162,7 @@ export const reindex = async indexMaps => {
 
 export const index = async (indexName, documentBody) => {
   const internalId = documentBody.internal_id;
-  const entityType = documentBody.entity_type;
+  const entityType = documentBody.entity_type ? documentBody.entity_type : '';
   logger.debug(
     `[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`
   );

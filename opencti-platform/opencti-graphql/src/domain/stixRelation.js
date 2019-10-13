@@ -36,7 +36,7 @@ import {
   getRelationById,
   getRelationInferredById,
   notify,
-  now,
+  graknNow,
   paginate,
   paginateRelationships,
   prepareDate,
@@ -108,7 +108,7 @@ export const findAllWithInferences = async args => {
           )} { $x isa ${escape(head(args.resolveRelationToTypes))}; };`
         : ''
     } $from has internal_id "${escapeString(args.fromId)}";
-    get $x;`,
+    get;`,
     'x',
     null,
     true
@@ -240,7 +240,7 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
             )
           )} { $x isa ${escape(head(args.resolveRelationToTypes))}; };`
         : ''
-    } $from has internal_id "${escapeString(args.fromId)}"; get $x;`,
+    } $from has internal_id "${escapeString(args.fromId)}"; get;`,
     'x',
     null,
     true
@@ -378,7 +378,7 @@ export const stixRelationsDistributionWithInferences = async args => {
             )
           )} { $x isa ${escape(head(args.resolveRelationToTypes))}; };`
         : ''
-    } $from has internal_id "${escapeString(args.fromId)}"; get $x;`,
+    } $from has internal_id "${escapeString(args.fromId)}"; get;`,
     'x',
     null,
     true
@@ -504,14 +504,14 @@ export const stixRelationsNumber = args => ({
         : ''
     }
     ${args.fromId ? `$y has internal_id "${escapeString(args.fromId)}";` : ''}
-    get $x;
+    get;
     count;`,
     args.inferred ? args.inferred : false
   ),
   total: getSingleValueNumber(
     `match $x($y, $z) isa ${args.type ? escape(args.type) : 'stix_relation'};
     ${args.fromId ? `$y has internal_id "${escapeString(args.fromId)}";` : ''}
-    get $x;
+    get;
     count;`,
     args.inferred ? args.inferred : false
   )
@@ -580,7 +580,7 @@ export const addStixRelation = async (user, stixRelation) => {
         ? escapeString(stixRelation.role_played)
         : 'Unknown'
     }",
-    has weight ${escape(stixRelation.weight)},
+    has weight ${stixRelation.weight ? escape(stixRelation.weight) : 0},
     has score ${stixRelation.score ? escape(stixRelation.score) : 50},
     ${
       stixRelation.expiration
@@ -599,17 +599,17 @@ export const addStixRelation = async (user, stixRelation) => {
     has last_seen_month "${monthFormat(stixRelation.last_seen)}",
     has last_seen_year "${yearFormat(stixRelation.last_seen)}",
     has created ${
-      stixRelation.created ? prepareDate(stixRelation.created) : now()
+      stixRelation.created ? prepareDate(stixRelation.created) : graknNow()
     },
     has modified ${
-      stixRelation.modified ? prepareDate(stixRelation.modified) : now()
+      stixRelation.modified ? prepareDate(stixRelation.modified) : graknNow()
     },
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",        
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",        
+    has updated_at ${graknNow()};
   `;
   logger.debug(`[GRAKN - infer: false] addStixRelation > ${query}`);
   const stixRelationIterator = await wTx.tx.query(query);
@@ -637,7 +637,7 @@ export const addStixRelation = async (user, stixRelation) => {
       wTx.tx.query(
         `match $from id ${createdStixRelationId};
         $to has internal_id "${escapeString(location)}";
-        insert $rel(localized: $from, location: $to) isa localization, has internal_id "${uuid()}", has stix_id "relationship--${uuid()}", has relationship_type 'localization', has first_seen ${now()}, has last_seen ${now()}, has weight 3;`
+        insert $rel(localized: $from, location: $to) isa localization, has internal_id "${uuid()}", has stix_id "relationship--${uuid()}", has relationship_type 'localization', has first_seen ${graknNow()}, has last_seen ${graknNow()}, has weight 3;`
       );
     const locationsPromises = map(createLocation, stixRelation.locations);
     await Promise.all(locationsPromises);

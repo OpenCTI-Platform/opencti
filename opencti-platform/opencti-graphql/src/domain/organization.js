@@ -8,7 +8,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   takeWriteTx,
   commitWriteTx
 } from '../database/grakn';
@@ -44,17 +44,17 @@ export const addOrganization = async (user, organization) => {
         : 'other'
     }",
     has created ${
-      organization.created ? prepareDate(organization.created) : now()
+      organization.created ? prepareDate(organization.created) : graknNow()
     },
     has modified ${
-      organization.modified ? prepareDate(organization.modified) : now()
+      organization.modified ? prepareDate(organization.modified) : graknNow()
     },
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",         
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",         
+    has updated_at ${graknNow()};
   `);
   const createOrganization = await organizationIterator.next();
   const createdOrganizationId = await createOrganization

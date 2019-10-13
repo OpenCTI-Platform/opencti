@@ -2,23 +2,28 @@ import {
   connectors,
   registerConnector,
   pingConnector,
-  connectorsForExport
+  connectorsForExport,
+  connectorsForImport
 } from '../domain/connector';
-import { deleteById, sinceNowInMinutes } from '../database/grakn';
-import { reportJobError } from '../domain/work';
+import { deleteById } from '../database/grakn';
+import { loadConnectorForWork, reportJobStatus } from '../domain/work';
+import { loadFile } from '../database/minio';
 
 const connectorResolvers = {
   Query: {
     connectors: () => connectors(),
-    connectorsForExport: () => connectorsForExport()
+    connectorsForExport: () => connectorsForExport(),
+    connectorsForImport: () => connectorsForImport(),
+    fileInformation: (_, { id }) => loadFile(id)
   },
-  Connector: {
-    active: connector => sinceNowInMinutes(connector.updated_at) < 2
+  Work: {
+    connector: work => loadConnectorForWork(work.id)
   },
   Mutation: {
     registerConnector: (_, { input }) => registerConnector(input),
     pingConnector: (_, { id }) => pingConnector(id),
-    reportJobError: (_, { id, message }) => reportJobError(id, message),
+    reportJobStatus: (_, { id, status, message }) =>
+      reportJobStatus(id, status, message),
     resetJob: (_, { id }) => deleteById(id)
   }
 };

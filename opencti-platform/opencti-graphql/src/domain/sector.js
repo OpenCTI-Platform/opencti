@@ -8,7 +8,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   paginate,
   takeWriteTx,
   commitWriteTx
@@ -52,14 +52,14 @@ export const addSector = async (user, sector) => {
     has alias "",
     has name "${escapeString(sector.name)}",
     has description "${escapeString(sector.description)}",
-    has created ${sector.created ? prepareDate(sector.created) : now()},
-    has modified ${sector.modified ? prepareDate(sector.modified) : now()},
+    has created ${sector.created ? prepareDate(sector.created) : graknNow()},
+    has modified ${sector.modified ? prepareDate(sector.modified) : graknNow()},
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",       
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",       
+    has updated_at ${graknNow()};
   `);
   const createSector = await sectorIterator.next();
   const createdSectorId = await createSector.map().get('sector').id;

@@ -17,7 +17,7 @@ import {
   getObject,
   getById,
   notify,
-  now,
+  graknNow,
   paginate,
   takeWriteTx,
   updateAttribute,
@@ -36,7 +36,7 @@ import { stixDomainEntityDelete } from './stixDomainEntity';
 export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
   uuid: tokenValue,
   name: OPENCTI_WEB_TOKEN,
-  created: now(),
+  created: graknNow(),
   issuer: OPENCTI_ISSUER,
   revoked: false,
   duration: OPENCTI_DEFAULT_DURATION // 99 years per default
@@ -84,9 +84,7 @@ export const token = (userId, args, context) => {
   return getObject(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
-    $client has internal_id "${escapeString(
-      userId
-    )}"; get $x, $rel; offset 0; limit 1;`,
+    $client has internal_id "${escapeString(userId)}"; get; offset 0; limit 1;`,
     'x',
     'rel'
   ).then(result => result.node.uuid);
@@ -96,9 +94,7 @@ export const getTokenId = userId => {
   return getObject(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
-    $client has internal_id "${escapeString(
-      userId
-    )}"; get $x, $rel; offset 0; limit 1;`,
+    $client has internal_id "${escapeString(userId)}"; get; offset 0; limit 1;`,
     'x',
     'rel'
   ).then(result => pathOr(null, ['node', 'id'], result));
@@ -119,14 +115,16 @@ export const addPerson = async (user, newUser) => {
     has alias "",
     has name "${escapeString(newUser.name)}",
     has description "${escapeString(newUser.description)}",
-    has created ${newUser.created ? prepareDate(newUser.created) : now()},
-    has modified ${newUser.modified ? prepareDate(newUser.modified) : now()},
+    has created ${newUser.created ? prepareDate(newUser.created) : graknNow()},
+    has modified ${
+      newUser.modified ? prepareDate(newUser.modified) : graknNow()
+    },
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}", 
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}", 
+    has updated_at ${graknNow()};
   `;
   logger.debug(`[GRAKN - infer: false] addPerson > ${query}`);
   const userIterator = await wTx.tx.query(query);
@@ -179,8 +177,10 @@ export const addUser = async (
         ? `has language "${escapeString(newUser.language)}",`
         : 'has language "auto",'
     }
-    has created ${newUser.created ? prepareDate(newUser.created) : now()},
-    has modified ${newUser.modified ? prepareDate(newUser.modified) : now()},
+    has created ${newUser.created ? prepareDate(newUser.created) : graknNow()},
+    has modified ${
+      newUser.modified ? prepareDate(newUser.modified) : graknNow()
+    },
     ${
       newUser.grant
         ? join(
@@ -190,11 +190,11 @@ export const addUser = async (
         : ''
     }
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}" ,    
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}" ,    
+    has updated_at ${graknNow()};
   `;
   logger.debug(`[GRAKN - infer: false] addUser > ${query}`);
   const userIterator = await wTx.tx.query(query);
@@ -218,8 +218,8 @@ export const addUser = async (
     has issuer "${newToken.issuer}",
     has revoked ${newToken.revoked},
     has duration "${newToken.duration}",
-    has created_at ${now()},
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has updated_at ${graknNow()};
   `);
 
   const createdToken = await tokenIterator.next();
@@ -247,7 +247,7 @@ export const loginFromProvider = async (email, name) => {
     const newUser = {
       name,
       email,
-      created: now(),
+      created: graknNow(),
       password: null,
       grant: conf.get('app:default_roles')
     };
@@ -299,8 +299,8 @@ export const userRenewToken = async (
     has issuer "${newToken.issuer}",
     has revoked ${newToken.revoked},
     has duration "${newToken.duration}",
-    has created_at ${now()},
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has updated_at ${graknNow()};
   `);
   const createdToken = await tokenIterator.next();
   await createdToken.map().get('token').id;

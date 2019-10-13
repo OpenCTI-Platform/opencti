@@ -9,7 +9,7 @@ import {
   yearFormat,
   prepareDate,
   notify,
-  now,
+  graknNow,
   commitWriteTx
 } from '../database/grakn';
 import { paginate as elPaginate } from '../database/elasticSearch';
@@ -25,6 +25,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   const internalId = intrusionSet.internal_id
     ? escapeString(intrusionSet.internal_id)
     : uuid();
+  const now = graknNow();
   const query = `insert $intrusionSet isa Intrusion-Set,
     has internal_id "${internalId}",
     has entity_type "intrusion-set",
@@ -38,40 +39,40 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     has name "${escapeString(intrusionSet.name)}",
     has description "${escapeString(intrusionSet.description)}",
     has first_seen ${
-      intrusionSet.first_seen ? prepareDate(intrusionSet.first_seen) : now()
+      intrusionSet.first_seen ? prepareDate(intrusionSet.first_seen) : now
     },
     has first_seen_day "${
       intrusionSet.first_seen
         ? dayFormat(intrusionSet.first_seen)
-        : dayFormat(now())
+        : dayFormat(now)
     }",
     has first_seen_month "${
       intrusionSet.first_seen
         ? monthFormat(intrusionSet.first_seen)
-        : monthFormat(now())
+        : monthFormat(now)
     }",
     has first_seen_year "${
       intrusionSet.first_seen
         ? yearFormat(intrusionSet.first_seen)
-        : yearFormat(now())
+        : yearFormat(now)
     }",
     has last_seen ${
-      intrusionSet.last_seen ? prepareDate(intrusionSet.last_seen) : now()
+      intrusionSet.last_seen ? prepareDate(intrusionSet.last_seen) : now
     },
     has last_seen_day "${
       intrusionSet.last_seen
         ? dayFormat(intrusionSet.last_seen)
-        : dayFormat(now())
+        : dayFormat(now)
     }",
     has last_seen_month "${
       intrusionSet.last_seen
         ? monthFormat(intrusionSet.last_seen)
-        : monthFormat(now())
+        : monthFormat(now)
     }",
     has last_seen_year "${
       intrusionSet.last_seen
         ? yearFormat(intrusionSet.last_seen)
-        : yearFormat(now())
+        : yearFormat(now)
     }",
     has goal "${escapeString(intrusionSet.goal)}",
     has sophistication "${escapeString(intrusionSet.sophistication)}",
@@ -81,17 +82,17 @@ export const addIntrusionSet = async (user, intrusionSet) => {
       intrusionSet.secondary_motivation
     )}",
     has created ${
-      intrusionSet.created ? prepareDate(intrusionSet.created) : now()
+      intrusionSet.created ? prepareDate(intrusionSet.created) : now
     },
     has modified ${
-      intrusionSet.modified ? prepareDate(intrusionSet.modified) : now()
+      intrusionSet.modified ? prepareDate(intrusionSet.modified) : now
     },
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",       
-    has updated_at ${now()};
+    has created_at ${now},
+    has created_at_day "${dayFormat(now)}",
+    has created_at_month "${monthFormat(now)}",
+    has created_at_year "${yearFormat(now)}",       
+    has updated_at ${now};
   `;
   logger.debug(`[GRAKN - infer: false] addIntrusionSet > ${query}`);
   const intrusionSetIterator = await wTx.tx.query(query);

@@ -4,7 +4,7 @@ import { logger } from '../config/conf';
 module.exports.up = async next => {
   const resultPromise = Promise.all(
     ['observable'].map(async entityType => {
-      const query = `match $x isa entity; $x has stix_id $sid; $sid contains "${entityType}"; get $x;`;
+      const query = `match $x isa entity; $x has stix_id $sid; $sid contains "${entityType}"; get;`;
       const entities = await find(query, ['x']);
       logger.info('[MIGRATION] update-stix_observables > Entities loaded');
       const updatePromise = Promise.all(

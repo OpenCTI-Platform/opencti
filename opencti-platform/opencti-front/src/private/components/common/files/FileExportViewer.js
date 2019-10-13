@@ -27,7 +27,7 @@ const FileExportViewerComponent = ({ entity, relay }) => {
   </React.Fragment>;
 };
 
-export const FileExportViewerRefetchQuery = graphql`
+const FileExportViewerRefetchQuery = graphql`
     query FileExportViewerRefetchQuery($id: String!) {
         stixDomainEntity(id: $id) {
             ...FileExportViewer_entity

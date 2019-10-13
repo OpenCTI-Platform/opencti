@@ -2,15 +2,14 @@ import { filter, map, assoc } from 'ramda';
 import moment from 'moment';
 import { metrics } from '../database/rabbitmq';
 
-export const dateFormat = 'YYYY-MM-DDTHH:mm:ss';
-
+// eslint-disable-next-line
 export const getMetrics = async args => {
   const stats = await metrics();
   const finalQueues = map(
     n =>
       assoc(
         'idle_since',
-        `${moment(n.idle_since, 'YYYY-MM-DD hh:mm:ss').format(dateFormat)}Z`,
+        moment(n.idle_since, 'YYYY-MM-DD hh:mm:ss').toISOString(),
         n
       ),
     stats.queues

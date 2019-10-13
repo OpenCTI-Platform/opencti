@@ -8,12 +8,13 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   takeWriteTx,
   commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
+import { stableUUID } from '../database/utils';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'city', args));
@@ -27,20 +28,22 @@ export const addCity = async (user, city) => {
     has internal_id "${internalId}",
     has entity_type "city",
     has stix_id "${
-      city.stix_id ? escapeString(city.stix_id) : `identity--${uuid()}`
+      city.stix_id
+        ? escapeString(city.stix_id)
+        : `identity--${stableUUID(city.name)}`
     }",
     has stix_label "",
     has alias "",
     has name "${escapeString(city.name)}",
     has description "${escapeString(city.description)}",
-    has created ${city.created ? prepareDate(city.created) : now()},
-    has modified ${city.modified ? prepareDate(city.modified) : now()},
+    has created ${city.created ? prepareDate(city.created) : graknNow()},
+    has modified ${city.modified ? prepareDate(city.modified) : graknNow()},
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",
+    has updated_at ${graknNow()};
   `);
   const createCity = await cityIterator.next();
   const createdCityId = await createCity.map().get('city').id;

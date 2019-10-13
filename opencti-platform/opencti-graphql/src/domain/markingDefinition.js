@@ -12,7 +12,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   paginate,
   takeWriteTx,
   commitWriteTx
@@ -68,6 +68,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   const internalId = markingDefinition.internal_id
     ? escapeString(markingDefinition.internal_id)
     : uuid();
+  const now = graknNow();
   const markingDefinitionIterator = await wTx.tx
     .query(`insert $markingDefinition isa Marking-Definition,
     has internal_id "${internalId}",
@@ -82,19 +83,17 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
     has color "${escapeString(markingDefinition.color)}",
     has level ${markingDefinition.level},
     has created ${
-      markingDefinition.created ? prepareDate(markingDefinition.created) : now()
+      markingDefinition.created ? prepareDate(markingDefinition.created) : now
     },
     has modified ${
-      markingDefinition.modified
-        ? prepareDate(markingDefinition.modified)
-        : now()
+      markingDefinition.modified ? prepareDate(markingDefinition.modified) : now
     },
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",       
-    has updated_at ${now()};
+    has created_at ${now},
+    has created_at_day "${dayFormat(now)}",
+    has created_at_month "${monthFormat(now)}",
+    has created_at_year "${yearFormat(now)}",       
+    has updated_at ${now};
   `);
   const createMarkingDefinition = await markingDefinitionIterator.next();
   const createdMarkingDefinitionId = await createMarkingDefinition

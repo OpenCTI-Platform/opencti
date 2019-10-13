@@ -13,7 +13,7 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   paginate,
   takeWriteTx,
   commitWriteTx
@@ -65,6 +65,7 @@ export const addKillChainPhase = async (user, killChainPhase) => {
   const internalId = killChainPhase.internal_id
     ? escapeString(killChainPhase.internal_id)
     : uuid();
+  const now = graknNow();
   const killChainPhaseIterator = await wTx.tx
     .query(`insert $killChainPhase isa Kill-Chain-Phase,
     has internal_id "${internalId}",
@@ -78,17 +79,17 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     has phase_name "${escapeString(killChainPhase.phase_name)}",
     has phase_order ${escape(killChainPhase.phase_order)},
     has created ${
-      killChainPhase.created ? prepareDate(killChainPhase.created) : now()
+      killChainPhase.created ? prepareDate(killChainPhase.created) : now
     },
     has modified ${
-      killChainPhase.modified ? prepareDate(killChainPhase.modified) : now()
+      killChainPhase.modified ? prepareDate(killChainPhase.modified) : now
     },
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",       
-    has updated_at ${now()};
+    has created_at ${now},
+    has created_at_day "${dayFormat(now)}",
+    has created_at_month "${monthFormat(now)}",
+    has created_at_year "${yearFormat(now)}",       
+    has updated_at ${now};
   `);
   const createKillChainPhase = await killChainPhaseIterator.next();
   const createdKillChainPhaseId = await createKillChainPhase

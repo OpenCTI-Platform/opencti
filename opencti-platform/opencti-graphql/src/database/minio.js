@@ -1,19 +1,11 @@
 import * as Minio from 'minio';
-import {
-  assoc,
-  filter,
-  includes,
-  isEmpty,
-  concat,
-  map,
-  mergeDeepLeft
-} from 'ramda';
+import { assoc, isEmpty, concat, map } from 'ramda';
+import mime from 'mime-types';
 import conf, { logger } from '../config/conf';
-import { getById, sinceNowInMinutes } from './grakn';
+import { getById, now, sinceNowInMinutes } from './grakn';
 import { buildPagination } from './utils';
 import { loadExportWorksAsProgressFiles } from '../domain/work';
 
-export const SUFFIX_IMPORT = '.import.';
 const bucketName = conf.get('minio:bucketName') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucketRegion') || 'us-east-1';
 
@@ -46,6 +38,28 @@ const extractName = (entityId, entityType, filename = '') => {
     : `${entityType}/${entityId}/${filename}`;
 };
 
+/**
+ * Generate a filename for the export
+ * @param format mime type like application/json
+ * @param connector the connector for the export
+ * @param exportType the export type simple or full
+ * @param entity the target entity of the export
+ * @returns {string}
+ */
+export const generateFileExportName = (
+  format,
+  connector,
+  exportType,
+  entity
+) => {
+  const creation = now();
+  const fileExt = mime.extension(format);
+  const entityInFile = entity
+    ? `${entity.entity_type}-${entity.name}`
+    : `global`;
+  return `${creation}_(${connector.name})_${entityInFile}_${exportType}.${fileExt}`;
+};
+
 export const deleteFile = (id, user) => {
   logger.debug(`FileManager > delete file ${id} by ${user.email}`);
   return minioClient.removeObject(bucketName, id);
@@ -72,34 +86,18 @@ const rawFilesListing = directory => {
     const files = [];
     const stream = minioClient.listObjectsV2(bucketName, directory, true);
     stream.on('data', async obj => files.push(assoc('id', obj.name, obj)));
+    stream.on('error', e => logger.error('MINIO > Error listing files', e));
     stream.on('end', () => resolve(files));
   }).then(files => Promise.all(map(elem => loadFile(elem.name), files)));
 };
 
 export const filesListing = async (first, category, entity) => {
-  const rawFiles = await rawFilesListing(
-    `${category}/${extractName(entity.id, entity.entity_type)}`
-  );
-  const originalFiles = filter(e => !includes(SUFFIX_IMPORT, e.name), rawFiles);
-  // For each file, find suffixed files to enrich the data
-  const fileEnrich = file => {
-    const extraFiles = filter(
-      e => includes(e.name + SUFFIX_IMPORT, e.name),
-      rawFiles
-    );
-    const extraConnectors = map(
-      ex => ex.name.substring((ex.name + SUFFIX_IMPORT).length),
-      extraFiles
-    );
-    return mergeDeepLeft(file, { connectors: extraConnectors });
-  };
-  const existingFiles = map(fileEnrich, originalFiles);
-  let allFiles;
+  const name = `${extractName(entity.id, entity.entity_type)}`;
+  const files = await rawFilesListing(`${category}/${name}`);
+  let allFiles = files;
   if (category === 'export') {
     const inExport = await loadExportWorksAsProgressFiles(entity.id);
-    allFiles = concat(inExport, existingFiles);
-  } else {
-    allFiles = existingFiles;
+    allFiles = concat(inExport, files);
   }
   const fileNodes = map(f => ({ node: f }), allFiles);
   return buildPagination(first, 0, fileNodes, allFiles.length);
