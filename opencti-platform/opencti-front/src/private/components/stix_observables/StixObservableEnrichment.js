@@ -62,7 +62,7 @@ const StixObservableEnrichmentFragment = createRefetchContainer(
           connectors(onlyAlive: false) {
               id
               name
-              acttive
+              active
           }
         }
     `,
