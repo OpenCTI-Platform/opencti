@@ -30,7 +30,6 @@ const reportQuery = graphql`
       ...ReportDetails_report
       ...ReportKnowledge_report
       ...ReportEntities_report
-      ...ReportObservables_report @arguments(relationType: $relationType)
     }
     me {
       ...ReportKnowledge_me
