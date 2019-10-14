@@ -16,10 +16,7 @@ import CityPopover from './CityPopover';
 const styles = theme => ({
   item: {
     paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+    height: '100%',
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -53,7 +50,7 @@ class CityLineComponent extends Component {
       fd, classes, dataColumns, node, paginationOptions,
     } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <CityVariant />
         </ListItemIcon>

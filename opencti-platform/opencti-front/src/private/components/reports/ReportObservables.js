@@ -47,11 +47,7 @@ const styles = theme => ({
   },
   item: {
     paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+    height: '100%',
   },
   bodyItem: {
     height: '100%',
@@ -305,6 +301,7 @@ class ReportObservablesComponent extends Component {
                 key={relationRef.id}
                 classes={{ root: classes.item }}
                 divider={true}
+                button={true}
                 component={Link}
                 to={`${link}/${relationRef.id}`}
               >

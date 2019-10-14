@@ -25,17 +25,6 @@ const styles = theme => ({
     borderRadius: 6,
     position: 'relative',
   },
-  item: {
-    height: 60,
-    minHeight: 60,
-    maxHeight: 60,
-    transition: 'background-color 0.1s ease',
-    paddingRight: 0,
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
-  },
   itemIcon: {
     color: theme.palette.primary.main,
   },

@@ -15,10 +15,7 @@ import ItemMarking from '../../../components/ItemMarking';
 const styles = theme => ({
   item: {
     paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+    height: '100%',
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -55,6 +52,7 @@ class WorkspaceLineComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
+        button={true}
         component={Link}
         to={`/dashboard/${node.workspace_type}/${node.id}`}
       >

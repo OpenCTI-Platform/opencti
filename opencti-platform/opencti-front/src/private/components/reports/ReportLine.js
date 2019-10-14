@@ -16,11 +16,7 @@ import ItemStatus from '../../../components/ItemStatus';
 const styles = theme => ({
   item: {
     paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+    height: '100%',
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -58,6 +54,7 @@ class ReportLineComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
+        button={true}
         component={Link}
         to={`/dashboard/reports/all/${node.id}`}
       >

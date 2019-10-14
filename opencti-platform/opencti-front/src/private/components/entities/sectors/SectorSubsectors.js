@@ -22,11 +22,8 @@ const styles = () => ({
     borderRadius: 6,
   },
   item: {
-    paddingLeft: 15,
-    transition: 'background-color 0.1s ease',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+    paddingLeft: 10,
+    height: '100%',
   },
 });
 

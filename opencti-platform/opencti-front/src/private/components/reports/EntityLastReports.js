@@ -27,12 +27,7 @@ const styles = theme => ({
     height: 60,
     minHeight: 60,
     maxHeight: 60,
-    transition: 'background-color 0.1s ease',
     paddingRight: 0,
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
   },
   itemIcon: {
     marginRight: 0,
@@ -119,6 +114,7 @@ class EntityLastReports extends Component {
                         <ListItem
                           key={report.id}
                           dense={true}
+                          button={true}
                           classes={{ root: classes.item }}
                           divider={true}
                           component={Link}
