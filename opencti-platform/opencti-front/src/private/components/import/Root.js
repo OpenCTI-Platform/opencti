@@ -101,7 +101,7 @@ const ImportRoot = ({
         </div>
         <Paper classes={{ root: classes.paper }} elevation={2}>
             {edges.length ? edges.map(file => <div style={{ marginLeft: -15 }} key={file.node.id}>
-                <FileLine entityId={null} file={file.node}
+                <FileLine file={file.node}
                           connectors={importConnsPerFormat[file.node.metaData.mimetype]}/>
             </div>) : <div style={{ padding: 10 }}>No file</div>}
         </Paper>

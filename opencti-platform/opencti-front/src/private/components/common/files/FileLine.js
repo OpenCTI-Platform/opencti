@@ -36,13 +36,13 @@ const FileLineImportAskJobMutation = graphql`
 `;
 
 const FileLineComponent = (props) => {
-  const { file, entityId, connectors } = props;
+  const { file, connectors } = props;
   const { information, lastModifiedSinceMin, uploadStatus } = file;
   const isFail = uploadStatus === 'error';
   const isProgress = uploadStatus === 'progress';
   const isOutdated = isProgress && lastModifiedSinceMin > 5;
   const isImportActive = () => connectors && filter(x => x.data.active, connectors).length > 0;
-  const executeRemove = (mutation, variables, id, category) => {
+  const executeRemove = (mutation, variables) => {
     commitMutation({
       mutation,
       variables,
@@ -55,11 +55,6 @@ const FileLineComponent = (props) => {
         const fileStore = store.get(file.id);
         fileStore.setValue(0, 'lastModifiedSinceMin');
         fileStore.setValue('progress', 'uploadStatus');
-        if (category === 'import') { // If export, just wait for the refresh
-          const entity = store.get(entityId);
-          const conn = ConnectionHandler.getConnection(entity, `Pagination_${category}Files`);
-          ConnectionHandler.deleteNode(conn, id);
-        }
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('File successfully removed');
@@ -150,7 +145,6 @@ const FileLine = createFragmentContainer(FileLineComponent, {
     `,
 });
 FileLine.propTypes = {
-  entityId: PropTypes.string.isRequired,
   file: PropTypes.object.isRequired,
   connectors: PropTypes.array,
 };

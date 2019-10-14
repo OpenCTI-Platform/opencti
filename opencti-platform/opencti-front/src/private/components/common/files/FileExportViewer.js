@@ -22,7 +22,7 @@ const FileExportViewerComponent = ({ entity, relay }) => {
   });
   return <React.Fragment>
       {edges.length ? edges.map((file, index) => <div style={{ marginLeft: -15 }} key={index}>
-        <FileLine entityId={id} file={file.node}/>
+        <FileLine file={file.node}/>
       </div>) : <div style={{ padding: 10 }}>No file</div>}
   </React.Fragment>;
 };
