@@ -27,7 +27,6 @@ const incidentQuery = graphql`
   query RootIncidentQuery($id: String!) {
     incident(id: $id) {
       ...Incident_incident
-      ...IncidentHeader_incident
       ...IncidentOverview_incident
       ...IncidentIdentity_incident
       ...IncidentReports_incident

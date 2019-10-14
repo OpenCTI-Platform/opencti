@@ -84,7 +84,7 @@ class AttackPatternPopover extends Component {
     commitMutation({
       mutation: AttackPatternPopoverDeletionMutation,
       variables: {
-        id: this.props.attackPatternId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -104,7 +104,7 @@ class AttackPatternPopover extends Component {
   }
 
   render() {
-    const { classes, t, attackPatternId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
@@ -159,7 +159,7 @@ class AttackPatternPopover extends Component {
         >
           <QueryRenderer
             query={attackPatternEditionQuery}
-            variables={{ id: attackPatternId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
@@ -180,7 +180,7 @@ class AttackPatternPopover extends Component {
 }
 
 AttackPatternPopover.propTypes = {
-  attackPatternId: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

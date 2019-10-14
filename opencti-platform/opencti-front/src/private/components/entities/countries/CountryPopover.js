@@ -84,7 +84,7 @@ class CountryPopover extends Component {
     commitMutation({
       mutation: CountryPopoverDeletionMutation,
       variables: {
-        id: this.props.countryId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -104,7 +104,7 @@ class CountryPopover extends Component {
   }
 
   render() {
-    const { classes, t, countryId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
@@ -159,7 +159,7 @@ class CountryPopover extends Component {
         >
           <QueryRenderer
             query={countryEditionQuery}
-            variables={{ id: countryId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
@@ -180,7 +180,7 @@ class CountryPopover extends Component {
 }
 
 CountryPopover.propTypes = {
-  countryId: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

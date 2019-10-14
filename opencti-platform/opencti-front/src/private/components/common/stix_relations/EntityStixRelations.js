@@ -121,8 +121,8 @@ class EntityStixRelations extends Component {
         isSortable: resolveInferences || !inferred || !displayDetails,
       },
       weight: {
-        label: 'Confidence level',
-        width: '10%',
+        label: 'Confidence',
+        width: '15%',
         isSortable: resolveInferences || !inferred || !displayDetails,
       },
     };

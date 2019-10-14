@@ -6,11 +6,12 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import IntrusionSetHeader from './IntrusionSetHeader';
 import IntrusionSetOverview from './IntrusionSetOverview';
-import IntrusionSetIdentity from './IntrusionSetIdentity';
+import IntrusionSetDetails from './IntrusionSetDetails';
 import IntrusionSetEdition from './IntrusionSetEdition';
+import IntrusionSetPopover from './IntrusionSetPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import EntityStixRelationsDonut from '../../common/stix_relations/EntityStixRelationsDonut';
 import EntityStixRelationsRadar from '../../common/stix_relations/EntityStixRelationsRadar';
 import EntityReportsChart from '../../reports/EntityReportsChart';
@@ -29,7 +30,10 @@ class IntrusionSetComponent extends Component {
     const { classes, intrusionSet } = this.props;
     return (
       <div className={classes.container}>
-        <IntrusionSetHeader intrusionSet={intrusionSet} />
+        <StixDomainEntityHeader
+          stixDomainEntity={intrusionSet}
+          PopoverComponent={<IntrusionSetPopover />}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -39,7 +43,7 @@ class IntrusionSetComponent extends Component {
             <IntrusionSetOverview intrusionSet={intrusionSet} />
           </Grid>
           <Grid item={true} xs={3}>
-            <IntrusionSetIdentity intrusionSet={intrusionSet} />
+            <IntrusionSetDetails intrusionSet={intrusionSet} />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={intrusionSet.id} />
@@ -90,9 +94,10 @@ const IntrusionSet = createFragmentContainer(IntrusionSetComponent, {
   intrusionSet: graphql`
     fragment IntrusionSet_intrusionSet on IntrusionSet {
       id
-      ...IntrusionSetHeader_intrusionSet
+      name
+      alias
       ...IntrusionSetOverview_intrusionSet
-      ...IntrusionSetIdentity_intrusionSet
+      ...IntrusionSetDetails_intrusionSet
     }
   `,
 });

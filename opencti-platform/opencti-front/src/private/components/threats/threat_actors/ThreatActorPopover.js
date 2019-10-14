@@ -84,7 +84,7 @@ class ThreatActorPopover extends Component {
     commitMutation({
       mutation: ThreatActorPopoverDeletionMutation,
       variables: {
-        id: this.props.threatActorId,
+        id: this.props.id,
       },
       config: [
         {
@@ -110,7 +110,7 @@ class ThreatActorPopover extends Component {
   }
 
   render() {
-    const { classes, t, threatActorId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
@@ -165,7 +165,7 @@ class ThreatActorPopover extends Component {
         >
           <QueryRenderer
             query={threatActorEditionQuery}
-            variables={{ id: threatActorId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
@@ -186,7 +186,7 @@ class ThreatActorPopover extends Component {
 }
 
 ThreatActorPopover.propTypes = {
-  threatActorId: PropTypes.string,
+  id: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

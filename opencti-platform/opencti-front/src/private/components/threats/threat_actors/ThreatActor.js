@@ -6,14 +6,15 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import ThreatActorHeader from './ThreatActorHeader';
 import ThreatActorOverview from './ThreatActorOverview';
 import ThreatActorIdentity from './ThreatActorIdentity';
 import ThreatActorEdition from './ThreatActorEdition';
+import ThreatActorPopover from './ThreatActorPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityIncidentsChart from '../incidents/EntityIncidentsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -29,7 +30,10 @@ class ThreatActorComponent extends Component {
     const { classes, threatActor } = this.props;
     return (
       <div className={classes.container}>
-        <ThreatActorHeader threatActor={threatActor} />
+        <StixDomainEntityHeader
+          stixDomainEntity={threatActor}
+          PopoverComponent={<ThreatActorPopover />}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -77,7 +81,8 @@ const ThreatActor = createFragmentContainer(ThreatActorComponent, {
   threatActor: graphql`
     fragment ThreatActor_threatActor on ThreatActor {
       id
-      ...ThreatActorHeader_threatActor
+      name
+      alias
       ...ThreatActorOverview_threatActor
       ...ThreatActorIdentity_threatActor
     }

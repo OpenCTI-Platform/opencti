@@ -6,8 +6,9 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import OrganizationHeader from './OrganizationHeader';
+import OrganizationPopover from './OrganizationPopover';
 import Reports from '../../reports/Reports';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -31,7 +32,10 @@ class OrganizationReportsComponent extends Component {
     ) {
       return (
         <div className={classes.container}>
-          <OrganizationHeader organization={organization} />
+          <StixDomainEntityHeader
+            stixDomainEntity={organization}
+            PopoverComponent={<OrganizationPopover />}
+          />
           <Paper classes={{ root: classes.paper }} elevation={2}>
             <Reports authorId={organization.id} />
           </Paper>
@@ -40,7 +44,10 @@ class OrganizationReportsComponent extends Component {
     }
     return (
       <div className={classes.container}>
-        <OrganizationHeader organization={organization} />
+        <StixDomainEntityHeader
+          stixDomainEntity={organization}
+          PopoverComponent={<OrganizationPopover />}
+        />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Reports objectId={organization.id} />
         </Paper>
@@ -62,7 +69,8 @@ const OrganizationReports = createFragmentContainer(
       fragment OrganizationReports_organization on Organization {
         id
         organization_class
-        ...OrganizationHeader_organization
+        name
+        alias
       }
     `,
   },
