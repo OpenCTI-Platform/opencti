@@ -125,6 +125,7 @@ class CampaignKnowledgeComponent extends Component {
               targetEntityTypes={[
                 'Organization',
                 'Sector',
+                'City',
                 'Country',
                 'Region',
               ]}
