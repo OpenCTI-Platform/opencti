@@ -129,6 +129,7 @@ class ThreatActorKnowledgeComponent extends Component {
               targetEntityTypes={[
                 'Organization',
                 'Sector',
+                'City',
                 'Country',
                 'Region',
                 'User',
