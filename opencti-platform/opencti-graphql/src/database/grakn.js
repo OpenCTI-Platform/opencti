@@ -216,8 +216,9 @@ export const conceptTypes = async (concept, currentType = null, acc = []) => {
  * Extract all vars from a grakn query
  * @param query
  */
-const extractQueryVars = query =>
-  uniq(map(t => head(t).replace('$', ''), [...query.matchAll(/\$[a-z]+/gi)]));
+const extractQueryVars = query => {
+  return uniq(map(m => m.replace('$', ''), query.match(/\$[a-z]+/gi)));
+};
 
 /**
  * Compute the index related to concept types
