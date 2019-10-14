@@ -21,7 +21,6 @@ import {
   sortWith,
   descend,
   ascend,
-  pipe,
   dropRepeats
 } from 'ramda';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
