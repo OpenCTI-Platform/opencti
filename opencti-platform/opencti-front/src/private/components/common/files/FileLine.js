@@ -6,7 +6,6 @@ import {
 } from '@material-ui/icons';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import React from 'react';
-import { ConnectionHandler } from 'relay-runtime';
 import * as PropTypes from 'prop-types';
 import Tooltip from '@material-ui/core/Tooltip';
 import Badge from '@material-ui/core/Badge';
