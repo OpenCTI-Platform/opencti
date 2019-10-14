@@ -149,7 +149,8 @@ class TopBar extends Component {
           </IconButton>
           <div className={classes.menuContainer}>
             {location.pathname === '/dashboard'
-            || location.pathname === '/dashboard/entities' ? (
+            || location.pathname === '/dashboard/entities'
+            || location.pathname === '/dashboard/import' ? (
               <TopMenuDashboard />
               ) : (
                 ''
@@ -336,12 +337,12 @@ class TopBar extends Component {
           </div>
           <Button
               component={Link}
-              to="/dashboard"
-              variant={location.pathname === '/dashboard' ? 'contained' : 'text'}
+              to="/dashboard/import"
+              variant={location.pathname === '/dashboard/import' ? 'contained' : 'text'}
               size="small"
-              color={location.pathname === '/dashboard' ? 'primary' : 'inherit'}
+              color={location.pathname === '/dashboard/import' ? 'primary' : 'inherit'}
               classes={{ root: classes.button }}>
-            {t('Files')}
+            {t('Import')}
           </Button>
           <IconButton
             size="medium"

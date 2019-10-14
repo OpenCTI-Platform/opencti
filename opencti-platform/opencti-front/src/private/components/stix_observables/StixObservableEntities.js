@@ -81,8 +81,7 @@ class StixObservableEntities extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         displayImport={true}
-        secondaryAction={true}
-      >
+        secondaryAction={true}>
         <QueryRenderer
           query={stixObservableEntitiesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}

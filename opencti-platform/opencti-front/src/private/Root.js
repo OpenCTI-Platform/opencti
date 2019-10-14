@@ -27,6 +27,7 @@ import Profile from './components/Profile';
 import Message from '../components/Message';
 import { NoMatch, BoundaryRoute } from './components/Error';
 import Loader from './Loader';
+import ImportRoot from './components/import/Root';
 
 const styles = theme => ({
   root: {
@@ -209,6 +210,11 @@ class Root extends Component {
                           render={routeProps => (
                             <Profile {...routeProps} me={props.me} />
                           )}
+                        />
+                        <BoundaryRoute
+                            path="/dashboard/import"
+                            component={ImportRoot}
+                            me={props.me}
                         />
                         <Route component={NoMatch} />
                       </Switch>

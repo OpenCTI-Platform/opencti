@@ -45,9 +45,6 @@ const reportQuery = graphql`
     connectorsForExport {
         ...FileManager_connectorsExport
     }
-    connectorsForImport {
-        ...FileManager_connectorsImport
-    }
   }
 `;
 
@@ -130,7 +127,6 @@ class RootReport extends Component {
                             <ReportHeader report={props.report} />
                             <FileManager {...routeProps} id={reportId}
                                          connectorsExport={props.connectorsForExport}
-                                         connectorsImport={props.connectorsForImport}
                                          entity={props.report}/>
                         </React.Fragment>
                     )}

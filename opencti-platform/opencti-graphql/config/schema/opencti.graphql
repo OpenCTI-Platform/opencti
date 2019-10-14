@@ -237,10 +237,6 @@ type WorkConnection {
   pageInfo: PageInfo!
   edges: [WorkEdge]
 }
-input FileUpload {
-  file: Upload! # File content
-  entityId: String # Entity Id, Stix or internal (for non stix2 entity)
-}
 enum FileCategory {
   import
   export
@@ -249,8 +245,6 @@ type FileMetadata {
   category: FileCategory!
   encoding: String
   mimetype: String
-  entityid: String # Entity Id, Stix or internal (for non stix2 entity)
-  entitytype: String # Type of this entity
 }
 type File {
   id: ID!
@@ -420,7 +414,7 @@ type StixObservable implements GlobalObject & StixEntity {
     search: String
     infrastructure: Boolean
   ): StixRelationConnection
-  jobs(first: Int): WorkConnection
+  jobs(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode): WorkConnection
   connectors(onlyAlive: Boolean): [Connector]
   created_at: DateTime!
   updated_at: DateTime!
@@ -2208,7 +2202,7 @@ type Query {
   connectors: [Connector] @auth
   connectorsForExport: [Connector] @auth
   connectorsForImport: [Connector] @auth
-  fileInformation(id: ID!): File @auth
+  importFiles(first: Int): FileConnection @auth
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(
@@ -2610,7 +2604,8 @@ type StixDomainEntityEditMutations {
   contextClean: StixDomainEntity
   relationAdd(input: RelationAddInput): RelationData
   relationDelete(relationId: ID!): RelationData
-  askExport(format: String!, exportType: String!): [File]
+  importPush(file: Upload!): File @auth
+  exportAsk(format: String!, exportType: String!): [File]
   exportPush(jobId: ID!, file: Upload!): Boolean @auth(for: ROLE_ADMIN)
 }
 
@@ -2622,6 +2617,7 @@ type StixObservableEditMutations {
   contextClean: StixObservable
   relationAdd(input: RelationAddInput): RelationData
   relationDelete(relationId: ID!): RelationData
+  askEnrichment(connectorId: ID!): Work
 }
 
 # StixRelation
@@ -2873,7 +2869,7 @@ type Mutation {
   resetJob(id: ID!): ID! @auth
   # File management
   deleteImport(fileName: String): Boolean @auth
-  uploadImport(input: FileUpload): File @auth
+  uploadImport(file: Upload!): File @auth
   askJobImport(fileName: ID!): File @auth
   # StixDomainEntity
   stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth

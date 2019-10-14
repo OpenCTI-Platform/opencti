@@ -17,7 +17,8 @@ import {
   stixObservableAddRelation,
   stixObservableDeleteRelation,
   stixRelations,
-  createdByRef
+  createdByRef,
+  stixObservableAskEnrichment
 } from '../domain/stixObservable';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
@@ -59,7 +60,9 @@ const stixObservableResolvers = {
       contextClean: () => stixObservableCleanContext(user, id),
       relationAdd: ({ input }) => stixObservableAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
-        stixObservableDeleteRelation(user, id, relationId)
+        stixObservableDeleteRelation(user, id, relationId),
+      askEnrichment: ({ connectorId }) =>
+        stixObservableAskEnrichment(id, connectorId)
     }),
     stixObservableAdd: (_, { input }, { user }) =>
       addStixObservable(user, input)

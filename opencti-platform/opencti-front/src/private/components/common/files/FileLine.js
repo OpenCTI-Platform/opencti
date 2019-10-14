@@ -2,7 +2,7 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import IconButton from '@material-ui/core/IconButton';
 import {
-  Delete, GetApp, Warning, Usb,
+  Delete, GetApp, Warning, SlowMotionVideo,
 } from '@material-ui/icons';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import React from 'react';
@@ -10,6 +10,8 @@ import { ConnectionHandler } from 'relay-runtime';
 import * as PropTypes from 'prop-types';
 import Tooltip from '@material-ui/core/Tooltip';
 import Badge from '@material-ui/core/Badge';
+import { filter } from 'ramda';
+import moment from 'moment';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import FileJob from './FileJob';
 
@@ -39,6 +41,7 @@ const FileLineComponent = (props) => {
   const isFail = uploadStatus === 'error';
   const isProgress = uploadStatus === 'progress';
   const isOutdated = isProgress && lastModifiedSinceMin > 5;
+  const isImportActive = () => connectors && filter(x => x.data.active, connectors).length > 0;
   const executeRemove = (mutation, variables, id, category) => {
     commitMutation({
       mutation,
@@ -93,7 +96,7 @@ const FileLineComponent = (props) => {
     }
     {isProgress
       ? <span>{file.name}</span>
-      : <a href={`/storage/view/${file.id}`} target="_blank" rel='noopener noreferrer'>{file.name}</a>}
+      : <span>{moment(file.lastModified).format('ll')} - <a href={`/storage/view/${file.id}`} target="_blank" rel='noopener noreferrer'>{file.name}</a></span>}
     {(() => {
       if (isFail || isOutdated) {
         const message = isOutdated ? 'Processing timeout' : information;
@@ -113,11 +116,11 @@ const FileLineComponent = (props) => {
           </IconButton>
           {
               connectors
-              && <IconButton onClick={askForImportJob} disabled={connectors.length === 0}
-                             aria-haspopup="true" color="primary">
-                  <Badge color='secondary' badgeContent={connectors.length}
+              && <IconButton onClick={askForImportJob} disabled={!isImportActive()}
+                             aria-haspopup="true">
+                  <Badge color={isImportActive() ? 'primary' : 'secondary'} badgeContent={connectors.length}
                          anchorOrigin={{ horizontal: 'right', vertical: 'top' }}>
-                    <Usb/>
+                    <SlowMotionVideo/>
                   </Badge>
               </IconButton>
           }
@@ -136,6 +139,7 @@ const FileLine = createFragmentContainer(FileLineComponent, {
             name
             information
             uploadStatus
+            lastModified
             lastModifiedSinceMin
             metaData {
                 category

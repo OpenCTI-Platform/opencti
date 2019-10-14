@@ -2,31 +2,30 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixDomainEntity,
-  stixDomainEntityDelete,
+  createdByRef,
   findAll,
-  findById,
-  findByStixId,
-  findByName,
   findByExternalReference,
+  findById,
+  findByName,
+  findByStixId,
   markingDefinitions,
-  stixDomainEntitiesTimeSeries,
+  reports,
   stixDomainEntitiesNumber,
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
+  stixDomainEntitiesTimeSeries,
   stixDomainEntityAddRelation,
+  stixDomainEntityExportAsk,
+  stixDomainEntityCleanContext,
+  stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityAskExport,
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField,
   stixDomainEntityExportPush,
   stixRelations,
-  createdByRef,
-  reports
+  stixDomainEntityImportPush
 } from '../domain/stixDomainEntity';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
-import { deleteFile, filesListing } from '../database/minio';
-import { askJobImport, uploadImport } from '../domain/stixEntity';
-import { loadFileWorks } from '../domain/work';
+import { filesListing } from '../database/minio';
 
 const stixDomainEntityResolvers = {
   Query: {
@@ -65,9 +64,6 @@ const stixDomainEntityResolvers = {
     importFiles: (entity, { first }) => filesListing(first, 'import', entity),
     exportFiles: (entity, { first }) => filesListing(first, 'export', entity)
   },
-  File: {
-    jobs: file => loadFileWorks(file.id)
-  },
   Mutation: {
     stixDomainEntityEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainEntityDelete(id),
@@ -77,16 +73,14 @@ const stixDomainEntityResolvers = {
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId),
-      askExport: ({ format, exportType }) =>
-        stixDomainEntityAskExport(id, format, exportType),
+      importPush: ({ file }) => stixDomainEntityImportPush(user, id, file),
+      exportAsk: ({ format, exportType }) =>
+        stixDomainEntityExportAsk(id, format, exportType),
       exportPush: ({ jobId, file }) =>
         stixDomainEntityExportPush(user, id, jobId, file)
     }),
     stixDomainEntityAdd: (_, { input }, { user }) =>
-      addStixDomainEntity(user, input),
-    uploadImport: (_, { input }, { user }) => uploadImport(input, user),
-    deleteImport: (_, { fileName }, { user }) => deleteFile(fileName, user),
-    askJobImport: (_, { fileName }, { user }) => askJobImport(fileName, user)
+      addStixDomainEntity(user, input)
   },
   Subscription: {
     stixDomainEntity: {

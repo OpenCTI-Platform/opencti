@@ -7,14 +7,12 @@ import {
 } from '../domain/connector';
 import { deleteById } from '../database/grakn';
 import { loadConnectorForWork, reportJobStatus } from '../domain/work';
-import { loadFile } from '../database/minio';
 
 const connectorResolvers = {
   Query: {
     connectors: () => connectors(),
     connectorsForExport: () => connectorsForExport(),
-    connectorsForImport: () => connectorsForImport(),
-    fileInformation: (_, { id }) => loadFile(id)
+    connectorsForImport: () => connectorsForImport()
   },
   Work: {
     connector: work => loadConnectorForWork(work.id)

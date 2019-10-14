@@ -183,6 +183,10 @@ const askJobExports = async (entity, format, exportType) => {
   return workList;
 };
 
+export const stixDomainEntityImportPush = (user, entityId, file) => {
+  return upload(user, 'import', file, entityId);
+};
+
 /**
  * Create export element waiting for completion
  * @param domainEntityId
@@ -190,7 +194,7 @@ const askJobExports = async (entity, format, exportType) => {
  * @param exportType > stix2-bundle-full | stix2-bundle-simple
  * @returns {*}
  */
-export const stixDomainEntityAskExport = async (
+export const stixDomainEntityExportAsk = async (
   domainEntityId,
   format,
   exportType

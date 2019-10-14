@@ -171,6 +171,14 @@ const askEnrich = async (observableId, scope) => {
   return workList;
 };
 
+export const stixObservableAskEnrichment = async (id, connectorId) => {
+  const connector = await getById(connectorId);
+  const work = await createWork(connector, id);
+  const message = { job_id: work.internal_id, entity_id: id };
+  await pushToConnector(connector, message);
+  return work;
+};
+
 export const addStixObservable = async (user, stixObservable) => {
   const wTx = await takeWriteTx();
   const stixId = stixObservable.stix_id;
