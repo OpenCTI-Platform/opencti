@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
-import { compose, includes } from 'ramda';
+import { compose, includes, map } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
 import { DiagramEngine } from 'storm-react-diagrams';
@@ -28,6 +28,7 @@ import EntityLinkFactory from '../../../../components/graph_node/EntityLinkFacto
 import EntityNodeFactory from '../../../../components/graph_node/EntityNodeFactory';
 import EntityPortFactory from '../../../../components/graph_node/EntityPortFactory';
 import { stixRelationEditionFocus } from './StixRelationEditionOverview';
+import ItemMarking from '../../../../components/ItemMarking';
 import StixRelationInferences from './StixRelationInferences';
 
 const styles = () => ({
@@ -174,18 +175,24 @@ class StixRelationContainer extends Component {
       ? stixRelation.toRole
       : stixRelation.fromRole;
     const to = linkedEntity.id === entityId ? stixRelation.from : stixRelation.to;
-    const linkTo = resolveLink(to.parent_type === 'Stix-Observable' ? 'observable' : to.entity_type);
-    const linkFrom = resolveLink(from.parent_type === 'Stix-Observable' ? 'observable' : from.entity_type);
+    const linkTo = resolveLink(
+      to.parent_type === 'Stix-Observable' ? 'observable' : to.entity_type,
+    );
+    const linkFrom = resolveLink(
+      from.parent_type === 'Stix-Observable' ? 'observable' : from.entity_type,
+    );
 
     return (
       <div className={classes.container}>
         <Link to={`${linkFrom}/${from.id}`}>
-          <div className={classes.item}
+          <div
+            className={classes.item}
             style={{
               backgroundColor: itemColor(from.entity_type, true),
               top: 10,
               left: 0,
-            }}>
+            }}
+          >
             <div className={classes.itemHeader}>
               <div className={classes.icon}>
                 <ItemIcon
@@ -202,23 +209,26 @@ class StixRelationContainer extends Component {
             </div>
             <div className={classes.content}>
               <span className={classes.name}>
-                {truncate(from.parent_type === 'Stix-Observable'
-                  ? from.observable_value
-                  : from.name,
-                120)}
+                {truncate(
+                  from.parent_type === 'Stix-Observable'
+                    ? from.observable_value
+                    : from.name,
+                  120,
+                )}
               </span>
             </div>
           </div>
         </Link>
         <div className={classes.middle}>
-          {includes(fromRole, inversedRoles) || (to.parent_type === 'Stix-Observable') ? (
+          {includes(fromRole, inversedRoles)
+          || to.parent_type === 'Stix-Observable' ? (
             <ArrowRightAlt
               fontSize="large"
               style={{ transform: 'rotate(180deg)' }}
             />
-          ) : (
+            ) : (
             <ArrowRightAlt fontSize="large" />
-          )}
+            )}
           <br />
           <div
             style={{
@@ -244,12 +254,14 @@ class StixRelationContainer extends Component {
           </div>
         </div>
         <Link to={`${linkTo}/${to.id}`}>
-          <div className={classes.item}
+          <div
+            className={classes.item}
             style={{
               backgroundColor: itemColor(to.entity_type, true),
               top: 10,
               right: 0,
-            }}>
+            }}
+          >
             <div className={classes.itemHeader}>
               <div className={classes.icon}>
                 <ItemIcon
@@ -259,14 +271,17 @@ class StixRelationContainer extends Component {
                 />
               </div>
               <div className={classes.type}>
-                {to.parent_type === 'Stix-Observable' ? t(`observable_${to.entity_type}`)
+                {to.parent_type === 'Stix-Observable'
+                  ? t(`observable_${to.entity_type}`)
                   : t(`entity_${to.entity_type}`)}
               </div>
             </div>
             <div className={classes.content}>
               <span className={classes.name}>
                 {truncate(
-                  to.parent_type === 'Stix-Observable' ? to.observable_value : to.name,
+                  to.parent_type === 'Stix-Observable'
+                    ? to.observable_value
+                    : to.name,
                   120,
                 )}
               </span>
@@ -281,9 +296,21 @@ class StixRelationContainer extends Component {
             </Typography>
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <Typography variant="h3" gutterBottom={true}>
-                {t('Relationship type')}
+                {t('Marking')}
               </Typography>
-              {t(`relation_${stixRelation.relationship_type}`)}
+              {stixRelation.markingDefinitions.edges.length > 0 ? (
+                map(
+                  (markingDefinition) => (
+                    <ItemMarking
+                      key={markingDefinition.node.id}
+                      label={markingDefinition.node.definition}
+                    />
+                  ),
+                  stixRelation.markingDefinitions.edges,
+                )
+              ) : (
+                <ItemMarking label="TLP:WHITE" />
+              )}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -300,16 +327,6 @@ class StixRelationContainer extends Component {
                 {t('Modification date')}
               </Typography>
               {stixRelation.inferred ? '-' : fld(stixRelation.updated_at)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Confidence level')}
-              </Typography>
-              <ItemConfidenceLevel
-                level={stixRelation.inferred ? 99 : stixRelation.weight}
-              />
             </Paper>
           </Grid>
           <Grid item={true} xs={6}>
@@ -318,6 +335,16 @@ class StixRelationContainer extends Component {
             </Typography>
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <Typography variant="h3" gutterBottom={true}>
+                {t('Confidence level')}
+              </Typography>
+              <ItemConfidenceLevel
+                level={stixRelation.inferred ? 99 : stixRelation.weight}
+              />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('First seen')}
               </Typography>
               {stixRelation.inferred ? '-' : fld(stixRelation.first_seen)}
@@ -429,6 +456,14 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
       toRole
       created_at
       updated_at
+      markingDefinitions {
+        edges {
+          node {
+            id
+            definition
+          }
+        }
+      }
       inferences {
         edges {
           node {

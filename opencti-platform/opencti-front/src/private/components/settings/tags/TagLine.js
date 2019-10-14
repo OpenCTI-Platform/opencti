@@ -21,9 +21,6 @@ const styles = (theme) => ({
       background: 'rgba(0, 0, 0, 0.1)',
     },
   },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
   bodyItem: {
     height: 20,
     fontSize: 13,
@@ -54,7 +51,7 @@ class TagLineComponent extends Component {
     } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon style={{ color: node.color }}>
           <Tag />
         </ListItemIcon>
         <ListItemText

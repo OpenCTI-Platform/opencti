@@ -3,7 +3,14 @@ import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  compose, map, pathOr, pipe, pluck, head, assoc,
+  compose,
+  map,
+  pathOr,
+  pipe,
+  pluck,
+  head,
+  assoc,
+  union,
 } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
@@ -26,11 +33,11 @@ import {
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import Select from '../../../../components/Select';
-import { stixDomainEntitiesLinesSearchQuery } from '../stix_domain_entities/StixDomainEntitiesLines';
 import Autocomplete from '../../../../components/Autocomplete';
 import DatePickerField from '../../../../components/DatePickerField';
+import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -170,7 +177,7 @@ const stixRelationCreationMutation = graphql`
   }
 `;
 
-const stixRelationValidation = t => Yup.object().shape({
+const stixRelationValidation = (t) => Yup.object().shape({
   relationship_type: Yup.string().required(t('This field is required')),
   weight: Yup.number()
     .typeError(t('The value must be a number'))
@@ -191,21 +198,25 @@ class StixRelationCreation extends Component {
     this.state = {
       step: 0,
       existingRelations: [],
-      locations: [],
+      markingDefinitions: [],
       currentType: null,
     };
   }
 
-  searchLocations(event) {
-    fetchQuery(stixDomainEntitiesLinesSearchQuery, {
+  searchMarkingDefinitions(event) {
+    fetchQuery(markingDefinitionsSearchQuery, {
       search: event.target.value,
-      types: ['region', 'country', 'city'],
     }).then((data) => {
-      const locations = pipe(
-        pathOr([], ['countries', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
+      const markingDefinitions = pipe(
+        pathOr([], ['markingDefinitions', 'edges']),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
-      this.setState({ locations });
+      this.setState({
+        markingDefinitions: union(
+          this.state.markingDefinitions,
+          markingDefinitions,
+        ),
+      });
     });
   }
 
@@ -218,7 +229,7 @@ class StixRelationCreation extends Component {
       assoc('toRole', roles.toRole),
       assoc('first_seen', parse(values.first_seen).format()),
       assoc('last_seen', parse(values.last_seen).format()),
-      assoc('locations', pluck('value', values.locations)),
+      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
     )(values);
     commitMutation({
       mutation: stixRelationCreationMutation,
@@ -287,7 +298,7 @@ class StixRelationCreation extends Component {
       first_seen: defaultFirstSeen,
       last_seen: defaultLastSeen,
       description: '',
-      locations: [],
+      markingDefinitions: [],
     };
     return (
       <Formik
@@ -375,7 +386,7 @@ class StixRelationCreation extends Component {
                 }}
               >
                 {map(
-                  type => (
+                  (type) => (
                     <MenuItem key={type} value={type}>
                       {t(`relation_${type}`)}
                     </MenuItem>
@@ -417,20 +428,6 @@ class StixRelationCreation extends Component {
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
-              {(initialValues.relationship_type === 'targets'
-                && this.state.currentType === null)
-              || this.state.currentType === 'targets' ? (
-                <Field
-                  name="locations"
-                  component={Autocomplete}
-                  multiple={true}
-                  label={t('Locations')}
-                  options={this.state.locations}
-                  onInputChange={this.searchLocations.bind(this)}
-                />
-                ) : (
-                  ''
-                )}
               <Field
                 name="description"
                 component={TextField}
@@ -439,6 +436,14 @@ class StixRelationCreation extends Component {
                 multiline={true}
                 rows="4"
                 style={{ marginTop: 20 }}
+              />
+              <Field
+                name="markingDefinitions"
+                component={Autocomplete}
+                multiple={true}
+                label={t('Marking')}
+                options={this.state.markingDefinitions}
+                onInputChange={this.searchMarkingDefinitions.bind(this)}
               />
               <div className={classes.buttons}>
                 <Button
@@ -484,7 +489,7 @@ class StixRelationCreation extends Component {
           <Typography variant="h6">{t('Select a relationship')}</Typography>
         </div>
         <div className={classes.container}>
-          {existingRelations.map(relation => (
+          {existingRelations.map((relation) => (
             <div
               key={relation.node.id}
               className={classes.relation}
@@ -633,7 +638,8 @@ class StixRelationCreation extends Component {
             display: 'table-cell',
             verticalAlign: 'middle',
             textAlign: 'center',
-          }}>
+          }}
+        >
           <CircularProgress size={80} thickness={2} />
         </span>
       </div>

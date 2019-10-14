@@ -464,7 +464,6 @@ type StixRelation implements GlobalObject & StixEntity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   tags: TagConnection
-  locations: IdentityConnection
   reports: ReportConnection
   from: StixEntity
   fromRole: String
@@ -516,7 +515,6 @@ input StixRelationAddInput {
   last_seen: DateTime
   createdByRef: String
   markingDefinitions: [String]
-  locations: [String]
   clientMutationId: String
   created: DateTime
   modified: DateTime

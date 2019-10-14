@@ -49,7 +49,9 @@ import {
   getObjects,
   getId,
   getSingleValueNumber,
-  commitWriteTx
+  commitWriteTx,
+  createRelation,
+  deleteRelationById
 } from '../database/grakn';
 import { buildPagination } from '../database/utils';
 import { BUS_TOPICS, logger } from '../config/conf';
@@ -553,15 +555,6 @@ export const reports = (stixRelationId, args) =>
     args
   );
 
-export const locations = (stixRelationId, args) =>
-  paginate(
-    `match $location isa Country; 
-    $rel(location:$location, localized:$stixRelation) isa localization; 
-    $stixRelation has internal_id "${escapeString(stixRelationId)}"`,
-    args,
-    false
-  );
-
 export const addStixRelation = async (user, stixRelation) => {
   const wTx = await takeWriteTx();
   const internalId = stixRelation.internal_id
@@ -633,7 +626,7 @@ export const addStixRelation = async (user, stixRelation) => {
   if (stixRelation.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
-        `match $from id ${createdStixRelationId}; $x
+        `match $from id ${createdStixRelationId};
         $to has internal_id "${escapeString(markingDefinition)}";
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
@@ -642,17 +635,6 @@ export const addStixRelation = async (user, stixRelation) => {
       stixRelation.markingDefinitions
     );
     await Promise.all(markingDefinitionsPromises);
-  }
-
-  if (stixRelation.locations) {
-    const createLocation = location =>
-      wTx.tx.query(
-        `match $from id ${createdStixRelationId};
-        $to has internal_id "${escapeString(location)}";
-        insert $rel(localized: $from, location: $to) isa localization, has internal_id "${uuid()}", has stix_id "relationship--${uuid()}", has relationship_type 'localization', has first_seen ${now()}, has last_seen ${now()}, has weight 3;`
-      );
-    const locationsPromises = map(createLocation, stixRelation.locations);
-    await Promise.all(locationsPromises);
   }
 
   await commitWriteTx(wTx);
@@ -687,13 +669,14 @@ export const stixRelationEditField = (user, stixRelationId, input) =>
     return notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user);
   });
 
-export const stixRelationAddRelation = (user, stixRelationId, input) => {
-  const finalInput = pipe(
-    assoc('fromId', stixRelationId),
-    assoc('relationship_type', input.through)
-  )(input);
-  return addStixRelation(user, finalInput).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
+export const stixRelationAddRelation = (user, stixRelationId, input) =>
+  createRelation(stixRelationId, input).then(relationData => {
+    notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
-};
+
+export const stixRelationDeleteRelation = (user, stixRelationId, relationId) =>
+  deleteRelationById(stixRelationId, relationId).then(relationData => {
+    notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, relationData.node, user);
+    return relationData;
+  });

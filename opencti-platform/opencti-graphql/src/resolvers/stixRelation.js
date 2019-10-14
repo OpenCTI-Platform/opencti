@@ -17,15 +17,14 @@ import {
   reports,
   markingDefinitions,
   tags,
-  locations,
   stixRelationEditContext,
   stixRelationCleanContext,
   stixRelationEditField,
-  stixRelationAddRelation
+  stixRelationAddRelation,
+  stixRelationDeleteRelation
 } from '../domain/stixRelation';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
-import { stixDomainEntityDeleteRelation } from '../domain/stixDomainEntity';
 
 const stixRelationResolvers = {
   Query: {
@@ -77,7 +76,6 @@ const stixRelationResolvers = {
     markingDefinitions: (stixRelation, args) =>
       markingDefinitions(stixRelation.id, args),
     tags: (stixRelation, args) => tags(stixRelation.id, args),
-    locations: (stixRelation, args) => locations(stixRelation.id, args),
     reports: (stixRelation, args) => {
       if (stixRelation.id.length !== 36) {
         return null;
@@ -94,7 +92,7 @@ const stixRelationResolvers = {
       contextClean: () => stixRelationCleanContext(user, id),
       relationAdd: ({ input }) => stixRelationAddRelation(user, id, input),
       relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+        stixRelationDeleteRelation(user, id, relationId)
     }),
     stixRelationAdd: (_, { input }, { user }) => addStixRelation(user, input)
   },
