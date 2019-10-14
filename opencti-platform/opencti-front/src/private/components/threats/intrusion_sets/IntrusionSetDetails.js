@@ -17,7 +17,7 @@ const styles = () => ({
   },
 });
 
-class IntrusionSetIdentityComponent extends Component {
+class IntrusionSetDetailsComponent extends Component {
   render() {
     const {
       t, fld, classes, intrusionSet,
@@ -25,7 +25,7 @@ class IntrusionSetIdentityComponent extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Identity')}
+          {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant="h3" gutterBottom={true}>
@@ -102,18 +102,18 @@ class IntrusionSetIdentityComponent extends Component {
   }
 }
 
-IntrusionSetIdentityComponent.propTypes = {
+IntrusionSetDetailsComponent.propTypes = {
   intrusionSet: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const IntrusionSetIdentity = createFragmentContainer(
-  IntrusionSetIdentityComponent,
+const IntrusionSetDetails = createFragmentContainer(
+  IntrusionSetDetailsComponent,
   {
     intrusionSet: graphql`
-      fragment IntrusionSetIdentity_intrusionSet on IntrusionSet {
+      fragment IntrusionSetDetails_intrusionSet on IntrusionSet {
         id
         first_seen
         last_seen
@@ -129,4 +129,4 @@ const IntrusionSetIdentity = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles),
-)(IntrusionSetIdentity);
+)(IntrusionSetDetails);

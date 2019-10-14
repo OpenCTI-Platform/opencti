@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import ToolHeader from './ToolHeader';
+import ToolPopover from './ToolPopover';
 import Reports from '../../reports/Reports';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -26,7 +27,10 @@ class ToolReportsComponent extends Component {
     const { classes, tool } = this.props;
     return (
       <div className={classes.container}>
-        <ToolHeader tool={tool} />
+        <StixDomainEntityHeader
+          stixDomainEntity={tool}
+          PopoverComponent={<ToolPopover />}
+        />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Reports objectId={tool.id} />
         </Paper>
@@ -45,7 +49,8 @@ const ToolReports = createFragmentContainer(ToolReportsComponent, {
   tool: graphql`
     fragment ToolReports_tool on Tool {
       id
-      ...ToolHeader_tool
+      name
+      alias
     }
   `,
 });

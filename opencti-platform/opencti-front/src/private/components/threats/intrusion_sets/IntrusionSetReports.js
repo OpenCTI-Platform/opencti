@@ -6,8 +6,9 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import IntrusionSetHeader from './IntrusionSetHeader';
 import Reports from '../../reports/Reports';
+import IntrusionSetPopover from './IntrusionSetPopover';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -26,7 +27,10 @@ class IntrusionSetReportsComponent extends Component {
     const { classes, intrusionSet } = this.props;
     return (
       <div className={classes.container}>
-        <IntrusionSetHeader intrusionSet={intrusionSet} />
+        <StixDomainEntityHeader
+          stixDomainEntity={intrusionSet}
+          PopoverComponent={<IntrusionSetPopover />}
+        />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Reports objectId={intrusionSet.id} />
         </Paper>
@@ -47,7 +51,8 @@ const IntrusionSetReports = createFragmentContainer(
     intrusionSet: graphql`
       fragment IntrusionSetReports_intrusionSet on IntrusionSet {
         id
-        ...IntrusionSetHeader_intrusionSet
+        name
+        alias
       }
     `,
   },

@@ -1,18 +1,19 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import CourseOfActionHeader from './CourseOfActionHeader';
 import CourseOfActionOverview from './CourseOfActionOverview';
 import CourseOfActionEdition from './CourseOfActionEdition';
+import CourseOfActionPopover from './CourseOfActionPopover';
 import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
 import EntityStixRelationsPie from '../../common/stix_relations/EntityStixRelationsPie';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -28,7 +29,10 @@ class CourseOfActionComponent extends Component {
     const { classes, courseOfAction } = this.props;
     return (
       <div className={classes.container}>
-        <CourseOfActionHeader courseOfAction={courseOfAction} />
+        <StixDomainEntityHeader
+          stixDomainEntity={courseOfAction}
+          PopoverComponent={<CourseOfActionPopover />}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -80,7 +84,8 @@ const CourseOfAction = createFragmentContainer(CourseOfActionComponent, {
   courseOfAction: graphql`
     fragment CourseOfAction_courseOfAction on CourseOfAction {
       id
-      ...CourseOfActionHeader_courseOfAction
+      name
+      alias
       ...CourseOfActionOverview_courseOfAction
     }
   `,

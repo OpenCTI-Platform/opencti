@@ -9,8 +9,9 @@ import inject18n from '../../../../components/i18n';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
 import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import CampaignHeader from './CampaignHeader';
+import CampaignPopover from './CampaignPopover';
 import CampaignKnowledgeBar from './CampaignKnowledgeBar';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -27,7 +28,10 @@ class CampaignKnowledgeComponent extends Component {
     const link = `/dashboard/threats/campaigns/${campaign.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <CampaignHeader campaign={campaign} />
+        <StixDomainEntityHeader
+          stixDomainEntity={campaign}
+          PopoverComponent={<CampaignPopover />}
+        />
         <CampaignKnowledgeBar campaignId={campaign.id} />
         <Route
           exact
@@ -192,7 +196,8 @@ const CampaignKnowledge = createFragmentContainer(CampaignKnowledgeComponent, {
   campaign: graphql`
     fragment CampaignKnowledge_campaign on Campaign {
       id
-      ...CampaignHeader_campaign
+      name
+      alias
     }
   `,
 });

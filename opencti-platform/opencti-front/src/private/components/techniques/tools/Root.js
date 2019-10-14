@@ -26,7 +26,6 @@ const toolQuery = graphql`
   query RootToolQuery($id: String!) {
     tool(id: $id) {
       ...Tool_tool
-      ...ToolHeader_tool
       ...ToolOverview_tool
       ...ToolReports_tool
       ...ToolKnowledge_tool
