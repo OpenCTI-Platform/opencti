@@ -141,6 +141,7 @@ const i18n = {
       'Create a malware': 'Créer un code malveillant',
       'Update a malware': 'Modifier un code malveillant',
       'New alias': 'Nouvel alias',
+      'Aliases separated by commas': 'Alias séparés par des virgules',
       'Create a marking definition': 'Créer un marquage',
       'Update a marking definition': 'Modifier un marquage',
       'Create a kill chain phase': 'Créer une étape de kill chain',
