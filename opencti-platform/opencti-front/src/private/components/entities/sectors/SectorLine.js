@@ -36,7 +36,7 @@ const styles = theme => ({
   },
   placeholder: {
     display: 'inline-block',
-    height: '1em',
+    height: '.6em',
     backgroundColor: theme.palette.grey[700],
   },
 });
