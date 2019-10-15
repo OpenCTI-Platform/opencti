@@ -61,7 +61,7 @@ const styles = theme => ({
     position: 'fixed',
     bottom: 30,
     right: 290,
-    zIndex: 100,
+    zIndex: 1001,
   },
   title: {
     float: 'left',
