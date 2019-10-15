@@ -342,6 +342,7 @@ input StixDomainEntityAddInput {
   internal_id: String
   name: String!
   description: String
+  alias: [String]
   type: String!
   markingDefinitions: [String]
   clientMutationId: String

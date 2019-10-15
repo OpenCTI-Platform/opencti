@@ -281,10 +281,10 @@ export const paginate = async (indexName, options) => {
   if (search !== null && search.length > 0) {
     const trimedSearch = search.trim();
     let finalSearch;
-    if (trimedSearch.includes('http://') || trimedSearch.includes('https://')) {
-      finalSearch = `"*${trimedSearch
-        .replace('http://', '')
-        .replace('https://', '')}*"`;
+    if (trimedSearch.startsWith('http://')) {
+      finalSearch = `"*${trimedSearch.replace('http://', '')}*"`;
+    } else if (trimedSearch.startsWith('https://')) {
+      finalSearch = `"*${trimedSearch.replace('https://', '')}*"`;
     } else if (!trimedSearch.startsWith('"')) {
       finalSearch = `*${trimedSearch}*`;
     } else {

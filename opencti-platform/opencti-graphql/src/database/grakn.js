@@ -1137,13 +1137,15 @@ export const paginateRelationships = (
       fromTypes && fromTypes.length > 0
         ? `${join(
             ' ',
-            map(fromType => `{ $from isa ${fromType}; } or`, fromTypes)
+            map(fromType => `{ $from isa ${fromType}; } or`, tail(fromTypes))
           )} { $from isa ${head(fromTypes)}; };`
         : ''
     } ${
       toTypes && toTypes.length > 0
-        ? `${join(' ', map(toType => `{ $to isa ${toType}; } or`, toTypes))}
-  { $to isa ${head(toTypes)}; };`
+        ? `${join(
+            ' ',
+            map(toType => `{ $to isa ${toType}; } or`, tail(toTypes))
+          )} { $to isa ${head(toTypes)}; };`
         : ''
     } ${firstSeenStart || firstSeenStop ? `$rel has first_seen $fs; ` : ''} ${
       firstSeenStart ? `$fs > ${prepareDate(firstSeenStart)}; ` : ''
@@ -1155,8 +1157,8 @@ export const paginateRelationships = (
       weights
         ? `$rel has weight $weight; ${join(
             ' ',
-            map(weight => `{ $weight == ${weight}; } or`, weights)
-          )} { $weight == 0; };`
+            map(weight => `{ $weight == ${weight}; } or`, tail(weights))
+          )} { $weight == ${head(weights)}; };`
         : ''
     }`;
     const orderingKey = orderBy ? `$rel has ${orderBy} $o;` : '';
