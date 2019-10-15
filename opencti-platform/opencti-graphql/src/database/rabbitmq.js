@@ -59,7 +59,8 @@ export const metrics = async () => {
   return { overview, queues };
 };
 
-export const getRabbitMQVersion = async () => {
-  const rabbitmqMetrics = await metrics();
-  return rabbitmqMetrics.overview.rabbitmq_version;
+export const getRabbitMQVersion = () => {
+  return metrics()
+    .then(data => data.overview.rabbitmq_version)
+    .catch(() => 'Disconnected');
 };

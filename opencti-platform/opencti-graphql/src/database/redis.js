@@ -26,11 +26,9 @@ if (client) {
 }
 const isActive = () => client && client.status === 'ready';
 
-export const getRedisVersion = async () => {
-  if (isActive()) {
-    return client.serverInfo.redis_version;
-  }
-  return '#.#.#';
+export const getRedisVersion = () => {
+  if (isActive()) return client.serverInfo.redis_version;
+  return 'Disconnected';
 };
 
 /**

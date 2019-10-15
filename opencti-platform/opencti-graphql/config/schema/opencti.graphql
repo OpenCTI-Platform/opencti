@@ -85,12 +85,13 @@ type EditUserContext {
 }
 
 ### Info
-type Info {
-  app_version: String
-  grakn_version: String
-  elasticsearch_version: String
-  rabbitmq_version: String
-  redis_version: String
+type DependencyVersion {
+  name: String!
+  version: String!
+}
+type AppInfo {
+  version: String!,
+  dependencies: [DependencyVersion!]!
 }
 
 ### Stats
@@ -2121,8 +2122,8 @@ input RelationsAddInput {
 ### QUERIES
 type Query {
   # Technical
+  about: AppInfo @auth
   settings: Settings
-  info: Info @auth
   attribute(id: String): Attribute @auth
   attributes(first: Int, type: String!): AttributeConnection @auth
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)

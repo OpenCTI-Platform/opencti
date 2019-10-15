@@ -40,10 +40,11 @@ export const elasticIsAlive = async () => {
   }
 };
 
-export const getElasticVersion = async () => {
-  return el.info().then(info => {
-    return info.body.version.number;
-  });
+export const getElasticVersion = () => {
+  return el
+    .info()
+    .then(info => info.body.version.number)
+    .catch(() => 'Disconnected');
 };
 
 export const createIndexes = async () => {
