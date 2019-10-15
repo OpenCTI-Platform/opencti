@@ -307,6 +307,7 @@ class StixRelationCreationFromEntity extends Component {
     const { classes, t, targetEntityTypes } = this.props;
     const paginationOptions = {
       search: this.state.search,
+      types: targetEntityTypes,
       orderBy: 'created_at',
       orderMode: 'desc',
     };
@@ -377,6 +378,7 @@ class StixRelationCreationFromEntity extends Component {
             contextual={true}
             inputValue={this.state.search}
             paginationOptions={paginationOptions}
+            targetEntityTypes={targetEntityTypes}
           />
         </div>
       </div>

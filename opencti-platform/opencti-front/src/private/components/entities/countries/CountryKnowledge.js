@@ -64,6 +64,7 @@ class CountryKnowledgeComponent extends Component {
               relationType="localization"
               targetEntityTypes={['City']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -79,6 +80,7 @@ class CountryKnowledgeComponent extends Component {
               relationType="localization"
               targetEntityTypes={['Organization']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -123,6 +125,7 @@ class CountryKnowledgeComponent extends Component {
                 'Malware',
               ]}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}

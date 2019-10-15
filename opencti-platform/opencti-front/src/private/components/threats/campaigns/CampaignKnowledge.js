@@ -64,6 +64,7 @@ class CampaignKnowledgeComponent extends Component {
               relationType="attributed-to"
               targetEntityTypes={['Identity', 'Intrusion-Set']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -77,6 +78,7 @@ class CampaignKnowledgeComponent extends Component {
               relationType="attributed-to"
               targetEntityTypes={['Incident']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -92,6 +94,7 @@ class CampaignKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -131,6 +134,7 @@ class CampaignKnowledgeComponent extends Component {
               ]}
               entityLink={link}
               exploreLink={`/dashboard/explore/victimology/${campaign.id}`}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -147,6 +151,7 @@ class CampaignKnowledgeComponent extends Component {
               targetEntityTypes={['Attack-Pattern']}
               entityLink={link}
               exploreLink={`/dashboard/explore/attack_patterns/${campaign.id}`}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -162,6 +167,7 @@ class CampaignKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Tool']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -177,6 +183,7 @@ class CampaignKnowledgeComponent extends Component {
               relationType="targets"
               targetEntityTypes={['Vulnerability']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}

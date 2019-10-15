@@ -144,6 +144,95 @@ class StixDomainEntityCreation extends Component {
     this.handleClose();
   }
 
+  renderEntityTypesList() {
+    const { t, targetEntityTypes } = this.props;
+    return (
+      <Field
+        name="type"
+        component={Select}
+        label={t('Entity type')}
+        fullWidth={true}
+        inputProps={{
+          name: 'type',
+          id: 'type',
+        }}
+        containerstyle={{ marginTop: 20, width: '100%' }}
+      >
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Organization') ? (
+          <MenuItem value="Organization">{t('Organization')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined || targetEntityTypes.includes('Sector') ? (
+          <MenuItem value="Sector">{t('Sector')}</MenuItem>
+        ) : (
+          ''
+        )}
+        {targetEntityTypes === undefined || targetEntityTypes.includes('User') ? (
+          <MenuItem value="User">{t('Person')}</MenuItem>
+        ) : (
+          ''
+        )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Threat-Actor') ? (
+          <MenuItem value="Threat-Actor">{t('Threat-Actor')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Intrusion-Set') ? (
+          <MenuItem value="Intrusion-Set">{t('Intrusion-Set')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Campaign') ? (
+          <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Incident') ? (
+          <MenuItem value="Incident">{t('Incident')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined || targetEntityTypes.includes('Malware') ? (
+          <MenuItem value="Malware">{t('Malware')}</MenuItem>
+        ) : (
+          ''
+        )}
+        {targetEntityTypes === undefined || targetEntityTypes.includes('Tool') ? (
+          <MenuItem value="Tool">{t('Tool')}</MenuItem>
+        ) : (
+          ''
+        )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Vulnerability') ? (
+          <MenuItem value="Vulnerability">{t('Vulnerability')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined || targetEntityTypes.includes('City') ? (
+          <MenuItem value="City">{t('City')}</MenuItem>
+        ) : (
+          ''
+        )}
+        {targetEntityTypes === undefined || targetEntityTypes.includes('Country') ? (
+          <MenuItem value="Country">{t('Country')}</MenuItem>
+        ) : (
+          ''
+        )}
+        {targetEntityTypes === undefined || targetEntityTypes.includes('Region') ? (
+          <MenuItem value="Region">{t('Region')}</MenuItem>
+        ) : (
+          ''
+        )}
+      </Field>
+    );
+  }
+
   renderClassic() {
     const { t, classes } = this.props;
     return (
@@ -199,39 +288,7 @@ class StixDomainEntityCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <Field
-                    name="type"
-                    component={Select}
-                    label={t('Entity type')}
-                    fullWidth={true}
-                    inputProps={{
-                      name: 'type',
-                      id: 'type',
-                    }}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
-                  >
-                    <MenuItem value="Organization">
-                      {t('Organization')}
-                    </MenuItem>
-                    <MenuItem value="Sector">{t('Sector')}</MenuItem>
-                    <MenuItem value="User">{t('Person')}</MenuItem>
-                    <MenuItem value="Threat-Actor">
-                      {t('Threat actor')}
-                    </MenuItem>
-                    <MenuItem value="Intrusion-Set">
-                      {t('Intrusion set')}
-                    </MenuItem>
-                    <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
-                    <MenuItem value="Incident">{t('Incident')}</MenuItem>
-                    <MenuItem value="Malware">{t('Malware')}</MenuItem>
-                    <MenuItem value="Tool">{t('Tool')}</MenuItem>
-                    <MenuItem value="Vulnerability">
-                      {t('Vulnerability')}
-                    </MenuItem>
-                    <MenuItem value="City">{t('City')}</MenuItem>
-                    <MenuItem value="Country">{t('Country')}</MenuItem>
-                    <MenuItem value="Region">{t('Region')}</MenuItem>
-                  </Field>
+                  {this.renderEntityTypesList()}
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -308,39 +365,7 @@ class StixDomainEntityCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <Field
-                    name="type"
-                    component={Select}
-                    label={t('Entity type')}
-                    fullWidth={true}
-                    inputProps={{
-                      name: 'type',
-                      id: 'type',
-                    }}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
-                  >
-                    <MenuItem value="Organization">
-                      {t('Organization')}
-                    </MenuItem>
-                    <MenuItem value="Sector">{t('Sector')}</MenuItem>
-                    <MenuItem value="User">{t('Person')}</MenuItem>
-                    <MenuItem value="Threat-Actor">
-                      {t('Threat actor')}
-                    </MenuItem>
-                    <MenuItem value="Intrusion-Set">
-                      {t('Intrusion set')}
-                    </MenuItem>
-                    <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
-                    <MenuItem value="Incident">{t('Incident')}</MenuItem>
-                    <MenuItem value="Malware">{t('Malware')}</MenuItem>
-                    <MenuItem value="Tool">{t('Tool')}</MenuItem>
-                    <MenuItem value="Vulnerability">
-                      {t('Vulnerability')}
-                    </MenuItem>
-                    <MenuItem value="City">{t('City')}</MenuItem>
-                    <MenuItem value="Country">{t('Country')}</MenuItem>
-                    <MenuItem value="Region">{t('Region')}</MenuItem>
-                  </Field>
+                  {this.renderEntityTypesList()}
                 </DialogContent>
                 <DialogActions classes={{ root: classes.dialogActions }}>
                   <Button
@@ -380,6 +405,7 @@ class StixDomainEntityCreation extends Component {
 
 StixDomainEntityCreation.propTypes = {
   paginationOptions: PropTypes.object,
+  targetEntityTypes: PropTypes.array,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
