@@ -55,7 +55,7 @@ class ItemConfidenceLevel extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.red}
-            label={t('Very low')}
+            label={t('Low')}
           />
         );
       case 2:
@@ -63,7 +63,7 @@ class ItemConfidenceLevel extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.orange}
-            label={t('Low')}
+            label={t('Moderate')}
           />
         );
       case 3:
@@ -71,7 +71,7 @@ class ItemConfidenceLevel extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.blue}
-            label={t('Medium')}
+            label={t('Good')}
           />
         );
       case 4:
@@ -79,15 +79,7 @@ class ItemConfidenceLevel extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.green}
-            label={t('High')}
-          />
-        );
-      case 5:
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.darkGreen}
-            label={t('Very high')}
+            label={t('Strong')}
           />
         );
       case 99:
@@ -103,7 +95,7 @@ class ItemConfidenceLevel extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.blue}
-            label={t('Medium')}
+            label={t('Moderate')}
           />
         );
     }

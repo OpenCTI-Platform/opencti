@@ -84,8 +84,9 @@ class StixDomainEntityHeader extends Component {
 
   onSubmitCreateAlias(element, data, { resetForm }) {
     if (
-      this.props.stixDomainEntity.alias === null
-      || !this.props.stixDomainEntity.alias.includes(data.new_alias)
+      (this.props.stixDomainEntity.alias === null
+        || !this.props.stixDomainEntity.alias.includes(data.new_alias))
+      && data.new_alias !== ''
     ) {
       commitMutation({
         mutation: stixDomainEntityMutation,
@@ -128,7 +129,8 @@ class StixDomainEntityHeader extends Component {
         <Typography
           variant="h1"
           gutterBottom={true}
-          classes={{ root: classes.title }}>
+          classes={{ root: classes.title }}
+        >
           {stixDomainEntity.name}
         </Typography>
         <div className={classes.popover}>
@@ -148,26 +150,33 @@ class StixDomainEntityHeader extends Component {
             ) : (
               ''
             )))}
-            {alias.length > 5 ? <IconButton
+            {alias.length > 5 ? (
+              <IconButton
                 color="primary"
                 aria-label="More"
-                onClick={this.handleToggleOpenAliases.bind(this)}>
+                onClick={this.handleToggleOpenAliases.bind(this)}
+              >
                 <More fontSize="small" />
-            </IconButton> : <IconButton
+              </IconButton>
+            ) : (
+              <IconButton
                 color="secondary"
                 aria-label="Alias"
-                onClick={this.handleToggleCreateAlias.bind(this)}>
-              {this.state.openAlias ? (
+                onClick={this.handleToggleCreateAlias.bind(this)}
+              >
+                {this.state.openAlias ? (
                   <Close fontSize="small" />
-              ) : (
+                ) : (
                   <Add fontSize="small" />
-              )}
-            </IconButton>}
+                )}
+              </IconButton>
+            )}
             <Slide
               direction="left"
               in={this.state.openAlias}
               mountOnEnter={true}
-              unmountOnExit={true}>
+              unmountOnExit={true}
+            >
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={this.onSubmitCreateAlias.bind(this, 'main')}
@@ -193,23 +202,24 @@ class StixDomainEntityHeader extends Component {
           open={this.state.openAliases}
           TransitionComponent={Transition}
           onClose={this.handleToggleOpenAliases.bind(this)}
-          fullWidth={true}>
+          fullWidth={true}
+        >
           <DialogTitle>
             {t('Entity aliases')}
             <Formik
-                initialValues={{ new_alias: '' }}
-                onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}
-                render={() => (
-                    <Form style={{ float: 'right' }}>
-                      <Field
-                          name="new_alias"
-                          component={TextField}
-                          autoFocus={true}
-                          placeholder={t('New alias')}
-                          className={classes.aliasInput}
-                      />
-                    </Form>
-                )}
+              initialValues={{ new_alias: '' }}
+              onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}
+              render={() => (
+                <Form style={{ float: 'right' }}>
+                  <Field
+                    name="new_alias"
+                    component={TextField}
+                    autoFocus={true}
+                    placeholder={t('New alias')}
+                    className={classes.aliasInput}
+                  />
+                </Form>
+              )}
             />
           </DialogTitle>
           <DialogContent dividers={true}>
@@ -231,9 +241,11 @@ class StixDomainEntityHeader extends Component {
                 ''
               )))}
             </List>
-            <div style={{
-              display: this.state.openAliasesCreate ? 'block' : 'none',
-            }}>
+            <div
+              style={{
+                display: this.state.openAliasesCreate ? 'block' : 'none',
+              }}
+            >
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}
@@ -255,7 +267,8 @@ class StixDomainEntityHeader extends Component {
           <DialogActions>
             <Button
               onClick={this.handleToggleOpenAliases.bind(this)}
-              color="primary">
+              color="primary"
+            >
               {t('Close')}
             </Button>
           </DialogActions>
