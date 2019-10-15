@@ -19,7 +19,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import AttributeEdition from './AttributeEdition';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -131,8 +131,7 @@ class AttributePopover extends Component {
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
-        >
+          style={{ marginTop: 50 }}>
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
@@ -144,8 +143,7 @@ class AttributePopover extends Component {
           open={this.state.displayUpdate}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}
-        >
+          onClose={this.handleCloseUpdate.bind(this)}>
           <QueryRenderer
             query={attributeEditionQuery}
             variables={{ id: attributeId }}
@@ -167,8 +165,7 @@ class AttributePopover extends Component {
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
-        >
+          onClose={this.handleCloseDelete.bind(this)}>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this attribute?')}
@@ -178,15 +175,13 @@ class AttributePopover extends Component {
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}
-            >
+              disabled={this.state.deleting}>
               {t('Cancel')}
             </Button>
             <Button
               onClick={this.submitDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}
-            >
+              disabled={this.state.deleting}>
               {t('Delete')}
             </Button>
           </DialogActions>

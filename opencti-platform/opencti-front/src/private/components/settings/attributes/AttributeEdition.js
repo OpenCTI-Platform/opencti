@@ -77,6 +77,19 @@ class AttributeEditionContainer extends Component {
         id: this.props.attribute.id,
         input,
       },
+      optimisticUpdater: (store) => {
+        // Artificially remove of a line to force refresh in the updater.
+        // Attribute like this should have stable UUID.
+        // TODO improve that part
+        const container = store.getRoot();
+        const userProxy = store.get(container.getDataID());
+        const conn = ConnectionHandler.getConnection(
+          userProxy,
+          'Pagination_attributes',
+          this.props.paginationOptions,
+        );
+        ConnectionHandler.deleteNode(conn, this.props.attribute.id);
+      },
       updater: (store) => {
         const container = store.getRoot();
         const userProxy = store.get(container.getDataID());
@@ -85,17 +98,17 @@ class AttributeEditionContainer extends Component {
           'Pagination_attributes',
           this.props.paginationOptions,
         );
-        /* const payload = store
+        ConnectionHandler.deleteNode(conn, this.props.attribute.id);
+        const payload = store
           .getRootField('attributeEdit')
           .getLinkedRecord('update', { input });
-         const newEdge = ConnectionHandler.createEdge(
+        const newEdge = ConnectionHandler.createEdge(
           store,
           conn,
           payload,
           'AttributeEdge',
-        ); */
-        ConnectionHandler.deleteNode(conn, this.props.attribute.id);
-        // ConnectionHandler.insertEdgeAfter(conn, newEdge);
+        );
+        ConnectionHandler.insertEdgeAfter(conn, newEdge);
         this.props.handleClose();
       },
       setSubmitting,

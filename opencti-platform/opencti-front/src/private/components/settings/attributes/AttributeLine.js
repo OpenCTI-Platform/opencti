@@ -12,7 +12,7 @@ import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import AttributePopover from './AttributePopover';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
@@ -61,8 +61,7 @@ class AttributeLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.value.width }}
-              >
+                style={{ width: dataColumns.value.width }}>
                 {node.value}
               </div>
             </div>

@@ -133,11 +133,26 @@ export const addPerson = async (user, newUser) => {
   const createUser = await userIterator.next();
   const createdUserId = await createUser.map().get('user').id;
 
-  if (user.createdByRef) {
+  if (newUser.createdByRef) {
     await wTx.tx.query(`match $from id ${createdUserId};
-         $to has internal_id "${escapeString(user.createdByRef)}";
+         $to has internal_id "${escapeString(newUser.createdByRef)}";
          insert (so: $from, creator: $to)
          isa created_by_ref, has internal_id "${uuid()}";`);
+  }
+
+  // Create user marking definitions relations
+  if (newUser.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.tx.query(
+        `match $from id ${createdUserId};
+        $to has internal_id "${escapeString(markingDefinition)}";
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      newUser.markingDefinitions
+    );
+    await Promise.all(markingDefinitionsPromises);
   }
 
   await commitWriteTx(wTx);

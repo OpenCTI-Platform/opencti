@@ -747,6 +747,8 @@ input PersonAddInput {
   description: String
   firstname: String
   lastname: String
+  createdByRef: String
+  markingDefinitions: [String]
 }
 input UserLoginInput {
   email: String!
