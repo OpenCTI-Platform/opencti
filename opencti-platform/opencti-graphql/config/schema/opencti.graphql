@@ -84,6 +84,16 @@ type EditUserContext {
   focusOn: String # Field name
 }
 
+### Info
+type DependencyVersion {
+  name: String!
+  version: String!
+}
+type AppInfo {
+  version: String!,
+  dependencies: [DependencyVersion!]!
+}
+
 ### Stats
 type AckDetails {
   rate: Float
@@ -2112,6 +2122,7 @@ input RelationsAddInput {
 ### QUERIES
 type Query {
   # Technical
+  about: AppInfo @auth
   settings: Settings
   attribute(id: String): Attribute @auth
   attributes(first: Int, type: String!): AttributeConnection @auth

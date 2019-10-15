@@ -40,6 +40,13 @@ export const elasticIsAlive = async () => {
   }
 };
 
+export const getElasticVersion = () => {
+  return el
+    .info()
+    .then(info => info.body.version.number)
+    .catch(() => 'Disconnected');
+};
+
 export const createIndexes = async () => {
   return Promise.all(
     defaultIndexes.map(index => {
