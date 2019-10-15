@@ -132,7 +132,7 @@ class ListLines extends Component {
                     <Chip
                       key={filter[0]}
                       classes={{ root: classes.filter }}
-                      label={`${filter[0]}: ${f === null ? t('No tag') : f.value}`}
+                      label={`${filter[0]}: ${f.value === null ? t('No tag') : f.value}`}
                       onDelete={handleRemoveFilter.bind(this, filter[0])}
                     />
                 ),
