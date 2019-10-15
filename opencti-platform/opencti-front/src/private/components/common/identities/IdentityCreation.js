@@ -299,7 +299,6 @@ class IdentityCreation extends Component {
                 </DialogContent>
                 <DialogActions>
                   <Button
-                    variant="contained"
                     onClick={handleReset}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
@@ -307,7 +306,6 @@ class IdentityCreation extends Component {
                     {t('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
                     color="primary"
                     onClick={submitForm}
                     disabled={isSubmitting}

@@ -26,7 +26,7 @@ import Select from '../../../../components/Select';
 import Autocomplete from '../../../../components/Autocomplete';
 import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -37,9 +37,6 @@ const styles = theme => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
-  },
-  dialogActions: {
-    padding: '0 17px 20px 0',
   },
   createButton: {
     position: 'fixed',
@@ -84,7 +81,7 @@ const stixDomainEntityCreationMutation = graphql`
   }
 `;
 
-const stixDomainEntityValidation = t => Yup.object().shape({
+const stixDomainEntityValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
   type: Yup.string().required(t('This field is required')),
@@ -120,7 +117,7 @@ class StixDomainEntityCreation extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({ markingDefinitions });
     });
@@ -184,16 +181,18 @@ class StixDomainEntityCreation extends Component {
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined || targetEntityTypes.includes('Sector') ? (
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Sector') ? (
           <MenuItem value="Sector">{t('Sector')}</MenuItem>
-        ) : (
-          ''
-        )}
-        {targetEntityTypes === undefined || targetEntityTypes.includes('User') ? (
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('User') ? (
           <MenuItem value="User">{t('Person')}</MenuItem>
-        ) : (
-          ''
-        )}
+          ) : (
+            ''
+          )}
         {targetEntityTypes === undefined
         || targetEntityTypes.includes('Threat-Actor') ? (
           <MenuItem value="Threat-Actor">{t('Threat-Actor')}</MenuItem>
@@ -218,37 +217,42 @@ class StixDomainEntityCreation extends Component {
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined || targetEntityTypes.includes('Malware') ? (
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Malware') ? (
           <MenuItem value="Malware">{t('Malware')}</MenuItem>
-        ) : (
-          ''
-        )}
-        {targetEntityTypes === undefined || targetEntityTypes.includes('Tool') ? (
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Tool') ? (
           <MenuItem value="Tool">{t('Tool')}</MenuItem>
-        ) : (
-          ''
-        )}
+          ) : (
+            ''
+          )}
         {targetEntityTypes === undefined
         || targetEntityTypes.includes('Vulnerability') ? (
           <MenuItem value="Vulnerability">{t('Vulnerability')}</MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined || targetEntityTypes.includes('City') ? (
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('City') ? (
           <MenuItem value="City">{t('City')}</MenuItem>
-        ) : (
-          ''
-        )}
-        {targetEntityTypes === undefined || targetEntityTypes.includes('Country') ? (
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Country') ? (
           <MenuItem value="Country">{t('Country')}</MenuItem>
-        ) : (
-          ''
-        )}
-        {targetEntityTypes === undefined || targetEntityTypes.includes('Region') ? (
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Region') ? (
           <MenuItem value="Region">{t('Region')}</MenuItem>
-        ) : (
-          ''
-        )}
+          ) : (
+            ''
+          )}
       </Field>
     );
   }
@@ -304,15 +308,6 @@ class StixDomainEntityCreation extends Component {
                     style={{ marginTop: 20 }}
                   />
                   <Field
-                    name="description"
-                    component={TextField}
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
                     name="alias"
                     component={TextField}
                     label={t('Aliases separated by commas')}
@@ -326,6 +321,15 @@ class StixDomainEntityCreation extends Component {
                     label={t('Marking')}
                     options={this.state.markingDefinitions}
                     onInputChange={this.searchMarkingDefinitions.bind(this)}
+                  />
+                  <Field
+                    name="description"
+                    component={TextField}
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
                   />
                   <div className={classes.buttons}>
                     <Button
@@ -382,7 +386,7 @@ class StixDomainEntityCreation extends Component {
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onResetContextual.bind(this)}
           render={({ submitForm, handleReset, isSubmitting }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form>
               <Dialog
                 open={this.state.open}
                 onClose={this.handleClose.bind(this)}
@@ -396,15 +400,6 @@ class StixDomainEntityCreation extends Component {
                     component={TextField}
                     label={t('Name')}
                     fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    name="description"
-                    component={TextField}
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
                     style={{ marginTop: 20 }}
                   />
                   <Field
@@ -422,22 +417,24 @@ class StixDomainEntityCreation extends Component {
                     options={this.state.markingDefinitions}
                     onInputChange={this.searchMarkingDefinitions.bind(this)}
                   />
+                  <Field
+                    name="description"
+                    component={TextField}
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                  />
                 </DialogContent>
-                <DialogActions classes={{ root: classes.dialogActions }}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                <DialogActions>
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
                     color="primary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>
