@@ -7,6 +7,7 @@ import {
 import {
   createdByRef,
   markingDefinitions,
+  tags,
   reports,
   exports,
   stixRelations,
@@ -33,6 +34,7 @@ const courseOfActionResolvers = {
     createdByRef: courseOfAction => createdByRef(courseOfAction.id),
     markingDefinitions: (courseOfAction, args) =>
       markingDefinitions(courseOfAction.id, args),
+    tags: (courseOfAction, args) => tags(courseOfAction.id, args),
     reports: (courseOfAction, args) => reports(courseOfAction.id, args),
     exports: (courseOfAction, args) => exports(courseOfAction.id, args),
     stixRelations: (courseOfAction, args) =>

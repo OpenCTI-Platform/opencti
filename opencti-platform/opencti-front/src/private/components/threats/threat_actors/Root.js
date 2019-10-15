@@ -28,9 +28,8 @@ const threatActorQuery = graphql`
   query RootThreatActorQuery($id: String!) {
     threatActor(id: $id) {
       ...ThreatActor_threatActor
-      ...ThreatActorHeader_threatActor
       ...ThreatActorOverview_threatActor
-      ...ThreatActorIdentity_threatActor
+      ...ThreatActorDetails_threatActor
       ...ThreatActorReports_threatActor
       ...ThreatActorKnowledge_threatActor
       ...ThreatActorObservables_threatActor

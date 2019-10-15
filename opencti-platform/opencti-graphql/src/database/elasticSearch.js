@@ -1,6 +1,6 @@
 import { Client } from '@elastic/elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import { map, append, assoc } from 'ramda';
+import { map, append, assoc, mapObjIndexed } from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
 
@@ -23,6 +23,8 @@ const defaultIndexes = [
   'external_references'
 ];
 
+const indexedRelations = ['tags', 'createdByRef', 'markingDefinitions'];
+
 export const el = new Client({ node: conf.get('elasticsearch:url') });
 
 export const elasticIsAlive = async () => {
@@ -38,6 +40,13 @@ export const elasticIsAlive = async () => {
     logger.error(`[ELASTICSEARCH] Seems down`);
     throw new Error('elastic seems down');
   }
+};
+
+export const getElasticVersion = () => {
+  return el
+    .info()
+    .then(info => info.body.version.number)
+    .catch(() => 'Disconnected');
 };
 
 export const createIndexes = async () => {
@@ -252,13 +261,14 @@ export const countEntities = (indexName, options) => {
   });
 };
 
-export const paginate = (indexName, options) => {
+export const paginate = async (indexName, options) => {
   const {
     first = 200,
     after,
     type = null,
     types = null,
     reportClass = null,
+    filters = null,
     isUser = null,
     search = null,
     orderBy = null,
@@ -266,14 +276,15 @@ export const paginate = (indexName, options) => {
   } = options;
   const offset = after ? cursorToOffset(after) : 0;
   let must = [];
+  let mustnot = [];
   let ordering = [];
   if (search !== null && search.length > 0) {
     const trimedSearch = search.trim();
     let finalSearch;
-    if (trimedSearch.includes('http://') || trimedSearch.includes('https://')) {
-      finalSearch = `"*${trimedSearch
-        .replace('http://', '')
-        .replace('https://', '')}*"`;
+    if (trimedSearch.startsWith('http://')) {
+      finalSearch = `"*${trimedSearch.replace('http://', '')}*"`;
+    } else if (trimedSearch.startsWith('https://')) {
+      finalSearch = `"*${trimedSearch.replace('https://', '')}*"`;
     } else if (!trimedSearch.startsWith('"')) {
       finalSearch = `*${trimedSearch}*`;
     } else {
@@ -339,6 +350,60 @@ export const paginate = (indexName, options) => {
       must
     );
   }
+  if (filters !== null) {
+    await mapObjIndexed((value, key) => {
+      let finalKey = key;
+      if (indexedRelations.includes(key)) {
+        finalKey = `${key}_indexed`;
+      }
+      if (Array.isArray(value)) {
+        for (let i = 0; i < value.length; i += 1) {
+          if (value[i] === null) {
+            mustnot = append(
+              {
+                exists: {
+                  field: finalKey
+                }
+              },
+              mustnot
+            );
+            break;
+          } else {
+            must = append(
+              {
+                match_phrase: {
+                  [finalKey]: {
+                    query: value[i]
+                  }
+                }
+              },
+              must
+            );
+          }
+        }
+      } else if (value === null) {
+        mustnot = append(
+          {
+            exists: {
+              field: finalKey
+            }
+          },
+          mustnot
+        );
+      } else {
+        must = append(
+          {
+            match_phrase: {
+              [finalKey]: {
+                query: value
+              }
+            }
+          },
+          must
+        );
+      }
+    }, filters);
+  }
   if (isUser !== null && isUser === true) {
     must = append(
       {
@@ -350,11 +415,15 @@ export const paginate = (indexName, options) => {
     );
   }
   if (orderBy !== null && orderBy.length > 0) {
+    let finalOrderBy = orderBy;
+    if (indexedRelations.includes(orderBy)) {
+      finalOrderBy = `${orderBy}_indexed`;
+    }
     const order = {};
     order[
-      dateFields.includes(orderBy) || numberFields.includes(orderBy)
-        ? orderBy
-        : `${orderBy}.keyword`
+      dateFields.includes(finalOrderBy) || numberFields.includes(finalOrderBy)
+        ? finalOrderBy
+        : `${finalOrderBy}.keyword`
     ] = orderMode;
     ordering = append(order, ordering);
   }
@@ -368,7 +437,8 @@ export const paginate = (indexName, options) => {
       sort: ordering,
       query: {
         bool: {
-          must
+          must,
+          must_not: mustnot
         }
       }
     }

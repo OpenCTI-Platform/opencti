@@ -40,20 +40,20 @@ const styles = theme => ({
 });
 
 const attackPatternMutationFieldPatch = graphql`
-  mutation AttackPatternEditionIdentityFieldPatchMutation(
+  mutation AttackPatternEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
     attackPatternEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...AttackPatternEditionIdentity_attackPattern
+        ...AttackPatternEditionDetails_attackPattern
       }
     }
   }
 `;
 
-export const attackPatternEditionIdentityFocus = graphql`
-  mutation AttackPatternEditionIdentityFocusMutation(
+export const attackPatternEditionDetailsFocus = graphql`
+  mutation AttackPatternEditionDetailsFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
@@ -70,11 +70,11 @@ const attackPatternValidation = () => Yup.object().shape({
   required_permission: Yup.string(),
 });
 
-class AttackPatternEditionIdentityComponent extends Component {
+class AttackPatternEditionDetailsComponent extends Component {
   handleChangeFocus(name) {
     if (WS_ACTIVATED) {
       commitMutation({
-        mutation: attackPatternEditionIdentityFocus,
+        mutation: attackPatternEditionDetailsFocus,
         variables: {
           id: this.props.attackPattern.id,
           input: {
@@ -182,7 +182,7 @@ class AttackPatternEditionIdentityComponent extends Component {
   }
 }
 
-AttackPatternEditionIdentityComponent.propTypes = {
+AttackPatternEditionDetailsComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -191,11 +191,11 @@ AttackPatternEditionIdentityComponent.propTypes = {
   me: PropTypes.object,
 };
 
-const AttackPatternEditionIdentity = createFragmentContainer(
-  AttackPatternEditionIdentityComponent,
+const AttackPatternEditionDetails = createFragmentContainer(
+  AttackPatternEditionDetailsComponent,
   {
     attackPattern: graphql`
-      fragment AttackPatternEditionIdentity_attackPattern on AttackPattern {
+      fragment AttackPatternEditionDetails_attackPattern on AttackPattern {
         id
         platform
         required_permission
@@ -207,4 +207,4 @@ const AttackPatternEditionIdentity = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(AttackPatternEditionIdentity);
+)(AttackPatternEditionDetails);

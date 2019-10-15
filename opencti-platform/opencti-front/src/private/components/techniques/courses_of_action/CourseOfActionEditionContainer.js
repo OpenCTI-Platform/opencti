@@ -74,7 +74,7 @@ class CourseOfActionEditionContainer extends Component {
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update an attack pattern')}
+            {t('Update a course of action')}
           </Typography>
           <SubscriptionAvatars users={editUsers} />
           <div className="clearfix" />

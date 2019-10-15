@@ -31,9 +31,9 @@ import { markingDefinitionsSearchQuery } from '../settings/MarkingDefinitions';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../common/identities/IdentityCreation';
-import { attributesQuery } from '../settings/attributes/AttributesList';
+import { attributesQuery } from '../settings/attributes/AttributesLines';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -84,7 +84,7 @@ const reportMutation = graphql`
   }
 `;
 
-const reportValidation = t => Yup.object().shape({
+const reportValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   published: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
@@ -130,7 +130,7 @@ class ReportCreation extends Component {
     }).then((data) => {
       const identities = pipe(
         pathOr([], ['identities', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
+        map((n) => ({ label: n.node.name, value: n.node.id })),
       )(data);
       this.setState({ identities: union(this.state.identities, identities) });
     });
@@ -150,7 +150,7 @@ class ReportCreation extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({ markingDefinitions });
     });
@@ -271,9 +271,9 @@ class ReportCreation extends Component {
                               }}
                               containerstyle={{ marginTop: 20, width: '100%' }}
                             >
-                              {reportClassesEdges.map(reportClassEdge => (
+                              {reportClassesEdges.map((reportClassEdge) => (
                                 <MenuItem
-                                  key={reportClassEdge.node.value}
+                                  key={reportClassEdge.node.id}
                                   value={reportClassEdge.node.value}
                                 >
                                   {reportClassEdge.node.value}

@@ -13,6 +13,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Typography from '@material-ui/core/Typography';
 import { ExpandMore } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
@@ -20,8 +21,9 @@ import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
+import StixObjectTags from '../stix_object/StixObjectTags';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     padding: '0 0 20px 0',
   },
@@ -45,9 +47,6 @@ const styles = theme => ({
   },
   list: {
     width: '100%',
-  },
-  listItem: {
-    width: '100M',
   },
   icon: {
     color: theme.palette.primary.main,
@@ -93,16 +92,16 @@ class StixDomainEntitiesContainer extends Component {
   render() {
     const { t, classes, data } = this.props;
     const stixDomainEntitiesNodes = map(
-      n => n.node,
+      (n) => n.node,
       data.stixDomainEntities.edges,
     );
-    const byType = groupBy(stixDomainEntity => stixDomainEntity.entity_type);
+    const byType = groupBy((stixDomainEntity) => stixDomainEntity.entity_type);
     const stixDomainEntities = byType(stixDomainEntitiesNodes);
     const stixDomainEntitiesTypes = keys(stixDomainEntities);
     if (stixDomainEntitiesTypes.length !== 0) {
       return (
         <div className={classes.container}>
-          {stixDomainEntitiesTypes.map(type => (
+          {stixDomainEntitiesTypes.map((type) => (
             <ExpansionPanel
               key={type}
               expanded={this.isExpanded(
@@ -137,7 +136,6 @@ class StixDomainEntitiesContainer extends Component {
                       return (
                         <ListItem
                           key={stixDomainEntity.id}
-                          classes={{ root: classes.menuItem }}
                           divider={true}
                           button={true}
                           component={Link}
@@ -153,13 +151,18 @@ class StixDomainEntitiesContainer extends Component {
                               200,
                             )}
                           />
+                          <ListItemSecondaryAction>
+                            <StixObjectTags
+                              tags={stixDomainEntity.tags}
+                              variant="inSearch"
+                            />
+                          </ListItemSecondaryAction>
                         </ListItem>
                       );
                     }
                     return (
                       <ListItem
                         key={stixDomainEntity.id}
-                        classes={{ root: classes.menuItem }}
                         divider={true}
                         button={false}
                       >
@@ -173,6 +176,12 @@ class StixDomainEntitiesContainer extends Component {
                             200,
                           )}
                         />
+                        <ListItemSecondaryAction>
+                          <StixObjectTags
+                            tags={stixDomainEntity.tags}
+                            variant="inSearch"
+                          />
+                        </ListItemSecondaryAction>
                       </ListItem>
                     );
                   })}
@@ -259,6 +268,19 @@ const StixDomainEntitiesLines = createPaginationContainer(
               entity_type
               name
               description
+              tags {
+                edges {
+                  node {
+                    id
+                    tag_type
+                    value
+                    color
+                  }
+                  relation {
+                    id
+                  }
+                }
+              }
             }
           }
         }

@@ -13,7 +13,7 @@ import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 import ItemStatus from '../../../components/ItemStatus';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: '100%',
@@ -101,11 +101,12 @@ class ReportLineComponent extends Component {
                 style={{ width: dataColumns.marking.width }}
               >
                 {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
-                  markingDefinition => (
+                  (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}
                       variant="inList"
                       label={markingDefinition.node.definition}
+                      color={markingDefinition.node.color}
                     />
                   ),
                 )}
@@ -146,6 +147,7 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
           node {
             id
             definition
+            color
           }
         }
       }

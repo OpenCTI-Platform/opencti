@@ -6,13 +6,15 @@ import {
   settingsEditField,
   settingsEditContext,
   settingsCleanContext,
-  addSettings
+  addSettings,
+  getApplicationInfo
 } from '../domain/settings';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 
 const settingsResolvers = {
   Query: {
+    about: () => getApplicationInfo(),
     settings: () => getSettings()
   },
   Settings: {

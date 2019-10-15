@@ -2,6 +2,7 @@ import { addCity, findAll, findById } from '../domain/city';
 import {
   createdByRef,
   markingDefinitions,
+  tags,
   reports,
   exports,
   stixRelations,
@@ -22,6 +23,7 @@ const cityResolvers = {
   City: {
     createdByRef: city => createdByRef(city.id),
     markingDefinitions: (city, args) => markingDefinitions(city.id, args),
+    tags: (city, args) => tags(city.id, args),
     reports: (city, args) => reports(city.id, args),
     exports: (city, args) => exports(city.id, args),
     stixRelations: (city, args) => stixRelations(city.id, args),

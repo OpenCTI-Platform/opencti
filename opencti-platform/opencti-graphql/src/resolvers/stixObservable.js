@@ -9,6 +9,7 @@ import {
   stixObservablesNumber,
   search,
   markingDefinitions,
+  tags,
   reports,
   stixObservablesTimeSeries,
   stixObservableEditContext,
@@ -38,9 +39,10 @@ const stixObservableResolvers = {
     stixObservablesNumber: (_, args) => stixObservablesNumber(args)
   },
   StixObservable: {
-    createdByRef: (stixObservable) => createdByRef(stixObservable.id),
+    createdByRef: stixObservable => createdByRef(stixObservable.id),
     markingDefinitions: (stixObservable, args) =>
       markingDefinitions(stixObservable.id, args),
+    tags: (stixObservable, args) => tags(stixObservable.id, args),
     reports: (stixObservable, args) => reports(stixObservable.id, args),
     stixRelations: (stixObservable, args) =>
       stixRelations(stixObservable.id, args),

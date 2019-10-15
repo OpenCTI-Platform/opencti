@@ -10,7 +10,7 @@ const nbOfRowsToLoad = 25;
 
 class VulnerabilitiesLines extends Component {
   render() {
-    const { initialLoading, dataColumns, relay } = this.props;
+    const { initialLoading, dataColumns, relay, onTagClick } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -27,6 +27,7 @@ class VulnerabilitiesLines extends Component {
         DummyLineComponent={<VulnerabilityLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
+        onTagClick={onTagClick.bind(this)}
       />
     );
   }
@@ -38,8 +39,8 @@ VulnerabilitiesLines.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
-  vulnerabilities: PropTypes.object,
   initialLoading: PropTypes.bool,
+  onTagClick: PropTypes.func,
 };
 
 export const vulnerabilitiesLinesQuery = graphql`
@@ -49,6 +50,7 @@ export const vulnerabilitiesLinesQuery = graphql`
     $cursor: ID
     $orderBy: VulnerabilitiesOrdering
     $orderMode: OrderingMode
+    $filters: VulnerabilitiesFiltering
   ) {
     ...VulnerabilitiesLines_data
       @arguments(
@@ -57,6 +59,7 @@ export const vulnerabilitiesLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -72,6 +75,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "VulnerabilitiesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "VulnerabilitiesFiltering" }
         ) {
         vulnerabilities(
           search: $search
@@ -79,6 +83,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_vulnerabilities") {
           edges {
             node {
@@ -115,6 +120,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: vulnerabilitiesLinesQuery,

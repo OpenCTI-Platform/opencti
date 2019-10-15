@@ -6,14 +6,15 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import SectorHeader from './SectorHeader';
 import SectorOverview from './SectorOverview';
 import SectorSubsectors from './SectorSubsectors';
 import SectorEdition from './SectorEdition';
+import SectorPopover from './SectorPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -29,7 +30,10 @@ class SectorComponent extends Component {
     const { classes, sector } = this.props;
     return (
       <div className={classes.container}>
-        <SectorHeader sector={sector} />
+        <StixDomainEntityHeader
+          stixDomainEntity={sector}
+          PopoverComponent={<SectorPopover />}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -88,7 +92,8 @@ const Sector = createFragmentContainer(SectorComponent, {
           }
         }
       }
-      ...SectorHeader_sector
+      name
+      alias
       ...SectorOverview_sector
       ...SectorSubsectors_sector
     }

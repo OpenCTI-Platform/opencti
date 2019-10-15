@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose, map, pathOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
@@ -9,6 +9,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import ItemCreator from '../../../../components/ItemCreator';
+import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = () => ({
   paper: {
@@ -31,12 +32,20 @@ class OrganizationOverviewComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant="h3" gutterBottom={true}>
-            {t('Organization type')}
+            {t('Marking')}
           </Typography>
-          {t(
-            organization.organization_class
-              ? `organization_${organization.organization_class}`
-              : 'organization_other',
+          {organization.markingDefinitions.edges.length > 0 ? (
+            map(
+              (markingDefinition) => (
+                <ItemMarking
+                  key={markingDefinition.node.id}
+                  label={markingDefinition.node.definition}
+                />
+              ),
+              organization.markingDefinitions.edges,
+            )
+          ) : (
+            <ItemMarking label="TLP:WHITE" />
           )}
           <Typography
             variant="h3"
@@ -91,11 +100,18 @@ const OrganizationOverview = createFragmentContainer(
     organization: graphql`
       fragment OrganizationOverview_organization on Organization {
         id
-        organization_class
         name
         description
         created
         modified
+        markingDefinitions {
+          edges {
+            node {
+              id
+              definition
+            }
+          }
+        }
         createdByRef {
           node {
             id

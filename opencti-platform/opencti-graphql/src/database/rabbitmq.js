@@ -58,3 +58,9 @@ export const metrics = async () => {
     });
   return { overview, queues };
 };
+
+export const getRabbitMQVersion = () => {
+  return metrics()
+    .then(data => data.overview.rabbitmq_version)
+    .catch(() => 'Disconnected');
+};

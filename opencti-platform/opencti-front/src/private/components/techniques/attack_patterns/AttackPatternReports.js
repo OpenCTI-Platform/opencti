@@ -6,8 +6,9 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import AttackPatternHeader from './AttackPatternHeader';
+import AttackPatternPopover from './AttackPatternPopover';
 import Reports from '../../reports/Reports';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -26,7 +27,10 @@ class AttackPatternReportsComponent extends Component {
     const { classes, attackPattern } = this.props;
     return (
       <div className={classes.container}>
-        <AttackPatternHeader attackPattern={attackPattern} />
+        <StixDomainEntityHeader
+          stixDomainEntity={attackPattern}
+          PopoverComponent={<AttackPatternPopover />}
+        />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Reports objectId={attackPattern.id} />
         </Paper>
@@ -47,7 +51,8 @@ const AttackPatternReports = createFragmentContainer(
     attackPattern: graphql`
       fragment AttackPatternReports_attackPattern on AttackPattern {
         id
-        ...AttackPatternHeader_attackPattern
+        name
+        alias
       }
     `,
   },

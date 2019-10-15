@@ -14,6 +14,7 @@ class DatePickerField extends Component {
   render() {
     const {
       t,
+      n,
       fld,
       fsd,
       md,
@@ -64,7 +65,7 @@ class DatePickerField extends Component {
           }
         }}
         onChange={(date) => {
-          form.setFieldValue(field.name, date);
+          form.setFieldValue(field.name, date, true);
           if (
             this.state.focused === false
             && typeof onSubmit === 'function'
@@ -78,7 +79,7 @@ class DatePickerField extends Component {
         error={
           form.errors[field.name] !== undefined && form.touched[field.name]
         }
-        onError={(_, error) => form.setFieldError(field.name, error)}
+        invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
         {...other}
       />
     );
