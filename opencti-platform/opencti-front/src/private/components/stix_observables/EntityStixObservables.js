@@ -53,11 +53,11 @@ class EntityStixObservables extends Component {
       entity_type: {
         label: 'Type',
         width: '10%',
-        isSortable: true,
+        isSortable: false,
       },
       observable_value: {
         label: 'Value',
-        width: '40%',
+        width: '30%',
         isSortable: false,
       },
       first_seen: {
@@ -72,7 +72,7 @@ class EntityStixObservables extends Component {
       },
       weight: {
         label: 'Confidence level',
-        width: '10%',
+        width: '20%',
         isSortable: true,
       },
     };
