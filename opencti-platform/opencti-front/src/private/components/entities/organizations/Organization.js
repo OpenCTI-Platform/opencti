@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import OrganizationOverview from './OrganizationOverview';
+import OrganizationDetails from './OrganizationDetails';
 import OrganizationEdition from './OrganizationEdition';
 import OrganizationPopover from './OrganizationPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
@@ -43,8 +44,11 @@ class OrganizationComponent extends Component {
             spacing={3}
             classes={{ container: classes.gridContainer }}
           >
-            <Grid item={true} xs={6}>
+            <Grid item={true} xs={3}>
               <OrganizationOverview organization={organization} />
+            </Grid>
+            <Grid item={true} xs={3}>
+              <OrganizationDetails organization={organization} />
             </Grid>
             <Grid item={true} xs={6}>
               <EntityLastReports authorId={organization.id} />
@@ -75,8 +79,11 @@ class OrganizationComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={3}>
             <OrganizationOverview organization={organization} />
+          </Grid>
+          <Grid item={true} xs={3}>
+            <OrganizationDetails organization={organization} />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={organization.id} />
@@ -118,6 +125,7 @@ const Organization = createFragmentContainer(OrganizationComponent, {
       name
       alias
       ...OrganizationOverview_organization
+      ...OrganizationDetails_organization
     }
   `,
 });

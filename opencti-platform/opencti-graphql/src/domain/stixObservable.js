@@ -132,6 +132,18 @@ export const markingDefinitions = (stixObservableId, args) =>
     false
   );
 
+export const tags = (stixObservableId, args) =>
+  paginate(
+    `match $t isa Tag; 
+    $rel(tagging:$t, so:$x) isa tagged; 
+    $x has internal_id "${escapeString(stixObservableId)}"`,
+    args,
+    false,
+    null,
+    false,
+    false
+  );
+
 export const reports = (stixObservableId, args) =>
   paginate(
     `match $r isa Report; 

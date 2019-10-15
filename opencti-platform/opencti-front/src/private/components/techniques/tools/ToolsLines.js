@@ -10,7 +10,9 @@ const nbOfRowsToLoad = 25;
 
 class ToolsLines extends Component {
   render() {
-    const { initialLoading, dataColumns, relay } = this.props;
+    const {
+      initialLoading, dataColumns, relay, onTagClick,
+    } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -27,6 +29,7 @@ class ToolsLines extends Component {
         DummyLineComponent={<ToolLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
+        onTagClick={onTagClick.bind(this)}
       />
     );
   }
@@ -38,8 +41,8 @@ ToolsLines.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
-  tools: PropTypes.object,
   initialLoading: PropTypes.bool,
+  onTagClick: PropTypes.func,
 };
 
 export const toolsLinesQuery = graphql`
@@ -49,6 +52,7 @@ export const toolsLinesQuery = graphql`
     $cursor: ID
     $orderBy: ToolsOrdering
     $orderMode: OrderingMode
+    $filters: ToolsFiltering
   ) {
     ...ToolsLines_data
       @arguments(
@@ -57,6 +61,7 @@ export const toolsLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -72,6 +77,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "ToolsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "ToolsFiltering" }
         ) {
         tools(
           search: $search
@@ -79,6 +85,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_tools") {
           edges {
             node {
@@ -115,6 +122,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: toolsLinesQuery,

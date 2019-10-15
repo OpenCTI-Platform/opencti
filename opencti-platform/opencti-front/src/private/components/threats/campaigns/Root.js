@@ -28,7 +28,7 @@ const campaignQuery = graphql`
     campaign(id: $id) {
       ...Campaign_campaign
       ...CampaignOverview_campaign
-      ...CampaignIdentity_campaign
+      ...CampaignDetails_campaign
       ...CampaignReports_campaign
       ...CampaignKnowledge_campaign
       ...CampaignObservables_campaign

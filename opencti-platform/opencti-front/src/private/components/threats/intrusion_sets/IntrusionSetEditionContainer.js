@@ -17,7 +17,7 @@ import { SubscriptionAvatars } from '../../../../components/Subscription';
 import IntrusionSetEditionOverview from './IntrusionSetEditionOverview';
 import IntrusionSetEditionDetails from './IntrusionSetEditionDetails';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',

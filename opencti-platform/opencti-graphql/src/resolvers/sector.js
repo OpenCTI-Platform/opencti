@@ -2,6 +2,7 @@ import { addSector, findAll, findById, subsectors } from '../domain/sector';
 import {
   createdByRef,
   markingDefinitions,
+  tags,
   reports,
   exports,
   stixRelations,
@@ -24,6 +25,7 @@ const sectorResolvers = {
     subsectors: (sector, args) => subsectors(sector.id, args),
     createdByRef: sector => createdByRef(sector.id),
     markingDefinitions: (sector, args) => markingDefinitions(sector.id, args),
+    tags: (sector, args) => tags(sector.id, args),
     reports: (sector, args) => reports(sector.id, args),
     exports: (sector, args) => exports(sector.id, args),
     stixRelations: (campaign, args) => stixRelations(campaign.id, args),

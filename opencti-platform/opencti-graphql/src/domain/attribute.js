@@ -74,7 +74,8 @@ export const attributeUpdate = async (id, input) => {
   try {
     const readQuery = `match $x isa entity, has ${escape(
       input.type
-    )} $a; get $x;`;
+    )} $a; $a "${escapeString(input.newValue)}"; get $x;`;
+    logger.debug(`[GRAKN - infer: false] attributeUpdate > ${readQuery}`);
     const iterator = await rTx.tx.query(readQuery);
     const answers = await iterator.collect();
     await Promise.all(
@@ -86,7 +87,7 @@ export const attributeUpdate = async (id, input) => {
     await closeReadTx(rTx);
   } catch (err) {
     logger.error('[GRAKN] attributeUpdate error > ', err);
-    await closeReadTx(wTx);
+    await closeReadTx(rTx);
   }
   // endregion
 

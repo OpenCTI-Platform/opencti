@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import {
+  compose, propOr, assoc, dissoc, mapObjIndexed, map,
+} from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import {
@@ -27,10 +29,11 @@ class Incidents extends Component {
       'Incidents-view',
     );
     this.state = {
-      sortBy: propOr('name', 'sortBy', params),
-      orderAsc: propOr(true, 'orderAsc', params),
+      sortBy: propOr('created', 'sortBy', params),
+      orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
+      filters: {},
     };
   }
 
@@ -39,7 +42,7 @@ class Incidents extends Component {
       this.props.history,
       this.props.location,
       'Incidents-view',
-      this.state,
+      dissoc('filters', this.state),
     );
   }
 
@@ -55,11 +58,28 @@ class Incidents extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleAddFilter(key, id, value, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    this.setState({
+      filters: assoc(key, [{ id, value }], this.state.filters),
+    });
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: dissoc(key, this.state.filters) });
+  }
+
   renderCards(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm } = this.state;
+    const {
+      sortBy, orderAsc, searchTerm, filters,
+    } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
+      },
+      tags: {
+        label: 'Tags',
       },
       created: {
         label: 'Creation date',
@@ -76,8 +96,10 @@ class Incidents extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         displayImport={true}
         keyword={searchTerm}
+        filters={filters}
       >
         <QueryRenderer
           query={incidentsCardsQuery}
@@ -87,6 +109,7 @@ class Incidents extends Component {
               data={props}
               paginationOptions={paginationOptions}
               initialLoading={props === null}
+              onTagClick={this.handleAddFilter.bind(this)}
             />
           )}
         />
@@ -95,11 +118,18 @@ class Incidents extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm } = this.state;
+    const {
+      sortBy, orderAsc, searchTerm, filters,
+    } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '60%',
+        width: '35%',
+        isSortable: true,
+      },
+      tags: {
+        label: 'Tags',
+        width: '25%',
         isSortable: true,
       },
       created: {
@@ -121,8 +151,10 @@ class Incidents extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         displayImport={true}
         keyword={searchTerm}
+        filters={filters}
       >
         <QueryRenderer
           query={incidentsLinesQuery}
@@ -133,6 +165,7 @@ class Incidents extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              onTagClick={this.handleAddFilter.bind(this)}
             />
           )}
         />
@@ -142,12 +175,13 @@ class Incidents extends Component {
 
   render() {
     const {
-      view, sortBy, orderAsc, searchTerm,
+      view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
+      filters: mapObjIndexed((value) => map((n) => n.id, value), filters),
     };
     return (
       <div>

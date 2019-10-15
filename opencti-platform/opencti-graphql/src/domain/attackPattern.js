@@ -33,6 +33,14 @@ export const findAll = args => {
   );
 };
 
+export const findByCourseOfAction = args =>
+  paginate(
+    `match $a isa Attack-Pattern;
+    $rel(problem:$a, mitigation:$c) isa mitigates;
+    $c has internal_id "${escapeString(args.courseOfActionId)}"`,
+    args
+  );
+
 export const findById = attackPatternId => getById(attackPatternId);
 
 export const addAttackPattern = async (user, attackPattern) => {

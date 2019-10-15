@@ -13,7 +13,9 @@ const nbOfRowsToLoad = 25;
 
 class CoursesOfActionLines extends Component {
   render() {
-    const { initialLoading, dataColumns, relay } = this.props;
+    const {
+      initialLoading, dataColumns, relay, onTagClick,
+    } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -30,6 +32,7 @@ class CoursesOfActionLines extends Component {
         DummyLineComponent={<CourseOfActionLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
+        onTagClick={onTagClick.bind(this)}
       />
     );
   }
@@ -41,8 +44,8 @@ CoursesOfActionLines.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
-  coursesOfAction: PropTypes.object,
   initialLoading: PropTypes.bool,
+  onTagClick: PropTypes.func,
 };
 
 export const coursesOfActionLinesQuery = graphql`
@@ -52,6 +55,7 @@ export const coursesOfActionLinesQuery = graphql`
     $cursor: ID
     $orderBy: CoursesOfActionOrdering
     $orderMode: OrderingMode
+    $filters: CoursesOfActionFiltering
   ) {
     ...CoursesOfActionLines_data
       @arguments(
@@ -60,6 +64,7 @@ export const coursesOfActionLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -76,6 +81,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "CoursesOfActionOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "CoursesOfActionFiltering" }
         ) {
         coursesOfAction(
           search: $search
@@ -83,6 +89,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_coursesOfAction") {
           edges {
             node {
@@ -117,6 +124,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: coursesOfActionLinesQuery,

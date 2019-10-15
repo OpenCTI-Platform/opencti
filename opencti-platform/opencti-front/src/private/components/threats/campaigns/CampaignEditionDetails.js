@@ -40,25 +40,25 @@ const styles = theme => ({
   },
 });
 
-const incidentMutationFieldPatch = graphql`
-  mutation IncidentEditionIdentityFieldPatchMutation(
+const campaignMutationFieldPatch = graphql`
+  mutation CampaignEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
-    incidentEdit(id: $id) {
+    campaignEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...IncidentEditionIdentity_incident
+        ...CampaignEditionDetails_campaign
       }
     }
   }
 `;
 
-const incidentEditionIdentityFocus = graphql`
-  mutation IncidentEditionIdentityFocusMutation(
+const campaignEditionDetailsFocus = graphql`
+  mutation CampaignEditionDetailsFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
-    incidentEdit(id: $id) {
+    campaignEdit(id: $id) {
       contextPatch(input: $input) {
         id
       }
@@ -66,23 +66,23 @@ const incidentEditionIdentityFocus = graphql`
   }
 `;
 
-const incidentValidation = t => Yup.object().shape({
+const campaignValidation = t => Yup.object().shape({
   first_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   last_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  objective: Yup.string(),
+  objective: Yup.string().required(t('This field is required')),
 });
 
-class IncidentEditionIdentityComponent extends Component {
+class CampaignEditionDetailsComponent extends Component {
   handleChangeFocus(name) {
     if (WS_ACTIVATED) {
       commitMutation({
-        mutation: incidentEditionIdentityFocus,
+        mutation: campaignEditionDetailsFocus,
         variables: {
-          id: this.props.incident.id,
+          id: this.props.campaign.id,
           input: {
             focusOn: name,
           },
@@ -92,13 +92,13 @@ class IncidentEditionIdentityComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    incidentValidation(this.props.t)
+    campaignValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: incidentMutationFieldPatch,
+          mutation: campaignMutationFieldPatch,
           variables: {
-            id: this.props.incident.id,
+            id: this.props.campaign.id,
             input: { key: name, value },
           },
         });
@@ -108,20 +108,20 @@ class IncidentEditionIdentityComponent extends Component {
 
   render() {
     const {
-      t, incident, editUsers, me,
+      t, campaign, editUsers, me,
     } = this.props;
     const initialValues = pipe(
-      assoc('first_seen', dateFormat(incident.first_seen)),
-      assoc('last_seen', dateFormat(incident.last_seen)),
+      assoc('first_seen', dateFormat(campaign.first_seen)),
+      assoc('last_seen', dateFormat(campaign.last_seen)),
       pick(['first_seen', 'last_seen', 'objective']),
-    )(incident);
+    )(campaign);
 
     return (
       <div>
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={incidentValidation(t)}
+          validationSchema={campaignValidation(t)}
           onSubmit={() => true}
           render={() => (
             <div>
@@ -131,6 +131,7 @@ class IncidentEditionIdentityComponent extends Component {
                   component={DatePickerField}
                   label={t('First seen')}
                   fullWidth={true}
+                  style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
@@ -184,20 +185,20 @@ class IncidentEditionIdentityComponent extends Component {
   }
 }
 
-IncidentEditionIdentityComponent.propTypes = {
+CampaignEditionDetailsComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  incident: PropTypes.object,
+  campaign: PropTypes.object,
   editUsers: PropTypes.array,
   me: PropTypes.object,
 };
 
-const IncidentEditionIdentity = createFragmentContainer(
-  IncidentEditionIdentityComponent,
+const CampaignEditionDetails = createFragmentContainer(
+  CampaignEditionDetailsComponent,
   {
-    incident: graphql`
-      fragment IncidentEditionIdentity_incident on Incident {
+    campaign: graphql`
+      fragment CampaignEditionDetails_campaign on Campaign {
         id
         first_seen
         last_seen
@@ -210,4 +211,4 @@ const IncidentEditionIdentity = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(IncidentEditionIdentity);
+)(CampaignEditionDetails);

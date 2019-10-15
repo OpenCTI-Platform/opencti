@@ -15,7 +15,7 @@ import { Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import AttackPatternEditionOverview from './AttackPatternEditionOverview';
-import AttackPatternEditionIdentity from './AttackPatternEditionIdentity';
+import AttackPatternEditionDetails from './AttackPatternEditionDetails';
 
 const styles = theme => ({
   header: {
@@ -101,7 +101,7 @@ class AttackPatternEditionContainer extends Component {
             />
           )}
           {this.state.currentTab === 1 && (
-            <AttackPatternEditionIdentity
+            <AttackPatternEditionDetails
               attackPattern={attackPattern}
               editUsers={editUsers}
               me={me}
@@ -129,7 +129,7 @@ const AttackPatternEditionFragment = createFragmentContainer(
       fragment AttackPatternEditionContainer_attackPattern on AttackPattern {
         id
         ...AttackPatternEditionOverview_attackPattern
-        ...AttackPatternEditionIdentity_attackPattern
+        ...AttackPatternEditionDetails_attackPattern
         editContext {
           name
           focusOn

@@ -27,6 +27,7 @@ const personQuery = graphql`
     user(id: $id) {
       ...Person_person
       ...PersonOverview_person
+      ...PersonDetails_person
       ...PersonReports_person
       ...PersonKnowledge_person
     }

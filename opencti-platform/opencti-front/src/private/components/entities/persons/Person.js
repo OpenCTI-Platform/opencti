@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import PersonOverview from './PersonOverview';
+import PersonDetails from './PersonDetails';
 import PersonEdition from './PersonEdition';
 import PersonPopover from './PersonPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
@@ -38,8 +39,11 @@ class PersonComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={3}>
             <PersonOverview person={person} />
+          </Grid>
+          <Grid item={true} xs={3}>
+            <PersonDetails person={person} />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={person.id} />
@@ -80,6 +84,7 @@ const Person = createFragmentContainer(PersonComponent, {
       name
       alias
       ...PersonOverview_person
+      ...PersonDetails_person
     }
   `,
 });

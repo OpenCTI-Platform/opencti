@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import {
   compose, pipe, pathOr, join, map, sort,
 } from 'ramda';
@@ -13,8 +13,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
 import { LockPattern } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
+import StixObjectTags from '../../common/stix_object/StixObjectTags';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
@@ -52,11 +53,11 @@ const styles = theme => ({
 class AttackPatternLineComponent extends Component {
   render() {
     const {
-      fd, classes, node, dataColumns, orderAsc,
+      fd, classes, node, dataColumns, orderAsc, onTagClick,
     } = this.props;
     const killchainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
-      map(n => n.node.phase_name),
+      map((n) => n.node.phase_name),
       sort((a, b) => (orderAsc ? a.localeCompare(b) : b.localeCompare(a))),
       join(', '),
     )(node);
@@ -87,6 +88,16 @@ class AttackPatternLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <StixObjectTags
+                  variant="inList"
+                  tags={node.tags}
+                  onClick={onTagClick.bind(this)}
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}
               >
                 {fd(node.created)}
@@ -114,6 +125,7 @@ AttackPatternLineComponent.propTypes = {
   classes: PropTypes.object,
   fd: PropTypes.func,
   orderAsc: PropTypes.bool,
+  onTagClick: PropTypes.func,
 };
 
 const AttackPatternLineFragment = createFragmentContainer(
@@ -131,6 +143,19 @@ const AttackPatternLineFragment = createFragmentContainer(
               id
               kill_chain_name
               phase_name
+            }
+          }
+        }
+        tags {
+          edges {
+            node {
+              id
+              tag_type
+              value
+              color
+            }
+            relation {
+              id
             }
           }
         }
@@ -166,6 +191,12 @@ class AttackPatternLineDummyComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <div className="fakeItem" style={{ width: '90%' }} />
               </div>
               <div
                 className={classes.bodyItem}

@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
-import { compose } from 'ramda';
+import {
+  assoc, compose, map, pathOr, pipe, pluck, split,
+} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -17,10 +19,12 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import Select from '../../../../components/Select';
+import Autocomplete from '../../../../components/Autocomplete';
+import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
 
 const styles = theme => ({
   drawerPaper: {
@@ -99,7 +103,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 class StixDomainEntityCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
+    this.state = { open: false, markingDefinitions: [] };
   }
 
   handleOpen() {
@@ -110,11 +114,27 @@ class StixDomainEntityCreation extends Component {
     this.setState({ open: false });
   }
 
+  searchMarkingDefinitions(event) {
+    fetchQuery(markingDefinitionsSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
+      const markingDefinitions = pipe(
+        pathOr([], ['markingDefinitions', 'edges']),
+        map(n => ({ label: n.node.definition, value: n.node.id })),
+      )(data);
+      this.setState({ markingDefinitions });
+    });
+  }
+
   onSubmit(values, { setSubmitting, resetForm }) {
+    const finalValues = pipe(
+      assoc('alias', split(',', values.alias)),
+      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+    )(values);
     commitMutation({
       mutation: stixDomainEntityCreationMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       updater: (store) => {
         const payload = store.getRootField('stixDomainEntityAdd');
@@ -156,7 +176,7 @@ class StixDomainEntityCreation extends Component {
           name: 'type',
           id: 'type',
         }}
-        containerstyle={{ marginTop: 20, width: '100%' }}
+        containerstyle={{ width: '100%' }}
       >
         {targetEntityTypes === undefined
         || targetEntityTypes.includes('Organization') ? (
@@ -264,20 +284,24 @@ class StixDomainEntityCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
+                type: '',
                 name: '',
                 description: '',
-                type: '',
+                alias: '',
+                markingDefinitions: [],
               }}
               validationSchema={stixDomainEntityValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
               render={({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
+                  {this.renderEntityTypesList()}
                   <Field
                     name="name"
                     component={TextField}
                     label={t('Name')}
                     fullWidth={true}
+                    style={{ marginTop: 20 }}
                   />
                   <Field
                     name="description"
@@ -288,7 +312,21 @@ class StixDomainEntityCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  {this.renderEntityTypesList()}
+                  <Field
+                    name="alias"
+                    component={TextField}
+                    label={t('Aliases separated by commas')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="markingDefinitions"
+                    component={Autocomplete}
+                    multiple={true}
+                    label={t('Marking')}
+                    options={this.state.markingDefinitions}
+                    onInputChange={this.searchMarkingDefinitions.bind(this)}
+                  />
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -334,9 +372,11 @@ class StixDomainEntityCreation extends Component {
         <Formik
           enableReinitialize={true}
           initialValues={{
+            type: '',
             name: inputValue,
             description: '',
-            type: '',
+            alias: '',
+            markingDefinitions: [],
           }}
           validationSchema={stixDomainEntityValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
@@ -350,11 +390,13 @@ class StixDomainEntityCreation extends Component {
               >
                 <DialogTitle>{t('Create an entity')}</DialogTitle>
                 <DialogContent>
+                  {this.renderEntityTypesList()}
                   <Field
                     name="name"
                     component={TextField}
                     label={t('Name')}
                     fullWidth={true}
+                    style={{ marginTop: 20 }}
                   />
                   <Field
                     name="description"
@@ -365,7 +407,21 @@ class StixDomainEntityCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  {this.renderEntityTypesList()}
+                  <Field
+                    name="alias"
+                    component={TextField}
+                    label={t('Aliases separated by commas')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="markingDefinitions"
+                    component={Autocomplete}
+                    multiple={true}
+                    label={t('Marking')}
+                    options={this.state.markingDefinitions}
+                    onInputChange={this.searchMarkingDefinitions.bind(this)}
+                  />
                 </DialogContent>
                 <DialogActions classes={{ root: classes.dialogActions }}>
                   <Button

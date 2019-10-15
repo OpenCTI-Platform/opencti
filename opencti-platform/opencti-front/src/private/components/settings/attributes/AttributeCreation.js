@@ -6,16 +6,17 @@ import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
+import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import { compose, assoc } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
+import { TextField } from 'formik-material-ui';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -28,8 +29,9 @@ const styles = theme => ({
     padding: 0,
   },
   createButton: {
-    float: 'left',
-    marginTop: -15,
+    position: 'fixed',
+    bottom: 30,
+    right: 230,
   },
   buttons: {
     marginTop: 20,
@@ -60,18 +62,13 @@ const styles = theme => ({
 const attributeMutation = graphql`
   mutation AttributeCreationMutation($input: AttributeAddInput!) {
     attributeAdd(input: $input) {
-      ...AttributeLine_attribute
+      ...AttributeLine_node
     }
   }
 `;
 
-const attributeValidation = t => Yup.object().shape({
-  value: Yup.string()
-    .required(t('This field is required'))
-    .matches(
-      /^[a-zA-Z1-9-\s]+$/g,
-      t('This field must only contain alphanumeric chars, dashes and space'),
-    ),
+const attributeValidation = (t) => Yup.object().shape({
+  value: Yup.string().required(t('This field is required')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -133,14 +130,14 @@ class AttributeCreation extends Component {
     const { t, classes } = this.props;
     return (
       <div>
-        <IconButton
+        <Fab
+          onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
-          onClick={this.handleOpen.bind(this)}
-          classes={{ root: classes.createButton }}
+          className={classes.createButton}
         >
-          <Add fontSize="small" />
-        </IconButton>
+          <Add />
+        </Fab>
         <Drawer
           open={this.state.open}
           anchor="right"

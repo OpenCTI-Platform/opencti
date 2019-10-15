@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, toPairs } from 'ramda';
+import { compose, map, toPairs } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -14,6 +14,7 @@ import {
   TableChart,
   Dashboard,
 } from '@material-ui/icons';
+import Chip from '@material-ui/core/Chip';
 import StixDomainEntitiesImportData from '../../private/components/common/stix_domain_entities/StixDomainEntitiesImportData';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
@@ -55,6 +56,10 @@ const styles = () => ({
     fontWeight: '700',
     cursor: 'pointer',
   },
+  filters: {
+    float: 'left',
+    margin: '2px 0 0 10px',
+  },
 });
 
 class ListLines extends Component {
@@ -67,15 +72,18 @@ class ListLines extends Component {
       classes, t, sortBy, orderAsc,
     } = this.props;
     if (isSortable) {
-      const orderComponent = orderAsc
-        ? <ArrowDropDown classes={{ root: classes.sortIcon }} />
-        : <ArrowDropUp classes={{ root: classes.sortIcon }} />;
+      const orderComponent = orderAsc ? (
+        <ArrowDropDown classes={{ root: classes.sortIcon }} />
+      ) : (
+        <ArrowDropUp classes={{ root: classes.sortIcon }} />
+      );
       return (
         <div
           key={field}
           className={classes.sortableHeaderItem}
           style={{ width }}
-          onClick={this.reverseBy.bind(this, field)}>
+          onClick={this.reverseBy.bind(this, field)}
+        >
           <span>{t(label)}</span>
           {sortBy === field ? orderComponent : ''}
         </div>
@@ -90,13 +98,16 @@ class ListLines extends Component {
 
   render() {
     const {
+      t,
       classes,
       handleSearch,
       handleChangeView,
+      handleRemoveFilter,
       dataColumns,
       displayImport,
       secondaryAction,
       keyword,
+      filters,
       bottomNav,
       children,
     } = this.props;
@@ -114,6 +125,22 @@ class ListLines extends Component {
           ) : (
             ''
           )}
+          <div className={classes.filters}>
+            {map(
+              (filter) => map(
+                (f) => (
+                    <Chip
+                      key={filter[0]}
+                      classes={{ root: classes.filter }}
+                      label={`${filter[0]}: ${f.value === null ? t('No tag') : f.value}`}
+                      onDelete={handleRemoveFilter.bind(this, filter[0])}
+                    />
+                ),
+                filter[1],
+              ),
+              toPairs(filters),
+            )}
+          </div>
         </div>
         <div className={classes.views}>
           <div style={{ float: 'right', marginTop: -20 }}>
@@ -169,7 +196,7 @@ class ListLines extends Component {
             <ListItemText
               primary={
                 <div>
-                  {toPairs(dataColumns).map(dataColumn => this.renderHeaderElement(
+                  {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
                     dataColumn[0],
                     dataColumn[1].label,
                     dataColumn[1].width,
@@ -198,10 +225,12 @@ ListLines.propTypes = {
   handleSearch: PropTypes.func,
   handleSort: PropTypes.func.isRequired,
   handleChangeView: PropTypes.func,
+  handleRemoveFilter: PropTypes.func,
   views: PropTypes.array,
   displayExport: PropTypes.bool,
   displayImport: PropTypes.bool,
   keyword: PropTypes.string,
+  filters: PropTypes.object,
   sortBy: PropTypes.string.isRequired,
   orderAsc: PropTypes.bool.isRequired,
   dataColumns: PropTypes.object.isRequired,

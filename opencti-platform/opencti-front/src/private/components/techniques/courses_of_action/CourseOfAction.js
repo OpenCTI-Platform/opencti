@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import CourseOfActionOverview from './CourseOfActionOverview';
+import CourseOfActionDetails from './CourseOfActionDetails';
 import CourseOfActionEdition from './CourseOfActionEdition';
 import CourseOfActionPopover from './CourseOfActionPopover';
 import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
@@ -38,10 +39,13 @@ class CourseOfActionComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={4}>
             <CourseOfActionOverview courseOfAction={courseOfAction} />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={4}>
+            <CourseOfActionDetails courseOfAction={courseOfAction} />
+          </Grid>
+          <Grid item={true} xs={4}>
             <EntityExternalReferences entityId={courseOfAction.id} />
           </Grid>
         </Grid>
@@ -87,6 +91,7 @@ const CourseOfAction = createFragmentContainer(CourseOfActionComponent, {
       name
       alias
       ...CourseOfActionOverview_courseOfAction
+      ...CourseOfActionDetails_courseOfAction
     }
   `,
 });
