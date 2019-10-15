@@ -84,7 +84,7 @@ class CampaignPopover extends Component {
     commitMutation({
       mutation: CampaignPopoverDeletionMutation,
       variables: {
-        id: this.props.campaignId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -104,7 +104,7 @@ class CampaignPopover extends Component {
   }
 
   render() {
-    const { classes, t, campaignId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
@@ -159,7 +159,7 @@ class CampaignPopover extends Component {
         >
           <QueryRenderer
             query={campaignEditionQuery}
-            variables={{ id: campaignId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
@@ -180,7 +180,7 @@ class CampaignPopover extends Component {
 }
 
 CampaignPopover.propTypes = {
-  campaignId: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

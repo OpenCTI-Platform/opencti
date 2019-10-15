@@ -5,6 +5,7 @@ import Users from './Users';
 import Groups from './Groups';
 import MarkingDefinitions from './MarkingDefinitions';
 import KillChainPhases from './KillChainPhases';
+import About from './About';
 import Attributes from './Attributes';
 import Tags from './Tags';
 import { BoundaryRoute } from '../Error';
@@ -29,16 +30,21 @@ const Root = () => (
       path="/dashboard/settings/attributes"
       render={() => <Redirect to="/dashboard/settings/attributes/tags" />}
     />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/attributes/tags"
-        component={Tags}
-      />
+    <BoundaryRoute
+      exact
+      path="/dashboard/settings/attributes/tags"
+      component={Tags}
+    />
     <BoundaryRoute
       exact
       path="/dashboard/settings/attributes/:attributeLabel"
       component={Attributes}
     />
+    <BoundaryRoute
+      exact
+      path="/dashboard/settings/about"
+      component={About}
+    />    
   </Switch>
 );
 

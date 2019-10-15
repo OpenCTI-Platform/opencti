@@ -84,7 +84,7 @@ class ToolPopover extends Component {
     commitMutation({
       mutation: ToolPopoverDeletionMutation,
       variables: {
-        id: this.props.toolId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -104,7 +104,7 @@ class ToolPopover extends Component {
   }
 
   render() {
-    const { classes, t, toolId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
@@ -159,7 +159,7 @@ class ToolPopover extends Component {
         >
           <QueryRenderer
             query={toolEditionQuery}
-            variables={{ id: toolId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
@@ -180,7 +180,7 @@ class ToolPopover extends Component {
 }
 
 ToolPopover.propTypes = {
-  toolId: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

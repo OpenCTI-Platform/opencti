@@ -7,9 +7,10 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import CampaignHeader from './CampaignHeader';
+import CampaignPopover from './CampaignPopover';
 import StixRelation from '../../common/stix_relations/StixRelation';
 import EntityStixObservables from '../../stix_observables/EntityStixObservables';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -42,7 +43,10 @@ class CampaignObservablesComponent extends Component {
             : classes.container
         }
       >
-        <CampaignHeader campaign={campaign} />
+        <StixDomainEntityHeader
+          stixDomainEntity={campaign}
+          PopoverComponent={<CampaignPopover />}
+        />
         <Route
           exact
           path="/dashboard/threats/campaigns/:campaignId/observables/relations/:relationId"
@@ -87,7 +91,8 @@ const CampaignObservables = createFragmentContainer(
     campaign: graphql`
       fragment CampaignObservables_campaign on Campaign {
         id
-        ...CampaignHeader_campaign
+        name
+        alias
       }
     `,
   },

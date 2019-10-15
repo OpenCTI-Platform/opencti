@@ -6,14 +6,15 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import AttackPatternHeader from './AttackPatternHeader';
 import AttackPatternOverview from './AttackPatternOverview';
 import AttackPatternDetails from './AttackPatternDetails';
 import AttackPatternEdition from './AttackPatternEdition';
+import AttackPatternPopover from './AttackPatternPopover';
 import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
 import EntityCoursesOfAction from '../courses_of_action/EntityCoursesOfAction';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -29,7 +30,10 @@ class AttackPatternComponent extends Component {
     const { classes, attackPattern } = this.props;
     return (
       <div className={classes.container}>
-        <AttackPatternHeader attackPattern={attackPattern} />
+        <StixDomainEntityHeader
+          stixDomainEntity={attackPattern}
+          PopoverComponent={<AttackPatternPopover />}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -80,7 +84,8 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
   attackPattern: graphql`
     fragment AttackPattern_attackPattern on AttackPattern {
       id
-      ...AttackPatternHeader_attackPattern
+      name
+      alias
       ...AttackPatternOverview_attackPattern
       ...AttackPatternDetails_attackPattern
     }

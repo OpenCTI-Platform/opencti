@@ -6,14 +6,15 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import PersonHeader from './PersonHeader';
 import PersonOverview from './PersonOverview';
 import PersonDetails from './PersonDetails';
 import PersonEdition from './PersonEdition';
+import PersonPopover from './PersonPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -29,7 +30,10 @@ class PersonComponent extends Component {
     const { classes, person } = this.props;
     return (
       <div className={classes.container}>
-        <PersonHeader person={person} />
+        <StixDomainEntityHeader
+          stixDomainEntity={person}
+          PopoverComponent={<PersonPopover />}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -77,7 +81,8 @@ const Person = createFragmentContainer(PersonComponent, {
   person: graphql`
     fragment Person_person on User {
       id
-      ...PersonHeader_person
+      name
+      alias
       ...PersonOverview_person
       ...PersonDetails_person
     }

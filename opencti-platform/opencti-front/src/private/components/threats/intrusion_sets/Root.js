@@ -27,7 +27,6 @@ const intrusionSetQuery = graphql`
   query RootIntrusionSetQuery($id: String!) {
     intrusionSet(id: $id) {
       ...IntrusionSet_intrusionSet
-      ...IntrusionSetHeader_intrusionSet
       ...IntrusionSetOverview_intrusionSet
       ...IntrusionSetDetails_intrusionSet
       ...IntrusionSetReports_intrusionSet

@@ -84,7 +84,7 @@ class IncidentPopover extends Component {
     commitMutation({
       mutation: IncidentPopoverDeletionMutation,
       variables: {
-        id: this.props.incidentId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -104,7 +104,7 @@ class IncidentPopover extends Component {
   }
 
   render() {
-    const { classes, t, incidentId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
@@ -159,7 +159,7 @@ class IncidentPopover extends Component {
         >
           <QueryRenderer
             query={incidentEditionQuery}
-            variables={{ id: incidentId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 // Done
@@ -182,7 +182,7 @@ class IncidentPopover extends Component {
 }
 
 IncidentPopover.propTypes = {
-  incidentId: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

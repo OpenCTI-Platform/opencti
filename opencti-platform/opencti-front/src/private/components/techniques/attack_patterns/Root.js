@@ -26,7 +26,6 @@ const attackPatternQuery = graphql`
   query RootAttackPatternQuery($id: String!) {
     attackPattern(id: $id) {
       ...AttackPattern_attackPattern
-      ...AttackPatternHeader_attackPattern
       ...AttackPatternOverview_attackPattern
       ...AttackPatternDetails_attackPattern
       ...AttackPatternReports_attackPattern

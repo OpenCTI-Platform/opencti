@@ -110,6 +110,12 @@ const client = new Grakn(
 );
 let session = null;
 
+export const getGraknVersion = async () => {
+  // TODO: It seems that Grakn server does not expose its version yet:
+  // https://github.com/graknlabs/client-nodejs/issues/47
+  return '1.5.8';
+};
+
 export const takeReadTx = async (retry = false) => {
   if (session === null) {
     session = await client.session('grakn');

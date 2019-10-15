@@ -9,7 +9,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, pathOr, pipe, map, pluck, union, assoc,
+  compose, pathOr, pipe, map, pluck, assoc,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -19,9 +19,6 @@ import { fetchQuery, commitMutation } from '../../../relay/environment';
 import Autocomplete from '../../../components/Autocomplete';
 import TextField from '../../../components/TextField';
 import { markingDefinitionsSearchQuery } from '../settings/MarkingDefinitions';
-import IdentityCreation, {
-  identityCreationIdentitiesSearchQuery,
-} from '../common/identities/IdentityCreation';
 
 const styles = theme => ({
   drawerPaper: {
@@ -94,9 +91,6 @@ class WorkspaceCreation extends Component {
     super(props);
     this.state = {
       open: false,
-      identities: [],
-      identityCreation: false,
-      identityInput: '',
       markingDefinitions: [],
     };
   }
@@ -107,27 +101,6 @@ class WorkspaceCreation extends Component {
 
   handleClose() {
     this.setState({ open: false });
-  }
-
-  searchIdentities(event) {
-    fetchQuery(identityCreationIdentitiesSearchQuery, {
-      search: event.target.value,
-      first: 10,
-    }).then((data) => {
-      const identities = pipe(
-        pathOr([], ['identities', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
-      )(data);
-      this.setState({ identities: union(this.state.identities, identities) });
-    });
-  }
-
-  handleOpenIdentityCreation(inputValue) {
-    this.setState({ identityCreation: true, identityInput: inputValue });
-  }
-
-  handleCloseIdentityCreation() {
-    this.setState({ identityCreation: false });
   }
 
   searchMarkingDefinitions(event) {
@@ -214,12 +187,7 @@ class WorkspaceCreation extends Component {
               validationSchema={workspaceValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
-              render={({
-                submitForm,
-                handleReset,
-                isSubmitting,
-                setFieldValue,
-              }) => (
+              render={({ submitForm, handleReset, isSubmitting }) => (
                 <div>
                   <Form style={{ margin: '20px 0 20px 0' }}>
                     <Field
@@ -265,18 +233,6 @@ class WorkspaceCreation extends Component {
                       </Button>
                     </div>
                   </Form>
-                  <IdentityCreation
-                    contextual={true}
-                    inputValue={this.state.identityInput}
-                    open={this.state.identityCreation}
-                    handleClose={this.handleCloseIdentityCreation.bind(this)}
-                    creationCallback={(data) => {
-                      setFieldValue('createdByRef', {
-                        label: data.identityAdd.name,
-                        value: data.identityAdd.id,
-                      });
-                    }}
-                  />
                 </div>
               )}
             />

@@ -26,7 +26,6 @@ const personQuery = graphql`
   query RootPersonQuery($id: String!) {
     user(id: $id) {
       ...Person_person
-      ...PersonHeader_person
       ...PersonOverview_person
       ...PersonDetails_person
       ...PersonReports_person

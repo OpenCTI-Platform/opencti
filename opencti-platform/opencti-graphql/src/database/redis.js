@@ -25,6 +25,12 @@ if (client) {
   });
 }
 const isActive = () => client && client.status === 'ready';
+
+export const getRedisVersion = () => {
+  if (isActive()) return client.serverInfo.redis_version;
+  return 'Disconnected';
+};
+
 /**
  * Delete the user context for a specific edition
  * @param user the user

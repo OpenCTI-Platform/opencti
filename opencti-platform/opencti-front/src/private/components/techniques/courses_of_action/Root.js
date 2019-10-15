@@ -24,7 +24,6 @@ const courseOfActionQuery = graphql`
   query RootCourseOfActionQuery($id: String!) {
     courseOfAction(id: $id) {
       ...CourseOfAction_courseOfAction
-      ...CourseOfActionHeader_courseOfAction
       ...CourseOfActionOverview_courseOfAction
       ...CourseOfActionDetails_courseOfAction
     }

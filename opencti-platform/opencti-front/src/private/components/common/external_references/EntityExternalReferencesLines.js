@@ -12,7 +12,13 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
+import Button from '@material-ui/core/Button';
 import Avatar from '@material-ui/core/Avatar';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogActions from '@material-ui/core/DialogActions';
 import { LinkOff } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -48,6 +54,37 @@ const styles = theme => ({
 });
 
 class EntityExternalReferencesLinesContainer extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      displayDialog: false,
+      removeExternalReference: null,
+      removing: false,
+    };
+  }
+
+  handleOpenDialog(externalReferenceEdge) {
+    const openedState = {
+      displayDialog: true,
+      removeExternalReference: externalReferenceEdge,
+    }
+    this.setState(openedState);
+  }
+
+  handleCloseDialog() {
+    const closedState = {
+      displayDialog: false,
+      removeExternalReference: null,
+    }
+    this.setState(closedState);
+  }
+
+  handleRemoval() {
+    this.setState({ removing: true });
+    this.removeExternalReference(this.state.removeExternalReference);
+  }
+
   removeExternalReference(externalReferenceEdge) {
     commitMutation({
       mutation: externalReferenceMutationRelationDelete,
@@ -64,6 +101,10 @@ class EntityExternalReferencesLinesContainer extends Component {
           this.props.paginationOptions,
         );
         ConnectionHandler.deleteNode(conn, externalReferenceEdge.node.id);
+      },
+      onCompleted: () => {
+        this.setState({ removing: false });
+        this.handleCloseDialog();
       },
     });
   }
@@ -118,7 +159,7 @@ class EntityExternalReferencesLinesContainer extends Component {
                     <ListItemSecondaryAction>
                       <IconButton
                         aria-label="Remove"
-                        onClick={this.removeExternalReference.bind(
+                        onClick={this.handleOpenDialog.bind(
                           this,
                           externalReferenceEdge,
                         )}
@@ -148,7 +189,7 @@ class EntityExternalReferencesLinesContainer extends Component {
                   <ListItemSecondaryAction>
                     <IconButton
                       aria-label="Remove"
-                      onClick={this.removeExternalReference.bind(
+                      onClick={this.handleOpenDialog.bind(
                         this,
                         externalReferenceEdge,
                       )}
@@ -161,6 +202,39 @@ class EntityExternalReferencesLinesContainer extends Component {
             })}
           </List>
         </Paper>
+        <Dialog
+          open={this.state.displayDialog}
+          keepMounted={true}
+          onClose={this.handleCloseDialog.bind(this)}
+        >
+          <DialogTitle>{t('Confirmation required')}</DialogTitle>
+          <DialogContent>
+            { this.state.removeExternalReference != null &&
+              <DialogContentText>
+                {t('Removing')} '{truncate(this.state.removeExternalReference.node.source_name, 30)}'.
+              </DialogContentText>
+            }
+            <DialogContentText>
+              {t('Do you want to remove this external reference?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseDialog.bind(this)}
+              color="primary"
+              disabled={this.state.removing}
+            >
+              {t('No')}
+            </Button>
+            <Button
+              onClick={this.handleRemoval.bind(this)}
+              color="primary"
+              disabled={this.state.removing}
+            >
+              {t('Yes')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }

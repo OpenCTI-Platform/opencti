@@ -9,8 +9,9 @@ import inject18n from '../../../../components/i18n';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
 import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import AttackPatternHeader from './AttackPatternHeader';
+import AttackPatternPopover from './AttackPatternPopover';
 import AttackPatternKnowledgeBar from './AttackPatternKnowledgeBar';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -27,7 +28,10 @@ class AttackPatternKnowledgeComponent extends Component {
     const link = `/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <AttackPatternHeader attackPattern={attackPattern} />
+        <StixDomainEntityHeader
+          stixDomainEntity={attackPattern}
+          PopoverComponent={<AttackPatternPopover />}
+        />
         <AttackPatternKnowledgeBar attackPatternId={attackPattern.id} />
         <Route
           exact
@@ -134,7 +138,8 @@ const AttackPatternKnowledge = createFragmentContainer(
     attackPattern: graphql`
       fragment AttackPatternKnowledge_attackPattern on AttackPattern {
         id
-        ...AttackPatternHeader_attackPattern
+        name
+        alias
       }
     `,
   },

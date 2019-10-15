@@ -127,6 +127,24 @@ class TopMenuSettings extends Component {
         >
           {t('Attributes & Tags')}
         </Button>
+        <Button
+          component={Link}
+          to="/dashboard/settings/about"
+          variant={
+            location.pathname.includes('/dashboard/settings/about')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/dashboard/settings/about')
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('About')}
+        </Button>
       </div>
     );
   }
