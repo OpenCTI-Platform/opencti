@@ -16,6 +16,7 @@ import {
 import {
   createdByRef,
   markingDefinitions,
+  tags,
   reports,
   exports,
   stixRelations,
@@ -37,6 +38,7 @@ const userResolvers = {
     groups: (user, args) => groups(user.id, args),
     token: (user, args, context) => token(user.id, args, context),
     markingDefinitions: (user, args) => markingDefinitions(user.id, args),
+    tags: (user, args) => tags(user.id, args),
     reports: (user, args) => reports(user.id, args),
     exports: (user, args) => exports(user.id, args),
     stixRelations: (user, args) => stixRelations(user.id, args),

@@ -15,7 +15,7 @@ import EntityCoursesOfActionLines, {
   entityCoursesOfActionLinesQuery,
 } from './EntityCoursesOfActionLines';
 
-const styles = theme => ({
+const styles = (theme) => ({
   paper: {
     minHeight: '100%',
     margin: '3px 0 0 0',

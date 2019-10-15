@@ -18,12 +18,13 @@ import {
   WS_ACTIVATED,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
+import ColorPickerField from '../../../../components/ColorPickerField';
 import {
   SubscriptionAvatars,
   SubscriptionFocus,
 } from '../../../../components/Subscription';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',
@@ -87,7 +88,7 @@ const markingDefinitionEditionFocus = graphql`
   }
 `;
 
-const markingDefinitionValidation = t => Yup.object().shape({
+const markingDefinitionValidation = (t) => Yup.object().shape({
   definition_type: Yup.string().required(t('This field is required')),
   definition: Yup.string().required(t('This field is required')),
   color: Yup.string().required(t('This field is required')),
@@ -209,7 +210,7 @@ class MarkingDefinitionEditionContainer extends Component {
                 />
                 <Field
                   name="color"
-                  component={TextField}
+                  component={ColorPickerField}
                   label={t('Color')}
                   fullWidth={true}
                   style={{ marginTop: 10 }}

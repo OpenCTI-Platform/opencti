@@ -84,7 +84,7 @@ class PersonPopover extends Component {
     commitMutation({
       mutation: PersonPopoverDeletionMutation,
       variables: {
-        id: this.props.personId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -104,7 +104,7 @@ class PersonPopover extends Component {
   }
 
   render() {
-    const { classes, t, personId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
@@ -159,7 +159,7 @@ class PersonPopover extends Component {
         >
           <QueryRenderer
             query={personEditionQuery}
-            variables={{ id: personId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
@@ -180,7 +180,7 @@ class PersonPopover extends Component {
 }
 
 PersonPopover.propTypes = {
-  personId: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

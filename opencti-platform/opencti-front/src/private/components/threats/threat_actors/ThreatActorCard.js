@@ -13,8 +13,9 @@ import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
 import { Public } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
+import StixObjectTags from '../../common/stix_object/StixObjectTags';
 
-const styles = theme => ({
+const styles = (theme) => ({
   card: {
     width: '100%',
     height: 170,
@@ -42,18 +43,25 @@ const styles = theme => ({
     height: '100%',
   },
   header: {
+    height: 55,
     paddingBottom: 0,
     marginBottom: 0,
   },
   content: {
     width: '100%',
-    height: 87,
-    overflow: 'hidden',
     paddingTop: 0,
+  },
+  description: {
+    height: 70,
+    overflow: 'hidden',
+  },
+  tags: {
+    height: 45,
+    paddingTop: 7,
   },
   contentDummy: {
     width: '100%',
-    height: 87,
+    height: 120,
     overflow: 'hidden',
     marginTop: 15,
   },
@@ -77,14 +85,15 @@ const styles = theme => ({
 class ThreatActorCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, node,
+      t, fsd, classes, node, onTagClick,
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/threats/threat_actors/${node.id}`}>
+          to={`/dashboard/threats/threat_actors/${node.id}`}
+        >
           <CardHeader
             classes={{ root: classes.header }}
             avatar={
@@ -94,12 +103,20 @@ class ThreatActorCardComponent extends Component {
             subheader={`${t('Updated the')} ${fsd(node.modified)}`}
             action={<Public className={classes.icon} />}
           />
-          <CardContent classes={{ root: classes.content }}>
-            <Markdown
-              source={node.description}
-              disallowedTypes={['link', 'linkReference']}
-              unwrapDisallowed={true}
-            />
+          <CardContent className={classes.content}>
+            <div className={classes.description}>
+              <Markdown
+                source={node.description}
+                disallowedTypes={['link', 'linkReference']}
+                unwrapDisallowed={true}
+              />
+            </div>
+            <div className={classes.tags}>
+              <StixObjectTags
+                tags={node.tags}
+                onClick={onTagClick.bind(this)}
+              />
+            </div>
           </CardContent>
         </CardActionArea>
       </Card>
@@ -112,6 +129,7 @@ ThreatActorCardComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
+  onTagClick: PropTypes.func,
 };
 
 const ThreatActorCardFragment = createFragmentContainer(
@@ -124,6 +142,27 @@ const ThreatActorCardFragment = createFragmentContainer(
         description
         created
         modified
+        tags {
+          edges {
+            node {
+              id
+              tag_type
+              value
+              color
+            }
+            relation {
+              id
+            }
+          }
+        }
+        markingDefinitions {
+          edges {
+            node {
+              id
+              definition
+            }
+          }
+        }
       }
     `,
   },

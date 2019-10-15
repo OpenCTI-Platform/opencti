@@ -9,8 +9,9 @@ import inject18n from '../../../../components/i18n';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
 import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import ThreatActorHeader from './ThreatActorHeader';
+import ThreatActorPopover from './ThreatActorPopover';
 import ThreatActorKnowledgeBar from './ThreatActorKnowledgeBar';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -27,7 +28,10 @@ class ThreatActorKnowledgeComponent extends Component {
     const link = `/dashboard/threats/threat_actors/${threatActor.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <ThreatActorHeader threatActor={threatActor} />
+        <StixDomainEntityHeader
+          stixDomainEntity={threatActor}
+          PopoverComponent={<ThreatActorPopover />}
+        />
         <ThreatActorKnowledgeBar threatActorId={threatActor.id} />
         <Route
           exact
@@ -129,6 +133,7 @@ class ThreatActorKnowledgeComponent extends Component {
               targetEntityTypes={[
                 'Organization',
                 'Sector',
+                'City',
                 'Country',
                 'Region',
                 'User',
@@ -217,7 +222,8 @@ const ThreatActorKnowledge = createFragmentContainer(
     threatActor: graphql`
       fragment ThreatActorKnowledge_threatActor on ThreatActor {
         id
-        ...ThreatActorHeader_threatActor
+        name
+        alias
       }
     `,
   },

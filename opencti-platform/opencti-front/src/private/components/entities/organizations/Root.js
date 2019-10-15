@@ -26,8 +26,8 @@ const organizationQuery = graphql`
   query RootOrganizationQuery($id: String!) {
     organization(id: $id) {
       ...Organization_organization
-      ...OrganizationHeader_organization
       ...OrganizationOverview_organization
+      ...OrganizationDetails_organization
       ...OrganizationReports_organization
       ...OrganizationKnowledge_organization
     }

@@ -15,9 +15,9 @@ import { Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import ThreatActorEditionOverview from './ThreatActorEditionOverview';
-import ThreatActorEditionIdentity from './ThreatActorEditionIdentity';
+import ThreatActorEditionDetails from './ThreatActorEditionDetails';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',
@@ -90,7 +90,7 @@ class ThreatActorEditionContainer extends Component {
               onChange={this.handleChangeTab.bind(this)}
             >
               <Tab label={t('Overview')} />
-              <Tab label={t('Identity')} />
+              <Tab label={t('Details')} />
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
@@ -101,7 +101,7 @@ class ThreatActorEditionContainer extends Component {
             />
           )}
           {this.state.currentTab === 1 && (
-            <ThreatActorEditionIdentity
+            <ThreatActorEditionDetails
               threatActor={this.props.threatActor}
               editUsers={editUsers}
               me={me}
@@ -129,7 +129,7 @@ const ThreatActorEditionFragment = createFragmentContainer(
       fragment ThreatActorEditionContainer_threatActor on ThreatActor {
         id
         ...ThreatActorEditionOverview_threatActor
-        ...ThreatActorEditionIdentity_threatActor
+        ...ThreatActorEditionDetails_threatActor
         editContext {
           name
           focusOn

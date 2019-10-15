@@ -15,9 +15,9 @@ import { Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import CampaignEditionOverview from './CampaignEditionOverview';
-import CampaignEditionIdentity from './CampaignEditionIdentity';
+import CampaignEditionDetails from './CampaignEditionDetails';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',
@@ -89,7 +89,7 @@ class CampaignEditionContainer extends Component {
               onChange={this.handleChangeTab.bind(this)}
             >
               <Tab label={t('Overview')} />
-              <Tab label={t('Identity')} />
+              <Tab label={t('Details')} />
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
@@ -100,7 +100,7 @@ class CampaignEditionContainer extends Component {
             />
           )}
           {this.state.currentTab === 1 && (
-            <CampaignEditionIdentity
+            <CampaignEditionDetails
               campaign={campaign}
               editUsers={editUsers}
               me={me}
@@ -128,7 +128,7 @@ const CampaignEditionFragment = createFragmentContainer(
       fragment CampaignEditionContainer_campaign on Campaign {
         id
         ...CampaignEditionOverview_campaign
-        ...CampaignEditionIdentity_campaign
+        ...CampaignEditionDetails_campaign
         editContext {
           name
           focusOn

@@ -84,7 +84,7 @@ class IntrusionSetPopover extends Component {
     commitMutation({
       mutation: IntrusionSetPopoverDeletionMutation,
       variables: {
-        id: this.props.intrusionSetId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -104,7 +104,7 @@ class IntrusionSetPopover extends Component {
   }
 
   render() {
-    const { classes, t, intrusionSetId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
@@ -159,7 +159,7 @@ class IntrusionSetPopover extends Component {
         >
           <QueryRenderer
             query={intrusionSetEditionQuery}
-            variables={{ id: intrusionSetId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
@@ -180,7 +180,7 @@ class IntrusionSetPopover extends Component {
 }
 
 IntrusionSetPopover.propTypes = {
-  intrusionSetId: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

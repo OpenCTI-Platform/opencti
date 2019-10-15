@@ -17,6 +17,7 @@ import {
 import {
   createdByRef,
   markingDefinitions,
+  tags,
   externalReferences,
   exports,
   stixDomainEntityEditContext,
@@ -65,6 +66,7 @@ const reportResolvers = {
   Report: {
     createdByRef: report => createdByRef(report.id),
     markingDefinitions: (report, args) => markingDefinitions(report.id, args),
+    tags: (report, args) => tags(report.id, args),
     externalReferences: (report, args) => externalReferences(report.id, args),
     objectRefs: (report, args) => objectRefs(report.id, args),
     exports: (report, args) => exports(report.id, args),

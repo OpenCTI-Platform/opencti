@@ -10,7 +10,7 @@ const nbOfRowsToLoad = 25;
 
 class IncidentsLines extends Component {
   render() {
-    const { initialLoading, dataColumns, relay } = this.props;
+    const { initialLoading, dataColumns, relay, onTagClick } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -27,6 +27,7 @@ class IncidentsLines extends Component {
         DummyLineComponent={<IncidentLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
+        onTagClick={onTagClick.bind(this)}
       />
     );
   }
@@ -38,8 +39,8 @@ IncidentsLines.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
-  incidents: PropTypes.object,
   initialLoading: PropTypes.bool,
+  onTagClick: PropTypes.func,
 };
 
 export const incidentsLinesQuery = graphql`
@@ -49,6 +50,7 @@ export const incidentsLinesQuery = graphql`
     $cursor: ID
     $orderBy: IncidentsOrdering
     $orderMode: OrderingMode
+    $filters: IncidentsFiltering
   ) {
     ...IncidentsLines_data
       @arguments(
@@ -57,6 +59,7 @@ export const incidentsLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -72,6 +75,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "IncidentsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "IncidentsFiltering" }
         ) {
         incidents(
           search: $search
@@ -79,6 +83,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_incidents") {
           edges {
             node {
@@ -115,6 +120,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: incidentsLinesQuery,

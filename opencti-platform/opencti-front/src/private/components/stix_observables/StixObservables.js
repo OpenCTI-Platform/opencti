@@ -93,7 +93,7 @@ class StixObservables extends Component {
         width: '15%',
         isSortable: true,
       },
-      marking: {
+      markingDefinitions: {
         label: 'Marking',
         width: '10%',
         isSortable: true,
@@ -121,7 +121,7 @@ class StixObservables extends Component {
           width: '15%',
           isSortable: true,
         },
-        marking: {
+        markingDefinitions: {
           label: 'Marking',
           width: '10%',
           isSortable: true,

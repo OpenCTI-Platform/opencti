@@ -2,6 +2,7 @@ import { addIdentity, findAll, findById } from '../domain/identity';
 import {
   createdByRef,
   markingDefinitions,
+  tags,
   reports,
   exports,
   stixRelations,
@@ -31,6 +32,7 @@ const identityResolvers = {
     createdByRef: identity => createdByRef(identity.id),
     markingDefinitions: (identity, args) =>
       markingDefinitions(identity.id, args),
+    tags: (identity, args) => tags(identity.id, args),
     reports: (identity, args) => reports(identity.id, args),
     exports: (identity, args) => exports(identity.id, args),
     stixRelations: (identity, args) => stixRelations(identity.id, args)

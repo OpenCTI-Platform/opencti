@@ -10,7 +10,7 @@ const nbOfCardsToLoad = 25;
 
 class IncidentsCards extends Component {
   render() {
-    const { initialLoading, relay } = this.props;
+    const { initialLoading, relay, onTagClick } = this.props;
     return (
       <ListCardsContent
         initialLoading={initialLoading}
@@ -26,6 +26,7 @@ class IncidentsCards extends Component {
         CardComponent={<IncidentCard />}
         DummyCardComponent={<IncidentCardDummy />}
         nbOfCardsToLoad={nbOfCardsToLoad}
+        onTagClick={onTagClick.bind(this)}
       />
     );
   }
@@ -39,6 +40,7 @@ IncidentsCards.propTypes = {
   incidents: PropTypes.object,
   initialLoading: PropTypes.bool,
   searchTerm: PropTypes.string,
+  onTagClick: PropTypes.func,
 };
 
 export const incidentsCardsQuery = graphql`
@@ -48,6 +50,7 @@ export const incidentsCardsQuery = graphql`
     $cursor: ID
     $orderBy: IncidentsOrdering
     $orderMode: OrderingMode
+    $filters: IncidentsFiltering
   ) {
     ...IncidentsCards_data
       @arguments(
@@ -56,6 +59,7 @@ export const incidentsCardsQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -71,6 +75,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "IncidentsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "IncidentsFiltering" }
         ) {
         incidents(
           search: $search
@@ -78,6 +83,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_incidents") {
           edges {
             node {
@@ -114,6 +120,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: incidentsCardsQuery,

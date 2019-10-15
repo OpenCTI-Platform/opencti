@@ -1,18 +1,19 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import RegionHeader from './RegionHeader';
 import RegionOverview from './RegionOverview';
 import RegionEdition from './RegionEdition';
+import RegionPopover from './RegionPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -28,7 +29,10 @@ class RegionComponent extends Component {
     const { classes, region } = this.props;
     return (
       <div className={classes.container}>
-        <RegionHeader region={region} />
+        <StixDomainEntityHeader
+          stixDomainEntity={region}
+          PopoverComponent={<RegionPopover />}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -73,7 +77,8 @@ const Region = createFragmentContainer(RegionComponent, {
   region: graphql`
     fragment Region_region on Region {
       id
-      ...RegionHeader_region
+      name
+      alias
       ...RegionOverview_region
     }
   `,

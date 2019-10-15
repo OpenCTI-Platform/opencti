@@ -26,7 +26,6 @@ const vulnerabilityQuery = graphql`
   query RootVulnerabilityQuery($id: String!) {
     vulnerability(id: $id) {
       ...Vulnerability_vulnerability
-      ...VulnerabilityHeader_vulnerability
       ...VulnerabilityOverview_vulnerability
       ...VulnerabilityReports_vulnerability
       ...VulnerabilityKnowledge_vulnerability

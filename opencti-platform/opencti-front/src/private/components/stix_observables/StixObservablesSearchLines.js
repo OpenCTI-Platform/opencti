@@ -16,11 +16,13 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { ExpandMore } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { truncate } from '../../../utils/String';
 import ItemIcon from '../../../components/ItemIcon';
 import inject18n from '../../../components/i18n';
+import StixObjectTags from '../common/stix_object/StixObjectTags';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     padding: '0 0 20px 0',
   },
@@ -80,13 +82,13 @@ class StixObservablesContainer extends Component {
 
   render() {
     const { t, classes, data } = this.props;
-    const stixObservablesNodes = map(n => n.node, data.stixObservables.edges);
-    const byType = groupBy(stixObservable => stixObservable.entity_type);
+    const stixObservablesNodes = map((n) => n.node, data.stixObservables.edges);
+    const byType = groupBy((stixObservable) => stixObservable.entity_type);
     const stixObservables = byType(stixObservablesNodes);
     const stixObservablesTypes = keys(stixObservables);
     return (
       <div className={classes.container}>
-        {stixObservablesTypes.map(type => (
+        {stixObservablesTypes.map((type) => (
           <ExpansionPanel
             key={type}
             expanded={this.isExpanded(
@@ -112,7 +114,7 @@ class StixObservablesContainer extends Component {
               classes={{ root: classes.expansionPanelContent }}
             >
               <List classes={{ root: classes.list }}>
-                {stixObservables[type].map(stixObservable => (
+                {stixObservables[type].map((stixObservable) => (
                   <ListItem
                     key={stixObservable.id}
                     classes={{ root: classes.menuItem }}
@@ -128,6 +130,12 @@ class StixObservablesContainer extends Component {
                       primary={stixObservable.observable_value}
                       secondary={truncate(stixObservable.description, 200)}
                     />
+                    <ListItemSecondaryAction>
+                      <StixObjectTags
+                        tags={stixObservable.tags}
+                        variant="inSearch"
+                      />
+                    </ListItemSecondaryAction>
                   </ListItem>
                 ))}
               </List>
@@ -192,6 +200,19 @@ const StixObservablesSearchLines = createPaginationContainer(
               id
               entity_type
               observable_value
+              tags {
+                edges {
+                  node {
+                    id
+                    tag_type
+                    value
+                    color
+                  }
+                  relation {
+                    id
+                  }
+                }
+              }
             }
           }
         }

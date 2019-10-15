@@ -104,7 +104,7 @@ class EntityCoursesOfActionLinesContainer extends Component {
                   </ListItemIcon>
                   <ListItemText
                     primary={courseOfAction.name}
-                    secondary={truncate(courseOfAction.description, 120)}
+                    secondary={truncate(courseOfAction.description, 60)}
                   />
                   <ListItemSecondaryAction>
                     <IconButton

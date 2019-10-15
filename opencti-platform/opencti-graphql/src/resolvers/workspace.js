@@ -6,6 +6,7 @@ import {
   findById,
   workspacesNumber,
   markingDefinitions,
+  tags,
   ownedBy,
   objectRefs,
   workspaceEditContext,
@@ -29,6 +30,8 @@ const workspaceResolvers = {
     ownedBy: workspace => ownedBy(workspace.id),
     markingDefinitions: (workspace, args) =>
       markingDefinitions(workspace.id, args),
+    tags: (workspace, args) =>
+      tags(workspace.id, args),
     objectRefs: (workspace, args) => objectRefs(workspace.id, args),
     editContext: workspace => fetchEditContext(workspace.id)
   },

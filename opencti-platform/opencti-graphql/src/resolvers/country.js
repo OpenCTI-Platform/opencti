@@ -2,6 +2,7 @@ import { addCountry, findAll, findById } from '../domain/country';
 import {
   createdByRef,
   markingDefinitions,
+  tags,
   reports,
   exports,
   stixRelations,
@@ -22,6 +23,7 @@ const countryResolvers = {
   Country: {
     createdByRef: country => createdByRef(country.id),
     markingDefinitions: (country, args) => markingDefinitions(country.id, args),
+    tags: (country, args) => tags(country.id, args),
     reports: (country, args) => reports(country.id, args),
     exports: (country, args) => exports(country.id, args),
     stixRelations: (country, args) => stixRelations(country.id, args),

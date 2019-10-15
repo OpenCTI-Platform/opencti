@@ -11,8 +11,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
 import { ProgressWrench } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
+import StixObjectTags from '../../common/stix_object/StixObjectTags';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
@@ -50,7 +51,7 @@ const styles = theme => ({
 class CourseOfActionLineComponent extends Component {
   render() {
     const {
-      fd, classes, node, dataColumns,
+      fd, classes, node, dataColumns, onTagClick,
     } = this.props;
     return (
       <ListItem
@@ -70,6 +71,16 @@ class CourseOfActionLineComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 {node.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <StixObjectTags
+                  variant="inList"
+                  tags={node.tags}
+                  onClick={onTagClick.bind(this)}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -99,6 +110,7 @@ CourseOfActionLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
+  onTagClick: PropTypes.func,
 };
 
 const CourseOfActionLineFragment = createFragmentContainer(
@@ -110,6 +122,19 @@ const CourseOfActionLineFragment = createFragmentContainer(
         name
         created
         modified
+        tags {
+          edges {
+            node {
+              id
+              tag_type
+              value
+              color
+            }
+            relation {
+              id
+            }
+          }
+        }
       }
     `,
   },
@@ -136,6 +161,12 @@ class CourseOfActionLineDummyComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <div className="fakeItem" style={{ width: '90%' }} />
               </div>
               <div
                 className={classes.bodyItem}

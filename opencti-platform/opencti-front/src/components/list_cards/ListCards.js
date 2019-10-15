@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, toPairs } from 'ramda';
+import { compose, map, toPairs } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import FormControl from '@material-ui/core/FormControl';
@@ -13,6 +13,7 @@ import {
   TableChart,
   Dashboard,
 } from '@material-ui/icons';
+import Chip from '@material-ui/core/Chip';
 import StixDomainEntitiesImportData from '../../private/components/common/stix_domain_entities/StixDomainEntitiesImportData';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
@@ -41,6 +42,10 @@ const styles = () => ({
     float: 'left',
     margin: '-5px 0 0 15px',
   },
+  filters: {
+    float: 'left',
+    margin: '2px 0 0 15px',
+  },
 });
 
 class ListCards extends Component {
@@ -58,8 +63,10 @@ class ListCards extends Component {
       classes,
       handleSearch,
       handleChangeView,
+      handleRemoveFilter,
       dataColumns,
       keyword,
+      filters,
       sortBy,
       orderAsc,
       displayImport,
@@ -86,8 +93,9 @@ class ListCards extends Component {
               inputProps={{
                 name: 'sort-by',
                 id: 'sort-by',
-              }}>
-              {toPairs(dataColumns).map(dataColumn => (
+              }}
+            >
+              {toPairs(dataColumns).map((dataColumn) => (
                 <MenuItem key={dataColumn[0]} value={dataColumn[0]}>
                   {t(dataColumn[1].label)}
                 </MenuItem>
@@ -97,16 +105,34 @@ class ListCards extends Component {
           <IconButton
             aria-label="Sort by"
             onClick={this.reverse.bind(this)}
-            classes={{ root: classes.sortIcon }}>
+            classes={{ root: classes.sortIcon }}
+          >
             {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
           </IconButton>
+          <div className={classes.filters}>
+            {map(
+              (filter) => map(
+                (f) => (
+                    <Chip
+                      key={filter[0]}
+                      classes={{ root: classes.filter }}
+                      label={`${filter[0]}: ${f.value === null ? t('No tag') : f.value}`}
+                      onDelete={handleRemoveFilter.bind(this, filter[0])}
+                    />
+                ),
+                filter[1],
+              ),
+              toPairs(filters),
+            )}
+          </div>
         </div>
         <div className={classes.views}>
           <div style={{ float: 'right', marginTop: -20 }}>
             {typeof handleChangeView === 'function' ? (
               <IconButton
                 color="secondary"
-                onClick={handleChangeView.bind(this, 'cards')}>
+                onClick={handleChangeView.bind(this, 'cards')}
+              >
                 <Dashboard />
               </IconButton>
             ) : (
@@ -115,7 +141,8 @@ class ListCards extends Component {
             {typeof handleChangeView === 'function' ? (
               <IconButton
                 color="primary"
-                onClick={handleChangeView.bind(this, 'lines')}>
+                onClick={handleChangeView.bind(this, 'lines')}
+              >
                 <TableChart />
               </IconButton>
             ) : (
@@ -138,10 +165,12 @@ ListCards.propTypes = {
   handleSearch: PropTypes.func.isRequired,
   handleSort: PropTypes.func.isRequired,
   handleChangeView: PropTypes.func,
+  handleRemoveFilter: PropTypes.func,
   views: PropTypes.array,
   displayExport: PropTypes.bool,
   displayImport: PropTypes.bool,
   keyword: PropTypes.string,
+  filters: PropTypes.object,
   sortBy: PropTypes.string.isRequired,
   orderAsc: PropTypes.bool.isRequired,
   dataColumns: PropTypes.object.isRequired,

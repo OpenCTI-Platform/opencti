@@ -10,7 +10,9 @@ const nbOfRowsToLoad = 25;
 
 class AttackPatternsLines extends Component {
   render() {
-    const { initialLoading, dataColumns, relay } = this.props;
+    const {
+      initialLoading, dataColumns, relay, onTagClick,
+    } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -27,6 +29,7 @@ class AttackPatternsLines extends Component {
         DummyLineComponent={<AttackPatternLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
+        onTagClick={onTagClick.bind(this)}
       />
     );
   }
@@ -38,8 +41,8 @@ AttackPatternsLines.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
-  attackPatterns: PropTypes.object,
   initialLoading: PropTypes.bool,
+  onTagClick: PropTypes.func,
 };
 
 export const attackPatternsLinesQuery = graphql`
@@ -49,6 +52,7 @@ export const attackPatternsLinesQuery = graphql`
     $cursor: ID
     $orderBy: AttackPatternsOrdering
     $orderMode: OrderingMode
+    $filters: AttackPatternsFiltering
   ) {
     ...AttackPatternsLines_data
       @arguments(
@@ -57,6 +61,7 @@ export const attackPatternsLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -73,6 +78,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "AttackPatternsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "AttackPatternsFiltering" }
         ) {
         attackPatterns(
           search: $search
@@ -80,6 +86,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_attackPatterns") {
           edges {
             node {
@@ -123,6 +130,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: attackPatternsLinesQuery,

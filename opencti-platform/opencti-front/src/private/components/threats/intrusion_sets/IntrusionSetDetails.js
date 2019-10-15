@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
+import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
 
 const styles = () => ({
   paper: {
@@ -17,7 +18,7 @@ const styles = () => ({
   },
 });
 
-class IntrusionSetIdentityComponent extends Component {
+class IntrusionSetDetailsComponent extends Component {
   render() {
     const {
       t, fld, classes, intrusionSet,
@@ -25,10 +26,15 @@ class IntrusionSetIdentityComponent extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Identity')}
+          {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant="h3" gutterBottom={true}>
+          <StixDomainEntityTags tags={intrusionSet.tags} id={intrusionSet.id} />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('First seen')}
           </Typography>
           {fld(intrusionSet.first_seen)}
@@ -102,18 +108,18 @@ class IntrusionSetIdentityComponent extends Component {
   }
 }
 
-IntrusionSetIdentityComponent.propTypes = {
+IntrusionSetDetailsComponent.propTypes = {
   intrusionSet: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const IntrusionSetIdentity = createFragmentContainer(
-  IntrusionSetIdentityComponent,
+const IntrusionSetDetails = createFragmentContainer(
+  IntrusionSetDetailsComponent,
   {
     intrusionSet: graphql`
-      fragment IntrusionSetIdentity_intrusionSet on IntrusionSet {
+      fragment IntrusionSetDetails_intrusionSet on IntrusionSet {
         id
         first_seen
         last_seen
@@ -121,6 +127,19 @@ const IntrusionSetIdentity = createFragmentContainer(
         resource_level
         primary_motivation
         secondary_motivation
+        tags {
+          edges {
+            node {
+              id
+              tag_type
+              value
+              color
+            }
+            relation {
+              id
+            }
+          }
+        }
       }
     `,
   },
@@ -129,4 +148,4 @@ const IntrusionSetIdentity = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles),
-)(IntrusionSetIdentity);
+)(IntrusionSetDetails);

@@ -6,9 +6,10 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
-import IntrusionSetHeader from './IntrusionSetHeader';
+import IntrusionSetPopover from './IntrusionSetPopover';
 import StixRelation from '../../common/stix_relations/StixRelation';
 import EntityStixObservables from '../../stix_observables/EntityStixObservables';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -32,14 +33,19 @@ class IntrusionSetObservablesComponent extends Component {
     const { classes, intrusionSet, location } = this.props;
     const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/observables`;
     return (
-      <div className={
+      <div
+        className={
           location.pathname.includes(
             `/dashboard/threats/intrusion_sets/${intrusionSet.id}/observables/relations/`,
           )
             ? classes.containerWithoutPadding
             : classes.container
-        }>
-        <IntrusionSetHeader intrusionSet={intrusionSet} />
+        }
+      >
+        <StixDomainEntityHeader
+          stixDomainEntity={intrusionSet}
+          PopoverComponent={<IntrusionSetPopover />}
+        />
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/observables/relations/:relationId"
@@ -83,7 +89,8 @@ const IntrusionSetObservables = createFragmentContainer(
     intrusionSet: graphql`
       fragment IntrusionSetObservables_intrusionSet on IntrusionSet {
         id
-        ...IntrusionSetHeader_intrusionSet
+        name
+        alias
       }
     `,
   },

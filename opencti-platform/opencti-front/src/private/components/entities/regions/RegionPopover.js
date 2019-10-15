@@ -84,7 +84,7 @@ class RegionPopover extends Component {
     commitMutation({
       mutation: RegionPopoverDeletionMutation,
       variables: {
-        id: this.props.regionId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -104,7 +104,7 @@ class RegionPopover extends Component {
   }
 
   render() {
-    const { classes, t, regionId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
@@ -159,7 +159,7 @@ class RegionPopover extends Component {
         >
           <QueryRenderer
             query={regionEditionQuery}
-            variables={{ id: regionId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
@@ -180,7 +180,7 @@ class RegionPopover extends Component {
 }
 
 RegionPopover.propTypes = {
-  regionId: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

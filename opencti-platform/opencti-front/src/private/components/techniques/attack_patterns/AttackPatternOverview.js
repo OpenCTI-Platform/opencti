@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import * as PropTypes from 'prop-types';
+import { compose, map, pathOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
@@ -9,6 +9,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import ItemCreator from '../../../../components/ItemCreator';
+import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = () => ({
   paper: {
@@ -31,6 +32,26 @@ class AttackPatternOverviewComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant="h3" gutterBottom={true}>
+            {t('Marking')}
+          </Typography>
+          {attackPattern.markingDefinitions.edges.length > 0 ? (
+            map(
+              (markingDefinition) => (
+                <ItemMarking
+                  key={markingDefinition.node.id}
+                  label={markingDefinition.node.definition}
+                />
+              ),
+              attackPattern.markingDefinitions.edges,
+            )
+          ) : (
+            <ItemMarking label="TLP:WHITE" />
+          )}
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Creation date')}
           </Typography>
           {fld(attackPattern.created)}
@@ -83,6 +104,14 @@ const AttackPatternOverview = createFragmentContainer(
         description
         created
         modified
+        markingDefinitions {
+          edges {
+            node {
+              id
+              definition
+            }
+          }
+        }
         createdByRef {
           node {
             id

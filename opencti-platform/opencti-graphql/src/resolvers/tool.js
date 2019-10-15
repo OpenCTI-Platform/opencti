@@ -3,6 +3,7 @@ import {
   createdByRef,
   killChainPhases,
   markingDefinitions,
+  tags,
   reports,
   exports,
   stixRelations,
@@ -23,6 +24,7 @@ const toolResolvers = {
   Tool: {
     createdByRef: tool => createdByRef(tool.id),
     markingDefinitions: (tool, args) => markingDefinitions(tool.id, args),
+    tags: (tool, args) => tags(tool.id, args),
     killChainPhases: (tool, args) => killChainPhases(tool.id, args),
     reports: (tool, args) => reports(tool.id, args),
     exports: (tool, args) => exports(tool.id, args),

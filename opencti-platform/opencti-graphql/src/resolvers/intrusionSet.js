@@ -2,6 +2,7 @@ import { addIntrusionSet, findAll, findById } from '../domain/intrusionSet';
 import {
   createdByRef,
   markingDefinitions,
+  tags,
   reports,
   exports,
   stixRelations,
@@ -23,6 +24,7 @@ const intrusionSetResolvers = {
     createdByRef: intrusionSet => createdByRef(intrusionSet.id),
     markingDefinitions: (intrusionSet, args) =>
       markingDefinitions(intrusionSet.id, args),
+    tags: (intrusionSet, args) => tags(intrusionSet.id, args),
     reports: (intrusionSet, args) => reports(intrusionSet.id, args),
     exports: (intrusionSet, args) => exports(intrusionSet.id, args),
     stixRelations: (intrusionSet, args) => stixRelations(intrusionSet.id, args),

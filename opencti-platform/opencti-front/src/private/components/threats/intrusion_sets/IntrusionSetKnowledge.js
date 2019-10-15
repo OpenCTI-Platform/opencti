@@ -1,16 +1,17 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
+import IntrusionSetPopover from './IntrusionSetPopover';
+import IntrusionSetKnowledgeBar from './IntrusionSetKnowledgeBar';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
 import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import IntrusionSetHeader from './IntrusionSetHeader';
-import IntrusionSetKnowledgeBar from './IntrusionSetKnowledgeBar';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -27,7 +28,10 @@ class IntrusionSetKnowledgeComponent extends Component {
     const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <IntrusionSetHeader intrusionSet={intrusionSet} />
+        <StixDomainEntityHeader
+          stixDomainEntity={intrusionSet}
+          PopoverComponent={<IntrusionSetPopover />}
+        />
         <IntrusionSetKnowledgeBar intrusionSetId={intrusionSet.id} />
         <Route
           exact
@@ -138,6 +142,7 @@ class IntrusionSetKnowledgeComponent extends Component {
               targetEntityTypes={[
                 'Organization',
                 'Sector',
+                'City',
                 'Country',
                 'Region',
               ]}
@@ -210,7 +215,8 @@ const IntrusionSetKnowledge = createFragmentContainer(
     intrusionSet: graphql`
       fragment IntrusionSetKnowledge_intrusionSet on IntrusionSet {
         id
-        ...IntrusionSetHeader_intrusionSet
+        name
+        alias
       }
     `,
   },
