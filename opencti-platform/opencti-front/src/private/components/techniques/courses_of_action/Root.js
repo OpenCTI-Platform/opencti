@@ -25,6 +25,7 @@ const courseOfActionQuery = graphql`
     courseOfAction(id: $id) {
       ...CourseOfAction_courseOfAction
       ...CourseOfActionOverview_courseOfAction
+      ...CourseOfActionDetails_courseOfAction
     }
   }
 `;

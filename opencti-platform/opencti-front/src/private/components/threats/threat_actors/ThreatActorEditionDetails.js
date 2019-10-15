@@ -39,20 +39,20 @@ const styles = theme => ({
 });
 
 const threatActorMutationFieldPatch = graphql`
-  mutation ThreatActorEditionIdentityFieldPatchMutation(
+  mutation ThreatActorEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
     threatActorEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...ThreatActorEditionIdentity_threatActor
+        ...ThreatActorEditionDetails_threatActor
       }
     }
   }
 `;
 
-const threatActorEditionIdentityFocus = graphql`
-  mutation ThreatActorEditionIdentityFocusMutation(
+const threatActorEditionDetailsFocus = graphql`
+  mutation ThreatActorEditionDetailsFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
@@ -72,11 +72,11 @@ const threatActorValidation = t => Yup.object().shape({
   goal: Yup.string(),
 });
 
-class ThreatActorEditionIdentityComponent extends Component {
+class ThreatActorEditionDetailsComponent extends Component {
   handleChangeFocus(name) {
     if (WS_ACTIVATED) {
       commitMutation({
-        mutation: threatActorEditionIdentityFocus,
+        mutation: threatActorEditionDetailsFocus,
         variables: {
           id: this.props.threatActor.id,
           input: {
@@ -358,7 +358,7 @@ class ThreatActorEditionIdentityComponent extends Component {
   }
 }
 
-ThreatActorEditionIdentityComponent.propTypes = {
+ThreatActorEditionDetailsComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -367,11 +367,11 @@ ThreatActorEditionIdentityComponent.propTypes = {
   me: PropTypes.object,
 };
 
-const ThreatActorEditionIdentity = createFragmentContainer(
-  ThreatActorEditionIdentityComponent,
+const ThreatActorEditionDetails = createFragmentContainer(
+  ThreatActorEditionDetailsComponent,
   {
     threatActor: graphql`
-      fragment ThreatActorEditionIdentity_threatActor on ThreatActor {
+      fragment ThreatActorEditionDetails_threatActor on ThreatActor {
         id
         sophistication
         resource_level
@@ -386,4 +386,4 @@ const ThreatActorEditionIdentity = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(ThreatActorEditionIdentity);
+)(ThreatActorEditionDetails);

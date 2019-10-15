@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import {
+  compose, propOr, assoc, dissoc, mapObjIndexed, map,
+} from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import {
@@ -27,6 +29,7 @@ class AttackPatterns extends Component {
       orderAsc: propOr(true, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
+      filters: {},
     };
   }
 
@@ -35,7 +38,7 @@ class AttackPatterns extends Component {
       this.props.history,
       this.props.location,
       'AttackPatterns-view',
-      this.state,
+      dissoc('filters', this.state),
     );
   }
 
@@ -47,8 +50,22 @@ class AttackPatterns extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleAddFilter(key, id, value, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    this.setState({
+      filters: assoc(key, [{ id, value }], this.state.filters),
+    });
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: dissoc(key, this.state.filters) });
+  }
+
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm } = this.state;
+    const {
+      sortBy, orderAsc, searchTerm, filters,
+    } = this.state;
     const dataColumns = {
       killChainPhases: {
         label: 'Kill chain phases',
@@ -57,7 +74,12 @@ class AttackPatterns extends Component {
       },
       name: {
         label: 'Name',
-        width: '40%',
+        width: '20%',
+        isSortable: true,
+      },
+      tags: {
+        label: 'Tags',
+        width: '20%',
         isSortable: true,
       },
       created: {
@@ -78,8 +100,10 @@ class AttackPatterns extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         displayImport={true}
         keyword={searchTerm}
+        filters={filters}
       >
         <QueryRenderer
           query={attackPatternsLinesQuery}
@@ -90,6 +114,7 @@ class AttackPatterns extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              onTagClick={this.handleAddFilter.bind(this)}
             />
           )}
         />
@@ -99,12 +124,13 @@ class AttackPatterns extends Component {
 
   render() {
     const {
-      view, sortBy, orderAsc, searchTerm,
+      view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
+      filters: mapObjIndexed((value) => map((n) => n.id, value), filters),
     };
     return (
       <div>

@@ -42,7 +42,6 @@ import TopMenuCountry from './TopMenuCountry';
 import TopMenuCity from './TopMenuCity';
 import TopMenuOrganization from './TopMenuOrganization';
 import TopMenuPerson from './TopMenuPerson';
-import TopMenuSources from './TopMenuSources';
 import TopMenuConnectors from './TopMenuConnectors';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
@@ -294,24 +293,17 @@ class TopBar extends Component {
             ) : (
               ''
             )}
-            {location.pathname === '/dashboard/sources'
-            || location.pathname.match('/dashboard/sources/[a-z_]+$') ? (
-              <TopMenuSources />
-              ) : (
-                ''
-              )}
             {location.pathname === '/dashboard/connectors'
             || location.pathname.match('/dashboard/connectors/[a-z_]+$') ? (
               <TopMenuConnectors />
               ) : (
                 ''
               )}
-            {location.pathname === '/dashboard/settings'
-            || location.pathname.match('/dashboard/settings/[a-z_]+$') ? (
+            {location.pathname.includes('/dashboard/settings') ? (
               <TopMenuSettings />
-              ) : (
-                ''
-              )}
+            ) : (
+              ''
+            )}
             {location.pathname === '/dashboard/profile' ? (
               <TopMenuProfile />
             ) : (

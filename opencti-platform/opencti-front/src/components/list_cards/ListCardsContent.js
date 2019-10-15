@@ -118,6 +118,7 @@ class ListCardsContent extends Component {
       CardComponent,
       DummyCardComponent,
       initialLoading,
+      onTagClick,
     } = this.props;
     const index = rowIndex * this.numberOfCardsPerLine() + columnIndex;
     let className = classes.bottomPad;
@@ -151,6 +152,7 @@ class ListCardsContent extends Component {
       <div className={className} key={key} style={style}>
         {React.cloneElement(CardComponent, {
           node,
+          onTagClick,
         })}
       </div>
     );
@@ -246,6 +248,7 @@ ListCardsContent.propTypes = {
   DummyCardComponent: PropTypes.object,
   nbOfCardsToLoad: PropTypes.number,
   width: PropTypes.number,
+  onTagClick: PropTypes.func,
 };
 
 export default compose(

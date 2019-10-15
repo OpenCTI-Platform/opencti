@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import AttackPatternOverview from './AttackPatternOverview';
-import AttackPatternIdentity from './AttackPatternIdentity';
+import AttackPatternDetails from './AttackPatternDetails';
 import AttackPatternEdition from './AttackPatternEdition';
 import AttackPatternPopover from './AttackPatternPopover';
 import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
@@ -43,7 +43,7 @@ class AttackPatternComponent extends Component {
             <AttackPatternOverview attackPattern={attackPattern} />
           </Grid>
           <Grid item={true} xs={4}>
-            <AttackPatternIdentity attackPattern={attackPattern} />
+            <AttackPatternDetails attackPattern={attackPattern} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityExternalReferences entityId={attackPattern.id} />
@@ -87,7 +87,7 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
       name
       alias
       ...AttackPatternOverview_attackPattern
-      ...AttackPatternIdentity_attackPattern
+      ...AttackPatternDetails_attackPattern
     }
   `,
 });

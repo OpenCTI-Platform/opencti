@@ -27,7 +27,7 @@ const attackPatternQuery = graphql`
     attackPattern(id: $id) {
       ...AttackPattern_attackPattern
       ...AttackPatternOverview_attackPattern
-      ...AttackPatternIdentity_attackPattern
+      ...AttackPatternDetails_attackPattern
       ...AttackPatternReports_attackPattern
       ...AttackPatternKnowledge_attackPattern
     }

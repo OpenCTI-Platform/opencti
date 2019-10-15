@@ -6,6 +6,7 @@ import CreatableSelect from 'react-select/creatable';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
+import Popper from '@material-ui/core/Popper';
 import Paper from '@material-ui/core/Paper';
 import Chip from '@material-ui/core/Chip';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -15,7 +16,7 @@ import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import inject18n from './i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   root: {
     flexGrow: 1,
   },
@@ -53,12 +54,9 @@ const styles = theme => ({
     left: 2,
     fontSize: 16,
   },
-  paper: {
-    position: 'absolute',
-    zIndex: 1,
+  popper: {
+    zIndex: theme.zIndex.modal + 200,
     marginTop: theme.spacing(1),
-    left: 0,
-    right: 0,
   },
   divider: {
     height: theme.spacing(2),
@@ -163,13 +161,23 @@ function MultiValue(props) {
 
 function Menu(props) {
   return (
-    <Paper
-      square
-      className={props.selectProps.classes.paper}
-      {...props.innerProps}
+    <Popper
+      open={Boolean(props.children)}
+      anchorEl={props.selectProps.anchorEl.current}
+      className={props.selectProps.classes.popper}
     >
-      {props.children}
-    </Paper>
+      <Paper
+        square
+        {...props.innerProps}
+        style={{
+          width: props.selectProps.anchorEl.current
+            ? props.selectProps.anchorEl.current.clientWidth
+            : null,
+        }}
+      >
+        {props.children}
+      </Paper>
+    </Popper>
   );
 }
 
@@ -185,6 +193,11 @@ const components = {
 };
 
 class AutocompleteCreate extends Component {
+  constructor(props) {
+    super(props);
+    this.anchorEl = React.createRef();
+  }
+
   render() {
     const {
       required,
@@ -203,12 +216,13 @@ class AutocompleteCreate extends Component {
       helperText,
       multiple,
       handleCreate,
+      noMargin,
     } = this.props;
     const errorText = errors[field.name];
     const hasError = dirty && errorText !== undefined;
 
     const selectStyles = {
-      input: base => ({
+      input: (base) => ({
         ...base,
         '& input': {
           font: 'inherit',
@@ -228,13 +242,13 @@ class AutocompleteCreate extends Component {
     }
 
     return (
-      <div className={classes.root}>
+      <div className={classes.root} ref={this.anchorEl}>
         <FormControl
           fullWidth
           error={hasError}
           required={required}
           disabled={isSubmitting}
-          style={{ marginTop: '20px' }}
+          style={{ marginTop: noMargin ? 0 : '20px' }}
         >
           <CreatableSelect
             classes={classes}
@@ -266,13 +280,14 @@ class AutocompleteCreate extends Component {
             isMulti={multiple}
             openMenuOnClick={false}
             onCreateOption={handleCreate.bind(this)}
+            anchorEl={this.anchorEl}
             isDisabled={isSubmitting}
             noOptionsMessage={() => (
               <span style={{ fontStyle: 'italic' }}>
                 {t('No available options')}
               </span>
             )}
-            formatCreateLabel={inputValue => (
+            formatCreateLabel={(inputValue) => (
               <span style={{ fontStyle: 'italic' }}>
                 {t('Create')} {inputValue}
               </span>
@@ -305,6 +320,7 @@ AutocompleteCreate.propTypes = {
   helperText: PropTypes.node,
   multiple: PropTypes.bool,
   handleCreate: PropTypes.func,
+  noMargin: PropTypes.bool,
 };
 
 export default compose(

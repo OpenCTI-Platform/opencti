@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -12,6 +12,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Launch, SettingsApplications, PermIdentity } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
+import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
 
 const styles = () => ({
   paper: {
@@ -29,7 +30,7 @@ const styles = () => ({
   },
 });
 
-class AttackPatternIdentityComponent extends Component {
+class AttackPatternDetailsComponent extends Component {
   render() {
     const { t, classes, attackPattern } = this.props;
     return (
@@ -38,7 +39,15 @@ class AttackPatternIdentityComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant="h3" gutterBottom={true}>
+          <StixDomainEntityTags
+            tags={attackPattern.tags}
+            id={attackPattern.id}
+          />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Kill chain phases')}
           </Typography>
           <List>
@@ -67,7 +76,7 @@ class AttackPatternIdentityComponent extends Component {
             {t('Platforms')}
           </Typography>
           <List>
-            {propOr([], 'platform', attackPattern).map(platform => (
+            {propOr([], 'platform', attackPattern).map((platform) => (
               <ListItem
                 key={platform}
                 dense={true}
@@ -90,7 +99,7 @@ class AttackPatternIdentityComponent extends Component {
           </Typography>
           <List>
             {propOr([], 'required_permission', attackPattern).map(
-              permission => (
+              (permission) => (
                 <ListItem
                   key={permission}
                   dense={true}
@@ -111,20 +120,33 @@ class AttackPatternIdentityComponent extends Component {
   }
 }
 
-AttackPatternIdentityComponent.propTypes = {
+AttackPatternDetailsComponent.propTypes = {
   attackPattern: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const AttackPatternIdentity = createFragmentContainer(
-  AttackPatternIdentityComponent,
+const AttackPatternDetails = createFragmentContainer(
+  AttackPatternDetailsComponent,
   {
     attackPattern: graphql`
-      fragment AttackPatternIdentity_attackPattern on AttackPattern {
+      fragment AttackPatternDetails_attackPattern on AttackPattern {
         platform
         required_permission
+        tags {
+          edges {
+            node {
+              id
+              tag_type
+              value
+              color
+            }
+            relation {
+              id
+            }
+          }
+        }
         killChainPhases {
           edges {
             node {
@@ -143,4 +165,4 @@ const AttackPatternIdentity = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles),
-)(AttackPatternIdentity);
+)(AttackPatternDetails);

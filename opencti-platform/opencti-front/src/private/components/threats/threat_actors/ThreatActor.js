@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import ThreatActorOverview from './ThreatActorOverview';
-import ThreatActorIdentity from './ThreatActorIdentity';
+import ThreatActorDetails from './ThreatActorDetails';
 import ThreatActorEdition from './ThreatActorEdition';
 import ThreatActorPopover from './ThreatActorPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
@@ -43,7 +43,7 @@ class ThreatActorComponent extends Component {
             <ThreatActorOverview threatActor={threatActor} />
           </Grid>
           <Grid item={true} xs={3}>
-            <ThreatActorIdentity threatActor={threatActor} />
+            <ThreatActorDetails threatActor={threatActor} />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={threatActor.id} />
@@ -84,7 +84,7 @@ const ThreatActor = createFragmentContainer(ThreatActorComponent, {
       name
       alias
       ...ThreatActorOverview_threatActor
-      ...ThreatActorIdentity_threatActor
+      ...ThreatActorDetails_threatActor
     }
   `,
 });

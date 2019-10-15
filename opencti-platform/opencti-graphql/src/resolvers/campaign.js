@@ -8,6 +8,7 @@ import {
 import {
   createdByRef,
   markingDefinitions,
+  tags,
   reports,
   exports,
   stixRelations,
@@ -37,6 +38,7 @@ const campaignResolvers = {
     createdByRef: campaign => createdByRef(campaign.id),
     markingDefinitions: (campaign, args) =>
       markingDefinitions(campaign.id, args),
+    tags: (campaign, args) => tags(campaign.id, args),
     reports: (campaign, args) => reports(campaign.id, args),
     exports: (campaign, args) => exports(campaign.id, args),
     stixRelations: (campaign, args) => stixRelations(campaign.id, args),

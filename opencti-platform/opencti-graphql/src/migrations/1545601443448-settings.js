@@ -6,7 +6,7 @@ module.exports.up = async next => {
     {},
     {
       platform_title: 'Cyber threat intelligence platform',
-      platform_email: '',
+      platform_email: 'admin@opencti.io',
       platform_url: '',
       platform_language: 'auto',
       platform_external_auth: true,
@@ -19,7 +19,7 @@ module.exports.up = async next => {
     {
       definition_type: 'TLP',
       definition: 'TLP:WHITE',
-      color: '',
+      color: '#ffffff',
       level: 1,
       stix_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9'
     }
@@ -29,7 +29,7 @@ module.exports.up = async next => {
     {
       definition_type: 'TLP',
       definition: 'TLP:GREEN',
-      color: '',
+      color: '#2e7d32',
       level: 2,
       stix_id: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da'
     }
@@ -39,7 +39,7 @@ module.exports.up = async next => {
     {
       definition_type: 'TLP',
       definition: 'TLP:AMBER',
-      color: '',
+      color: '#d84315',
       level: 3,
       stix_id: '"marking-definition--f88d31f6-486f-44da-b317-01333bde0b82'
     }
@@ -49,7 +49,7 @@ module.exports.up = async next => {
     {
       definition_type: 'TLP',
       definition: 'TLP:RED',
-      color: '',
+      color: '#c62828',
       level: 4,
       stix_id: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed'
     }

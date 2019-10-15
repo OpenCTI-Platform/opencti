@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -9,10 +10,10 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
 import { Application } from 'mdi-material-ui';
-import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
+import StixObjectTags from '../../common/stix_object/StixObjectTags';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
@@ -50,7 +51,7 @@ const styles = theme => ({
 class ToolLineComponent extends Component {
   render() {
     const {
-      fd, classes, node, dataColumns,
+      fd, classes, node, dataColumns, onTagClick,
     } = this.props;
     return (
       <ListItem
@@ -76,6 +77,16 @@ class ToolLineComponent extends Component {
                 style={{ width: dataColumns.tool_version.width }}
               >
                 {node.tool_version}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <StixObjectTags
+                  variant="inList"
+                  tags={node.tags}
+                  onClick={onTagClick.bind(this)}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -105,6 +116,7 @@ ToolLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
+  onTagClick: PropTypes.func,
 };
 
 const ToolLineFragment = createFragmentContainer(ToolLineComponent, {
@@ -115,6 +127,19 @@ const ToolLineFragment = createFragmentContainer(ToolLineComponent, {
       tool_version
       created
       modified
+      tags {
+        edges {
+          node {
+            id
+            tag_type
+            value
+            color
+          }
+          relation {
+            id
+          }
+        }
+      }
     }
   `,
 });
@@ -146,6 +171,12 @@ class ToolLineDummyComponent extends Component {
                 style={{ width: dataColumns.tool_version.width }}
               >
                 <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <div className="fakeItem" style={{ width: '90%' }} />
               </div>
               <div
                 className={classes.bodyItem}

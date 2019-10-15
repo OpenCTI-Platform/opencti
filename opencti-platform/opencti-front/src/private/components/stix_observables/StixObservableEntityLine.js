@@ -9,14 +9,14 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert, Help } from '@material-ui/icons';
-import { Tag } from 'mdi-material-ui';
+import { MoreVert } from '@material-ui/icons';
+import { HexagonOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
 import StixRelationPopover from '../common/stix_relations/StixRelationPopover';
 import { resolveLink } from '../../../utils/Entity';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     transition: 'background-color 0.1s ease',
@@ -73,7 +73,7 @@ class StixObservableEntityLineComponent extends Component {
         to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Tag />
+          <HexagonOutline />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -95,8 +95,11 @@ class StixObservableEntityLineComponent extends Component {
                 style={{ width: dataColumns.role_played.width }}
               >
                 {/* eslint-disable-next-line no-nested-ternary */}
-                {node.inferred ? '-' : node.role_played
-                  ? t(node.role_played) : t('Unknown')}
+                {node.inferred
+                  ? '-'
+                  : node.role_played
+                    ? t(node.role_played)
+                    : t('Unknown')}
               </div>
               <div
                 className={classes.bodyItem}
@@ -181,7 +184,7 @@ class StixObservableEntityLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Help />
+          <HexagonOutline />
         </ListItemIcon>
         <ListItemText
           primary={

@@ -15,7 +15,7 @@ import inject18n from '../../../../components/i18n';
 import AttackPatternEditionContainer from './AttackPatternEditionContainer';
 import { attackPatternEditionOverviewFocus } from './AttackPatternEditionOverview';
 
-const styles = theme => ({
+const styles = (theme) => ({
   editButton: {
     position: 'fixed',
     bottom: 30,
@@ -39,7 +39,7 @@ export const attackPatternEditionQuery = graphql`
   query AttackPatternEditionContainerQuery($id: String!) {
     attackPattern(id: $id) {
       ...AttackPatternEditionContainer_attackPattern
-      ...AttackPatternEditionIdentity_attackPattern
+      ...AttackPatternEditionDetails_attackPattern
     }
     me {
       ...AttackPatternEditionContainer_me

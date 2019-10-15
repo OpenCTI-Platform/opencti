@@ -2,6 +2,7 @@ import { addRegion, findAll, findById } from '../domain/region';
 import {
   createdByRef,
   markingDefinitions,
+  tags,
   reports,
   exports,
   stixRelations,
@@ -22,6 +23,7 @@ const regionResolvers = {
   Region: {
     createdByRef: region => createdByRef(region.id),
     markingDefinitions: (region, args) => markingDefinitions(region.id, args),
+    tags: (region, args) => tags(region.id, args),
     reports: (region, args) => reports(region.id, args),
     exports: (region, args) => exports(region.id, args),
     stixRelations: (region, args) => stixRelations(region.id, args),

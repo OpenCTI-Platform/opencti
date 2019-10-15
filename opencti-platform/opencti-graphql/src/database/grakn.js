@@ -13,7 +13,9 @@ import {
   pluck,
   fromPairs,
   toPairs,
-  tail
+  tail,
+  mergeLeft,
+  mergeAll
 } from 'ramda';
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
@@ -70,6 +72,38 @@ export const statsDateAttributes = [
   'published', // Standard
   'expiration' // Standard
 ];
+export const relationsToIndex = {
+  'Stix-Domain-Entity': [
+    {
+      key: 'tags_indexed',
+      query:
+        'match $t isa Tag, has internal_id $value; (so: $x, tagging: $t) isa tagged;'
+    },
+    {
+      key: 'createdByRef_indexed',
+      query:
+        'match $i isa Identity, has internal_id $value; (so: $x, creator: $i) isa created_by_ref;'
+    },
+    {
+      key: 'markingDefinitions_indexed',
+      query:
+        'match $m isa Marking-Definition, has internal_id $value; (so: $x, marking: $m) isa object_marking_refs;'
+    }
+  ],
+  'Stix-Observable': [
+    {
+      key: 'tags_indexed',
+      query:
+        'match $t isa Tag, has value $value; (so: $x, tagging: $t) isa tagged;'
+    }
+  ]
+};
+
+const sleep = ms => {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
+};
 
 const client = new Grakn(
   `${conf.get('grakn:hostname')}:${conf.get('grakn:port')}`
@@ -138,7 +172,13 @@ export const commitWriteTx = async wTx => {
   try {
     await wTx.tx.commit();
   } catch (err) {
-    logger.error('[GRAKN] CommitWriteTx error > ', err);
+    logger.error('[GRAKN] CommitWriteTx (retrying) error > ', err);
+    await sleep(5000);
+    try {
+      await wTx.tx.commit();
+    } catch (err2) {
+      logger.error('[GRAKN] CommitWriteTx error > ', err2);
+    }
   }
 };
 
@@ -324,6 +364,49 @@ const inferIndexFromConceptTypes = async types => {
 };
 
 /**
+ * Get relations to index
+ * @param type
+ * @param id
+ * @returns {Promise<{}>}
+ */
+const getRelationsValuesToIndex = async (type, id) => {
+  const rTx = await takeReadTx();
+  try {
+    if (relationsToIndex[type]) {
+      const result = await Promise.all(
+        relationsToIndex[type].map(async relationToIndex => {
+          const query = `${
+            relationToIndex.query
+          } $x has internal_id "${escapeString(id)}"; get $value;`;
+          logger.debug(
+            `[GRAKN - infer: false] getRelationsValuesToIndex > ${query}`
+          );
+          const iterator = await rTx.tx.query(query);
+          const answers = await iterator.collect();
+          return Promise.all(
+            answers.map(async answer => {
+              const attribute = answer.map().get('value');
+              return attribute.value();
+            })
+          ).then(data => {
+            return { [relationToIndex.key]: data };
+          });
+        })
+      ).then(data => {
+        return mergeAll(data);
+      });
+      await closeReadTx(rTx);
+      return result;
+    }
+    return {};
+  } catch (err) {
+    logger.error('[GRAKN] getRelationsValuesToIndex error > ', err);
+    await closeReadTx(rTx);
+    return {};
+  }
+};
+
+/**
  * Load any grakn instance with internal grakn ID.
  * @param concept the concept to get attributes from
  * @param forceReindex if index need to be updated
@@ -369,9 +452,10 @@ export const getAttributes = async (concept, forceReindex = false) => {
   const attributes = await attributesIterator.collect();
   const attributesPromises = attributes.map(async attribute => {
     const attributeType = await attribute.type();
+    const attributeLabel = await attributeType.label();
     return {
-      'data-type': await attributeType.dataType(),
-      type: await attributeType.label(),
+      dataType: await attributeType.dataType(),
+      label: attributeLabel,
       value: await attribute.value()
     };
   });
@@ -380,16 +464,15 @@ export const getAttributes = async (concept, forceReindex = false) => {
       const transform = pipe(
         map(attribute => {
           let transformedVal = attribute.value;
-          const type = attribute['data-type'];
-          if (type === Date) {
+          const { dataType, label } = attribute;
+          if (dataType === Date) {
             transformedVal = `${moment(attribute.value).format(dateFormat)}Z`;
-          }
-          if (type === String) {
+          } else if (dataType === String) {
             transformedVal = attribute.value
               .replace(/\\"/g, '"')
               .replace(/\\\\/g, '\\');
           }
-          return { [attribute.type]: transformedVal };
+          return { [label]: transformedVal };
         }), // Extract values
         chain(toPairs), // Convert to pairs for grouping
         groupBy(head), // Group by key
@@ -398,7 +481,7 @@ export const getAttributes = async (concept, forceReindex = false) => {
           // eslint-disable-next-line no-nested-ternary
           Array.isArray(obj[key]) && !includes(key, multipleAttributes)
             ? head(obj[key])
-            : head(obj[key]) && head(obj[key]).length > 0
+            : head(obj[key]) && head(obj[key]) !== ''
             ? obj[key]
             : []
         ) // Remove extra list then contains only 1 element
@@ -409,9 +492,16 @@ export const getAttributes = async (concept, forceReindex = false) => {
         assoc('parent_type', parentTypeLabel)
       )(transform);
     })
-    .then(data => {
+    .then(async data => {
       // If data was fetched from db but should be indexed
-      if (shouldBeReindex) return index(getIndex, data);
+      if (shouldBeReindex) {
+        const indexedRelations = await getRelationsValuesToIndex(
+          parentTypeLabel,
+          data.id
+        );
+        const finalData = mergeLeft(data, indexedRelations);
+        return index(getIndex, finalData);
+      }
       return data;
     });
 };
@@ -426,6 +516,7 @@ export const getById = async (id, forceReindex = false) => {
   const rTx = await takeReadTx();
   try {
     const query = `match $x has internal_id "${escapeString(id)}"; get $x;`;
+    logger.debug(`[GRAKN - infer: false] getById > ${query}`);
     const iterator = await rTx.tx.query(query);
     const answer = await iterator.next();
     const concept = answer.map().get('x');
@@ -1138,7 +1229,7 @@ export const createRelation = async (id, input) => {
       input.last_seen ? `, has last_seen ${prepareDate(input.last_seen)}` : ''
     } ${input.weight ? `, has weight ${escape(input.weight)}` : ''};`;
     logger.debug(`[GRAKN - infer: false] createRelation > ${query}`);
-    const node = await getById(input.toId);
+    const node = await getById(input.toId, true);
     const iterator = await wTx.tx.query(query);
     const answer = await iterator.next();
     const createdRelation = await answer.map().get('rel');
@@ -1285,7 +1376,7 @@ export const deleteRelationById = async (id, relationId) => {
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
     await wTx.tx.query(query, { infer: false });
     await commitWriteTx(wTx);
-    return getById(id).then(data => ({
+    return getById(id, true).then(data => ({
       node: data,
       relation: { id: relationId }
     }));
