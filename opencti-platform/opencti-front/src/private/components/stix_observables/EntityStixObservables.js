@@ -18,9 +18,6 @@ class EntityStixObservables extends Component {
       lastSeenStart: null,
       lastSeenStop: null,
       targetEntityTypes: [],
-      toType: 'All',
-      inferred: true,
-      resolveInferences: false,
       view: 'lines',
     };
   }
@@ -56,26 +53,26 @@ class EntityStixObservables extends Component {
       entity_type: {
         label: 'Type',
         width: '10%',
-        isSortable: true,
+        isSortable: false,
       },
       observable_value: {
         label: 'Value',
-        width: '40%',
-        isSortable: true,
+        width: '30%',
+        isSortable: false,
       },
       first_seen: {
-        label: 'First seen',
+        label: 'First obs.',
         width: '15%',
         isSortable: true,
       },
       last_seen: {
-        label: 'Last seen',
+        label: 'Last obs.',
         width: '15%',
         isSortable: true,
       },
       weight: {
         label: 'Confidence level',
-        width: '10%',
+        width: '20%',
         isSortable: true,
       },
     };
@@ -106,14 +103,7 @@ class EntityStixObservables extends Component {
   }
 
   render() {
-    const {
-      entityId,
-      relationType,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
-    } = this.props;
+    const { entityId, relationType } = this.props;
     const {
       view,
       targetEntityTypes,
@@ -121,21 +111,14 @@ class EntityStixObservables extends Component {
       orderAsc,
       lastSeenStart,
       lastSeenStop,
-      resolveInferences,
     } = this.state;
     const paginationOptions = {
-      resolveInferences,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
-      inferred: this.state.inferred,
       toTypes: targetEntityTypes,
       fromId: entityId,
       relationType,
       lastSeenStart: lastSeenStart || null,
       lastSeenStop: lastSeenStop || null,
-      orderBy: resolveInferences ? sortBy : null,
+      orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
@@ -156,14 +139,8 @@ class EntityStixObservables extends Component {
 
 EntityStixObservables.propTypes = {
   entityId: PropTypes.string,
-  resolveRelationType: PropTypes.string,
-  resolveRelationRole: PropTypes.string,
-  resolveRelationToTypes: PropTypes.array,
-  resolveViaTypes: PropTypes.array,
   entityLink: PropTypes.string,
-  relationType: PropTypes.string,
   classes: PropTypes.object,
-  reportClass: PropTypes.string,
   t: PropTypes.func,
   history: PropTypes.object,
 };

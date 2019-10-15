@@ -58,13 +58,7 @@ export const entityStixObservablesLinesQuery = graphql`
   query EntityStixObservablesLinesPaginationQuery(
     $fromId: String
     $toTypes: [String]
-    $inferred: Boolean
     $relationType: String
-    $resolveInferences: Boolean
-    $resolveRelationType: String
-    $resolveRelationRole: String
-    $resolveRelationToTypes: [String]
-    $resolveViaTypes: [EntityRelation]
     $firstSeenStart: DateTime
     $firstSeenStop: DateTime
     $lastSeenStart: DateTime
@@ -79,13 +73,7 @@ export const entityStixObservablesLinesQuery = graphql`
       @arguments(
         fromId: $fromId
         toTypes: $toTypes
-        inferred: $inferred
         relationType: $relationType
-        resolveInferences: $resolveInferences
-        resolveRelationType: $resolveRelationType
-        resolveRelationRole: $resolveRelationRole
-        resolveRelationToTypes: $resolveRelationToTypes
-        resolveViaTypes: $resolveViaTypes
         firstSeenStart: $firstSeenStart
         firstSeenStop: $firstSeenStop
         lastSeenStart: $lastSeenStart
@@ -107,13 +95,7 @@ export default createPaginationContainer(
         @argumentDefinitions(
           fromId: { type: "String" }
           toTypes: { type: "[String]" }
-          inferred: { type: "Boolean" }
           relationType: { type: "String" }
-          resolveInferences: { type: "Boolean" }
-          resolveRelationType: { type: "String" }
-          resolveRelationRole: { type: "String" }
-          resolveRelationToTypes: { type: "[String]" }
-          resolveViaTypes: { type: "[EntityRelation]" }
           firstSeenStart: { type: "DateTime" }
           firstSeenStop: { type: "DateTime" }
           lastSeenStart: { type: "DateTime" }
@@ -127,13 +109,7 @@ export default createPaginationContainer(
         stixRelations(
           fromId: $fromId
           toTypes: $toTypes
-          inferred: $inferred
           relationType: $relationType
-          resolveInferences: $resolveInferences
-          resolveRelationType: $resolveRelationType
-          resolveRelationRole: $resolveRelationRole
-          resolveRelationToTypes: $resolveRelationToTypes
-          resolveViaTypes: $resolveViaTypes
           firstSeenStart: $firstSeenStart
           firstSeenStop: $firstSeenStop
           lastSeenStart: $lastSeenStart
@@ -173,13 +149,7 @@ export default createPaginationContainer(
       return {
         fromId: fragmentVariables.fromId,
         toTypes: fragmentVariables.toTypes,
-        inferred: fragmentVariables.inferred,
         relationType: fragmentVariables.relationType,
-        resolveInferences: fragmentVariables.resolveInferences,
-        resolveRelationType: fragmentVariables.resolveRelationType,
-        resolveRelationRole: fragmentVariables.resolveRelationRole,
-        resolveRelationToTypes: fragmentVariables.resolveRelationToTypes,
-        resolveViaTypes: fragmentVariables.resolveViaTypes,
         firstSeenStart: fragmentVariables.firstSeenStart,
         firstSeenStop: fragmentVariables.firstSeenStop,
         lastSeenStart: fragmentVariables.lastSeenStart,
