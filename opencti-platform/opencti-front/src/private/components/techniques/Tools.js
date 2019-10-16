@@ -67,12 +67,7 @@ class Tools extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '27%',
-        isSortable: true,
-      },
-      tool_version: {
-        label: 'Version',
-        width: '8%',
+        width: '35%',
         isSortable: true,
       },
       tags: {

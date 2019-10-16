@@ -17,9 +17,10 @@ import EntityStixRelationsLines, {
   entityStixRelationsLinesQuery,
 } from './EntityStixRelationsLines';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     marginTop: 15,
+    paddingBottom: 70,
   },
   bottomNav: {
     zIndex: 1000,
@@ -95,8 +96,9 @@ class EntityStixRelations extends Component {
     const {
       sortBy, orderAsc, inferred, resolveInferences,
     } = this.state;
-    const { entityLink } = this.props;
+    const { entityLink, resolveRelationType } = this.props;
     // sort only when inferences are disabled or inferences are resolved
+    const isRelationSortable = resolveInferences || !inferred || !resolveRelationType;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -111,17 +113,17 @@ class EntityStixRelations extends Component {
       first_seen: {
         label: 'First obs.',
         width: '15%',
-        isSortable: resolveInferences || !inferred,
+        isSortable: isRelationSortable,
       },
       last_seen: {
         label: 'Last obs.',
         width: '15%',
-        isSortable: resolveInferences || !inferred,
+        isSortable: isRelationSortable,
       },
       weight: {
         label: 'Confidence level',
         width: '15%',
-        isSortable: resolveInferences || !inferred,
+        isSortable: isRelationSortable,
       },
     };
     return (
@@ -217,7 +219,7 @@ class EntityStixRelations extends Component {
                     onOpen={this.handleOpenToType.bind(this)}
                     onChange={this.handleChangeEntities.bind(this)}
                     input={<Input id="entities" />}
-                    renderValue={selected => (
+                    renderValue={(selected) => (
                       <div className={classes.chips}>
                         <Chip
                           key={selected}

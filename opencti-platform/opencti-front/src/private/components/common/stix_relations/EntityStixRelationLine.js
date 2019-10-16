@@ -15,7 +15,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
 import StixRelationPopover from './StixRelationPopover';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: '100%',

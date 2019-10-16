@@ -71,12 +71,6 @@ class ToolLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tool_version.width }}
-              >
-                {node.tool_version}
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.tags.width }}
               >
                 <StixObjectTags
@@ -121,7 +115,6 @@ const ToolLineFragment = createFragmentContainer(ToolLineComponent, {
     fragment ToolLine_node on Tool {
       id
       name
-      tool_version
       created
       modified
       tags {
@@ -162,12 +155,6 @@ class ToolLineDummyComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.tool_version.width }}
-              >
-                <div className="fakeItem" style={{ width: '70%' }} />
               </div>
               <div
                 className={classes.bodyItem}
