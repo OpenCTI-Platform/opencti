@@ -408,11 +408,10 @@ class StixRelationCreation extends Component {
                 }}
                 containerstyle={{ marginTop: 20, width: '100%' }}
               >
-                <MenuItem value={1}>{t('Very low')}</MenuItem>
-                <MenuItem value={2}>{t('Low')}</MenuItem>
-                <MenuItem value={3}>{t('Medium')}</MenuItem>
-                <MenuItem value={4}>{t('High')}</MenuItem>
-                <MenuItem value={5}>{t('Very high')}</MenuItem>
+                <MenuItem value={1}>{t('Low')}</MenuItem>
+                <MenuItem value={2}>{t('Moderate')}</MenuItem>
+                <MenuItem value={3}>{t('Good')}</MenuItem>
+                <MenuItem value={4}>{t('Strong')}</MenuItem>
               </Field>
               <Field
                 name="first_seen"
