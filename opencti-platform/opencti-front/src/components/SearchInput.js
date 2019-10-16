@@ -7,7 +7,7 @@ import { Search } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from './i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   searchRoot: {
     borderRadius: 5,
     padding: '0 10px 0 10px',
@@ -20,7 +20,7 @@ const styles = theme => ({
   },
   searchInput: {
     transition: theme.transitions.create('width'),
-    width: 250,
+    width: 200,
     '&:focus': {
       width: 350,
     },

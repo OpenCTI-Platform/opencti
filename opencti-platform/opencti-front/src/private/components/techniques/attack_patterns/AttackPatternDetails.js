@@ -23,7 +23,7 @@ const styles = () => ({
   },
   item: {
     paddingLeft: 10,
-    height: '100%',
+    height: 50,
   },
 });
 

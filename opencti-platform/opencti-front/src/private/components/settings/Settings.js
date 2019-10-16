@@ -17,8 +17,13 @@ import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
 import Switch from '../../../components/Switch';
+import SettingsMenu from './SettingsMenu';
 
 const styles = () => ({
+  container: {
+    margin: 0,
+    padding: '0 200px 0 0',
+  },
   paper: {
     width: '100%',
     height: '100%',
@@ -81,7 +86,7 @@ const settingsFocus = graphql`
   }
 `;
 
-const settingsValidation = t => Yup.object().shape({
+const settingsValidation = (t) => Yup.object().shape({
   platform_title: Yup.string().required(t('This field is required')),
   platform_email: Yup.string()
     .required(t('This field is required'))
@@ -124,168 +129,177 @@ class Settings extends Component {
   render() {
     const { t, classes } = this.props;
     return (
-      <QueryRenderer
-        query={settingsQuery}
-        render={({ props }) => {
-          if (props && props.settings && props.me) {
-            const { settings, me } = props;
-            const { id, editContext } = settings;
-            // Add current group to the context if is not available yet.
-            const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-            const editUsers = missingMe
-              ? insert(0, { name: me.email }, editContext)
-              : editContext;
-            const initialValues = pick(
-              [
-                'platform_title',
-                'platform_email',
-                'platform_url',
-                'platform_language',
-                'platform_external_auth',
-                'platform_registration',
-                'platform_demo',
-              ],
-              settings,
-            );
-            return (
-              <Formik
-                enableReinitialize={true}
-                initialValues={initialValues}
-                validationSchema={settingsValidation(t)}
-                render={() => (
-                  <Form>
-                    <Grid container={true} spacing={3}>
-                      <Grid item={true} xs={9}>
-                        <Paper classes={{ root: classes.paper }} elevation={2}>
-                          <Typography variant="h1" gutterBottom={true}>
-                            {t('Global')}
-                          </Typography>
-                          <Field
-                            name="platform_title"
-                            component={TextField}
-                            label={t('Name')}
-                            fullWidth={true}
-                            onFocus={this.handleChangeFocus.bind(this, id)}
-                            onSubmit={this.handleSubmitField.bind(this, id)}
-                            helperText={
-                              <SubscriptionFocus
-                                me={me}
-                                users={editUsers}
-                                fieldName="platform_title"
-                              />
-                            }
-                          />
-                          <Field
-                            name="platform_email"
-                            component={TextField}
-                            label={t('Sender email address')}
-                            fullWidth={true}
-                            style={{ marginTop: 10 }}
-                            onFocus={this.handleChangeFocus.bind(this, id)}
-                            onSubmit={this.handleSubmitField.bind(this, id)}
-                            helperText={
-                              <SubscriptionFocus
-                                me={me}
-                                users={editUsers}
-                                fieldName="platform_email"
-                              />
-                            }
-                          />
-                          <Field
-                            name="platform_url"
-                            component={TextField}
-                            label={t('Base URL')}
-                            fullWidth={true}
-                            style={{ marginTop: 10 }}
-                            onFocus={this.handleChangeFocus.bind(this, id)}
-                            onSubmit={this.handleSubmitField.bind(this, id)}
-                            helperText={
-                              <SubscriptionFocus
-                                me={me}
-                                users={editUsers}
-                                fieldName="platform_email"
-                              />
-                            }
-                          />
-                          <Field
-                            name="platform_language"
-                            component={Select}
-                            label={t('Language')}
-                            fullWidth={true}
-                            inputProps={{
-                              name: 'platform_language',
-                              id: 'platform-language',
-                            }}
-                            containerstyle={{ marginTop: 10, width: '100%' }}
-                            onFocus={this.handleChangeFocus.bind(this, id)}
-                            onChange={this.handleSubmitField.bind(this, id)}
-                            helpertext={
-                              <SubscriptionFocus
-                                me={me}
-                                users={editUsers}
-                                fieldName="platform_language"
-                              />
-                            }
+      <div className={classes.container}>
+        <SettingsMenu />
+        <QueryRenderer
+          query={settingsQuery}
+          render={({ props }) => {
+            if (props && props.settings && props.me) {
+              const { settings, me } = props;
+              const { id, editContext } = settings;
+              // Add current group to the context if is not available yet.
+              const missingMe = find(propEq('name', me.email))(editContext) === undefined;
+              const editUsers = missingMe
+                ? insert(0, { name: me.email }, editContext)
+                : editContext;
+              const initialValues = pick(
+                [
+                  'platform_title',
+                  'platform_email',
+                  'platform_url',
+                  'platform_language',
+                  'platform_external_auth',
+                  'platform_registration',
+                  'platform_demo',
+                ],
+                settings,
+              );
+              return (
+                <Formik
+                  enableReinitialize={true}
+                  initialValues={initialValues}
+                  validationSchema={settingsValidation(t)}
+                  render={() => (
+                    <Form>
+                      <Grid container={true} spacing={3}>
+                        <Grid item={true} xs={9}>
+                          <Paper
+                            classes={{ root: classes.paper }}
+                            elevation={2}
                           >
-                            <MenuItem value="auto">
-                              <em>{t('Automatic')}</em>
-                            </MenuItem>
-                            <MenuItem value="en">English</MenuItem>
-                            <MenuItem value="fr">Français</MenuItem>
-                          </Field>
-                        </Paper>
+                            <Typography variant="h1" gutterBottom={true}>
+                              {t('Global')}
+                            </Typography>
+                            <Field
+                              name="platform_title"
+                              component={TextField}
+                              label={t('Name')}
+                              fullWidth={true}
+                              onFocus={this.handleChangeFocus.bind(this, id)}
+                              onSubmit={this.handleSubmitField.bind(this, id)}
+                              helperText={
+                                <SubscriptionFocus
+                                  me={me}
+                                  users={editUsers}
+                                  fieldName="platform_title"
+                                />
+                              }
+                            />
+                            <Field
+                              name="platform_email"
+                              component={TextField}
+                              label={t('Sender email address')}
+                              fullWidth={true}
+                              style={{ marginTop: 10 }}
+                              onFocus={this.handleChangeFocus.bind(this, id)}
+                              onSubmit={this.handleSubmitField.bind(this, id)}
+                              helperText={
+                                <SubscriptionFocus
+                                  me={me}
+                                  users={editUsers}
+                                  fieldName="platform_email"
+                                />
+                              }
+                            />
+                            <Field
+                              name="platform_url"
+                              component={TextField}
+                              label={t('Base URL')}
+                              fullWidth={true}
+                              style={{ marginTop: 10 }}
+                              onFocus={this.handleChangeFocus.bind(this, id)}
+                              onSubmit={this.handleSubmitField.bind(this, id)}
+                              helperText={
+                                <SubscriptionFocus
+                                  me={me}
+                                  users={editUsers}
+                                  fieldName="platform_email"
+                                />
+                              }
+                            />
+                            <Field
+                              name="platform_language"
+                              component={Select}
+                              label={t('Language')}
+                              fullWidth={true}
+                              inputProps={{
+                                name: 'platform_language',
+                                id: 'platform-language',
+                              }}
+                              containerstyle={{ marginTop: 10, width: '100%' }}
+                              onFocus={this.handleChangeFocus.bind(this, id)}
+                              onChange={this.handleSubmitField.bind(this, id)}
+                              helpertext={
+                                <SubscriptionFocus
+                                  me={me}
+                                  users={editUsers}
+                                  fieldName="platform_language"
+                                />
+                              }
+                            >
+                              <MenuItem value="auto">
+                                <em>{t('Automatic')}</em>
+                              </MenuItem>
+                              <MenuItem value="en">English</MenuItem>
+                              <MenuItem value="fr">Français</MenuItem>
+                            </Field>
+                          </Paper>
+                        </Grid>
+                        <Grid item={true} xs={3}>
+                          <Paper
+                            classes={{ root: classes.paper }}
+                            elevation={2}
+                          >
+                            <Typography variant="h1" gutterBottom={true}>
+                              {t('Options')}
+                            </Typography>
+                            <Field
+                              name="platform_external_auth"
+                              component={Switch}
+                              label={t('External authentication')}
+                              onChange={this.handleSubmitField.bind(this, id)}
+                            />
+                            <Field
+                              name="platform_registration"
+                              component={Switch}
+                              label={t('Registration')}
+                              onChange={this.handleSubmitField.bind(this, id)}
+                            />
+                            <Field
+                              name="platform_demo"
+                              component={Switch}
+                              label={t('Display demo credentials')}
+                              onChange={this.handleSubmitField.bind(this, id)}
+                            />
+                          </Paper>
+                        </Grid>
                       </Grid>
-                      <Grid item={true} xs={3}>
-                        <Paper classes={{ root: classes.paper }} elevation={2}>
-                          <Typography variant="h1" gutterBottom={true}>
-                            {t('Options')}
-                          </Typography>
-                          <Field
-                            name="platform_external_auth"
-                            component={Switch}
-                            label={t('External authentication')}
-                            onChange={this.handleSubmitField.bind(this, id)}
-                          />
-                          <Field
-                            name="platform_registration"
-                            component={Switch}
-                            label={t('Registration')}
-                            onChange={this.handleSubmitField.bind(this, id)}
-                          />
-                          <Field
-                            name="platform_demo"
-                            component={Switch}
-                            label={t('Display demo credentials')}
-                            onChange={this.handleSubmitField.bind(this, id)}
-                          />
-                        </Paper>
-                      </Grid>
-                    </Grid>
-                  </Form>
-                )}
-              />
+                    </Form>
+                  )}
+                />
+              );
+            }
+            return (
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={9}>
+                  <Paper classes={{ root: classes.paper }} elevation={2}>
+                    <Typography variant="h1" gutterBottom={true}>
+                      {t('Global')}
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid item={true} xs={3}>
+                  <Paper classes={{ root: classes.paper }} elevation={2}>
+                    <Typography variant="h1" gutterBottom={true}>
+                      {t('Options')}
+                    </Typography>
+                  </Paper>
+                </Grid>
+              </Grid>
             );
-          }
-          return (
-            <Grid container={true} spacing={3}>
-              <Grid item={true} xs={9}>
-                <Paper classes={{ root: classes.paper }} elevation={2}>
-                  <Typography variant="h1" gutterBottom={true}>
-                    {t('Global')}
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item={true} xs={3}>
-                <Paper classes={{ root: classes.paper }} elevation={2}>
-                  <Typography variant="h1" gutterBottom={true}>
-                    {t('Options')}
-                  </Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-          );
-        }}
-      />
+          }}
+        />
+      </div>
     );
   }
 }

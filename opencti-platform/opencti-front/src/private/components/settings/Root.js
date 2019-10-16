@@ -13,8 +13,22 @@ import { BoundaryRoute } from '../Error';
 const Root = () => (
   <Switch>
     <BoundaryRoute exact path="/dashboard/settings" component={Settings} />
-    <BoundaryRoute exact path="/dashboard/settings/users" component={Users} />
-    <BoundaryRoute exact path="/dashboard/settings/groups" component={Groups} />
+    <BoundaryRoute exact path="/dashboard/settings/about" component={About} />
+    <BoundaryRoute
+      exact
+      path="/dashboard/settings/accesses"
+      render={() => <Redirect to="/dashboard/settings/accesses/users" />}
+    />
+    <BoundaryRoute
+      exact
+      path="/dashboard/settings/accesses/users"
+      component={Users}
+    />
+    <BoundaryRoute
+      exact
+      path="/dashboard/settings/accesses/groups"
+      component={Groups}
+    />
     <BoundaryRoute
       exact
       path="/dashboard/settings/marking"
@@ -40,11 +54,6 @@ const Root = () => (
       path="/dashboard/settings/attributes/:attributeLabel"
       component={Attributes}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/settings/about"
-      component={About}
-    />    
   </Switch>
 );
 

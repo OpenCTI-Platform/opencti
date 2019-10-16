@@ -15,7 +15,8 @@ import MarkingDefinitionPopover from './MarkingDefinitionPopover';
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
-    height: '100%',
+    height: 50,
+    cursor: 'default',
   },
   itemIcon: {
     color: theme.palette.primary.main,

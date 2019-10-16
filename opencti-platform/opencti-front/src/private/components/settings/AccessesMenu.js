@@ -7,7 +7,7 @@ import Drawer from '@material-ui/core/Drawer';
 import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import inject18n from '../../../../components/i18n';
+import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
   drawer: {
@@ -21,7 +21,7 @@ const styles = (theme) => ({
   toolbar: theme.mixins.toolbar,
 });
 
-class AttributesMenu extends Component {
+class SettingsMenu extends Component {
   render() {
     const { t, location, classes } = this.props;
     return (
@@ -34,34 +34,24 @@ class AttributesMenu extends Component {
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to={'/dashboard/settings/attributes/tags'}
+            to={'/dashboard/settings/accesses/users'}
             selected={
-              location.pathname === '/dashboard/settings/attributes/tags'
+              location.pathname === '/dashboard/settings/accesses/users'
             }
             dense={false}
           >
-            <ListItemText primary={t('Tags')} />
+            <ListItemText primary={t('Users')} />
           </MenuItem>
           <MenuItem
             component={Link}
-            to={'/dashboard/settings/attributes/report_class'}
+            to={'/dashboard/settings/accesses/groups'}
             selected={
               location.pathname
-              === '/dashboard/settings/attributes/report_class'
+              === '/dashboard/settings/accesses/groups'
             }
             dense={false}
           >
-            <ListItemText primary={t('Report types')} />
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to={'/dashboard/settings/attributes/role_played'}
-            selected={
-              location.pathname === '/dashboard/settings/attributes/role_played'
-            }
-            dense={false}
-          >
-            <ListItemText primary={t('Observables roles')} />
+            <ListItemText primary={t('Groups')} />
           </MenuItem>
         </MenuList>
       </Drawer>
@@ -69,7 +59,7 @@ class AttributesMenu extends Component {
   }
 }
 
-AttributesMenu.propTypes = {
+SettingsMenu.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,
@@ -79,4 +69,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(AttributesMenu);
+)(SettingsMenu);

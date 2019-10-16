@@ -24,7 +24,7 @@ const roles = [
   { label: 'ROLE_ADMIN', value: 'ROLE_ADMIN' },
 ];
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -39,7 +39,7 @@ const styles = theme => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
-    right: 30,
+    right: 230,
   },
   buttons: {
     marginTop: 20,
@@ -75,7 +75,7 @@ const userMutation = graphql`
   }
 `;
 
-const userValidation = t => Yup.object().shape({
+const userValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   email: Yup.string()
     .required(t('This field is required'))

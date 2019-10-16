@@ -13,10 +13,11 @@ import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import KillChainPhasePopover from './KillChainPhasePopover';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
-    height: '100%',
+    height: 50,
+    cursor: 'default',
   },
   itemIcon: {
     color: theme.palette.primary.main,

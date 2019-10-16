@@ -10,7 +10,7 @@ import { compose, map } from 'ramda';
 import List from '@material-ui/core/List';
 import inject18n from '../../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {},
   itemNested: {
     paddingLeft: theme.spacing(4),
@@ -18,13 +18,22 @@ const styles = theme => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
+  name: {
+    width: '20%',
     height: 20,
-    fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+  },
+  description: {
+    width: '70%',
+    height: 20,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    color: '#a5a5a5',
   },
   goIcon: {
     position: 'absolute',
@@ -44,22 +53,40 @@ const styles = theme => ({
 class SectorLineComponent extends Component {
   render() {
     const {
-      classes, subsectors, node, isSubsector,
+      classes, subsectors, node, isSubsector, t,
     } = this.props;
     return (
       <div>
         <ListItem
           classes={{ root: isSubsector ? classes.itemNested : classes.item }}
           divider={true}
-          dense={true}
           button={true}
           component={Link}
           to={`/dashboard/entities/sectors/${node.id}`}
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <Domain />
+            <Domain fontSize={isSubsector ? 'small' : 'default'} />
           </ListItemIcon>
-          <ListItemText primary={node.name} secondary={node.description} />
+          <ListItemText
+            primary={
+              <div>
+                <div
+                  className={classes.name}
+                  style={{ fontSize: isSubsector ? 11 : 13 }}
+                >
+                  {node.name}
+                </div>
+                <div
+                  className={classes.description}
+                  style={{ fontSize: isSubsector ? 11 : 13 }}
+                >
+                  {node.description.length > 0
+                    ? node.description
+                    : t('This sector does not have any description.')}
+                </div>
+              </div>
+            }
+          />
           <ListItemIcon classes={{ root: classes.goIcon }}>
             <KeyboardArrowRight />
           </ListItemIcon>
@@ -67,7 +94,7 @@ class SectorLineComponent extends Component {
         {subsectors ? (
           <List disablePadding={true}>
             {map(
-              subsector => (
+              (subsector) => (
                 <SectorLine
                   key={subsector.id}
                   node={subsector}
@@ -102,13 +129,12 @@ class SectorLineDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} dense={true}>
+      <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <Domain />
         </ListItemIcon>
         <ListItemText
           primary={<span className="fakeItem" style={{ width: '80%' }} />}
-          secondary={<span className="fakeItem" style={{ width: '90%' }} />}
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRight />

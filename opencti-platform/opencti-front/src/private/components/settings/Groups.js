@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
+import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../../relay/environment';
 import {
@@ -12,6 +13,7 @@ import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import GroupsLines, { groupsLinesQuery } from './groups/GroupsLines';
 import GroupCreation from './groups/GroupCreation';
+import AccessesMenu from './AccessesMenu';
 
 export const groupsSearchQuery = graphql`
   query GroupsSearchQuery($search: String) {
@@ -28,6 +30,13 @@ export const groupsSearchQuery = graphql`
     }
   }
 `;
+
+const styles = () => ({
+  container: {
+    margin: 0,
+    padding: '0 200px 0 0',
+  },
+});
 
 class Groups extends Component {
   constructor(props) {
@@ -112,13 +121,15 @@ class Groups extends Component {
     const {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;
+    const { classes } = this.props;
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div>
+      <div className={classes.container}>
+        <AccessesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <GroupCreation paginationOptions={paginationOptions} />
       </div>
@@ -128,6 +139,7 @@ class Groups extends Component {
 
 Groups.propTypes = {
   t: PropTypes.func,
+  classes: PropTypes.object,
   history: PropTypes.object,
   location: PropTypes.object,
 };
@@ -135,4 +147,5 @@ Groups.propTypes = {
 export default compose(
   inject18n,
   withRouter,
+  withStyles(styles),
 )(Groups);

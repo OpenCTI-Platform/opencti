@@ -16,10 +16,8 @@ import TagPopover from './TagPopover';
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+    height: 50,
+    cursor: 'default',
   },
   bodyItem: {
     height: 20,
@@ -50,7 +48,7 @@ class TagLineComponent extends Component {
       fd, classes, node, dataColumns, paginationOptions,
     } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon style={{ color: node.color }}>
           <Tag />
         </ListItemIcon>

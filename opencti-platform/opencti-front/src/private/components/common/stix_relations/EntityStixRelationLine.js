@@ -18,7 +18,7 @@ import StixRelationPopover from './StixRelationPopover';
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
-    height: '100%',
+    height: 50,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -30,11 +30,6 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-  },
-  goIcon: {
-    position: 'absolute',
-    right: 10,
-    marginRight: 0,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],

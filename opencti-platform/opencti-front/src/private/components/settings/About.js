@@ -10,9 +10,13 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
-import Loader from '../../Loader';
+import SettingsMenu from './SettingsMenu';
 
 const styles = () => ({
+  container: {
+    margin: 0,
+    padding: '0 200px 0 0',
+  },
   panel: {
     margin: '0 auto',
     marginBottom: 30,
@@ -38,33 +42,39 @@ class About extends Component {
   render() {
     const { classes, t } = this.props;
     return (
-      <QueryRenderer
-        query={aboutQuery}
-        render={({ props }) => {
-          if (props) {
-            const { version, dependencies } = props.about;
-            return (
-              <Paper classes={{ root: classes.panel }} elevation={2}>
-                <Typography variant="h1" gutterBottom={true}>
-                  {t('OpenCTI version')} {version}
-                </Typography>
-                <br/>
-                <Typography variant="h2" gutterBottom={true}>
-                  <b>{t('Dependencies')}</b>
-                </Typography>
-                <List>
-                  {dependencies.map(dep => (
+      <div className={classes.container}>
+        <SettingsMenu />
+        <QueryRenderer
+          query={aboutQuery}
+          render={({ props }) => {
+            if (props) {
+              const { version, dependencies } = props.about;
+              return (
+                <Paper classes={{ root: classes.panel }} elevation={2}>
+                  <Typography variant="h1" gutterBottom={true}>
+                    {t('OpenCTI version')} {version}
+                  </Typography>
+                  <br />
+                  <Typography variant="h2" gutterBottom={true}>
+                    <b>{t('Dependencies')}</b>
+                  </Typography>
+                  <List>
+                    {dependencies.map((dep) => (
                       <ListItem key={dep.name} divider>
-                        <ListItemText primary={t(dep.name)} secondary={dep.version}/>
+                        <ListItemText
+                          primary={t(dep.name)}
+                          secondary={dep.version}
+                        />
                       </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            );
-          }
-          return <Loader/>;
-        }}
-      />
+                    ))}
+                  </List>
+                </Paper>
+              );
+            }
+            return <div> &nbsp; </div>;
+          }}
+        />
+      </div>
     );
   }
 }

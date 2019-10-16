@@ -16,7 +16,7 @@ import ItemStatus from '../../../components/ItemStatus';
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
-    height: '100%',
+    height: 50,
   },
   itemIcon: {
     color: theme.palette.primary.main,

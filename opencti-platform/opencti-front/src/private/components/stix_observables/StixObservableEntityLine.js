@@ -19,7 +19,7 @@ import { resolveLink } from '../../../utils/Entity';
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
-    height: '100%',
+    height: 50,
   },
   itemIcon: {
     color: theme.palette.primary.main,

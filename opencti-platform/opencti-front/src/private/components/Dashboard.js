@@ -26,14 +26,13 @@ import YAxis from 'recharts/lib/cartesian/YAxis';
 import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
 import Tooltip from 'recharts/lib/component/Tooltip';
 import { QueryRenderer } from '../../relay/environment';
-import { truncate } from '../../utils/String';
 import { yearsAgo, dayAgo, now } from '../../utils/Time';
 import Theme from '../../components/Theme';
 import inject18n from '../../components/i18n';
 import ItemNumberDifference from '../../components/ItemNumberDifference';
 import ItemMarking from '../../components/ItemMarking';
 
-const styles = theme => ({
+const styles = (theme) => ({
   root: {
     flexGrow: 1,
   },
@@ -57,6 +56,12 @@ const styles = theme => ({
   },
   itemIcon: {
     color: theme.palette.primary.main,
+  },
+  itemText: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   itemIconSecondary: {
     marginRight: 0,
@@ -232,7 +237,7 @@ class Dashboard extends Component {
                         <div className={classes.number}>{n(total)}</div>
                         <ItemNumberDifference
                           difference={difference}
-                          description="last 24h"
+                          description="24h"
                         />
                         <div className="clearfix" />
                         <div className={classes.title}>
@@ -269,7 +274,7 @@ class Dashboard extends Component {
                         <div className={classes.number}>{n(total)}</div>
                         <ItemNumberDifference
                           difference={difference}
-                          description="last 24h"
+                          description="24h"
                         />
                         <div className="clearfix" />
                         <div className={classes.title}>
@@ -308,7 +313,7 @@ class Dashboard extends Component {
                         <div className={classes.number}>{n(total)}</div>
                         <ItemNumberDifference
                           difference={difference}
-                          description="last 24h"
+                          description="24h"
                         />
                         <div className="clearfix" />
                         <div className={classes.title}>
@@ -345,7 +350,7 @@ class Dashboard extends Component {
                         <div className={classes.number}>{n(total)}</div>
                         <ItemNumberDifference
                           difference={difference}
-                          description="last 24h"
+                          description="24h"
                         />
                         <div className="clearfix" />
                         <div className={classes.title}>
@@ -476,8 +481,9 @@ class Dashboard extends Component {
                                 <Description />
                               </ListItemIcon>
                               <ListItemText
-                                primary={truncate(report.name, 70)}
-                                secondary={truncate(report.description, 70)}
+                                classes={{ root: classes.itemText }}
+                                primary={report.name}
+                                secondary={report.description}
                               />
                               <div style={{ minWidth: 100 }}>
                                 {markingDefinition ? (
@@ -550,10 +556,8 @@ class Dashboard extends Component {
                                 <Tag />
                               </ListItemIcon>
                               <ListItemText
-                                primary={truncate(
-                                  stixObservable.observable_value,
-                                  70,
-                                )}
+                                classes={{ root: classes.itemText }}
+                                primary={stixObservable.observable_value}
                                 secondary={t(
                                   `observable_${stixObservable.entity_type}`,
                                 )}

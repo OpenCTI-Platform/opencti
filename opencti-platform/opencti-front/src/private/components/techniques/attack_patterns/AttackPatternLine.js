@@ -18,7 +18,7 @@ import StixObjectTags from '../../common/stix_object/StixObjectTags';
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
-    height: '100%',
+    height: 50,
   },
   itemIcon: {
     color: theme.palette.primary.main,
