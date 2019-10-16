@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  map, filter, head, keys, groupBy, assoc, compose,
+  map, keys, groupBy, assoc, compose,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
@@ -14,11 +14,10 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
-import { ExpandMore, CheckCircle } from '@material-ui/icons';
-import { commitMutation } from '../../../relay/environment';
-import { truncate } from '../../../utils/String';
-import ItemIcon from '../../../components/ItemIcon';
-import inject18n from '../../../components/i18n';
+import { ExpandMore } from '@material-ui/icons';
+import { truncate } from '../../../../utils/String';
+import ItemIcon from '../../../../components/ItemIcon';
+import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
   container: {
@@ -50,76 +49,10 @@ const styles = (theme) => ({
   },
 });
 
-export const reportMutationRelationAdd = graphql`
-  mutation ReportAddObjectRefsLinesRelationAddMutation(
-    $id: ID!
-    $input: RelationAddInput!
-  ) {
-    reportEdit(id: $id) {
-      relationAdd(input: $input) {
-        node {
-          ...ReportKnowledgeGraph_report
-        }
-        relation {
-          id
-        }
-      }
-    }
-  }
-`;
-
-export const reportMutationRelationDelete = graphql`
-  mutation ReportAddObjectRefsLinesRelationDeleteMutation(
-    $id: ID!
-    $relationId: ID!
-  ) {
-    reportEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
-        node {
-          ...ReportKnowledgeGraph_report
-        }
-      }
-    }
-  }
-`;
-
-class ReportAddObjectRefsLinesContainer extends Component {
+class StixRelationCreationFromEntityLinesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedPanels: {} };
-  }
-
-  toggleStixDomain(stixDomain) {
-    const { reportId, reportObjectRefs } = this.props;
-    const reportObjectRefsIds = map((n) => n.node.id, reportObjectRefs);
-    const alreadyAdded = reportObjectRefsIds.includes(stixDomain.id);
-
-    if (alreadyAdded) {
-      const existingStixDomain = head(
-        filter((n) => n.node.id === stixDomain.id, reportObjectRefs),
-      );
-      commitMutation({
-        mutation: reportMutationRelationDelete,
-        variables: {
-          id: reportId,
-          relationId: existingStixDomain.relation.id,
-        },
-      });
-    } else {
-      const input = {
-        fromRole: 'so',
-        toId: reportId,
-        toRole: 'knowledge_aggregation',
-        through: 'object_refs',
-      };
-      commitMutation({
-        mutation: reportMutationRelationAdd,
-        variables: {
-          id: stixDomain.id,
-          input,
-        },
-      });
-    }
   }
 
   handleChangePanel(panelKey, event, expanded) {
@@ -140,9 +73,8 @@ class ReportAddObjectRefsLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, data, reportObjectRefs,
+      t, classes, data, handleSelect,
     } = this.props;
-    const reportObjectRefsIds = map((n) => n.node.id, reportObjectRefs);
     const stixDomainEntitiesNodes = map(
       (n) => n.node,
       data.stixDomainEntities.edges,
@@ -174,34 +106,22 @@ class ReportAddObjectRefsLinesContainer extends Component {
             <ExpansionPanelDetails
               classes={{ root: classes.expansionPanelContent }}>
               <List classes={{ root: classes.list }}>
-                {stixDomainEntities[type].map((stixDomainEntity) => {
-                  const alreadyAdded = reportObjectRefsIds.includes(
-                    stixDomainEntity.id,
-                  );
-                  return (
-                    <ListItem
-                      key={stixDomainEntity.id}
-                      classes={{ root: classes.menuItem }}
-                      divider={true}
-                      button={true}
-                      onClick={this.toggleStixDomain.bind(
-                        this,
-                        stixDomainEntity,
-                      )}>
-                      <ListItemIcon>
-                        {alreadyAdded ? (
-                          <CheckCircle classes={{ root: classes.icon }} />
-                        ) : (
-                          <ItemIcon type={type} />
-                        )}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={stixDomainEntity.name}
-                        secondary={truncate(stixDomainEntity.description, 100)}
-                      />
-                    </ListItem>
-                  );
-                })}
+                {stixDomainEntities[type].map((stixDomainEntity) => (
+                  <ListItem
+                    key={stixDomainEntity.id}
+                    classes={{ root: classes.menuItem }}
+                    divider={true}
+                    button={true}
+                    onClick={handleSelect.bind(this, stixDomainEntity)}>
+                    <ListItemIcon>
+                      <ItemIcon type={type} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={stixDomainEntity.name}
+                      secondary={truncate(stixDomainEntity.description, 100)}
+                    />
+                  </ListItem>
+                ))}
               </List>
             </ExpansionPanelDetails>
           </ExpansionPanel>
@@ -211,9 +131,8 @@ class ReportAddObjectRefsLinesContainer extends Component {
   }
 }
 
-ReportAddObjectRefsLinesContainer.propTypes = {
-  reportId: PropTypes.string,
-  reportObjectRefs: PropTypes.array,
+StixRelationCreationFromEntityLinesContainer.propTypes = {
+  handleSelect: PropTypes.func,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -221,17 +140,19 @@ ReportAddObjectRefsLinesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const reportAddObjectRefsLinesQuery = graphql`
-  query ReportAddObjectRefsLinesQuery(
+export const stixRelationCreationFromEntityLinesQuery = graphql`
+  query StixRelationCreationFromEntityLinesQuery(
     $search: String
+    $types: [String]
     $count: Int!
     $cursor: ID
     $orderBy: StixDomainEntitiesOrdering
     $orderMode: OrderingMode
   ) {
-    ...ReportAddObjectRefsLines_data
+    ...StixRelationCreationFromEntityLines_data
       @arguments(
         search: $search
+        types: $types
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -240,14 +161,14 @@ export const reportAddObjectRefsLinesQuery = graphql`
   }
 `;
 
-const ReportAddObjectRefsLines = createPaginationContainer(
-  ReportAddObjectRefsLinesContainer,
+const StixRelationCreationFromEntityLines = createPaginationContainer(
+  StixRelationCreationFromEntityLinesContainer,
   {
     data: graphql`
-      fragment ReportAddObjectRefsLines_data on Query
+      fragment StixRelationCreationFromEntityLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
-
+          types: { type: "[String]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: { type: "StixDomainEntitiesOrdering", defaultValue: "name" }
@@ -255,6 +176,7 @@ const ReportAddObjectRefsLines = createPaginationContainer(
         ) {
         stixDomainEntities(
           search: $search
+          types: $types
           first: $count
           after: $cursor
           orderBy: $orderBy
@@ -285,17 +207,19 @@ const ReportAddObjectRefsLines = createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
+        search: fragmentVariables.search,
+        types: fragmentVariables.types,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: reportAddObjectRefsLinesQuery,
+    query: stixRelationCreationFromEntityLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(ReportAddObjectRefsLines);
+)(StixRelationCreationFromEntityLines);

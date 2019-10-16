@@ -1,6 +1,14 @@
-import { importData } from '../domain/stixEntity';
+import {
+  importData,
+  findById,
+  markingDefinitions,
+  stixRelations
+} from '../domain/stixEntity';
 
 const stixEntityResolvers = {
+  Query: {
+    stixEntity: (_, { id }) => findById(id)
+  },
   StixEntity: {
     // eslint-disable-next-line
     __resolveType(obj) {
@@ -13,7 +21,10 @@ const stixEntityResolvers = {
         );
       }
       return 'Unknown';
-    }
+    },
+    markingDefinitions: (stixEntity, args) =>
+      markingDefinitions(stixEntity.id, args),
+    stixRelations: (stixEntity, args) => stixRelations(stixEntity.id, args)
   },
   Mutation: {
     importData: (_, { type, file }) => importData(type, file)

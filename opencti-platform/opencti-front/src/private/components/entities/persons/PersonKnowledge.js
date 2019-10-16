@@ -64,6 +64,7 @@ class PersonKnowledgeComponent extends Component {
               relationType="belongs-to"
               targetEntityTypes={['Organization']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -77,6 +78,7 @@ class PersonKnowledgeComponent extends Component {
               relationType="localization"
               targetEntityTypes={['City', 'Country', 'Region']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -121,6 +123,7 @@ class PersonKnowledgeComponent extends Component {
                   relationRole: 'attribution',
                 },
               ]}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}

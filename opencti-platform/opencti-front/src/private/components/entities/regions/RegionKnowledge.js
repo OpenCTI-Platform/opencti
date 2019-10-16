@@ -64,6 +64,7 @@ class RegionKnowledgeComponent extends Component {
               relationType="localization"
               targetEntityTypes={['Country']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -108,6 +109,7 @@ class RegionKnowledgeComponent extends Component {
                   relationRole: 'attribution',
                 },
               ]}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}

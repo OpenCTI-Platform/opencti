@@ -64,6 +64,7 @@ class OrganizationKnowledgeComponent extends Component {
               relationType="gathering"
               targetEntityTypes={['Sector']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -77,6 +78,7 @@ class OrganizationKnowledgeComponent extends Component {
               relationType="localization"
               targetEntityTypes={['Region', 'Country', 'City']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -90,6 +92,7 @@ class OrganizationKnowledgeComponent extends Component {
               relationType="gathering"
               targetEntityTypes={['User']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -134,6 +137,7 @@ class OrganizationKnowledgeComponent extends Component {
                 'Malware',
               ]}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}

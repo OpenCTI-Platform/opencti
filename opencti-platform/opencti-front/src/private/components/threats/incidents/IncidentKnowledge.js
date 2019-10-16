@@ -64,6 +64,7 @@ class IncidentKnowledgeComponent extends Component {
               relationType="attributed-to"
               targetEntityTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -77,6 +78,7 @@ class IncidentKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -116,6 +118,7 @@ class IncidentKnowledgeComponent extends Component {
               ]}
               entityLink={link}
               exploreLink={`/dashboard/explore/victimology/${incident.id}`}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -130,6 +133,7 @@ class IncidentKnowledgeComponent extends Component {
               targetEntityTypes={['Attack-Pattern']}
               entityLink={link}
               exploreLink={`/dashboard/explore/attack_patterns/${incident.id}`}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -143,6 +147,7 @@ class IncidentKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Tool']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -156,6 +161,7 @@ class IncidentKnowledgeComponent extends Component {
               relationType="targets"
               targetEntityTypes={['Vulnerability']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}

@@ -16,6 +16,7 @@ import inject18n from '../../../../components/i18n';
 import EntityStixRelationsLines, {
   entityStixRelationsLinesQuery,
 } from './EntityStixRelationsLines';
+import StixRelationCreationFromEntity from './StixRelationCreationFromEntity';
 
 const styles = theme => ({
   container: {
@@ -162,6 +163,7 @@ class EntityStixRelations extends Component {
       resolveRelationRole,
       resolveRelationToTypes,
       resolveViaTypes,
+      creationIsFrom,
     } = this.props;
     const {
       view,
@@ -360,6 +362,12 @@ class EntityStixRelations extends Component {
           ''
         )}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        <StixRelationCreationFromEntity
+          entityId={entityId}
+          isFrom={creationIsFrom}
+          targetEntityTypes={targetEntityTypes}
+          paginationOptions={paginationOptions}
+        />
       </div>
     );
   }
@@ -379,6 +387,7 @@ EntityStixRelations.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   exploreLink: PropTypes.string,
+  creationIsFrom: PropTypes.bool,
 };
 
 export default compose(

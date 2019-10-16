@@ -64,6 +64,7 @@ class SectorKnowledgeComponent extends Component {
               relationType="gathering"
               targetEntityTypes={['Organization']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -96,6 +97,7 @@ class SectorKnowledgeComponent extends Component {
               relationType="targets"
               targetEntityTypes={['Intrusion-Set']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -123,6 +125,7 @@ class SectorKnowledgeComponent extends Component {
               relationType="targets"
               targetEntityTypes={['Campaign']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -132,19 +135,11 @@ class SectorKnowledgeComponent extends Component {
           path="/dashboard/entities/sectors/:sectorId/knowledge/incidents"
           render={routeProps => (
             <EntityStixRelations
-              resolveRelationType="gathering"
-              resolveRelationRole="gather"
-              resolveViaTypes={[
-                {
-                  entityType: 'Malware',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-              ]}
               entityId={sector.id}
               relationType="targets"
               targetEntityTypes={['Incident']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -160,6 +155,7 @@ class SectorKnowledgeComponent extends Component {
               relationType="targets"
               targetEntityTypes={['Malware']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}

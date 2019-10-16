@@ -64,6 +64,7 @@ class ToolKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Intrusion-Set']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -77,6 +78,7 @@ class ToolKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Campaign']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -90,6 +92,7 @@ class ToolKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Incident']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -103,6 +106,7 @@ class ToolKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
