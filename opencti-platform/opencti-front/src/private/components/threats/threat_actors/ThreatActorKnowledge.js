@@ -64,6 +64,7 @@ class ThreatActorKnowledgeComponent extends Component {
               relationType="attributed-to"
               targetEntityTypes={['Intrusion-Set']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -80,6 +81,7 @@ class ThreatActorKnowledgeComponent extends Component {
               relationType="attributed-to"
               targetEntityTypes={['Campaign']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -95,6 +97,7 @@ class ThreatActorKnowledgeComponent extends Component {
               relationType="attributed-to"
               targetEntityTypes={['Incident']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -140,6 +143,7 @@ class ThreatActorKnowledgeComponent extends Component {
               ]}
               entityLink={link}
               exploreLink={`/dashboard/explore/victimology/${threatActor.id}`}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -155,6 +159,7 @@ class ThreatActorKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -171,6 +176,7 @@ class ThreatActorKnowledgeComponent extends Component {
               targetEntityTypes={['Attack-Pattern']}
               entityLink={link}
               exploreLink={`/dashboard/explore/attack_patterns/${threatActor.id}`}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -186,6 +192,7 @@ class ThreatActorKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Tool']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -201,6 +208,7 @@ class ThreatActorKnowledgeComponent extends Component {
               relationType="targets"
               targetEntityTypes={['Vulnerability']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}

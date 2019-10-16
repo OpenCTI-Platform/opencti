@@ -11,9 +11,8 @@ import {
 } from 'react-router-dom';
 import 'storm-react-diagrams/dist/style.min.css';
 import 'react-grid-layout/css/styles.css';
-import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import { createMuiTheme } from '@material-ui/core/styles';
+import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
 import * as serviceWorker from './config/serviceWorker';
@@ -26,7 +25,7 @@ import { APP_BASE_PATH, MESSAGING$ } from './relay/environment';
 class RedirectManagerComponent extends Component {
   componentDidMount() {
     this.subscription = MESSAGING$.redirect.subscribe({
-      next: url => this.props.history.push(url),
+      next: (url) => this.props.history.push(url),
     });
   }
 
@@ -47,7 +46,7 @@ RedirectManagerComponent.propTypes = {
 const RedirectManager = compose(withRouter)(RedirectManagerComponent);
 
 const App = () => (
-  <MuiThemeProvider theme={createMuiTheme(theme)}>
+  <ThemeProvider theme={createMuiTheme(theme)}>
     <BrowserRouter basename={APP_BASE_PATH}>
       <RedirectManager>
         <CssBaseline />
@@ -58,7 +57,7 @@ const App = () => (
         </Switch>
       </RedirectManager>
     </BrowserRouter>
-  </MuiThemeProvider>
+  </ThemeProvider>
 );
 
 export default App;

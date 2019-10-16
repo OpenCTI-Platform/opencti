@@ -20,7 +20,7 @@ import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -31,9 +31,6 @@ const styles = theme => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
-  },
-  dialogActions: {
-    padding: '0 17px 20px 0',
   },
   createButton: {
     position: 'fixed',
@@ -82,7 +79,7 @@ const externalReferenceCreationMutation = graphql`
   }
 `;
 
-const externalReferenceValidation = t => Yup.object().shape({
+const externalReferenceValidation = (t) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string(),
   url: Yup.string().url(t('The value must be an URL')),
@@ -307,21 +304,14 @@ class ExternalReferenceCreation extends Component {
                     style={{ marginTop: 20 }}
                   />
                 </DialogContent>
-                <DialogActions classes={{ root: classes.dialogActions }}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                <DialogActions>
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
                     color="primary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>

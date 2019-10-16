@@ -271,6 +271,32 @@ interface StixEntity {
   parent_type: String!
   name: String!
   description: String
+  markingDefinitions: MarkingDefinitionConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    resolveInferences: Boolean
+    resolveRelationType: String
+    resolveRelationRole: String
+    resolveRelationToTypes: [String]
+    resolveViaTypes: [EntityRelation]
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    infrastructure: Boolean
+  ): StixRelationConnection
   created_at: DateTime
   updated_at: DateTime
 }
@@ -2319,6 +2345,8 @@ type Query {
     search: String
   ): TagConnection @auth
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)
+  # StixEntities
+  stixEntity(id: String): StixEntity @auth
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(

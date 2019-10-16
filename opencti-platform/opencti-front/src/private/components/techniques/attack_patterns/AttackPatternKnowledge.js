@@ -64,6 +64,7 @@ class AttackPatternKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Intrusion-Set']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -77,6 +78,7 @@ class AttackPatternKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Campaign']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -91,6 +93,7 @@ class AttackPatternKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Incident']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -104,6 +107,7 @@ class AttackPatternKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -117,6 +121,7 @@ class AttackPatternKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Tools']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}

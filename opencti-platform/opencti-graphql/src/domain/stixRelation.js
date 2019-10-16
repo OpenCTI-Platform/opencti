@@ -638,7 +638,7 @@ export const addStixRelation = async (user, stixRelation) => {
 
   await commitWriteTx(wTx);
 
-  return getById(internalId).then(created => {
+  return getRelationById(internalId).then(created => {
     return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
   });
 };
