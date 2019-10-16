@@ -19,7 +19,7 @@ import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     padding: '20px 0 20px 0',
   },
@@ -58,14 +58,14 @@ class StixDomainEntityAddObjectRefsLinesContainer extends Component {
   toggleStixDomain(stixDomain) {
     const { stixDomainEntityObjectRefs } = this.props;
     const stixDomainEntityObjectRefsIds = map(
-      n => n.id,
+      (n) => n.id,
       stixDomainEntityObjectRefs,
     );
     const alreadyAdded = stixDomainEntityObjectRefsIds.includes(stixDomain.id);
 
     if (alreadyAdded) {
       const existingStixDomain = head(
-        filter(n => n.id === stixDomain.id, stixDomainEntityObjectRefs),
+        filter((n) => n.id === stixDomain.id, stixDomainEntityObjectRefs),
       );
       this.props.handleDeleteObjectRef(existingStixDomain.id);
     } else {
@@ -97,20 +97,20 @@ class StixDomainEntityAddObjectRefsLinesContainer extends Component {
       t, classes, data, stixDomainEntityObjectRefs,
     } = this.props;
     const stixDomainEntityObjectRefsIds = map(
-      n => n.id,
+      (n) => n.id,
       stixDomainEntityObjectRefs,
     );
     const stixDomainEntitiesNodes = map(
-      n => n.node,
+      (n) => n.node,
       data.stixDomainEntities.edges,
     );
-    const byType = groupBy(stixDomainEntity => stixDomainEntity.entity_type);
+    const byType = groupBy((stixDomainEntity) => stixDomainEntity.entity_type);
     const stixDomainEntities = byType(stixDomainEntitiesNodes);
     const stixDomainEntitiesTypes = keys(stixDomainEntities);
 
     return (
       <div className={classes.container}>
-        {stixDomainEntitiesTypes.map(type => (
+        {stixDomainEntitiesTypes.length > 0 ? stixDomainEntitiesTypes.map((type) => (
           <ExpansionPanel
             key={type}
             expanded={this.isExpanded(
@@ -119,8 +119,7 @@ class StixDomainEntityAddObjectRefsLinesContainer extends Component {
               stixDomainEntitiesTypes.length,
             )}
             onChange={this.handleChangePanel.bind(this, type)}
-            classes={{ root: classes.expansionPanel }}
-          >
+            classes={{ root: classes.expansionPanel }}>
             <ExpansionPanelSummary expandIcon={<ExpandMore />}>
               <Typography className={classes.heading}>
                 {t(`entity_${type}`)}
@@ -130,8 +129,7 @@ class StixDomainEntityAddObjectRefsLinesContainer extends Component {
               </Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails
-              classes={{ root: classes.expansionPanelContent }}
-            >
+              classes={{ root: classes.expansionPanelContent }}>
               <List classes={{ root: classes.list }}>
                 {stixDomainEntities[type].map((stixDomainEntity) => {
                   const alreadyAdded = stixDomainEntityObjectRefsIds.includes(
@@ -165,7 +163,7 @@ class StixDomainEntityAddObjectRefsLinesContainer extends Component {
               </List>
             </ExpansionPanelDetails>
           </ExpansionPanel>
-        ))}
+        )) : <div style={{ paddingLeft: 20 }}>{t('No entities were found for this search.')}</div>}
       </div>
     );
   }
