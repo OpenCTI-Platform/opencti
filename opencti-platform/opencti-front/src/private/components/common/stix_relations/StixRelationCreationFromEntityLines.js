@@ -19,7 +19,7 @@ import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     padding: '20px 0 20px 0',
   },
@@ -68,10 +68,7 @@ class StixRelationCreationFromEntityLinesContainer extends Component {
     if (numberOfEntities === 1) {
       return true;
     }
-    if (numberOfTypes === 1) {
-      return true;
-    }
-    return false;
+    return numberOfTypes === 1;
   }
 
   render() {
@@ -79,16 +76,16 @@ class StixRelationCreationFromEntityLinesContainer extends Component {
       t, classes, data, handleSelect,
     } = this.props;
     const stixDomainEntitiesNodes = map(
-      n => n.node,
+      (n) => n.node,
       data.stixDomainEntities.edges,
     );
-    const byType = groupBy(stixDomainEntity => stixDomainEntity.entity_type);
+    const byType = groupBy((stixDomainEntity) => stixDomainEntity.entity_type);
     const stixDomainEntities = byType(stixDomainEntitiesNodes);
     const stixDomainEntitiesTypes = keys(stixDomainEntities);
 
     return (
       <div className={classes.container}>
-        {stixDomainEntitiesTypes.map(type => (
+        {stixDomainEntitiesTypes.length > 0 ? stixDomainEntitiesTypes.map((type) => (
           <ExpansionPanel
             key={type}
             expanded={this.isExpanded(
@@ -97,8 +94,7 @@ class StixRelationCreationFromEntityLinesContainer extends Component {
               stixDomainEntitiesTypes.length,
             )}
             onChange={this.handleChangePanel.bind(this, type)}
-            classes={{ root: classes.expansionPanel }}
-          >
+            classes={{ root: classes.expansionPanel }}>
             <ExpansionPanelSummary expandIcon={<ExpandMore />}>
               <Typography className={classes.heading}>
                 {t(`entity_${type}`)}
@@ -108,17 +104,15 @@ class StixRelationCreationFromEntityLinesContainer extends Component {
               </Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails
-              classes={{ root: classes.expansionPanelContent }}
-            >
+              classes={{ root: classes.expansionPanelContent }}>
               <List classes={{ root: classes.list }}>
-                {stixDomainEntities[type].map(stixDomainEntity => (
+                {stixDomainEntities[type].map((stixDomainEntity) => (
                   <ListItem
                     key={stixDomainEntity.id}
                     classes={{ root: classes.menuItem }}
                     divider={true}
                     button={true}
-                    onClick={handleSelect.bind(this, stixDomainEntity)}
-                  >
+                    onClick={handleSelect.bind(this, stixDomainEntity)}>
                     <ListItemIcon>
                       <ItemIcon type={type} />
                     </ListItemIcon>
@@ -131,7 +125,7 @@ class StixRelationCreationFromEntityLinesContainer extends Component {
               </List>
             </ExpansionPanelDetails>
           </ExpansionPanel>
-        ))}
+        )) : <div style={{ paddingLeft: 20 }}>{t('No entities were found for this search.')}</div>}
       </div>
     );
   }
