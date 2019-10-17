@@ -13,7 +13,8 @@ import ThreatActorKnowledge from './ThreatActorKnowledge';
 import ThreatActorObservables from './ThreatActorObservables';
 import Loader from '../../../Loader';
 import FileManager from '../../common/files/FileManager';
-import ThreatActorHeader from './ThreatActorHeader';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import ThreatActorPopover from './ThreatActorPopover';
 
 const subscription = graphql`
   subscription RootThreatActorSubscription($id: ID!) {
@@ -31,6 +32,9 @@ const subscription = graphql`
 const threatActorQuery = graphql`
   query RootThreatActorQuery($id: String!) {
     threatActor(id: $id) {
+      id
+      name
+      alias
       ...ThreatActor_threatActor
       ...ThreatActorOverview_threatActor
       ...ThreatActorDetails_threatActor
@@ -88,7 +92,7 @@ class RootThreatActor extends Component {
                   <Route
                     exact
                     path="/dashboard/threats/threat_actors/:threatActorId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <ThreatActor
                         {...routeProps}
                         threatActor={props.threatActor}
@@ -98,7 +102,7 @@ class RootThreatActor extends Component {
                   <Route
                     exact
                     path="/dashboard/threats/threat_actors/:threatActorId/reports"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <ThreatActorReports
                         {...routeProps}
                         threatActor={props.threatActor}
@@ -116,7 +120,7 @@ class RootThreatActor extends Component {
                   />
                   <Route
                     path="/dashboard/threats/threat_actors/:threatActorId/knowledge"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <ThreatActorKnowledge
                         {...routeProps}
                         threatActor={props.threatActor}
@@ -125,7 +129,7 @@ class RootThreatActor extends Component {
                   />
                   <Route
                     path="/dashboard/threats/threat_actors/:threatActorId/observables"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <ThreatActorObservables
                         {...routeProps}
                         threatActor={props.threatActor}
@@ -133,11 +137,13 @@ class RootThreatActor extends Component {
                     )}
                   />
                   <Route exact path="/dashboard/threats/threat_actors/:threatActorId/files"
-                    render={routeProps => (
+                    render={(routeProps) => (
                        <React.Fragment>
-                           <ThreatActorHeader threatActor={props.threatActor} />
+                           <StixDomainEntityHeader
+                               stixDomainEntity={props.threatActor}
+                               PopoverComponent={<ThreatActorPopover />}/>
                            <FileManager {...routeProps} id={threatActorId}
-                                        exportConnectors={props.connectorsForExport}
+                                        connectorsExport={props.connectorsForExport}
                                         entity={props.threatActor}/>
                        </React.Fragment>
                     )}

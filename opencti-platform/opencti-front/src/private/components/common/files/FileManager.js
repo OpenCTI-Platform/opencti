@@ -50,10 +50,10 @@ export const FileManagerExportMutation = graphql`
 `;
 
 export const scopesConn = (exportConnectors) => {
-  const scopes = uniq(flatten(map(c => c.connector_scope, exportConnectors)));
+  const scopes = uniq(flatten(map((c) => c.connector_scope, exportConnectors)));
   const connectors = map((s) => {
-    const filteredConnectors = filter(e => includes(s, e.connector_scope), exportConnectors);
-    return map(x => ({ data: { name: x.name, active: x.active } }), filteredConnectors);
+    const filteredConnectors = filter((e) => includes(s, e.connector_scope), exportConnectors);
+    return map((x) => ({ data: { name: x.name, active: x.active } }), filteredConnectors);
   }, scopes);
   const zipped = zip(scopes, connectors);
   return fromPairs(zipped);
@@ -62,14 +62,14 @@ export const scopesConn = (exportConnectors) => {
 const FileManager = ({
   id, entity, t, classes, connectorsExport,
 }) => {
-  const exportScopes = uniq(flatten(map(c => c.connector_scope, connectorsExport)));
+  const exportScopes = uniq(flatten(map((c) => c.connector_scope, connectorsExport)));
   const exportConnsPerFormat = scopesConn(connectorsExport);
   const [format, setFormat] = useState(head(exportScopes));
   const exportConnsTooltip = () => {
-    const data = map(x => (`${x.data.name} (${x.data.active ? 'active)' : 'disconnected)'}`), exportConnsPerFormat[format]);
+    const data = map((x) => (`${x.data.name} (${x.data.active ? 'active)' : 'disconnected)'}`), exportConnsPerFormat[format]);
     return data.join(', ');
   };
-  const isExportActive = () => filter(x => x.data.active, exportConnsPerFormat[format]).length > 0;
+  const isExportActive = () => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
   const askExport = (exportType) => {
     commitMutation({
       mutation: FileManagerExportMutation,
@@ -108,7 +108,7 @@ const FileManager = ({
                                 badgeContent={exportConnsPerFormat[format].length}
                                 anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
                                 style={{ marginRight: 15 }}>
-                                <Select value={format} onChange={e => setFormat(e.target.value)}>
+                                <Select value={format} onChange={(e) => setFormat(e.target.value)}>
                                     {exportScopes.map((value, i) => <MenuItem key={i} value={value}>
                                         {value}</MenuItem>)}
                                 </Select>

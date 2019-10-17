@@ -45,11 +45,7 @@ export const isSubsector = async (sectorId, args) => {
     $subsector has internal_id "${escapeString(sectorId)}"; get; count;`,
     args
   );
-  console.log(numberOfParents);
-  if (numberOfParents > 0) {
-    return true;
-  }
-  return false;
+  return numberOfParents > 0;
 };
 
 export const addSector = async (user, sector) => {

@@ -2,14 +2,11 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixDomainEntity,
-  createdByRef,
   findAll,
   findByExternalReference,
   findById,
   findByName,
   findByStixId,
-  markingDefinitions,
-  reports,
   stixDomainEntitiesNumber,
   stixDomainEntitiesTimeSeries,
   stixDomainEntityAddRelation,
@@ -20,10 +17,10 @@ import {
   stixDomainEntityEditContext,
   stixDomainEntityEditField,
   stixDomainEntityExportPush,
-  stixRelations,
-  stixDomainEntityImportPush
+  stixDomainEntityImportPush,
+  stixDomainEntityAddRelations
 } from '../domain/stixDomainEntity';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { filesListing } from '../database/minio';
 
@@ -56,12 +53,6 @@ const stixDomainEntityResolvers = {
       }
       return 'Unknown';
     },
-    createdByRef: entity => createdByRef(entity.id),
-    markingDefinitions: (entity, args) => markingDefinitions(entity.id, args),
-    tags: (stixDomainEntity, args) => tags(stixDomainEntity.id, args),
-    stixRelations: (entity, args) => stixRelations(entity.id, args),
-    editContext: entity => fetchEditContext(entity.id),
-    reports: (entity, args) => reports(entity.id, args),
     importFiles: (entity, { first }) => filesListing(first, 'import', entity),
     exportFiles: (entity, { first }) => filesListing(first, 'export', entity)
   },

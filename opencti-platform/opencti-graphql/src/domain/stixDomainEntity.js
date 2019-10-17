@@ -1,5 +1,6 @@
-import { assoc, dissoc, map } from 'ramda';
+import { dissoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
+import { Logger as logger } from 'winston';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   commitWriteTx,
@@ -11,7 +12,6 @@ import {
   escapeString,
   getById,
   getId,
-  getObject,
   monthFormat,
   notify,
   graknNow,
@@ -29,10 +29,6 @@ import {
 } from '../database/elasticSearch';
 
 import { BUS_TOPICS } from '../config/conf';
-import {
-  findAll as relationFindAll,
-  search as relationSearch
-} from './stixRelation';
 import { generateFileExportName, upload } from '../database/minio';
 import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
@@ -40,11 +36,12 @@ import { pushToConnector } from '../database/rabbitmq';
 
 export const findAll = args => elPaginate('stix_domain_entities', args);
 
-export const stixDomainEntitiesTimeSeries = args =>
-  timeSeries(
+export const stixDomainEntitiesTimeSeries = args => {
+  return timeSeries(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'}`,
     args
   );
+};
 
 export const stixDomainEntitiesNumber = args => ({
   count: countEntities('stix_domain_entities', args),
@@ -53,16 +50,17 @@ export const stixDomainEntitiesNumber = args => ({
 
 export const findById = stixDomainEntityId => getById(stixDomainEntityId);
 
-export const findByStixId = args =>
-  paginate(
+export const findByStixId = args => {
+  return paginate(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
     $x has stix_id "${escapeString(args.stix_id)}"`,
     args,
     false
   );
+};
 
-export const findByName = args =>
-  paginate(
+export const findByName = args => {
+  return paginate(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
    $x has name $name;
    $x has alias $alias;
@@ -71,9 +69,10 @@ export const findByName = args =>
     args,
     false
   );
+};
 
-export const findByExternalReference = args =>
-  paginate(
+export const findByExternalReference = args => {
+  return paginate(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
      $rel(external_reference:$externalReference, so:$x) isa external_references;
      $externalReference has internal_id "${escapeString(
@@ -82,20 +81,10 @@ export const findByExternalReference = args =>
     args,
     false
   );
+};
 
-export const createdByRef = stixDomainEntityId =>
-  getObject(
-    `match $i isa Identity; 
-    $rel(creator:$i, so:$x) isa created_by_ref; 
-    $x has internal_id "${escapeString(
-      stixDomainEntityId
-    )}"; get; offset 0; limit 1;`,
-    'i',
-    'rel'
-  );
-
-export const killChainPhases = (stixDomainEntityId, args) =>
-  paginate(
+export const killChainPhases = (stixDomainEntityId, args) => {
+  return paginate(
     `match $k isa Kill-Chain-Phase; 
     $rel(kill_chain_phase:$k, phase_belonging:$x) isa kill_chain_phases; 
     $x has internal_id "${escapeString(stixDomainEntityId)}"`,
@@ -103,62 +92,25 @@ export const killChainPhases = (stixDomainEntityId, args) =>
     false,
     false
   );
+};
 
-export const markingDefinitions = (stixDomainEntityId, args) =>
-  paginate(
-    `match $m isa Marking-Definition; 
-    $rel(marking:$m, so:$x) isa object_marking_refs; 
-    $x has internal_id "${escapeString(stixDomainEntityId)}"`,
-    args,
-    false,
-    null,
-    false,
-    false
-  );
-
-export const tags = (stixDomainEntityId, args) =>
-  paginate(
-    `match $t isa Tag; 
-    $rel(tagging:$t, so:$x) isa tagged; 
-    $x has internal_id "${escapeString(stixDomainEntityId)}"`,
-    args,
-    false,
-    null,
-    false,
-    false
-  );
-
-export const reports = (stixDomainEntityId, args) =>
-  paginate(
-    `match $r isa Report; 
-    $rel(knowledge_aggregation:$r, so:$x) isa object_refs; 
-    $x has internal_id "${escapeString(stixDomainEntityId)}"`,
-    args
-  );
-
-export const reportsTimeSeries = (stixDomainEntityId, args) =>
-  timeSeries(
+export const reportsTimeSeries = (stixDomainEntityId, args) => {
+  return timeSeries(
     `match $x isa Report; 
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
     $so has internal_id "${escapeString(stixDomainEntityId)}"`,
     args
   );
+};
 
-export const externalReferences = (stixDomainEntityId, args) =>
-  paginate(
+export const externalReferences = (stixDomainEntityId, args) => {
+  return paginate(
     `match $e isa External-Reference; 
     $rel(external_reference:$e, so:$x) isa external_references; 
     $x has internal_id "${escapeString(stixDomainEntityId)}"`,
     args,
     false
   );
-
-export const stixRelations = (stixDomainEntityId, args) => {
-  const finalArgs = assoc('fromId', stixDomainEntityId, args);
-  if (finalArgs.search && finalArgs.search.length > 0) {
-    return relationSearch(finalArgs);
-  }
-  return relationFindAll(finalArgs);
 };
 
 const askJobExports = async (entity, format, exportType) => {

@@ -51,15 +51,6 @@ export const findByPhaseName = args =>
     false
   );
 
-export const markingDefinitions = (killChainPhaseId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    (marking:$marking, so:$k) isa object_marking_refs; 
-    $k has internal_id "${escapeString(killChainPhaseId)}"`,
-    args,
-    false
-  );
-
 export const addKillChainPhase = async (user, killChainPhase) => {
   const wTx = await takeWriteTx();
   const internalId = killChainPhase.internal_id

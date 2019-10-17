@@ -49,7 +49,7 @@ class ReportHeaderComponent extends Component {
         {variant !== 'noMarking' ? (
           <div className={classes.marking}>
             {pathOr([], ['markingDefinitions', 'edges'], report).map(
-              markingDefinition => (
+              (markingDefinition) => (
                 <ItemMarking
                   key={markingDefinition.node.id}
                   label={markingDefinition.node.definition}

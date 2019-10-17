@@ -67,30 +67,6 @@ export const ownedBy = workspaceId =>
     'rel'
   );
 
-export const markingDefinitions = (workspaceId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(marking:$marking, so:$workspace) isa object_marking_refs; 
-    $workspace has internal_id "${escapeString(workspaceId)}"`,
-    args,
-    false,
-    null,
-    false,
-    false
-  );
-
-export const tags = (workspaceId, args) =>
-  paginate(
-    `match $tag isa Tag; 
-    $rel(tagging:$tag, so:$workspace) isa tagged; 
-    $workspace has internal_id "${escapeString(workspaceId)}"`,
-    args,
-    false,
-    null,
-    false,
-    false
-  );
-
 export const objectRefs = (workspaceId, args) =>
   paginate(
     `match $so isa Stix-Domain-Entity; 

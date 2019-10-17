@@ -335,6 +335,10 @@ interface StixEntity {
   parent_type: String!
   name: String!
   description: String
+  tags: TagConnection
+  reports: ReportConnection
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   stixRelations(
     first: Int
@@ -387,44 +391,14 @@ type StixDomainEntityEdge {
 }
 interface StixDomainEntity {
   id: ID!
-  internal_id: String!
+  name: String!
+  alias: [String]
   stix_id: String!
+  internal_id: String!
   entity_type: String!
   parent_type: String!
-  name: String!
   description: String
-  alias: [String]
   graph_data: String
-  editContext: [EditUserContext]
-  createdByRef: createdByRef
-  markingDefinitions: MarkingDefinitionConnection
-  tags: TagConnection
-  reports: ReportConnection
-  stixRelations(
-    first: Int
-    after: ID
-    orderBy: StixRelationsOrdering
-    orderMode: OrderingMode
-    stix_id: String
-    fromId: String
-    inferred: Boolean
-    toId: String
-    fromTypes: [String]
-    toTypes: [String]
-    relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    weights: [Int]
-    search: String
-    infrastructure: Boolean
-  ): StixRelationConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   created_at: DateTime!
@@ -2881,7 +2855,7 @@ type StixDomainEntityEditMutations {
   contextPatch(input: EditContext): StixDomainEntity
   contextClean: StixDomainEntity
   relationAdd(input: RelationAddInput): RelationData
-  relationsAdd(input: RelationsAddInput): StixDomainEntity
+  relationsAdd(input: RelationsAddInput): StixEntity
   relationDelete(relationId: ID!): RelationData
   importPush(file: Upload!): File @auth
   exportAsk(format: String!, exportType: String!): [File]

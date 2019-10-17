@@ -1,10 +1,5 @@
 import { addIdentity, findAll, findById } from '../domain/identity';
 import {
-  createdByRef,
-  markingDefinitions,
-  tags,
-  reports,
-  stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
@@ -12,6 +7,13 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
+import {
+  createdByRef,
+  markingDefinitions,
+  reports,
+  stixRelations,
+  tags
+} from '../domain/stixEntity';
 
 const identityResolvers = {
   Query: {

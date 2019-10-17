@@ -36,7 +36,6 @@ import {
   getRelationInferredById,
   notify,
   graknNow,
-  paginate,
   paginateRelationships,
   prepareDate,
   dayFormat,
@@ -56,34 +55,37 @@ import { buildPagination } from '../database/utils';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { deleteEntity } from '../database/elasticSearch';
 
-const sumBy = attribute => vals =>
-  reduce(
+const sumBy = attribute => vals => {
+  return reduce(
     (current, val) => evolve({ [attribute]: add(val[attribute]) }, current),
     head(vals),
     tail(vals)
   );
+};
 
 const groupSumBy = curry((groupOn, sumOn, vals) =>
   values(map(sumBy(sumOn))(groupBy(prop(groupOn), vals)))
 );
 
-export const findAll = args =>
-  paginateRelationships(
+export const findAll = args => {
+  return paginateRelationships(
     `match $rel($from, $to) isa ${
       args.relationType ? escape(args.relationType) : 'stix_relation'
     }`,
     args
   );
+};
 
-export const findByStixId = args =>
-  paginateRelationships(
+export const findByStixId = args => {
+  return paginateRelationships(
     `match $rel($from, $to) isa relation; 
     $rel has stix_id "${escapeString(args.stix_id)}"`,
     args
   );
+};
 
-export const search = args =>
-  paginateRelationships(
+export const search = args => {
+  return paginateRelationships(
     `match $rel($from, $to) isa relation;
     $to has name $name;
     $to has description $desc;
@@ -91,6 +93,7 @@ export const search = args =>
     { $desc contains "${escapeString(args.search)}"; }`,
     args
   );
+};
 
 export const findAllWithInferences = async args => {
   const entities = await getObjects(
@@ -207,8 +210,8 @@ export const findAllWithInferences = async args => {
   return resultPromise;
 };
 
-export const stixRelationsTimeSeries = args =>
-  timeSeries(
+export const stixRelationsTimeSeries = args => {
+  return timeSeries(
     `match $x($from, $to) isa ${
       args.relationType ? escape(args.relationType) : 'stix_relation'
     }; ${
@@ -225,6 +228,7 @@ export const stixRelationsTimeSeries = args =>
     }`,
     args
   );
+};
 
 export const stixRelationsTimeSeriesWithInferences = async args => {
   const entities = await getObjects(
@@ -519,40 +523,10 @@ export const stixRelationsNumber = args => ({
 });
 
 export const findById = stixRelationId => getRelationById(stixRelationId);
-export const findByIdInferred = stixRelationId =>
-  getRelationInferredById(stixRelationId);
 
-export const markingDefinitions = (stixRelationId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(marking:$marking, so:$stixRelation) isa object_marking_refs; 
-    $stixRelation has internal_id "${escapeString(stixRelationId)}"`,
-    args,
-    false,
-    null,
-    false,
-    false
-  );
-
-export const tags = (stixRelationId, args) =>
-  paginate(
-    `match $tag isa Tag; 
-    $rel(tagging:$tag, so:$stixRelation) isa tagged; 
-    $stixRelation has internal_id "${escapeString(stixRelationId)}"`,
-    args,
-    false,
-    null,
-    false,
-    false
-  );
-
-export const reports = (stixRelationId, args) =>
-  paginate(
-    `match $report isa Report; 
-    $rel(knowledge_aggregation:$report, so:$stixRelation) isa object_refs; 
-    $stixRelation has internal_id "${escapeString(stixRelationId)}"`,
-    args
-  );
+export const findByIdInferred = stixRelationId => {
+  return getRelationInferredById(stixRelationId);
+};
 
 export const addStixRelation = async (user, stixRelation) => {
   const wTx = await takeWriteTx();

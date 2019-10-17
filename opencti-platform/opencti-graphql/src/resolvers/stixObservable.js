@@ -8,20 +8,15 @@ import {
   findByValue,
   stixObservablesNumber,
   search,
-  markingDefinitions,
-  tags,
-  reports,
   stixObservablesTimeSeries,
   stixObservableEditContext,
   stixObservableCleanContext,
   stixObservableEditField,
   stixObservableAddRelation,
   stixObservableDeleteRelation,
-  stixRelations,
-  createdByRef,
   stixObservableAskEnrichment
 } from '../domain/stixObservable';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { workForEntity } from '../domain/work';
 import { connectorsForEnrichment } from '../domain/connector';
@@ -42,17 +37,9 @@ const stixObservableResolvers = {
     stixObservablesNumber: (_, args) => stixObservablesNumber(args)
   },
   StixObservable: {
-    createdByRef: stixObservable => createdByRef(stixObservable.id),
-    markingDefinitions: (stixObservable, args) =>
-      markingDefinitions(stixObservable.id, args),
-    tags: (stixObservable, args) => tags(stixObservable.id, args),
-    reports: (stixObservable, args) => reports(stixObservable.id, args),
-    stixRelations: (stixObservable, args) =>
-      stixRelations(stixObservable.id, args),
     jobs: (stixObservable, args) => workForEntity(stixObservable.id, args),
     connectors: (stixObservable, { onlyAlive = false }) =>
       connectorsForEnrichment(stixObservable.entity_type, onlyAlive),
-    editContext: stixObservable => fetchEditContext(stixObservable.id)
   },
   Mutation: {
     stixObservableEdit: (_, { id }, { user }) => ({

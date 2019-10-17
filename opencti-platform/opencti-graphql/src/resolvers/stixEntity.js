@@ -1,8 +1,12 @@
 import {
+  createdByRef,
   findById,
   markingDefinitions,
-  stixRelations
+  reports,
+  stixRelations,
+  tags
 } from '../domain/stixEntity';
+import { fetchEditContext } from '../database/redis';
 
 const stixEntityResolvers = {
   Query: {
@@ -21,6 +25,10 @@ const stixEntityResolvers = {
       }
       return 'Unknown';
     },
+    createdByRef: entity => createdByRef(entity.id),
+    editContext: entity => fetchEditContext(entity.id),
+    tags: (entity, args) => tags(entity.id, args),
+    reports: (entity, args) => reports(entity.id, args),
     markingDefinitions: (stixEntity, args) =>
       markingDefinitions(stixEntity.id, args),
     stixRelations: (stixEntity, args) => stixRelations(stixEntity.id, args)

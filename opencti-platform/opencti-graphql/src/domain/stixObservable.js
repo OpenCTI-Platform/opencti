@@ -22,10 +22,7 @@ import {
   commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import {
-  findAll as relationFindAll,
-  search as relationSearch
-} from './stixRelation';
+import { findAll as relationFindAll } from './stixRelation';
 import {
   countEntities,
   deleteEntity,
@@ -86,64 +83,6 @@ export const findByValue = args => {
 };
 
 export const search = args => elPaginate('stix_observables', args);
-/*
-  paginate(
-    `match $x isa ${args.type ? args.type : 'Stix-Observable'};
-    $x has observable_value $value;
-    $x has name $name;
-    { $value contains "${escapeString(args.search)}"; } or
-    { $name contains "${escapeString(args.search)}"; }`,
-    args,
-    false
-  );
-*/
-
-export const createdByRef = stixObservableId => {
-  return getObject(
-    `match $i isa Identity;
-    $rel(creator:$i, so:$x) isa created_by_ref; 
-    $x has internal_id "${escapeString(stixObservableId)}"; 
-    get; 
-    offset 0; 
-    limit 1;`,
-    'i',
-    'rel'
-  );
-};
-
-export const markingDefinitions = (stixObservableId, args) => {
-  return paginate(
-    `match $m isa Marking-Definition;
-    $rel(marking:$m, so:$x) isa object_marking_refs; 
-    $x has internal_id "${escapeString(stixObservableId)}"`,
-    args,
-    false,
-    null,
-    false,
-    false
-  );
-};
-
-export const tags = (stixObservableId, args) =>
-  paginate(
-    `match $t isa Tag; 
-    $rel(tagging:$t, so:$x) isa tagged; 
-    $x has internal_id "${escapeString(stixObservableId)}"`,
-    args,
-    false,
-    null,
-    false,
-    false
-  );
-
-export const reports = (stixObservableId, args) => {
-  return paginate(
-    `match $r isa Report; 
-    $rel(knowledge_aggregation:$r, so:$x) isa object_refs; 
-    $x has internal_id "${escapeString(stixObservableId)}"`,
-    args
-  );
-};
 
 export const reportsTimeSeries = (stixObservableId, args) => {
   return timeSeries(
@@ -152,14 +91,6 @@ export const reportsTimeSeries = (stixObservableId, args) => {
     $so has internal_id "${escapeString(stixObservableId)}"`,
     args
   );
-};
-
-export const stixRelations = (stixObservableId, args) => {
-  const finalArgs = assoc('fromId', stixObservableId, args);
-  if (finalArgs.search && finalArgs.search.length > 0) {
-    return relationSearch(finalArgs);
-  }
-  return relationFindAll(finalArgs);
 };
 
 const askEnrich = async (observableId, scope) => {
