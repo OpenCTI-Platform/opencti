@@ -169,19 +169,22 @@ export const reindex = async indexMaps => {
   );
 };
 
-export const index = async (indexName, documentBody) => {
-  const internalId = documentBody.internal_id;
-  const entityType = documentBody.entity_type;
-  logger.debug(
-    `[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`
-  );
-  await el.index({
-    index: indexName,
-    id: documentBody.grakn_id,
-    refresh: true,
-    body: documentBody
-  });
-  return documentBody;
+export const index = async (indexName, documentBody, refresh = true) => {
+  const internalId = documentBody.internal_id_key;
+  if (internalId) {
+    const entityType = documentBody.entity_type;
+    logger.debug(
+      `[ELASTICSEARCH] index > ${entityType} ${internalId} (${documentBody.grakn_id}) in ${indexName}`
+    );
+    await el.index({
+      index: indexName,
+      id: documentBody.grakn_id,
+      refresh,
+      body: documentBody
+    });
+    return documentBody;
+  }
+  return null;
 };
 
 export const deleteEntity = async (indexName, documentId) => {
@@ -449,7 +452,7 @@ export const paginate = async (indexName, options) => {
     .then(data => {
       const finalData = map(
         n => ({
-          node: assoc('id', n._source.internal_id, n._source)
+          node: assoc('id', n._source.internal_id_key, n._source)
         }),
         data.body.hits.hits
       );

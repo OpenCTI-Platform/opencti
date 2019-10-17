@@ -77,17 +77,17 @@ export const relationsToIndex = {
     {
       key: 'tags_indexed',
       query:
-        'match $t isa Tag, has internal_id $value; (so: $x, tagging: $t) isa tagged;'
+        'match $t isa Tag, has internal_id_key $value; (so: $x, tagging: $t) isa tagged;'
     },
     {
       key: 'createdByRef_indexed',
       query:
-        'match $i isa Identity, has internal_id $value; (so: $x, creator: $i) isa created_by_ref;'
+        'match $i isa Identity, has internal_id_key $value; (so: $x, creator: $i) isa created_by_ref;'
     },
     {
       key: 'markingDefinitions_indexed',
       query:
-        'match $m isa Marking-Definition, has internal_id $value; (so: $x, marking: $m) isa object_marking_refs;'
+        'match $m isa Marking-Definition, has internal_id_key $value; (so: $x, marking: $m) isa object_marking_refs;'
     }
   ],
   'Stix-Observable': [
@@ -223,7 +223,7 @@ export const write = async query => {
 export const getId = async internalId => {
   const rTx = await takeReadTx();
   try {
-    const query = `match $x has internal_id "${escapeString(
+    const query = `match $x has internal_id_key "${escapeString(
       internalId
     )}"; get $x;`;
     logger.debug(`[GRAKN - infer: false] getGraknId > ${query}`);
@@ -354,11 +354,10 @@ export const conceptTypes = async (concept, currentType = null, acc = []) => {
  * @param types
  * @returns {Promise<string|null>}
  */
-const inferIndexFromConceptTypes = async types => {
+export const inferIndexFromConceptTypes = async types => {
   if (includes('Stix-Observable', types)) return 'stix_observables';
   if (includes('Stix-Domain-Entity', types)) return 'stix_domain_entities';
   if (includes('External-Reference', types)) return 'external_references';
-  if (includes('Stix-Observable', types)) return 'stix_observables';
   if (includes('stix_relation', types)) return 'stix_relations';
   return undefined;
 };
@@ -377,7 +376,7 @@ const getRelationsValuesToIndex = async (type, id) => {
         relationsToIndex[type].map(async relationToIndex => {
           const query = `${
             relationToIndex.query
-          } $x has internal_id "${escapeString(id)}"; get $value;`;
+          } $x has internal_id_key "${escapeString(id)}"; get $value;`;
           logger.debug(
             `[GRAKN - infer: false] getRelationsValuesToIndex > ${query}`
           );
@@ -433,7 +432,7 @@ export const getAttributes = async (concept, forceReindex = false) => {
             ? head(value)
             : value
         ),
-        assoc('id', elAttributes.internal_id),
+        assoc('id', elAttributes.internal_id_key),
         assoc('parent_type', parentTypeLabel)
       )(elAttributes);
     } catch (e) {
@@ -487,7 +486,7 @@ export const getAttributes = async (concept, forceReindex = false) => {
         ) // Remove extra list then contains only 1 element
       )(attributesData);
       return pipe(
-        assoc('id', transform.internal_id),
+        assoc('id', transform.internal_id_key),
         assoc('grakn_id', concept.id),
         assoc('parent_type', parentTypeLabel)
       )(transform);
@@ -515,7 +514,7 @@ export const getAttributes = async (concept, forceReindex = false) => {
 export const getById = async (id, forceReindex = false) => {
   const rTx = await takeReadTx();
   try {
-    const query = `match $x has internal_id "${escapeString(id)}"; get $x;`;
+    const query = `match $x has internal_id_key "${escapeString(id)}"; get $x;`;
     logger.debug(`[GRAKN - infer: false] getById > ${query}`);
     const iterator = await rTx.tx.query(query);
     const answer = await iterator.next();
@@ -580,7 +579,7 @@ export const load = async (query, entities) => {
 export const getRelationById = async id => {
   const rTx = await takeReadTx();
   try {
-    const query = `match $x($from, $to) isa relation; $x has internal_id "${escapeString(
+    const query = `match $x($from, $to) isa relation; $x has internal_id_key "${escapeString(
       id
     )}"; get;`;
     logger.debug(`[GRAKN - infer: false] getRelationById > ${query}`);
@@ -775,7 +774,7 @@ export const getRelationInferredById = async id => {
           const inferenceAttributes = await getAttributes(
             inferencesAnswer.map().get(inference.relationKey)
           );
-          inferenceId = inferenceAttributes.internal_id;
+          inferenceId = inferenceAttributes.internal_id_key;
         }
         const fromAttributes = await getAttributes(inferenceFrom);
         const toAttributes = await getAttributes(inferenceTo);
@@ -1132,8 +1131,8 @@ export const paginateRelationships = (
     const offset = after ? cursorToOffset(after) : 0;
     const finalQuery = `
   ${query};
-  ${fromId ? `$from has internal_id "${escapeString(fromId)}";` : ''}
-  ${toId ? `$to has internal_id "${escapeString(toId)}";` : ''} ${
+  ${fromId ? `$from has internal_id_key "${escapeString(fromId)}";` : ''}
+  ${toId ? `$to has internal_id_key "${escapeString(toId)}";` : ''} ${
       fromTypes && fromTypes.length > 0
         ? `${join(
             ' ',
@@ -1207,21 +1206,21 @@ export const paginateRelationships = (
 export const createRelation = async (id, input) => {
   const wTx = await takeWriteTx();
   try {
-    const query = `match $from has internal_id "${escapeString(id)}";
-      $to has internal_id "${escapeString(input.toId)}"; 
+    const query = `match $from has internal_id_key "${escapeString(id)}";
+      $to has internal_id_key "${escapeString(input.toId)}"; 
       insert $rel(${escape(input.fromRole)}: $from, ${escape(
       input.toRole
-    )}: $to) isa ${input.through}, has internal_id "${uuid()}" ${
-      input.stix_id
+    )}: $to) isa ${input.through}, has internal_id_key "${uuid()}" ${
+      input.stix_id_key
         ? `, has relationship_type "${escapeString(input.through)}"`
         : ''
     }
         ${
           // eslint-disable-next-line no-nested-ternary
-          input.stix_id
-            ? input.stix_id === 'create'
-              ? `, has stix_id "relationship--${uuid()}"`
-              : `, has stix_id "${escapeString(input.stix_id)}"`
+          input.stix_id_key
+            ? input.stix_id_key === 'create'
+              ? `, has stix_id_key "relationship--${uuid()}"`
+              : `, has stix_id_key "${escapeString(input.stix_id_key)}"`
             : ''
         } ${
       input.first_seen
@@ -1265,7 +1264,7 @@ export const updateAttribute = async (id, input, tx = null) => {
       .map()
       .get('x')
       .dataType();
-    const deleteQuery = `match $x has internal_id "${escapeString(
+    const deleteQuery = `match $x has internal_id_key "${escapeString(
       id
     )}", has ${escapedKey} $del via $d; delete $d;`;
     /* eslint-enable prettier/prettier */
@@ -1289,7 +1288,7 @@ export const updateAttribute = async (id, input, tx = null) => {
         map(val => `has ${escapedKey} ${val},`, tail(typedValues))
       )} has ${escapedKey} ${head(typedValues)}`;
     }
-    const createQuery = `match $m has internal_id "${escapeString(
+    const createQuery = `match $m has internal_id_key "${escapeString(
       id
     )}"; insert $m ${graknValues};`;
     logger.debug(
@@ -1329,7 +1328,7 @@ export const updateAttribute = async (id, input, tx = null) => {
 export const deleteEntityById = async id => {
   const wTx = await takeWriteTx();
   try {
-    const query = `match $x has internal_id "${escapeString(
+    const query = `match $x has internal_id_key "${escapeString(
       id
     )}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteEntityById > ${query}`);
@@ -1351,7 +1350,7 @@ export const deleteEntityById = async id => {
 export const deleteById = async id => {
   const wTx = await takeWriteTx();
   try {
-    const query = `match $x has internal_id "${escapeString(id)}"; delete $x;`;
+    const query = `match $x has internal_id_key "${escapeString(id)}"; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteById > ${query}`);
     await wTx.tx.query(query, { infer: false });
     await commitWriteTx(wTx);
@@ -1372,7 +1371,7 @@ export const deleteById = async id => {
 export const deleteRelationById = async (id, relationId) => {
   const wTx = await takeWriteTx();
   try {
-    const query = `match $x has internal_id "${escapeString(
+    const query = `match $x has internal_id_key "${escapeString(
       relationId
     )}"; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);

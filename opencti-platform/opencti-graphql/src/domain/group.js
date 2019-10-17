@@ -34,7 +34,7 @@ export const members = (groupId, args) =>
   paginate(
     `match $user isa User; 
     $rel((member:$user, grouping:$g) isa membership; 
-    $g has internal_id "${escapeString(groupId)}"`,
+    $g has internal_id_key "${escapeString(groupId)}"`,
     args
   );
 
@@ -42,17 +42,17 @@ export const permissions = (groupId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
     $rel(allow:$marking, allowed:$g) isa permission; 
-    $g has internal_id "${escapeString(groupId)}"`,
+    $g has internal_id_key "${escapeString(groupId)}"`,
     args
   );
 
 export const addGroup = async (user, group) => {
   const wTx = await takeWriteTx();
-  const internalId = group.internal_id
-    ? escapeString(group.internal_id)
+  const internalId = group.internal_id_key
+    ? escapeString(group.internal_id_key)
     : uuid();
   const groupIterator = await wTx.tx.query(`insert $group isa Group,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "group",
     has name "${escapeString(group.name)}",
     has description "${escapeString(group.description)}",
@@ -68,9 +68,9 @@ export const addGroup = async (user, group) => {
   if (group.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createdGroupId};
-      $to has internal_id "${escapeString(group.createdByRef)}";
+      $to has internal_id_key "${escapeString(group.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id "${uuid()}";`
+      isa created_by_ref, has internal_id_key "${uuid()}";`
     );
   }
 
@@ -78,8 +78,8 @@ export const addGroup = async (user, group) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
         `match $from id ${createdGroupId}; 
-        $to has internal_id "${escapeString(markingDefinition)}";
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(markingDefinition)}";
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

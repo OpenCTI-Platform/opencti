@@ -1,8 +1,8 @@
 import uuid from 'uuid/v4';
-import { isNil, isEmpty, head, map, filter } from 'ramda';
+import { isEmpty, head, map, filter } from 'ramda';
 import migrate from 'migrate';
 import path from 'path';
-import { load, find, write } from './grakn';
+import { commitWriteTx, find, takeWriteTx, write } from './grakn';
 import { logger } from '../config/conf';
 
 // noinspection JSUnusedGlobalSymbols
@@ -10,24 +10,26 @@ const graknStateStorage = {
   async load(fn) {
     // Get current status of migrations in Grakn
     const result = await find(
-      `match $x isa MigrationStatus; 
-      (status:$x, state:$y); 
-      get;`,
-      ['x', 'y']
+      `match $from isa MigrationStatus; $rel(status:$from, state:$to); get;`,
+      ['rel', 'from', 'to']
     );
+    logger.info(`[MIGRATION] > Read ${result.length} from the database`);
     if (isEmpty(result)) {
       logger.info(
-        '[MIGRATION] Cannot read migrations from database. If this is the first time you run migrations,' +
+        '[MIGRATION] > Cannot read migrations from database. If this is the first time you run migrations,' +
           ' then this is normal.'
+      );
+      await write(
+        `insert $x isa MigrationStatus, has internal_id_key "${uuid()}";`
       );
       return fn(null, {});
     }
     const migrationStatus = {
-      lastRun: head(result).x.lastRun,
+      lastRun: head(result).from.lastRun,
       migrations: map(
         record => ({
-          title: record.y.title,
-          timestamp: record.y.timestamp
+          title: record.to.title,
+          timestamp: record.to.timestamp
         }),
         result
       )
@@ -35,47 +37,38 @@ const graknStateStorage = {
     return fn(null, migrationStatus);
   },
   async save(set, fn) {
+    const wTx = await takeWriteTx();
     // Get current done migration
     const mig = head(filter(m => m.title === set.lastRun, set.migrations));
-    // Get the MigrationStatus. If exist, update last run, if not create it
-    const migrationStatus = await load(`match $x isa MigrationStatus; get;`, [
-      'x'
-    ]);
-    if (!isNil(migrationStatus)) {
-      await write(
-        `match $x isa MigrationStatus, 
-        has lastRun $run; 
-        delete $run;`
-      );
-      await write(
-        `match $x isa MigrationStatus; 
-        insert $x has lastRun "${set.lastRun}";`
-      );
-    } else {
-      await write(
-        `insert $x isa MigrationStatus,
-        has internal_id "${uuid()}",
-        has lastRun "${set.lastRun}";`
-      );
-    }
-    await write(
-      `insert $x isa MigrationReference,
-      has internal_id "${uuid()}",
+    // We have only one instance of migration status.
+    const q1 = `match $x isa MigrationStatus, has lastRun $run; delete $run;`;
+    logger.debug(`[MIGRATION] > ${q1}`);
+    await wTx.tx.query(q1);
+    const q2 = `match $x isa MigrationStatus; insert $x has lastRun "${set.lastRun}";`;
+    logger.debug(`[MIGRATION] > ${q2}`);
+    await wTx.tx.query(q2);
+
+    // Insert the migration reference
+    const q3 = `insert $x isa MigrationReference,
+      has internal_id_key "${uuid()}",
       has title "${mig.title}",
-      has timestamp ${mig.timestamp};`
-    );
-    await write(
-      `match $status isa MigrationStatus; 
+      has timestamp ${mig.timestamp};`;
+    logger.debug(`[MIGRATION] > ${q3}`);
+    await wTx.tx.query(q3);
+    // Attach the reference to the migration status.
+    const q4 = `match $status isa MigrationStatus; 
       $ref isa MigrationReference, has title "${mig.title}"; 
-      insert (status: $status, state: $ref) isa migrate, has internal_id "${uuid()}";`
-    );
-    logger.info(`[MIGRATION] Saving current configuration, ${mig.title}`);
+      insert (status: $status, state: $ref) isa migrate, has internal_id_key "${uuid()}";`;
+    logger.debug(`[MIGRATION] > ${q4}`);
+    await wTx.tx.query(q4);
+    logger.info(`[MIGRATION] > Saving current configuration, ${mig.title}`);
+    await commitWriteTx(wTx);
     return fn();
   }
 };
 
 const applyMigration = () => {
-  logger.info('[MIGRATION] Starting migration process');
+  logger.info('[MIGRATION] > Starting migration process');
   return new Promise((resolve, reject) => {
     const migrationsDirectory = path.join(__dirname, '../migrations');
     migrate.load(
@@ -83,11 +76,11 @@ const applyMigration = () => {
       async (err, set) => {
         if (err) reject(err);
         logger.info(
-          '[MIGRATION] Migration state successfully updated, starting migrations'
+          '[MIGRATION] > Migration state successfully updated, starting migrations'
         );
         set.up(err2 => {
           if (err2) reject(err2);
-          logger.info('[MIGRATION] Migrations successfully ran');
+          logger.info('[MIGRATION] > Migrations successfully ran');
           resolve(true);
         });
       }

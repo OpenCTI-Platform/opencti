@@ -320,7 +320,7 @@ class SectorEditionOverviewComponent extends Component {
             toId: this.props.sector.id,
             toRole: 'gather',
             through: 'gathering',
-            stix_id: 'create',
+            stix_id_key: 'create',
             first_seen: now(),
             last_seen: now(),
             weight: 3,

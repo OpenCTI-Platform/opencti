@@ -229,7 +229,7 @@ type TagEdge {
 }
 type Tag {
   id: ID!
-  internal_id: String!
+  internal_id_key: String!
   tag_type: String!
   value: String!
   color: String!
@@ -238,7 +238,7 @@ type Tag {
   updated_at: DateTime!
 }
 input TagAddInput {
-  internal_id: String
+  internal_id_key: String
   tag_type: String!
   value: String!
   color: String!
@@ -258,15 +258,15 @@ type Export {
 ### Global objects
 interface GlobalObject {
   id: ID!
-  internal_id: String!
+  internal_id_key: String!
   entity_type: String!
 }
 
 ### STIX objects
 interface StixEntity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -277,7 +277,7 @@ interface StixEntity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -323,8 +323,8 @@ type StixDomainEntityEdge {
 }
 interface StixDomainEntity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -341,7 +341,7 @@ interface StixDomainEntity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -365,7 +365,7 @@ interface StixDomainEntity {
   updated_at: DateTime!
 }
 input StixDomainEntityAddInput {
-  internal_id: String
+  internal_id_key: String
   name: String!
   description: String
   alias: [String]
@@ -401,8 +401,8 @@ type StixObservableEdge {
 }
 type StixObservable implements GlobalObject & StixEntity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -421,7 +421,7 @@ type StixObservable implements GlobalObject & StixEntity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -445,8 +445,8 @@ type StixObservable implements GlobalObject & StixEntity {
   updated_at: DateTime!
 }
 input StixObservableAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   type: String!
   observable_value: String!
   description: String
@@ -459,7 +459,7 @@ input StixObservableAddInput {
 
 ### STIX relations
 enum StixRelationsOrdering {
-  stix_id
+  stix_id_key
   relationship_type
   weight
   first_seen
@@ -480,8 +480,8 @@ type StixRelationEdge {
 }
 type StixRelation implements GlobalObject & StixEntity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -512,7 +512,7 @@ type StixRelation implements GlobalObject & StixEntity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -536,8 +536,8 @@ type StixRelation implements GlobalObject & StixEntity {
   updated_at: DateTime
 }
 input StixRelationAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   fromId: String!
   fromRole: String!
   toId: String!
@@ -574,7 +574,7 @@ type WorkspaceEdge {
 }
 type Workspace implements GlobalObject {
   id: ID!
-  internal_id: String!
+  internal_id_key: String!
   entity_type: String!
   workspace_type: String!
   name: String!
@@ -592,7 +592,7 @@ type Workspace implements GlobalObject {
 input WorkspaceAddInput {
   name: String!
   workspace_type: String!
-  internal_id: String
+  internal_id_key: String
   description: String
   markingDefinitions: [String]
   clientMutationId: String
@@ -600,7 +600,7 @@ input WorkspaceAddInput {
 
 ### Identities
 enum IdentitiesOrdering {
-  stix_id
+  stix_id_key
   name
   created_at
   updated_at
@@ -616,8 +616,8 @@ type IdentityEdge {
 }
 interface Identity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -634,7 +634,7 @@ interface Identity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -658,8 +658,8 @@ interface Identity {
   modified: DateTime
 }
 input IdentityAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String
   type: String!
@@ -698,8 +698,8 @@ type UserEdge {
 }
 type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -727,7 +727,7 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -751,8 +751,8 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   updated_at: DateTime!
 }
 input UserAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   email: String @constraint(minLength: 5, format: "email")
   name: String! @constraint(minLength: 3)
   description: String
@@ -768,8 +768,8 @@ input UserAddInput {
   modified: DateTime
 }
 input PersonAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String! @constraint(minLength: 3)
   description: String
   firstname: String
@@ -784,7 +784,7 @@ input UserLoginInput {
 
 ### Organizations
 enum OrganizationsOrdering {
-  stix_id
+  stix_id_key
   name
   description
   organization_class
@@ -808,8 +808,8 @@ type OrganizationEdge {
 }
 type Organization implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -832,7 +832,7 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -856,8 +856,8 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
   updated_at: DateTime!
 }
 input OrganizationAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String
   organization_class: String
@@ -871,7 +871,7 @@ input OrganizationAddInput {
 
 ### Sectors
 enum SectorsOrdering {
-  stix_id
+  stix_id_key
   name
   description
   created
@@ -895,8 +895,8 @@ type SectorEdge {
 }
 type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -920,7 +920,7 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -944,8 +944,8 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   updated_at: DateTime!
 }
 input SectorAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String
   createdByRef: String
@@ -958,7 +958,7 @@ input SectorAddInput {
 
 ### Cities
 enum CitiesOrdering {
-  stix_id
+  stix_id_key
   name
   description
   created
@@ -981,8 +981,8 @@ type CityEdge {
 }
 type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -1004,7 +1004,7 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -1028,8 +1028,8 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   updated_at: DateTime!
 }
 input CityAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String
   createdByRef: String
@@ -1042,7 +1042,7 @@ input CityAddInput {
 
 ### Countries
 enum CountriesOrdering {
-  stix_id
+  stix_id_key
   name
   description
   created
@@ -1065,8 +1065,8 @@ type CountryEdge {
 }
 type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -1088,7 +1088,7 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -1112,8 +1112,8 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
   updated_at: DateTime!
 }
 input CountryAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String
   createdByRef: String
@@ -1126,7 +1126,7 @@ input CountryAddInput {
 
 ### Regions
 enum RegionsOrdering {
-  stix_id
+  stix_id_key
   name
   description
   created
@@ -1149,8 +1149,8 @@ type RegionEdge {
 }
 type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -1172,7 +1172,7 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -1196,8 +1196,8 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   updated_at: DateTime!
 }
 input RegionAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String
   createdByRef: String
@@ -1225,7 +1225,7 @@ type GroupEdge {
 }
 type Group implements GlobalObject {
   id: ID!
-  internal_id: String!
+  internal_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -1237,7 +1237,7 @@ type Group implements GlobalObject {
   updated_at: DateTime!
 }
 input GroupAddInput {
-  internal_id: String
+  internal_id_key: String
   name: String!
   description: String
   markingDefinitions: [String]
@@ -1246,7 +1246,7 @@ input GroupAddInput {
 
 ### Marking definitions
 enum MarkingDefinitionsOrdering {
-  stix_id
+  stix_id_key
   definition_type
   definition
   level
@@ -1267,8 +1267,8 @@ type MarkingDefinitionEdge {
 }
 type MarkingDefinition implements GlobalObject {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   definition_type: String!
   definition: String!
@@ -1282,8 +1282,8 @@ type MarkingDefinition implements GlobalObject {
   updated_at: DateTime!
 }
 input MarkingDefinitionAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   definition_type: String!
   definition: String!
   level: Int!
@@ -1295,7 +1295,7 @@ input MarkingDefinitionAddInput {
 
 ### ExternalReferences
 enum ExternalReferencesOrdering {
-  stix_id
+  stix_id_key
   source_name
   url
   hash
@@ -1316,8 +1316,8 @@ type ExternalReferenceEdge {
 }
 type ExternalReference implements GlobalObject {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   source_name: String!
   description: String
@@ -1332,8 +1332,8 @@ type ExternalReference implements GlobalObject {
   updated_at: DateTime!
 }
 input ExternalReferenceAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   source_name: String!
   description: String
   url: String
@@ -1346,7 +1346,7 @@ input ExternalReferenceAddInput {
 
 ### KillChain Phases
 enum KillChainPhasesOrdering {
-  stix_id
+  stix_id_key
   phase_order
   kill_chain_name
   phase_name
@@ -1364,8 +1364,8 @@ type KillChainPhaseEdge {
 }
 type KillChainPhase implements GlobalObject {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   kill_chain_name: String!
   phase_name: String!
@@ -1379,8 +1379,8 @@ type KillChainPhase implements GlobalObject {
   updated_at: DateTime!
 }
 input KillChainPhaseAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   kill_chain_name: String!
   phase_name: String!
   phase_order: Int!
@@ -1392,7 +1392,7 @@ input KillChainPhaseAddInput {
 
 ### AttackPattern
 enum AttackPatternsOrdering {
-  stix_id
+  stix_id_key
   name
   killChainPhases
   created
@@ -1416,8 +1416,8 @@ type AttackPatternEdge {
 }
 type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -1443,7 +1443,7 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -1467,8 +1467,8 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input AttackPatternAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String!
   platform: [String]
@@ -1484,7 +1484,7 @@ input AttackPatternAddInput {
 
 ### CourseOfAction
 enum CoursesOfActionOrdering {
-  stix_id
+  stix_id_key
   name
   created
   modified
@@ -1507,8 +1507,8 @@ type CourseOfActionEdge {
 }
 type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -1530,7 +1530,7 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -1554,8 +1554,8 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input CourseOfActionAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String!
   markingDefinitions: [String]
@@ -1567,7 +1567,7 @@ input CourseOfActionAddInput {
 
 ### Threat Actors
 enum ThreatActorsOrdering {
-  stix_id
+  stix_id_key
   name
   created
   modified
@@ -1589,8 +1589,8 @@ type ThreatActorEdge {
 }
 type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -1619,7 +1619,7 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -1643,8 +1643,8 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
   updated_at: DateTime!
 }
 input ThreatActorAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String!
   goal: String
@@ -1663,7 +1663,7 @@ input ThreatActorAddInput {
 
 ### IntrusionSets
 enum IntrusionSetsOrdering {
-  stix_id
+  stix_id_key
   name
   created
   modified
@@ -1685,8 +1685,8 @@ type IntrusionSetEdge {
 }
 type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -1715,7 +1715,7 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -1739,8 +1739,8 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input IntrusionSetAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String!
   first_seen: DateTime
@@ -1761,7 +1761,7 @@ input IntrusionSetAddInput {
 
 ### Campaign
 enum CampaignsOrdering {
-  stix_id
+  stix_id_key
   name
   first_seen
   last_seen
@@ -1785,8 +1785,8 @@ type CampaignEdge {
 }
 type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -1811,7 +1811,7 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -1835,8 +1835,8 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input CampaignAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String!
   first_seen: DateTime
@@ -1852,7 +1852,7 @@ input CampaignAddInput {
 
 ### Incident
 enum IncidentsOrdering {
-  stix_id
+  stix_id_key
   name
   first_seen
   last_seen
@@ -1876,8 +1876,8 @@ type IncidentEdge {
 }
 type Incident implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -1902,7 +1902,7 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -1926,8 +1926,8 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input IncidentAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String!
   objective: String
@@ -1943,7 +1943,7 @@ input IncidentAddInput {
 
 ### Malware
 enum MalwaresOrdering {
-  stix_id
+  stix_id_key
   name
   created
   modified
@@ -1965,8 +1965,8 @@ type MalwareEdge {
 }
 type Malware implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -1989,7 +1989,7 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -2013,8 +2013,8 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input MalwareAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String!
   createdByRef: String
@@ -2028,7 +2028,7 @@ input MalwareAddInput {
 
 ### Tool
 enum ToolsOrdering {
-  stix_id
+  stix_id_key
   name
   created
   modified
@@ -2050,8 +2050,8 @@ type ToolEdge {
 }
 type Tool implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -2075,7 +2075,7 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -2099,8 +2099,8 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input ToolAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String!
   tool_version: String
@@ -2115,7 +2115,7 @@ input ToolAddInput {
 
 ### Vulnerability
 enum VulnerabilitiesOrdering {
-  stix_id
+  stix_id_key
   name
   created
   modified
@@ -2137,8 +2137,8 @@ type VulnerabilityEdge {
 }
 type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -2160,7 +2160,7 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -2184,8 +2184,8 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input VulnerabilityAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String!
   createdByRef: String
@@ -2198,7 +2198,7 @@ input VulnerabilityAddInput {
 
 ### Reports
 enum ReportsOrdering {
-  stix_id
+  stix_id_key
   name
   created
   modified
@@ -2227,8 +2227,8 @@ type ReportPayload {
 }
 type Report implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
-  internal_id: String!
-  stix_id: String!
+  internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
   name: String!
@@ -2257,7 +2257,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -2281,8 +2281,8 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
   updated_at: DateTime!
 }
 input ReportAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String
   published: DateTime
@@ -2300,8 +2300,8 @@ input ReportAddInput {
 
 ### Relations
 input RelationAddInput {
-  internal_id: String
-  stix_id: String
+  internal_id_key: String
+  stix_id_key: String
   fromRole: String!
   toId: ID!
   toRole: String!
@@ -2358,7 +2358,7 @@ type Query {
     filterMode: FilterMode
     name: String
     names: [String]
-    stix_id: String
+    stix_id_key: String
     search: String
     externalReferenceId: String
     type: String
@@ -2400,7 +2400,7 @@ type Query {
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id: String
+    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -2568,7 +2568,7 @@ type Query {
     orderMode: OrderingMode
     definition_type: String
     definition: String
-    stix_id: String
+    stix_id_key: String
     objectId: String
     search: String
   ): MarkingDefinitionConnection @auth
