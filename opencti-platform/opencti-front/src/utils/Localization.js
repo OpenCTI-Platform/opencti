@@ -71,8 +71,7 @@ const i18n = {
       'Last reports': 'Derniers rapports',
       'Last reports wrote by the entity':
         'Derniers rapports écrits par cette entité',
-      'Last reports about this entity':
-        'Derniers rapports à propos de cette entité',
+      'Last reports about the entity': "Derniers rapports à propos de l'entité",
       'Last observables': 'Derniers observables',
       'Last modified entities': 'Dernières entités modifiées',
       'Global parameters': 'Paramètres généraux',

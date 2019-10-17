@@ -21,6 +21,7 @@ const styles = (theme) => ({
   name: {
     width: '20%',
     height: 20,
+    lineHeight: '20px',
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -29,6 +30,7 @@ const styles = (theme) => ({
   description: {
     width: '70%',
     height: 20,
+    lineHeight: '20px',
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
