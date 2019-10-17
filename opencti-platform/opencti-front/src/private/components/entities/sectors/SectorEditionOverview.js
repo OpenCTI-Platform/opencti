@@ -180,7 +180,7 @@ class SectorEditionOverviewComponent extends Component {
       this.setState({
         subsectors: union(
           this.state.subsectors,
-          filter((n) => n.id !== this.props.sector.id, subsectors),
+          filter((n) => n.value !== this.props.sector.id, subsectors),
         ),
       });
     });
@@ -440,23 +440,27 @@ class SectorEditionOverviewComponent extends Component {
                     />
                   }
                 />
-                <Field
-                  name="subsectors"
-                  component={Autocomplete}
-                  multiple={true}
-                  label={t('Subsectors')}
-                  options={this.state.subsectors}
-                  onInputChange={this.searchSubsector.bind(this)}
-                  onChange={this.handleChangeSubsectors.bind(this)}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="subsectors"
-                    />
-                  }
-                />
+                {!sector.isSubsector ? (
+                  <Field
+                    name="subsectors"
+                    component={Autocomplete}
+                    multiple={true}
+                    label={t('Subsectors')}
+                    options={this.state.subsectors}
+                    onInputChange={this.searchSubsector.bind(this)}
+                    onChange={this.handleChangeSubsectors.bind(this)}
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    helperText={
+                      <SubscriptionFocus
+                        me={me}
+                        users={editUsers}
+                        fieldName="subsectors"
+                      />
+                    }
+                  />
+                ) : (
+                  ''
+                )}
                 <Field
                   name="markingDefinitions"
                   component={Autocomplete}
@@ -516,6 +520,7 @@ const SectorEditionOverview = createFragmentContainer(
         id
         name
         description
+        isSubsector
         createdByRef {
           node {
             id
