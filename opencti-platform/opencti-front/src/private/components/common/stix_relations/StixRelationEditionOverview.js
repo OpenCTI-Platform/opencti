@@ -16,6 +16,7 @@ import {
   pathOr,
   difference,
   head,
+  union,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -40,11 +41,11 @@ import {
 } from '../../../../components/Subscription';
 import Select from '../../../../components/Select';
 import Autocomplete from '../../../../components/Autocomplete';
-import { stixDomainEntitiesLinesSearchQuery } from '../stix_domain_entities/StixDomainEntitiesLines';
 import DatePickerField from '../../../../components/DatePickerField';
-import { attributesQuery } from '../../settings/attributes/AttributesList';
+import { attributesQuery } from '../../settings/attributes/AttributesLines';
+import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',
@@ -151,7 +152,7 @@ const stixRelationMutationRelationDelete = graphql`
   }
 `;
 
-const stixRelationValidation = t => Yup.object().shape({
+const stixRelationValidation = (t) => Yup.object().shape({
   weight: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
@@ -171,7 +172,7 @@ const stixRelationValidation = t => Yup.object().shape({
 class StixRelationEditionContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = { locations: [] };
+    this.state = { markingDefinitions: [] };
   }
 
   componentDidMount() {
@@ -189,32 +190,36 @@ class StixRelationEditionContainer extends Component {
     this.state.sub.dispose();
   }
 
-  searchLocations(event) {
-    fetchQuery(stixDomainEntitiesLinesSearchQuery, {
+  searchMarkingDefinitions(event) {
+    fetchQuery(markingDefinitionsSearchQuery, {
       search: event.target.value,
-      types: ['region', 'country', 'city'],
     }).then((data) => {
-      const locations = pipe(
-        pathOr([], ['stixDomainEntities', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
+      const markingDefinitions = pipe(
+        pathOr([], ['markingDefinitions', 'edges']),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
-      this.setState({ locations });
+      this.setState({
+        markingDefinitions: union(
+          this.state.markingDefinitions,
+          markingDefinitions,
+        ),
+      });
     });
   }
 
-  handleChangeLocation(name, values) {
+  handleChangeMarkingDefinition(name, values) {
     const { stixRelation } = this.props;
-    const currentLocations = pipe(
-      pathOr([], ['locations', 'edges']),
-      map(n => ({
-        label: n.node.name,
+    const currentMarkingDefinitions = pipe(
+      pathOr([], ['markingDefinitions', 'edges']),
+      map((n) => ({
+        label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,
       })),
     )(stixRelation);
 
-    const added = difference(values, currentLocations);
-    const removed = difference(currentLocations, values);
+    const added = difference(values, currentMarkingDefinitions);
+    const removed = difference(currentMarkingDefinitions, values);
 
     if (added.length > 0) {
       commitMutation({
@@ -222,14 +227,10 @@ class StixRelationEditionContainer extends Component {
         variables: {
           id: head(added).value,
           input: {
-            fromRole: 'location',
-            toId: this.props.stixRelation.id,
-            toRole: 'localized',
-            through: 'localization',
-            first_seen: stixRelation.last_seen,
-            last_seen: stixRelation.last_seen,
-            description: stixRelation.description,
-            weight: stixRelation.weight,
+            fromRole: 'marking',
+            toId: stixRelation.id,
+            toRole: 'so',
+            through: 'object_marking_refs',
           },
         },
       });
@@ -239,7 +240,7 @@ class StixRelationEditionContainer extends Component {
       commitMutation({
         mutation: stixRelationMutationRelationDelete,
         variables: {
-          id: this.props.stixRelation.id,
+          id: stixRelation.id,
           relationId: head(removed).relationId,
         },
       });
@@ -289,10 +290,10 @@ class StixRelationEditionContainer extends Component {
     const editUsers = missingMe
       ? insert(0, { name: me.email }, editContext)
       : editContext;
-    const locations = pipe(
-      pathOr([], ['locations', 'edges']),
-      map(n => ({
-        label: n.node.name,
+    const markingDefinitions = pipe(
+      pathOr([], ['markingDefinitions', 'edges']),
+      map((n) => ({
+        label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,
       })),
@@ -300,16 +301,16 @@ class StixRelationEditionContainer extends Component {
     const initialValues = pipe(
       assoc('first_seen', dateFormat(stixRelation.first_seen)),
       assoc('last_seen', dateFormat(stixRelation.last_seen)),
-      assoc('locations', locations),
+      assoc('markingDefinitions', markingDefinitions),
       pick([
         'weight',
         'first_seen',
         'last_seen',
         'description',
-        'locations',
         'role_played',
         'score',
         'expiration',
+        'markingDefinitions',
       ]),
     )(stixRelation);
     const link = stixDomainEntity
@@ -345,6 +346,31 @@ class StixRelationEditionContainer extends Component {
                     validationSchema={stixRelationValidation(t)}
                     render={() => (
                       <Form style={{ margin: '20px 0 20px 0' }}>
+                        <Field
+                          name="weight"
+                          component={Select}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          onChange={this.handleSubmitField.bind(this)}
+                          label={t('Confidence level')}
+                          fullWidth={true}
+                          inputProps={{
+                            name: 'weight',
+                            id: 'weight',
+                          }}
+                          containerstyle={{ width: '100%' }}
+                          helpertext={
+                            <SubscriptionFocus
+                              me={me}
+                              users={editUsers}
+                              fieldName="weight"
+                            />
+                          }
+                        >
+                          <MenuItem value="1">{t('Low')}</MenuItem>
+                          <MenuItem value="2">{t('Moderate')}</MenuItem>
+                          <MenuItem value="3">{t('Good')}</MenuItem>
+                          <MenuItem value="4">{t('Strong')}</MenuItem>
+                        </Field>
                         {stixRelation.relationship_type === 'indicates' ? (
                           <Field
                             name="role_played"
@@ -366,7 +392,7 @@ class StixRelationEditionContainer extends Component {
                               />
                             }
                           >
-                            {rolesPlayedEdges.map(rolePlayedEdge => (
+                            {rolesPlayedEdges.map((rolePlayedEdge) => (
                               <MenuItem
                                 key={rolePlayedEdge.node.value}
                                 value={rolePlayedEdge.node.value}
@@ -378,32 +404,6 @@ class StixRelationEditionContainer extends Component {
                         ) : (
                           ''
                         )}
-                        <Field
-                          name="weight"
-                          component={Select}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onChange={this.handleSubmitField.bind(this)}
-                          label={t('Confidence level')}
-                          fullWidth={true}
-                          inputProps={{
-                            name: 'weight',
-                            id: 'weight',
-                          }}
-                          containerstyle={{ marginTop: 10, width: '100%' }}
-                          helpertext={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="weight"
-                            />
-                          }
-                        >
-                          <MenuItem value="1">{t('Very low')}</MenuItem>
-                          <MenuItem value="2">{t('Low')}</MenuItem>
-                          <MenuItem value="3">{t('Medium')}</MenuItem>
-                          <MenuItem value="4">{t('High')}</MenuItem>
-                          <MenuItem value="5">{t('Very high')}</MenuItem>
-                        </Field>
                         {stixRelation.relationship_type === 'indicates' ? (
                           <Field
                             name="score"
@@ -456,27 +456,6 @@ class StixRelationEditionContainer extends Component {
                             />
                           }
                         />
-                        {stixRelation.relationship_type === 'targets' ? (
-                          <Field
-                            name="locations"
-                            component={Autocomplete}
-                            multiple={true}
-                            label={t('Locations')}
-                            options={this.state.locations}
-                            onInputChange={this.searchLocations.bind(this)}
-                            onChange={this.handleChangeLocation.bind(this)}
-                            onFocus={this.handleChangeFocus.bind(this)}
-                            helperText={
-                              <SubscriptionFocus
-                                me={me}
-                                users={editUsers}
-                                fieldName="locations"
-                              />
-                            }
-                          />
-                        ) : (
-                          ''
-                        )}
                         {stixRelation.relationship_type === 'indicates' ? (
                           <Field
                             name="expiration"
@@ -512,6 +491,27 @@ class StixRelationEditionContainer extends Component {
                               me={me}
                               users={editUsers}
                               fieldName="description"
+                            />
+                          }
+                        />
+                        <Field
+                          name="markingDefinitions"
+                          component={Autocomplete}
+                          multiple={true}
+                          label={t('Marking')}
+                          options={this.state.markingDefinitions}
+                          onInputChange={this.searchMarkingDefinitions.bind(
+                            this,
+                          )}
+                          onChange={this.handleChangeMarkingDefinition.bind(
+                            this,
+                          )}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          helperText={
+                            <SubscriptionFocus
+                              me={me}
+                              users={editUsers}
+                              fieldName="markingDefinitions"
                             />
                           }
                         />
@@ -579,11 +579,12 @@ const StixRelationEditionFragment = createFragmentContainer(
         role_played
         score
         expiration
-        locations {
+        markingDefinitions {
           edges {
             node {
               id
-              name
+              definition
+              definition_type
             }
             relation {
               id

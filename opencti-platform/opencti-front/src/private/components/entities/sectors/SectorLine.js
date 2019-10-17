@@ -1,34 +1,41 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight, Domain } from '@material-ui/icons';
-import { compose } from 'ramda';
+import { compose, map } from 'ramda';
+import List from '@material-ui/core/List';
 import inject18n from '../../../../components/i18n';
 
-const styles = theme => ({
-  item: {
-    paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+const styles = (theme) => ({
+  item: {},
+  itemNested: {
+    paddingLeft: theme.spacing(4),
   },
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
+  name: {
+    width: '20%',
     height: 20,
-    fontSize: 13,
+    lineHeight: '20px',
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+  },
+  description: {
+    width: '70%',
+    height: 20,
+    lineHeight: '20px',
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    color: '#a5a5a5',
   },
   goIcon: {
     position: 'absolute',
@@ -40,7 +47,7 @@ const styles = theme => ({
   },
   placeholder: {
     display: 'inline-block',
-    height: '1em',
+    height: '.6em',
     backgroundColor: theme.palette.grey[700],
   },
 });
@@ -48,104 +55,88 @@ const styles = theme => ({
 class SectorLineComponent extends Component {
   render() {
     const {
-      fd, classes, dataColumns, node,
+      classes, subsectors, node, isSubsector, t,
     } = this.props;
     return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        component={Link}
-        to={`/dashboard/entities/sectors/${node.id}`}
-      >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Domain />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {node.name}
+      <div>
+        <ListItem
+          classes={{ root: isSubsector ? classes.itemNested : classes.item }}
+          divider={true}
+          button={true}
+          component={Link}
+          to={`/dashboard/entities/sectors/${node.id}`}
+        >
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <Domain fontSize={isSubsector ? 'small' : 'default'} />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <div>
+                <div
+                  className={classes.name}
+                  style={{ fontSize: isSubsector ? 11 : 13 }}
+                >
+                  {node.name}
+                </div>
+                <div
+                  className={classes.description}
+                  style={{ fontSize: isSubsector ? 11 : 13 }}
+                >
+                  {node.description.length > 0
+                    ? node.description
+                    : t('This sector does not have any description.')}
+                </div>
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                {fd(node.created)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
-              >
-                {fd(node.modified)}
-              </div>
-            </div>
-          }
-        />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon>
-      </ListItem>
+            }
+          />
+          <ListItemIcon classes={{ root: classes.goIcon }}>
+            <KeyboardArrowRight />
+          </ListItemIcon>
+        </ListItem>
+        {subsectors ? (
+          <List disablePadding={true}>
+            {map(
+              (subsector) => (
+                <SectorLine
+                  key={subsector.id}
+                  node={subsector}
+                  isSubsector={true}
+                />
+              ),
+              subsectors,
+            )}
+          </List>
+        ) : (
+          ''
+        )}
+      </div>
     );
   }
 }
 
 SectorLineComponent.propTypes = {
-  dataColumns: PropTypes.object,
   node: PropTypes.object,
+  isSubsector: PropTypes.bool,
+  subsectors: PropTypes.array,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
 
-const SectorLineFragment = createFragmentContainer(SectorLineComponent, {
-  node: graphql`
-    fragment SectorLine_node on Sector {
-      id
-      name
-      created
-      modified
-    }
-  `,
-});
-
 export const SectorLine = compose(
   inject18n,
   withStyles(styles),
-)(SectorLineFragment);
+)(SectorLineComponent);
 
 class SectorLineDummyComponent extends Component {
   render() {
-    const { classes, dataColumns } = this.props;
+    const { classes } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <Domain />
         </ListItemIcon>
         <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <div className="fakeItem" style={{ width: '80%' }} />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                <div className="fakeItem" style={{ width: 140 }} />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
-              >
-                <div className="fakeItem" style={{ width: 140 }} />
-              </div>
-            </div>
-          }
+          primary={<span className="fakeItem" style={{ width: '80%' }} />}
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRight />
@@ -156,7 +147,6 @@ class SectorLineDummyComponent extends Component {
 }
 
 SectorLineDummyComponent.propTypes = {
-  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

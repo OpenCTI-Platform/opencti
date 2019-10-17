@@ -15,8 +15,9 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
+import ColorPickerField from '../../../../components/ColorPickerField';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -69,7 +70,7 @@ const markingDefinitionMutation = graphql`
   }
 `;
 
-const markingDefinitionValidation = t => Yup.object().shape({
+const markingDefinitionValidation = (t) => Yup.object().shape({
   definition_type: Yup.string().required(t('This field is required')),
   definition: Yup.string().required(t('This field is required')),
   color: Yup.string().required(t('This field is required')),
@@ -194,7 +195,7 @@ class MarkingDefinitionCreation extends Component {
                   />
                   <Field
                     name="color"
-                    component={TextField}
+                    component={ColorPickerField}
                     label={t('Color')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}

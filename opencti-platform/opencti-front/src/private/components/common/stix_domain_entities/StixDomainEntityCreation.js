@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
-import { compose } from 'ramda';
+import {
+  assoc, compose, map, pathOr, pipe, pluck, split,
+} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -17,12 +19,14 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import Select from '../../../../components/Select';
+import Autocomplete from '../../../../components/Autocomplete';
+import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -33,9 +37,6 @@ const styles = theme => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
-  },
-  dialogActions: {
-    padding: '0 17px 20px 0',
   },
   createButton: {
     position: 'fixed',
@@ -80,7 +81,7 @@ const stixDomainEntityCreationMutation = graphql`
   }
 `;
 
-const stixDomainEntityValidation = t => Yup.object().shape({
+const stixDomainEntityValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
   type: Yup.string().required(t('This field is required')),
@@ -99,7 +100,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 class StixDomainEntityCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
+    this.state = { open: false, markingDefinitions: [] };
   }
 
   handleOpen() {
@@ -110,11 +111,27 @@ class StixDomainEntityCreation extends Component {
     this.setState({ open: false });
   }
 
+  searchMarkingDefinitions(event) {
+    fetchQuery(markingDefinitionsSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
+      const markingDefinitions = pipe(
+        pathOr([], ['markingDefinitions', 'edges']),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
+      )(data);
+      this.setState({ markingDefinitions });
+    });
+  }
+
   onSubmit(values, { setSubmitting, resetForm }) {
+    const finalValues = pipe(
+      assoc('alias', split(',', values.alias)),
+      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+    )(values);
     commitMutation({
       mutation: stixDomainEntityCreationMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       updater: (store) => {
         const payload = store.getRootField('stixDomainEntityAdd');
@@ -142,6 +159,102 @@ class StixDomainEntityCreation extends Component {
 
   onResetContextual() {
     this.handleClose();
+  }
+
+  renderEntityTypesList() {
+    const { t, targetEntityTypes } = this.props;
+    return (
+      <Field
+        name="type"
+        component={Select}
+        label={t('Entity type')}
+        fullWidth={true}
+        inputProps={{
+          name: 'type',
+          id: 'type',
+        }}
+        containerstyle={{ width: '100%' }}
+      >
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Organization') ? (
+          <MenuItem value="Organization">{t('Organization')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Sector') ? (
+          <MenuItem value="Sector">{t('Sector')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('User') ? (
+          <MenuItem value="User">{t('Person')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Threat-Actor') ? (
+          <MenuItem value="Threat-Actor">{t('Threat-Actor')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Intrusion-Set') ? (
+          <MenuItem value="Intrusion-Set">{t('Intrusion-Set')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Campaign') ? (
+          <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Incident') ? (
+          <MenuItem value="Incident">{t('Incident')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Malware') ? (
+          <MenuItem value="Malware">{t('Malware')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Tool') ? (
+          <MenuItem value="Tool">{t('Tool')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Vulnerability') ? (
+          <MenuItem value="Vulnerability">{t('Vulnerability')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('City') ? (
+          <MenuItem value="City">{t('City')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Country') ? (
+          <MenuItem value="Country">{t('Country')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Region') ? (
+          <MenuItem value="Region">{t('Region')}</MenuItem>
+          ) : (
+            ''
+          )}
+      </Field>
+    );
   }
 
   renderClassic() {
@@ -175,20 +288,39 @@ class StixDomainEntityCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
+                type: '',
                 name: '',
                 description: '',
-                type: '',
+                alias: '',
+                markingDefinitions: [],
               }}
               validationSchema={stixDomainEntityValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
               render={({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
+                  {this.renderEntityTypesList()}
                   <Field
                     name="name"
                     component={TextField}
                     label={t('Name')}
                     fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="alias"
+                    component={TextField}
+                    label={t('Aliases separated by commas')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="markingDefinitions"
+                    component={Autocomplete}
+                    multiple={true}
+                    label={t('Marking')}
+                    options={this.state.markingDefinitions}
+                    onInputChange={this.searchMarkingDefinitions.bind(this)}
                   />
                   <Field
                     name="description"
@@ -199,39 +331,6 @@ class StixDomainEntityCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <Field
-                    name="type"
-                    component={Select}
-                    label={t('Entity type')}
-                    fullWidth={true}
-                    inputProps={{
-                      name: 'type',
-                      id: 'type',
-                    }}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
-                  >
-                    <MenuItem value="Organization">
-                      {t('Organization')}
-                    </MenuItem>
-                    <MenuItem value="Sector">{t('Sector')}</MenuItem>
-                    <MenuItem value="User">{t('Person')}</MenuItem>
-                    <MenuItem value="Threat-Actor">
-                      {t('Threat actor')}
-                    </MenuItem>
-                    <MenuItem value="Intrusion-Set">
-                      {t('Intrusion set')}
-                    </MenuItem>
-                    <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
-                    <MenuItem value="Incident">{t('Incident')}</MenuItem>
-                    <MenuItem value="Malware">{t('Malware')}</MenuItem>
-                    <MenuItem value="Tool">{t('Tool')}</MenuItem>
-                    <MenuItem value="Vulnerability">
-                      {t('Vulnerability')}
-                    </MenuItem>
-                    <MenuItem value="City">{t('City')}</MenuItem>
-                    <MenuItem value="Country">{t('Country')}</MenuItem>
-                    <MenuItem value="Region">{t('Region')}</MenuItem>
-                  </Field>
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -277,15 +376,17 @@ class StixDomainEntityCreation extends Component {
         <Formik
           enableReinitialize={true}
           initialValues={{
+            type: '',
             name: inputValue,
             description: '',
-            type: '',
+            alias: '',
+            markingDefinitions: [],
           }}
           validationSchema={stixDomainEntityValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onResetContextual.bind(this)}
           render={({ submitForm, handleReset, isSubmitting }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form>
               <Dialog
                 open={this.state.open}
                 onClose={this.handleClose.bind(this)}
@@ -293,11 +394,28 @@ class StixDomainEntityCreation extends Component {
               >
                 <DialogTitle>{t('Create an entity')}</DialogTitle>
                 <DialogContent>
+                  {this.renderEntityTypesList()}
                   <Field
                     name="name"
                     component={TextField}
                     label={t('Name')}
                     fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="alias"
+                    component={TextField}
+                    label={t('Aliases separated by commas')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="markingDefinitions"
+                    component={Autocomplete}
+                    multiple={true}
+                    label={t('Marking')}
+                    options={this.state.markingDefinitions}
+                    onInputChange={this.searchMarkingDefinitions.bind(this)}
                   />
                   <Field
                     name="description"
@@ -308,55 +426,15 @@ class StixDomainEntityCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <Field
-                    name="type"
-                    component={Select}
-                    label={t('Entity type')}
-                    fullWidth={true}
-                    inputProps={{
-                      name: 'type',
-                      id: 'type',
-                    }}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
-                  >
-                    <MenuItem value="Organization">
-                      {t('Organization')}
-                    </MenuItem>
-                    <MenuItem value="Sector">{t('Sector')}</MenuItem>
-                    <MenuItem value="User">{t('Person')}</MenuItem>
-                    <MenuItem value="Threat-Actor">
-                      {t('Threat actor')}
-                    </MenuItem>
-                    <MenuItem value="Intrusion-Set">
-                      {t('Intrusion set')}
-                    </MenuItem>
-                    <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
-                    <MenuItem value="Incident">{t('Incident')}</MenuItem>
-                    <MenuItem value="Malware">{t('Malware')}</MenuItem>
-                    <MenuItem value="Tool">{t('Tool')}</MenuItem>
-                    <MenuItem value="Vulnerability">
-                      {t('Vulnerability')}
-                    </MenuItem>
-                    <MenuItem value="City">{t('City')}</MenuItem>
-                    <MenuItem value="Country">{t('Country')}</MenuItem>
-                    <MenuItem value="Region">{t('Region')}</MenuItem>
-                  </Field>
                 </DialogContent>
-                <DialogActions classes={{ root: classes.dialogActions }}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                <DialogActions>
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
                     color="primary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>
@@ -380,6 +458,7 @@ class StixDomainEntityCreation extends Component {
 
 StixDomainEntityCreation.propTypes = {
   paginationOptions: PropTypes.object,
+  targetEntityTypes: PropTypes.array,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

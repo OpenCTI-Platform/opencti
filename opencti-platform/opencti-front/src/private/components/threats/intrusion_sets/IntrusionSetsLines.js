@@ -10,7 +10,9 @@ const nbOfRowsToLoad = 25;
 
 class IntrusionSetsLines extends Component {
   render() {
-    const { initialLoading, dataColumns, relay } = this.props;
+    const {
+      initialLoading, dataColumns, relay, onTagClick,
+    } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -27,6 +29,7 @@ class IntrusionSetsLines extends Component {
         DummyLineComponent={<IntrusionSetLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
+        onTagClick={onTagClick.bind(this)}
       />
     );
   }
@@ -41,6 +44,7 @@ IntrusionSetsLines.propTypes = {
   intrusionSets: PropTypes.object,
   initialLoading: PropTypes.bool,
   searchTerm: PropTypes.string,
+  onTagClick: PropTypes.func,
 };
 
 export const intrusionSetsLinesQuery = graphql`
@@ -50,6 +54,7 @@ export const intrusionSetsLinesQuery = graphql`
     $cursor: ID
     $orderBy: IntrusionSetsOrdering
     $orderMode: OrderingMode
+    $filters: IntrusionSetsFiltering
   ) {
     ...IntrusionSetsLines_data
       @arguments(
@@ -58,6 +63,7 @@ export const intrusionSetsLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -73,6 +79,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "IntrusionSetsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "IntrusionSetsFiltering" }
         ) {
         intrusionSets(
           search: $search
@@ -80,6 +87,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_intrusionSets") {
           edges {
             node {
@@ -116,6 +124,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: intrusionSetsLinesQuery,

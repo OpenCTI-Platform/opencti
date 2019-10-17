@@ -40,6 +40,7 @@ define
   work_entity sub attribute, datatype string;
   work_message sub attribute, datatype string;
   score sub attribute, datatype long;
+  tag_type sub attribute, datatype string;
 
   # STIX common properties
   stix_id sub attribute, datatype string;
@@ -131,6 +132,7 @@ define
   allowed sub role;
   grouping sub role;
   member sub role;
+  tagging sub role;
 
   # STIX common roles
   so sub role;
@@ -249,6 +251,10 @@ define
   owned_by sub relation_embedded,
     relates owner,
     relates to;
+
+  tagged sub relation_embedded,
+    relates tagging,
+    relates so;
 
   # STIX embeded relationships
   stix_relation_embedded sub relation,
@@ -497,7 +503,19 @@ define
     has updated_at,
     plays work;
 
-  Connector sub entity,
+  Tag sub entity,
+    has internal_id,
+    has tag_type,
+    key value,
+    has color,
+    has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
+    has updated_at,
+    plays tagging;
+
+  Export sub entity,
     has internal_id,
     has name,
     has connector_type,
@@ -840,7 +858,7 @@ define
     has number,
     has name,
     has rir,
-    plays belongs_to;
+    plays belongs_to;.
 
     ## ACCESS RULES
     #PermissionRule sub rule

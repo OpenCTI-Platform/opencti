@@ -13,14 +13,10 @@ import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 import ItemStatus from '../../../components/ItemStatus';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+    height: 50,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -58,6 +54,7 @@ class ReportLineComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
+        button={true}
         component={Link}
         to={`/dashboard/reports/all/${node.id}`}
       >
@@ -104,11 +101,12 @@ class ReportLineComponent extends Component {
                 style={{ width: dataColumns.marking.width }}
               >
                 {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
-                  markingDefinition => (
+                  (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}
                       variant="inList"
                       label={markingDefinition.node.definition}
+                      color={markingDefinition.node.color}
                     />
                   ),
                 )}
@@ -149,6 +147,7 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
           node {
             id
             definition
+            color
           }
         }
       }

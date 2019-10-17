@@ -18,6 +18,7 @@ import {
   pluck,
   tail,
   toPairs,
+  mergeLeft,
   uniq,
   uniqWith
 } from 'ramda';
@@ -86,6 +87,38 @@ export const statsDateAttributes = [
   'published', // Standard
   'expiration' // Standard
 ];
+export const relationsToIndex = {
+  'Stix-Domain-Entity': [
+    {
+      key: 'tags_indexed',
+      query:
+        'match $t isa Tag, has internal_id $value; (so: $x, tagging: $t) isa tagged;'
+    },
+    {
+      key: 'createdByRef_indexed',
+      query:
+        'match $i isa Identity, has internal_id $value; (so: $x, creator: $i) isa created_by_ref;'
+    },
+    {
+      key: 'markingDefinitions_indexed',
+      query:
+        'match $m isa Marking-Definition, has internal_id $value; (so: $x, marking: $m) isa object_marking_refs;'
+    }
+  ],
+  'Stix-Observable': [
+    {
+      key: 'tags_indexed',
+      query:
+        'match $t isa Tag, has value $value; (so: $x, tagging: $t) isa tagged;'
+    }
+  ]
+};
+
+const sleep = ms => {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
+};
 // endregion
 
 // region client
@@ -94,6 +127,12 @@ const client = new Grakn(
 );
 let session = null;
 // endregion
+
+export const getGraknVersion = async () => {
+  // TODO: It seems that Grakn server does not expose its version yet:
+  // https://github.com/graknlabs/client-nodejs/issues/47
+  return '1.5.9';
+};
 
 // region basic commands
 export const takeReadTx = async (retry = false) => {
@@ -152,7 +191,13 @@ export const commitWriteTx = async wTx => {
   try {
     await wTx.tx.commit();
   } catch (err) {
-    logger.error('[GRAKN] CommitWriteTx error > ', err);
+    logger.error('[GRAKN] CommitWriteTx (retrying) error > ', err);
+    await sleep(5000);
+    try {
+      await wTx.tx.commit();
+    } catch (err2) {
+      logger.error('[GRAKN] CommitWriteTx error > ', err2);
+    }
   }
 };
 
@@ -327,6 +372,49 @@ export const deleteAttributeById = async id => {
 };
 
 /**
+ * Get relations to index
+ * @param type
+ * @param id
+ * @returns {Promise<{}>}
+ */
+const getRelationsValuesToIndex = async (type, id) => {
+  const rTx = await takeReadTx();
+  try {
+    if (relationsToIndex[type]) {
+      const result = await Promise.all(
+        relationsToIndex[type].map(async relationToIndex => {
+          const query = `${
+            relationToIndex.query
+          } $x has internal_id "${escapeString(id)}"; get $value;`;
+          logger.debug(
+            `[GRAKN - infer: false] getRelationsValuesToIndex > ${query}`
+          );
+          const iterator = await rTx.tx.query(query);
+          const answers = await iterator.collect();
+          return Promise.all(
+            answers.map(async answer => {
+              const attribute = answer.map().get('value');
+              return attribute.value();
+            })
+          ).then(data => {
+            return { [relationToIndex.key]: data };
+          });
+        })
+      ).then(data => {
+        return mergeAll(data);
+      });
+      await closeReadTx(rTx);
+      return result;
+    }
+    return {};
+  } catch (err) {
+    logger.error('[GRAKN] getRelationsValuesToIndex error > ', err);
+    await closeReadTx(rTx);
+    return {};
+  }
+};
+
+/**
  * Load any grakn instance with internal grakn ID.
  * @param concept the concept to get attributes from
  * @param forceReindex if index need to be updated
@@ -372,9 +460,10 @@ export const getAttributes = async (concept, forceReindex = false) => {
   const attributes = await attributesIterator.collect();
   const attributesPromises = attributes.map(async attribute => {
     const attributeType = await attribute.type();
+    const attributeLabel = await attributeType.label();
     return {
-      'data-type': await attributeType.dataType(),
-      type: await attributeType.label(),
+      dataType: await attributeType.dataType(),
+      label: attributeLabel,
       value: await attribute.value()
     };
   });
@@ -383,18 +472,17 @@ export const getAttributes = async (concept, forceReindex = false) => {
       const transform = pipe(
         map(attribute => {
           let transformedVal = attribute.value;
-          const type = attribute['data-type'];
-          if (type === Date) {
+          const { dataType, label } = attribute;
+          if (dataType === Date) {
             transformedVal = moment(attribute.value)
               .utc()
               .toISOString();
-          }
-          if (type === String) {
+          } else if (dataType === String) {
             transformedVal = attribute.value
               .replace(/\\"/g, '"')
               .replace(/\\\\/g, '\\');
           }
-          return { [attribute.type]: transformedVal };
+          return { [label]: transformedVal };
         }), // Extract values
         chain(toPairs), // Convert to pairs for grouping
         groupBy(head), // Group by key
@@ -403,7 +491,7 @@ export const getAttributes = async (concept, forceReindex = false) => {
           // eslint-disable-next-line no-nested-ternary
           Array.isArray(obj[key]) && !includes(key, multipleAttributes)
             ? head(obj[key])
-            : head(obj[key]) && head(obj[key]).length > 0
+            : head(obj[key]) && head(obj[key]) !== ''
             ? obj[key]
             : []
         ) // Remove extra list then contains only 1 element
@@ -414,9 +502,16 @@ export const getAttributes = async (concept, forceReindex = false) => {
         assoc('parent_type', parentTypeLabel)
       )(transform);
     })
-    .then(data => {
+    .then(async data => {
       // If data was fetched from db but should be indexed
-      if (shouldBeReindex) return index(getIndex, data);
+      if (shouldBeReindex) {
+        const indexedRelations = await getRelationsValuesToIndex(
+          parentTypeLabel,
+          data.id
+        );
+        const finalData = mergeLeft(data, indexedRelations);
+        return index(getIndex, finalData);
+      }
       return data;
     });
 };
@@ -615,6 +710,7 @@ export const getSingleValue = async (query, infer = false) => {
   const rTx = await takeReadTx();
   try {
     logger.debug(`[GRAKN - infer: ${infer}] getSingleValue > ${query}`);
+    logger.debug(`[GRAKN - infer: false] getById > ${query}`);
     const iterator = await rTx.tx.query(query, { infer });
     const result = await iterator.next();
     await closeReadTx(rTx);
@@ -1365,13 +1461,15 @@ export const paginateRelationships = (
       fromTypes && fromTypes.length > 0
         ? `${join(
             ' ',
-            map(fromType => `{ $from isa ${fromType}; } or`, fromTypes)
+            map(fromType => `{ $from isa ${fromType}; } or`, tail(fromTypes))
           )} { $from isa ${head(fromTypes)}; };`
         : ''
     } ${
       toTypes && toTypes.length > 0
-        ? `${join(' ', map(toType => `{ $to isa ${toType}; } or`, toTypes))}
-  { $to isa ${head(toTypes)}; };`
+        ? `${join(
+            ' ',
+            map(toType => `{ $to isa ${toType}; } or`, tail(toTypes))
+          )} { $to isa ${head(toTypes)}; };`
         : ''
     } ${firstSeenStart || firstSeenStop ? `$rel has first_seen $fs; ` : ''} ${
       firstSeenStart ? `$fs > ${prepareDate(firstSeenStart)}; ` : ''
@@ -1383,8 +1481,8 @@ export const paginateRelationships = (
       weights
         ? `$rel has weight $weight; ${join(
             ' ',
-            map(weight => `{ $weight == ${weight}; } or`, weights)
-          )} { $weight == 0; };`
+            map(weight => `{ $weight == ${weight}; } or`, tail(weights))
+          )} { $weight == ${head(weights)}; };`
         : ''
     }`;
     const orderingKey = orderBy ? `$rel has ${orderBy} $o;` : '';

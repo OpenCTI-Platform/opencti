@@ -1,4 +1,9 @@
-import { addAttackPattern, findAll, findById } from '../domain/attackPattern';
+import {
+  addAttackPattern,
+  findAll,
+  findById,
+  findByCourseOfAction
+} from '../domain/attackPattern';
 import {
   killChainPhases,
   externalReferences,
@@ -13,7 +18,12 @@ import {
 const attackPatternResolvers = {
   Query: {
     attackPattern: (_, { id }) => findById(id),
-    attackPatterns: (_, args) => findAll(args)
+    attackPatterns: (_, args) => {
+      if (args.courseOfActionId && args.courseOfActionId.length > 0) {
+        return findByCourseOfAction(args);
+      }
+      return findAll(args);
+    }
   },
   AttackPattern: {
     externalReferences: (attPatt, args) => externalReferences(attPatt.id, args),

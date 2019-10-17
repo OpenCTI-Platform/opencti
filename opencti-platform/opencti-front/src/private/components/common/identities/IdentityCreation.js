@@ -21,7 +21,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Select from '../../../../components/Select';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -32,9 +32,6 @@ const styles = theme => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
-  },
-  dialogActions: {
-    padding: '0 17px 20px 0',
   },
   createButton: {
     position: 'fixed',
@@ -89,7 +86,7 @@ const identityMutation = graphql`
   }
 `;
 
-const identityValidation = t => Yup.object().shape({
+const identityValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   type: Yup.string().required(t('This field is required')),
 });
@@ -117,9 +114,9 @@ class IdentityCreation extends Component {
       setSubmitting,
       onCompleted: (response) => {
         setSubmitting(false);
-        this.props.creationCallback(response);
         resetForm();
         if (this.props.contextual) {
+          this.props.creationCallback(response);
           this.props.handleClose();
         } else {
           this.handleClose();
@@ -300,9 +297,8 @@ class IdentityCreation extends Component {
                     <MenuItem value="User">{t('Person')}</MenuItem>
                   </Field>
                 </DialogContent>
-                <DialogActions classes={{ root: classes.dialogActions }}>
+                <DialogActions>
                   <Button
-                    variant="contained"
                     onClick={handleReset}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
@@ -310,7 +306,6 @@ class IdentityCreation extends Component {
                     {t('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
                     color="primary"
                     onClick={submitForm}
                     disabled={isSubmitting}

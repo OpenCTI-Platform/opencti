@@ -26,7 +26,6 @@ const sectorQuery = graphql`
   query RootSectorQuery($id: String!) {
     sector(id: $id) {
       ...Sector_sector
-      ...SectorHeader_sector
       ...SectorOverview_sector
       ...SectorSubsectors_sector
       ...SectorReports_sector

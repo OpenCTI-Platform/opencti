@@ -9,8 +9,9 @@ import inject18n from '../../../../components/i18n';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
 import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import IncidentHeader from './IncidentHeader';
+import IncidentPopover from './IncidentPopover';
 import IncidentKnowledgeBar from './IncidentKnowledgeBar';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -27,7 +28,10 @@ class IncidentKnowledgeComponent extends Component {
     const link = `/dashboard/threats/incidents/${incident.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <IncidentHeader incident={incident} />
+        <StixDomainEntityHeader
+          stixDomainEntity={incident}
+          PopoverComponent={<IncidentPopover />}
+        />
         <IncidentKnowledgeBar incidentId={incident.id} />
         <Route
           exact
@@ -60,6 +64,7 @@ class IncidentKnowledgeComponent extends Component {
               relationType="attributed-to"
               targetEntityTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -73,6 +78,7 @@ class IncidentKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -106,11 +112,13 @@ class IncidentKnowledgeComponent extends Component {
               targetEntityTypes={[
                 'Organization',
                 'Sector',
+                'City',
                 'Country',
                 'Region',
               ]}
               entityLink={link}
               exploreLink={`/dashboard/explore/victimology/${incident.id}`}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -125,6 +133,7 @@ class IncidentKnowledgeComponent extends Component {
               targetEntityTypes={['Attack-Pattern']}
               entityLink={link}
               exploreLink={`/dashboard/explore/attack_patterns/${incident.id}`}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -138,6 +147,7 @@ class IncidentKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Tool']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -151,6 +161,7 @@ class IncidentKnowledgeComponent extends Component {
               relationType="targets"
               targetEntityTypes={['Vulnerability']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -170,7 +181,8 @@ const IncidentKnowledge = createFragmentContainer(IncidentKnowledgeComponent, {
   incident: graphql`
     fragment IncidentKnowledge_incident on Incident {
       id
-      ...IncidentHeader_incident
+      name
+      alias
     }
   `,
 });

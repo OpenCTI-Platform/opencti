@@ -73,6 +73,21 @@ export const markingDefinitions = (workspaceId, args) =>
     $rel(marking:$marking, so:$workspace) isa object_marking_refs; 
     $workspace has internal_id "${escapeString(workspaceId)}"`,
     args,
+    false,
+    null,
+    false,
+    false
+  );
+
+export const tags = (workspaceId, args) =>
+  paginate(
+    `match $tag isa Tag; 
+    $rel(tagging:$tag, so:$workspace) isa tagged; 
+    $workspace has internal_id "${escapeString(workspaceId)}"`,
+    args,
+    false,
+    null,
+    false,
     false
   );
 

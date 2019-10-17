@@ -58,6 +58,7 @@ const stixDomainEntityResolvers = {
     },
     createdByRef: entity => createdByRef(entity.id),
     markingDefinitions: (entity, args) => markingDefinitions(entity.id, args),
+    tags: (stixDomainEntity, args) => tags(stixDomainEntity.id, args),
     stixRelations: (entity, args) => stixRelations(entity.id, args),
     editContext: entity => fetchEditContext(entity.id),
     reports: (entity, args) => reports(entity.id, args),
@@ -71,6 +72,8 @@ const stixDomainEntityResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
+      relationsAdd: ({ input }) =>
+        stixDomainEntityAddRelations(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId),
       importPush: ({ file }) => stixDomainEntityImportPush(user, id, file),

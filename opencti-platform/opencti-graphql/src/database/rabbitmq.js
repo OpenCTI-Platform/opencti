@@ -158,3 +158,9 @@ export const pushToConnector = (connector, message) => {
     JSON.stringify(message)
   );
 };
+
+export const getRabbitMQVersion = () => {
+  return metrics()
+    .then(data => data.overview.rabbitmq_version)
+    .catch(() => 'Disconnected');
+};

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
@@ -9,8 +9,9 @@ import inject18n from '../../../../components/i18n';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
 import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import PersonHeader from './PersonHeader';
+import PersonPopover from './PersonPopover';
 import PersonKnowledgeBar from './PersonKnowledgeBar';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -27,7 +28,10 @@ class PersonKnowledgeComponent extends Component {
     const link = `/dashboard/entities/persons/${person.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <PersonHeader person={person} />
+        <StixDomainEntityHeader
+          stixDomainEntity={person}
+          PopoverComponent={<PersonPopover />}
+        />
         <PersonKnowledgeBar personId={person.id} />
         <Route
           exact
@@ -60,6 +64,7 @@ class PersonKnowledgeComponent extends Component {
               relationType="belongs-to"
               targetEntityTypes={['Organization']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -73,6 +78,7 @@ class PersonKnowledgeComponent extends Component {
               relationType="localization"
               targetEntityTypes={['City', 'Country', 'Region']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -117,6 +123,7 @@ class PersonKnowledgeComponent extends Component {
                   relationRole: 'attribution',
                 },
               ]}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -136,7 +143,8 @@ const PersonKnowledge = createFragmentContainer(PersonKnowledgeComponent, {
   person: graphql`
     fragment PersonKnowledge_person on User {
       id
-      ...PersonHeader_person
+      name
+      alias
     }
   `,
 });

@@ -26,7 +26,6 @@ const regionQuery = graphql`
   query RootRegionQuery($id: String!) {
     region(id: $id) {
       ...Region_region
-      ...RegionHeader_region
       ...RegionOverview_region
       ...RegionReports_region
       ...RegionKnowledge_region

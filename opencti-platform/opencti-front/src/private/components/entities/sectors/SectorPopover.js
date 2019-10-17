@@ -84,7 +84,7 @@ class SectorPopover extends Component {
     commitMutation({
       mutation: SectorPopoverDeletionMutation,
       variables: {
-        id: this.props.sectorId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -104,7 +104,7 @@ class SectorPopover extends Component {
   }
 
   render() {
-    const { classes, t, sectorId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
@@ -159,7 +159,7 @@ class SectorPopover extends Component {
         >
           <QueryRenderer
             query={sectorEditionQuery}
-            variables={{ id: sectorId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 // Done
@@ -182,7 +182,7 @@ class SectorPopover extends Component {
 }
 
 SectorPopover.propTypes = {
-  sectorId: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

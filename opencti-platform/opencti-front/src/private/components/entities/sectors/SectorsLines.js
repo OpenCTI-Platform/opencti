@@ -1,91 +1,128 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import {
+  compose,
+  pipe,
+  map,
+  propOr,
+  pathOr,
+  sortBy,
+  toLower,
+  prop,
+  filter,
+  join,
+  assoc,
+} from 'ramda';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
-import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import { withStyles } from '@material-ui/core';
+import List from '@material-ui/core/List';
 import { SectorLine, SectorLineDummy } from './SectorLine';
+import inject18n from '../../../../components/i18n';
 
-const nbOfRowsToLoad = 25;
+const styles = () => ({
+  root: {
+    margin: 0,
+  },
+});
 
-class SectorsLines extends Component {
+class SectorsLinesComponent extends Component {
   render() {
-    const { initialLoading, dataColumns, relay } = this.props;
+    const { data, keyword, classes } = this.props;
+    const sortByNameCaseInsensitive = sortBy(
+      compose(
+        toLower,
+        prop('name'),
+      ),
+    );
+    const filterSubsector = n => n.isSubsector === false;
+    const filterByKeyword = n => keyword === ''
+      || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+      || n.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+      || propOr('', 'subsectors_text', n)
+        .toLowerCase()
+        .indexOf(keyword.toLowerCase()) !== -1;
+    const sectors = pipe(
+      pathOr([], ['sectors', 'edges']),
+      map(n => n.node),
+      map(n => assoc(
+        'subsectors_text',
+        pipe(
+          map(o => `${o.node.name} ${o.node.description}`),
+          join(' | '),
+        )(pathOr([], ['subsectors', 'edges'], n)),
+        n,
+      )),
+      filter(filterSubsector),
+      filter(filterByKeyword),
+      sortByNameCaseInsensitive,
+    )(data);
     return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['sectors', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['sectors', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
-        LineComponent={<SectorLine />}
-        DummyLineComponent={<SectorLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-      />
+      <List
+        component="nav"
+        aria-labelledby="nested-list-subheader"
+        className={classes.root}
+      >
+        {data
+          ? map((sector) => {
+            const subsectors = pipe(
+              pathOr([], ['subsectors', 'edges']),
+              map(n => n.node),
+              filter(filterByKeyword),
+              sortByNameCaseInsensitive,
+            )(sector);
+            return (
+                <SectorLine
+                  key={sector.id}
+                  node={sector}
+                  subsectors={subsectors}
+                />
+            );
+          }, sectors)
+          : Array.from(Array(20), (e, i) => <SectorLineDummy key={i} />)}
+      </List>
     );
   }
 }
 
-SectorsLines.propTypes = {
+SectorsLinesComponent.propTypes = {
   classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
-  dataColumns: PropTypes.object.isRequired,
+  keyword: PropTypes.string,
   data: PropTypes.object,
-  relay: PropTypes.object,
-  sectors: PropTypes.object,
-  initialLoading: PropTypes.bool,
 };
 
 export const sectorsLinesQuery = graphql`
-  query SectorsLinesPaginationQuery(
-    $search: String
-    $count: Int!
-    $cursor: ID
-    $orderBy: SectorsOrdering
-    $orderMode: OrderingMode
-  ) {
-    ...SectorsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+  query SectorsLinesPaginationQuery($count: Int!, $cursor: ID) {
+    ...SectorsLines_data @arguments(count: $count, cursor: $cursor)
   }
 `;
 
-export default createPaginationContainer(
-  SectorsLines,
+const SectorsLinesFragment = createPaginationContainer(
+  SectorsLinesComponent,
   {
     data: graphql`
       fragment SectorsLines_data on Query
         @argumentDefinitions(
-          search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "SectorsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
-        sectors(
-          search: $search
-          first: $count
-          after: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-        ) @connection(key: "Pagination_sectors") {
+        sectors(first: $count, after: $cursor)
+          @connection(key: "Pagination_sectors") {
           edges {
             node {
               id
               name
               description
-              ...SectorLine_node
+              isSubsector
+              subsectors {
+                edges {
+                  node {
+                    id
+                    name
+                    description
+                  }
+                }
+              }
             }
           }
           pageInfo {
@@ -108,15 +145,17 @@ export default createPaginationContainer(
         count: totalCount,
       };
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
+    getVariables(props, { count, cursor }) {
       return {
-        search: fragmentVariables.search,
         count,
         cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
       };
     },
     query: sectorsLinesQuery,
   },
 );
+
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(SectorsLinesFragment);

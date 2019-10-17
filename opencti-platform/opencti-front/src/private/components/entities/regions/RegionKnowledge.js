@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
@@ -9,8 +9,9 @@ import inject18n from '../../../../components/i18n';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
 import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import RegionHeader from './RegionHeader';
+import RegionPopover from './RegionPopover';
 import RegionKnowledgeBar from './RegionKnowledgeBar';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -27,7 +28,10 @@ class RegionKnowledgeComponent extends Component {
     const link = `/dashboard/entities/regions/${region.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <RegionHeader region={region} />
+        <StixDomainEntityHeader
+          stixDomainEntity={region}
+          PopoverComponent={<RegionPopover />}
+        />
         <RegionKnowledgeBar regionId={region.id} />
         <Route
           exact
@@ -60,6 +64,7 @@ class RegionKnowledgeComponent extends Component {
               relationType="localization"
               targetEntityTypes={['Country']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -104,6 +109,7 @@ class RegionKnowledgeComponent extends Component {
                   relationRole: 'attribution',
                 },
               ]}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -123,7 +129,8 @@ const RegionKnowledge = createFragmentContainer(RegionKnowledgeComponent, {
   region: graphql`
     fragment RegionKnowledge_region on Region {
       id
-      ...RegionHeader_region
+      name
+      alias
     }
   `,
 });

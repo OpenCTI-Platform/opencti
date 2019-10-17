@@ -29,7 +29,7 @@ import graphql from 'babel-plugin-relay/macro';
 import logo from '../../../resources/images/logo_text.png';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: 60,
@@ -55,6 +55,9 @@ const styles = theme => ({
     height: 35,
   },
   toolbar: theme.mixins.toolbar,
+  menuItem: {
+    height: 40,
+  },
 });
 
 class LeftBar extends Component {
@@ -81,6 +84,7 @@ class LeftBar extends Component {
               to="/dashboard"
               selected={location.pathname === '/dashboard'}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <Dashboard />
@@ -91,6 +95,7 @@ class LeftBar extends Component {
               to="/dashboard/threats"
               selected={location.pathname.includes('/dashboard/threats')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <Database />
@@ -101,6 +106,7 @@ class LeftBar extends Component {
               to="/dashboard/techniques"
               selected={location.pathname.includes('/dashboard/techniques')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <Layers />
@@ -111,6 +117,7 @@ class LeftBar extends Component {
               to="/dashboard/observables"
               selected={location.pathname.includes('/dashboard/observables')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <Binoculars />
@@ -121,6 +128,7 @@ class LeftBar extends Component {
               to="/dashboard/reports"
               selected={location.pathname.includes('/dashboard/reports')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <Assignment />
@@ -131,6 +139,7 @@ class LeftBar extends Component {
               to="/dashboard/entities"
               selected={location.pathname.includes('/dashboard/entities')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <ListAlt />
@@ -144,6 +153,7 @@ class LeftBar extends Component {
               to="/dashboard/explore"
               selected={location.pathname.includes('/dashboard/explore')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <Explore />
@@ -155,6 +165,7 @@ class LeftBar extends Component {
               to="/dashboard/investigate"
               selected={location.pathname.includes('/dashboard/investigate')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <DeviceHub />
@@ -181,6 +192,7 @@ class LeftBar extends Component {
                   to="/dashboard/connectors"
                   selected={location.pathname.includes('/dashboard/connectors')}
                   dense={false}
+                  classes={{ root: classes.menuItem }}
                 >
                   <ListItemIcon>
                     <Extension />
@@ -192,6 +204,7 @@ class LeftBar extends Component {
                   selected={location.pathname.includes('/dashboard/settings')}
                   dense={false}
                   style={{ marginBottom: 50 }}
+                  classes={{ root: classes.menuItem }}
                 >
                   <ListItemIcon>
                     <Settings />
@@ -208,6 +221,7 @@ class LeftBar extends Component {
               onClick={this.toggle.bind(this)}
               dense={false}
               style={{ position: 'absolute', bottom: 10, width: '100%' }}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <KeyboardArrowRight />
@@ -238,6 +252,7 @@ class LeftBar extends Component {
               onClick={this.toggle.bind(this)}
               selected={location.pathname === '/dashboard'}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <Dashboard />
@@ -250,6 +265,7 @@ class LeftBar extends Component {
               onClick={this.toggle.bind(this)}
               selected={location.pathname.includes('/dashboard/threats')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <Database />
@@ -262,11 +278,11 @@ class LeftBar extends Component {
               onClick={this.toggle.bind(this)}
               selected={location.pathname.includes('/dashboard/techniques')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <Layers />
               </ListItemIcon>
-
               <ListItemText primary={t('Techniques')} />
             </MenuItem>
             <MenuItem
@@ -275,11 +291,11 @@ class LeftBar extends Component {
               onClick={this.toggle.bind(this)}
               selected={location.pathname.includes('/dashboard/observables')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <Binoculars />
               </ListItemIcon>
-
               <ListItemText primary={t('Observables')} />
             </MenuItem>
             <MenuItem
@@ -288,11 +304,11 @@ class LeftBar extends Component {
               onClick={this.toggle.bind(this)}
               selected={location.pathname.includes('/dashboard/reports')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <Assignment />
               </ListItemIcon>
-
               <ListItemText primary={t('Reports')} />
             </MenuItem>
             <MenuItem
@@ -300,6 +316,7 @@ class LeftBar extends Component {
               to="/dashboard/entities"
               selected={location.pathname.includes('/dashboard/entities')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <ListAlt />
@@ -315,11 +332,11 @@ class LeftBar extends Component {
               onClick={this.toggle.bind(this)}
               selected={location.pathname.includes('/dashboard/explore')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <Explore />
               </ListItemIcon>
-
               <ListItemText primary={t('Explore')} />
             </MenuItem>
             <MenuItem
@@ -329,11 +346,11 @@ class LeftBar extends Component {
               onClick={this.toggle.bind(this)}
               selected={location.pathname.includes('/dashboard/investigate')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <DeviceHub />
               </ListItemIcon>
-
               <ListItemText primary={t('Investigate')} />
             </MenuItem>
             <MenuItem
@@ -343,11 +360,11 @@ class LeftBar extends Component {
               onClick={this.toggle.bind(this)}
               selected={location.pathname.includes('/dashboard/correlate')}
               dense={false}
+              classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <GroupWork />
               </ListItemIcon>
-
               <ListItemText primary={t('Correlate')} />
             </MenuItem>
           </MenuList>
@@ -361,11 +378,11 @@ class LeftBar extends Component {
                   onClick={this.toggle.bind(this)}
                   selected={location.pathname.includes('/dashboard/connectors')}
                   dense={false}
+                  classes={{ root: classes.menuItem }}
                 >
                   <ListItemIcon>
                     <Extension />
                   </ListItemIcon>
-
                   <ListItemText primary={t('Connectors')} />
                 </MenuItem>
                 <MenuItem
@@ -374,6 +391,7 @@ class LeftBar extends Component {
                   onClick={this.toggle.bind(this)}
                   selected={location.pathname.includes('/dashboard/settings')}
                   dense={false}
+                  classes={{ root: classes.menuItem }}
                   style={{ marginBottom: 50 }}
                 >
                   <ListItemIcon>

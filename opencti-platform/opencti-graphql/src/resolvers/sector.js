@@ -1,4 +1,10 @@
-import { addSector, findAll, findById, subsectors } from '../domain/sector';
+import {
+  addSector,
+  findAll,
+  findById,
+  subsectors,
+  isSubsector
+} from '../domain/sector';
 import {
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -14,7 +20,8 @@ const sectorResolvers = {
     sectors: (_, args) => findAll(args)
   },
   Sector: {
-    subsectors: (sector, args) => subsectors(sector.id, args)
+    subsectors: (sector, args) => subsectors(sector.id, args),
+    isSubsector: (sector, args) => isSubsector(sector.id, args)
   },
   Mutation: {
     sectorEdit: (_, { id }, { user }) => ({

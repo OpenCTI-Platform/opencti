@@ -82,6 +82,7 @@ class ListLinesContent extends Component {
       paginationOptions,
       entityLink,
       me,
+      onTagClick,
     } = this.props;
     const edge = dataList[index];
     if (!edge) {
@@ -102,6 +103,7 @@ class ListLinesContent extends Component {
           paginationOptions,
           entityLink,
           me,
+          onTagClick,
         })}
       </div>
     );
@@ -178,6 +180,7 @@ ListLinesContent.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   paginationOptions: PropTypes.object,
   entityLink: PropTypes.string,
+  onTagClick: PropTypes.func,
 };
 
 export default compose(

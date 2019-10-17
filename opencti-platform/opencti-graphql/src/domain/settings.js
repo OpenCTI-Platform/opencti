@@ -9,10 +9,31 @@ import {
   notify,
   graknNow,
   takeWriteTx,
-  commitWriteTx
+  commitWriteTx,
+  getGraknVersion
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { delEditContext, setEditContext } from '../database/redis';
+import {
+  delEditContext,
+  setEditContext,
+  getRedisVersion
+} from '../database/redis';
+
+import { getElasticVersion } from '../database/elasticSearch';
+
+import { getRabbitMQVersion } from '../database/rabbitmq';
+import { version } from '../../package.json';
+
+export const getApplicationInfo = () => ({
+  version,
+  dependencies: [
+    { name: 'Grakn', version: getGraknVersion() },
+    { name: 'Elasticsearch', version: getElasticVersion() },
+    { name: 'RabbitMQ', version: getRabbitMQVersion() },
+    { name: 'Redis', version: getRedisVersion() }
+    // TODO Add Minio
+  ]
+});
 
 export const getSettings = () =>
   getObject(

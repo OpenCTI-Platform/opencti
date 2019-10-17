@@ -15,9 +15,9 @@ import { Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import IntrusionSetEditionOverview from './IntrusionSetEditionOverview';
-import IntrusionSetEditionIdentity from './IntrusionSetEditionIdentity';
+import IntrusionSetEditionDetails from './IntrusionSetEditionDetails';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',
@@ -89,7 +89,7 @@ class IntrusionSetEditionContainer extends Component {
               onChange={this.handleChangeTab.bind(this)}
             >
               <Tab label={t('Overview')} />
-              <Tab label={t('Identity')} />
+              <Tab label={t('Details')} />
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
@@ -100,7 +100,7 @@ class IntrusionSetEditionContainer extends Component {
             />
           )}
           {this.state.currentTab === 1 && (
-            <IntrusionSetEditionIdentity
+            <IntrusionSetEditionDetails
               intrusionSet={intrusionSet}
               editUsers={editUsers}
               me={me}
@@ -128,7 +128,7 @@ const IntrusionSetEditionFragment = createFragmentContainer(
       fragment IntrusionSetEditionContainer_intrusionSet on IntrusionSet {
         id
         ...IntrusionSetEditionOverview_intrusionSet
-        ...IntrusionSetEditionIdentity_intrusionSet
+        ...IntrusionSetEditionDetails_intrusionSet
         editContext {
           name
           focusOn

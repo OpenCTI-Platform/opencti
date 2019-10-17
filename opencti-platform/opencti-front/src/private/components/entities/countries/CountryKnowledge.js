@@ -9,8 +9,9 @@ import inject18n from '../../../../components/i18n';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
 import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import CountryHeader from './CountryHeader';
+import CountryPopover from './CountryPopover';
 import CountryKnowledgeBar from './CountryKnowledgeBar';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -27,7 +28,10 @@ class CountryKnowledgeComponent extends Component {
     const link = `/dashboard/entities/countries/${country.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <CountryHeader country={country} />
+        <StixDomainEntityHeader
+          stixDomainEntity={country}
+          PopoverComponent={<CountryPopover />}
+        />
         <CountryKnowledgeBar countryId={country.id} />
         <Route
           exact
@@ -60,6 +64,7 @@ class CountryKnowledgeComponent extends Component {
               relationType="localization"
               targetEntityTypes={['City']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -75,6 +80,7 @@ class CountryKnowledgeComponent extends Component {
               relationType="localization"
               targetEntityTypes={['Organization']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -119,6 +125,7 @@ class CountryKnowledgeComponent extends Component {
                 'Malware',
               ]}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -138,7 +145,8 @@ const CountryKnowledge = createFragmentContainer(CountryKnowledgeComponent, {
   country: graphql`
     fragment CountryKnowledge_country on Country {
       id
-      ...CountryHeader_country
+      name
+      alias
     }
   `,
 });

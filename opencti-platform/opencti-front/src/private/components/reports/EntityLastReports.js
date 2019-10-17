@@ -13,10 +13,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { Description } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
-import { truncate } from '../../../utils/String';
 import { QueryRenderer } from '../../../relay/environment';
 
-const styles = theme => ({
+const styles = (theme) => ({
   paper: {
     minHeight: '100%',
     margin: '10px 0 0 0',
@@ -27,12 +26,13 @@ const styles = theme => ({
     height: 60,
     minHeight: 60,
     maxHeight: 60,
-    transition: 'background-color 0.1s ease',
     paddingRight: 0,
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+  },
+  itemText: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   itemIcon: {
     marginRight: 0,
@@ -94,7 +94,9 @@ class EntityLastReports extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {authorId ? t('Last reports wrote by the entity') : t('Last reports about the entity')}
+          {authorId
+            ? t('Last reports wrote by the entity')
+            : t('Last reports about the entity')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
@@ -119,6 +121,7 @@ class EntityLastReports extends Component {
                         <ListItem
                           key={report.id}
                           dense={true}
+                          button={true}
                           classes={{ root: classes.item }}
                           divider={true}
                           component={Link}
@@ -128,8 +131,9 @@ class EntityLastReports extends Component {
                             <Description />
                           </ListItemIcon>
                           <ListItemText
-                            primary={truncate(report.name, 70)}
-                            secondary={truncate(report.description, 70)}
+                            classes={{ root: classes.itemText }}
+                            primary={report.name}
+                            secondary={report.description}
                           />
                           <div style={{ minWidth: 100 }}>
                             {markingDefinition ? (

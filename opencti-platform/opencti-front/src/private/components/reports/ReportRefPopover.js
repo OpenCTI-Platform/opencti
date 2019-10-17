@@ -50,7 +50,7 @@ const reportRefPopoverDeletionMutation = graphql`
       relationDelete(relationId: $relationId) {
         node {
           ...ReportEntities_report
-          ...ReportObservables_report @arguments(relationType: $relationType)
+          ...ReportObservablesLines_report @arguments(relationType: $relationType)
         }
       }
     }

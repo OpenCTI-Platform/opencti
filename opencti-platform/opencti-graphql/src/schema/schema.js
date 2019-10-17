@@ -6,6 +6,7 @@ import ConstraintDirective from 'graphql-constraint-directive';
 import path from 'path';
 import settingsResolvers from '../resolvers/settings';
 import attributeResolvers from '../resolvers/attribute';
+import tagResolvers from '../resolvers/tag';
 import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
 import globalObjectResolvers from '../resolvers/globalObject';
 import stixEntityResolvers from '../resolvers/stixEntity';
@@ -49,6 +50,7 @@ const resolvers = mergeResolvers([
   globalResolvers,
   settingsResolvers,
   attributeResolvers,
+  tagResolvers,
   rabbitmqMetricsResolvers,
   connectorResolvers,
   fileResolvers,

@@ -6,14 +6,15 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import CampaignHeader from './CampaignHeader';
 import CampaignOverview from './CampaignOverview';
-import CampaignIdentity from './CampaignIdentity';
+import CampaignDetails from './CampaignDetails';
 import CampaignEdition from './CampaignEdition';
+import CampaignPopover from './CampaignPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityStixRelationsDonut from '../../common/stix_relations/EntityStixRelationsDonut';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../incidents/EntityIncidentsChart';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -29,7 +30,10 @@ class CampaignComponent extends Component {
     const { classes, campaign } = this.props;
     return (
       <div className={classes.container}>
-        <CampaignHeader campaign={campaign} />
+        <StixDomainEntityHeader
+          stixDomainEntity={campaign}
+          PopoverComponent={<CampaignPopover />}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -39,7 +43,7 @@ class CampaignComponent extends Component {
             <CampaignOverview campaign={campaign} />
           </Grid>
           <Grid item={true} xs={3}>
-            <CampaignIdentity campaign={campaign} />
+            <CampaignDetails campaign={campaign} />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={campaign.id} />
@@ -82,9 +86,10 @@ const Campaign = createFragmentContainer(CampaignComponent, {
   campaign: graphql`
     fragment Campaign_campaign on Campaign {
       id
-      ...CampaignHeader_campaign
+      name
+      alias
       ...CampaignOverview_campaign
-      ...CampaignIdentity_campaign
+      ...CampaignDetails_campaign
     }
   `,
 });

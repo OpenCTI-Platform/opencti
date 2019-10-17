@@ -16,10 +16,12 @@ import inject18n from '../../../../components/i18n';
 import EntityStixRelationsLines, {
   entityStixRelationsLinesQuery,
 } from './EntityStixRelationsLines';
+import StixRelationCreationFromEntity from './StixRelationCreationFromEntity';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     marginTop: 15,
+    paddingBottom: 70,
   },
   bottomNav: {
     zIndex: 1000,
@@ -95,10 +97,9 @@ class EntityStixRelations extends Component {
     const {
       sortBy, orderAsc, inferred, resolveInferences,
     } = this.state;
-    const { entityLink, resolveRelationType, targetEntityTypes } = this.props;
-    const displayDetails = this.state.inferred
-      && resolveRelationType
-      && (this.state.toType !== 'All' || targetEntityTypes.length === 1);
+    const { entityLink, resolveRelationType } = this.props;
+    // sort only when inferences are disabled or inferences are resolved
+    const isRelationSortable = resolveInferences || !inferred || !resolveRelationType;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -113,17 +114,17 @@ class EntityStixRelations extends Component {
       first_seen: {
         label: 'First obs.',
         width: '15%',
-        isSortable: resolveInferences || !inferred || !displayDetails,
+        isSortable: isRelationSortable,
       },
       last_seen: {
         label: 'Last obs.',
         width: '15%',
-        isSortable: resolveInferences || !inferred || !displayDetails,
+        isSortable: isRelationSortable,
       },
       weight: {
         label: 'Confidence level',
-        width: '10%',
-        isSortable: resolveInferences || !inferred || !displayDetails,
+        width: '15%',
+        isSortable: isRelationSortable,
       },
     };
     return (
@@ -164,6 +165,7 @@ class EntityStixRelations extends Component {
       resolveRelationRole,
       resolveRelationToTypes,
       resolveViaTypes,
+      creationIsFrom,
     } = this.props;
     const {
       view,
@@ -176,12 +178,15 @@ class EntityStixRelations extends Component {
       resolveInferences,
     } = this.state;
 
+    // Display types selection when target types are multiple
     const displayTypes = targetEntityTypes.length > 1;
     const displayInferences = !!resolveRelationType;
+    // Display detail is resolveRelationType is set and selected Type not all or single
     const displayDetails = this.state.inferred
       && resolveRelationType
       && (this.state.toType !== 'All' || targetEntityTypes.length === 1);
 
+    // sort only when inferences are disabled or inferences are resolved
     const paginationOptions = {
       resolveInferences: this.state.resolveInferences,
       resolveRelationType,
@@ -193,8 +198,7 @@ class EntityStixRelations extends Component {
       fromId: entityId,
       relationType,
       search: searchTerm,
-      orderBy:
-        resolveInferences || !inferred || !displayDetails ? sortBy : null,
+      orderBy: resolveInferences || !inferred ? sortBy : null,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
 
@@ -217,7 +221,7 @@ class EntityStixRelations extends Component {
                     onOpen={this.handleOpenToType.bind(this)}
                     onChange={this.handleChangeEntities.bind(this)}
                     input={<Input id="entities" />}
-                    renderValue={selected => (
+                    renderValue={(selected) => (
                       <div className={classes.chips}>
                         <Chip
                           key={selected}
@@ -360,6 +364,12 @@ class EntityStixRelations extends Component {
           ''
         )}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        <StixRelationCreationFromEntity
+          entityId={entityId}
+          isFrom={creationIsFrom}
+          targetEntityTypes={targetEntityTypes}
+          paginationOptions={paginationOptions}
+        />
       </div>
     );
   }
@@ -379,6 +389,7 @@ EntityStixRelations.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   exploreLink: PropTypes.string,
+  creationIsFrom: PropTypes.bool,
 };
 
 export default compose(

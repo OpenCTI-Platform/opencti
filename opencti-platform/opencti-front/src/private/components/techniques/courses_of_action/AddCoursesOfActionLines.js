@@ -17,7 +17,7 @@ import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 
-const styles = theme => ({
+const styles = (theme) => ({
   avatar: {
     width: 24,
     height: 24,
@@ -83,12 +83,12 @@ class AddCoursesOfActionLinesContainer extends Component {
       entityCoursesOfAction,
       entityPaginationOptions,
     } = this.props;
-    const entityCoursesOfActionIds = map(n => n.node.id, entityCoursesOfAction);
+    const entityCoursesOfActionIds = map((n) => n.node.id, entityCoursesOfAction);
     const alreadyAdded = entityCoursesOfActionIds.includes(courseOfAction.id);
 
     if (alreadyAdded) {
       const existingCourseOfAction = head(
-        filter(n => n.node.id === courseOfAction.id, entityCoursesOfAction),
+        filter((n) => n.node.id === courseOfAction.id, entityCoursesOfAction),
       );
       commitMutation({
         mutation: courseOfActionMutationRelationDelete,
@@ -138,7 +138,7 @@ class AddCoursesOfActionLinesContainer extends Component {
 
   render() {
     const { classes, data, entityCoursesOfAction } = this.props;
-    const entityCoursesOfActionIds = map(n => n.node.id, entityCoursesOfAction);
+    const entityCoursesOfActionIds = map((n) => n.node.id, entityCoursesOfAction);
     return (
       <List>
         {data.coursesOfAction.edges.map((courseOfActionNode) => {

@@ -28,7 +28,7 @@ export const findAll = args => {
       `match $r isa Report; 
       ${
         args.reportClass
-          ? `$r has report_class "${escapeString(args.reportClass)};"`
+          ? `$r has report_class "${escapeString(args.reportClass)}";`
           : ''
       } 
       $rel(creator:$x, so:$r) isa created_by_ref`,

@@ -1,100 +1,132 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, propOr } from 'ramda';
+import { withRouter } from 'react-router-dom';
+import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
 import { QueryRenderer } from '../../../relay/environment';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-import AttributesList, {
-  attributesListQuery,
-} from './attributes/AttributesList';
+import ListLines from '../../../components/list_lines/ListLines';
+import TagsAttributesMenu from './TagsAttributesMenu';
+import AttributesLines, {
+  attributesLinesQuery,
+} from './attributes/AttributesLines';
 import AttributeCreation from './attributes/AttributeCreation';
 
 const styles = () => ({
-  paper: {
-    minHeight: '100%',
-    margin: '3px 0 0 0',
-    padding: 0,
-    borderRadius: 6,
+  container: {
+    margin: 0,
+    padding: '0 200px 0 0',
   },
 });
 
+export const attributesSearchQuery = graphql`
+  query AttributesSearchQuery($search: String) {
+    attributes(search: $search) {
+      edges {
+        node {
+          id
+          value
+        }
+      }
+    }
+  }
+`;
+
 class Attributes extends Component {
-  render() {
-    const { classes, t } = this.props;
-    const argumentsReportClass = { type: 'report_class' };
-    const argumentsPlayedRole = { type: 'role_played' };
+  constructor(props) {
+    super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      'Attributes-view',
+    );
+    this.state = {
+      sortBy: propOr('definition', 'sortBy', params),
+      orderAsc: propOr(true, 'orderAsc', params),
+      searchTerm: propOr('', 'searchTerm', params),
+      view: propOr('lines', 'view', params),
+    };
+  }
+
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      'Attributes-view',
+      this.state,
+    );
+  }
+
+  handleSearch(value) {
+    this.setState({ searchTerm: value }, () => this.saveView());
+  }
+
+  handleSort(field, orderAsc) {
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
+  }
+
+  renderLines(paginationOptions) {
+    const { sortBy, orderAsc, searchTerm } = this.state;
+    const dataColumns = {
+      value: {
+        label: 'Value',
+        width: '80%',
+        isSortable: false,
+      },
+    };
     return (
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
+      <ListLines
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={this.handleSort.bind(this)}
+        handleSearch={this.handleSearch.bind(this)}
+        displayImport={false}
+        secondaryAction={true}
+        keyword={searchTerm}
       >
-        <Grid item={true} xs={6}>
-          <Typography
-            variant="h4"
-            gutterBottom={true}
-            style={{ float: 'left' }}
-          >
-            {t('Report types')}
-          </Typography>
-          <AttributeCreation
-            attributeType="report_class"
-            paginationOptions={argumentsReportClass}
-          />
-          <div className="clearfix" />
-          <Paper classes={{ root: classes.paper }} elevation={2}>
-            <QueryRenderer
-              query={attributesListQuery}
-              variables={argumentsReportClass}
-              render={({ props }) => {
-                if (props) {
-                  return (
-                    <AttributesList
-                      paginationOptions={argumentsReportClass}
-                      data={props}
-                    />
-                  );
-                }
-                return <div> &nbsp; </div>;
-              }}
+        <QueryRenderer
+          query={attributesLinesQuery}
+          variables={{ count: 25, ...paginationOptions }}
+          render={({ props }) => (
+            <AttributesLines
+              data={props}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              initialLoading={props === null}
             />
-          </Paper>
-        </Grid>
-        <Grid item={true} xs={6}>
-          <Typography
-            variant="h4"
-            gutterBottom={true}
-            style={{ float: 'left' }}
-          >
-            {t('Played roles of observables')}
-          </Typography>
-          <AttributeCreation
-            attributeType="role_played"
-            paginationOptions={argumentsPlayedRole}
-          />
-          <div className="clearfix" />
-          <Paper classes={{ root: classes.paper }} elevation={2}>
-            <QueryRenderer
-              query={attributesListQuery}
-              variables={argumentsPlayedRole}
-              render={({ props }) => {
-                if (props) {
-                  return (
-                    <AttributesList
-                      paginationOptions={argumentsPlayedRole}
-                      data={props}
-                    />
-                  );
-                }
-                return <div> &nbsp; </div>;
-              }}
-            />
-          </Paper>
-        </Grid>
-      </Grid>
+          )}
+        />
+      </ListLines>
+    );
+  }
+
+  render() {
+    const {
+      classes,
+      match: {
+        params: { attributeLabel },
+      },
+    } = this.props;
+    const { view, searchTerm } = this.state;
+    const paginationOptions = {
+      type: attributeLabel,
+      search: searchTerm,
+    };
+    return (
+      <div className={classes.container}>
+        <TagsAttributesMenu />
+        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        <AttributeCreation
+          paginationOptions={paginationOptions}
+          attributeType={attributeLabel}
+        />
+      </div>
     );
   }
 }
@@ -102,9 +134,13 @@ class Attributes extends Component {
 Attributes.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
+  history: PropTypes.object,
+  match: PropTypes.object,
+  location: PropTypes.object,
 };
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles),
 )(Attributes);

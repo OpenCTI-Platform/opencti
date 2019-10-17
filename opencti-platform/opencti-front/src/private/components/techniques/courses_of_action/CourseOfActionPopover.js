@@ -84,7 +84,7 @@ class CourseOfActionPopover extends Component {
     commitMutation({
       mutation: CourseOfActionPopoverDeletionMutation,
       variables: {
-        id: this.props.courseOfActionId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -104,7 +104,7 @@ class CourseOfActionPopover extends Component {
   }
 
   render() {
-    const { classes, t, courseOfActionId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
@@ -159,7 +159,7 @@ class CourseOfActionPopover extends Component {
         >
           <QueryRenderer
             query={courseOfActionEditionQuery}
-            variables={{ id: courseOfActionId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
@@ -180,7 +180,7 @@ class CourseOfActionPopover extends Component {
 }
 
 CourseOfActionPopover.propTypes = {
-  courseOfActionId: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

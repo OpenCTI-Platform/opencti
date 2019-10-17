@@ -10,14 +10,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight, AccountBalance } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
+import StixObjectTags from '../../common/stix_object/StixObjectTags';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+    height: 50,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -48,12 +46,13 @@ const styles = theme => ({
 class OrganizationLineComponent extends Component {
   render() {
     const {
-      t, fd, classes, dataColumns, node,
+      t, fd, classes, dataColumns, node, onTagClick,
     } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
+        button={true}
         component={Link}
         to={`/dashboard/entities/organizations/${node.id}`}
       >
@@ -76,6 +75,16 @@ class OrganizationLineComponent extends Component {
                 {node.organization_class
                   ? t(`organization_${node.organization_class}`)
                   : ''}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <StixObjectTags
+                  variant="inList"
+                  tags={node.tags}
+                  onClick={onTagClick.bind(this)}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -105,6 +114,7 @@ OrganizationLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
+  onTagClick: PropTypes.func,
 };
 
 const OrganizationLineFragment = createFragmentContainer(
@@ -117,6 +127,19 @@ const OrganizationLineFragment = createFragmentContainer(
         name
         created
         modified
+        tags {
+          edges {
+            node {
+              id
+              tag_type
+              value
+              color
+            }
+            relation {
+              id
+            }
+          }
+        }
       }
     `,
   },
@@ -149,6 +172,12 @@ class OrganizationLineDummyComponent extends Component {
                 style={{ width: dataColumns.organization_class.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <div className="fakeItem" style={{ width: '90%' }} />
               </div>
               <div
                 className={classes.bodyItem}

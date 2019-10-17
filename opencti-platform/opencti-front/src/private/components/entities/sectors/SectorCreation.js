@@ -24,7 +24,7 @@ import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -70,12 +70,24 @@ const styles = theme => ({
 const sectorMutation = graphql`
   mutation SectorCreationMutation($input: SectorAddInput!) {
     sectorAdd(input: $input) {
-      ...SectorCard_node
+      id
+      name
+      description
+      isSubsector
+      subsectors {
+        edges {
+          node {
+            id
+            name
+            description
+          }
+        }
+      }
     }
   }
 `;
 
-const sectorValidation = t => Yup.object().shape({
+const sectorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -120,7 +132,7 @@ class SectorCreation extends Component {
     }).then((data) => {
       const identities = pipe(
         pathOr([], ['identities', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
+        map((n) => ({ label: n.node.name, value: n.node.id })),
       )(data);
       this.setState({ identities: union(this.state.identities, identities) });
     });
@@ -140,7 +152,7 @@ class SectorCreation extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({
         markingDefinitions: union(
@@ -152,25 +164,23 @@ class SectorCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const adaptedValues = evolve({
-      createdByRef: path(['value']),
-      markingDefinitions: pluck('value'),
-    }, values);
+    const finalValues = evolve(
+      {
+        createdByRef: path(['value']),
+        markingDefinitions: pluck('value'),
+      },
+      values,
+    );
     commitMutation({
       mutation: sectorMutation,
       variables: {
-        input: adaptedValues,
+        input: finalValues,
       },
       updater: (store) => {
         const payload = store.getRootField('sectorAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationOptions,
-          newEdge,
-        );
+        sharedUpdater(store, container.getDataID(), {}, newEdge);
       },
       setSubmitting,
       onCompleted: () => {
@@ -307,7 +317,6 @@ class SectorCreation extends Component {
 }
 
 SectorCreation.propTypes = {
-  paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -315,5 +324,5 @@ SectorCreation.propTypes = {
 
 export default compose(
   inject18n,
-  withStyles(styles, { withTheme: true }),
+  withStyles(styles),
 )(SectorCreation);

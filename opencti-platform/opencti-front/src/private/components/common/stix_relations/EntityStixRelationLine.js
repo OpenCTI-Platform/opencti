@@ -15,14 +15,10 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
 import StixRelationPopover from './StixRelationPopover';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+    height: 50,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -34,11 +30,6 @@ const styles = theme => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-  },
-  goIcon: {
-    position: 'absolute',
-    right: 10,
-    marginRight: 0,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],

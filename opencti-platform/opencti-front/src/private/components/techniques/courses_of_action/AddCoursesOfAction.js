@@ -19,7 +19,7 @@ import AddCoursesOfActionLines, {
 } from './AddCoursesOfActionLines';
 import CourseOfActionCreation from './CourseOfActionCreation';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',

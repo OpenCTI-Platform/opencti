@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
@@ -10,12 +11,11 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
-import { compose } from 'ramda';
 import { Fire } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
+import StixObjectTags from '../../common/stix_object/StixObjectTags';
 
-const styles = theme => ({
+const styles = (theme) => ({
   card: {
     width: '100%',
     height: 170,
@@ -31,7 +31,7 @@ const styles = theme => ({
     backgroundColor: theme.palette.primary.main,
   },
   avatarDisabled: {
-    backgroundColor: theme.palette.grey[700],
+    backgroundColor: theme.palette.grey[600],
   },
   icon: {
     margin: '10px 20px 0 0',
@@ -43,18 +43,25 @@ const styles = theme => ({
     height: '100%',
   },
   header: {
+    height: 55,
     paddingBottom: 0,
     marginBottom: 0,
   },
   content: {
     width: '100%',
-    height: 87,
-    overflow: 'hidden',
     paddingTop: 0,
+  },
+  description: {
+    height: 70,
+    overflow: 'hidden',
+  },
+  tags: {
+    height: 45,
+    paddingTop: 7,
   },
   contentDummy: {
     width: '100%',
-    height: 87,
+    height: 120,
     overflow: 'hidden',
     marginTop: 15,
   },
@@ -78,7 +85,7 @@ const styles = theme => ({
 class IncidentCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, node,
+      t, fsd, classes, node, onTagClick,
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
@@ -92,16 +99,24 @@ class IncidentCardComponent extends Component {
             avatar={
               <Avatar className={classes.avatar}>{node.name.charAt(0)}</Avatar>
             }
-            title={truncate(node.name, 50)}
+            title={node.name}
             subheader={`${t('Updated the')} ${fsd(node.modified)}`}
             action={<Fire className={classes.icon} />}
           />
-          <CardContent classes={{ root: classes.content }}>
-            <Markdown
-              source={truncate(node.description, 50)}
-              disallowedTypes={['link', 'linkReference']}
-              unwrapDisallowed={true}
-            />
+          <CardContent className={classes.content}>
+            <div className={classes.description}>
+              <Markdown
+                source={node.description}
+                disallowedTypes={['link', 'linkReference']}
+                unwrapDisallowed={true}
+              />
+            </div>
+            <div className={classes.tags}>
+              <StixObjectTags
+                tags={node.tags}
+                onClick={onTagClick.bind(this)}
+              />
+            </div>
           </CardContent>
         </CardActionArea>
       </Card>
@@ -114,6 +129,7 @@ IncidentCardComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
+  onTagClick: PropTypes.func,
 };
 
 const IncidentCardFragment = createFragmentContainer(IncidentCardComponent, {
@@ -124,6 +140,27 @@ const IncidentCardFragment = createFragmentContainer(IncidentCardComponent, {
       description
       created
       modified
+      tags {
+        edges {
+          node {
+            id
+            tag_type
+            value
+            color
+          }
+          relation {
+            id
+          }
+        }
+      }
+      markingDefinitions {
+        edges {
+          node {
+            id
+            definition
+          }
+        }
+      }
     }
   `,
 });

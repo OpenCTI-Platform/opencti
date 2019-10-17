@@ -16,7 +16,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -31,7 +31,7 @@ const styles = theme => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
-    right: 30,
+    right: 230,
   },
   buttons: {
     marginTop: 20,
@@ -67,7 +67,7 @@ const groupMutation = graphql`
   }
 `;
 
-const groupValidation = t => Yup.object().shape({
+const groupValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });

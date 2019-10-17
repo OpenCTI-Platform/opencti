@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
+import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -11,6 +12,14 @@ import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import UsersLines, { usersLinesQuery } from './users/UsersLines';
 import UserCreation from './users/UserCreation';
+import AccessesMenu from './AccessesMenu';
+
+const styles = () => ({
+  container: {
+    margin: 0,
+    padding: '0 200px 0 0',
+  },
+});
 
 class Users extends Component {
   constructor(props) {
@@ -105,6 +114,7 @@ class Users extends Component {
     const {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;
+    const { classes } = this.props;
     const paginationOptions = {
       isUser: true,
       search: searchTerm,
@@ -112,7 +122,8 @@ class Users extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div>
+      <div className={classes.container}>
+        <AccessesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <UserCreation paginationOptions={paginationOptions} />
       </div>
@@ -122,6 +133,7 @@ class Users extends Component {
 
 Users.propTypes = {
   t: PropTypes.func,
+  classes: PropTypes.object,
   history: PropTypes.object,
   location: PropTypes.object,
 };
@@ -129,4 +141,5 @@ Users.propTypes = {
 export default compose(
   inject18n,
   withRouter,
+  withStyles(styles),
 )(Users);

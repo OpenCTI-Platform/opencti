@@ -9,8 +9,9 @@ import inject18n from '../../../../components/i18n';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
 import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import CampaignHeader from './CampaignHeader';
+import CampaignPopover from './CampaignPopover';
 import CampaignKnowledgeBar from './CampaignKnowledgeBar';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -27,7 +28,10 @@ class CampaignKnowledgeComponent extends Component {
     const link = `/dashboard/threats/campaigns/${campaign.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <CampaignHeader campaign={campaign} />
+        <StixDomainEntityHeader
+          stixDomainEntity={campaign}
+          PopoverComponent={<CampaignPopover />}
+        />
         <CampaignKnowledgeBar campaignId={campaign.id} />
         <Route
           exact
@@ -60,6 +64,7 @@ class CampaignKnowledgeComponent extends Component {
               relationType="attributed-to"
               targetEntityTypes={['Identity', 'Intrusion-Set']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -73,6 +78,7 @@ class CampaignKnowledgeComponent extends Component {
               relationType="attributed-to"
               targetEntityTypes={['Incident']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -88,6 +94,7 @@ class CampaignKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -121,11 +128,13 @@ class CampaignKnowledgeComponent extends Component {
               targetEntityTypes={[
                 'Organization',
                 'Sector',
+                'City',
                 'Country',
                 'Region',
               ]}
               entityLink={link}
               exploreLink={`/dashboard/explore/victimology/${campaign.id}`}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -142,6 +151,7 @@ class CampaignKnowledgeComponent extends Component {
               targetEntityTypes={['Attack-Pattern']}
               entityLink={link}
               exploreLink={`/dashboard/explore/attack_patterns/${campaign.id}`}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -157,6 +167,7 @@ class CampaignKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Tool']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -172,6 +183,7 @@ class CampaignKnowledgeComponent extends Component {
               relationType="targets"
               targetEntityTypes={['Vulnerability']}
               entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -191,7 +203,8 @@ const CampaignKnowledge = createFragmentContainer(CampaignKnowledgeComponent, {
   campaign: graphql`
     fragment CampaignKnowledge_campaign on Campaign {
       id
-      ...CampaignHeader_campaign
+      name
+      alias
     }
   `,
 });

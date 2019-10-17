@@ -27,7 +27,7 @@ const subscription = graphql`
 `;
 
 const reportQuery = graphql`
-  query RootReportQuery($id: String!, $relationType: String) {
+  query RootReportQuery($id: String!) {
     report(id: $id) {
       ...Report_report
       ...ReportHeader_report
@@ -37,7 +37,6 @@ const reportQuery = graphql`
       ...ReportEntities_report
       ...FileImportViewer_entity
       ...FileExportViewer_entity
-      ...ReportObservables_report @arguments(relationType: $relationType)
     }
     me {
       ...ReportKnowledge_me
@@ -78,7 +77,7 @@ class RootReport extends Component {
         <TopBar me={me || null} />
         <QueryRenderer
           query={reportQuery}
-          variables={{ id: reportId, relationType: 'indicates' }}
+          variables={{ id: reportId }}
           render={({ props }) => {
             if (props && props.report) {
               return (
@@ -86,14 +85,14 @@ class RootReport extends Component {
                   <Route
                     exact
                     path="/dashboard/reports/all/:reportId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <Report {...routeProps} report={props.report} />
                     )}
                   />
                   <Route
                     exact
                     path="/dashboard/reports/all/:reportId/entities"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <ReportEntities
                         {...routeProps}
                         report={props.report}
@@ -104,7 +103,7 @@ class RootReport extends Component {
                   <Route
                     exact
                     path="/dashboard/reports/all/:reportId/knowledge"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <ReportKnowledge
                         {...routeProps}
                         report={props.report}
@@ -113,16 +112,12 @@ class RootReport extends Component {
                     )}
                   />
                   <Route exact path="/dashboard/reports/all/:reportId/observables"
-                    render={routeProps => (
-                      <ReportObservables
-                        {...routeProps}
-                        report={props.report}
-                        me={props.me}
-                      />
+                    render={(routeProps) => (
+                      <ReportObservables {...routeProps} reportId={reportId} />
                     )}
                   />
                   <Route exact path="/dashboard/reports/all/:reportId/files"
-                    render={routeProps => (
+                    render={(routeProps) => (
                         <React.Fragment>
                             <ReportHeader report={props.report} />
                             <FileManager {...routeProps} id={reportId}

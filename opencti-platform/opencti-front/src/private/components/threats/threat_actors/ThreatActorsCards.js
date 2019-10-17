@@ -10,7 +10,7 @@ const nbOfCardsToLoad = 25;
 
 class ThreatActorsCards extends Component {
   render() {
-    const { initialLoading, relay } = this.props;
+    const { initialLoading, relay, onTagClick } = this.props;
     return (
       <ListCardsContent
         initialLoading={initialLoading}
@@ -26,19 +26,17 @@ class ThreatActorsCards extends Component {
         CardComponent={<ThreatActorCard />}
         DummyCardComponent={<ThreatActorCardDummy />}
         nbOfCardsToLoad={nbOfCardsToLoad}
+        onTagClick={onTagClick.bind(this)}
       />
     );
   }
 }
 
 ThreatActorsCards.propTypes = {
-  classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
   data: PropTypes.object,
   relay: PropTypes.object,
-  threatActors: PropTypes.object,
   initialLoading: PropTypes.bool,
-  searchTerm: PropTypes.string,
+  onTagClick: PropTypes.func,
 };
 
 export const threatActorsCardsQuery = graphql`
@@ -48,6 +46,7 @@ export const threatActorsCardsQuery = graphql`
     $cursor: ID
     $orderBy: ThreatActorsOrdering
     $orderMode: OrderingMode
+    $filters: ThreatActorsFiltering
   ) {
     ...ThreatActorsCards_data
       @arguments(
@@ -56,6 +55,7 @@ export const threatActorsCardsQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -71,6 +71,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "ThreatActorsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "ThreatActorsFiltering" }
         ) {
         threatActors(
           search: $search
@@ -78,6 +79,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_threatActors") {
           edges {
             node {
@@ -114,6 +116,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: threatActorsCardsQuery,

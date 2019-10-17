@@ -84,7 +84,7 @@ class OrganizationPopover extends Component {
     commitMutation({
       mutation: OrganizationPopoverDeletionMutation,
       variables: {
-        id: this.props.organizationId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -104,7 +104,7 @@ class OrganizationPopover extends Component {
   }
 
   render() {
-    const { classes, t, organizationId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
@@ -159,7 +159,7 @@ class OrganizationPopover extends Component {
         >
           <QueryRenderer
             query={organizationEditionQuery}
-            variables={{ id: organizationId }}
+            variables={{ id: id }}
             render={({ props }) => {
               if (props) {
                 return (
@@ -180,7 +180,7 @@ class OrganizationPopover extends Component {
 }
 
 OrganizationPopover.propTypes = {
-  organizationId: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

@@ -9,8 +9,9 @@ import inject18n from '../../../../components/i18n';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
 import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import SectorHeader from './SectorHeader';
+import SectorPopover from './SectorPopover';
 import SectorKnowledgeBar from './SectorKnowledgeBar';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -27,7 +28,10 @@ class SectorKnowledgeComponent extends Component {
     const link = `/dashboard/entities/sectors/${sector.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <SectorHeader sector={sector} />
+        <StixDomainEntityHeader
+          stixDomainEntity={sector}
+          PopoverComponent={<SectorPopover />}
+        />
         <SectorKnowledgeBar sectorId={sector.id} />
         <Route
           exact
@@ -60,6 +64,7 @@ class SectorKnowledgeComponent extends Component {
               relationType="gathering"
               targetEntityTypes={['Organization']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -92,6 +97,7 @@ class SectorKnowledgeComponent extends Component {
               relationType="targets"
               targetEntityTypes={['Intrusion-Set']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -119,6 +125,7 @@ class SectorKnowledgeComponent extends Component {
               relationType="targets"
               targetEntityTypes={['Campaign']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -128,19 +135,11 @@ class SectorKnowledgeComponent extends Component {
           path="/dashboard/entities/sectors/:sectorId/knowledge/incidents"
           render={routeProps => (
             <EntityStixRelations
-              resolveRelationType="gathering"
-              resolveRelationRole="gather"
-              resolveViaTypes={[
-                {
-                  entityType: 'Malware',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-              ]}
               entityId={sector.id}
               relationType="targets"
               targetEntityTypes={['Incident']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -156,6 +155,7 @@ class SectorKnowledgeComponent extends Component {
               relationType="targets"
               targetEntityTypes={['Malware']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -175,7 +175,8 @@ const SectorKnowledge = createFragmentContainer(SectorKnowledgeComponent, {
   sector: graphql`
     fragment SectorKnowledge_sector on Sector {
       id
-      ...SectorHeader_sector
+      name
+      alias
     }
   `,
 });

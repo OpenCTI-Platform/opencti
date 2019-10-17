@@ -34,7 +34,7 @@ import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -112,7 +112,7 @@ const sectorMutationRelationDelete = graphql`
   }
 `;
 
-const sectorValidation = t => Yup.object().shape({
+const sectorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -138,7 +138,7 @@ class SectorEditionOverviewComponent extends Component {
     }).then((data) => {
       const identities = pipe(
         pathOr([], ['identities', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
+        map((n) => ({ label: n.node.name, value: n.node.id })),
       )(data);
       this.setState({ identities: union(this.state.identities, identities) });
     });
@@ -158,7 +158,7 @@ class SectorEditionOverviewComponent extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({
         markingDefinitions: union(
@@ -175,12 +175,12 @@ class SectorEditionOverviewComponent extends Component {
     }).then((data) => {
       const subsectors = pipe(
         pathOr([], ['sectors', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
+        map((n) => ({ label: n.node.name, value: n.node.id })),
       )(data);
       this.setState({
         subsectors: union(
           this.state.subsectors,
-          filter(n => n.id !== this.props.sector.id, subsectors),
+          filter((n) => n.value !== this.props.sector.id, subsectors),
         ),
       });
     });
@@ -260,7 +260,7 @@ class SectorEditionOverviewComponent extends Component {
     const { sector } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,
@@ -300,7 +300,7 @@ class SectorEditionOverviewComponent extends Component {
     const { sector } = this.props;
     const currentSubsectors = pipe(
       pathOr([], ['subsectors', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: n.node.name,
         value: n.node.id,
         relationId: n.relation.id,
@@ -353,7 +353,7 @@ class SectorEditionOverviewComponent extends Component {
       };
     const subsectors = pipe(
       pathOr([], ['subsectors', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: n.node.name,
         value: n.node.id,
         relationId: n.relation.id,
@@ -361,7 +361,7 @@ class SectorEditionOverviewComponent extends Component {
     )(sector);
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,
@@ -440,23 +440,27 @@ class SectorEditionOverviewComponent extends Component {
                     />
                   }
                 />
-                <Field
-                  name="subsectors"
-                  component={Autocomplete}
-                  multiple={true}
-                  label={t('Subsectors')}
-                  options={this.state.subsectors}
-                  onInputChange={this.searchSubsector.bind(this)}
-                  onChange={this.handleChangeSubsectors.bind(this)}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="subsectors"
-                    />
-                  }
-                />
+                {!sector.isSubsector ? (
+                  <Field
+                    name="subsectors"
+                    component={Autocomplete}
+                    multiple={true}
+                    label={t('Subsectors')}
+                    options={this.state.subsectors}
+                    onInputChange={this.searchSubsector.bind(this)}
+                    onChange={this.handleChangeSubsectors.bind(this)}
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    helperText={
+                      <SubscriptionFocus
+                        me={me}
+                        users={editUsers}
+                        fieldName="subsectors"
+                      />
+                    }
+                  />
+                ) : (
+                  ''
+                )}
                 <Field
                   name="markingDefinitions"
                   component={Autocomplete}
@@ -516,6 +520,7 @@ const SectorEditionOverview = createFragmentContainer(
         id
         name
         description
+        isSubsector
         createdByRef {
           node {
             id

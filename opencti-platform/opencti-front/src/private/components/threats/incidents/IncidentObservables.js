@@ -7,9 +7,10 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import IncidentHeader from './IncidentHeader';
+import IncidentPopover from './IncidentPopover';
 import StixRelation from '../../common/stix_relations/StixRelation';
 import EntityStixObservables from '../../stix_observables/EntityStixObservables';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -42,7 +43,10 @@ class IncidentObservablesComponent extends Component {
             : classes.container
         }
       >
-        <IncidentHeader incident={incident} />
+        <StixDomainEntityHeader
+          stixDomainEntity={incident}
+          PopoverComponent={<IncidentPopover />}
+        />
         <Route
           exact
           path="/dashboard/threats/incidents/:incidentId/observables/relations/:relationId"
@@ -87,7 +91,8 @@ const IncidentObservables = createFragmentContainer(
     incident: graphql`
       fragment IncidentObservables_incident on Incident {
         id
-        ...IncidentHeader_incident
+        name
+        alias
       }
     `,
   },

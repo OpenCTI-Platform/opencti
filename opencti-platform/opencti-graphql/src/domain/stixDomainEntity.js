@@ -116,6 +116,18 @@ export const markingDefinitions = (stixDomainEntityId, args) =>
     false
   );
 
+export const tags = (stixDomainEntityId, args) =>
+  paginate(
+    `match $t isa Tag; 
+    $rel(tagging:$t, so:$x) isa tagged; 
+    $x has internal_id "${escapeString(stixDomainEntityId)}"`,
+    args,
+    false,
+    null,
+    false,
+    false
+  );
+
 export const reports = (stixDomainEntityId, args) =>
   paginate(
     `match $r isa Report; 
@@ -224,8 +236,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   const internalId = stixDomainEntity.internal_id
     ? escapeString(stixDomainEntity.internal_id)
     : uuid();
-  const stixDomainEntityIterator = await wTx.tx
-    .query(`insert $stixDomainEntity isa ${escape(stixDomainEntity.type)},
+  const query = `insert $stixDomainEntity isa ${escape(stixDomainEntity.type)},
     has internal_id "${internalId}",
     has entity_type "${escapeString(stixDomainEntity.type.toLowerCase())}",
     has stix_id "${
@@ -234,7 +245,17 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
         : `${escapeString(stixDomainEntity.type.toLowerCase())}--${uuid()}`
     }",
     has stix_label "",
-    has alias "",
+    ${
+      stixDomainEntity.alias
+        ? `${join(
+            ' ',
+            map(
+              val => `has alias "${escapeString(val)}",`,
+              tail(stixDomainEntity.alias)
+            )
+          )} has alias "${escapeString(head(stixDomainEntity.alias))}",`
+        : ''
+    }
     has name "${escapeString(stixDomainEntity.name)}",
     has description "${escapeString(stixDomainEntity.description)}",
     has created ${
@@ -253,7 +274,9 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     has created_at_month "${monthFormat(graknNow())}",
     has created_at_year "${yearFormat(graknNow())}",      
     has updated_at ${graknNow()};
-  `);
+  `;
+  logger.debug(`[GRAKN - infer: false] addStixDomainEntity > ${query}`);
+  const stixDomainEntityIterator = await wTx.tx.query(query);
   const createStixDomainEntity = await stixDomainEntityIterator.next();
   const createdStixDomainEntityId = await createStixDomainEntity
     .map()
@@ -271,7 +294,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   if (stixDomainEntity.markingDefinitions) {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
-        `match $from has id ${createdStixDomainEntityId}; 
+        `match $from id ${createdStixDomainEntityId}; 
         $to has internal_id "${escapeString(markingDefinition)}"; 
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
       );
@@ -300,6 +323,34 @@ export const stixDomainEntityAddRelation = (user, stixDomainEntityId, input) =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
+
+export const stixDomainEntityAddRelations = async (
+  user,
+  stixDomainEntityId,
+  input
+) => {
+  const finalInput = map(
+    n => ({
+      toId: n,
+      fromRole: input.fromRole,
+      toRole: input.toRole,
+      through: input.through
+    }),
+    input.toIds
+  );
+
+  const wTx = await takeWriteTx();
+  const createRelationPromise = relationInput =>
+    createRelation(stixDomainEntityId, relationInput);
+  const relationsPromises = map(createRelationPromise, finalInput);
+  await Promise.all(relationsPromises);
+
+  await commitWriteTx(wTx);
+
+  return getById(stixDomainEntityId, true).then(stixDomainEntity =>
+    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, stixDomainEntity, user)
+  );
+};
 
 export const stixDomainEntityDeleteRelation = (
   user,

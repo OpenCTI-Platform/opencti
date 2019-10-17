@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
@@ -9,8 +9,9 @@ import inject18n from '../../../../components/i18n';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
 import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import ToolHeader from './ToolHeader';
+import ToolPopover from './ToolPopover';
 import ToolKnowledgeBar from './ToolKnowledgeBar';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
@@ -27,7 +28,10 @@ class ToolKnowledgeComponent extends Component {
     const link = `/dashboard/techniques/tools/${tool.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <ToolHeader tool={tool} />
+        <StixDomainEntityHeader
+          stixDomainEntity={tool}
+          PopoverComponent={<ToolPopover />}
+        />
         <ToolKnowledgeBar toolId={tool.id} />
         <Route
           exact
@@ -60,6 +64,7 @@ class ToolKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Intrusion-Set']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -73,6 +78,7 @@ class ToolKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Campaign']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -86,6 +92,7 @@ class ToolKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Incident']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -99,6 +106,7 @@ class ToolKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
+              creationIsFrom={false}
               {...routeProps}
             />
           )}
@@ -118,7 +126,8 @@ const ToolKnowledge = createFragmentContainer(ToolKnowledgeComponent, {
   tool: graphql`
     fragment ToolKnowledge_tool on Tool {
       id
-      ...ToolHeader_tool
+      name
+      alias
     }
   `,
 });

@@ -68,8 +68,8 @@ class StixObservableEntities extends Component {
         isSortable: true,
       },
       weight: {
-        label: 'Confidence level',
-        width: '10%',
+        label: 'Confidence',
+        width: '12%',
         isSortable: false,
       },
     };
