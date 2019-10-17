@@ -15,10 +15,8 @@ import AttributePopover from './AttributePopover';
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+    height: 50,
+    cursor: 'default',
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -52,7 +50,7 @@ class AttributeLineComponent extends Component {
       classes, node, dataColumns, paginationOptions,
     } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ShortText />
         </ListItemIcon>
@@ -61,7 +59,8 @@ class AttributeLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.value.width }}>
+                style={{ width: dataColumns.value.width }}
+              >
                 {node.value}
               </div>
             </div>

@@ -13,7 +13,7 @@ import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import TagsLines, { tagsLinesQuery } from './tags/TagsLines';
 import TagCreation from './tags/TagCreation';
-import AttributesMenu from './attributes/AttributesMenu';
+import TagsAttributesMenu from './TagsAttributesMenu';
 
 const styles = () => ({
   container: {
@@ -133,7 +133,7 @@ class Tags extends Component {
     };
     return (
       <div className={classes.container}>
-        <AttributesMenu />
+        <TagsAttributesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <TagCreation paginationOptions={paginationOptions} />
       </div>

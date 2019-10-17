@@ -1,4 +1,4 @@
-import { addSector, findAll, findById, subsectors } from '../domain/sector';
+import { addSector, findAll, findById, subsectors, isSubsector } from '../domain/sector';
 import {
   createdByRef,
   markingDefinitions,
@@ -23,6 +23,7 @@ const sectorResolvers = {
   },
   Sector: {
     subsectors: (sector, args) => subsectors(sector.id, args),
+    isSubsector: (sector, args) => isSubsector(sector.id, args),
     createdByRef: sector => createdByRef(sector.id),
     markingDefinitions: (sector, args) => markingDefinitions(sector.id, args),
     tags: (sector, args) => tags(sector.id, args),

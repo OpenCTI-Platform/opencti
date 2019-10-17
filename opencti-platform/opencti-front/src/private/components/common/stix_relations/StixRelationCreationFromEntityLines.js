@@ -94,7 +94,8 @@ class StixRelationCreationFromEntityLinesContainer extends Component {
               stixDomainEntitiesTypes.length,
             )}
             onChange={this.handleChangePanel.bind(this, type)}
-            classes={{ root: classes.expansionPanel }}>
+            classes={{ root: classes.expansionPanel }}
+          >
             <ExpansionPanelSummary expandIcon={<ExpandMore />}>
               <Typography className={classes.heading}>
                 {t(`entity_${type}`)}
@@ -112,7 +113,8 @@ class StixRelationCreationFromEntityLinesContainer extends Component {
                     classes={{ root: classes.menuItem }}
                     divider={true}
                     button={true}
-                    onClick={handleSelect.bind(this, stixDomainEntity)}>
+                    onClick={handleSelect.bind(this, stixDomainEntity)}
+                  >
                     <ListItemIcon>
                       <ItemIcon type={type} />
                     </ListItemIcon>

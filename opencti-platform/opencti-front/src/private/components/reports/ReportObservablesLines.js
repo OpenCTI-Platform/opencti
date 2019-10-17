@@ -35,7 +35,7 @@ import { resolveLink } from '../../../utils/Entity';
 import ReportAddObservable from './ReportAddObservable';
 import ReportRefPopover from './ReportRefPopover';
 
-const styles = theme => ({
+const styles = (theme) => ({
   linesContainer: {
     marginTop: 10,
   },
@@ -46,11 +46,6 @@ const styles = theme => ({
   },
   item: {
     paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
   },
   bodyItem: {
     height: '100%',
@@ -221,15 +216,15 @@ class ReportObservablesLinesComponent extends Component {
       t, fd, classes, report,
     } = this.props;
     const observableRefs = map(
-      n => ({ id: n.node.id, relationId: n.relation.id }),
+      (n) => ({ id: n.node.id, relationId: n.relation.id }),
       report.observableRefs.edges,
     );
     const relationRefs = pipe(
-      map(n => assoc('relation', n.relation, n.node)),
+      map((n) => assoc('relation', n.relation, n.node)),
       groupBy(prop('id')),
       values,
-      map(n => head(n)),
-      map(n => (n.to.observable_value
+      map((n) => head(n)),
+      map((n) => (n.to.observable_value
         ? merge(n, {
           entity_type: n.to.entity_type,
           threat: n.from.name,
@@ -246,16 +241,16 @@ class ReportObservablesLinesComponent extends Component {
           observable_id: n.from.id,
           observable_value: n.from.observable_value,
         }))),
-      map(n => assoc(
+      map((n) => assoc(
         'observableRelationId',
         find(propEq('id', n.observable_id))(observableRefs).id,
         n,
       )),
     )(report.relationRefs.edges);
-    const observableRefsIds = map(n => n.id, observableRefs);
+    const observableRefsIds = map((n) => n.id, observableRefs);
     const objectRefsIds = concat(
       observableRefsIds,
-      map(n => n.node.id, report.objectRefs.edges),
+      map((n) => n.node.id, report.objectRefs.edges),
     );
     const sort = sortWith(
       this.state.orderAsc
@@ -306,6 +301,7 @@ class ReportObservablesLinesComponent extends Component {
                 key={relationRef.id}
                 classes={{ root: classes.item }}
                 divider={true}
+                button={true}
                 component={Link}
                 to={`${link}/${relationRef.id}`}
               >

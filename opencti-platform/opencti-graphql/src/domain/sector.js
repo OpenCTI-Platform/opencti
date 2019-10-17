@@ -11,7 +11,8 @@ import {
   now,
   paginate,
   takeWriteTx,
-  commitWriteTx
+  commitWriteTx,
+  getSingleValueNumber
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
@@ -36,6 +37,20 @@ export const subsectors = (sectorId, args) =>
     $s has internal_id "${escapeString(sectorId)}"`,
     args
   );
+
+export const isSubsector = async (sectorId, args) => {
+  const numberOfParents = await getSingleValueNumber(
+    `match $parent isa Sector; 
+    $rel(gather:$parent, part_of:$subsector) isa gathering; 
+    $subsector has internal_id "${escapeString(sectorId)}"; get; count;`,
+    args
+  );
+  console.log(numberOfParents);
+  if (numberOfParents > 0) {
+    return true;
+  }
+  return false;
+};
 
 export const addSector = async (user, sector) => {
   const wTx = await takeWriteTx();

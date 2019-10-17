@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   button: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -27,11 +27,17 @@ class TopMenuSettings extends Component {
           component={Link}
           to="/dashboard/settings"
           variant={
-            location.pathname === '/dashboard/settings' ? 'contained' : 'text'
+            location.pathname === '/dashboard/settings'
+            || location.pathname === '/dashboard/settings/about'
+              ? 'contained'
+              : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/settings' ? 'primary' : 'inherit'
+            location.pathname === '/dashboard/settings'
+            || location.pathname === '/dashboard/settings/about'
+              ? 'primary'
+              : 'inherit'
           }
           classes={{ root: classes.button }}
         >
@@ -39,39 +45,21 @@ class TopMenuSettings extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/settings/users"
+          to="/dashboard/settings/accesses"
           variant={
-            location.pathname.includes('/dashboard/settings/users')
+            location.pathname.includes('/dashboard/settings/accesses')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/settings/users')
+            location.pathname.includes('/dashboard/settings/accesses')
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Users')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/settings/groups"
-          variant={
-            location.pathname.includes('/dashboard/settings/groups')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/dashboard/settings/groups')
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Groups')}
+          {t('Accesses')}
         </Button>
         <Button
           component={Link}
@@ -125,25 +113,7 @@ class TopMenuSettings extends Component {
           }
           classes={{ root: classes.button }}
         >
-          {t('Attributes & Tags')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/settings/about"
-          variant={
-            location.pathname.includes('/dashboard/settings/about')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/dashboard/settings/about')
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('About')}
+          {t('Tags & Attributes')}
         </Button>
       </div>
     );

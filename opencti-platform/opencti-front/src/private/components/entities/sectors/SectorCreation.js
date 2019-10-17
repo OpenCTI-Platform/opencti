@@ -70,7 +70,19 @@ const styles = (theme) => ({
 const sectorMutation = graphql`
   mutation SectorCreationMutation($input: SectorAddInput!) {
     sectorAdd(input: $input) {
-      ...SectorCard_node
+      id
+      name
+      description
+      isSubsector
+      subsectors {
+        edges {
+          node {
+            id
+            name
+            description
+          }
+        }
+      }
     }
   }
 `;
@@ -152,10 +164,13 @@ class SectorCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = evolve({
-      createdByRef: path(['value']),
-      markingDefinitions: pluck('value'),
-    }, values);
+    const finalValues = evolve(
+      {
+        createdByRef: path(['value']),
+        markingDefinitions: pluck('value'),
+      },
+      values,
+    );
     commitMutation({
       mutation: sectorMutation,
       variables: {
@@ -165,12 +180,7 @@ class SectorCreation extends Component {
         const payload = store.getRootField('sectorAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationOptions,
-          newEdge,
-        );
+        sharedUpdater(store, container.getDataID(), {}, newEdge);
       },
       setSubmitting,
       onCompleted: () => {
@@ -307,7 +317,6 @@ class SectorCreation extends Component {
 }
 
 SectorCreation.propTypes = {
-  paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -315,5 +324,5 @@ SectorCreation.propTypes = {
 
 export default compose(
   inject18n,
-  withStyles(styles, { withTheme: true }),
+  withStyles(styles),
 )(SectorCreation);

@@ -16,11 +16,7 @@ import StixObjectTags from '../../common/stix_object/StixObjectTags';
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+    height: 50,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -57,6 +53,7 @@ class ToolLineComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
+        button={true}
         component={Link}
         to={`/dashboard/techniques/tools/${node.id}`}
       >
@@ -71,12 +68,6 @@ class ToolLineComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 {node.name}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.tool_version.width }}
-              >
-                {node.tool_version}
               </div>
               <div
                 className={classes.bodyItem}
@@ -124,7 +115,6 @@ const ToolLineFragment = createFragmentContainer(ToolLineComponent, {
     fragment ToolLine_node on Tool {
       id
       name
-      tool_version
       created
       modified
       tags {
@@ -165,12 +155,6 @@ class ToolLineDummyComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.tool_version.width }}
-              >
-                <div className="fakeItem" style={{ width: '70%' }} />
               </div>
               <div
                 className={classes.bodyItem}

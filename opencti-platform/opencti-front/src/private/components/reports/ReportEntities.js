@@ -31,11 +31,7 @@ const styles = theme => ({
   },
   item: {
     paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+    height: 50,
   },
   bodyItem: {
     height: '100%',

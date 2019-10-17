@@ -23,10 +23,7 @@ const styles = () => ({
   },
   item: {
     paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+    height: 50,
   },
 });
 
@@ -57,6 +54,7 @@ class AttackPatternDetailsComponent extends Component {
                 <ListItem
                   key={killChainPhase.phase_name}
                   dense={true}
+                  button={true}
                   divider={true}
                   classes={{ root: classes.item }}
                 >

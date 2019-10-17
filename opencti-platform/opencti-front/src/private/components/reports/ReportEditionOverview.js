@@ -513,9 +513,6 @@ class ReportEditionOverviewComponent extends Component {
                           <MenuItem key="4" value="4">
                             {t('confidence_4')}
                           </MenuItem>
-                          <MenuItem key="5" value="5">
-                            {t('confidence_5')}
-                          </MenuItem>
                         </Field>
                       </Form>
                       <IdentityCreation

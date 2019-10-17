@@ -12,13 +12,11 @@ import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import MarkingDefinitionPopover from './MarkingDefinitionPopover';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
+    height: 50,
+    cursor: 'default',
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -52,8 +50,11 @@ class MarkingDefinitionLineComponent extends Component {
       fd, classes, node, dataColumns, paginationOptions,
     } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon style={{ color: node.color }} classes={{ root: classes.itemIcon }}>
+      <ListItem classes={{ root: classes.item }} divider={true} button={true}>
+        <ListItemIcon
+          style={{ color: node.color }}
+          classes={{ root: classes.itemIcon }}
+        >
           <CenterFocusStrong />
         </ListItemIcon>
         <ListItemText
