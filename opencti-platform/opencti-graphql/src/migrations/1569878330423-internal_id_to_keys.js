@@ -5,7 +5,8 @@ import {
   commitWriteTx,
   getAttributes,
   conceptTypes,
-  inferIndexFromConceptTypes
+  inferIndexFromConceptTypes,
+  attributeExists
 } from '../database/grakn';
 import { logger } from '../config/conf';
 import { index } from '../database/elasticSearch';
@@ -42,6 +43,11 @@ module.exports.up = async next => {
   logger.info(
     `[MIGRATION] internal_id_to_keys > Migrating all attributes internal_id to internal_id_key...`
   );
+
+  if (!attributeExists('internal_id')) {
+    next();
+  }
+
   await Promise.all(
     entities.map(async entity => {
       if (entity !== null) {

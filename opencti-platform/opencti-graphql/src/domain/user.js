@@ -113,7 +113,9 @@ export const addPerson = async (user, newUser) => {
     has internal_id_key "${internalId}",
     has entity_type "user",
     has stix_id_key "${
-      newUser.stix_id_key ? escapeString(newUser.stix_id_key) : `identity--${uuid()}`
+      newUser.stix_id_key
+        ? escapeString(newUser.stix_id_key)
+        : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -175,7 +177,9 @@ export const addUser = async (
     has internal_id_key "${internalId}",
     has entity_type "user",
     has stix_id_key "${
-      newUser.stix_id_key ? escapeString(newUser.stix_id_key) : `identity--${uuid()}`
+      newUser.stix_id_key
+        ? escapeString(newUser.stix_id_key)
+        : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",

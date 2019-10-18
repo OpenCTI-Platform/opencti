@@ -215,6 +215,19 @@ export const write = async query => {
   }
 };
 
+export const attributeExists = async attributeLabel => {
+  const rTx = await takeReadTx();
+  try {
+    const checkQuery = `match $x sub ${attributeLabel}; get;`;
+    await rTx.tx.query(checkQuery);
+    await closeReadTx(rTx);
+    return false;
+  } catch (err) {
+    await closeReadTx(rTx);
+    return false;
+  }
+};
+
 /**
  * Get the Grakn ID from internal id
  * @param internalId
@@ -1350,7 +1363,9 @@ export const deleteEntityById = async id => {
 export const deleteById = async id => {
   const wTx = await takeWriteTx();
   try {
-    const query = `match $x has internal_id_key "${escapeString(id)}"; delete $x;`;
+    const query = `match $x has internal_id_key "${escapeString(
+      id
+    )}"; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteById > ${query}`);
     await wTx.tx.query(query, { infer: false });
     await commitWriteTx(wTx);
