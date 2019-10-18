@@ -1206,8 +1206,8 @@ export const paginateRelationships = (
  * @param input
  */
 export const createRelation = async (id, input) => {
-  const wTx = await takeWriteTx();
   try {
+    const wTx = await takeWriteTx();
     const query = `match $from has internal_id_key "${escapeString(id)}";
       $to has internal_id_key "${escapeString(input.toId)}"; 
       insert $rel(${escape(input.fromRole)}: $from, ${escape(
@@ -1253,8 +1253,8 @@ export const createRelation = async (id, input) => {
  * @returns the complete instance
  */
 export const updateAttribute = async (id, input, tx = null) => {
-  const wTx = tx === null ? await takeWriteTx() : tx;
   try {
+    const wTx = tx === null ? await takeWriteTx() : tx;
     const { key, value } = input; // value can be multi valued
     const escapedKey = escape(key);
     const labelTypeQuery = `match $x type ${escapedKey}; get;`;
@@ -1326,8 +1326,8 @@ export const updateAttribute = async (id, input, tx = null) => {
  * @returns {Promise<any[] | never>}
  */
 export const deleteEntityById = async id => {
-  const wTx = await takeWriteTx();
   try {
+    const wTx = await takeWriteTx();
     const query = `match $x has internal_id_key "${escapeString(
       id
     )}"; $z($x, $y); delete $z, $x;`;
@@ -1347,8 +1347,8 @@ export const deleteEntityById = async id => {
  * @returns {Promise<any[] | never>}
  */
 export const deleteById = async id => {
-  const wTx = await takeWriteTx();
   try {
+    const wTx = await takeWriteTx();
     const query = `match $x has internal_id_key "${escapeString(
       id
     )}"; delete $x;`;
@@ -1369,8 +1369,8 @@ export const deleteById = async id => {
  * @returns {Promise<any[] | never>}
  */
 export const deleteRelationById = async (id, relationId) => {
-  const wTx = await takeWriteTx();
   try {
+    const wTx = await takeWriteTx();
     const query = `match $x has internal_id_key "${escapeString(
       relationId
     )}"; delete $x;`;
@@ -1394,8 +1394,8 @@ export const deleteRelationById = async (id, relationId) => {
  * @returns Promise
  */
 export const timeSeries = async (query, options) => {
-  const rTx = await takeReadTx();
   try {
+    const rTx = await takeReadTx();
     const {
       startDate,
       endDate,
@@ -1431,8 +1431,8 @@ export const timeSeries = async (query, options) => {
  * @returns Promise
  */
 export const distribution = async (query, options) => {
-  const rTx = await takeReadTx();
   try {
+    const rTx = await takeReadTx();
     const { startDate, endDate, operation, field, inferred = false } = options;
     const finalQuery = `${query}; ${
       startDate && endDate
