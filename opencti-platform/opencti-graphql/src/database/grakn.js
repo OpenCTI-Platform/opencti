@@ -221,7 +221,7 @@ export const attributeExists = async attributeLabel => {
     const checkQuery = `match $x sub ${attributeLabel}; get;`;
     await rTx.tx.query(checkQuery);
     await closeReadTx(rTx);
-    return false;
+    return true;
   } catch (err) {
     await closeReadTx(rTx);
     return false;

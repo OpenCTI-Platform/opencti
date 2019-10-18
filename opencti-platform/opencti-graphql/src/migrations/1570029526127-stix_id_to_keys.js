@@ -28,7 +28,8 @@ module.exports.up = async next => {
     `[MIGRATION] stix_id_to_keys > Migrating all attributes stix_id to stix_id_key...`
   );
 
-  if (!attributeExists('stix_id')) {
+  const isExisting = await attributeExists('stix_id');
+  if (!isExisting) {
     next();
   }
 
