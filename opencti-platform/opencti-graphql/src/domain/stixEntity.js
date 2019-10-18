@@ -1,11 +1,28 @@
 import { assoc } from 'ramda';
-import { escapeString, getById, getObject, paginate } from '../database/grakn';
+import {
+  escapeString,
+  getById,
+  getObject,
+  load,
+  paginate
+} from '../database/grakn';
 import {
   findAll as relationFindAll,
   search as relationSearch
 } from './stixRelation';
 
-export const findById = stixEntityId => getById(stixEntityId);
+const findByStixId = stixId => {
+  const query = `match $x isa entity;
+   { $x isa Stix-Domain; } or { $x isa Stix-Observable; } or { $x isa stix_relation; };
+   $x has stix_id "${escapeString(stixId)}"; get;`;
+  return load(query, ['x']).then(data => {
+    return data && data.x;
+  });
+};
+
+export const findById = (id, isStixId) => {
+  return isStixId ? findByStixId(id) : getById(id);
+};
 
 export const markingDefinitions = (stixEntityId, args) => {
   return paginate(

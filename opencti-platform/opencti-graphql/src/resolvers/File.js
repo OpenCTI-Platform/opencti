@@ -7,7 +7,7 @@ const fileResolvers = {
     importFiles: (entity, { first }) => filesListing(first, 'import')
   },
   File: {
-    jobs: file => loadFileWorks(file.id)
+    works: file => loadFileWorks(file.id)
   },
   Mutation: {
     uploadImport: (_, { file }, { user }) => uploadImport(file, user),

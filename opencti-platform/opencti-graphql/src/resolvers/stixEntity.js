@@ -10,7 +10,7 @@ import { fetchEditContext } from '../database/redis';
 
 const stixEntityResolvers = {
   Query: {
-    stixEntity: (_, { id }) => findById(id)
+    stixEntity: (_, { id, isStixId }) => findById(id, isStixId)
   },
   StixEntity: {
     // eslint-disable-next-line

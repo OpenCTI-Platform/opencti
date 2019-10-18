@@ -35,7 +35,14 @@ export const connectorsFor = async (type, scope, onlyAlive = false) => {
   return pipe(
     filter(c => c.connector_type === type),
     filter(c => (onlyAlive ? c.active === true : true)),
-    filter(c => (scope ? includes(scope, c.connector_scope) : true))
+    filter(c =>
+      scope
+        ? includes(
+            scope.toLowerCase(),
+            map(s => s.toLowerCase(), c.connector_scope)
+          )
+        : true
+    )
   )(connects);
 };
 

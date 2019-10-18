@@ -34,11 +34,6 @@ define
   workspace_data sub attribute, datatype string;
   workspace_type sub attribute, datatype string;
   object_status sub attribute, datatype long;
-  work_type sub attribute, datatype string;
-  work_status sub attribute, datatype string;
-  work_file sub attribute, datatype string;
-  work_entity sub attribute, datatype string;
-  work_message sub attribute, datatype string;
   score sub attribute, datatype long;
   tag_type sub attribute, datatype string;
 
@@ -213,12 +208,6 @@ define
     has internal_id,
     relates status,
     relates state;
-
-  # Work job relationship
-  job sub relation,
-    has internal_id,
-    relates work,
-    relates connector;
 
   # Group membership relationships
   membership sub relation,
@@ -492,17 +481,6 @@ define
     has created_at_year,
     has updated_at;
 
-  Work sub entity,
-    has internal_id,
-    has work_entity,
-    has work_file,
-    has work_type,
-    has work_status,
-    has work_message,
-    has created_at,
-    has updated_at,
-    plays work;
-
   Tag sub entity,
     has internal_id,
     has tag_type,
@@ -515,7 +493,7 @@ define
     has updated_at,
     plays tagging;
 
-  Export sub entity,
+  Connector sub entity,
     has internal_id,
     has name,
     has connector_type,

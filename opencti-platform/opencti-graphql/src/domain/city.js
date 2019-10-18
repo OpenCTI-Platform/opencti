@@ -14,7 +14,6 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
-import { stableUUID } from '../database/utils';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'city', args));
@@ -28,9 +27,7 @@ export const addCity = async (user, city) => {
     has internal_id "${internalId}",
     has entity_type "city",
     has stix_id "${
-      city.stix_id
-        ? escapeString(city.stix_id)
-        : `identity--${stableUUID(city.name)}`
+      city.stix_id ? escapeString(city.stix_id) : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",

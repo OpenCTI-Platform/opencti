@@ -12,7 +12,7 @@ import Badge from '@material-ui/core/Badge';
 import { filter } from 'ramda';
 import moment from 'moment';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import FileJob from './FileJob';
+import FileWork from './FileWork';
 
 const FileLineDeleteMutation = graphql`
     mutation FileLineDeleteMutation($fileName: String) {
@@ -22,7 +22,7 @@ const FileLineDeleteMutation = graphql`
 
 const FileLineAskDeleteMutation = graphql`
     mutation FileLineAskDeleteMutation($workId: ID!) {
-        resetJob(id: $workId)
+        deleteWork(id: $workId)
     }
 `;
 
@@ -36,11 +36,11 @@ const FileLineImportAskJobMutation = graphql`
 
 const FileLineComponent = (props) => {
   const { file, connectors } = props;
-  const { information, lastModifiedSinceMin, uploadStatus } = file;
-  const isFail = uploadStatus === 'error';
+  const { lastModifiedSinceMin, uploadStatus } = file;
+  const isFail = uploadStatus === 'error' || uploadStatus === 'partial';
   const isProgress = uploadStatus === 'progress';
   const isOutdated = isProgress && lastModifiedSinceMin > 5;
-  const isImportActive = () => connectors && filter(x => x.data.active, connectors).length > 0;
+  const isImportActive = () => connectors && filter((x) => x.data.active, connectors).length > 0;
   const executeRemove = (mutation, variables) => {
     commitMutation({
       mutation,
@@ -93,7 +93,7 @@ const FileLineComponent = (props) => {
       : <span>{moment(file.lastModified).format('ll')} - <a href={`/storage/view/${file.id}`} target="_blank" rel='noopener noreferrer'>{file.name}</a></span>}
     {(() => {
       if (isFail || isOutdated) {
-        const message = isOutdated ? 'Processing timeout' : information;
+        const message = isOutdated ? 'Processing timeout' : 'TODO';
         return <Tooltip title={message} aria-label={message}>
             <IconButton aria-haspopup="true" color="secondary">
                 <Warning/>
@@ -121,7 +121,7 @@ const FileLineComponent = (props) => {
       </React.Fragment>;
     })()}
     <div style={{ paddingLeft: 50 }}>
-        <FileJob file={file}/>
+        <FileWork file={file}/>
     </div>
   </div>;
 };
@@ -131,7 +131,6 @@ const FileLine = createFragmentContainer(FileLineComponent, {
         fragment FileLine_file on File {
             id
             name
-            information
             uploadStatus
             lastModified
             lastModifiedSinceMin
@@ -139,7 +138,7 @@ const FileLine = createFragmentContainer(FileLineComponent, {
                 category
                 mimetype
             }
-            ...FileJob_file
+            ...FileWork_file
         }
     `,
 });

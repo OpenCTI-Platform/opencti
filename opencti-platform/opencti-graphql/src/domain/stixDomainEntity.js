@@ -115,7 +115,7 @@ export const externalReferences = (stixDomainEntityId, args) => {
 
 const askJobExports = async (entity, format, exportType) => {
   const connectors = await connectorsForExport(format, true);
-  // Create job for
+  // Create job for every connectors
   const workList = await Promise.all(
     map(connector => {
       const fileName = generateFileExportName(
@@ -124,18 +124,22 @@ const askJobExports = async (entity, format, exportType) => {
         exportType,
         entity
       );
-      return createWork(connector, entity.id, fileName).then(work => ({
-        connector,
-        work
-      }));
+      return createWork(connector, entity.id, fileName).then(
+        ({ work, job }) => ({
+          connector,
+          job,
+          work
+        })
+      );
     }, connectors)
   );
   // Send message to all correct connectors queues
   await Promise.all(
     map(data => {
-      const { connector, work } = data;
+      const { connector, job, work } = data;
       const message = {
-        job_id: work.internal_id, // job(id)
+        work_id: work.internal_id, // work(id)
+        job_id: job.internal_id, // job(id)
         export_type: exportType, // simple or full
         entity_type: entity.entity_type, // report, threat, ...
         entity_id: entity.id, // report(id), thread(id), ...
@@ -169,12 +173,7 @@ export const stixDomainEntityExportAsk = async (
   return map(w => workToExportFile(w.work, w.connector), workList);
 };
 
-export const stixDomainEntityExportPush = async (
-  user,
-  entityId,
-  jobId,
-  file
-) => {
+export const stixDomainEntityExportPush = async (user, entityId, file) => {
   // Upload the document in minio
   await upload(user, 'export', file, entityId);
   return getById(entityId).then(stixDomainEntity => {

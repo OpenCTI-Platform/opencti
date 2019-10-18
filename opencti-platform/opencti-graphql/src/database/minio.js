@@ -4,7 +4,10 @@ import mime from 'mime-types';
 import conf, { logger } from '../config/conf';
 import { getById, now, sinceNowInMinutes } from './grakn';
 import { buildPagination } from './utils';
-import { loadExportWorksAsProgressFiles } from '../domain/work';
+import {
+  deleteWorkForFile,
+  loadExportWorksAsProgressFiles
+} from '../domain/work';
 
 const bucketName = conf.get('minio:bucketName') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucketRegion') || 'us-east-1';
@@ -58,9 +61,11 @@ export const generateFileExportName = (
   return `${creation}_(${connector.name})_${entityInFile}_${exportType}.${fileExt}`;
 };
 
-export const deleteFile = (id, user) => {
+export const deleteFile = async (id, user) => {
   logger.debug(`FileManager > delete file ${id} by ${user.email}`);
-  return minioClient.removeObject(bucketName, id);
+  await minioClient.removeObject(bucketName, id);
+  await deleteWorkForFile(id);
+  return true;
 };
 
 export const downloadFile = id => minioClient.getObject(bucketName, id);

@@ -26,6 +26,7 @@ scalar Upload
 enum Status {
   wait
   progress
+  partial
   complete
   error
 }
@@ -263,24 +264,32 @@ type ConnectorConfig {
 }
 type Connector {
   id: ID!
+  internal_id: ID!
   name: String!
-  updated_at: DateTime
   active: Boolean
-  created_at: DateTime
   connector_type: String!
   connector_scope: [String!]
+  updated_at: DateTime
+  created_at: DateTime
   config: ConnectorConfig
 }
 
 ### Files
-type Work {
-  id: ID!
-  connector: Connector!
-  work_type: String!
-  work_message: String!
-  work_status: Status!
+type Job {
+  internal_id: ID!
+  messages: [String]
+  job_status: Status!
   created_at: DateTime!
   updated_at: DateTime!
+}
+type Work {
+  id: ID!
+  internal_id: ID!
+  jobs: [Job]
+  status: Status!
+  connector: Connector!
+  work_type: String!
+  created_at: DateTime!
 }
 type WorkEdge {
   cursor: String!
@@ -303,12 +312,11 @@ type File {
   id: ID!
   name: String
   size: Int
-  information: String
   lastModified: DateTime
   lastModifiedSinceMin: Int
   metaData: FileMetadata
   uploadStatus: Status!
-  jobs: [Work]
+  works: [Work]
 }
 type FileEdge {
   cursor: String!
@@ -480,7 +488,7 @@ type StixObservable implements GlobalObject & StixEntity {
     search: String
     infrastructure: Boolean
   ): StixRelationConnection
-  jobs(first: Int, after: ID, orderBy: StixRelationsOrdering, orderMode: OrderingMode): WorkConnection
+  jobs(first: Int): [Work]
   connectors(onlyAlive: Boolean): [Connector]
   created_at: DateTime!
   updated_at: DateTime!
@@ -2407,7 +2415,7 @@ type Query {
   connectorsForImport: [Connector] @auth
   importFiles(first: Int): FileConnection @auth
   # StixEntities
-  stixEntity(id: String): StixEntity @auth
+  stixEntity(id: String, isStixId: Boolean): StixEntity @auth
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(
@@ -2439,6 +2447,7 @@ type Query {
   stixObservables(
     first: Int
     after: ID
+    stix_id: String
     orderBy: StixObservablesOrdering
     orderMode: OrderingMode
     filters: StixObservablesFiltering
@@ -2859,7 +2868,7 @@ type StixDomainEntityEditMutations {
   relationDelete(relationId: ID!): RelationData
   importPush(file: Upload!): File @auth
   exportAsk(format: String!, exportType: String!): [File]
-  exportPush(jobId: ID!, file: Upload!): Boolean @auth(for: ROLE_ADMIN)
+  exportPush(file: Upload!): Boolean @auth(for: ROLE_ADMIN)
 }
 
 # StixObservable
@@ -3116,10 +3125,11 @@ type Mutation {
   attributeAdd(input: AttributeAddInput): Attribute @auth(for: ROLE_ADMIN)
   attributeEdit(id: ID!): AttributeEditMutations @auth(for: ROLE_ADMIN)
   # Connector
-  registerConnector(input: RegisterConnectorInput): Connector @auth(for: ROLE_ADMIN)
   pingConnector(id: ID!): Connector @auth(for: ROLE_ADMIN)
-  reportJobStatus(id: ID!, status: Status!, message: String): Work @auth
-  resetJob(id: ID!): ID! @auth
+  registerConnector(input: RegisterConnectorInput): Connector @auth(for: ROLE_ADMIN)
+  deleteWork(id: ID!): ID! @auth
+  initiateJob(workId: ID!): Job @auth
+  updateJob(jobId: ID!, status: Status!, messages: [String]): Job @auth
   # File management
   deleteImport(fileName: String): Boolean @auth
   uploadImport(file: Upload!): File @auth

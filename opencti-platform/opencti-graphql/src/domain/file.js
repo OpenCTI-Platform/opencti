@@ -12,9 +12,10 @@ const uploadJobImport = async (fileId, fileMime) => {
     const workList = await Promise.all(
       map(
         connector =>
-          createWork(connector, null, fileId).then(work => ({
+          createWork(connector, null, fileId).then(({ work, job }) => ({
             connector,
-            work
+            work,
+            job
           })),
         connectors
       )
@@ -22,9 +23,10 @@ const uploadJobImport = async (fileId, fileMime) => {
     // Send message to all correct connectors queues
     await Promise.all(
       map(data => {
-        const { connector, work } = data;
+        const { connector, work, job } = data;
         const message = {
-          job_id: work.internal_id, // job(id)
+          work_id: work.internal_id, // work(id)
+          job_id: job.internal_id, // job(id)
           file_mime: fileMime, // Ex. application/json
           file_path: `/storage/get/${fileId}` // Path to get the file
         };

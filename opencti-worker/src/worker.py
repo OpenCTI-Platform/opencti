@@ -10,7 +10,8 @@ import base64
 import threading
 import ctypes
 
-from pycti import OpenCTIApiClient
+from itertools import groupby
+from api.opencti_api_client import OpenCTIApiClient
 
 
 class Consumer(threading.Thread):
@@ -50,11 +51,21 @@ class Consumer(threading.Thread):
 
     # Data handling
     def data_handler(self, data):
+        job_id = data['job_id']
         try:
             content = base64.b64decode(data['content']).decode('utf-8')
-            self.api.stix2_import_bundle(content, True, data['entities_types'] if 'entities_types' in data else [])
-        except Exception as e:
-            logging.error('An unexpected error occurred: { ' + str(e) + ' }')
+            types = data['entities_types'] if 'entities_types' in data else []
+            imported_data = self.api.stix2_import_bundle(content, True, types)
+            if job_id is not None:
+                messages = []
+                by_types = groupby(imported_data, key=lambda x: x['type'])
+                for key, grp in by_types:
+                    messages.append(str(len(list(grp))) + ' imported ' + key)
+                self.api.job.update_job(job_id, 'complete', messages)
+        except Exception as handlerError:
+            logging.error('An unexpected error occurred: { ' + str(handlerError) + ' }')
+            if job_id is not None:
+                self.api.job.update_job(job_id, 'error', [str(handlerError)])
             return False
 
     def run(self):
@@ -83,7 +94,7 @@ class Worker:
         self.api = OpenCTIApiClient(self.opencti_url, self.opencti_token)
 
         # Fetch queue configuration from API
-        self.connectors = self.api.connectors()
+        self.connectors = self.api.connector.list()
         self.queues = list(map(lambda x: x['config']['push'], self.connectors))
 
         # Configure logger

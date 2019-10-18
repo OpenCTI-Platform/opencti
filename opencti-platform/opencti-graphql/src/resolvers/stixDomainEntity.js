@@ -70,8 +70,7 @@ const stixDomainEntityResolvers = {
       importPush: ({ file }) => stixDomainEntityImportPush(user, id, file),
       exportAsk: ({ format, exportType }) =>
         stixDomainEntityExportAsk(id, format, exportType),
-      exportPush: ({ jobId, file }) =>
-        stixDomainEntityExportPush(user, id, jobId, file)
+      exportPush: ({ file }) => stixDomainEntityExportPush(user, id, file)
     }),
     stixDomainEntityAdd: (_, { input }, { user }) =>
       addStixDomainEntity(user, input)

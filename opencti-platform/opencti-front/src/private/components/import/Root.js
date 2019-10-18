@@ -70,11 +70,11 @@ const ImportRoot = ({
   const { edges } = importFiles;
   const importConnsPerFormat = scopesConn(connectorsImport);
   const onUploadSuccess = () => relay.refetch();
-  const isImportActive = () => filter(x => x.active, connectorsImport).length > 0;
+  const isImportActive = () => filter((x) => x.active, connectorsImport).length > 0;
   const importConnsTooltip = () => {
     const connsPair = toPairs(importConnsPerFormat);
     const data = map((x) => {
-      const associateConnectors = map(s => `${s.data.name} ${s.data.active ? '(active)' : '(disconnected)'}`, last(x));
+      const associateConnectors = map((s) => `${s.data.name} ${s.data.active ? '(active)' : '(disconnected)'}`, last(x));
       return `${head(x)} [ ${associateConnectors.join(', ')} ]`;
     }, connsPair);
     return data.join('\r\n');
@@ -100,7 +100,7 @@ const ImportRoot = ({
             <div className="clearfix" />
         </div>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-            {edges.length ? edges.map(file => <div style={{ marginLeft: -15 }} key={file.node.id}>
+            {edges.length ? edges.map((file) => <div style={{ marginLeft: -15 }} key={file.node.id}>
                 <FileLine file={file.node}
                           connectors={importConnsPerFormat[file.node.metaData.mimetype]}/>
             </div>) : <div style={{ padding: 10 }}>No file</div>}

@@ -52,7 +52,7 @@ const StixObservableEnrichment = (props) => {
   return <div>
       <Grid container={true} spacing={3}>
           <Grid item={true} xs={6}>
-          {stixObservable.connectors.map(conn => <React.Fragment key={conn.id}>
+          {stixObservable.connectors.map((conn) => <React.Fragment key={conn.id}>
                 <div style={{ float: 'left' }}>
                     <Typography variant="h2" style={{ paddingTop: 15 }} gutterBottom={true}>
                         {conn.name}
@@ -70,22 +70,19 @@ const StixObservableEnrichment = (props) => {
           </Grid>
       </Grid>
       <div>
-          {stixObservable.jobs.edges.map((data) => {
-            const { node } = data;
-            return <div key={node.id}>
-                <Tooltip title={node.work_message} aria-label={node.work_message}>
+          {stixObservable.jobs.map((node) => <div key={node.id}>
+                <Tooltip title={'todo'} aria-label={'todo'}>
                   <span>
-                      {node.work_status === 'error'
+                      {(node.status === 'error' || node.status === 'partial')
                       && <Warning style={{ fontSize: 10, marginRight: 10, color: 'red' }}/>}
-                      {node.work_status === 'complete'
+                      {node.status === 'complete'
                       && <CheckCircle style={{ fontSize: 10, marginRight: 10, color: 'green' }}/>}
-                      {node.work_status === 'progress'
+                      {node.status === 'progress'
                       && <CircularProgress size={10} thickness={2} style={{ marginRight: 10 }} />}
                   </span>
                 </Tooltip>
-                {node.connector.name} / {node.updated_at}
-            </div>;
-          })}
+                {node.connector.name}
+            </div>)}
       </div>
   </div>;
 };
@@ -97,18 +94,12 @@ const StixObservableEnrichmentFragment = createRefetchContainer(
       fragment StixObservableEnrichment_stixObservable on StixObservable {
           id
           entity_type
-          jobs(first: 100, orderBy: updated_at, orderMode: desc) @connection(key: "Pagination_jobs") {
-            edges {
-              node {
-                id
-                connector {
-                  name
-                }
-                updated_at
-                work_message
-                work_status
-              }
+          jobs(first: 100) {
+            id
+            connector {
+              name
             }
+            status
           }
           connectors(onlyAlive: false) {
               id

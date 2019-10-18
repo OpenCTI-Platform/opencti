@@ -17,7 +17,6 @@ import {
   paginate,
   takeWriteTx,
   timeSeries,
-  getObject,
   getId,
   commitWriteTx
 } from '../database/grakn';
@@ -28,7 +27,6 @@ import {
   deleteEntity,
   paginate as elPaginate
 } from '../database/elasticSearch';
-import { stableUUID } from '../database/utils';
 import { connectorsForEnrichment } from './connector';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
@@ -73,6 +71,15 @@ export const stixObservablesTimeSeries = args => {
 
 export const findById = stixObservableId => getById(stixObservableId);
 
+export const findByStixId = args => {
+  return paginate(
+    `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
+    $x has stix_id "${escapeString(args.stix_id)}"`,
+    args,
+    false
+  );
+};
+
 export const findByValue = args => {
   return paginate(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
@@ -99,15 +106,23 @@ const askEnrich = async (observableId, scope) => {
   const workList = await Promise.all(
     map(
       connector =>
-        createWork(connector, observableId).then(work => ({ connector, work })),
+        createWork(connector, observableId).then(({ job, work }) => ({
+          connector,
+          job,
+          work
+        })),
       targetConnectors
     )
   );
   // Send message to all correct connectors queues
   await Promise.all(
     map(data => {
-      const { connector, work } = data;
-      const message = { job_id: work.internal_id, entity_id: observableId };
+      const { connector, work, job } = data;
+      const message = {
+        work_id: work.internal_id,
+        job_id: job.internal_id,
+        entity_id: observableId
+      };
       return pushToConnector(connector, message);
     }, workList)
   );
@@ -116,8 +131,12 @@ const askEnrich = async (observableId, scope) => {
 
 export const stixObservableAskEnrichment = async (id, connectorId) => {
   const connector = await getById(connectorId);
-  const work = await createWork(connector, id);
-  const message = { job_id: work.internal_id, entity_id: id };
+  const { job, work } = await createWork(connector, id);
+  const message = {
+    work_id: work.internal_id,
+    job_id: job.internal_id,
+    entity_id: id
+  };
   await pushToConnector(connector, message);
   return work;
 };
@@ -131,11 +150,7 @@ export const addStixObservable = async (user, stixObservable) => {
     : uuid();
   const query = `insert $stixObservable isa ${escape(stixObservable.type)},
     has internal_id "${internalId}",
-    has stix_id "${
-      stixId
-        ? escapeString(stixId)
-        : `indicator--${stableUUID(observableValue)}`
-    }",
+    has stix_id "${stixId ? escapeString(stixId) : `indicator--${uuid()}`}",
     has entity_type "${escapeString(stixObservable.type.toLowerCase())}",
     has name "",
     has description "${escapeString(stixObservable.description)}",
