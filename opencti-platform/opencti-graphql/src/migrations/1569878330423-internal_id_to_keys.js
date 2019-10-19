@@ -44,7 +44,7 @@ module.exports.up = async next => {
     `[MIGRATION] internal_id_to_keys > Migrating all attributes internal_id to internal_id_key...`
   );
 
-  const isExisting = await attributeExists('internaldsqdqsdqsdqd_id');
+  const isExisting = await attributeExists('internal_id');
   if (isExisting) {
     await Promise.all(
       entities.map(async entity => {

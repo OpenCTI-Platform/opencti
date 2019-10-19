@@ -170,21 +170,18 @@ export const reindex = async indexMaps => {
 };
 
 export const index = async (indexName, documentBody, refresh = true) => {
-  const internalId = documentBody.internal_id_key;
-  if (internalId) {
-    const entityType = documentBody.entity_type;
-    logger.debug(
-      `[ELASTICSEARCH] index > ${entityType} ${internalId} (${documentBody.grakn_id}) in ${indexName}`
-    );
-    await el.index({
-      index: indexName,
-      id: documentBody.grakn_id,
-      refresh,
-      body: documentBody
-    });
-    return documentBody;
-  }
-  return null;
+  const internalId = documentBody.internal_id;
+  const entityType = documentBody.entity_type;
+  logger.debug(
+    `[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`
+  );
+  await el.index({
+    index: indexName,
+    id: documentBody.grakn_id,
+    refresh,
+    body: documentBody
+  });
+  return documentBody;
 };
 
 export const deleteEntity = async (indexName, documentId) => {
