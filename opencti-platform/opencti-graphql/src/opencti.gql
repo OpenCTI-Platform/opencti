@@ -115,10 +115,6 @@ define
   status sub role;
   state sub role;
 
-  # Work
-  work sub role;
-  connector sub role;
-
   # OpenCTI roles
   author sub role;
   authorization sub role;
@@ -499,8 +495,7 @@ define
     has connector_type,
     has connector_scope,
     has created_at,
-    has updated_at,
-    plays connector;
+    has updated_at;
 
   Group sub entity,
     has internal_id,
