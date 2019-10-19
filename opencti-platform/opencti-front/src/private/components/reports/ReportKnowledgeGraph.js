@@ -25,13 +25,15 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import { AspectRatio } from '@material-ui/icons';
+import { AutoFix } from 'mdi-material-ui';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
 import { commitMutation, fetchQuery } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
-import EntityLabelModel from '../../../components/graph_node/EntityLabelModel';
-import EntityLinkModel from '../../../components/graph_node/EntityLinkModel';
+import GlobalLinkModel from '../../../components/graph_node/GlobalLinkModel';
+import GlobalLabelModel from '../../../components/graph_node/GlobalLabelModel';
+import RelationNodeModel from '../../../components/graph_node/RelationNodeModel';
 import { distributeElements } from '../../../utils/DagreHelper';
 import { serializeGraph } from '../../../utils/GraphHelper';
 import { dateFormat } from '../../../utils/Time';
@@ -163,7 +165,7 @@ class ReportKnowledgeGraphComponent extends Component {
     if (added.length > 0) {
       const model = this.props.engine.getDiagramModel();
       const newNodes = map(
-        n => new EntityNodeModel({
+        (n) => new EntityNodeModel({
           id: n.node.id,
           relationId: n.relation.id,
           name: n.node.name,
@@ -180,7 +182,7 @@ class ReportKnowledgeGraphComponent extends Component {
     // if a node has been removed, remove in graph
     if (removed.length > 0) {
       const model = this.props.engine.getDiagramModel();
-      const removedIds = map(n => n.node.id, removed);
+      const removedIds = map((n) => n.node.id, removed);
       forEach((n) => {
         if (removedIds.includes(n.extras.id)) {
           n.remove();
@@ -244,51 +246,71 @@ class ReportKnowledgeGraphComponent extends Component {
       model.addNode(newNode);
     }, nodes);
 
+    // add relations
+    forEach((l) => {
+      const newNode = new RelationNodeModel({
+        id: l.node.id,
+        relationId: l.relation.id,
+        relationship_type: l.node.relationship_type,
+        first_seen: l.node.first_seen,
+        last_seen: l.node.last_seen,
+      });
+      newNode.addListener({
+        selectionChanged: this.handleSelection.bind(this),
+      });
+      const position = pathOr(
+        null,
+        ['nodes', l.node.id, 'position'],
+        graphData,
+      );
+      if (position && position.x !== undefined && position.y !== undefined) {
+        newNode.setPosition(position.x, position.y);
+      }
+      model.addNode(newNode);
+    }, relations);
+
     // build usables nodes object
     const finalNodes = model.getNodes();
     const finalNodesObject = pipe(
       values,
-      map(n => ({ id: n.extras.id, node: n })),
+      map((n) => ({ id: n.extras.id, node: n })),
       indexBy(prop('id')),
     )(finalNodes);
-
-    // add relations
+    // add links
     const createdRelations = [];
     forEach((l) => {
       if (
         !includes(l.relation.id, createdRelations)
         && l.node.relationship_type !== 'indicates'
       ) {
-        const fromPort = finalNodesObject[l.node.from.id]
+        const sourceFromPort = finalNodesObject[l.node.from.id]
           ? finalNodesObject[l.node.from.id].node.getPort('main')
           : null;
-        const toPort = finalNodesObject[l.node.to.id]
+        const sourceToPort = finalNodesObject[l.node.id]
+          ? finalNodesObject[l.node.id].node.getPort('main')
+          : null;
+        if (sourceFromPort !== null && sourceToPort !== null) {
+          const newLink = new GlobalLinkModel();
+          newLink.setSourcePort(sourceFromPort);
+          newLink.setTargetPort(sourceToPort);
+          const label = new GlobalLabelModel(l.node.fromRole);
+          newLink.addLabel(label);
+          model.addLink(newLink);
+        }
+        const targetFromPort = finalNodesObject[l.node.id]
+          ? finalNodesObject[l.node.id].node.getPort('main')
+          : null;
+        const targetToPort = finalNodesObject[l.node.to.id]
           ? finalNodesObject[l.node.to.id].node.getPort('main')
           : null;
-        if (fromPort === null || toPort === null) {
-          return false;
+        if (targetFromPort !== null && targetToPort !== null) {
+          const newLink = new GlobalLinkModel();
+          newLink.setSourcePort(targetFromPort);
+          newLink.setTargetPort(targetToPort);
+          const label = new GlobalLabelModel(l.node.toRole);
+          newLink.addLabel(label);
+          model.addLink(newLink);
         }
-        const newLink = new EntityLinkModel();
-        newLink.setExtras({
-          relation: l.node,
-          objectRefId: l.relation.id,
-        });
-        newLink.setSourcePort(fromPort);
-        newLink.setTargetPort(toPort);
-        const label = new EntityLabelModel();
-        label.setExtras([
-          {
-            id: l.node.id,
-            relationship_type: l.node.relationship_type,
-            first_seen: l.node.first_seen,
-            last_seen: l.node.last_seen,
-          },
-        ]);
-        newLink.addLabel(label);
-        newLink.addListener({
-          selectionChanged: this.handleSelection.bind(this),
-        });
-        model.addLink(newLink);
         createdRelations.push(l.relation.id);
         return true;
       }
@@ -391,7 +413,7 @@ class ReportKnowledgeGraphComponent extends Component {
     const model = this.props.engine.getDiagramModel();
     const currentLinks = model.getLinks();
     const currentLinksPairs = map(
-      n => ({
+      (n) => ({
         source: n.sourcePort.id,
         target: pathOr(null, ['targetPort', 'id'], n),
       }),
@@ -411,7 +433,7 @@ class ReportKnowledgeGraphComponent extends Component {
           target: pathOr(null, ['targetPort', 'id'], link),
         };
         const filteredCurrentLinks = filter(
-          n => (n.source === linkPair.source && n.target === linkPair.target)
+          (n) => (n.source === linkPair.source && n.target === linkPair.target)
             || (n.source === linkPair.target && n.target === linkPair.source),
           currentLinksPairs,
         );
@@ -448,7 +470,7 @@ class ReportKnowledgeGraphComponent extends Component {
     const model = this.props.engine.getDiagramModel();
     const currentLinks = model.getLinks();
     const currentLinksPairs = map(
-      n => ({
+      (n) => ({
         source: n.sourcePort.id,
         target: pathOr(null, ['targetPort', 'id'], n),
       }),
@@ -462,7 +484,7 @@ class ReportKnowledgeGraphComponent extends Component {
         target: pathOr(null, ['targetPort', 'id'], link),
       };
       const filteredCurrentLinks = filter(
-        n => (n.source === linkPair.source && n.target === linkPair.target)
+        (n) => (n.source === linkPair.source && n.target === linkPair.target)
           || (n.source === linkPair.target && n.target === linkPair.source),
         currentLinksPairs,
       );
@@ -483,7 +505,7 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleSelection(event) {
     if (event.isSelected === true && event.openEdit === true) {
-      if (event.entity instanceof EntityLinkModel) {
+      if (event.entity instanceof GlobalLinkModel) {
         this.setState({
           openEditRelation: true,
           editRelationId: event.entity.extras.relation.id,
@@ -513,7 +535,7 @@ class ReportKnowledgeGraphComponent extends Component {
       lastLinkFirstSeen: result.first_seen,
       lastLinkLastSeen: result.last_seen,
     });
-    const label = new EntityLabelModel();
+    const label = new GlobalLabelModel();
     label.setExtras([
       {
         id: result.id,
@@ -563,7 +585,7 @@ class ReportKnowledgeGraphComponent extends Component {
         const { stixRelation } = data;
         const model = this.props.engine.getDiagramModel();
         const linkObject = model.getLink(currentLink);
-        const label = new EntityLabelModel();
+        const label = new GlobalLabelModel();
         label.setExtras([
           {
             id: stixRelation.id,
@@ -631,6 +653,14 @@ class ReportKnowledgeGraphComponent extends Component {
           style={{ left: 90 }}
         >
           <AspectRatio />
+        </IconButton>
+        <IconButton
+            color="primary"
+            className={classes.icon}
+            onClick={this.distribute.bind(this)}
+            style={{ left: 140 }}
+        >
+          <AutoFix />
         </IconButton>
         <DiagramWidget
           className={classes.canvas}
@@ -705,11 +735,13 @@ const ReportKnowledgeGraph = createFragmentContainer(
               relationship_type
               first_seen
               last_seen
+              fromRole
               from {
                 id
                 entity_type
                 name
               }
+              toRole
               to {
                 id
                 entity_type

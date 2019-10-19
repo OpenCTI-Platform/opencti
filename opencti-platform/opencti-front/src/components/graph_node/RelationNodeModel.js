@@ -1,10 +1,10 @@
 import { NodeModel } from 'storm-react-diagrams';
-import GlobalPortModel from './GlobalPortModel';
+import RelationPortModel from './GlobalPortModel';
 
-export default class EntityNodeModel extends NodeModel {
+export default class RelationNodeModel extends NodeModel {
   constructor(data) {
-    super('entity');
-    this.addPort(new GlobalPortModel('main'));
+    super('relation');
+    this.addPort(new RelationPortModel('main'));
     this.extras = data;
   }
 

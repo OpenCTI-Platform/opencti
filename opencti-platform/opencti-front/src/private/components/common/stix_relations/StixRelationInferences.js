@@ -15,8 +15,8 @@ import { DiagramModel, DiagramWidget } from 'storm-react-diagrams';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import EntityNodeModel from '../../../../components/graph_node/EntityNodeModel';
-import EntityLinkModel from '../../../../components/graph_node/EntityLinkModel';
-import EntityLabelModel from '../../../../components/graph_node/EntityLabelModel';
+import GlobalLinkModel from '../../../../components/graph_node/GlobalLinkModel';
+import GlobalLabelModel from '../../../../components/graph_node/GlobalLabelModel';
 import { resolveLink } from '../../../../utils/Entity';
 
 const styles = () => ({
@@ -111,7 +111,7 @@ class StixRelationInferences extends Component {
         const toPort = finalNodesObject[inference.to.id]
           ? finalNodesObject[inference.to.id].node.getPort('main')
           : null;
-        const newLink = new EntityLinkModel();
+        const newLink = new GlobalLinkModel();
         newLink.setExtras({
           relation: inference,
           link: `${resolveLink(inference.from.entity_type)}/${
@@ -120,7 +120,7 @@ class StixRelationInferences extends Component {
         });
         newLink.setSourcePort(fromPort);
         newLink.setTargetPort(toPort);
-        const label = new EntityLabelModel();
+        const label = new GlobalLabelModel();
         label.setExtras([
           {
             id: l.node.id,
@@ -145,7 +145,7 @@ class StixRelationInferences extends Component {
 
   handleSelection(event) {
     if (event.isSelected === true && event.openEdit === true) {
-      if (event.entity instanceof EntityLinkModel) {
+      if (event.entity instanceof GlobalLinkModel) {
         this.props.history.push(event.entity.extras.link);
       }
     }

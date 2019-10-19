@@ -2250,7 +2250,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
   externalReferences: ExternalReferenceConnection
   objectRefs: StixDomainEntityConnection
   observableRefs: StixObservableConnection
-  relationRefs(relationType: String): StixRelationConnection
+  relationRefs(relationType: String, knowledgeLevels: [String]): StixRelationConnection
   exports(types: [String]!): [Export]
   stixRelations(
     first: Int

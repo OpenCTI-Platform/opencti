@@ -23,10 +23,10 @@ import StixRelationEdition, {
   stixRelationEditionDeleteMutation,
 } from './StixRelationEdition';
 import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
-import EntityLabelFactory from '../../../../components/graph_node/EntityLabelFactory';
-import EntityLinkFactory from '../../../../components/graph_node/EntityLinkFactory';
+import GlobalLabelFactory from '../../../../components/graph_node/GlobalLabelFactory';
+import GlobalLinkFactory from '../../../../components/graph_node/GlobalLinkFactory';
 import EntityNodeFactory from '../../../../components/graph_node/EntityNodeFactory';
-import EntityPortFactory from '../../../../components/graph_node/EntityPortFactory';
+import GlobalPortFactory from '../../../../components/graph_node/GlobalPortFactory';
 import { stixRelationEditionFocus } from './StixRelationEditionOverview';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixRelationInferences from './StixRelationInferences';
@@ -109,10 +109,10 @@ class StixRelationContainer extends Component {
     super(props);
     const engine = new DiagramEngine();
     engine.installDefaultFactories();
-    engine.registerPortFactory(new EntityPortFactory());
+    engine.registerPortFactory(new GlobalPortFactory());
     engine.registerNodeFactory(new EntityNodeFactory());
-    engine.registerLinkFactory(new EntityLinkFactory());
-    engine.registerLabelFactory(new EntityLabelFactory());
+    engine.registerLinkFactory(new GlobalLinkFactory());
+    engine.registerLabelFactory(new GlobalLabelFactory());
     this.state = { openEdit: false, engine };
   }
 

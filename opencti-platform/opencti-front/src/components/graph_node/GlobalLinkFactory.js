@@ -1,10 +1,10 @@
 import React from 'react';
 import * as SRD from 'storm-react-diagrams';
-import EntityLinkModel from './EntityLinkModel';
+import GlobalLinkModel from './GlobalLinkModel';
 
-export default class EntityLinkFactory extends SRD.AbstractLinkFactory {
+export default class GlobalLinkFactory extends SRD.AbstractLinkFactory {
   constructor() {
-    super('entity');
+    super('global');
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -17,7 +17,7 @@ export default class EntityLinkFactory extends SRD.AbstractLinkFactory {
 
   // eslint-disable-next-line class-methods-use-this
   getNewInstance() {
-    return new EntityLinkModel();
+    return new GlobalLinkModel();
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -31,6 +31,11 @@ export default class EntityLinkFactory extends SRD.AbstractLinkFactory {
         strokeWidth={model.width}
         stroke={model.color}
         d={path}
+        onContextMenu={(event) => {
+          console.log(event);
+          event.preventDefault();
+          event.stopPropagation();
+        }}
       />
     );
   }
