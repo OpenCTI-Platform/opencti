@@ -38,7 +38,7 @@ const stixRelationResolvers = {
       if (args.search && args.search.length > 0) {
         return search(args);
       }
-      if (args.stix_id && args.stix_id.length > 0) {
+      if (args.stix_id_key && args.stix_id_key.length > 0) {
         return findByStixId(args);
       }
       if (

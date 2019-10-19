@@ -9,7 +9,7 @@ define
   timestamp sub attribute, datatype long;
 
   # OpenCTI properties
-  internal_id sub attribute, datatype string;
+  internal_id_key sub attribute, datatype string;
   created_at sub attribute, datatype date;
   created_at_day sub attribute, datatype string;
   created_at_month sub attribute, datatype string;
@@ -41,7 +41,7 @@ define
   tag_type sub attribute, datatype string;
 
   # STIX common properties
-  stix_id sub attribute, datatype string;
+  stix_id_key sub attribute, datatype string;
   stix_label sub attribute, datatype string;
   entity_type sub attribute, datatype string;
   created sub attribute, datatype date;
@@ -200,37 +200,37 @@ define
 
   # Login relationship
   authorize sub relation,
-    has internal_id,
+    key internal_id_key,
     relates authorization,
     relates client;
 
   # Migration relationships
   migrate sub relation,
-    has internal_id,
+    key internal_id_key,
     relates status,
     relates state;
 
   # Export relationship
   exports sub relation,
-    has internal_id,
+    key internal_id_key,
     relates export,
     relates exported;
 
   # Group membership relationships
   membership sub relation,
-    has internal_id,
+    key internal_id_key,
     relates grouping,
     relates member;
 
   # Access relationships
   permission sub relation,
-    has internal_id,
+    key internal_id_key,
     has grant,
     relates allow,
     relates allowed;
 
   user_permission sub relation,
-    has internal_id,
+    key internal_id_key,
     has grant,
     relates allow,
     relates allowed;
@@ -238,7 +238,7 @@ define
   # OpenCTI embeded relationships
   relation_embedded sub relation,
     abstract,
-    has internal_id;
+    key internal_id_key;
 
   authored_by sub relation_embedded,
     relates author,
@@ -255,8 +255,8 @@ define
   # STIX embeded relationships
   stix_relation_embedded sub relation,
     abstract,
-    has internal_id,
-    has stix_id;
+    key internal_id_key,
+    key stix_id_key;
 
   created_by_ref sub stix_relation_embedded,
     relates creator,
@@ -281,8 +281,8 @@ define
   # STIX SOO embeded relationships
    stix_relation_observable_embedded sub relation,
     abstract,
-    has internal_id,
-    has stix_id,
+    key internal_id_key,
+    key stix_id_key,
     has created,
     has modified,
     has revoked,
@@ -317,8 +317,8 @@ define
   # STIX SOO embeded relationships
    stix_relation_observable_grouping sub relation,
     abstract,
-    has internal_id,
-    has stix_id,
+    key internal_id_key,
+    key stix_id_key,
     has created,
     has modified,
     has revoked,
@@ -345,8 +345,8 @@ define
 
   # STIX SRO relationships
   stix_sighting sub relation,
-    has internal_id,
-    has stix_id,
+    key internal_id_key,
+    key stix_id_key,
     has created,
     has modified,
     has revoked,
@@ -366,8 +366,8 @@ define
 
   stix_relation sub relation,
     abstract,
-    has internal_id,
-    has stix_id,
+    key internal_id_key,
+    key stix_id_key,
     has created,
     has modified,
     has revoked,
@@ -461,19 +461,19 @@ define
   ## ENTITIES
   # Migration entities
   MigrationStatus sub entity,
-    has internal_id,
+    key internal_id_key,
     has lastRun,
     plays status;
 
   MigrationReference sub entity,
-    has internal_id,
+    key internal_id_key,
     has title,
     has timestamp,
     plays state;
 
   # OpenCTI entities
   Settings sub entity,
-    has internal_id,
+    key internal_id_key,
     has entity_type,
     has platform_title,
     has platform_email,
@@ -489,7 +489,7 @@ define
     has updated_at;
 
   Tag sub entity,
-    has internal_id,
+    key internal_id_key,
     has tag_type,
     key value,
     has color,
@@ -501,7 +501,7 @@ define
     plays tagging;
 
   Export sub entity,
-    has internal_id,
+    key internal_id_key,
     has description,
     has export_type,
     has object_status,
@@ -514,7 +514,7 @@ define
     plays export;
 
   Group sub entity,
-    has internal_id,
+    key internal_id_key,
     has entity_type,
     has name,
     has description,
@@ -527,7 +527,7 @@ define
     plays grouping;
 
   Workspace sub entity,
-    has internal_id,
+    key internal_id_key,
     has entity_type,
     has workspace_type,
     has name,
@@ -544,7 +544,7 @@ define
     plays knowledge_aggregation;
 
   Token sub entity,
-    has internal_id,
+    key internal_id_key,
     key uuid,
     has entity_type,
     has name,
@@ -561,8 +561,8 @@ define
 
   Stix-Domain sub entity,
     abstract,
-    has internal_id,
-    has stix_id,
+    key internal_id_key,
+    key stix_id_key,
     has stix_label,
     has entity_type,
     has created,
@@ -775,8 +775,8 @@ define
 
    Stix-Observable sub entity,
     abstract,
-    has internal_id,
-    has stix_id,
+    key internal_id_key,
+    key stix_id_key,
     has entity_type,
     has name,
     has description,
@@ -833,7 +833,7 @@ define
 
     Stix-Observable-Data sub entity,
     abstract,
-    has internal_id,
+    key internal_id_key,
     has entity_type,
     has value,
     has created_at,

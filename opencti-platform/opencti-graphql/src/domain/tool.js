@@ -22,12 +22,12 @@ export const findById = toolId => getById(toolId);
 
 export const addTool = async (user, tool) => {
   const wTx = await takeWriteTx();
-  const internalId = tool.internal_id ? escapeString(tool.internal_id) : uuid();
+  const internalId = tool.internal_id_key ? escapeString(tool.internal_id_key) : uuid();
   const toolIterator = await wTx.tx.query(`insert $tool isa Tool,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "tool",
-    has stix_id "${
-      tool.stix_id ? escapeString(tool.stix_id) : `tool--${uuid()}`
+    has stix_id_key "${
+      tool.stix_id_key ? escapeString(tool.stix_id_key) : `tool--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -48,9 +48,9 @@ export const addTool = async (user, tool) => {
   if (tool.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createdToolId};
-      $to has internal_id "${escapeString(tool.createdByRef)}";
+      $to has internal_id_key "${escapeString(tool.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id "${uuid()}";`
+      isa created_by_ref, has internal_id_key "${uuid()}";`
     );
   }
 
@@ -58,8 +58,8 @@ export const addTool = async (user, tool) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
         `match $from id ${createdToolId}; 
-        $to has internal_id "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,
@@ -72,8 +72,8 @@ export const addTool = async (user, tool) => {
     const createKillChainPhase = killChainPhase =>
       wTx.tx.query(
         `match $from id ${createdToolId}; 
-        $to has internal_id "${escapeString(killChainPhase)}"; 
-        insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(killChainPhase)}"; 
+        insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id_key "${uuid()}";`
       );
     const killChainPhasesPromises = map(
       createKillChainPhase,

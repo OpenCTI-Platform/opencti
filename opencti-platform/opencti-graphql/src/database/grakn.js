@@ -77,17 +77,17 @@ export const relationsToIndex = {
     {
       key: 'tags_indexed',
       query:
-        'match $t isa Tag, has internal_id $value; (so: $x, tagging: $t) isa tagged;'
+        'match $t isa Tag, has internal_id_key $value; (so: $x, tagging: $t) isa tagged;'
     },
     {
       key: 'createdByRef_indexed',
       query:
-        'match $i isa Identity, has internal_id $value; (so: $x, creator: $i) isa created_by_ref;'
+        'match $i isa Identity, has internal_id_key $value; (so: $x, creator: $i) isa created_by_ref;'
     },
     {
       key: 'markingDefinitions_indexed',
       query:
-        'match $m isa Marking-Definition, has internal_id $value; (so: $x, marking: $m) isa object_marking_refs;'
+        'match $m isa Marking-Definition, has internal_id_key $value; (so: $x, marking: $m) isa object_marking_refs;'
     }
   ],
   'Stix-Observable': [
@@ -196,22 +196,36 @@ export const notify = (topic, instance, user, context) => {
 };
 
 export const read = async query => {
-  const rTx = await takeReadTx();
   try {
+    const rTx = await takeReadTx();
     await rTx.tx.query(query);
+    await closeReadTx(rTx);
   } catch (err) {
     logger.error('[GRAKN] Read error > ', err);
   }
-  await closeReadTx(rTx);
 };
 
 export const write = async query => {
-  const wTx = await takeWriteTx();
   try {
+    const wTx = await takeWriteTx();
     await wTx.tx.query(query);
     await commitWriteTx(wTx);
   } catch (err) {
     logger.error('[GRAKN] Write error > ', err);
+  }
+};
+
+export const attributeExists = async attributeLabel => {
+  try {
+    const rTx = await takeReadTx();
+    const checkQuery = `match $x sub ${attributeLabel}; get;`;
+    logger.debug(`[GRAKN - infer: false] attributeExists > ${checkQuery}`);
+    await rTx.tx.query(checkQuery);
+    await closeReadTx(rTx);
+    return true;
+  } catch (err) {
+    logger.error('[GRAKN] attributeExists error > ', err);
+    return false;
   }
 };
 
@@ -221,9 +235,9 @@ export const write = async query => {
  * @returns {Promise<any[] | never>}
  */
 export const getId = async internalId => {
-  const rTx = await takeReadTx();
   try {
-    const query = `match $x has internal_id "${escapeString(
+    const rTx = await takeReadTx();
+    const query = `match $x has internal_id_key "${escapeString(
       internalId
     )}"; get $x;`;
     logger.debug(`[GRAKN - infer: false] getGraknId > ${query}`);
@@ -234,7 +248,6 @@ export const getId = async internalId => {
     return concept.id;
   } catch (err) {
     logger.error('[GRAKN] getId error > ', err);
-    await closeReadTx(rTx);
     return null;
   }
 };
@@ -245,8 +258,8 @@ export const getId = async internalId => {
  * @returns {{edges: *}}
  */
 export const queryAttributeValues = async type => {
-  const rTx = await takeReadTx();
   try {
+    const rTx = await takeReadTx();
     const query = `match $x isa ${escape(type)}; get;`;
     logger.debug(`[GRAKN - infer: false] queryAttributeValues > ${query}`);
     const iterator = await rTx.tx.query(query);
@@ -271,7 +284,6 @@ export const queryAttributeValues = async type => {
     return buildPagination(5000, 0, result, 5000);
   } catch (err) {
     logger.error('[GRAKN] queryAttributeValues error > ', err);
-    await closeReadTx(rTx);
     return {};
   }
 };
@@ -282,8 +294,8 @@ export const queryAttributeValues = async type => {
  * @returns {{edges: *}}
  */
 export const queryAttributeValueById = async id => {
-  const rTx = await takeReadTx();
   try {
+    const rTx = await takeReadTx();
     const query = `match $x id ${escape(id)}; get;`;
     logger.debug(`[GRAKN - infer: false] queryAttributeValueById > ${query}`);
     const iterator = await rTx.tx.query(query);
@@ -301,7 +313,6 @@ export const queryAttributeValueById = async id => {
     };
   } catch (err) {
     logger.error('[GRAKN] queryAttributeValueById error > ', err);
-    await closeReadTx(rTx);
     return { edges: [] };
   }
 };
@@ -312,8 +323,8 @@ export const queryAttributeValueById = async id => {
  * @returns {Promise<any[] | never>}
  */
 export const deleteAttributeById = async id => {
-  const wTx = await takeWriteTx();
   try {
+    const wTx = await takeWriteTx();
     const query = `match $x id ${escape(id)}; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteAttributeById > ${query}`);
     await wTx.tx.query(query, { infer: false });
@@ -321,7 +332,6 @@ export const deleteAttributeById = async id => {
     return id;
   } catch (err) {
     logger.error('[GRAKN] deleteAttributeById error > ', err);
-    await closeWriteTx(wTx);
     return null;
   }
 };
@@ -354,11 +364,10 @@ export const conceptTypes = async (concept, currentType = null, acc = []) => {
  * @param types
  * @returns {Promise<string|null>}
  */
-const inferIndexFromConceptTypes = async types => {
+export const inferIndexFromConceptTypes = async types => {
   if (includes('Stix-Observable', types)) return 'stix_observables';
   if (includes('Stix-Domain-Entity', types)) return 'stix_domain_entities';
   if (includes('External-Reference', types)) return 'external_references';
-  if (includes('Stix-Observable', types)) return 'stix_observables';
   if (includes('stix_relation', types)) return 'stix_relations';
   return undefined;
 };
@@ -370,14 +379,14 @@ const inferIndexFromConceptTypes = async types => {
  * @returns {Promise<{}>}
  */
 const getRelationsValuesToIndex = async (type, id) => {
-  const rTx = await takeReadTx();
   try {
     if (relationsToIndex[type]) {
+      const rTx = await takeReadTx();
       const result = await Promise.all(
         relationsToIndex[type].map(async relationToIndex => {
           const query = `${
             relationToIndex.query
-          } $x has internal_id "${escapeString(id)}"; get $value;`;
+          } $x has internal_id_key "${escapeString(id)}"; get $value;`;
           logger.debug(
             `[GRAKN - infer: false] getRelationsValuesToIndex > ${query}`
           );
@@ -401,7 +410,6 @@ const getRelationsValuesToIndex = async (type, id) => {
     return {};
   } catch (err) {
     logger.error('[GRAKN] getRelationsValuesToIndex error > ', err);
-    await closeReadTx(rTx);
     return {};
   }
 };
@@ -433,7 +441,7 @@ export const getAttributes = async (concept, forceReindex = false) => {
             ? head(value)
             : value
         ),
-        assoc('id', elAttributes.internal_id),
+        assoc('id', elAttributes.internal_id_key),
         assoc('parent_type', parentTypeLabel)
       )(elAttributes);
     } catch (e) {
@@ -487,7 +495,7 @@ export const getAttributes = async (concept, forceReindex = false) => {
         ) // Remove extra list then contains only 1 element
       )(attributesData);
       return pipe(
-        assoc('id', transform.internal_id),
+        assoc('id', transform.internal_id_key),
         assoc('grakn_id', concept.id),
         assoc('parent_type', parentTypeLabel)
       )(transform);
@@ -513,9 +521,9 @@ export const getAttributes = async (concept, forceReindex = false) => {
  * @returns {Promise<any[] | never>}
  */
 export const getById = async (id, forceReindex = false) => {
-  const rTx = await takeReadTx();
   try {
-    const query = `match $x has internal_id "${escapeString(id)}"; get $x;`;
+    const rTx = await takeReadTx();
+    const query = `match $x has internal_id_key "${escapeString(id)}"; get $x;`;
     logger.debug(`[GRAKN - infer: false] getById > ${query}`);
     const iterator = await rTx.tx.query(query);
     const answer = await iterator.next();
@@ -525,7 +533,6 @@ export const getById = async (id, forceReindex = false) => {
     return result;
   } catch (err) {
     logger.error('[GRAKN] getById error > ', err);
-    await closeReadTx(rTx);
     return null;
   }
 };
@@ -537,8 +544,8 @@ export const getById = async (id, forceReindex = false) => {
  * @returns {Promise<any[] | never>}
  */
 export const find = async (query, entities) => {
-  const rTx = await takeReadTx();
   try {
+    const rTx = await takeReadTx();
     logger.debug(`[GRAKN - infer: false] Find > ${query}`);
     const iterator = await rTx.tx.query(query);
     const answers = await iterator.collect();
@@ -556,7 +563,6 @@ export const find = async (query, entities) => {
     return result;
   } catch (err) {
     logger.error('[GRAKN] find error > ', err);
-    await closeReadTx(rTx);
     return [];
   }
 };
@@ -578,9 +584,9 @@ export const load = async (query, entities) => {
  * @returns {Promise<any[] | never>}
  */
 export const getRelationById = async id => {
-  const rTx = await takeReadTx();
   try {
-    const query = `match $x($from, $to) isa relation; $x has internal_id "${escapeString(
+    const rTx = await takeReadTx();
+    const query = `match $x($from, $to) isa relation; $x has internal_id_key "${escapeString(
       id
     )}"; get;`;
     logger.debug(`[GRAKN - infer: false] getRelationById > ${query}`);
@@ -631,7 +637,6 @@ export const getRelationById = async id => {
     return result;
   } catch (err) {
     logger.error('[GRAKN] getRelationById error > ', err);
-    await closeReadTx(rTx);
     return null;
   }
 };
@@ -642,8 +647,8 @@ export const getRelationById = async id => {
  * @returns {Promise}
  */
 export const getRelationInferredById = async id => {
-  const rTx = await takeReadTx();
   try {
+    const rTx = await takeReadTx();
     const decodedQuery = Buffer.from(id, 'base64').toString('ascii');
     const query = `match ${decodedQuery} get;`;
     const queryRegex = /\$([a-z_\d]+)\s?[([a-z_]+:\s\$(\w+),\s[a-z_]+:\s\$(\w+)\)\s[a-z_]+\s([\w-]+);/i.exec(
@@ -775,7 +780,7 @@ export const getRelationInferredById = async id => {
           const inferenceAttributes = await getAttributes(
             inferencesAnswer.map().get(inference.relationKey)
           );
-          inferenceId = inferenceAttributes.internal_id;
+          inferenceId = inferenceAttributes.internal_id_key;
         }
         const fromAttributes = await getAttributes(inferenceFrom);
         const toAttributes = await getAttributes(inferenceTo);
@@ -816,7 +821,6 @@ export const getRelationInferredById = async id => {
     return result;
   } catch (err) {
     logger.error('[GRAKN] getRelationInferredById error > ', err);
-    await closeReadTx(rTx);
     return null;
   }
 };
@@ -828,8 +832,8 @@ export const getRelationInferredById = async id => {
  * @returns {Promise<any[] | never>}
  */
 export const getSingleValue = async (query, infer = false) => {
-  const rTx = await takeReadTx();
   try {
+    const rTx = await takeReadTx();
     logger.debug(`[GRAKN - infer: ${infer}] getSingleValue > ${query}`);
     const iterator = await rTx.tx.query(query, { infer });
     const answer = await iterator.next();
@@ -838,7 +842,6 @@ export const getSingleValue = async (query, infer = false) => {
     return result;
   } catch (err) {
     logger.error('[GRAKN] getSingleValue error > ', err);
-    await closeReadTx(rTx);
     return null;
   }
 };
@@ -867,8 +870,8 @@ export const getObjects = async (
   relationKey = null,
   infer = false
 ) => {
-  const rTx = await takeReadTx();
   try {
+    const rTx = await takeReadTx();
     const iterator = await rTx.tx.query(query, { infer });
     const answers = await iterator.collect();
     logger.debug(
@@ -907,7 +910,6 @@ export const getObjects = async (
     return result;
   } catch (err) {
     logger.error('[GRAKN] getObjects error > ', err);
-    await closeReadTx(rTx);
     return [];
   }
 };
@@ -1093,7 +1095,6 @@ export const getRelations = async (
     return result;
   } catch (err) {
     logger.error('[GRAKN] getRelations error > ', err);
-    await closeReadTx(rTx);
     return Promise.resolve(null);
   }
 };
@@ -1132,8 +1133,8 @@ export const paginateRelationships = (
     const offset = after ? cursorToOffset(after) : 0;
     const finalQuery = `
   ${query};
-  ${fromId ? `$from has internal_id "${escapeString(fromId)}";` : ''}
-  ${toId ? `$to has internal_id "${escapeString(toId)}";` : ''} ${
+  ${fromId ? `$from has internal_id_key "${escapeString(fromId)}";` : ''}
+  ${toId ? `$to has internal_id_key "${escapeString(toId)}";` : ''} ${
       fromTypes && fromTypes.length > 0
         ? `${join(
             ' ',
@@ -1205,23 +1206,23 @@ export const paginateRelationships = (
  * @param input
  */
 export const createRelation = async (id, input) => {
-  const wTx = await takeWriteTx();
   try {
-    const query = `match $from has internal_id "${escapeString(id)}";
-      $to has internal_id "${escapeString(input.toId)}"; 
+    const wTx = await takeWriteTx();
+    const query = `match $from has internal_id_key "${escapeString(id)}";
+      $to has internal_id_key "${escapeString(input.toId)}"; 
       insert $rel(${escape(input.fromRole)}: $from, ${escape(
       input.toRole
-    )}: $to) isa ${input.through}, has internal_id "${uuid()}" ${
-      input.stix_id
+    )}: $to) isa ${input.through}, has internal_id_key "${uuid()}" ${
+      input.stix_id_key
         ? `, has relationship_type "${escapeString(input.through)}"`
         : ''
     }
         ${
           // eslint-disable-next-line no-nested-ternary
-          input.stix_id
-            ? input.stix_id === 'create'
-              ? `, has stix_id "relationship--${uuid()}"`
-              : `, has stix_id "${escapeString(input.stix_id)}"`
+          input.stix_id_key
+            ? input.stix_id_key === 'create'
+              ? `, has stix_id_key "relationship--${uuid()}"`
+              : `, has stix_id_key "${escapeString(input.stix_id_key)}"`
             : ''
         } ${
       input.first_seen
@@ -1240,7 +1241,6 @@ export const createRelation = async (id, input) => {
     return { node, relation };
   } catch (err) {
     logger.error('[GRAKN] createRelation error > ', err);
-    await closeWriteTx(wTx);
     return null;
   }
 };
@@ -1253,8 +1253,8 @@ export const createRelation = async (id, input) => {
  * @returns the complete instance
  */
 export const updateAttribute = async (id, input, tx = null) => {
-  const wTx = tx === null ? await takeWriteTx() : tx;
   try {
+    const wTx = tx === null ? await takeWriteTx() : tx;
     const { key, value } = input; // value can be multi valued
     const escapedKey = escape(key);
     const labelTypeQuery = `match $x type ${escapedKey}; get;`;
@@ -1265,7 +1265,7 @@ export const updateAttribute = async (id, input, tx = null) => {
       .map()
       .get('x')
       .dataType();
-    const deleteQuery = `match $x has internal_id "${escapeString(
+    const deleteQuery = `match $x has internal_id_key "${escapeString(
       id
     )}", has ${escapedKey} $del via $d; delete $d;`;
     /* eslint-enable prettier/prettier */
@@ -1289,7 +1289,7 @@ export const updateAttribute = async (id, input, tx = null) => {
         map(val => `has ${escapedKey} ${val},`, tail(typedValues))
       )} has ${escapedKey} ${head(typedValues)}`;
     }
-    const createQuery = `match $m has internal_id "${escapeString(
+    const createQuery = `match $m has internal_id_key "${escapeString(
       id
     )}"; insert $m ${graknValues};`;
     logger.debug(
@@ -1316,7 +1316,6 @@ export const updateAttribute = async (id, input, tx = null) => {
     return await getById(id, true);
   } catch (err) {
     logger.error('[GRAKN] updateAttribute error > ', err);
-    await closeWriteTx(wTx);
     return null;
   }
 };
@@ -1327,9 +1326,9 @@ export const updateAttribute = async (id, input, tx = null) => {
  * @returns {Promise<any[] | never>}
  */
 export const deleteEntityById = async id => {
-  const wTx = await takeWriteTx();
   try {
-    const query = `match $x has internal_id "${escapeString(
+    const wTx = await takeWriteTx();
+    const query = `match $x has internal_id_key "${escapeString(
       id
     )}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteEntityById > ${query}`);
@@ -1338,7 +1337,6 @@ export const deleteEntityById = async id => {
     return id;
   } catch (err) {
     logger.error('[GRAKN] deleteEntityById error > ', err);
-    await closeWriteTx(wTx);
     return null;
   }
 };
@@ -1349,16 +1347,17 @@ export const deleteEntityById = async id => {
  * @returns {Promise<any[] | never>}
  */
 export const deleteById = async id => {
-  const wTx = await takeWriteTx();
   try {
-    const query = `match $x has internal_id "${escapeString(id)}"; delete $x;`;
+    const wTx = await takeWriteTx();
+    const query = `match $x has internal_id_key "${escapeString(
+      id
+    )}"; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteById > ${query}`);
     await wTx.tx.query(query, { infer: false });
     await commitWriteTx(wTx);
     return id;
   } catch (err) {
     logger.error('[GRAKN] deleteById error > ', err);
-    await closeWriteTx(wTx);
     return null;
   }
 };
@@ -1370,9 +1369,9 @@ export const deleteById = async id => {
  * @returns {Promise<any[] | never>}
  */
 export const deleteRelationById = async (id, relationId) => {
-  const wTx = await takeWriteTx();
   try {
-    const query = `match $x has internal_id "${escapeString(
+    const wTx = await takeWriteTx();
+    const query = `match $x has internal_id_key "${escapeString(
       relationId
     )}"; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
@@ -1384,7 +1383,6 @@ export const deleteRelationById = async (id, relationId) => {
     }));
   } catch (err) {
     logger.error('[GRAKN] deleteRelationById error > ', err);
-    await closeWriteTx(wTx);
     return null;
   }
 };
@@ -1396,8 +1394,8 @@ export const deleteRelationById = async (id, relationId) => {
  * @returns Promise
  */
 export const timeSeries = async (query, options) => {
-  const rTx = await takeReadTx();
   try {
+    const rTx = await takeReadTx();
     const {
       startDate,
       endDate,
@@ -1422,7 +1420,6 @@ export const timeSeries = async (query, options) => {
     return result;
   } catch (err) {
     logger.error('[GRAKN] timeSeries error > ', err);
-    await closeReadTx(rTx);
     return null;
   }
 };
@@ -1434,8 +1431,8 @@ export const timeSeries = async (query, options) => {
  * @returns Promise
  */
 export const distribution = async (query, options) => {
-  const rTx = await takeReadTx();
   try {
+    const rTx = await takeReadTx();
     const { startDate, endDate, operation, field, inferred = false } = options;
     const finalQuery = `${query}; ${
       startDate && endDate
@@ -1459,7 +1456,6 @@ export const distribution = async (query, options) => {
     return result;
   } catch (err) {
     logger.error('[GRAKN] distribution error > ', err);
-    await closeReadTx(rTx);
     return null;
   }
 };
