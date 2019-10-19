@@ -26,7 +26,8 @@ export const workToExportFile = work => {
 
 export const connectorForWork = async id => {
   const work = await getAttributes(WORK_INDEX, id);
-  return getById(work.connector_id);
+  if (work) return getById(work.connector_id);
+  return null;
 };
 
 export const jobsForWork = async id => {
@@ -144,9 +145,4 @@ export const updateJob = async (jobId, status, messages) => {
   )(job);
   await index(WORK_INDEX, updatedJob);
   return updatedJob;
-  // await elUpdate(WORK_INDEX, jobId, {
-  //  job_status: status,
-  //  messages
-  // });
-  // return getAttributes(WORK_INDEX, jobId);
 };

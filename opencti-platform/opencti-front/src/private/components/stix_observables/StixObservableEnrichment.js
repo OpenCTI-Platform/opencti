@@ -4,7 +4,9 @@ import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Tooltip from '@material-ui/core/Tooltip';
 import IconButton from '@material-ui/core/IconButton';
-import { CheckCircle, Warning, PlayCircleFilledWhite } from '@material-ui/icons';
+import {
+  CheckCircle, Warning, PlayCircleFilledWhite, Delete,
+} from '@material-ui/icons';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -21,6 +23,12 @@ const StixObservableEnrichmentQuery = graphql`
   }
 `;
 
+const StixObservableEnrichmentDeleteMutation = graphql`
+    mutation StixObservableEnrichmentDeleteMutation($workId: ID!) {
+        deleteWork(id: $workId)
+    }
+`;
+
 const StixObservableEnrichmentAskEnrich = graphql`
     mutation StixObservableEnrichmentMutation($id: ID!, $connectorId: ID!) {
         stixObservableEdit(id: $id) {
@@ -33,11 +41,18 @@ const StixObservableEnrichmentAskEnrich = graphql`
 
 const StixObservableEnrichment = (props) => {
   const { stixObservable, relay } = props;
+  const { id } = stixObservable;
   const askEnrich = (connectorId) => {
-    const { id } = stixObservable;
     commitMutation({
       mutation: StixObservableEnrichmentAskEnrich,
       variables: { id, connectorId },
+      onCompleted: () => relay.refetch({ id, entityType: stixObservable.entity_type }),
+    });
+  };
+  const deleteWork = (workId) => {
+    commitMutation({
+      mutation: StixObservableEnrichmentDeleteMutation,
+      variables: { workId },
       onCompleted: () => relay.refetch({ id, entityType: stixObservable.entity_type }),
     });
   };
@@ -71,7 +86,9 @@ const StixObservableEnrichment = (props) => {
       </Grid>
       <div>
           {stixObservable.jobs.map((node) => <div key={node.id}>
-                <Tooltip title={'todo'} aria-label={'todo'}>
+                  <IconButton color="secondary" onClick={() => deleteWork(node.id)}>
+                      <Delete style={{ fontSize: 10 }} />
+                  </IconButton>
                   <span>
                       {(node.status === 'error' || node.status === 'partial')
                       && <Warning style={{ fontSize: 10, marginRight: 10, color: 'red' }}/>}
@@ -80,7 +97,6 @@ const StixObservableEnrichment = (props) => {
                       {node.status === 'progress'
                       && <CircularProgress size={10} thickness={2} style={{ marginRight: 10 }} />}
                   </span>
-                </Tooltip>
                 {node.connector.name}
             </div>)}
       </div>

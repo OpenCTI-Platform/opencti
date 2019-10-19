@@ -197,10 +197,11 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   const query = {
     match: { [fieldName]: value }
   };
-  return el.deleteByQuery({
+  await el.deleteByQuery({
     index: indexName,
     body: { query }
   });
+  return value;
 };
 
 export const deleteEntity = async (indexName, documentId) => {
