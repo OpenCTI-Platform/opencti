@@ -28,7 +28,7 @@ const stixDomainEntityResolvers = {
   Query: {
     stixDomainEntity: (_, { id }) => findById(id),
     stixDomainEntities: (_, args) => {
-      if (args.stix_id && args.stix_id.length > 0) {
+      if (args.stix_id_key && args.stix_id_key.length > 0) {
         return findByStixId(args);
       }
       if (args.name && args.name.length > 0) {

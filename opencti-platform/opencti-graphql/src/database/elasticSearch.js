@@ -170,8 +170,8 @@ export const reindex = async indexMaps => {
   );
 };
 
-export const index = async (indexName, documentBody) => {
-  const internalId = documentBody.internal_id;
+export const index = async (indexName, documentBody, refresh = true) => {
+  const internalId = documentBody.internal_id_key;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
   logger.debug(
     `[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`
@@ -179,7 +179,7 @@ export const index = async (indexName, documentBody) => {
   await el.index({
     index: indexName,
     id: documentBody.grakn_id,
-    refresh: true,
+    refresh,
     body: documentBody
   });
   return documentBody;
@@ -469,7 +469,7 @@ export const paginate = async (indexName, options) => {
     .search(query)
     .then(data => {
       const dataWithIds = map(
-        n => assoc('id', n._source.internal_id, n._source),
+        n => assoc('id', n._source.internal_id_key, n._source),
         data.body.hits.hits
       );
       if (connectionFormat) {

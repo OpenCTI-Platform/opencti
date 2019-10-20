@@ -22,16 +22,16 @@ export const findById = intrusionSetId => getById(intrusionSetId);
 
 export const addIntrusionSet = async (user, intrusionSet) => {
   const wTx = await takeWriteTx();
-  const internalId = intrusionSet.internal_id
-    ? escapeString(intrusionSet.internal_id)
+  const internalId = intrusionSet.internal_id_key
+    ? escapeString(intrusionSet.internal_id_key)
     : uuid();
   const now = graknNow();
   const query = `insert $intrusionSet isa Intrusion-Set,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "intrusion-set",
-    has stix_id "${
-      intrusionSet.stix_id
-        ? escapeString(intrusionSet.stix_id)
+    has stix_id_key "${
+      intrusionSet.stix_id_key
+        ? escapeString(intrusionSet.stix_id_key)
         : `intrusion-set--${uuid()}`
     }",
     has stix_label "",
@@ -104,9 +104,9 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   if (intrusionSet.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createdIntrusionSetId};
-      $to has internal_id "${escapeString(intrusionSet.createdByRef)}";
+      $to has internal_id_key "${escapeString(intrusionSet.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id "${uuid()}";`
+      isa created_by_ref, has internal_id_key "${uuid()}";`
     );
   }
 
@@ -114,8 +114,8 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
         `match $from id ${createdIntrusionSetId}; 
-        $to has internal_id "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

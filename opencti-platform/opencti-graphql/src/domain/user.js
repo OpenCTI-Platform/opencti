@@ -73,7 +73,7 @@ export const groups = (userId, args) =>
   paginate(
     `match $group isa Group; 
     $rel(grouping:$group, member:$user) isa membership; 
-    $user has internal_id "${escapeString(userId)}"`,
+    $user has internal_id_key "${escapeString(userId)}"`,
     args
   );
 
@@ -84,7 +84,7 @@ export const token = (userId, args, context) => {
   return getObject(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
-    $client has internal_id "${escapeString(userId)}"; get; offset 0; limit 1;`,
+    $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`,
     'x',
     'rel'
   ).then(result => result.node.uuid);
@@ -94,7 +94,7 @@ export const getTokenId = userId => {
   return getObject(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
-    $client has internal_id "${escapeString(userId)}"; get; offset 0; limit 1;`,
+    $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`,
     'x',
     'rel'
   ).then(result => pathOr(null, ['node', 'id'], result));
@@ -102,14 +102,16 @@ export const getTokenId = userId => {
 
 export const addPerson = async (user, newUser) => {
   const wTx = await takeWriteTx();
-  const internalId = newUser.internal_id
-    ? escapeString(newUser.internal_id)
+  const internalId = newUser.internal_id_key
+    ? escapeString(newUser.internal_id_key)
     : uuid();
   const query = `insert $user isa User,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "user",
-    has stix_id "${
-      newUser.stix_id ? escapeString(newUser.stix_id) : `identity--${uuid()}`
+    has stix_id_key "${
+      newUser.stix_id_key
+        ? escapeString(newUser.stix_id_key)
+        : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -133,9 +135,9 @@ export const addPerson = async (user, newUser) => {
 
   if (newUser.createdByRef) {
     await wTx.tx.query(`match $from id ${createdUserId};
-         $to has internal_id "${escapeString(newUser.createdByRef)}";
+         $to has internal_id_key "${escapeString(newUser.createdByRef)}";
          insert (so: $from, creator: $to)
-         isa created_by_ref, has internal_id "${uuid()}";`);
+         isa created_by_ref, has internal_id_key "${uuid()}";`);
   }
 
   // Create user marking definitions relations
@@ -143,8 +145,8 @@ export const addPerson = async (user, newUser) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
         `match $from id ${createdUserId};
-        $to has internal_id "${escapeString(markingDefinition)}";
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(markingDefinition)}";
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,
@@ -166,14 +168,16 @@ export const addUser = async (
   newToken = generateOpenCTIWebToken()
 ) => {
   const wTx = await takeWriteTx();
-  const internalId = newUser.internal_id
-    ? escapeString(newUser.internal_id)
+  const internalId = newUser.internal_id_key
+    ? escapeString(newUser.internal_id_key)
     : uuid();
   const query = `insert $user isa User,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "user",
-    has stix_id "${
-      newUser.stix_id ? escapeString(newUser.stix_id) : `identity--${uuid()}`
+    has stix_id_key "${
+      newUser.stix_id_key
+        ? escapeString(newUser.stix_id_key)
+        : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -219,13 +223,13 @@ export const addUser = async (
 
   if (user.createdByRef) {
     await wTx.tx.query(`match $from id ${createdUserId};
-         $to has internal_id "${escapeString(user.createdByRef)}";
+         $to has internal_id_key "${escapeString(user.createdByRef)}";
          insert (so: $from, creator: $to)
-         isa created_by_ref, has internal_id "${uuid()}";`);
+         isa created_by_ref, has internal_id_key "${uuid()}";`);
   }
 
   const tokenIterator = await wTx.tx.query(`insert $token isa Token,
-    has internal_id "${uuid()}",
+    has internal_id_key "${uuid()}",
     has entity_type "token",
     has uuid "${newToken.uuid}",
     has name "${newToken.name}",
@@ -241,7 +245,7 @@ export const addUser = async (
   await createdToken.map().get('token').id;
   await wTx.tx.query(`match $user isa User, has email "${newUser.email}"; 
                    $token isa Token, has uuid "${newToken.uuid}"; 
-                   insert (client: $user, authorization: $token) isa authorize, has internal_id "${uuid()}";`);
+                   insert (client: $user, authorization: $token) isa authorize, has internal_id_key "${uuid()}";`);
 
   await commitWriteTx(wTx);
 
@@ -301,12 +305,12 @@ export const userRenewToken = async (
 ) => {
   const wTx = await takeWriteTx();
   await wTx.tx.query(
-    `match $user has internal_id "${escapeString(userId)}";
+    `match $user has internal_id_key "${escapeString(userId)}";
     $rel(authorization:$token, client:$user);
     delete $rel, $token;`
   );
   const tokenIterator = await wTx.tx.query(`insert $token isa Token,
-    has internal_id "${uuid()}",
+    has internal_id_key "${uuid()}",
     has entity_type "token",
     has uuid "${newToken.uuid}",
     has name "${newToken.name}",
@@ -320,10 +324,10 @@ export const userRenewToken = async (
   const createdToken = await tokenIterator.next();
   await createdToken.map().get('token').id;
   await wTx.tx.query(
-    `match $user has internal_id "${escapeString(userId)}";
+    `match $user has internal_id_key "${escapeString(userId)}";
     $token isa Token,
     has uuid "${newToken.uuid}";
-    insert (client: $user, authorization: $token) isa authorize, has internal_id "${uuid()}";`
+    insert (client: $user, authorization: $token) isa authorize, has internal_id_key "${uuid()}";`
   );
   await commitWriteTx(wTx);
   return getById(userId);
@@ -426,8 +430,8 @@ export const initAdmin = async (email, password, tokenValue) => {
     await addUser(
       user,
       {
-        internal_id: OPENCTI_ADMIN_DNS,
-        stix_id: `identity--${OPENCTI_ADMIN_DNS}`,
+        internal_id_key: OPENCTI_ADMIN_DNS,
+        stix_id_key: `identity--${OPENCTI_ADMIN_DNS}`,
         name: 'admin',
         firstname: 'Admin',
         lastname: 'OpenCTI',

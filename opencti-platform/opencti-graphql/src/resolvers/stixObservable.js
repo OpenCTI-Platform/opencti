@@ -26,7 +26,7 @@ const stixObservableResolvers = {
   Query: {
     stixObservable: (_, { id }) => findById(id),
     stixObservables: (_, args) => {
-      if (args.stix_id && args.stix_id.length > 0) {
+      if (args.stix_id_key && args.stix_id_key.length > 0) {
         return findByStixId(args);
       }
       if (args.search && args.search.length > 0) {

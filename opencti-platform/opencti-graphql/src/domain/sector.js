@@ -26,7 +26,7 @@ export const markingDefinitions = (sectorId, args) =>
   paginate(
     `match $marking isa Marking-Definition; 
     $rel(marking:$marking, so:$s) isa object_marking_refs; 
-    $s has internal_id "${escapeString(sectorId)}"`,
+    $s has internal_id_key "${escapeString(sectorId)}"`,
     args
   );
 
@@ -34,7 +34,7 @@ export const subsectors = (sectorId, args) =>
   paginate(
     `match $subsector isa Sector; 
     $rel(gather:$s, part_of:$subsector) isa gathering; 
-    $s has internal_id "${escapeString(sectorId)}"`,
+    $s has internal_id_key "${escapeString(sectorId)}"`,
     args
   );
 
@@ -42,7 +42,7 @@ export const isSubsector = async (sectorId, args) => {
   const numberOfParents = await getSingleValueNumber(
     `match $parent isa Sector; 
     $rel(gather:$parent, part_of:$subsector) isa gathering; 
-    $subsector has internal_id "${escapeString(sectorId)}"; get; count;`,
+    $subsector has internal_id_key "${escapeString(sectorId)}"; get; count;`,
     args
   );
   return numberOfParents > 0;
@@ -50,14 +50,14 @@ export const isSubsector = async (sectorId, args) => {
 
 export const addSector = async (user, sector) => {
   const wTx = await takeWriteTx();
-  const internalId = sector.internal_id
-    ? escapeString(sector.internal_id)
+  const internalId = sector.internal_id_key
+    ? escapeString(sector.internal_id_key)
     : uuid();
   const sectorIterator = await wTx.tx.query(`insert $sector isa Sector,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "sector",
-    has stix_id "${
-      sector.stix_id ? escapeString(sector.stix_id) : `identity--${uuid()}`
+    has stix_id_key "${
+      sector.stix_id_key ? escapeString(sector.stix_id_key) : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -78,9 +78,9 @@ export const addSector = async (user, sector) => {
   if (sector.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createdSectorId};
-      $to has internal_id "${escapeString(sector.createdByRef)}";
+      $to has internal_id_key "${escapeString(sector.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id "${uuid()}";`
+      isa created_by_ref, has internal_id_key "${uuid()}";`
     );
   }
 
@@ -88,8 +88,8 @@ export const addSector = async (user, sector) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
         `match $from id ${createdSectorId}; 
-        $to has internal_id "${escapeString(markingDefinition)}";
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(markingDefinition)}";
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

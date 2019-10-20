@@ -154,7 +154,7 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
 export const pushToConnector = (connector, message) => {
   return send(
     CONNECTOR_EXCHANGE,
-    listenRouting(connector.internal_id),
+    listenRouting(connector.internal_id_key),
     JSON.stringify(message)
   );
 };

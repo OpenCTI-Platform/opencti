@@ -12,7 +12,7 @@ const WORK_INDEX = 'work_jobs_index';
 
 export const workToExportFile = work => {
   return {
-    id: work.internal_id,
+    id: work.internal_id_key,
     name: work.work_file,
     size: 0,
     lastModified: work.updated_at,
@@ -100,7 +100,7 @@ export const deleteWork = async workId => {
 
 export const deleteWorkForFile = async fileId => {
   const works = await loadFileWorks(fileId);
-  await Promise.all(map(w => deleteWork(w.internal_id), works));
+  await Promise.all(map(w => deleteWork(w.internal_id_key), works));
   return true;
 };
 
@@ -114,7 +114,7 @@ export const initiateJob = workId => {
     created_at: now(),
     job_status: 'wait',
     entity_type: 'Job',
-    internal_id: jobInternalId
+    internal_id_key: jobInternalId
   });
 };
 
@@ -123,7 +123,7 @@ export const createWork = async (connector, entityId = null, fileId = null) => {
   const workInternalId = uuid();
   const createdWork = await index(WORK_INDEX, {
     id: workInternalId,
-    internal_id: workInternalId,
+    internal_id_key: workInternalId,
     grakn_id: workInternalId,
     work_id: workInternalId,
     entity_type: 'Work',

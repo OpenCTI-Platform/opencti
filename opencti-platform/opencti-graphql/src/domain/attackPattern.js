@@ -37,7 +37,7 @@ export const findByCourseOfAction = args =>
   paginate(
     `match $a isa Attack-Pattern;
     $rel(problem:$a, mitigation:$c) isa mitigates;
-    $c has internal_id "${escapeString(args.courseOfActionId)}"`,
+    $c has internal_id_key "${escapeString(args.courseOfActionId)}"`,
     args
   );
 
@@ -45,15 +45,15 @@ export const findById = attackPatternId => getById(attackPatternId);
 
 export const addAttackPattern = async (user, attackPattern) => {
   const wTx = await takeWriteTx();
-  const internalId = attackPattern.internal_id
-    ? escapeString(attackPattern.internal_id)
+  const internalId = attackPattern.internal_id_key
+    ? escapeString(attackPattern.internal_id_key)
     : uuid();
   const query = `insert $attackPattern isa Attack-Pattern,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "attack-pattern",
-    has stix_id "${
-      attackPattern.stix_id
-        ? escapeString(attackPattern.stix_id)
+    has stix_id_key "${
+      attackPattern.stix_id_key
+        ? escapeString(attackPattern.stix_id_key)
         : `attack-pattern--${uuid()}`
     }",
     has stix_label "",
@@ -108,9 +108,9 @@ export const addAttackPattern = async (user, attackPattern) => {
   if (attackPattern.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createdAttackPatternId};
-      $to has internal_id "${escapeString(attackPattern.createdByRef)}";
+      $to has internal_id_key "${escapeString(attackPattern.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id "${uuid()}";`
+      isa created_by_ref, has internal_id_key "${uuid()}";`
     );
   }
 
@@ -118,8 +118,8 @@ export const addAttackPattern = async (user, attackPattern) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
         `match $from id ${createdAttackPatternId}; 
-        $to has internal_id "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,
@@ -132,8 +132,8 @@ export const addAttackPattern = async (user, attackPattern) => {
     const createKillChainPhase = killChainPhase =>
       wTx.tx.query(
         `match $from id ${createdAttackPatternId}; 
-        $to has internal_id "${escapeString(killChainPhase)}";
-        insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(killChainPhase)}";
+        insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id_key "${uuid()}";`
       );
     const killChainPhasesPromises = map(
       createKillChainPhase,

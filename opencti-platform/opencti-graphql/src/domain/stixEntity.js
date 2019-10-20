@@ -14,7 +14,7 @@ import {
 const findByStixId = stixId => {
   const query = `match $x isa entity;
    { $x isa Stix-Domain; } or { $x isa Stix-Observable; } or { $x isa stix_relation; };
-   $x has stix_id "${escapeString(stixId)}"; get;`;
+   $x has stix_id_key "${escapeString(stixId)}"; get;`;
   return load(query, ['x']).then(data => {
     return data && data.x;
   });
@@ -28,7 +28,7 @@ export const markingDefinitions = (stixEntityId, args) => {
   return paginate(
     `match $m isa Marking-Definition; 
     $rel(marking:$m, so:$x) isa object_marking_refs; 
-    $x has internal_id "${escapeString(stixEntityId)}"`,
+    $x has internal_id_key "${escapeString(stixEntityId)}"`,
     args,
     false,
     null,
@@ -41,7 +41,7 @@ export const tags = (stixEntityId, args) => {
   return paginate(
     `match $t isa Tag; 
     $rel(tagging:$t, so:$x) isa tagged; 
-    $x has internal_id "${escapeString(stixEntityId)}"`,
+    $x has internal_id_key "${escapeString(stixEntityId)}"`,
     args,
     false,
     null,
@@ -54,7 +54,7 @@ export const createdByRef = stixEntityId => {
   return getObject(
     `match $i isa Identity;
     $rel(creator:$i, so:$x) isa created_by_ref; 
-    $x has internal_id "${escapeString(stixEntityId)}"; 
+    $x has internal_id_key "${escapeString(stixEntityId)}"; 
     get; 
     offset 0; 
     limit 1;`,
@@ -67,7 +67,7 @@ export const reports = (stixEntityId, args) => {
   return paginate(
     `match $r isa Report; 
     $rel(knowledge_aggregation:$r, so:$x) isa object_refs; 
-    $x has internal_id "${escapeString(stixEntityId)}"`,
+    $x has internal_id_key "${escapeString(stixEntityId)}"`,
     args
   );
 };

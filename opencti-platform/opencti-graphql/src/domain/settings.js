@@ -45,11 +45,11 @@ export const getSettings = () =>
 
 export const addSettings = async (user, settings) => {
   const wTx = await takeWriteTx();
-  const internalId = settings.internal_id
-    ? escapeString(settings.internal_id)
+  const internalId = settings.internal_id_key
+    ? escapeString(settings.internal_id_key)
     : uuid();
   await wTx.tx.query(`insert $settings isa Settings,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "settings",
     has platform_title "${escapeString(settings.platform_title)}",
     has platform_email "${escapeString(settings.platform_email)}",

@@ -27,7 +27,7 @@ export const findByEntity = args =>
   paginate(
     `match $x isa Incident;
     $rel($x, $to) isa stix_relation;
-    $to has internal_id "${escapeString(args.objectId)}"`,
+    $to has internal_id_key "${escapeString(args.objectId)}"`,
     args
   );
 
@@ -35,7 +35,7 @@ export const incidentsTimeSeriesByEntity = args =>
   timeSeries(
     `match $x isa Incident; 
     $rel($x, $to) isa stix_relation; 
-    $to has internal_id "${escapeString(args.objectId)}"`,
+    $to has internal_id_key "${escapeString(args.objectId)}"`,
     args
   );
 
@@ -43,16 +43,16 @@ export const findById = incidentId => getById(incidentId);
 
 export const addIncident = async (user, incident) => {
   const wTx = await takeWriteTx();
-  const internalId = incident.internal_id
-    ? escapeString(incident.internal_id)
+  const internalId = incident.internal_id_key
+    ? escapeString(incident.internal_id_key)
     : uuid();
   const now = graknNow();
   const query = `insert $incident isa Incident,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "incident",
-    has stix_id "${
-      incident.stix_id
-        ? escapeString(incident.stix_id)
+    has stix_id_key "${
+      incident.stix_id_key
+        ? escapeString(incident.stix_id_key)
         : `x-opencti-incident--${uuid()}`
     }",
     has stix_label "",
@@ -98,9 +98,9 @@ export const addIncident = async (user, incident) => {
   if (incident.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createdIncidentId};
-      $to has internal_id "${escapeString(incident.createdByRef)}";
+      $to has internal_id_key "${escapeString(incident.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id "${uuid()}";`
+      isa created_by_ref, has internal_id_key "${uuid()}";`
     );
   }
 
@@ -108,8 +108,8 @@ export const addIncident = async (user, incident) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
         `match $from id ${createdIncidentId}; 
-        $to has internal_id "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

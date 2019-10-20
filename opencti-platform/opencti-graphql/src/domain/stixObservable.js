@@ -74,7 +74,7 @@ export const findById = stixObservableId => getById(stixObservableId);
 export const findByStixId = args => {
   return paginate(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
-    $x has stix_id "${escapeString(args.stix_id)}"`,
+    $x has stix_id_key "${escapeString(args.stix_id)}"`,
     args,
     false
   );
@@ -95,7 +95,7 @@ export const reportsTimeSeries = (stixObservableId, args) => {
   return timeSeries(
     `match $x isa Report; 
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs;
-    $so has internal_id "${escapeString(stixObservableId)}"`,
+    $so has internal_id_key "${escapeString(stixObservableId)}"`,
     args
   );
 };
@@ -119,8 +119,8 @@ const askEnrich = async (observableId, scope) => {
     map(data => {
       const { connector, work, job } = data;
       const message = {
-        work_id: work.internal_id,
-        job_id: job.internal_id,
+        work_id: work.internal_id_key,
+        job_id: job.internal_id_key,
         entity_id: observableId
       };
       return pushToConnector(connector, message);
@@ -143,14 +143,14 @@ export const stixObservableAskEnrichment = async (id, connectorId) => {
 
 export const addStixObservable = async (user, stixObservable) => {
   const wTx = await takeWriteTx();
-  const stixId = stixObservable.stix_id;
+  const stixId = stixObservable.stix_id_key;
   const observableValue = stixObservable.observable_value;
-  const internalId = stixObservable.internal_id
-    ? escapeString(stixObservable.internal_id)
+  const internalId = stixObservable.internal_id_key
+    ? escapeString(stixObservable.internal_id_key)
     : uuid();
   const query = `insert $stixObservable isa ${escape(stixObservable.type)},
-    has internal_id "${internalId}",
-    has stix_id "${stixId ? escapeString(stixId) : `indicator--${uuid()}`}",
+    has internal_id_key "${internalId}",
+    has stix_id_key "${stixId ? escapeString(stixId) : `indicator--${uuid()}`}",
     has entity_type "${escapeString(stixObservable.type.toLowerCase())}",
     has name "",
     has description "${escapeString(stixObservable.description)}",
@@ -171,9 +171,9 @@ export const addStixObservable = async (user, stixObservable) => {
   if (stixObservable.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createdStixObservableId};
-      $to has internal_id "${escapeString(stixObservable.createdByRef)}";
+      $to has internal_id_key "${escapeString(stixObservable.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id "${uuid()}";`
+      isa created_by_ref, has internal_id_key "${uuid()}";`
     );
   }
 
@@ -181,8 +181,8 @@ export const addStixObservable = async (user, stixObservable) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
         `match $from id ${createdStixObservableId}; 
-        $to has internal_id "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

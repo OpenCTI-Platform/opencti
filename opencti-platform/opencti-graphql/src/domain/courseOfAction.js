@@ -23,7 +23,7 @@ export const findByEntity = args =>
   paginate(
     `match $c isa Course-Of-Action; 
     $rel(mitigation:$c, problem:$p) isa mitigates;
-    $p has internal_id "${escapeString(args.objectId)}"`,
+    $p has internal_id_key "${escapeString(args.objectId)}"`,
     args
   );
 
@@ -31,17 +31,17 @@ export const findById = courseOfActionId => getById(courseOfActionId);
 
 export const addCourseOfAction = async (user, courseOfAction) => {
   const wTx = await takeWriteTx();
-  const internalId = courseOfAction.internal_id
-    ? escapeString(courseOfAction.internal_id)
+  const internalId = courseOfAction.internal_id_key
+    ? escapeString(courseOfAction.internal_id_key)
     : uuid();
   const now = graknNow();
   const courseOfActionIterator = await wTx.tx
     .query(`insert $courseOfAction isa Course-Of-Action,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "course-of-action",
-    has stix_id "${
-      courseOfAction.stix_id
-        ? escapeString(courseOfAction.stix_id)
+    has stix_id_key "${
+      courseOfAction.stix_id_key
+        ? escapeString(courseOfAction.stix_id_key)
         : `course-of-action--${uuid()}`
     }",
     has stix_label "",
@@ -69,9 +69,9 @@ export const addCourseOfAction = async (user, courseOfAction) => {
   if (courseOfAction.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createdCourseOfActionId};
-      $to has internal_id "${escapeString(courseOfAction.createdByRef)}";
+      $to has internal_id_key "${escapeString(courseOfAction.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id "${uuid()}";`
+      isa created_by_ref, has internal_id_key "${uuid()}";`
     );
   }
 
@@ -79,8 +79,8 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
         `match $from id ${createdCourseOfActionId}; 
-        $to has internal_id "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,
@@ -93,8 +93,8 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     const createKillChainPhase = killChainPhase =>
       wTx.tx.query(
         `match $from id ${createdCourseOfActionId};
-         $to has internal_id "${escapeString(killChainPhase)}"; 
-         insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id "${uuid()}";`
+         $to has internal_id_key "${escapeString(killChainPhase)}"; 
+         insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id_key "${uuid()}";`
       );
     const killChainPhasesPromises = map(
       createKillChainPhase,

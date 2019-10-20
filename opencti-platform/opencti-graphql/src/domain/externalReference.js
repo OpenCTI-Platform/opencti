@@ -31,7 +31,7 @@ export const findByEntity = args =>
   paginate(
     `match $e isa External-Reference; 
     $rel(external_reference:$e, so:$so) isa external_references;
-    $so has internal_id "${escapeString(args.objectId)}"`,
+    $so has internal_id_key "${escapeString(args.objectId)}"`,
     args
   );
 
@@ -39,16 +39,16 @@ export const findById = externalReferenceId => getById(externalReferenceId);
 
 export const addExternalReference = async (user, externalReference) => {
   const wTx = await takeWriteTx();
-  const internalId = externalReference.internal_id
-    ? escapeString(externalReference.internal_id)
+  const internalId = externalReference.internal_id_key
+    ? escapeString(externalReference.internal_id_key)
     : uuid();
   const now = graknNow();
   const query = `insert $externalReference isa External-Reference,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "external-reference",
-    has stix_id "${
-      externalReference.stix_id
-        ? escapeString(externalReference.stix_id)
+    has stix_id_key "${
+      externalReference.stix_id_key
+        ? escapeString(externalReference.stix_id_key)
         : `external-reference--${uuid()}`
     }",
     has source_name "${escapeString(externalReference.source_name)}",
@@ -81,9 +81,9 @@ export const addExternalReference = async (user, externalReference) => {
   if (externalReference.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createdExternalReferenceId};
-      $to has internal_id "${escapeString(externalReference.createdByRef)}";
+      $to has internal_id_key "${escapeString(externalReference.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id "${uuid()}";`
+      isa created_by_ref, has internal_id_key "${uuid()}";`
     );
   }
 
@@ -91,8 +91,8 @@ export const addExternalReference = async (user, externalReference) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
         `match $from id ${createdExternalReferenceId}; 
-        $to has internal_id "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

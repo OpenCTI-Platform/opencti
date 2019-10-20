@@ -22,12 +22,12 @@ export const findById = cityId => getById(cityId);
 
 export const addCity = async (user, city) => {
   const wTx = await takeWriteTx();
-  const internalId = city.internal_id ? escapeString(city.internal_id) : uuid();
+  const internalId = city.internal_id_key ? escapeString(city.internal_id_key) : uuid();
   const cityIterator = await wTx.tx.query(`insert $city isa City,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "city",
-    has stix_id "${
-      city.stix_id ? escapeString(city.stix_id) : `identity--${uuid()}`
+    has stix_id_key "${
+      city.stix_id_key ? escapeString(city.stix_id_key) : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -48,9 +48,9 @@ export const addCity = async (user, city) => {
   if (city.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createdCityId};
-      $to has internal_id "${escapeString(city.createdByRef)}";
+      $to has internal_id_key "${escapeString(city.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id "${uuid()}";`
+      isa created_by_ref, has internal_id_key "${uuid()}";`
     );
   }
 
@@ -58,8 +58,8 @@ export const addCity = async (user, city) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
         `match $from id ${createdCityId}; 
-        $to has internal_id "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

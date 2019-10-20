@@ -79,7 +79,7 @@ export const registerConnector = async ({ id, name, type, scope }) => {
     const creation = graknNow();
     const wTx = await takeWriteTx();
     const query = `insert $connector isa Connector, 
-          has internal_id "${id}",
+          has internal_id_key "${id}",
           has name "${name}",
           has connector_type "${type}",
           has connector_scope "${scope.join(',')}",

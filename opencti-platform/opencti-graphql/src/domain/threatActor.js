@@ -22,18 +22,17 @@ export const findById = threatActorId => getById(threatActorId);
 
 export const addThreatActor = async (user, threatActor) => {
   const wTx = await takeWriteTx();
-  const internalId = threatActor.internal_id
-    ? escapeString(threatActor.internal_id)
+  const internalId = threatActor.internal_id_key
+    ? escapeString(threatActor.internal_id_key)
     : uuid();
+  const stixId = threatActor.stix_id_key
+    ? escapeString(threatActor.stix_id_key)
+    : `threat-actor--${uuid()}`;
   const threatActorIterator = await wTx.tx
     .query(`insert $threatActor isa Threat-Actor,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "threat-actor",
-    has stix_id "${
-      threatActor.stix_id
-        ? escapeString(threatActor.stix_id)
-        : `threat-actor--${uuid()}`
-    }",
+    has stix_id_key "${stixId}",
     has stix_label "",
     has alias "",
     has name "${escapeString(threatActor.name)}", 
@@ -65,9 +64,9 @@ export const addThreatActor = async (user, threatActor) => {
   if (threatActor.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createThreatActorId};
-      $to has internal_id "${escapeString(threatActor.createdByRef)}";
+      $to has internal_id_key "${escapeString(threatActor.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id "${uuid()}";`
+      isa created_by_ref, has internal_id_key "${uuid()}";`
     );
   }
   // Create Marking definitions relations
@@ -75,8 +74,8 @@ export const addThreatActor = async (user, threatActor) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
         `match $from id ${createThreatActorId};
-        $to has internal_id "${escapeString(markingDefinition)}";
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(markingDefinition)}";
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,

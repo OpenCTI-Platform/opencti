@@ -37,7 +37,7 @@ export const findByEntity = args =>
   paginate(
     `match $k isa Kill-Chain-Phase; 
     $rel(kill_chain_phase:$k, phase_belonging:$so) isa kill_chain_phases; 
-    $so has internal_id "${escapeString(args.objectId)}"`,
+    $so has internal_id_key "${escapeString(args.objectId)}"`,
     args
   );
 
@@ -53,17 +53,17 @@ export const findByPhaseName = args =>
 
 export const addKillChainPhase = async (user, killChainPhase) => {
   const wTx = await takeWriteTx();
-  const internalId = killChainPhase.internal_id
-    ? escapeString(killChainPhase.internal_id)
+  const internalId = killChainPhase.internal_id_key
+    ? escapeString(killChainPhase.internal_id_key)
     : uuid();
   const now = graknNow();
   const killChainPhaseIterator = await wTx.tx
     .query(`insert $killChainPhase isa Kill-Chain-Phase,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "kill-chain-phase",
-    has stix_id "${
-      killChainPhase.stix_id
-        ? escapeString(killChainPhase.stix_id)
+    has stix_id_key "${
+      killChainPhase.stix_id_key
+        ? escapeString(killChainPhase.stix_id_key)
         : `kill-chain-phase--${uuid()}`
     }",
     has kill_chain_name "${escapeString(killChainPhase.kill_chain_name)}",
@@ -90,9 +90,9 @@ export const addKillChainPhase = async (user, killChainPhase) => {
   if (killChainPhase.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createdKillChainPhaseId};
-      $to has internal_id "${escapeString(killChainPhase.createdByRef)}";
+      $to has internal_id_key "${escapeString(killChainPhase.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id "${uuid()}";`
+      isa created_by_ref, has internal_id_key "${uuid()}";`
     );
   }
 
