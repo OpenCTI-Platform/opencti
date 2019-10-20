@@ -60,13 +60,11 @@ const FileLineComponent = (props) => {
       },
     });
   };
-  const handleRemoveFile = (name, category) => {
-    executeRemove(FileLineDeleteMutation,
-      { fileName: name }, name, category);
+  const handleRemoveFile = (name) => {
+    executeRemove(FileLineDeleteMutation, { fileName: name }, name);
   };
-  const handleRemoveJob = (id, category) => {
-    executeRemove(FileLineAskDeleteMutation,
-      { workId: id }, id, category);
+  const handleRemoveJob = (id) => {
+    executeRemove(FileLineAskDeleteMutation, { workId: id }, id);
   };
   const askForImportJob = () => {
     commitMutation({
@@ -79,12 +77,10 @@ const FileLineComponent = (props) => {
   };
   return <div>
     {isFail || isOutdated
-      ? <IconButton color="secondary"
-                    onClick={() => handleRemoveJob(file.id, file.metaData.category)}>
+      ? <IconButton color="secondary" onClick={() => handleRemoveJob(file.id)}>
             <Delete/>
         </IconButton>
-      : <IconButton disabled={isProgress} color="primary"
-                    onClick={() => handleRemoveFile(file.id, file.metaData.category)}>
+      : <IconButton disabled={isProgress} color="primary" onClick={() => handleRemoveFile(file.id)}>
             <Delete/>
         </IconButton>
     }
@@ -99,7 +95,8 @@ const FileLineComponent = (props) => {
                 <Warning/>
             </IconButton>
         </Tooltip>;
-      } if (isProgress) {
+      }
+      if (isProgress) {
         return <IconButton aria-haspopup="true" color="primary">
             <CircularProgress size={24} thickness={2} />
         </IconButton>;

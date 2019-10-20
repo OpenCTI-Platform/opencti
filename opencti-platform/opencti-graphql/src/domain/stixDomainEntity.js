@@ -171,7 +171,7 @@ export const stixDomainEntityExportAsk = async (
   const entity = await getById(domainEntityId);
   const workList = await askJobExports(entity, format, exportType);
   // Return the work list to do
-  return map(w => workToExportFile(w.work, w.connector), workList);
+  return map(w => workToExportFile(w.work), workList);
 };
 
 export const stixDomainEntityExportPush = async (user, entityId, file) => {
