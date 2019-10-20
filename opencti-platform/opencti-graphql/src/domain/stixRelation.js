@@ -141,7 +141,8 @@ export const findAllWithInferences = async args => {
         }; ${join(
           ' ',
           map(
-            fromId => `{ $from has internal_id_key "${escapeString(fromId)}"; } or`,
+            fromId =>
+              `{ $from has internal_id_key "${escapeString(fromId)}"; } or`,
             fromIds
           )
         )} { $from has internal_id_key "${escapeString(
@@ -166,7 +167,8 @@ export const findAllWithInferences = async args => {
         }; ${join(
           ' ',
           map(
-            fromId => `{ $from has internal_id_key "${escapeString(fromId)}"; } or`,
+            fromId =>
+              `{ $from has internal_id_key "${escapeString(fromId)}"; } or`,
             fromIds
           )
         )} { $from has internal_id_key "${escapeString(
@@ -276,7 +278,8 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
         }; ${join(
           ' ',
           map(
-            fromId => `{ $from has internal_id_key "${escapeString(fromId)}"; } or`,
+            fromId =>
+              `{ $from has internal_id_key "${escapeString(fromId)}"; } or`,
             fromIds
           )
         )} { $from has internal_id_key "${escapeString(
@@ -303,12 +306,15 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
         }; ${join(
           ' ',
           map(
-            fromId => `{ $from has internal_id_key "${escapeString(fromId)}"; } or`,
+            fromId =>
+              `{ $from has internal_id_key "${escapeString(fromId)}"; } or`,
             fromIds
           )
-        )} { $from has internal_id_key "${escapeString(head(fromIds))}"; }; $link(${
-          resolveViaType.relationRole
-        }: $x, $to) isa ${escape(resolveViaType.relationType)} ${
+        )} { $from has internal_id_key "${escapeString(
+          head(fromIds)
+        )}"; }; $link(${resolveViaType.relationRole}: $x, $to) isa ${escape(
+          resolveViaType.relationType
+        )} ${
           args.toTypes && args.toTypes.length > 0
             ? `; ${join(
                 ' ',
@@ -414,7 +420,8 @@ export const stixRelationsDistributionWithInferences = async args => {
         }; ${join(
           ' ',
           map(
-            fromId => `{ $from has internal_id_key "${escapeString(fromId)}"; } or`,
+            fromId =>
+              `{ $from has internal_id_key "${escapeString(fromId)}"; } or`,
             fromIds
           )
         )} { $from has internal_id_key "${escapeString(
@@ -439,7 +446,8 @@ export const stixRelationsDistributionWithInferences = async args => {
         }; ${join(
           ' ',
           map(
-            fromId => `{ $from has internal_id_key "${escapeString(fromId)}"; } or`,
+            fromId =>
+              `{ $from has internal_id_key "${escapeString(fromId)}"; } or`,
             fromIds
           )
         )} { $from has internal_id_key "${escapeString(
@@ -508,14 +516,22 @@ export const stixRelationsNumber = args => ({
     $date < ${prepareDate(args.endDate)};`
         : ''
     }
-    ${args.fromId ? `$y has internal_id_key "${escapeString(args.fromId)}";` : ''}
+    ${
+      args.fromId
+        ? `$y has internal_id_key "${escapeString(args.fromId)}";`
+        : ''
+    }
     get;
     count;`,
     args.inferred ? args.inferred : false
   ),
   total: getSingleValueNumber(
     `match $x($y, $z) isa ${args.type ? escape(args.type) : 'stix_relation'};
-    ${args.fromId ? `$y has internal_id_key "${escapeString(args.fromId)}";` : ''}
+    ${
+      args.fromId
+        ? `$y has internal_id_key "${escapeString(args.fromId)}";`
+        : ''
+    }
     get;
     count;`,
     args.inferred ? args.inferred : false
@@ -610,17 +626,18 @@ export const addStixRelation = async (user, stixRelation) => {
     await Promise.all(markingDefinitionsPromises);
   }
 
-  if (stixRelation.locations) {
-    const createLocation = location =>
+  if (stixRelation.killChainPhases) {
+    const createKillChainPhase = killChainPhase =>
       wTx.tx.query(
         `match $from id ${createdStixRelationId};
-        $to has internal_id_key "${escapeString(location)}";
-        insert $rel(localized: $from, location: $to) isa localization, has internal_id_key "${uuid()}", 
-        has stix_id_key "relationship--${uuid()}", has relationship_type 'localization', 
-        has first_seen ${graknNow()}, has last_seen ${graknNow()}, has weight 3;`
+        $to has internal_id_key "${escapeString(killChainPhase)}";
+        insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id_key "${uuid()}";`
       );
-    const locationsPromises = map(createLocation, stixRelation.locations);
-    await Promise.all(locationsPromises);
+    const killChainPhasesPromises = map(
+      createKillChainPhase,
+      stixRelation.killChainPhases
+    );
+    await Promise.all(killChainPhasesPromises);
   }
 
   await commitWriteTx(wTx);

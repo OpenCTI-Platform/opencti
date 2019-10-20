@@ -3,14 +3,7 @@ import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pluck,
-  head,
-  assoc,
-  union,
+  compose, map, pathOr, pipe, pluck, head, assoc, union,
 } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
@@ -333,12 +326,17 @@ class StixRelationCreation extends Component {
                     <div className={classes.icon}>
                       <ItemIcon
                         type={from.type}
-                        color={itemColor(from.type, false)}
+                        color={itemColor(
+                          from.type ? from.type : 'stix_relation',
+                          false,
+                        )}
                         size="small"
                       />
                     </div>
                     <div className={classes.type}>
-                      {t(`entity_${from.type}`)}
+                      {from.type
+                        ? t(`entity_${from.type}`)
+                        : t(`relation_${from.relationship_type}`)}
                     </div>
                   </div>
                   <div className={classes.content}>
@@ -351,7 +349,10 @@ class StixRelationCreation extends Component {
                 <div
                   className={classes.item}
                   style={{
-                    backgroundColor: itemColor(to.type, true),
+                    backgroundColor: itemColor(
+                      to.type ? to.type : 'stix_relation',
+                      true,
+                    ),
                     top: 10,
                     right: 10,
                   }}
@@ -360,11 +361,18 @@ class StixRelationCreation extends Component {
                     <div className={classes.icon}>
                       <ItemIcon
                         type={to.type}
-                        color={itemColor(to.type, false)}
+                        color={itemColor(
+                          to.type ? to.type : 'stix_relation',
+                          false,
+                        )}
                         size="small"
                       />
                     </div>
-                    <div className={classes.type}>{t(`entity_${to.type}`)}</div>
+                    <div className={classes.type}>
+                      {to.type
+                        ? t(`entity_${to.type}`)
+                        : t(`relation_${to.relationship_type}`)}
+                    </div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>{to.name}</span>
@@ -498,7 +506,10 @@ class StixRelationCreation extends Component {
               <div
                 className={classes.item}
                 style={{
-                  backgroundColor: itemColor(from.type, true),
+                  backgroundColor: itemColor(
+                    from.type ? from.type : 'stix_relation',
+                    true,
+                  ),
                   top: 10,
                   left: 10,
                 }}

@@ -1,20 +1,10 @@
 import * as React from 'react';
-import { mergeLeft } from 'ramda';
 import { PointModel, BaseWidget, Toolkit } from 'storm-react-diagrams';
 import * as _ from 'lodash';
 
 export default class GlobalLinkWidget extends BaseWidget {
   constructor(props) {
-    const defaultProps = {
-      color: 'black',
-      width: 3,
-      link: null,
-      engine: null,
-      smooth: false,
-      diagramEngine: null,
-    };
-    super('srd-default-link', mergeLeft(props, defaultProps));
-
+    super('srd-default-link', props);
     this.refLabels = {};
     this.refPaths = [];
     this.state = {
@@ -289,13 +279,6 @@ export default class GlobalLinkWidget extends BaseWidget {
           > Math.abs(points[0].y - points[1].y);
         const xOrY = isHorizontal ? 'x' : 'y';
 
-        // draw the smoothing
-        // if the points are too close, just draw a straight line
-        let margin = 50;
-        if (Math.abs(points[0][xOrY] - points[1][xOrY]) < 50) {
-          margin = 5;
-        }
-
         let pointLeft = points[0];
         let pointRight = points[1];
 
@@ -326,9 +309,6 @@ export default class GlobalLinkWidget extends BaseWidget {
           paths.push(this.generatePoint(1));
         }
       } else {
-        const firstLinkIndex = 0;
-        const lastLinkIndex = points.length - 2;
-        let extraParams;
         // draw the multiple anchors and complex line instead
         for (let j = 0; j < points.length - 1; j++) {
           paths.push(

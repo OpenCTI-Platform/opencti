@@ -4,6 +4,8 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Tooltip from '@material-ui/core/Tooltip';
 import { PortWidget } from 'storm-react-diagrams';
+import IconButton from '@material-ui/core/IconButton';
+import { Delete, Edit } from '@material-ui/icons';
 import inject18n from '../i18n';
 
 const styles = () => ({
@@ -18,7 +20,7 @@ const styles = () => ({
     fontSize: 11,
     backgroundColor: '#303030',
   },
-  portContainer: {
+  port: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -28,12 +30,28 @@ const styles = () => ({
     overflow: 'hidden',
     borderRadius: 10,
   },
+  actions: {
+    display: 'flex',
+    position: 'absolute',
+    top: -25,
+    left: 12,
+    width: 50,
+    justifyContent: 'space-between',
+  },
 });
 
 class RelationNodeWidget extends Component {
   setSelected() {
     this.props.node.setSelected(true);
     this.forceUpdate();
+  }
+
+  handleEdit() {
+    this.props.node.setSelectedCustom(true, true);
+  }
+
+  handleRemove() {
+    this.props.node.setSelectedCustom(true, false, true);
   }
 
   render() {
@@ -67,12 +85,32 @@ class RelationNodeWidget extends Component {
         >
           <strong>{t(`relation_${extras.relationship_type}`)}</strong>
           <div
-            className={classes.portContainer}
+            className={classes.port}
             style={{ display: node.selected ? 'none' : 'block' }}
             onClick={this.setSelected.bind(this)}
           >
             <PortWidget name="main" node={node} />
           </div>
+          {node.selected ? (
+            <div className={classes.actions}>
+              <IconButton
+                aria-label="edit"
+                size="small"
+                onClick={this.handleEdit.bind(this, node)}
+              >
+                <Edit fontSize="small" />
+              </IconButton>
+              <IconButton
+                aria-label="delete"
+                size="small"
+                onClick={this.handleRemove.bind(this, node)}
+              >
+                <Delete fontSize="small" />
+              </IconButton>
+            </div>
+          ) : (
+            ''
+          )}
         </div>
       </Tooltip>
     );

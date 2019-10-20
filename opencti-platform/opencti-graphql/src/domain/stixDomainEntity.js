@@ -1,6 +1,6 @@
 import { dissoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
-import { Logger as logger } from 'winston';
+import { logger, BUS_TOPICS } from '../config/conf';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
   commitWriteTx,
@@ -28,7 +28,6 @@ import {
   paginate as elPaginate
 } from '../database/elasticSearch';
 
-import { BUS_TOPICS } from '../config/conf';
 import { generateFileExportName, upload } from '../database/minio';
 import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';

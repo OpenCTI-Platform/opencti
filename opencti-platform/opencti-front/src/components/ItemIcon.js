@@ -20,6 +20,8 @@ import {
   Fire,
   CityVariant,
   Tag,
+  ProgressWrench,
+  HexagonOutline
 } from 'mdi-material-ui';
 
 const iconSelector = (type, variant, fontSize, color) => {
@@ -63,6 +65,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <AccountBalance style={style} fontSize={fontSize} />;
     case 'attack-pattern':
       return <LockPattern style={style} fontSize={fontSize} />;
+    case 'course-of-action':
+      return <ProgressWrench style={style} fontSize={fontSize} />;
     case 'malware':
       return <Biohazard style={style} fontSize={fontSize} />;
     case 'tool':
@@ -81,6 +85,8 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'file-md5':
     case 'file-sha1':
     case 'file-sha256':
+      return <HexagonOutline style={style} fontSize={fontSize} />;
+    case 'stix_relation':
       return <Tag style={style} fontSize={fontSize} />;
     default:
       return <Help style={style} fontSize={fontSize} />;

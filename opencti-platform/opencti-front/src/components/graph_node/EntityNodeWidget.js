@@ -45,7 +45,6 @@ const styles = () => ({
     position: 'absolute',
     top: -25,
     left: -10,
-    right: 0,
     width: 80,
     justifyContent: 'space-between',
   },

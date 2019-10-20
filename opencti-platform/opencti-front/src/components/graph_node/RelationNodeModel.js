@@ -8,19 +8,25 @@ export default class RelationNodeModel extends NodeModel {
     this.extras = data;
   }
 
-  getPosition() {
-    return { x: this.x, y: this.y };
+  setSelectedCustom(selected, edit = false, remove = false) {
+    this.selected = selected;
+    this.iterateListeners((listener, event) => {
+      if (listener.selectionChanged) {
+        listener.selectionChanged({
+          ...event,
+          edit,
+          remove,
+          isSelected: selected,
+        });
+      }
+    });
   }
 
   setExtras(data) {
     this.extras = data;
   }
-
-  setExpandable(expandable) {
-    this.expandable = expandable;
-  }
-
-  getExpandable() {
-    return this.expandable;
+  
+  getPosition() {
+    return { x: this.x, y: this.y };
   }
 }
