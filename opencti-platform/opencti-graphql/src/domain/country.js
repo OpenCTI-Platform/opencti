@@ -1,4 +1,4 @@
-import { assoc, map } from 'ramda';
+import { assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   escapeString,
@@ -14,6 +14,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'country', args));
@@ -30,7 +31,9 @@ export const addCountry = async (user, country) => {
     has internal_id_key "${internalId}",
     has entity_type "country",
     has stix_id_key "${
-      country.stix_id_key ? escapeString(country.stix_id_key) : `identity--${uuid()}`
+      country.stix_id_key
+        ? escapeString(country.stix_id_key)
+        : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -48,31 +51,12 @@ export const addCountry = async (user, country) => {
   const createCountry = await countryIterator.next();
   const createdCountryId = await createCountry.map().get('country').id;
 
-  if (country.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdCountryId};
-      $to has internal_id_key "${escapeString(country.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdCountryId, country.createdByRef);
+  await linkMarkingDef(wTx, createdCountryId, country.markingDefinitions);
 
-  if (country.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdCountryId};
-         $to has internal_id_key "${escapeString(markingDefinition)}"; 
-         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      country.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

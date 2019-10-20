@@ -31,6 +31,7 @@ import {
 } from '../database/grakn';
 import { paginate as elPaginate } from '../database/elasticSearch';
 import { stixDomainEntityDelete } from './stixDomainEntity';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 // Security related
 export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
@@ -84,7 +85,9 @@ export const token = (userId, args, context) => {
   return getObject(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
-    $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`,
+    $client has internal_id_key "${escapeString(
+      userId
+    )}"; get; offset 0; limit 1;`,
     'x',
     'rel'
   ).then(result => result.node.uuid);
@@ -94,7 +97,9 @@ export const getTokenId = userId => {
   return getObject(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
-    $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`,
+    $client has internal_id_key "${escapeString(
+      userId
+    )}"; get; offset 0; limit 1;`,
     'x',
     'rel'
   ).then(result => pathOr(null, ['node', 'id'], result));
@@ -133,30 +138,12 @@ export const addPerson = async (user, newUser) => {
   const createUser = await userIterator.next();
   const createdUserId = await createUser.map().get('user').id;
 
-  if (newUser.createdByRef) {
-    await wTx.tx.query(`match $from id ${createdUserId};
-         $to has internal_id_key "${escapeString(newUser.createdByRef)}";
-         insert (so: $from, creator: $to)
-         isa created_by_ref, has internal_id_key "${uuid()}";`);
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdUserId, newUser.createdByRef);
+  await linkMarkingDef(wTx, createdUserId, newUser.markingDefinitions);
 
-  // Create user marking definitions relations
-  if (newUser.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdUserId};
-        $to has internal_id_key "${escapeString(markingDefinition)}";
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      newUser.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
@@ -220,13 +207,7 @@ export const addUser = async (
 
   const createUser = await userIterator.next();
   const createdUserId = await createUser.map().get('user').id;
-
-  if (user.createdByRef) {
-    await wTx.tx.query(`match $from id ${createdUserId};
-         $to has internal_id_key "${escapeString(user.createdByRef)}";
-         insert (so: $from, creator: $to)
-         isa created_by_ref, has internal_id_key "${uuid()}";`);
-  }
+  await linkCreatedByRef(wTx, createdUserId, user.createdByRef);
 
   const tokenIterator = await wTx.tx.query(`insert $token isa Token,
     has internal_id_key "${uuid()}",
@@ -248,7 +229,6 @@ export const addUser = async (
                    insert (client: $user, authorization: $token) isa authorize, has internal_id_key "${uuid()}";`);
 
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

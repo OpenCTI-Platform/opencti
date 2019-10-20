@@ -1,43 +1,48 @@
-import { assoc, map } from 'ramda';
+import { assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  commitWriteTx,
+  dayFormat,
   escapeString,
   getById,
-  prepareDate,
-  dayFormat,
-  monthFormat,
-  yearFormat,
-  notify,
   graknNow,
+  monthFormat,
+  notify,
   paginate,
+  prepareDate,
   takeWriteTx,
   timeSeries,
-  commitWriteTx
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
-export const findAll = args =>
-  elPaginate('stix_domain_entities', assoc('type', 'incident', args));
+export const findAll = args => {
+  return elPaginate('stix_domain_entities', assoc('type', 'incident', args));
+};
 
-export const incidentsTimeSeries = args =>
-  timeSeries('match $i isa Incident', args);
+export const incidentsTimeSeries = args => {
+  return timeSeries('match $i isa Incident', args);
+};
 
-export const findByEntity = args =>
-  paginate(
+export const findByEntity = args => {
+  return paginate(
     `match $x isa Incident;
     $rel($x, $to) isa stix_relation;
     $to has internal_id_key "${escapeString(args.objectId)}"`,
     args
   );
+};
 
-export const incidentsTimeSeriesByEntity = args =>
-  timeSeries(
+export const incidentsTimeSeriesByEntity = args => {
+  return timeSeries(
     `match $x isa Incident; 
     $rel($x, $to) isa stix_relation; 
     $to has internal_id_key "${escapeString(args.objectId)}"`,
     args
   );
+};
 
 export const findById = incidentId => getById(incidentId);
 
@@ -95,31 +100,12 @@ export const addIncident = async (user, incident) => {
   const createdIncident = await incidentIterator.next();
   const createdIncidentId = await createdIncident.map().get('incident').id;
 
-  if (incident.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdIncidentId};
-      $to has internal_id_key "${escapeString(incident.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdIncidentId, incident.createdByRef);
+  await linkMarkingDef(wTx, createdIncidentId, incident.markingDefinitions);
 
-  if (incident.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdIncidentId}; 
-        $to has internal_id_key "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      incident.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

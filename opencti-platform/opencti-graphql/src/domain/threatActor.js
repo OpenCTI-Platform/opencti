@@ -1,19 +1,20 @@
-import { assoc, map } from 'ramda';
+import { assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escapeString,
-  takeWriteTx,
-  getById,
-  notify,
-  graknNow,
-  prepareDate,
+  commitWriteTx,
   dayFormat,
+  escapeString,
+  getById,
+  graknNow,
   monthFormat,
-  yearFormat,
-  commitWriteTx
+  notify,
+  prepareDate,
+  takeWriteTx,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'threat-actor', args));
@@ -59,35 +60,14 @@ export const addThreatActor = async (user, threatActor) => {
     has updated_at ${graknNow()};
   `);
   const txThreatActor = await threatActorIterator.next();
-  const createThreatActorId = await txThreatActor.map().get('threatActor').id;
-  // Create relation createdByRef
-  if (threatActor.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createThreatActorId};
-      $to has internal_id_key "${escapeString(threatActor.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
-  // Create Marking definitions relations
-  if (threatActor.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createThreatActorId};
-        $to has internal_id_key "${escapeString(markingDefinition)}";
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      threatActor.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
+  const createId = await txThreatActor.map().get('threatActor').id;
 
-  // Finalize the transaction for all objects
+  // Create associated relations
+  await linkCreatedByRef(wTx, createId, threatActor.createdByRef);
+  await linkMarkingDef(wTx, createId, threatActor.markingDefinitions);
+
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
-  // Return the data created
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

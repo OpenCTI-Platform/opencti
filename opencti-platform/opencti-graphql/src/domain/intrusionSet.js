@@ -1,22 +1,27 @@
-import { assoc, map } from 'ramda';
+import { assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escapeString,
-  takeWriteTx,
-  getById,
+  commitWriteTx,
   dayFormat,
-  monthFormat,
-  yearFormat,
-  prepareDate,
-  notify,
+  escapeString,
+  getById,
   graknNow,
-  commitWriteTx
+  monthFormat,
+  notify,
+  prepareDate,
+  takeWriteTx,
+  yearFormat
 } from '../database/grakn';
 import { paginate as elPaginate } from '../database/elasticSearch';
 import { BUS_TOPICS, logger } from '../config/conf';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
-export const findAll = args =>
-  elPaginate('stix_domain_entities', assoc('type', 'intrusion-set', args));
+export const findAll = args => {
+  return elPaginate(
+    'stix_domain_entities',
+    assoc('type', 'intrusion-set', args)
+  );
+};
 
 export const findById = intrusionSetId => getById(intrusionSetId);
 
@@ -97,35 +102,14 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   logger.debug(`[GRAKN - infer: false] addIntrusionSet > ${query}`);
   const intrusionSetIterator = await wTx.tx.query(query);
   const createIntrusionSet = await intrusionSetIterator.next();
-  const createdIntrusionSetId = await createIntrusionSet
-    .map()
-    .get('intrusionSet').id;
+  const createdId = await createIntrusionSet.map().get('intrusionSet').id;
 
-  if (intrusionSet.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdIntrusionSetId};
-      $to has internal_id_key "${escapeString(intrusionSet.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdId, intrusionSet.createdByRef);
+  await linkMarkingDef(wTx, createdId, intrusionSet.markingDefinitions);
 
-  if (intrusionSet.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdIntrusionSetId}; 
-        $to has internal_id_key "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      intrusionSet.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

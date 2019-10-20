@@ -1,21 +1,22 @@
-import { assoc, map } from 'ramda';
+import { assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  commitWriteTx,
+  dayFormat,
   escapeString,
   getById,
-  dayFormat,
-  monthFormat,
-  yearFormat,
-  notify,
   graknNow,
+  monthFormat,
+  notify,
   paginate,
   prepareDate,
   takeWriteTx,
   timeSeries,
-  commitWriteTx
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'campaign', args));
@@ -51,7 +52,9 @@ export const addCampaign = async (user, campaign) => {
     has internal_id_key "${internalId}",
     has entity_type "campaign",
     has stix_id_key "${
-      campaign.stix_id_key ? escapeString(campaign.stix_id_key) : `campaign--${uuid()}`
+      campaign.stix_id_key
+        ? escapeString(campaign.stix_id_key)
+        : `campaign--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -94,31 +97,12 @@ export const addCampaign = async (user, campaign) => {
   const createCampaign = await campaignIterator.next();
   const createdCampaignId = await createCampaign.map().get('campaign').id;
 
-  if (campaign.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdCampaignId};
-      $to has internal_id_key "${escapeString(campaign.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdCampaignId, campaign.createdByRef);
+  await linkMarkingDef(wTx, createdCampaignId, campaign.markingDefinitions);
 
-  if (campaign.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdCampaignId};
-        $to has internal_id_key "${escapeString(markingDefinition)}";
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      campaign.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

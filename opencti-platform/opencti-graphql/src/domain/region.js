@@ -1,19 +1,20 @@
-import { assoc, map } from 'ramda';
+import { assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  commitWriteTx,
+  dayFormat,
   escapeString,
   getById,
-  prepareDate,
-  dayFormat,
-  monthFormat,
-  yearFormat,
-  notify,
   graknNow,
+  monthFormat,
+  notify,
+  prepareDate,
   takeWriteTx,
-  commitWriteTx
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'region', args));
@@ -29,7 +30,9 @@ export const addRegion = async (user, region) => {
     has internal_id_key "${internalId}",
     has entity_type "region",
     has stix_id_key "${
-      region.stix_id_key ? escapeString(region.stix_id_key) : `identity--${uuid()}`
+      region.stix_id_key
+        ? escapeString(region.stix_id_key)
+        : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -47,31 +50,12 @@ export const addRegion = async (user, region) => {
   const createRegion = await regionIterator.next();
   const createdRegionId = await createRegion.map().get('region').id;
 
-  if (region.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdRegionId};
-      $to has internal_id_key "${escapeString(region.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdRegionId, region.createdByRef);
+  await linkMarkingDef(wTx, createdRegionId, region.markingDefinitions);
 
-  if (region.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdRegionId}; 
-        $to has internal_id_key "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      region.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

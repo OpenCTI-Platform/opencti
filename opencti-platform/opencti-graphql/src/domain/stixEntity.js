@@ -1,4 +1,5 @@
-import { assoc } from 'ramda';
+import { assoc, map } from 'ramda';
+import uuid from 'uuid/v4';
 import {
   escapeString,
   getById,
@@ -61,6 +62,42 @@ export const createdByRef = stixEntityId => {
     'i',
     'rel'
   );
+};
+
+export const linkCreatedByRef = async (wTx, fromId, createdByRefId) => {
+  if (createdByRefId) {
+    await wTx.tx.query(
+      `match $from id ${fromId};
+      $to has internal_id_key "${escapeString(createdByRefId)}";
+      insert (so: $from, creator: $to)
+      isa created_by_ref, has internal_id_key "${uuid()}";`
+    );
+  }
+};
+
+export const linkMarkingDef = async (wTx, fromId, markingDefs) => {
+  if (markingDefs) {
+    const create = markingDefinition => {
+      return wTx.tx.query(
+        `match $from id ${fromId}; 
+        $to has internal_id_key "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
+      );
+    };
+    await Promise.all(map(create, markingDefs));
+  }
+};
+
+export const linkKillChains = async (wTx, fromId, killChains) => {
+  if (killChains) {
+    const createKillChainPhase = killChainPhase =>
+      wTx.tx.query(
+        `match $from id ${fromId}; 
+        $to has internal_id_key "${escapeString(killChainPhase)}";
+        insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id_key "${uuid()}";`
+      );
+    await Promise.all(map(createKillChainPhase, killChains));
+  }
 };
 
 export const reports = (stixEntityId, args) => {

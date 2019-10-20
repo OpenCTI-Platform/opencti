@@ -1,24 +1,24 @@
-import { assoc, map, pipe, assocPath, dissoc } from 'ramda';
+import { assoc, assocPath, dissoc, map, pipe } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
-  escape,
-  escapeString,
+  commitWriteTx,
   createRelation,
+  dayFormat,
   deleteEntityById,
   deleteRelationById,
-  updateAttribute,
+  escape,
+  escapeString,
   getById,
-  dayFormat,
-  monthFormat,
-  yearFormat,
-  notify,
+  getId,
   graknNow,
+  monthFormat,
+  notify,
   paginate,
   takeWriteTx,
   timeSeries,
-  getId,
-  commitWriteTx
+  updateAttribute,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { findAll as relationFindAll } from './stixRelation';
@@ -30,6 +30,7 @@ import {
 import { connectorsForEnrichment } from './connector';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args => {
   if (
@@ -164,33 +165,13 @@ export const addStixObservable = async (user, stixObservable) => {
   logger.debug(`[GRAKN - infer: false] addStixObservable > ${query}`);
   const stixObservableIterator = await wTx.tx.query(query);
   const createStixObservable = await stixObservableIterator.next();
-  const createdStixObservableId = await createStixObservable
-    .map()
-    .get('stixObservable').id;
+  const createdId = await createStixObservable.map().get('stixObservable').id;
 
-  if (stixObservable.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdStixObservableId};
-      $to has internal_id_key "${escapeString(stixObservable.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdId, stixObservable.createdByRef);
+  await linkMarkingDef(wTx, createdId, stixObservable.markingDefinitions);
 
-  if (stixObservable.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdStixObservableId}; 
-        $to has internal_id_key "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      stixObservable.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
+  // Commit everything
   await commitWriteTx(wTx);
 
   // Enqueue enrich job

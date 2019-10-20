@@ -1,22 +1,22 @@
 import uuid from 'uuid/v4';
-import { map } from 'ramda';
 import {
-  escapeString,
-  deleteEntityById,
-  getById,
+  commitWriteTx,
   dayFormat,
-  monthFormat,
-  yearFormat,
-  notify,
+  deleteEntityById,
+  escapeString,
+  getById,
   graknNow,
+  monthFormat,
+  notify,
   paginate,
   takeWriteTx,
-  commitWriteTx
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
-export const findAll = args =>
-  paginate(
+export const findAll = args => {
+  return paginate(
     `match $g isa Group ${
       args.search
         ? `; $g has name $name;
@@ -27,24 +27,27 @@ export const findAll = args =>
     }`,
     args
   );
+};
 
 export const findById = groupId => getById(groupId);
 
-export const members = (groupId, args) =>
-  paginate(
+export const members = (groupId, args) => {
+  return paginate(
     `match $user isa User; 
     $rel((member:$user, grouping:$g) isa membership; 
     $g has internal_id_key "${escapeString(groupId)}"`,
     args
   );
+};
 
-export const permissions = (groupId, args) =>
-  paginate(
+export const permissions = (groupId, args) => {
+  return paginate(
     `match $marking isa Marking-Definition; 
     $rel(allow:$marking, allowed:$g) isa permission; 
     $g has internal_id_key "${escapeString(groupId)}"`,
     args
   );
+};
 
 export const addGroup = async (user, group) => {
   const wTx = await takeWriteTx();
@@ -65,31 +68,12 @@ export const addGroup = async (user, group) => {
   const createGroup = await groupIterator.next();
   const createdGroupId = await createGroup.map().get('group').id;
 
-  if (group.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdGroupId};
-      $to has internal_id_key "${escapeString(group.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdGroupId, group.createdByRef);
+  await linkMarkingDef(wTx, createdGroupId, group.markingDefinitions);
 
-  if (group.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdGroupId}; 
-        $to has internal_id_key "${escapeString(markingDefinition)}";
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      group.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );

@@ -1,4 +1,4 @@
-import { assoc, map } from 'ramda';
+import { assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   escapeString,
@@ -15,6 +15,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
+import { linkCreatedByRef, linkKillChains, linkMarkingDef } from './stixEntity';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'course-of-action', args));
@@ -62,49 +63,15 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     has updated_at ${now};
   `);
   const createCourseOfAction = await courseOfActionIterator.next();
-  const createdCourseOfActionId = await createCourseOfAction
-    .map()
-    .get('courseOfAction').id;
+  const createdId = await createCourseOfAction.map().get('courseOfAction').id;
 
-  if (courseOfAction.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdCourseOfActionId};
-      $to has internal_id_key "${escapeString(courseOfAction.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdId, courseOfAction.createdByRef);
+  await linkMarkingDef(wTx, createdId, courseOfAction.markingDefinitions);
+  await linkKillChains(wTx, createdId, courseOfAction.killChainPhases);
 
-  if (courseOfAction.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdCourseOfActionId}; 
-        $to has internal_id_key "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      courseOfAction.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
-  if (courseOfAction.killChainPhases) {
-    const createKillChainPhase = killChainPhase =>
-      wTx.tx.query(
-        `match $from id ${createdCourseOfActionId};
-         $to has internal_id_key "${escapeString(killChainPhase)}"; 
-         insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id_key "${uuid()}";`
-      );
-    const killChainPhasesPromises = map(
-      createKillChainPhase,
-      courseOfAction.killChainPhases
-    );
-    await Promise.all(killChainPhasesPromises);
-  }
-
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

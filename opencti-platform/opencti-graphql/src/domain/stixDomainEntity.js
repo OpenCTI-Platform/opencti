@@ -12,9 +12,9 @@ import {
   escapeString,
   getById,
   getId,
+  graknNow,
   monthFormat,
   notify,
-  graknNow,
   paginate,
   prepareDate,
   takeWriteTx,
@@ -33,6 +33,7 @@ import { generateFileExportName, upload } from '../database/minio';
 import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args => elPaginate('stix_domain_entities', args);
 
@@ -228,36 +229,15 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   `;
   logger.debug(`[GRAKN - infer: false] addStixDomainEntity > ${query}`);
   const stixDomainEntityIterator = await wTx.tx.query(query);
-  const createStixDomainEntity = await stixDomainEntityIterator.next();
-  const createdStixDomainEntityId = await createStixDomainEntity
-    .map()
-    .get('stixDomainEntity').id;
+  const createSDO = await stixDomainEntityIterator.next();
+  const createdId = await createSDO.map().get('stixDomainEntity').id;
 
-  if (stixDomainEntity.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdStixDomainEntityId};
-      $to has internal_id_key "${escapeString(stixDomainEntity.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdId, stixDomainEntity.createdByRef);
+  await linkMarkingDef(wTx, createdId, stixDomainEntity.markingDefinitions);
 
-  if (stixDomainEntity.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdStixDomainEntityId}; 
-        $to has internal_id_key "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      stixDomainEntity.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

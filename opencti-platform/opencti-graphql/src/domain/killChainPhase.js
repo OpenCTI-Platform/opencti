@@ -19,6 +19,7 @@ import {
   commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args =>
   paginate(
@@ -83,21 +84,14 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     has updated_at ${now};
   `);
   const createKillChainPhase = await killChainPhaseIterator.next();
-  const createdKillChainPhaseId = await createKillChainPhase
-    .map()
-    .get('killChainPhase').id;
+  const createdId = await createKillChainPhase.map().get('killChainPhase').id;
 
-  if (killChainPhase.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdKillChainPhaseId};
-      $to has internal_id_key "${escapeString(killChainPhase.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdId, killChainPhase.createdByRef);
+  await linkMarkingDef(wTx, createdId, killChainPhase.markingDefinitions);
 
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created =>
     notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created, user)
   );

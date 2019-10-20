@@ -1,42 +1,46 @@
-import { assoc, map } from 'ramda';
+import { assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  commitWriteTx,
+  dayFormat,
   escapeString,
   getById,
-  prepareDate,
-  dayFormat,
-  monthFormat,
-  yearFormat,
-  notify,
+  getSingleValueNumber,
   graknNow,
+  monthFormat,
+  notify,
   paginate,
+  prepareDate,
   takeWriteTx,
-  commitWriteTx,
-  getSingleValueNumber
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
-export const findAll = args =>
-  elPaginate('stix_domain_entities', assoc('type', 'sector', args));
+export const findAll = args => {
+  return elPaginate('stix_domain_entities', assoc('type', 'sector', args));
+};
 
 export const findById = sectorId => getById(sectorId);
 
-export const markingDefinitions = (sectorId, args) =>
-  paginate(
+export const markingDefinitions = (sectorId, args) => {
+  return paginate(
     `match $marking isa Marking-Definition; 
     $rel(marking:$marking, so:$s) isa object_marking_refs; 
     $s has internal_id_key "${escapeString(sectorId)}"`,
     args
   );
+};
 
-export const subsectors = (sectorId, args) =>
-  paginate(
+export const subsectors = (sectorId, args) => {
+  return paginate(
     `match $subsector isa Sector; 
     $rel(gather:$s, part_of:$subsector) isa gathering; 
     $s has internal_id_key "${escapeString(sectorId)}"`,
     args
   );
+};
 
 export const isSubsector = async (sectorId, args) => {
   const numberOfParents = await getSingleValueNumber(
@@ -57,7 +61,9 @@ export const addSector = async (user, sector) => {
     has internal_id_key "${internalId}",
     has entity_type "sector",
     has stix_id_key "${
-      sector.stix_id_key ? escapeString(sector.stix_id_key) : `identity--${uuid()}`
+      sector.stix_id_key
+        ? escapeString(sector.stix_id_key)
+        : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -75,31 +81,12 @@ export const addSector = async (user, sector) => {
   const createSector = await sectorIterator.next();
   const createdSectorId = await createSector.map().get('sector').id;
 
-  if (sector.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdSectorId};
-      $to has internal_id_key "${escapeString(sector.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdSectorId, sector.createdByRef);
+  await linkMarkingDef(wTx, createdSectorId, sector.markingDefinitions);
 
-  if (sector.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdSectorId}; 
-        $to has internal_id_key "${escapeString(markingDefinition)}";
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      sector.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
