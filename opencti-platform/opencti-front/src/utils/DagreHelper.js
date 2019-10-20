@@ -1,16 +1,15 @@
 import * as dagre from 'dagre';
 import * as _ from 'lodash';
 
-const size = {
-  width: 180,
-  height: 150,
-};
-
 function mapElements(model) {
   // dagre compatible format
   return model.nodes.map((node) => ({
     id: node.id,
-    metadata: { ...size, id: node.id },
+    metadata: {
+      width: node.type === 'entity' ? 80 : 65,
+      height: node.type === 'entity' ? 80 : 48,
+      id: node.id,
+    },
   }));
 }
 

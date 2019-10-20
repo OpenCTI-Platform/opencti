@@ -247,28 +247,34 @@ class ReportKnowledgeGraphComponent extends Component {
     }, nodes);
 
     // add relations
+    const createdRelations = [];
     forEach((l) => {
-      const newNode = new RelationNodeModel({
-        id: l.node.id,
-        relationId: l.relation.id,
-        relationship_type: l.node.relationship_type,
-        first_seen: l.node.first_seen,
-        last_seen: l.node.last_seen,
-      });
-      newNode.addListener({
-        selectionChanged: this.handleSelection.bind(this),
-      });
-      const position = pathOr(
-        null,
-        ['nodes', l.node.id, 'position'],
-        graphData,
-      );
-      if (position && position.x !== undefined && position.y !== undefined) {
-        newNode.setPosition(position.x, position.y);
+      if (
+        !includes(l.relation.id, createdRelations)
+        && l.node.relationship_type !== 'indicates'
+      ) {
+        const newNode = new RelationNodeModel({
+          id: l.node.id,
+          relationId: l.relation.id,
+          relationship_type: l.node.relationship_type,
+          first_seen: l.node.first_seen,
+          last_seen: l.node.last_seen,
+        });
+        newNode.addListener({
+          selectionChanged: this.handleSelection.bind(this),
+        });
+        const position = pathOr(
+          null,
+          ['nodes', l.node.id, 'position'],
+          graphData,
+        );
+        if (position && position.x !== undefined && position.y !== undefined) {
+          newNode.setPosition(position.x, position.y);
+        }
+        model.addNode(newNode);
+        createdRelations.push(l.relation.id);
       }
-      model.addNode(newNode);
     }, relations);
-
     // build usables nodes object
     const finalNodes = model.getNodes();
     const finalNodesObject = pipe(
@@ -276,11 +282,12 @@ class ReportKnowledgeGraphComponent extends Component {
       map((n) => ({ id: n.extras.id, node: n })),
       indexBy(prop('id')),
     )(finalNodes);
+
     // add links
-    const createdRelations = [];
+    const createdLinks = [];
     forEach((l) => {
       if (
-        !includes(l.relation.id, createdRelations)
+        !includes(l.relation.id, createdLinks)
         && l.node.relationship_type !== 'indicates'
       ) {
         const sourceFromPort = finalNodesObject[l.node.from.id]
@@ -293,8 +300,6 @@ class ReportKnowledgeGraphComponent extends Component {
           const newLink = new GlobalLinkModel();
           newLink.setSourcePort(sourceFromPort);
           newLink.setTargetPort(sourceToPort);
-          const label = new GlobalLabelModel(l.node.fromRole);
-          newLink.addLabel(label);
           model.addLink(newLink);
         }
         const targetFromPort = finalNodesObject[l.node.id]
@@ -307,14 +312,10 @@ class ReportKnowledgeGraphComponent extends Component {
           const newLink = new GlobalLinkModel();
           newLink.setSourcePort(targetFromPort);
           newLink.setTargetPort(targetToPort);
-          const label = new GlobalLabelModel(l.node.toRole);
-          newLink.addLabel(label);
           model.addLink(newLink);
         }
-        createdRelations.push(l.relation.id);
-        return true;
+        createdLinks.push(l.relation.id);
       }
-      return false;
     }, relations);
 
     // add listeners
@@ -612,6 +613,10 @@ class ReportKnowledgeGraphComponent extends Component {
 
   autoDistribute() {
     const model = this.props.engine.getDiagramModel();
+    const nodes = model.getNodes();
+    map((node) => {
+      node.setSelected(false);
+    }, nodes);
     const serialized = model.serializeDiagram();
     const distributedSerializedDiagram = distributeElements(serialized);
     const distributedDeSerializedModel = new DiagramModel();
@@ -655,16 +660,16 @@ class ReportKnowledgeGraphComponent extends Component {
           <AspectRatio />
         </IconButton>
         <IconButton
-            color="primary"
-            className={classes.icon}
-            onClick={this.distribute.bind(this)}
-            style={{ left: 140 }}
+          color="primary"
+          className={classes.icon}
+          onClick={this.distribute.bind(this)}
+          style={{ left: 140 }}
         >
           <AutoFix />
         </IconButton>
         <DiagramWidget
           className={classes.canvas}
-          deleteKeys={[46]}
+          deleteKeys={[]}
           diagramEngine={engine}
           inverseZoom={true}
           allowLooseLinks={false}

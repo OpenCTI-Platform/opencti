@@ -1,6 +1,7 @@
 import React from 'react';
 import * as SRD from 'storm-react-diagrams';
 import GlobalLinkModel from './GlobalLinkModel';
+import GlobalLinkWidget from './GlobalLinkWidget';
 
 export default class GlobalLinkFactory extends SRD.AbstractLinkFactory {
   constructor() {
@@ -9,7 +10,7 @@ export default class GlobalLinkFactory extends SRD.AbstractLinkFactory {
 
   // eslint-disable-next-line class-methods-use-this
   generateReactWidget(diagramEngine, link) {
-    return React.createElement(SRD.DefaultLinkWidget, {
+    return React.createElement(GlobalLinkWidget, {
       link,
       diagramEngine,
     });
@@ -22,21 +23,6 @@ export default class GlobalLinkFactory extends SRD.AbstractLinkFactory {
 
   // eslint-disable-next-line class-methods-use-this
   generateLinkSegment(model, widget, selected, path) {
-    const classNameNotInferred = selected ? widget.bem('--path-selected') : '';
-    return (
-      <path
-        className={
-          model.inferred ? widget.bem('--path-inferred') : classNameNotInferred
-        }
-        strokeWidth={model.width}
-        stroke={model.color}
-        d={path}
-        onContextMenu={(event) => {
-          console.log(event);
-          event.preventDefault();
-          event.stopPropagation();
-        }}
-      />
-    );
+    return <path strokeWidth={model.width} stroke={model.color} d={path} />;
   }
 }
