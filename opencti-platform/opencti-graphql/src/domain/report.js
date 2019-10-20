@@ -1,25 +1,26 @@
-import { map, assoc, sortWith, take, ascend, descend, prop } from 'ramda';
+import { ascend, assoc, descend, prop, sortWith, take } from 'ramda';
 import uuid from 'uuid/v4';
 import {
+  commitWriteTx,
+  dayFormat,
+  distribution,
   escape,
   escapeString,
   getById,
+  getSingleValueNumber,
+  graknNow,
+  monthFormat,
   notify,
-  now,
   paginate,
   paginateRelationships,
   prepareDate,
-  dayFormat,
-  monthFormat,
-  yearFormat,
   takeWriteTx,
   timeSeries,
-  getSingleValueNumber,
-  distribution,
-  commitWriteTx
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args => {
   if (args.orderBy === 'createdByRef') {
@@ -197,7 +198,7 @@ export const reportsNumberByEntity = args => ({
     $date < ${prepareDate(args.endDate)};`
         : ''
     }
-    get $x;
+    get;
     count;`
   ),
   total: getSingleValueNumber(
@@ -209,7 +210,7 @@ export const reportsNumberByEntity = args => ({
     $x has report_class "${escapeString(args.reportClass)}"`
         : ';'
     }
-    get $x;
+    get;
     count;`
   )
 });
@@ -267,7 +268,9 @@ export const addReport = async (user, report) => {
     has internal_id_key "${internalId}",
     has entity_type "report",
     has stix_id_key "${
-      report.stix_id_key ? escapeString(report.stix_id_key) : `report--${uuid()}`
+      report.stix_id_key
+        ? escapeString(report.stix_id_key)
+        : `report--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -285,43 +288,24 @@ export const addReport = async (user, report) => {
         : 3
     },
     has graph_data "${escapeString(report.graph_data)}",
-    has created ${report.created ? prepareDate(report.created) : now()},
-    has modified ${report.modified ? prepareDate(report.modified) : now()},
+    has created ${report.created ? prepareDate(report.created) : graknNow()},
+    has modified ${report.modified ? prepareDate(report.modified) : graknNow()},
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",        
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",        
+    has updated_at ${graknNow()};
   `);
   const createdReport = await reportIterator.next();
   const createdReportId = await createdReport.map().get('report').id;
 
-  if (report.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdReportId};
-      $to has internal_id_key "${escapeString(report.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdReportId, report.createdByRef);
+  await linkMarkingDef(wTx, createdReportId, report.markingDefinitions);
 
-  if (report.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdReportId}; 
-        $to has internal_id_key "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      report.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

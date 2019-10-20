@@ -1,39 +1,40 @@
-import { map } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
-  escapeString,
+  commitWriteTx,
   createRelation,
+  dayFormat,
   deleteEntityById,
   deleteRelationById,
-  updateAttribute,
+  escapeString,
   getById,
-  prepareDate,
-  dayFormat,
-  monthFormat,
-  yearFormat,
-  notify,
-  now,
-  paginate,
-  takeWriteTx,
   getId,
-  commitWriteTx
+  graknNow,
+  monthFormat,
+  notify,
+  paginate,
+  prepareDate,
+  takeWriteTx,
+  updateAttribute,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import {
   deleteEntity,
   paginate as elPaginate
 } from '../database/elasticSearch';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args => elPaginate('external_references', args);
 
-export const findByEntity = args =>
-  paginate(
+export const findByEntity = args => {
+  return paginate(
     `match $e isa External-Reference; 
     $rel(external_reference:$e, so:$so) isa external_references;
     $so has internal_id_key "${escapeString(args.objectId)}"`,
     args
   );
+};
 
 export const findById = externalReferenceId => getById(externalReferenceId);
 
@@ -42,6 +43,7 @@ export const addExternalReference = async (user, externalReference) => {
   const internalId = externalReference.internal_id_key
     ? escapeString(externalReference.internal_id_key)
     : uuid();
+  const now = graknNow();
   const query = `insert $externalReference isa External-Reference,
     has internal_id_key "${internalId}",
     has entity_type "external-reference",
@@ -58,52 +60,29 @@ export const addExternalReference = async (user, externalReference) => {
     has hash "${escapeString(externalReference.hash)}",
     has external_id "${escapeString(externalReference.external_id)}",
     has created ${
-      externalReference.created ? prepareDate(externalReference.created) : now()
+      externalReference.created ? prepareDate(externalReference.created) : now
     },
     has modified ${
-      externalReference.modified
-        ? prepareDate(externalReference.modified)
-        : now()
+      externalReference.modified ? prepareDate(externalReference.modified) : now
     },
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",  
-    has updated_at ${now()};
+    has created_at ${now},
+    has created_at_day "${dayFormat(now)}",
+    has created_at_month "${monthFormat(now)}",
+    has created_at_year "${yearFormat(now)}",  
+    has updated_at ${now};
   `;
   logger.debug(`[GRAKN - infer: false] addExternalReference > ${query}`);
   const externalReferenceIterator = await wTx.tx.query(query);
-  const createExternalReference = await externalReferenceIterator.next();
-  const createdExternalReferenceId = await createExternalReference
-    .map()
-    .get('externalReference').id;
+  const createExternalRef = await externalReferenceIterator.next();
+  const createdId = await createExternalRef.map().get('externalReference').id;
 
-  if (externalReference.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdExternalReferenceId};
-      $to has internal_id_key "${escapeString(externalReference.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdId, externalReference.createdByRef);
+  await linkMarkingDef(wTx, createdId, externalReference.markingDefinitions);
 
-  if (externalReference.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdExternalReferenceId}; 
-        $to has internal_id_key "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      externalReference.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user);
   });

@@ -233,7 +233,7 @@ const StixDomainEntityEditionFragment = createFragmentContainer(
   StixDomainEntityEditionContainer,
   {
     stixDomainEntity: graphql`
-      fragment StixDomainEntityEditionOverview_stixDomainEntity on StixDomainEntity {
+      fragment StixDomainEntityEditionOverview_stixDomainEntity on StixEntity {
         id
         name
         description

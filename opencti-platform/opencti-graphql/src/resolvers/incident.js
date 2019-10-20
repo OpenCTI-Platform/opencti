@@ -6,12 +6,6 @@ import {
   incidentsTimeSeries
 } from '../domain/incident';
 import {
-  createdByRef,
-  markingDefinitions,
-  tags,
-  reports,
-  exports,
-  stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
@@ -19,7 +13,6 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
-import { fetchEditContext } from '../database/redis';
 
 const incidentResolvers = {
   Query: {
@@ -31,16 +24,6 @@ const incidentResolvers = {
       }
       return incidentsTimeSeries(args);
     }
-  },
-  Incident: {
-    createdByRef: incident => createdByRef(incident.id),
-    markingDefinitions: (incident, args) =>
-      markingDefinitions(incident.id, args),
-    tags: (incident, args) => tags(incident.id, args),
-    reports: (incident, args) => reports(incident.id, args),
-    exports: (incident, args) => exports(incident.id, args),
-    stixRelations: (incident, args) => stixRelations(incident.id, args),
-    editContext: incident => fetchEditContext(incident.id)
   },
   Mutation: {
     incidentEdit: (_, { id }, { user }) => ({

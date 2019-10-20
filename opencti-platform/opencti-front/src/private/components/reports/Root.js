@@ -8,6 +8,9 @@ import Report from './Report';
 import ReportEntities from './ReportEntities';
 import ReportKnowledge from './ReportKnowledge';
 import ReportObservables from './ReportObservables';
+import FileManager from '../common/files/FileManager';
+import ReportHeader from './ReportHeader';
+import Loader from '../../Loader';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -17,6 +20,8 @@ const subscription = graphql`
         ...ReportKnowledgeGraph_report
         ...ReportEditionContainer_report
       }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
     }
   }
 `;
@@ -30,9 +35,14 @@ const reportQuery = graphql`
       ...ReportDetails_report
       ...ReportKnowledge_report
       ...ReportEntities_report
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
     }
     me {
       ...ReportKnowledge_me
+    }
+    connectorsForExport {
+        ...FileManager_connectorsExport
     }
   }
 `;
@@ -46,10 +56,7 @@ class RootReport extends Component {
     } = this.props;
     const sub = requestSubscription({
       subscription,
-      variables: {
-        id: reportId,
-        types: ['export.stix2.simple', 'export.stix2.full'],
-      },
+      variables: { id: reportId },
     });
     this.setState({ sub });
   }
@@ -78,14 +85,14 @@ class RootReport extends Component {
                   <Route
                     exact
                     path="/dashboard/reports/all/:reportId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <Report {...routeProps} report={props.report} />
                     )}
                   />
                   <Route
                     exact
                     path="/dashboard/reports/all/:reportId/entities"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <ReportEntities
                         {...routeProps}
                         report={props.report}
@@ -96,7 +103,7 @@ class RootReport extends Component {
                   <Route
                     exact
                     path="/dashboard/reports/all/:reportId/knowledge"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <ReportKnowledge
                         {...routeProps}
                         report={props.report}
@@ -104,17 +111,25 @@ class RootReport extends Component {
                       />
                     )}
                   />
-                  <Route
-                    exact
-                    path="/dashboard/reports/all/:reportId/observables"
-                    render={routeProps => (
+                  <Route exact path="/dashboard/reports/all/:reportId/observables"
+                    render={(routeProps) => (
                       <ReportObservables {...routeProps} reportId={reportId} />
+                    )}
+                  />
+                  <Route exact path="/dashboard/reports/all/:reportId/files"
+                    render={(routeProps) => (
+                        <React.Fragment>
+                            <ReportHeader report={props.report} />
+                            <FileManager {...routeProps} id={reportId}
+                                         connectorsExport={props.connectorsForExport}
+                                         entity={props.report}/>
+                        </React.Fragment>
                     )}
                   />
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader/>;
           }}
         />
       </div>

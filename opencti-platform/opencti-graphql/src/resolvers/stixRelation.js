@@ -14,17 +14,15 @@ import {
   stixRelationsDistributionWithInferences,
   stixRelationsNumber,
   search,
-  reports,
-  markingDefinitions,
-  tags,
   stixRelationEditContext,
   stixRelationCleanContext,
   stixRelationEditField,
   stixRelationAddRelation,
   stixRelationDeleteRelation
 } from '../domain/stixRelation';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
+import { getByGraknId } from '../database/grakn';
 
 const stixRelationResolvers = {
   Query: {
@@ -73,16 +71,8 @@ const stixRelationResolvers = {
     stixRelationsNumber: (_, args) => stixRelationsNumber(args)
   },
   StixRelation: {
-    markingDefinitions: (stixRelation, args) =>
-      markingDefinitions(stixRelation.id, args),
-    tags: (stixRelation, args) => tags(stixRelation.id, args),
-    reports: (stixRelation, args) => {
-      if (stixRelation.id.length !== 36) {
-        return null;
-      }
-      return reports(stixRelation.id, args);
-    },
-    editContext: stixRelation => fetchEditContext(stixRelation.id)
+    from: rel => rel.from || getByGraknId(rel.fromId),
+    to: rel => rel.to || getByGraknId(rel.toId)
   },
   Mutation: {
     stixRelationEdit: (_, { id }, { user }) => ({
