@@ -113,7 +113,6 @@ export default class GlobalLinkWidget extends BaseWidget {
 
   generateLink(path, extraProps, id) {
     const { props } = this;
-    console.log(props);
     const Bottom = React.cloneElement(
       props.diagramEngine
         .getFactoryForLink(this.props.link)

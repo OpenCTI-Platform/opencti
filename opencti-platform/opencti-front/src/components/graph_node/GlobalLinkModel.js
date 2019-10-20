@@ -25,6 +25,10 @@ export default class GlobalLinkModel extends LinkModel {
     this.curvyness = ob.curvyness;
   }
 
+  getPosition() {
+    return { x: this.x, y: this.y };
+  }
+
   addLabel(label) {
     if (label instanceof GlobalLabelModel) {
       return super.addLabel(label);
@@ -52,8 +56,8 @@ export default class GlobalLinkModel extends LinkModel {
     });
   }
 
-  setExtras(extras) {
-    this.extras = extras;
+  setExtras(data) {
+    this.data = data;
   }
 
   setLabel(label) {

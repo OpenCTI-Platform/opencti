@@ -282,7 +282,6 @@ class StixRelationEditionContainer extends Component {
       handleDelete,
       stixRelation,
       me,
-      variant,
       stixDomainEntity,
     } = this.props;
     const { editContext } = stixRelation;
@@ -536,7 +535,7 @@ class StixRelationEditionContainer extends Component {
           ) : (
             ''
           )}
-          {variant !== 'noGraph' ? (
+          {typeof handleDelete === 'function' ? (
             <Button
               variant="contained"
               onClick={handleDelete.bind(this)}
@@ -554,7 +553,6 @@ class StixRelationEditionContainer extends Component {
 }
 
 StixRelationEditionContainer.propTypes = {
-  variant: PropTypes.string,
   handleClose: PropTypes.func,
   handleDelete: PropTypes.func,
   classes: PropTypes.object,

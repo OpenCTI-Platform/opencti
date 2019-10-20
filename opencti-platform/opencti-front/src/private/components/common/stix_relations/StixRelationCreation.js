@@ -475,6 +475,7 @@ class StixRelationCreation extends Component {
       nsd, t, classes, from, to,
     } = this.props;
     const { existingRelations } = this.state;
+
     return (
       <div>
         <div className={classes.header}>

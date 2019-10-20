@@ -8,7 +8,7 @@ import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixRelationEditionOverview from './StixRelationEditionOverview';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '30%',
@@ -51,7 +51,6 @@ class StixRelationEdition extends Component {
       open,
       handleClose,
       handleDelete,
-      variant,
     } = this.props;
     return (
       <Drawer
@@ -68,12 +67,15 @@ class StixRelationEdition extends Component {
               if (props) {
                 return (
                   <StixRelationEditionOverview
-                    variant={variant}
                     me={props.me}
                     stixDomainEntity={stixDomainEntity}
                     stixRelation={props.stixRelation}
                     handleClose={handleClose.bind(this)}
-                    handleDelete={handleDelete.bind(this)}
+                    handleDelete={
+                      typeof handleDelete === 'function'
+                        ? handleDelete.bind(this)
+                        : null
+                    }
                   />
                 );
               }
@@ -81,7 +83,7 @@ class StixRelationEdition extends Component {
             }}
           />
         ) : (
-          ''
+          <div> &nbsp; </div>
         )}
       </Drawer>
     );
@@ -89,7 +91,6 @@ class StixRelationEdition extends Component {
 }
 
 StixRelationEdition.propTypes = {
-  variant: PropTypes.string,
   stixRelationId: PropTypes.string,
   stixDomainEntity: PropTypes.object,
   open: PropTypes.bool,

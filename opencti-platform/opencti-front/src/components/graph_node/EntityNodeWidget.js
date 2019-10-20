@@ -1,48 +1,36 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import { PortWidget } from 'storm-react-diagrams';
 import { withStyles } from '@material-ui/core/styles';
+import IconButton from '@material-ui/core/IconButton';
+import { Edit, Delete, Info } from '@material-ui/icons';
 import { itemColor } from '../../utils/Colors';
+import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../ItemIcon';
 
 const styles = () => ({
   node: {
     position: 'relative',
-    width: 80,
-    height: 80,
-    zIndex: 20,
-    borderRadius: '50%',
-    backgroundColor: '#303030',
-  },
-  circle: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
     width: 60,
     height: 60,
     zIndex: 20,
     borderRadius: '50%',
+    backgroundColor: '#303030',
   },
   icon: {
     margin: '0 auto',
     textAlign: 'center',
-    paddingTop: 10,
-  },
-  nameContainer: {
-    position: 'absolute',
-    top: 85,
-    left: '50%',
-    width: 120,
-    color: '#ffffff',
-    textAlign: 'center',
+    paddingTop: 12,
   },
   name: {
-    position: 'relative',
-    left: '-50%',
-    width: '100%',
+    width: 120,
+    position: 'absolute',
+    left: -30,
+    marginTop: 15,
     textAlign: 'center',
   },
-  portContainer: {
+  port: {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -52,6 +40,15 @@ const styles = () => ({
     border: 1,
     overflow: 'hidden',
   },
+  actions: {
+    display: 'flex',
+    position: 'absolute',
+    top: -25,
+    left: -10,
+    right: 0,
+    width: 80,
+    justifyContent: 'space-between',
+  },
 });
 
 class EntityNodeWidget extends Component {
@@ -60,40 +57,74 @@ class EntityNodeWidget extends Component {
     this.forceUpdate();
   }
 
+  handleEdit() {
+    this.props.node.setSelectedCustom(true, true);
+  }
+
+  handleRemove() {
+    this.props.node.setSelectedCustom(true, false, true);
+  }
+
   render() {
     const {
       node,
       node: { extras },
       classes,
     } = this.props;
+    const link = resolveLink(extras.type);
     return (
-      <div className={classes.node}>
+      <div
+        className={classes.node}
+        style={{
+          border: node.selected
+            ? '2px solid #00c0ff'
+            : `2px solid ${itemColor(extras.type, false)}`,
+        }}
+      >
+        <div className={classes.icon}>
+          <ItemIcon
+            type={extras.type}
+            color={itemColor(extras.type, false)}
+            size="large"
+          />
+        </div>
+        <div className={classes.name}>{extras.name}</div>
         <div
-          className={classes.circle}
-          style={{
-            border: node.selected
-              ? '2px solid #00c0ff'
-              : `2px solid ${itemColor(extras.type, false)}`,
-          }}
+          className={classes.port}
+          onClick={this.setSelected.bind(this)}
+          style={{ display: node.selected ? 'none' : 'block' }}
         >
-          <div className={classes.icon}>
-            <ItemIcon
-              type={extras.type}
-              color={itemColor(extras.type, false)}
-              size="large"
-            />
-          </div>
-          <div
-            className={classes.portContainer}
-            style={{ display: node.selected ? 'none' : 'block' }}
-            onClick={this.setSelected.bind(this)}
-          >
-            <PortWidget name="main" node={node} />
-          </div>
+          <PortWidget name="main" node={node} />
         </div>
-        <div className={classes.nameContainer}>
-          <div className={classes.name}>{extras.name}</div>
-        </div>
+        {node.selected ? (
+          <div className={classes.actions}>
+            <IconButton
+              aria-label="edit"
+              size="small"
+              onClick={this.handleEdit.bind(this, node)}
+            >
+              <Edit fontSize="small" />
+            </IconButton>
+            <IconButton
+              aria-label="delete"
+              size="small"
+              onClick={this.handleRemove.bind(this, node)}
+            >
+              <Delete fontSize="small" />
+            </IconButton>
+            <IconButton
+              aria-label="info"
+              size="small"
+              component={Link}
+              target="_blank"
+              to={`${link}/${extras.id}`}
+            >
+              <Info fontSize="small" />
+            </IconButton>
+          </div>
+        ) : (
+          ''
+        )}
       </div>
     );
   }

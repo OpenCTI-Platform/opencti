@@ -6,8 +6,8 @@ function mapElements(model) {
   return model.nodes.map((node) => ({
     id: node.id,
     metadata: {
-      width: node.type === 'entity' ? 80 : 65,
-      height: node.type === 'entity' ? 80 : 48,
+      width: node.type === 'entity' ? 60 : 65,
+      height: node.type === 'entity' ? 60 : 48,
       id: node.id,
     },
   }));

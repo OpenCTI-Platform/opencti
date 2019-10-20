@@ -172,13 +172,7 @@ export const commitWriteTx = async wTx => {
   try {
     await wTx.tx.commit();
   } catch (err) {
-    logger.error('[GRAKN] CommitWriteTx (retrying) error > ', err);
-    await sleep(5000);
-    try {
-      await wTx.tx.commit();
-    } catch (err2) {
-      logger.error('[GRAKN] CommitWriteTx error > ', err2);
-    }
+    logger.error('[GRAKN] CommitWriteTx error > ', err);
   }
 };
 
@@ -1220,10 +1214,8 @@ export const createRelation = async (id, input) => {
         ${
           // eslint-disable-next-line no-nested-ternary
           input.stix_id_key
-            ? input.stix_id_key === 'create'
-              ? `, has stix_id_key "relationship--${uuid()}"`
-              : `, has stix_id_key "${escapeString(input.stix_id_key)}"`
-            : ''
+            ? `, has stix_id_key "${escapeString(input.stix_id_key)}"`
+            : `, has stix_id_key "relationship--${uuid()}"`
         } ${
       input.first_seen
         ? `, has first_seen ${prepareDate(input.first_seen)}`

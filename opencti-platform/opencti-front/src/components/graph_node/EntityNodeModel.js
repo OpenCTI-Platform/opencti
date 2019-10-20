@@ -8,24 +8,25 @@ export default class EntityNodeModel extends NodeModel {
     this.extras = data;
   }
 
-  setSelected(selected) {
+  setSelectedCustom(selected, edit = false, remove = false) {
     this.selected = selected;
     this.iterateListeners((listener, event) => {
       if (listener.selectionChanged) {
-        listener.selectionChanged({ ...event, isSelected: selected });
+        listener.selectionChanged({
+          ...event,
+          edit,
+          remove,
+          isSelected: selected,
+        });
       }
     });
   }
 
+  setExtras(data) {
+    this.extras = data;
+  }
+
   getPosition() {
     return { x: this.x, y: this.y };
-  }
-
-  setExpandable(expandable) {
-    this.expandable = expandable;
-  }
-
-  getExpandable() {
-    return this.expandable;
   }
 }

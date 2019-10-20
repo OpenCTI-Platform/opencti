@@ -22,7 +22,7 @@ import {
   SubscriptionFocus,
 } from '../../../../components/Subscription';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',
@@ -96,7 +96,7 @@ export const stixDomainEntityEditionFocus = graphql`
   }
 `;
 
-const stixDomainEntityValidation = t => Yup.object().shape({
+const stixDomainEntityValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });
@@ -180,7 +180,7 @@ class StixDomainEntityEditionContainer extends Component {
                 <Field
                   name="name"
                   component={TextField}
-                  label={t('Last seen')}
+                  label={t('Name')}
                   fullWidth={true}
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
