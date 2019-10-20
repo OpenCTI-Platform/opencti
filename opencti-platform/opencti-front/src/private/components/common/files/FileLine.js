@@ -61,10 +61,10 @@ const FileLineComponent = (props) => {
     });
   };
   const handleRemoveFile = (name) => {
-    executeRemove(FileLineDeleteMutation, { fileName: name }, name);
+    executeRemove(FileLineDeleteMutation, { fileName: name });
   };
   const handleRemoveJob = (id) => {
-    executeRemove(FileLineAskDeleteMutation, { workId: id }, id);
+    executeRemove(FileLineAskDeleteMutation, { workId: id });
   };
   const askForImportJob = () => {
     commitMutation({
