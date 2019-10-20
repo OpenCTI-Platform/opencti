@@ -234,20 +234,6 @@ export const write = async query => {
   }
 };
 
-export const attributeExists = async attributeLabel => {
-  try {
-    const rTx = await takeReadTx();
-    const checkQuery = `match $x sub ${attributeLabel}; get;`;
-    logger.debug(`[GRAKN - infer: false] attributeExists > ${checkQuery}`);
-    await rTx.tx.query(checkQuery);
-    await closeReadTx(rTx);
-    return true;
-  } catch (err) {
-    logger.error('[GRAKN] attributeExists error > ', err);
-    return false;
-  }
-};
-
 /**
  * Recursive fetch of every types of a concept
  * @param concept the element
@@ -553,8 +539,8 @@ export const find = async (
   args = { forceReindex: false, withInference: false }
 ) => {
   const { forceReindex, withInference } = args;
-  const rTx = await takeReadTx();
   try {
+    const rTx = await takeReadTx();
     const conceptQueryVars = extractQueryVars(query);
     logger.debug(`[GRAKN - infer: ${withInference}] Find > ${query}`);
     const iterator = await rTx.tx.query(query, { withInference });
@@ -662,7 +648,6 @@ export const find = async (
     return result;
   } catch (err) {
     logger.error('[GRAKN] find error > ', err);
-    await closeReadTx(rTx);
     return [];
   }
 };
@@ -899,7 +884,9 @@ export const deleteEntityById = async id => {
 export const deleteById = async id => {
   const wTx = await takeWriteTx();
   try {
-    const query = `match $x has internal_id_key "${escapeString(id)}"; delete $x;`;
+    const query = `match $x has internal_id_key "${escapeString(
+      id
+    )}"; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteById > ${query}`);
     await wTx.tx.query(query, { infer: false });
     await commitWriteTx(wTx);
@@ -941,6 +928,7 @@ export const timeSeries = async (query, options) => {
       interval,
       inferred = true
     } = options;
+    const rTx = await takeReadTx();
     const finalQuery = `${query}; $x has ${field}_${interval} $g; get; group $g; ${operation};`;
     logger.debug(`[GRAKN - infer: ${inferred}] timeSeries > ${finalQuery}`);
     const iterator = await rTx.tx.query(finalQuery, { infer: inferred });
@@ -962,8 +950,8 @@ export const timeSeries = async (query, options) => {
 };
 
 export const distribution = async (query, options) => {
-  const rTx = await takeReadTx();
   try {
+    const rTx = await takeReadTx();
     const { startDate, endDate, operation, field, inferred = false } = options;
     const finalQuery = `${query}; ${
       startDate && endDate
@@ -987,7 +975,6 @@ export const distribution = async (query, options) => {
     return result;
   } catch (err) {
     logger.error('[GRAKN] distribution error > ', err);
-    await closeReadTx(rTx);
     return null;
   }
 };
@@ -1347,8 +1334,8 @@ export const getRelations = async (
   infer = false,
   enforceDirection = true
 ) => {
-  const rTx = await takeReadTx();
   try {
+    const rTx = await takeReadTx();
     logger.debug(`[GRAKN - infer: ${infer}] getRelations > ${query}`);
     const iterator = await rTx.tx.query(query, { infer });
     const answers = await iterator.collect();
