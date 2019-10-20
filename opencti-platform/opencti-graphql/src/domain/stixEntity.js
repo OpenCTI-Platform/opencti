@@ -16,7 +16,7 @@ export const markingDefinitions = (stixEntityId, args) =>
   paginate(
     `match $m isa Marking-Definition; 
     $rel(marking:$m, so:$x) isa object_marking_refs; 
-    $x has internal_id "${escapeString(stixEntityId)}"`,
+    $x has internal_id_key "${escapeString(stixEntityId)}"`,
     args,
     false,
     null,

@@ -36,7 +36,7 @@ export const findByEntity = args =>
   paginate(
     `match $m isa Marking-Definition; 
     $rel(marking:$m, so:$so) isa object_marking_refs; 
-    $so has internal_id "${escapeString(args.objectId)}"`,
+    $so has internal_id_key "${escapeString(args.objectId)}"`,
     args,
     false,
     null,
@@ -56,7 +56,7 @@ export const findByDefinition = args =>
 export const findByStixId = args =>
   paginate(
     `match $m isa Marking-Definition; 
-    $m has stix_id "${escapeString(args.stix_id)}"`,
+    $m has stix_id_key "${escapeString(args.stix_id_key)}"`,
     args,
     false
   );
@@ -65,16 +65,16 @@ export const findById = markingDefinitionId => getById(markingDefinitionId);
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
   const wTx = await takeWriteTx();
-  const internalId = markingDefinition.internal_id
-    ? escapeString(markingDefinition.internal_id)
+  const internalId = markingDefinition.internal_id_key
+    ? escapeString(markingDefinition.internal_id_key)
     : uuid();
   const markingDefinitionIterator = await wTx.tx
     .query(`insert $markingDefinition isa Marking-Definition,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "marking-definition",
-    has stix_id "${
-      markingDefinition.stix_id
-        ? escapeString(markingDefinition.stix_id)
+    has stix_id_key "${
+      markingDefinition.stix_id_key
+        ? escapeString(markingDefinition.stix_id_key)
         : `marking-definition--${uuid()}`
     }",
     has definition_type "${escapeString(markingDefinition.definition_type)}",
@@ -104,9 +104,9 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   if (markingDefinition.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createdMarkingDefinitionId};
-      $to has internal_id "${escapeString(markingDefinition.createdByRef)}";
+      $to has internal_id_key "${escapeString(markingDefinition.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id "${uuid()}";`
+      isa created_by_ref, has internal_id_key "${uuid()}";`
     );
   }
 

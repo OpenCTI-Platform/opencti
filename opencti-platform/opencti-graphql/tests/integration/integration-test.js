@@ -8,7 +8,7 @@ import applyMigration from '../../src/database/migration';
 beforeAll(async () => {
   await initializeSchema();
   return applyMigration();
-}, 60000);
+}, 120000);
 
 // Setup the configuration
 export const USER_ID = 'V1234';

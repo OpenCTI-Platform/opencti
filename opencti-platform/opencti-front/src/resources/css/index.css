@@ -14,7 +14,8 @@ input:-webkit-autofill:active {
   -webkit-animation: autofill 0s forwards;
   animation: autofill 0s forwards;
   -webkit-text-fill-color: #fff !important;
-  caret-color: #fff !important;
+  caret-color: transparent !important;
+  -webkit-box-shadow: 0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important;
 }
 
 @keyframes autofill {

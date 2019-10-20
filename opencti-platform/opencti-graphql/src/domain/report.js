@@ -107,7 +107,7 @@ export const findByEntity = args => {
           : ''
       }
       $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
-      $so has internal_id "${escapeString(args.objectId)}";
+      $so has internal_id_key "${escapeString(args.objectId)}";
       $relCreatedByRef(creator:$x, so:$r) isa created_by_ref`,
       finalArgs,
       true,
@@ -130,7 +130,7 @@ export const findByEntity = args => {
         : ''
     }
     $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
-    $so has internal_id "${escapeString(args.objectId)}"`,
+    $so has internal_id_key "${escapeString(args.objectId)}"`,
     args,
     true,
     null,
@@ -142,7 +142,7 @@ export const findByAuthor = args => {
   return paginate(
     `match $r isa Report; 
     $rel(so:$r, creator:$so) isa created_by_ref; 
-    $so has internal_id "${escapeString(args.authorId)}" ${
+    $so has internal_id_key "${escapeString(args.authorId)}" ${
       args.reportClass
         ? `; 
     $r has report_class "${escapeString(args.reportClass)}"`
@@ -159,7 +159,7 @@ export const reportsTimeSeriesByEntity = args =>
   timeSeries(
     `match $x isa Report;
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
-    $so has internal_id "${escapeString(args.objectId)}" ${
+    $so has internal_id_key "${escapeString(args.objectId)}" ${
       args.reportClass
         ? `; 
     $x has report_class "${escapeString(args.reportClass)}"`
@@ -172,7 +172,7 @@ export const reportsTimeSeriesByAuthor = args =>
   timeSeries(
     `match $x isa Report;
     $rel(so:$x, creator:$so) isa created_by_ref; 
-    $so has internal_id "${escapeString(args.authorId)}" ${
+    $so has internal_id_key "${escapeString(args.authorId)}" ${
       args.reportClass
         ? `; 
     $x has report_class "${escapeString(args.reportClass)}"`
@@ -185,7 +185,7 @@ export const reportsNumberByEntity = args => ({
   count: getSingleValueNumber(
     `match $x isa Report;
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
-    $so has internal_id "${escapeString(args.objectId)}" ${
+    $so has internal_id_key "${escapeString(args.objectId)}" ${
       args.reportClass
         ? `; 
     $x has report_class "${escapeString(args.reportClass)}"`
@@ -203,7 +203,7 @@ export const reportsNumberByEntity = args => ({
   total: getSingleValueNumber(
     `match $x isa Report;
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
-    $so has internal_id "${escapeString(args.objectId)}" ${
+    $so has internal_id_key "${escapeString(args.objectId)}" ${
       args.reportClass
         ? `; 
     $x has report_class "${escapeString(args.reportClass)}"`
@@ -219,7 +219,7 @@ export const reportsDistributionByEntity = args => {
   return distribution(
     `match $x isa Report; 
       $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
-      $so has internal_id "${escapeString(args.objectId)}"`,
+      $so has internal_id_key "${escapeString(args.objectId)}"`,
     args
   ).then(result => {
     if (args.order === 'asc') {
@@ -235,7 +235,7 @@ export const objectRefs = (reportId, args) =>
   paginate(
     `match $so isa Stix-Domain-Entity;
     $rel(so:$so, knowledge_aggregation:$r) isa object_refs;
-    $r has internal_id "${escapeString(reportId)}"`,
+    $r has internal_id_key "${escapeString(reportId)}"`,
     args
   );
 
@@ -243,7 +243,7 @@ export const observableRefs = (reportId, args) =>
   paginate(
     `match $so isa Stix-Observable; 
     $rel(so:$so, knowledge_aggregation:$r) isa object_refs; 
-    $r has internal_id "${escapeString(reportId)}"`,
+    $r has internal_id_key "${escapeString(reportId)}"`,
     args
   );
 
@@ -253,21 +253,21 @@ export const relationRefs = (reportId, args) =>
       args.relationType ? args.relationType : 'stix_relation'
     }; 
     $extraRel(so:$rel, knowledge_aggregation:$r) isa object_refs; 
-    $r has internal_id "${escapeString(reportId)}"`,
+    $r has internal_id_key "${escapeString(reportId)}"`,
     args,
     'extraRel'
   );
 
 export const addReport = async (user, report) => {
   const wTx = await takeWriteTx();
-  const internalId = report.internal_id
-    ? escapeString(report.internal_id)
+  const internalId = report.internal_id_key
+    ? escapeString(report.internal_id_key)
     : uuid();
   const reportIterator = await wTx.tx.query(`insert $report isa Report,
-    has internal_id "${internalId}",
+    has internal_id_key "${internalId}",
     has entity_type "report",
-    has stix_id "${
-      report.stix_id ? escapeString(report.stix_id) : `report--${uuid()}`
+    has stix_id_key "${
+      report.stix_id_key ? escapeString(report.stix_id_key) : `report--${uuid()}`
     }",
     has stix_label "",
     has alias "",
@@ -300,9 +300,9 @@ export const addReport = async (user, report) => {
   if (report.createdByRef) {
     await wTx.tx.query(
       `match $from id ${createdReportId};
-      $to has internal_id "${escapeString(report.createdByRef)}";
+      $to has internal_id_key "${escapeString(report.createdByRef)}";
       insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id "${uuid()}";`
+      isa created_by_ref, has internal_id_key "${uuid()}";`
     );
   }
 
@@ -310,8 +310,8 @@ export const addReport = async (user, report) => {
     const createMarkingDefinition = markingDefinition =>
       wTx.tx.query(
         `match $from id ${createdReportId}; 
-        $to has internal_id "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id "${uuid()}";`
+        $to has internal_id_key "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
       );
     const markingDefinitionsPromises = map(
       createMarkingDefinition,
