@@ -108,13 +108,13 @@ export const initiateJob = workId => {
   const jobInternalId = uuid();
   return index(WORK_INDEX, {
     id: jobInternalId,
+    internal_id_key: jobInternalId,
     grakn_id: jobInternalId,
     messages: ['Initiate work'],
     work_id: workId,
     created_at: now(),
     job_status: 'wait',
-    entity_type: 'Job',
-    internal_id_key: jobInternalId
+    entity_type: 'Job'
   });
 };
 
