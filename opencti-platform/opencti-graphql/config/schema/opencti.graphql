@@ -264,7 +264,7 @@ type ConnectorConfig {
 }
 type Connector {
   id: ID!
-  internal_id: ID!
+  internal_id_key: ID!
   name: String!
   active: Boolean
   connector_type: String!
@@ -276,7 +276,8 @@ type Connector {
 
 ### Files
 type Job {
-  internal_id: ID!
+  id: ID!
+  internal_id_key: ID!
   messages: [String]
   job_status: Status!
   created_at: DateTime!
@@ -284,7 +285,7 @@ type Job {
 }
 type Work {
   id: ID!
-  internal_id: ID!
+  internal_id_key: ID!
   jobs: [Job]
   status: Status!
   connector: Connector!

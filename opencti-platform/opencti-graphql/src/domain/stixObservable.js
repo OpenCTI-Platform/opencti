@@ -134,8 +134,8 @@ export const stixObservableAskEnrichment = async (id, connectorId) => {
   const connector = await getById(connectorId);
   const { job, work } = await createWork(connector, id);
   const message = {
-    work_id: work.internal_id,
-    job_id: job.internal_id,
+    work_id: work.internal_id_key,
+    job_id: job.internal_id_key,
     entity_id: id
   };
   await pushToConnector(connector, message);
