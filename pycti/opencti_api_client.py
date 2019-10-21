@@ -19,8 +19,9 @@ class OpenCTIApiClient:
         :param token: The API key
     """
 
-    def __init__(self, url, token, log_level='info'):
+    def __init__(self, url, token, log_level='info', ssl_verify=True):
         self.log_level = log_level
+        self.ssl_verify = ssl_verify
         # Configure logger
         numeric_level = getattr(logging, self.log_level.upper(), None)
         if not isinstance(numeric_level, int):
@@ -34,7 +35,7 @@ class OpenCTIApiClient:
         }
 
     def query(self, query, variables={}):
-        r = requests.post(self.api_url, json={'query': query, 'variables': variables}, headers=self.request_headers)
+        r = requests.post(self.api_url, json={'query': query, 'variables': variables}, headers=self.request_headers, verify=self.ssl_verify)
         if r.status_code == requests.codes.ok:
             result = r.json()
             if 'errors' in result:
