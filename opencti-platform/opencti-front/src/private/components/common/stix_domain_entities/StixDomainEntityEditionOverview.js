@@ -4,7 +4,19 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import {
-  compose, insert, find, propEq, pick,
+  compose,
+  insert,
+  find,
+  propEq,
+  pick,
+  pipe,
+  pathOr,
+  map,
+  assoc,
+  difference,
+  head,
+  union,
+  join,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -14,6 +26,7 @@ import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
+  fetchQuery,
   requestSubscription,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -21,6 +34,8 @@ import {
   SubscriptionAvatars,
   SubscriptionFocus,
 } from '../../../../components/Subscription';
+import Autocomplete from '../../../../components/Autocomplete';
+import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
 
 const styles = (theme) => ({
   header: {
@@ -96,12 +111,47 @@ export const stixDomainEntityEditionFocus = graphql`
   }
 `;
 
+const stixDomainEntityMutationRelationAdd = graphql`
+  mutation StixDomainEntityEditionOverviewRelationAddMutation(
+    $id: ID!
+    $input: RelationAddInput!
+  ) {
+    stixDomainEntityEdit(id: $id) {
+      relationAdd(input: $input) {
+        node {
+          ...StixDomainEntityEditionOverview_stixDomainEntity
+        }
+      }
+    }
+  }
+`;
+
+const stixDomainEntityMutationRelationDelete = graphql`
+  mutation StixDomainEntityEditionOverviewRelationDeleteMutation(
+    $id: ID!
+    $relationId: ID!
+  ) {
+    stixDomainEntityEdit(id: $id) {
+      relationDelete(relationId: $relationId) {
+        node {
+          ...StixDomainEntityEditionOverview_stixDomainEntity
+        }
+      }
+    }
+  }
+`;
+
 const stixDomainEntityValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });
 
 class StixDomainEntityEditionContainer extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { markingDefinitions: [] };
+  }
+
   componentDidMount() {
     const sub = requestSubscription({
       subscription,
@@ -114,6 +164,63 @@ class StixDomainEntityEditionContainer extends Component {
 
   componentWillUnmount() {
     this.state.sub.dispose();
+  }
+
+  searchMarkingDefinitions(event) {
+    fetchQuery(markingDefinitionsSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
+      const markingDefinitions = pipe(
+        pathOr([], ['markingDefinitions', 'edges']),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
+      )(data);
+      this.setState({
+        markingDefinitions: union(
+          this.state.markingDefinitions,
+          markingDefinitions,
+        ),
+      });
+    });
+  }
+
+  handleChangeMarkingDefinition(name, values) {
+    const { stixDomainEntity } = this.props;
+    const currentMarkingDefinitions = pipe(
+      pathOr([], ['markingDefinitions', 'edges']),
+      map((n) => ({
+        label: n.node.definition,
+        value: n.node.id,
+        relationId: n.relation.id,
+      })),
+    )(stixDomainEntity);
+
+    const added = difference(values, currentMarkingDefinitions);
+    const removed = difference(currentMarkingDefinitions, values);
+
+    if (added.length > 0) {
+      commitMutation({
+        mutation: stixDomainEntityMutationRelationAdd,
+        variables: {
+          id: head(added).value,
+          input: {
+            fromRole: 'marking',
+            toId: stixDomainEntity.id,
+            toRole: 'so',
+            through: 'object_marking_refs',
+          },
+        },
+      });
+    }
+
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: stixDomainEntityMutationRelationDelete,
+        variables: {
+          id: stixDomainEntity.id,
+          relationId: head(removed).relationId,
+        },
+      });
+    }
   }
 
   handleChangeFocus(name) {
@@ -153,7 +260,19 @@ class StixDomainEntityEditionContainer extends Component {
     const editUsers = missingMe
       ? insert(0, { name: me.email }, editContext)
       : editContext;
-    const initialValues = pick(['name', 'description'], stixDomainEntity);
+    const markingDefinitions = pipe(
+      pathOr([], ['markingDefinitions', 'edges']),
+      map((n) => ({
+        label: n.node.definition,
+        value: n.node.id,
+        relationId: n.relation.id,
+      })),
+    )(stixDomainEntity);
+    const initialValues = pipe(
+      assoc('alias', join(',', stixDomainEntity.alias)),
+      assoc('markingDefinitions', markingDefinitions),
+      pick(['name', 'alias', 'description', 'markingDefinitions']),
+    )(stixDomainEntity);
     return (
       <div>
         <div className={classes.header}>
@@ -194,6 +313,24 @@ class StixDomainEntityEditionContainer extends Component {
                   }
                 />
                 <Field
+                  name="alias"
+                  component={TextField}
+                  label={t('Aliases separated by commas')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows={4}
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="alias"
+                    />
+                  }
+                />
+                <Field
                   name="description"
                   component={TextField}
                   label={t('Description')}
@@ -208,6 +345,23 @@ class StixDomainEntityEditionContainer extends Component {
                       me={me}
                       users={editUsers}
                       fieldName="description"
+                    />
+                  }
+                />
+                <Field
+                  name="markingDefinitions"
+                  component={Autocomplete}
+                  multiple={true}
+                  label={t('Marking')}
+                  options={this.state.markingDefinitions}
+                  onInputChange={this.searchMarkingDefinitions.bind(this)}
+                  onChange={this.handleChangeMarkingDefinition.bind(this)}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="markingDefinitions"
                     />
                   }
                 />
@@ -233,10 +387,23 @@ const StixDomainEntityEditionFragment = createFragmentContainer(
   StixDomainEntityEditionContainer,
   {
     stixDomainEntity: graphql`
-      fragment StixDomainEntityEditionOverview_stixDomainEntity on StixEntity {
+      fragment StixDomainEntityEditionOverview_stixDomainEntity on StixDomainEntity {
         id
         name
         description
+        alias
+        markingDefinitions {
+          edges {
+            node {
+              id
+              definition
+              definition_type
+            }
+            relation {
+              id
+            }
+          }
+        }
         editContext {
           name
           focusOn

@@ -63,6 +63,7 @@
     "@storybook/react": "^5.2.4",
     "babel-core": "^6.26.3",
     "babel-runtime": "^6.26.0",
+    "core-js": "^2.6.10",
     "cross-env": "^6.0.3",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-config-airbnb-base": "^14.0.0",

@@ -764,20 +764,20 @@ class ReportKnowledgeGraphComponent extends Component {
           <AspectRatio />
         </IconButton>
         <IconButton
-          color="primary"
-          className={classes.icon}
-          onClick={this.distribute.bind(this, 'TB')}
-          style={{ left: 140 }}
+            color="primary"
+            className={classes.icon}
+            onClick={this.distribute.bind(this, 'LR')}
+            style={{ left: 140 }}
         >
-          <GraphOutline />
+          <GraphOutline style={{ transform: 'rotate(-90deg)' }} />
         </IconButton>
         <IconButton
           color="primary"
           className={classes.icon}
-          onClick={this.distribute.bind(this, 'LR')}
+          onClick={this.distribute.bind(this, 'TB')}
           style={{ left: 190 }}
         >
-          <GraphOutline style={{ transform: 'rotate(-90deg)' }} />
+          <GraphOutline />
         </IconButton>
         <DiagramWidget
           className={classes.canvas}

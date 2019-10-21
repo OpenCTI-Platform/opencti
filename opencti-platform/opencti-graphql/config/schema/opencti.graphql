@@ -408,6 +408,8 @@ interface StixDomainEntity {
   parent_type: String!
   description: String
   graph_data: String
+  editContext: [EditUserContext]
+  markingDefinitions: MarkingDefinitionConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   created_at: DateTime!
