@@ -11,7 +11,7 @@ import pytz
 
 import stix2
 from stix2 import ObjectPath, ObservationExpression, EqualityComparisonExpression, HashConstant
-from utils.constants import ObservableTypes, CustomProperties
+from pycti.utils.constants import ObservableTypes, CustomProperties
 
 datefinder.ValueError = ValueError, OverflowError
 utc = pytz.UTC

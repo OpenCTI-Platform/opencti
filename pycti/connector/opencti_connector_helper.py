@@ -11,8 +11,8 @@ import requests
 
 from typing import Callable, Dict, List
 from pika.exceptions import UnroutableError, NackError
-from api.opencti_api_client import OpenCTIApiClient
-from connector.opencti_connector import OpenCTIConnector
+from pycti.api.opencti_api_client import OpenCTIApiClient
+from pycti.connector.opencti_connector import OpenCTIConnector
 
 
 class ListenQueue(threading.Thread):
@@ -80,6 +80,7 @@ class OpenCTIConnectorHelper:
         Python API for OpenCTI connector
         :param config: Dict standard config
     """
+
     def __init__(self, config: dict):
         # Load API config
         self.opencti_url = os.getenv('OPENCTI_URL') or config['opencti']['url']
@@ -172,8 +173,8 @@ class OpenCTIConnectorHelper:
         # raise ValueError('The bundle is not a valid STIX2 JSON')
 
         # Prepare the message
-        if self.current_work_id is None:
-            raise ValueError('The job id must be specified')
+        #if self.current_work_id is None:
+        #    raise ValueError('The job id must be specified')
         message = {
             'job_id': job_id,
             'entities_types': entities_types,

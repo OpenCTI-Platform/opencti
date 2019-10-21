@@ -1,6 +1,6 @@
 import logging
 
-from connector.opencti_connector import OpenCTIConnector
+from pycti.connector.opencti_connector import OpenCTIConnector
 
 
 class OpenCTIApiConnector:
