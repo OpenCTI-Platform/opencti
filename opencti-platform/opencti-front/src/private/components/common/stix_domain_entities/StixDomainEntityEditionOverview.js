@@ -17,6 +17,7 @@ import {
   head,
   union,
   join,
+  split,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -143,6 +144,7 @@ const stixDomainEntityMutationRelationDelete = graphql`
 
 const stixDomainEntityValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  alias: Yup.string(),
   description: Yup.string(),
 });
 
@@ -243,7 +245,10 @@ class StixDomainEntityEditionContainer extends Component {
           mutation: stixDomainEntityMutationFieldPatch,
           variables: {
             id: this.props.stixDomainEntity.id,
-            input: { key: name, value },
+            input: {
+              key: name,
+              value: name === 'alias' ? split(',', value) : value,
+            },
           },
         });
       })
@@ -301,7 +306,6 @@ class StixDomainEntityEditionContainer extends Component {
                   component={TextField}
                   label={t('Name')}
                   fullWidth={true}
-                  style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
@@ -317,8 +321,6 @@ class StixDomainEntityEditionContainer extends Component {
                   component={TextField}
                   label={t('Aliases separated by commas')}
                   fullWidth={true}
-                  multiline={true}
-                  rows={4}
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
@@ -389,6 +391,7 @@ const StixDomainEntityEditionFragment = createFragmentContainer(
     stixDomainEntity: graphql`
       fragment StixDomainEntityEditionOverview_stixDomainEntity on StixDomainEntity {
         id
+        entity_type
         name
         description
         alias

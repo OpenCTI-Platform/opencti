@@ -637,8 +637,10 @@ class ReportKnowledgeGraphComponent extends Component {
       editEntityId: null,
       currentNode: null,
     });
-    fetchQuery(reportKnowledgeGraphStixEntityQuery, { id: editEntityId }).then(
-      (data) => {
+    setTimeout(() => {
+      fetchQuery(reportKnowledgeGraphStixEntityQuery, {
+        id: editEntityId,
+      }).then((data) => {
         const { stixEntity } = data;
         const model = this.props.engine.getDiagramModel();
         const nodeObject = model.getNode(currentNode);
@@ -649,8 +651,8 @@ class ReportKnowledgeGraphComponent extends Component {
           type: stixEntity.entity_type,
         });
         this.props.engine.repaintCanvas();
-      },
-    );
+      });
+    }, 1500);
   }
 
   handleCloseRelationEdition() {
@@ -660,8 +662,10 @@ class ReportKnowledgeGraphComponent extends Component {
       editRelationId: null,
       currentNode: null,
     });
-    fetchQuery(reportKnowledgeGraphRelationQuery, { id: editRelationId }).then(
-      (data) => {
+    setTimeout(() => {
+      fetchQuery(reportKnowledgeGraphRelationQuery, {
+        id: editRelationId,
+      }).then((data) => {
         const { stixRelation } = data;
         const model = this.props.engine.getDiagramModel();
         const nodeObject = model.getNode(currentNode);
@@ -673,8 +677,8 @@ class ReportKnowledgeGraphComponent extends Component {
           last_seen: stixRelation.last_seen,
         });
         this.props.engine.repaintCanvas();
-      },
-    );
+      });
+    }, 1500);
   }
 
   handleRemoveNode(node) {
@@ -764,10 +768,10 @@ class ReportKnowledgeGraphComponent extends Component {
           <AspectRatio />
         </IconButton>
         <IconButton
-            color="primary"
-            className={classes.icon}
-            onClick={this.distribute.bind(this, 'LR')}
-            style={{ left: 140 }}
+          color="primary"
+          className={classes.icon}
+          onClick={this.distribute.bind(this, 'LR')}
+          style={{ left: 140 }}
         >
           <GraphOutline style={{ transform: 'rotate(-90deg)' }} />
         </IconButton>

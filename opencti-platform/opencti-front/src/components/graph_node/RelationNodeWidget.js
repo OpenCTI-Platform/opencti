@@ -11,14 +11,17 @@ import inject18n from '../i18n';
 const styles = () => ({
   node: {
     position: 'relative',
-    textAlign: 'center',
     width: 70,
     height: 25,
-    lineHeight: '25px',
     zIndex: 20,
     borderRadius: 10,
-    fontSize: 11,
     backgroundColor: '#303030',
+  },
+  label: {
+    wdith: '100%',
+    lineHeight: '25px',
+    fontSize: 11,
+    textAlign: 'center',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
@@ -39,6 +42,7 @@ const styles = () => ({
     top: -25,
     left: 12,
     width: 50,
+    zIndex: 300,
     justifyContent: 'space-between',
   },
 });
@@ -86,7 +90,9 @@ class RelationNodeWidget extends Component {
             border: node.selected ? '2px solid #00c0ff' : '2px solid #9e9e9e',
           }}
         >
-          <strong>{t(`relation_${extras.type}`)}</strong>
+          <div className={classes.label}>
+            <strong>{t(`relation_${extras.type}`)}</strong>
+          </div>
           <div
             className={classes.port}
             style={{ display: node.selected ? 'none' : 'block' }}
