@@ -1,5 +1,6 @@
 import uuid from 'uuid/v4';
 import { assoc, map, filter, pipe } from 'ramda';
+import moment from 'moment';
 import { getById, now, sinceNowInMinutes } from '../database/grakn';
 import {
   elDeleteByField,
@@ -15,7 +16,7 @@ export const workToExportFile = work => {
     id: work.internal_id_key,
     name: work.work_file,
     size: 0,
-    lastModified: work.updated_at,
+    lastModified: moment(work.updated_at).toDate(),
     lastModifiedSinceMin: sinceNowInMinutes(work.updated_at),
     uploadStatus: 'progress',
     metaData: {
@@ -91,7 +92,7 @@ export const loadExportWorksAsProgressFiles = async entityId => {
     w => w.status === 'progress',
     worksWithStatus
   );
-  return map(item => workToExportFile(item.work), onlyProgressWorks);
+  return map(item => workToExportFile(item), onlyProgressWorks);
 };
 
 export const deleteWork = async workId => {
@@ -113,6 +114,7 @@ export const initiateJob = workId => {
     messages: ['Initiate work'],
     work_id: workId,
     created_at: now(),
+    updated_at: now(),
     job_status: 'wait',
     entity_type: 'Job'
   });
@@ -131,7 +133,8 @@ export const createWork = async (connector, entityId = null, fileId = null) => {
     work_entity: entityId,
     work_file: fileId,
     work_type: connector.connector_type,
-    created_at: now()
+    created_at: now(),
+    updated_at: now()
   });
   const createdJob = await initiateJob(workInternalId);
   return { work: createdWork, job: createdJob };

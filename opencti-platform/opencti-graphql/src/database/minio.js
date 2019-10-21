@@ -108,7 +108,7 @@ export const filesListing = async (first, category, entity = null) => {
     allFiles = concat(inExport, files);
   }
   const sortedFiles = sort(
-    (a, b) => b.lastModified.getTime() - a.lastModified.getTime(),
+    (a, b) => b.lastModified - a.lastModified,
     allFiles
   );
   const fileNodes = map(f => ({ node: f }), sortedFiles);

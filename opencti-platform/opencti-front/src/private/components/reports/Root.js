@@ -42,7 +42,7 @@ const reportQuery = graphql`
       ...ReportKnowledge_me
     }
     connectorsForExport {
-        ...FileManager_connectorsExport
+      ...FileManager_connectorsExport
     }
   }
 `;
@@ -111,25 +111,32 @@ class RootReport extends Component {
                       />
                     )}
                   />
-                  <Route exact path="/dashboard/reports/all/:reportId/observables"
+                  <Route
+                    exact
+                    path="/dashboard/reports/all/:reportId/observables"
                     render={(routeProps) => (
                       <ReportObservables {...routeProps} reportId={reportId} />
                     )}
                   />
-                  <Route exact path="/dashboard/reports/all/:reportId/files"
+                  <Route
+                    exact
+                    path="/dashboard/reports/all/:reportId/files"
                     render={(routeProps) => (
-                        <React.Fragment>
-                            <ReportHeader report={props.report} />
-                            <FileManager {...routeProps} id={reportId}
-                                         connectorsExport={props.connectorsForExport}
-                                         entity={props.report}/>
-                        </React.Fragment>
+                      <React.Fragment>
+                        <ReportHeader report={props.report} />
+                        <FileManager
+                          {...routeProps}
+                          id={reportId}
+                          connectorsExport={props.connectorsForExport}
+                          entity={props.report}
+                        />
+                      </React.Fragment>
                     )}
                   />
                 </div>
               );
             }
-            return <Loader/>;
+            return <Loader />;
           }}
         />
       </div>

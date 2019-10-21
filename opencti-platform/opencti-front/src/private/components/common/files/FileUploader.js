@@ -32,7 +32,9 @@ const FileUploader = (props) => {
   const handleOpenUpload = () => uploadRef.current.click();
   const handleUpload = (file) => {
     commitMutation({
-      mutation: entityId ? FileUploaderEntityMutation : FileUploaderGlobalMutation,
+      mutation: entityId
+        ? FileUploaderEntityMutation
+        : FileUploaderGlobalMutation,
       variables: { file, id: entityId },
       optimisticUpdater: () => {
         setUpload(file.name);
@@ -45,23 +47,44 @@ const FileUploader = (props) => {
       },
     });
   };
-  return <React.Fragment>
-    <input ref={uploadRef} type="file" style={{ display: 'none' }}
-      onChange={({ target: { validity, files: [file] } }) =>
-        // eslint-disable-next-line implicit-arrow-linebreak
-        validity.valid && handleUpload(file)
-    }/>
-    { upload ? <Tooltip title={`Uploading ${upload}`} aria-label={`Uploading ${upload}`}>
+  return (
+    <React.Fragment>
+      <input
+        ref={uploadRef}
+        type="file"
+        style={{ display: 'none' }}
+        onChange={({
+          target: {
+            validity,
+            files: [file],
+          },
+        }) =>
+          // eslint-disable-next-line implicit-arrow-linebreak
+          validity.valid && handleUpload(file)
+        }
+      />
+      {upload ? (
+        <Tooltip
+          title={`Uploading ${upload}`}
+          aria-label={`Uploading ${upload}`}
+        >
           <IconButton disabled={true}>
             <CircularProgress size={24} thickness={2} />
           </IconButton>
         </Tooltip>
-      : <Tooltip title="Select your file" aria-label="Select your file">
-      <IconButton onClick={handleOpenUpload} aria-haspopup="true" color="primary">
-        <CloudUpload/>
-      </IconButton>
-    </Tooltip>}
-</React.Fragment>;
+      ) : (
+        <Tooltip title="Select your file" aria-label="Select your file">
+          <IconButton
+            onClick={handleOpenUpload}
+            aria-haspopup="true"
+            color="primary"
+          >
+            <CloudUpload />
+          </IconButton>
+        </Tooltip>
+      )}
+    </React.Fragment>
+  );
 };
 
 FileUploader.propTypes = {

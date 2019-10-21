@@ -20,9 +20,15 @@ import {
   stixDomainEntityImportPush,
   stixDomainEntityAddRelations
 } from '../domain/stixDomainEntity';
-import { pubsub } from '../database/redis';
+import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { filesListing } from '../database/minio';
+import {
+  createdByRef,
+  markingDefinitions,
+  reports,
+  tags
+} from '../domain/stixEntity';
 
 const stixDomainEntityResolvers = {
   Query: {
@@ -54,7 +60,12 @@ const stixDomainEntityResolvers = {
       return 'Unknown';
     },
     importFiles: (entity, { first }) => filesListing(first, 'import', entity),
-    exportFiles: (entity, { first }) => filesListing(first, 'export', entity)
+    exportFiles: (entity, { first }) => filesListing(first, 'export', entity),
+    createdByRef: entity => createdByRef(entity.id),
+    editContext: entity => fetchEditContext(entity.id),
+    tags: (entity, args) => tags(entity.id, args),
+    reports: (entity, args) => reports(entity.id, args),
+    markingDefinitions: (entity, args) => markingDefinitions(entity.id, args)
   },
   Mutation: {
     stixDomainEntityEdit: (_, { id }, { user }) => ({
