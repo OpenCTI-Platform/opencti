@@ -11,7 +11,7 @@ import threading
 import ctypes
 
 from itertools import groupby
-from api.opencti_api_client import OpenCTIApiClient
+from pycti import OpenCTIApiClient
 
 
 class Consumer(threading.Thread):

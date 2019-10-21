@@ -21,11 +21,12 @@ const amqpExecute = execute => {
         return connection
           .createConfirmChannel()
           .then(channel => {
-            execute(channel)
+            return execute(channel)
               .then(response => {
                 channel.close();
                 connection.close();
                 resolve(response);
+                return true;
               })
               .catch(e => reject(e));
           })
@@ -125,8 +126,8 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
 
   // 03. bind queue for the each connector scope
   // eslint-disable-next-line prettier/prettier
-  await amqpExecute(c => c.bindQueue(
-      listenQueue, CONNECTOR_EXCHANGE, listenRouting(id))
+  await amqpExecute(c =>
+    c.bindQueue(listenQueue, CONNECTOR_EXCHANGE, listenRouting(id))
   );
 
   // 04. Create stix push queue

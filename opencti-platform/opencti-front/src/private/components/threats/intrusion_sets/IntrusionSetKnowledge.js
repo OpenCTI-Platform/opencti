@@ -36,7 +36,7 @@ class IntrusionSetKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/relations/:relationId"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixRelation
               entityId={intrusionSet.id}
               inversedRoles={inversedRoles}
@@ -47,7 +47,7 @@ class IntrusionSetKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/overview"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixDomainEntityKnowledge
               stixDomainEntityId={intrusionSet.id}
               stixDomainEntityType="intrusion-set"
@@ -58,13 +58,13 @@ class IntrusionSetKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/attribution"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
               entityId={intrusionSet.id}
               relationType="attributed-to"
-              targetEntityTypes={['Identity']}
+              targetEntityTypes={['Threat-Actor', 'Organization', 'User']}
               entityLink={link}
               creationIsFrom={true}
               {...routeProps}
@@ -74,7 +74,7 @@ class IntrusionSetKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/campaigns"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               entityId={intrusionSet.id}
               relationType="attributed-to"
@@ -88,7 +88,7 @@ class IntrusionSetKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/incidents"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
@@ -104,7 +104,7 @@ class IntrusionSetKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/malwares"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
@@ -120,7 +120,7 @@ class IntrusionSetKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/victimology"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
@@ -160,7 +160,7 @@ class IntrusionSetKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/ttp"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
@@ -177,7 +177,7 @@ class IntrusionSetKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/tools"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
@@ -193,7 +193,7 @@ class IntrusionSetKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/vulnerabilities"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
