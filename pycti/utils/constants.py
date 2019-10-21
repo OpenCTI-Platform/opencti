@@ -1,9 +1,10 @@
 """These are the custom STIX properties and observation types used internally by OpenCTI.
 
 """
+from enum import Enum
 
 
-class ObservableTypes:
+class ObservableTypes(Enum):
     """These are the possible values for OpenCTI's observable types.
 
     Use in conjuction with the STIX custom property 'x_opencti_observable_type'.
@@ -33,6 +34,11 @@ class ObservableTypes:
     WIN_SCHEDULED_TASK = "Windows-Scheduled-Task"
     X509_CERT_ISSUER = "X509-Certificate-Issuer"
     X509_CERT_SN = "X509-Certificate-Serial-Number"
+
+    @classmethod
+    def has_value(cls, value):
+        lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
+        return value in lower_attr
 
 
 class CustomProperties:

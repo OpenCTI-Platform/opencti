@@ -1,2 +1,2 @@
-from .opencti_api_client import OpenCTIApiClient
-from .opencti_connector_helper import OpenCTIConnectorHelper
+from api.opencti_api_client import OpenCTIApiClient
+from connector.opencti_connector_helper import OpenCTIConnectorHelper

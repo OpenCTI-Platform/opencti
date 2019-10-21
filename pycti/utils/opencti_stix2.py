@@ -3,13 +3,15 @@
 import time
 import datetime
 import logging
+from typing import List
+
 import datefinder
 import dateutil.parser
 import pytz
 
 import stix2
 from stix2 import ObjectPath, ObservationExpression, EqualityComparisonExpression, HashConstant
-from pycti.constants import ObservableTypes, CustomProperties
+from utils.constants import ObservableTypes, CustomProperties
 
 datefinder.ValueError = ValueError, OverflowError
 utc = pytz.UTC
@@ -52,9 +54,10 @@ class OpenCTIStix2:
 
     def filter_objects(self, uuids, objects):
         result = []
-        for object in objects:
-            if 'id' in object and object['id'] not in uuids:
-                result.append(object)
+        if objects is not None:
+            for object in objects:
+                if 'id' in object and object['id'] not in uuids:
+                    result.append(object)
         return result
 
     def prepare_export(self, entity, stix_object, mode='simple'):
@@ -72,7 +75,7 @@ class OpenCTIStix2:
                 identity_class = entity_created_by_ref['entity_type']
 
             created_by_ref = dict()
-            created_by_ref['id'] = entity_created_by_ref['stix_id']
+            created_by_ref['id'] = entity_created_by_ref['stix_id_key']
             created_by_ref['type'] = 'identity'
             created_by_ref['name'] = entity_created_by_ref['name']
             created_by_ref['identity_class'] = identity_class
@@ -82,7 +85,7 @@ class OpenCTIStix2:
                 created_by_ref['labels'] = ['identity']
             created_by_ref['created'] = self.format_date(entity_created_by_ref['created'])
             created_by_ref['modified'] = self.format_date(entity_created_by_ref['modified'])
-            if self.not_empty(entity_created_by_ref['alias']): 
+            if self.not_empty(entity_created_by_ref['alias']):
                 created_by_ref[CustomProperties.ALIASES] = entity_created_by_ref['alias']
             created_by_ref[CustomProperties.IDENTITY_TYPE] = entity_created_by_ref['entity_type']
             created_by_ref[CustomProperties.ID] = entity_created_by_ref['id']
@@ -93,7 +96,7 @@ class OpenCTIStix2:
             marking_definitions = []
             for entity_marking_definition in entity['markingDefinitions']:
                 marking_definition = {
-                    'id': entity_marking_definition['stix_id'],
+                    'id': entity_marking_definition['stix_id_key'],
                     'type': 'marking-definition',
                     'definition_type': entity_marking_definition['definition_type'],
                     'definition': {
@@ -110,7 +113,7 @@ class OpenCTIStix2:
             kill_chain_phases = []
             for entity_kill_chain_phase in entity['killChainPhases']:
                 kill_chain_phase = {
-                    'id': entity_kill_chain_phase['stix_id'],
+                    'id': entity_kill_chain_phase['stix_id_key'],
                     'kill_chain_name': entity_kill_chain_phase['kill_chain_name'],
                     'phase_name': entity_kill_chain_phase['phase_name'],
                     CustomProperties.ID: entity_kill_chain_phase['id'],
@@ -124,7 +127,7 @@ class OpenCTIStix2:
             external_references = []
             for entity_external_reference in entity['externalReferences']:
                 external_reference = {
-                    'id': entity_external_reference['stix_id'],
+                    'id': entity_external_reference['stix_id_key'],
                     'source_name': entity_external_reference['source_name'],
                     'description': entity_external_reference['description'],
                     'url': entity_external_reference['url'],
@@ -140,17 +143,17 @@ class OpenCTIStix2:
             object_refs = []
             objects_to_get = entity['objectRefs']
             for entity_object_ref in entity['objectRefs']:
-                object_refs.append(entity_object_ref['stix_id'])
+                object_refs.append(entity_object_ref['stix_id_key'])
             if 'observableRefs' in entity and len(entity['observableRefs']) > 0:
                 observables_to_get = entity['observableRefs']
                 for entity_observable_ref in entity['observableRefs']:
-                    if entity_observable_ref['stix_id'] not in object_refs:
-                        object_refs.append(entity_observable_ref['stix_id'])
+                    if entity_observable_ref['stix_id_key'] not in object_refs:
+                        object_refs.append(entity_observable_ref['stix_id_key'])
             if 'relationRefs' in entity and len(entity['relationRefs']) > 0:
                 relations_to_get = entity['relationRefs']
                 for entity_relation_ref in entity['relationRefs']:
-                    if entity_relation_ref['stix_id'] not in object_refs:
-                        object_refs.append(entity_relation_ref['stix_id'])
+                    if entity_relation_ref['stix_id_key'] not in object_refs:
+                        object_refs.append(entity_relation_ref['stix_id_key'])
             stix_object['object_refs'] = object_refs
 
         result.append(stix_object)
@@ -278,7 +281,7 @@ class OpenCTIStix2:
         return result
 
     def import_object(self, stix_object, update=False):
-        logging.info('Importing a ' + stix_object['type'])
+        logging.info('Importing a ' + stix_object['type'] + ' (id: ' + stix_object['id'] + ')')
         # Reports
         reports = {}
         # Created By Ref
@@ -288,7 +291,7 @@ class OpenCTIStix2:
             if created_by_ref in self.mapping_cache:
                 created_by_ref_result = self.mapping_cache[created_by_ref]
             else:
-                created_by_ref_result = self.opencti.get_stix_domain_entity_by_stix_id(created_by_ref)
+                created_by_ref_result = self.opencti.get_stix_entity_by_stix_id_key(created_by_ref)
             if created_by_ref_result is not None:
                 self.mapping_cache[created_by_ref] = {'id': created_by_ref_result['id']}
                 created_by_ref_id = created_by_ref_result['id']
@@ -300,7 +303,7 @@ class OpenCTIStix2:
                 if object_marking_ref in self.mapping_cache:
                     object_marking_ref_result = self.mapping_cache[object_marking_ref]
                 else:
-                    object_marking_ref_result = self.opencti.get_marking_definition_by_stix_id(object_marking_ref)
+                    object_marking_ref_result = self.opencti.get_marking_definition_by_stix_id_key(object_marking_ref)
                 if object_marking_ref_result is not None:
                     self.mapping_cache[object_marking_ref] = {'id': object_marking_ref_result['id']}
                     marking_definitions_ids.append(object_marking_ref_result['id'])
@@ -324,8 +327,10 @@ class OpenCTIStix2:
                         external_reference['description'] if 'description' in external_reference else None,
                         external_reference['id'] if 'id' in external_reference else None,
                         external_reference[CustomProperties.ID] if CustomProperties.ID in external_reference else None,
-                        external_reference[CustomProperties.CREATED] if CustomProperties.CREATED in external_reference else None,
-                        external_reference[CustomProperties.MODIFIED] if CustomProperties.MODIFIED in external_reference else None,
+                        external_reference[
+                            CustomProperties.CREATED] if CustomProperties.CREATED in external_reference else None,
+                        external_reference[
+                            CustomProperties.MODIFIED] if CustomProperties.MODIFIED in external_reference else None,
                     )['id']
                 self.mapping_cache[url] = {'id': external_reference_id}
                 external_references_ids.append(external_reference_id)
@@ -392,8 +397,10 @@ class OpenCTIStix2:
                             CustomProperties.PHASE_ORDER] if CustomProperties.PHASE_ORDER in kill_chain_phase else 0,
                         kill_chain_phase[CustomProperties.ID] if CustomProperties.ID in kill_chain_phase else None,
                         kill_chain_phase['id'] if 'id' in kill_chain_phase else None,
-                        kill_chain_phase[CustomProperties.CREATED] if CustomProperties.CREATED in kill_chain_phase else None,
-                        kill_chain_phase[CustomProperties.MODIFIED] if CustomProperties.MODIFIED in kill_chain_phase else None,
+                        kill_chain_phase[
+                            CustomProperties.CREATED] if CustomProperties.CREATED in kill_chain_phase else None,
+                        kill_chain_phase[
+                            CustomProperties.MODIFIED] if CustomProperties.MODIFIED in kill_chain_phase else None,
                     )['id']
                 self.mapping_cache[kill_chain_phase['phase_name']] = {'id': kill_chain_phase_id}
                 kill_chain_phases_ids.append(kill_chain_phase_id)
@@ -404,9 +411,9 @@ class OpenCTIStix2:
                 if object_ref in self.mapping_cache:
                     object_ref_result = self.mapping_cache[object_ref]
                 elif 'relationship' in object_ref:
-                    object_ref_result = self.opencti.get_stix_relation_by_stix_id(object_ref)
+                    object_ref_result = self.opencti.get_stix_relation_by_stix_id_key(object_ref)
                 else:
-                    object_ref_result = self.opencti.get_stix_domain_entity_by_stix_id(object_ref)
+                    object_ref_result = self.opencti.get_stix_entity_by_stix_id_key(object_ref)
 
                 if object_ref_result is not None:
                     self.mapping_cache[object_ref] = {'id': object_ref_result['id']}
@@ -427,7 +434,8 @@ class OpenCTIStix2:
             'report': self.create_report,
             'indicator': self.create_indicator,
         }
-        do_import = importer.get(stix_object['type'], lambda stix_object, update: self.unknown_type(stix_object, update))
+        do_import = importer.get(stix_object['type'],
+                                 lambda stix_object, update: self.unknown_type(stix_object, update))
         stix_object_result = do_import(stix_object, update)
 
         # Add embedded relationships
@@ -464,7 +472,8 @@ class OpenCTIStix2:
             for external_reference_id in external_references_ids:
                 self.opencti.add_external_reference_if_not_exists(stix_object_result['id'], external_reference_id)
                 if external_reference_id in reports:
-                    self.opencti.add_object_ref_to_report_if_not_exists(reports[external_reference_id], stix_object_result['id'])
+                    self.opencti.add_object_ref_to_report_if_not_exists(reports[external_reference_id],
+                                                                        stix_object_result['id'])
 
             # Add kill chain phases
             for kill_chain_phase_id in kill_chain_phases_ids:
@@ -502,7 +511,7 @@ class OpenCTIStix2:
             identity_class = 'organization'
 
         identity = dict()
-        identity['id'] = entity['stix_id']
+        identity['id'] = entity['stix_id_key']
         identity['type'] = 'identity'
         identity['name'] = entity['name']
         identity['identity_class'] = identity_class
@@ -541,12 +550,13 @@ class OpenCTIStix2:
             stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
-            stix_object['modified'] if 'modified' in stix_object else None
+            stix_object['modified'] if 'modified' in stix_object else None,
+            update
         )
 
     def export_threat_actor(self, entity):
         threat_actor = dict()
-        threat_actor['id'] = entity['stix_id']
+        threat_actor['id'] = entity['stix_id_key']
         threat_actor['type'] = 'threat-actor'
         threat_actor['name'] = entity['name']
         if self.not_empty(entity['stix_label']):
@@ -558,7 +568,8 @@ class OpenCTIStix2:
         if self.not_empty(entity['goal']): threat_actor['goals'] = entity['goal']
         if self.not_empty(entity['sophistication']): threat_actor['sophistication'] = entity['sophistication']
         if self.not_empty(entity['resource_level']): threat_actor['resource_level'] = entity['resource_level']
-        if self.not_empty(entity['primary_motivation']): threat_actor['primary_motivation'] = entity['primary_motivation']
+        if self.not_empty(entity['primary_motivation']): threat_actor['primary_motivation'] = entity[
+            'primary_motivation']
         if self.not_empty(entity['secondary_motivation']): threat_actor['secondary_motivations'] = entity[
             'secondary_motivation']
         threat_actor['created'] = self.format_date(entity['created'])
@@ -580,11 +591,12 @@ class OpenCTIStix2:
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
+            update
         )
 
     def export_intrusion_set(self, entity):
         intrusion_set = dict()
-        intrusion_set['id'] = entity['stix_id']
+        intrusion_set['id'] = entity['stix_id_key']
         intrusion_set['type'] = 'intrusion-set'
         intrusion_set['name'] = entity['name']
         if self.not_empty(entity['stix_label']):
@@ -596,10 +608,14 @@ class OpenCTIStix2:
         if self.not_empty(entity['goal']): intrusion_set['goals'] = entity['goal']
         if self.not_empty(entity['sophistication']): intrusion_set['sophistication'] = entity['sophistication']
         if self.not_empty(entity['resource_level']): intrusion_set['resource_level'] = entity['resource_level']
-        if self.not_empty(entity['primary_motivation']): intrusion_set['primary_motivation'] = entity['primary_motivation']
-        if self.not_empty(entity['secondary_motivation']): intrusion_set['secondary_motivations'] = entity['secondary_motivation']
-        if self.not_empty(entity['first_seen']): intrusion_set[CustomProperties.FIRST_SEEN] = self.format_date(entity['first_seen'])
-        if self.not_empty(entity['last_seen']): intrusion_set[CustomProperties.LAST_SEEN] = self.format_date(entity['last_seen'])
+        if self.not_empty(entity['primary_motivation']): intrusion_set['primary_motivation'] = entity[
+            'primary_motivation']
+        if self.not_empty(entity['secondary_motivation']): intrusion_set['secondary_motivations'] = entity[
+            'secondary_motivation']
+        if self.not_empty(entity['first_seen']): intrusion_set[CustomProperties.FIRST_SEEN] = self.format_date(
+            entity['first_seen'])
+        if self.not_empty(entity['last_seen']): intrusion_set[CustomProperties.LAST_SEEN] = self.format_date(
+            entity['last_seen'])
         intrusion_set['created'] = self.format_date(entity['created'])
         intrusion_set['modified'] = self.format_date(entity['modified'])
         intrusion_set[CustomProperties.ID] = entity['id']
@@ -620,11 +636,12 @@ class OpenCTIStix2:
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
+            update
         )
 
     def export_campaign(self, entity):
         campaign = dict()
-        campaign['id'] = entity['stix_id']
+        campaign['id'] = entity['stix_id_key']
         campaign['type'] = 'campaign'
         campaign['name'] = entity['name']
         if self.not_empty(entity['stix_label']):
@@ -634,8 +651,10 @@ class OpenCTIStix2:
         if self.not_empty(entity['alias']): campaign['aliases'] = entity['alias']
         if self.not_empty(entity['description']): campaign['description'] = entity['description']
         if self.not_empty(entity['objective']): campaign['objective'] = entity['objective']
-        if self.not_empty(entity['first_seen']): campaign[CustomProperties.FIRST_SEEN] = self.format_date(entity['first_seen'])
-        if self.not_empty(entity['last_seen']): campaign[CustomProperties.LAST_SEEN] = self.format_date(entity['last_seen'])
+        if self.not_empty(entity['first_seen']): campaign[CustomProperties.FIRST_SEEN] = self.format_date(
+            entity['first_seen'])
+        if self.not_empty(entity['last_seen']): campaign[CustomProperties.LAST_SEEN] = self.format_date(
+            entity['last_seen'])
         campaign['created'] = self.format_date(entity['created'])
         campaign['modified'] = self.format_date(entity['modified'])
         campaign[CustomProperties.ID] = entity['id']
@@ -652,11 +671,12 @@ class OpenCTIStix2:
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
+            update
         )
 
     def export_incident(self, entity):
         incident = dict()
-        incident['id'] = entity['stix_id']
+        incident['id'] = entity['stix_id_key']
         incident['type'] = 'x-opencti-incident'
         incident['name'] = entity['name']
         if self.not_empty(entity['stix_label']):
@@ -684,11 +704,12 @@ class OpenCTIStix2:
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
+            update
         )
 
     def export_malware(self, entity):
         malware = dict()
-        malware['id'] = entity['stix_id']
+        malware['id'] = entity['stix_id_key']
         malware['type'] = 'malware'
         malware['name'] = entity['name']
         if self.not_empty(entity['stix_label']):
@@ -711,11 +732,12 @@ class OpenCTIStix2:
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
+            update
         )
 
     def export_tool(self, entity):
         tool = dict()
-        tool['id'] = entity['stix_id']
+        tool['id'] = entity['stix_id_key']
         tool['type'] = 'tool'
         tool['name'] = entity['name']
         if self.not_empty(entity['stix_label']):
@@ -738,11 +760,12 @@ class OpenCTIStix2:
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
+            update
         )
 
     def export_vulnerability(self, entity):
         vulnerability = dict()
-        vulnerability['id'] = entity['stix_id']
+        vulnerability['id'] = entity['stix_id_key']
         vulnerability['type'] = 'vulnerability'
         vulnerability['name'] = entity['name']
         if self.not_empty(entity['stix_label']):
@@ -764,11 +787,12 @@ class OpenCTIStix2:
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
+            update
         )
 
     def export_attack_pattern(self, entity):
         attack_pattern = dict()
-        attack_pattern['id'] = entity['stix_id']
+        attack_pattern['id'] = entity['stix_id_key']
         attack_pattern['type'] = 'attack-pattern'
         attack_pattern['name'] = entity['name']
         if self.not_empty(entity['stix_label']):
@@ -779,13 +803,14 @@ class OpenCTIStix2:
         attack_pattern['created'] = self.format_date(entity['created'])
         attack_pattern['modified'] = self.format_date(entity['modified'])
         if self.not_empty(entity['platform']): attack_pattern['x_mitre_platforms'] = entity['platform']
-        if self.not_empty(entity['required_permission']): attack_pattern['x_mitre_permissions_required'] = entity['required_permission']
+        if self.not_empty(entity['required_permission']): attack_pattern['x_mitre_permissions_required'] = entity[
+            'required_permission']
         if self.not_empty(entity['alias']): attack_pattern[CustomProperties.ALIASES] = entity['alias']
         attack_pattern[CustomProperties.ID] = entity['id']
         return self.prepare_export(entity, attack_pattern)
 
     def create_attack_pattern(self, stix_object, update=False):
-        attack_pattern = self.opencti.create_attack_pattern_if_not_exists(
+        return self.opencti.create_attack_pattern_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['x_mitre_platforms'] if 'x_mitre_platforms' in stix_object else None,
@@ -794,20 +819,12 @@ class OpenCTIStix2:
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
+            update
         )
-        if update:
-            self.opencti.update_stix_domain_entity_field(attack_pattern['id'], 'name', stix_object['name'])
-            if 'description' in stix_object:
-                self.opencti.update_stix_domain_entity_field(attack_pattern['id'], 'description', stix_object['description'])
-            if 'x_mitre_platforms' in stix_object:
-                self.opencti.update_stix_domain_entity_field(attack_pattern['id'], 'platform', stix_object['x_mitre_platforms'])
-            if 'x_mitre_permissions_required' in stix_object:
-                self.opencti.update_stix_domain_entity_field(attack_pattern['id'], 'required_permission', stix_object['x_mitre_permissions_required'])
-        return attack_pattern
 
     def export_course_of_action(self, entity):
         course_of_action = dict()
-        course_of_action['id'] = entity['stix_id']
+        course_of_action['id'] = entity['stix_id_key']
         course_of_action['type'] = 'course-of-action'
         course_of_action['name'] = entity['name']
         if self.not_empty(entity['stix_label']):
@@ -822,23 +839,19 @@ class OpenCTIStix2:
         return self.prepare_export(entity, course_of_action)
 
     def create_course_of_action(self, stix_object, update=False):
-        course_of_action = self.opencti.create_course_of_action_if_not_exists(
+        return self.opencti.create_course_of_action_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
             stix_object['modified'] if 'modified' in stix_object else None,
+            update
         )
-        if update:
-            self.opencti.update_stix_domain_entity_field(course_of_action['id'], 'name', stix_object['name'])
-            if 'description' in stix_object:
-                self.opencti.update_stix_domain_entity_field(course_of_action['id'], 'description', stix_object['description'])
-        return course_of_action
 
     def export_report(self, entity, mode='simple'):
         report = dict()
-        report['id'] = entity['stix_id']
+        report['id'] = entity['stix_id_key']
         report['type'] = 'report'
         report['name'] = entity['name']
         if self.not_empty(entity['stix_label']):
@@ -852,7 +865,8 @@ class OpenCTIStix2:
         if self.not_empty(entity['alias']): report[CustomProperties.ALIASES] = entity['alias']
         if self.not_empty(entity['report_class']): report[CustomProperties.REPORT_CLASS] = entity['report_class']
         if self.not_empty(entity['object_status']): report[CustomProperties.OBJECT_STATUS] = entity['object_status']
-        if self.not_empty(entity['source_confidence_level']): report[CustomProperties.SRC_CONF_LEVEL] = entity['source_confidence_level']
+        if self.not_empty(entity['source_confidence_level']): report[CustomProperties.SRC_CONF_LEVEL] = entity[
+            'source_confidence_level']
         if self.not_empty(entity['graph_data']): report[CustomProperties.GRAPH_DATA] = entity['graph_data']
         report[CustomProperties.ID] = entity['id']
         return self.prepare_export(entity, report, mode)
@@ -862,7 +876,8 @@ class OpenCTIStix2:
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             stix_object['published'] if 'published' in stix_object else '',
-            stix_object[CustomProperties.REPORT_CLASS] if CustomProperties.REPORT_CLASS in stix_object else 'Threat Report',
+            stix_object[
+                CustomProperties.REPORT_CLASS] if CustomProperties.REPORT_CLASS in stix_object else 'Threat Report',
             stix_object[CustomProperties.OBJECT_STATUS] if CustomProperties.OBJECT_STATUS in stix_object else 0,
             stix_object[CustomProperties.SRC_CONF_LEVEL] if CustomProperties.SRC_CONF_LEVEL in stix_object else 3,
             stix_object[CustomProperties.GRAPH_DATA] if CustomProperties.GRAPH_DATA in stix_object else '',
@@ -874,7 +889,7 @@ class OpenCTIStix2:
 
     def export_stix_observable(self, entity):
         stix_observable = dict()
-        stix_observable['id'] = entity['stix_id']
+        stix_observable['id'] = entity['stix_id_key']
         stix_observable['type'] = 'indicator'
         stix_observable['name'] = 'Indicator'
         if self.not_empty(entity['description']): stix_observable['description'] = entity['description']
@@ -932,28 +947,32 @@ class OpenCTIStix2:
                 stix_object['id'] if 'id' in stix_object else None,
                 stix_object['created'] if 'created' in stix_object else None,
                 stix_object['modified'] if 'modified' in stix_object else None,
+                update
             )
         else:
             # log that the indicator could not be parsed
-            logging.info("  Cannot handle indicator: {id}".format(id=stix_object['stix_id']))
+            logging.info("  Cannot handle indicator: {id}".format(id=stix_object['stix_id_key']))
 
         return None
 
     def export_stix_relation(self, entity):
         stix_relation = dict()
-        stix_relation['id'] = entity['stix_id']
+        stix_relation['id'] = entity['stix_id_key']
         stix_relation['type'] = 'relationship'
         stix_relation['relationship_type'] = entity['relationship_type']
         if self.not_empty(entity['description']): stix_relation['description'] = entity['description']
-        stix_relation['source_ref'] = entity['from']['stix_id']
-        stix_relation['target_ref'] = entity['to']['stix_id']
+        stix_relation['source_ref'] = entity['from']['stix_id_key']
+        stix_relation['target_ref'] = entity['to']['stix_id_key']
         stix_relation[CustomProperties.SOURCE_REF] = entity['from']['id']
         stix_relation[CustomProperties.TARGET_REF] = entity['to']['id']
         stix_relation['created'] = self.format_date(entity['created'])
         stix_relation['modified'] = self.format_date(entity['modified'])
-        if self.not_empty(entity['first_seen']): stix_relation[CustomProperties.FIRST_SEEN] = self.format_date(entity['first_seen'])
-        if self.not_empty(entity['last_seen']): stix_relation[CustomProperties.LAST_SEEN] = self.format_date(entity['last_seen'])
-        if self.not_empty(entity['expiration']): stix_relation[CustomProperties.EXPIRATION] = self.format_date(entity['expiration'])
+        if self.not_empty(entity['first_seen']): stix_relation[CustomProperties.FIRST_SEEN] = self.format_date(
+            entity['first_seen'])
+        if self.not_empty(entity['last_seen']): stix_relation[CustomProperties.LAST_SEEN] = self.format_date(
+            entity['last_seen'])
+        if self.not_empty(entity['expiration']): stix_relation[CustomProperties.EXPIRATION] = self.format_date(
+            entity['expiration'])
         if self.not_empty(entity['weight']): stix_relation[CustomProperties.WEIGHT] = entity['weight']
         if self.not_empty(entity['role_played']): stix_relation[CustomProperties.ROLE_PLAYED] = entity['role_played']
         if self.not_empty(entity['score']): stix_relation[CustomProperties.SCORE] = entity['score']
@@ -962,7 +981,7 @@ class OpenCTIStix2:
 
     def import_relationship(self, stix_relation, update=False):
         # Check relation
-        stix_relation_result = self.opencti.get_stix_relation_by_stix_id(stix_relation['id'])
+        stix_relation_result = self.opencti.get_stix_relation_by_stix_id_key(stix_relation['id'])
         if stix_relation_result is not None:
             return stix_relation_result
 
@@ -972,12 +991,13 @@ class OpenCTIStix2:
             source_type = self.mapping_cache[stix_relation['source_ref']]['type']
         else:
             if CustomProperties.SOURCE_REF in stix_relation:
-                stix_object_result = self.opencti.get_stix_domain_entity_by_id(stix_relation[CustomProperties.SOURCE_REF])
+                stix_object_result = self.opencti.get_stix_domain_entity_by_id(
+                    stix_relation[CustomProperties.SOURCE_REF])
             else:
-                stix_object_result = self.opencti.get_stix_domain_entity_by_stix_id(stix_relation['source_ref'])
+                stix_object_result = self.opencti.get_stix_entity_by_stix_id_key(stix_relation['source_ref'])
             if stix_object_result is not None:
                 source_id = stix_object_result['id']
-                source_type = stix_object_result['entity_type'] if stix_relation['relationship_type'] != 'indicates' else 'observable'
+                source_type = stix_object_result['entity_type']
             else:
                 logging.error('Source ref of the relationship not found, doing nothing...')
                 return None
@@ -987,9 +1007,10 @@ class OpenCTIStix2:
             target_type = self.mapping_cache[stix_relation['target_ref']]['type']
         else:
             if CustomProperties.TARGET_REF in stix_relation:
-                stix_object_result = self.opencti.get_stix_domain_entity_by_id(stix_relation[CustomProperties.TARGET_REF])
+                stix_object_result = self.opencti.get_stix_domain_entity_by_id(
+                    stix_relation[CustomProperties.TARGET_REF])
             else:
-                stix_object_result = self.opencti.get_stix_domain_entity_by_stix_id(stix_relation['target_ref'])
+                stix_object_result = self.opencti.get_stix_entity_by_stix_id_key(stix_relation['target_ref'])
             if stix_object_result is not None:
                 target_id = stix_object_result['id']
                 target_type = stix_object_result['entity_type']
@@ -1054,8 +1075,10 @@ class OpenCTIStix2:
                         external_reference['description'] if 'description' in external_reference else None,
                         external_reference['id'] if 'id' in external_reference else None,
                         external_reference[CustomProperties.ID] if CustomProperties.ID in external_reference else None,
-                        external_reference[CustomProperties.CREATED] if CustomProperties.CREATED in external_reference else None,
-                        external_reference[CustomProperties.MODIFIED] if CustomProperties.MODIFIED in external_reference else None,
+                        external_reference[
+                            CustomProperties.CREATED] if CustomProperties.CREATED in external_reference else None,
+                        external_reference[
+                            CustomProperties.MODIFIED] if CustomProperties.MODIFIED in external_reference else None,
                     )['id']
                 self.mapping_cache[url] = {'id': external_reference_id}
                 external_references_ids.append(external_reference_id)
@@ -1150,7 +1173,9 @@ class OpenCTIStix2:
 
         if observable_type == 'file':
             lhs = ObjectPath(observable_type, ['hashes', entity['entity_type'].split('-')[1].upper()])
-            ece = ObservationExpression(EqualityComparisonExpression(lhs, HashConstant(entity['observable_value'], entity['entity_type'].split('-')[1].upper())))
+            ece = ObservationExpression(EqualityComparisonExpression(lhs, HashConstant(entity['observable_value'],
+                                                                                       entity['entity_type'].split('-')[
+                                                                                           1].upper())))
         if observable_type == 'ipv4-addr' or observable_type == 'ipv6-addr' or observable_type == 'domain_name' or observable_type == 'url':
             lhs = ObjectPath(observable_type, ["value"])
             ece = ObservationExpression(EqualityComparisonExpression(lhs, entity['observable_value']))
@@ -1187,27 +1212,32 @@ class OpenCTIStix2:
         else:
             return False
 
-    def import_bundle(self, stix_bundle, update=False, types=[]):
+    def import_bundle(self, stix_bundle, update=False, types=None) -> List:
+        if types is None:
+            types = []
         self.mapping_cache = {}
-        # Check if the bundle is correctly formated
+        # Check if the bundle is correctly formatted
         if 'type' not in stix_bundle or stix_bundle['type'] != 'bundle':
-            logging.error('JSON data type is not a STIX2 bundle')
-            return None
+            raise ValueError('JSON data type is not a STIX2 bundle')
         if 'objects' not in stix_bundle or len(stix_bundle['objects']) == 0:
-            logging.error('JSON data objects is empty')
-            return None
+            raise ValueError('JSON data objects is empty')
 
+        # Import every elements in a specific order
+        imported_elements = []
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'marking-definition':
                 self.import_object(item, update)
+                imported_elements.append({'id': item['id'], 'type': item['type']})
         end_time = time.time()
         logging.info("Marking definitions imported in: %ssecs" % round(end_time - start_time))
 
         start_time = time.time()
         for item in stix_bundle['objects']:
-            if item['type'] == 'identity' and (len(types) == 0 or 'identity' in types or (CustomProperties.IDENTITY_TYPE in item and item[CustomProperties.IDENTITY_TYPE] in types)):
+            if item['type'] == 'identity' and (len(types) == 0 or 'identity' in types or (
+                    CustomProperties.IDENTITY_TYPE in item and item[CustomProperties.IDENTITY_TYPE] in types)):
                 self.import_object(item, update)
+                imported_elements.append({'id': item['id'], 'type': item['type']})
         end_time = time.time()
         logging.info("Identities imported in: %ssecs" % round(end_time - start_time))
 
@@ -1216,6 +1246,7 @@ class OpenCTIStix2:
             if item['type'] != 'relationship' and item['type'] != 'report' and (
                     len(types) == 0 or item['type'] in types):
                 self.import_object(item, update)
+                imported_elements.append({'id': item['id'], 'type': item['type']})
         end_time = time.time()
         logging.info("Objects imported in: %ssecs" % round(end_time - start_time))
 
@@ -1223,6 +1254,7 @@ class OpenCTIStix2:
         for item in stix_bundle['objects']:
             if item['type'] == 'relationship':
                 self.import_relationship(item, update)
+                imported_elements.append({'id': item['id'], 'type': item['type']})
         end_time = time.time()
         logging.info("Relationships imported in: %ssecs" % round(end_time - start_time))
 
@@ -1230,5 +1262,7 @@ class OpenCTIStix2:
         for item in stix_bundle['objects']:
             if item['type'] == 'report' and (len(types) == 0 or 'report' in types):
                 self.import_object(item, update)
+                imported_elements.append({'id': item['id'], 'type': item['type']})
         end_time = time.time()
         logging.info("Reports imported in: %ssecs" % round(end_time - start_time))
+        return imported_elements
