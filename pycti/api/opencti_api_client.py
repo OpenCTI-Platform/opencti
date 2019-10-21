@@ -1,15 +1,26 @@
 # coding: utf-8
 
 import os
+import io
+from typing import List
+
 import requests
 import datetime
 import dateutil.parser
 import json
 import uuid
-import base64
 import logging
 
-from pycti.opencti_stix2 import OpenCTIStix2
+from api.opencti_api_connector import OpenCTIApiConnector
+from api.opencti_api_job import OpenCTIApiJob
+from utils.constants import ObservableTypes
+from utils.opencti_stix2 import OpenCTIStix2
+
+
+class File:
+    def __init__(self, name, data):
+        self.name = name
+        self.data = data
 
 
 class OpenCTIApiClient:
@@ -20,22 +31,82 @@ class OpenCTIApiClient:
     """
 
     def __init__(self, url, token, log_level='info', ssl_verify=True):
-        self.log_level = log_level
+        # Check configuration
         self.ssl_verify = ssl_verify
+        if url is None or len(token) == 0:
+            raise ValueError('Url configuration must be configured')
+        if token is None or len(token) == 0 or token == 'ChangeMe':
+            raise ValueError('Token configuration must be the same as APP__ADMIN__TOKEN')
+
         # Configure logger
+        self.log_level = log_level
         numeric_level = getattr(logging, self.log_level.upper(), None)
         if not isinstance(numeric_level, int):
             raise ValueError('Invalid log level: ' + self.log_level)
         logging.basicConfig(level=numeric_level)
-
+        # Define API
         self.api_url = url + '/graphql'
-        self.request_headers = {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-        }
+        self.request_headers = {'Authorization': 'Bearer ' + token}
+        # Check if openCTI is available
+        if not self.health_check():
+            raise ValueError('OpenCTI API seems down')
+        # Define the dependencies
+        self.job = OpenCTIApiJob(self)
+        self.connector = OpenCTIApiConnector(self)
 
     def query(self, query, variables={}):
-        r = requests.post(self.api_url, json={'query': query, 'variables': variables}, headers=self.request_headers, verify=self.ssl_verify)
+        query_var = {}
+        files_vars = []
+        # Implementation of spec https://github.com/jaydenseric/graphql-multipart-request-spec
+        # Support for single or multiple upload
+        # Batching or mixed upload or not supported
+        var_keys = variables.keys()
+        for key in var_keys:
+            val = variables[key]
+            is_file = type(val) is File
+            is_files = isinstance(val, list) and all(map(lambda x: isinstance(x, File), val))
+            if is_file or is_files:
+                files_vars.append({'key': key, 'file': val, 'multiple': is_files})
+                query_var[key] = None if is_file else [None] * len(val)
+            else:
+                query_var[key] = val
+        # If yes, transform variable (file to null) and create multipart query
+        if len(files_vars) > 0:
+            multipart_data = {'operations': json.dumps({'query': query, 'variables': query_var})}
+            # Build the multipart map
+            map_index = 0
+            file_vars = {}
+            for file_var_item in files_vars:
+                is_multiple_files = file_var_item['multiple']
+                var_name = "variables." + file_var_item['key']
+                if is_multiple_files:
+                    # [(var_name + "." + i)] if is_multiple_files else
+                    for _ in file_var_item['file']:
+                        file_vars[str(map_index)] = [(var_name + "." + str(map_index))]
+                        map_index += 1
+                else:
+                    file_vars[str(map_index)] = [var_name]
+                    map_index += 1
+            multipart_data['map'] = json.dumps(file_vars)
+            # Add the files
+            file_index = 0
+            multipart_files = []
+            for file_var_item in files_vars:
+                files = file_var_item['file']
+                is_multiple_files = file_var_item['multiple']
+                if is_multiple_files:
+                    for file in files:
+                        multipart_files.append((str(file_index), (file.name, io.BytesIO(file.data.encode()))))
+                        file_index += 1
+                else:
+                    multipart_files.append((str(file_index), (files.name, io.BytesIO(files.data.encode()))))
+                    file_index += 1
+            # Send the multipart request
+            r = requests.post(self.api_url, data=multipart_data, files=multipart_files, headers=self.request_headers, verify=self.ssl_verify)
+        # If no
+        else:
+            r = requests.post(self.api_url, json={'query': query, 'variables': variables}, headers=self.request_headers, verify=self.ssl_verify)
+        # Build response
         if r.status_code == requests.codes.ok:
             result = r.json()
             if 'errors' in result:
@@ -79,18 +150,22 @@ class OpenCTIApiClient:
             data['stixRelations'] = self.parse_multiple(data['stixRelations'])
         return data
 
-    def check_existing_stix_domain_entity(self, stix_id=None, name=None, type=None):
+    def fetch_opencti_file(self, fetch_uri):
+        r = requests.get(fetch_uri, headers=self.request_headers)
+        return r.text
+
+    def check_existing_stix_domain_entity(self, stix_id_key=None, name=None, type=None):
         object_result = None
-        if stix_id is not None:
-            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+        if stix_id_key is not None:
+            object_result = self.get_stix_entity_by_stix_id_key(stix_id_key)
         if object_result is None and name is not None and type is not None:
             object_result = self.search_stix_domain_entity_by_name(name, type)
         return object_result
 
-    def check_existing_report(self, stix_id=None, name=None, published=None):
+    def check_existing_report(self, stix_id_key=None, name=None, published=None):
         object_result = None
-        if stix_id is not None:
-            object_result = self.get_stix_domain_entity_by_stix_id(stix_id)
+        if stix_id_key is not None:
+            object_result = self.get_stix_entity_by_stix_id_key(stix_id_key)
         if object_result is None and name is not None and published is not None:
             object_result = self.search_report_by_name_and_date(name, published)
         return object_result
@@ -112,31 +187,6 @@ class OpenCTIApiClient:
                 'key': key,
                 'value': value
             }
-        })
-
-    def get_connectors(self):
-        query = """
-            query Connectors {
-                connectors {
-                    identifier
-                    config_template
-                    config
-               }
-            }
-           """
-        result = self.query(query)
-        return result['data']['connectors']
-
-    def update_connector_config(self, identifier, config):
-        logging.info('Updating connector config of ' + identifier + '...')
-        query = """
-            mutation ConnectorConfig($identifier: String!, $config: String!) {
-                connectorConfig(identifier: $identifier, config: $config)
-            }
-        """
-        self.query(query, {
-            'identifier': identifier,
-            'config': base64.b64encode(json.dumps(config).encode('ascii')).decode('ascii')
         })
 
     def get_stix_domain_entity(self, id):
@@ -202,25 +252,17 @@ class OpenCTIApiClient:
         else:
             return None
 
-    def get_stix_domain_entity_by_stix_id(self, stix_id):
+    def get_stix_entity_by_stix_id_key(self, stix_id_key):
         query = """
-            query StixDomainEntities($stix_id: String) {
-                stixDomainEntities(stix_id: $stix_id) {
-                    edges {
-                        node {
-                            id
-                            entity_type
-                            alias
-                        }
-                    }
+            query StixEntity($stix_id_key: String, $isStixId: Boolean) {
+                stixEntity(id: $stix_id_key, isStixId: $isStixId) {
+                  id
+                  entity_type
                 }
             }
         """
-        result = self.query(query, {'stix_id': stix_id})
-        if len(result['data']['stixDomainEntities']['edges']) > 0:
-            return result['data']['stixDomainEntities']['edges'][0]['node']
-        else:
-            return None
+        result = self.query(query, {'stix_id_key': stix_id_key, 'isStixId': True})
+        return result['data']['stixEntity']
 
     def search_stix_domain_entities(self, keyword, type='Stix-Domain-Entity'):
         query = """
@@ -315,7 +357,6 @@ class OpenCTIApiClient:
                     fieldPatch(input: $input) {
                         id
                         entity_type
-                        alias
                     }
                 }
             }
@@ -328,19 +369,15 @@ class OpenCTIApiClient:
             }
         })
 
-    def push_stix_domain_entity_export(self, id, export_id, data):
+    def push_stix_domain_entity_export(self, entity_id, file_name, data):
         query = """
-            mutation StixDomainEntityEdit($id: ID!, $exportId: String!, $rawData: String!) {
+            mutation StixDomainEntityEdit($id: ID!, $file: Upload!) {
                 stixDomainEntityEdit(id: $id) {
-                    exportPush(exportId: $exportId, rawData: $rawData)
+                    exportPush(file: $file)
                 }
-            }
+            } 
         """
-        self.query(query, {
-            'id': id,
-            'exportId': export_id,
-            'rawData': data
-        })
+        self.query(query, {'id': entity_id, 'file': (File(file_name, data))})
 
     def delete_stix_domain_entity(self, id):
         logging.info('Deleting + ' + id + '...')
@@ -353,11 +390,11 @@ class OpenCTIApiClient:
          """
         self.query(query, {'id': id})
 
-    def get_stix_relation_by_stix_id(self, stix_id):
-        logging.info('Getting relation ' + stix_id + '...')
+    def get_stix_relation_by_stix_id_key(self, stix_id_key):
+        logging.info('Getting relation ' + stix_id_key + '...')
         query = """
-            query StixRelations($stix_id: String) {
-                stixRelations(stix_id: $stix_id) {
+            query StixRelations($stix_id_key: String) {
+                stixRelations(stix_id_key: $stix_id_key) {
                     edges {
                         node {
                             id
@@ -367,7 +404,7 @@ class OpenCTIApiClient:
                 }
             }
         """
-        result = self.query(query, {'stix_id': stix_id})
+        result = self.query(query, {'stix_id_key': stix_id_key})
         if len(result['data']['stixRelations']['edges']) > 0:
             return result['data']['stixRelations']['edges'][0]['node']
         else:
@@ -379,7 +416,7 @@ class OpenCTIApiClient:
             query StixRelation($id: String!) {
                 stixRelation(id: $id) {
                     id
-                    stix_id
+                    stix_id_key
                     entity_type
                     relationship_type
                     description
@@ -393,11 +430,11 @@ class OpenCTIApiClient:
                     modified
                     from {
                         id
-                        stix_id
+                        stix_id_key
                     }
                     to {
                         id
-                        stix_id
+                        stix_id_key
                     }
                 }
             }
@@ -430,7 +467,7 @@ class OpenCTIApiClient:
                     edges {
                         node {
                             id
-                            stix_id
+                            stix_id_key
                             entity_type
                             relationship_type
                             description
@@ -444,11 +481,11 @@ class OpenCTIApiClient:
                             modified
                             from {
                                 id
-                                stix_id
+                                stix_id_key
                             }
                             to {
                                 id
-                                stix_id
+                                stix_id_key
                             }
                         }
                     }
@@ -483,12 +520,12 @@ class OpenCTIApiClient:
                         description,
                         first_seen,
                         last_seen,
-                        weight,
+                        weight=None,
                         role_played=None,
                         score=None,
                         expiration=None,
                         id=None,
-                        stix_id=None,
+                        stix_id_key=None,
                         created=None,
                         modified=None
                         ):
@@ -514,8 +551,8 @@ class OpenCTIApiClient:
                 'first_seen': first_seen,
                 'last_seen': last_seen,
                 'weight': weight,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
@@ -536,13 +573,14 @@ class OpenCTIApiClient:
                                       score=None,
                                       expiration=None,
                                       id=None,
-                                      stix_id=None,
+                                      stix_id_key=None,
                                       created=None,
-                                      modified=None
+                                      modified=None,
+                                      update=False
                                       ):
         stix_relation_result = None
-        if stix_id is not None:
-            stix_relation_result = self.get_stix_relation_by_stix_id(stix_id)
+        if stix_id_key is not None:
+            stix_relation_result = self.get_stix_relation_by_stix_id_key(stix_id_key)
         if stix_relation_result is None:
             stix_relation_result = self.get_stix_relation(
                 from_id,
@@ -551,6 +589,11 @@ class OpenCTIApiClient:
                 first_seen,
                 last_seen)
         if stix_relation_result is not None:
+            if update:
+                self.update_stix_relation_field(stix_relation_result['id'], description, description)
+                stix_relation_result['description'] = description
+                self.update_stix_relation_field(stix_relation_result['id'], 'weight', weight)
+                stix_relation_result['weight'] = weight
             return stix_relation_result
         else:
             roles = self.resolve_role(type, from_type, to_type)
@@ -563,7 +606,8 @@ class OpenCTIApiClient:
                     final_from_id = to_id
                     final_to_id = from_id
                 else:
-                    logging.info('Cannot resolve roles, doing nothing (' + type + ': ' + from_type + ',' + to_type + ')')
+                    logging.info(
+                        'Cannot resolve roles, doing nothing (' + type + ': ' + from_type + ',' + to_type + ')')
                     return None
 
             return self.create_relation(
@@ -580,7 +624,7 @@ class OpenCTIApiClient:
                 score,
                 expiration,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -604,7 +648,7 @@ class OpenCTIApiClient:
                     id
                     name
                     description
-                    stix_id
+                    stix_id_key
                     entity_type
                     observable_value
                     created_at
@@ -624,10 +668,10 @@ class OpenCTIApiClient:
         result = self.query(query, {'id': id})
         return result['data']['stixObservable']
 
-    def get_marking_definition_by_stix_id(self, stix_id):
+    def get_marking_definition_by_stix_id_key(self, stix_id_key):
         query = """
-             query MarkingDefinitions($stix_id: String) {
-                 markingDefinitions(stix_id: $stix_id) {
+             query MarkingDefinitions($stix_id_key: String) {
+                 markingDefinitions(stix_id_key: $stix_id_key) {
                      edges {
                          node {
                              id
@@ -637,7 +681,7 @@ class OpenCTIApiClient:
                  }
              }
          """
-        result = self.query(query, {'stix_id': stix_id})
+        result = self.query(query, {'stix_id_key': stix_id_key})
         if len(result['data']['markingDefinitions']['edges']) > 0:
             return result['data']['markingDefinitions']['edges'][0]['node']
         else:
@@ -668,7 +712,7 @@ class OpenCTIApiClient:
                                   level=0,
                                   color=None,
                                   id=None,
-                                  stix_id=None,
+                                  stix_id_key=None,
                                   created=None,
                                   modified=None
                                   ):
@@ -685,10 +729,10 @@ class OpenCTIApiClient:
             'input': {
                 'definition_type': definition_type,
                 'definition': definition,
-                'internal_id': id,
+                'internal_id_key': id,
                 'level': level,
                 'color': color,
-                'stix_id': stix_id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
@@ -701,13 +745,13 @@ class OpenCTIApiClient:
                                                 level=0,
                                                 color=None,
                                                 id=None,
-                                                stix_id=None,
+                                                stix_id_key=None,
                                                 created=None,
                                                 modified=None
                                                 ):
         object_result = None
-        if stix_id is not None:
-            object_result = self.get_marking_definition_by_stix_id(stix_id)
+        if stix_id_key is not None:
+            object_result = self.get_marking_definition_by_stix_id_key(stix_id_key)
             if object_result is None:
                 object_result = self.get_marking_definition_by_definition(definition_type, definition)
         if object_result is not None:
@@ -719,7 +763,7 @@ class OpenCTIApiClient:
                 level,
                 color,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -742,13 +786,24 @@ class OpenCTIApiClient:
         else:
             return None
 
+    def delete_external_reference(self, id):
+        logging.info('Deleting + ' + id + '...')
+        query = """
+             mutation ExternalReferenceEdit($id: ID!) {
+                 externalReferenceEdit(id: $id) {
+                     delete
+                 }
+             }
+         """
+        self.query(query, {'id': id})
+
     def create_external_reference(self,
                                   source_name,
                                   url,
                                   external_id='',
                                   description='',
                                   id=None,
-                                  stix_id=None,
+                                  stix_id_key=None,
                                   created=None,
                                   modified=None
                                   ):
@@ -766,8 +821,8 @@ class OpenCTIApiClient:
                 'external_id': external_id,
                 'description': description,
                 'url': url,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
@@ -780,7 +835,7 @@ class OpenCTIApiClient:
                                                 external_id='',
                                                 description='',
                                                 id=None,
-                                                stix_id=None,
+                                                stix_id_key=None,
                                                 created=None,
                                                 modified=None
                                                 ):
@@ -794,7 +849,7 @@ class OpenCTIApiClient:
                 external_id,
                 description,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -822,7 +877,7 @@ class OpenCTIApiClient:
                                 phase_name,
                                 phase_order=0,
                                 id=None,
-                                stix_id=None,
+                                stix_id_key=None,
                                 created=None,
                                 modified=None):
         logging.info('Creating kill chain phase ' + phase_name + '...')
@@ -838,8 +893,8 @@ class OpenCTIApiClient:
                 'kill_chain_name': kill_chain_name,
                 'phase_name': phase_name,
                 'phase_order': phase_order,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
@@ -851,7 +906,7 @@ class OpenCTIApiClient:
                                               phase_name,
                                               phase_order=0,
                                               id=None,
-                                              stix_id=None,
+                                              stix_id_key=None,
                                               created=None,
                                               modified=None):
         kill_chain_phase_result = self.get_kill_chain_phase(phase_name)
@@ -863,7 +918,7 @@ class OpenCTIApiClient:
                 phase_name,
                 phase_order,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -875,7 +930,7 @@ class OpenCTIApiClient:
                 identity(id: $id) {
                    id
                     entity_type
-                    stix_id
+                    stix_id_key
                     stix_label
                     name
                     alias
@@ -886,7 +941,7 @@ class OpenCTIApiClient:
                         node {
                             id
                             entity_type
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -900,7 +955,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 definition_type
                                 definition
                                 level
@@ -925,7 +980,7 @@ class OpenCTIApiClient:
                         node {
                             id
                             entity_type
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -936,7 +991,7 @@ class OpenCTIApiClient:
                                 node {
                                     id
                                     entity_type
-                                    stix_id
+                                    stix_id_key
                                     stix_label
                                     name
                                     alias
@@ -950,7 +1005,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         definition_type
                                         definition
                                         level
@@ -968,7 +1023,7 @@ class OpenCTIApiClient:
         result = self.query(query, {'first': limit})
         return self.parse_multiple(result['data']['identities'])
 
-    def create_identity(self, type, name, description, id=None, stix_id=None, created=None, modified=None):
+    def create_identity(self, type, name, description, id=None, stix_id_key=None, created=None, modified=None):
         logging.info('Creating identity ' + name + '...')
         query = """
             mutation IdentityAdd($input: IdentityAddInput) {
@@ -984,8 +1039,8 @@ class OpenCTIApiClient:
                 'name': name,
                 'description': description,
                 'type': type,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
@@ -997,12 +1052,18 @@ class OpenCTIApiClient:
                                       name,
                                       description,
                                       id=None,
-                                      stix_id=None,
+                                      stix_id_key=None,
                                       created=None,
-                                      modified=None
+                                      modified=None,
+                                      update=False
                                       ):
-        object_result = self.check_existing_stix_domain_entity(stix_id, name, type)
+        object_result = self.check_existing_stix_domain_entity(stix_id_key, name, type)
         if object_result is not None:
+            if update:
+                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                object_result['name'] = name
+                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                object_result['description'] = description
             return object_result
         else:
             return self.create_identity(
@@ -1010,7 +1071,7 @@ class OpenCTIApiClient:
                 name,
                 description,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -1022,7 +1083,7 @@ class OpenCTIApiClient:
                 threatActor(id: $id) {
                     id
                     entity_type
-                    stix_id
+                    stix_id_key
                     stix_label
                     name
                     alias
@@ -1039,7 +1100,7 @@ class OpenCTIApiClient:
                         node {
                             id
                             entity_type
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -1053,7 +1114,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 definition_type
                                 definition
                                 level
@@ -1078,7 +1139,7 @@ class OpenCTIApiClient:
                         node {
                             id
                             entity_type
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -1095,7 +1156,7 @@ class OpenCTIApiClient:
                                 node {
                                     id
                                     entity_type
-                                    stix_id
+                                    stix_id_key
                                     stix_label
                                     name
                                     alias
@@ -1109,7 +1170,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         definition_type
                                         definition
                                         level
@@ -1137,7 +1198,7 @@ class OpenCTIApiClient:
                             secondary_motivation=None,
                             personal_motivation=None,
                             id=None,
-                            stix_id=None,
+                            stix_id_key=None,
                             created=None,
                             modified=None
                             ):
@@ -1161,8 +1222,8 @@ class OpenCTIApiClient:
                 'primary_motivation': primary_motivation,
                 'secondary_motivation': secondary_motivation,
                 'personal_motivation': personal_motivation,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
@@ -1179,12 +1240,21 @@ class OpenCTIApiClient:
                                           secondary_motivation=None,
                                           personal_motivation=None,
                                           id=None,
-                                          stix_id=None,
+                                          stix_id_key=None,
                                           created=None,
-                                          modified=None
+                                          modified=None,
+                                          update=False
                                           ):
-        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Threat-Actor')
+        object_result = self.check_existing_stix_domain_entity(stix_id_key, name, 'Threat-Actor')
         if object_result is not None:
+            if update:
+                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                object_result['name'] = name
+                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                object_result['description'] = description
+                if goal is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'goal', goal)
+                    object_result['last_seen'] = goal
             return object_result
         else:
             return self.create_threat_actor(
@@ -1197,7 +1267,7 @@ class OpenCTIApiClient:
                 secondary_motivation,
                 personal_motivation,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -1208,7 +1278,7 @@ class OpenCTIApiClient:
             query IntrusionSet($id: String!) {
                 intrusionSet(id: $id) {
                     id
-                    stix_id
+                    stix_id_key
                     stix_label
                     name
                     alias
@@ -1226,7 +1296,7 @@ class OpenCTIApiClient:
                         node {
                             id
                             entity_type
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -1240,7 +1310,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 definition_type
                                 definition
                                 level
@@ -1264,7 +1334,7 @@ class OpenCTIApiClient:
                     edges {
                         node {
                             id
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -1282,7 +1352,7 @@ class OpenCTIApiClient:
                                 node {
                                     id
                                     entity_type
-                                    stix_id
+                                    stix_id_key
                                     stix_label
                                     name
                                     alias
@@ -1296,7 +1366,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         definition_type
                                         definition
                                         level
@@ -1325,7 +1395,7 @@ class OpenCTIApiClient:
                              primary_motivation=None,
                              secondary_motivation=None,
                              id=None,
-                             stix_id=None,
+                             stix_id_key=None,
                              created=None,
                              modified=None
                              ):
@@ -1350,8 +1420,8 @@ class OpenCTIApiClient:
                 'resource_level': resource_level,
                 'primary_motivation': primary_motivation,
                 'secondary_motivation': secondary_motivation,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
@@ -1369,12 +1439,27 @@ class OpenCTIApiClient:
                                            primary_motivation=None,
                                            secondary_motivation=None,
                                            id=None,
-                                           stix_id=None,
+                                           stix_id_key=None,
                                            created=None,
-                                           modified=None
+                                           modified=None,
+                                           update=False
                                            ):
-        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Intrusion-Set')
+        object_result = self.check_existing_stix_domain_entity(stix_id_key, name, 'Intrusion-Set')
         if object_result is not None:
+            if update:
+                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                object_result['name'] = name
+                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                object_result['description'] = description
+                if first_seen is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'first_seen', first_seen)
+                object_result['first_seen'] = first_seen
+                if last_seen is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'last_seen', last_seen)
+                    object_result['last_seen'] = last_seen
+                if goal is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'goal', goal)
+                    object_result['last_seen'] = goal
             return object_result
         else:
             return self.create_intrusion_set(
@@ -1388,7 +1473,7 @@ class OpenCTIApiClient:
                 primary_motivation,
                 secondary_motivation,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -1399,7 +1484,7 @@ class OpenCTIApiClient:
             query Campaign($id: String!) {
                 campaign(id: $id) {
                     id
-                    stix_id
+                    stix_id_key
                     stix_label
                     name
                     alias
@@ -1413,7 +1498,7 @@ class OpenCTIApiClient:
                         node {
                             id
                             entity_type
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -1427,7 +1512,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 definition_type
                                 definition
                                 level
@@ -1451,7 +1536,7 @@ class OpenCTIApiClient:
                     edges {
                         node {
                             id
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -1465,7 +1550,7 @@ class OpenCTIApiClient:
                                 node {
                                     id
                                     entity_type
-                                    stix_id
+                                    stix_id_key
                                     stix_label
                                     name
                                     alias
@@ -1479,7 +1564,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         definition_type
                                         definition
                                         level
@@ -1504,7 +1589,7 @@ class OpenCTIApiClient:
                         first_seen=None,
                         last_seen=None,
                         id=None,
-                        stix_id=None,
+                        stix_id_key=None,
                         created=None,
                         modified=None
                         ):
@@ -1525,8 +1610,8 @@ class OpenCTIApiClient:
                 'objective': objective,
                 'first_seen': first_seen,
                 'last_seen': last_seen,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
@@ -1540,12 +1625,27 @@ class OpenCTIApiClient:
                                       first_seen=None,
                                       last_seen=None,
                                       id=None,
-                                      stix_id=None,
+                                      stix_id_key=None,
                                       created=None,
-                                      modified=None
+                                      modified=None,
+                                      update=False
                                       ):
-        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Campaign')
+        object_result = self.check_existing_stix_domain_entity(stix_id_key, name, 'Campaign')
         if object_result is not None:
+            if update:
+                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                object_result['name'] = name
+                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                object_result['description'] = description
+                if objective is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'objective', objective)
+                object_result['objective'] = objective
+                if first_seen is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'first_seen', first_seen)
+                object_result['first_seen'] = first_seen
+                if last_seen is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'last_seen', last_seen)
+                    object_result['last_seen'] = last_seen
             return object_result
         else:
             return self.create_campaign(
@@ -1555,7 +1655,7 @@ class OpenCTIApiClient:
                 first_seen,
                 last_seen,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -1566,7 +1666,7 @@ class OpenCTIApiClient:
             query Incident($id: String!) {
                 incident(id: $id) {
                     id
-                    stix_id
+                    stix_id_key
                     stix_label
                     name
                     alias
@@ -1580,7 +1680,7 @@ class OpenCTIApiClient:
                         node {
                             id
                             entity_type
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -1594,7 +1694,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 definition_type
                                 definition
                                 level
@@ -1618,7 +1718,7 @@ class OpenCTIApiClient:
                     edges {
                         node {
                             id
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -1632,7 +1732,7 @@ class OpenCTIApiClient:
                                 node {
                                     id
                                     entity_type
-                                    stix_id
+                                    stix_id_key
                                     stix_label
                                     name
                                     alias
@@ -1646,7 +1746,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         definition_type
                                         definition
                                         level
@@ -1671,7 +1771,7 @@ class OpenCTIApiClient:
                         first_seen=None,
                         last_seen=None,
                         id=None,
-                        stix_id=None,
+                        stix_id_key=None,
                         created=None,
                         modified=None
                         ):
@@ -1692,8 +1792,8 @@ class OpenCTIApiClient:
                 'objective': objective,
                 'first_seen': first_seen,
                 'last_seen': last_seen,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
@@ -1707,18 +1807,27 @@ class OpenCTIApiClient:
                                       first_seen=None,
                                       last_seen=None,
                                       id=None,
-                                      stix_id=None,
+                                      stix_id_key=None,
                                       created=None,
-                                      modified=None
+                                      modified=None,
+                                      update=False
                                       ):
-        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Incident')
+        object_result = self.check_existing_stix_domain_entity(stix_id_key, name, 'Incident')
         if object_result is not None:
-            self.update_stix_domain_entity_field(object_result['id'], 'name', name)
-            description is not None and self.update_stix_domain_entity_field(object_result['id'], 'description',
-                                                                             description)
-            first_seen is not None and self.update_stix_domain_entity_field(object_result['id'], 'first_seen',
-                                                                            first_seen)
-            last_seen is not None and self.update_stix_domain_entity_field(object_result['id'], 'last_seen', last_seen)
+            if update:
+                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                object_result['name'] = name
+                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                object_result['description'] = description
+                if objective is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'objective', objective)
+                object_result['objective'] = objective
+                if first_seen is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'first_seen', first_seen)
+                object_result['first_seen'] = first_seen
+                if last_seen is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'last_seen', last_seen)
+                    object_result['last_seen'] = last_seen
             return object_result
         else:
             return self.create_incident(
@@ -1728,7 +1837,7 @@ class OpenCTIApiClient:
                 first_seen,
                 last_seen,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -1739,7 +1848,7 @@ class OpenCTIApiClient:
             query Malware($id: String!) {
                 malware(id: $id) {
                     id
-                    stix_id
+                    stix_id_key
                     stix_label
                     name
                     alias
@@ -1750,7 +1859,7 @@ class OpenCTIApiClient:
                         node {
                             id
                             entity_type
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -1764,7 +1873,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 definition_type
                                 definition
                                 level
@@ -1779,7 +1888,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 kill_chain_name
                                 phase_name
                                 phase_order
@@ -1802,7 +1911,7 @@ class OpenCTIApiClient:
                     edges {
                         node {
                             id
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -1813,7 +1922,7 @@ class OpenCTIApiClient:
                                 node {
                                     id
                                     entity_type
-                                    stix_id
+                                    stix_id_key
                                     stix_label
                                     name
                                     alias
@@ -1827,7 +1936,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         definition_type
                                         definition
                                         level
@@ -1842,7 +1951,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         kill_chain_name
                                         phase_name
                                         phase_order
@@ -1859,7 +1968,7 @@ class OpenCTIApiClient:
         result = self.query(query, {'first': limit})
         return self.parse_multiple(result['data']['malwares'])
 
-    def create_malware(self, name, description, id=None, stix_id=None, created=None, modified=None):
+    def create_malware(self, name, description, id=None, stix_id_key=None, created=None, modified=None):
         logging.info('Creating malware ' + name + '...')
         query = """
             mutation MalwareAdd($input: MalwareAddInput) {
@@ -1874,24 +1983,30 @@ class OpenCTIApiClient:
             'input': {
                 'name': name,
                 'description': description,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
         })
         return result['data']['malwareAdd']
 
-    def create_malware_if_not_exists(self, name, description, id=None, stix_id=None, created=None, modified=None):
-        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Malware')
+    def create_malware_if_not_exists(self, name, description, id=None, stix_id_key=None, created=None, modified=None,
+                                     update=False):
+        object_result = self.check_existing_stix_domain_entity(stix_id_key, name, 'Malware')
         if object_result is not None:
+            if update:
+                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                object_result['name'] = name
+                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                object_result['description'] = description
             return object_result
         else:
             return self.create_malware(
                 name,
                 description,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -1902,7 +2017,7 @@ class OpenCTIApiClient:
             query Tool($id: String!) {
                 tool(id: $id) {
                     id
-                    stix_id
+                    stix_id_key
                     stix_label
                     name
                     alias
@@ -1914,7 +2029,7 @@ class OpenCTIApiClient:
                         node {
                             id
                             entity_type
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -1928,7 +2043,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 definition_type
                                 definition
                                 level
@@ -1952,7 +2067,7 @@ class OpenCTIApiClient:
                     edges {
                         node {
                             id
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -1964,7 +2079,7 @@ class OpenCTIApiClient:
                                 node {
                                     id
                                     entity_type
-                                    stix_id
+                                    stix_id_key
                                     stix_label
                                     name
                                     alias
@@ -1978,7 +2093,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         definition_type
                                         definition
                                         level
@@ -1996,7 +2111,7 @@ class OpenCTIApiClient:
         result = self.query(query, {'first': limit})
         return self.parse_multiple(result['data']['tools'])
 
-    def create_tool(self, name, description, id=None, stix_id=None, created=None, modified=None):
+    def create_tool(self, name, description, id=None, stix_id_key=None, created=None, modified=None):
         logging.info('Creating tool ' + name + '...')
         query = """
             mutation ToolAdd($input: ToolAddInput) {
@@ -2011,24 +2126,30 @@ class OpenCTIApiClient:
             'input': {
                 'name': name,
                 'description': description,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
         })
         return result['data']['toolAdd']
 
-    def create_tool_if_not_exists(self, name, description, id=None, stix_id=None, created=None, modified=None):
-        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Tool')
+    def create_tool_if_not_exists(self, name, description, id=None, stix_id_key=None, created=None, modified=None,
+                                  update=False):
+        object_result = self.check_existing_stix_domain_entity(stix_id_key, name, 'Tool')
         if object_result is not None:
+            if update:
+                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                object_result['name'] = name
+                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                object_result['description'] = description
             return object_result
         else:
             return self.create_tool(
                 name,
                 description,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -2039,7 +2160,7 @@ class OpenCTIApiClient:
             query Vulnerability($id: String!) {
                 vulnerability(id: $id) {
                     id
-                    stix_id
+                    stix_id_key
                     stix_label
                     name
                     alias
@@ -2050,7 +2171,7 @@ class OpenCTIApiClient:
                         node {
                             id
                             entity_type
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -2064,7 +2185,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 definition_type
                                 definition
                                 level
@@ -2088,7 +2209,7 @@ class OpenCTIApiClient:
                     edges {
                         node {
                             id
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -2099,7 +2220,7 @@ class OpenCTIApiClient:
                                 node {
                                     id
                                     entity_type
-                                    stix_id
+                                    stix_id_key
                                     stix_label
                                     name
                                     alias
@@ -2113,7 +2234,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         definition_type
                                         definition
                                         level
@@ -2131,7 +2252,7 @@ class OpenCTIApiClient:
         result = self.query(query, {'first': limit})
         return self.parse_multiple(result['data']['vulnerabilities'])
 
-    def create_vulnerability(self, name, description, id=None, stix_id=None, created=None, modified=None):
+    def create_vulnerability(self, name, description, id=None, stix_id_key=None, created=None, modified=None):
         logging.info('Creating tool ' + name + '...')
         query = """
             mutation VulnerabilityAdd($input: VulnerabilityAddInput) {
@@ -2146,24 +2267,30 @@ class OpenCTIApiClient:
             'input': {
                 'name': name,
                 'description': description,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
         })
         return result['data']['vulnerabilityAdd']
 
-    def create_vulnerability_if_not_exists(self, name, description, id=None, stix_id=None, created=None, modified=None):
-        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Vulnerability')
+    def create_vulnerability_if_not_exists(self, name, description, id=None, stix_id_key=None, created=None, modified=None,
+                                           update=False):
+        object_result = self.check_existing_stix_domain_entity(stix_id_key, name, 'Vulnerability')
         if object_result is not None:
+            if update:
+                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                object_result['name'] = name
+                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                object_result['description'] = description
             return object_result
         else:
             return self.create_vulnerability(
                 name,
                 description,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -2174,7 +2301,7 @@ class OpenCTIApiClient:
             query AttackPattern($id: String!) {
                 attackPattern(id: $id) {
                     id
-                    stix_id
+                    stix_id_key
                     stix_label
                     name
                     alias
@@ -2187,7 +2314,7 @@ class OpenCTIApiClient:
                         node {
                             id
                             entity_type
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -2201,7 +2328,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 definition_type
                                 definition
                                 level
@@ -2216,7 +2343,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 kill_chain_name
                                 phase_name
                                 phase_order
@@ -2230,7 +2357,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 source_name
                                 description
                                 url
@@ -2255,7 +2382,7 @@ class OpenCTIApiClient:
                     edges {
                         node {
                             id
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -2268,7 +2395,7 @@ class OpenCTIApiClient:
                                 node {
                                     id
                                     entity_type
-                                    stix_id
+                                    stix_id_key
                                     stix_label
                                     name
                                     alias
@@ -2282,7 +2409,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         definition_type
                                         definition
                                         level
@@ -2297,7 +2424,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         kill_chain_name
                                         phase_name
                                         phase_order
@@ -2311,7 +2438,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         source_name
                                         description
                                         url
@@ -2336,7 +2463,7 @@ class OpenCTIApiClient:
                               platform=None,
                               required_permission=None,
                               id=None,
-                              stix_id=None,
+                              stix_id_key=None,
                               created=None,
                               modified=None):
         logging.info('Creating attack pattern ' + name + '...')
@@ -2355,8 +2482,8 @@ class OpenCTIApiClient:
                 'description': description,
                 'platform': platform,
                 'required_permission': required_permission,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
@@ -2369,11 +2496,20 @@ class OpenCTIApiClient:
                                             platform=None,
                                             required_permission=None,
                                             id=None,
-                                            stix_id=None,
+                                            stix_id_key=None,
                                             created=None,
-                                            modified=None):
-        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Attack-Pattern')
+                                            modified=None,
+                                            update=False):
+        object_result = self.check_existing_stix_domain_entity(stix_id_key, name, 'Attack-Pattern')
         if object_result is not None:
+            if update:
+                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                if platform is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'platform', platform)
+                if required_permission is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'required_permission',
+                                                         required_permission)
             return object_result
         else:
             return self.create_attack_pattern(
@@ -2382,7 +2518,7 @@ class OpenCTIApiClient:
                 platform,
                 required_permission,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -2393,7 +2529,7 @@ class OpenCTIApiClient:
             query CourseOfAction($id: String!) {
                 courseOfAction(id: $id) {
                     id
-                    stix_id
+                    stix_id_key
                     stix_label
                     name
                     alias
@@ -2404,7 +2540,7 @@ class OpenCTIApiClient:
                         node {
                             id
                             entity_type
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -2418,7 +2554,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 definition_type
                                 definition
                                 level
@@ -2442,7 +2578,7 @@ class OpenCTIApiClient:
                     edges {
                         node {
                             id
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -2453,7 +2589,7 @@ class OpenCTIApiClient:
                                 node {
                                     id
                                     entity_type
-                                    stix_id
+                                    stix_id_key
                                     stix_label
                                     name
                                     alias
@@ -2467,7 +2603,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         definition_type
                                         definition
                                         level
@@ -2485,7 +2621,7 @@ class OpenCTIApiClient:
         result = self.query(query, {'first': limit})
         return self.parse_multiple(result['data']['courseOfActions'])
 
-    def create_course_of_action(self, name, description, id=None, stix_id=None, created=None, modified=None):
+    def create_course_of_action(self, name, description, id=None, stix_id_key=None, created=None, modified=None):
         logging.info('Creating course of action ' + name + '...')
         query = """
            mutation CourseOfActionAdd($input: CourseOfActionAddInput) {
@@ -2500,25 +2636,30 @@ class OpenCTIApiClient:
             'input': {
                 'name': name,
                 'description': description,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
         })
         return result['data']['courseOfActionAdd']
 
-    def create_course_of_action_if_not_exists(self, name, description, id=None, stix_id=None, created=None,
-                                              modified=None):
-        object_result = self.check_existing_stix_domain_entity(stix_id, name, 'Course-Of-Action')
+    def create_course_of_action_if_not_exists(self, name, description, id=None, stix_id_key=None, created=None,
+                                              modified=None, update=False):
+        object_result = self.check_existing_stix_domain_entity(stix_id_key, name, 'Course-Of-Action')
         if object_result is not None:
+            if update:
+                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                object_result['name'] = name
+                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                object_result['description'] = description
             return object_result
         else:
             return self.create_course_of_action(
                 name,
                 description,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -2529,7 +2670,7 @@ class OpenCTIApiClient:
             query Report($id: String!) {
                 report(id: $id) {
                     id
-                    stix_id
+                    stix_id_key
                     stix_label
                     name
                     alias
@@ -2545,7 +2686,7 @@ class OpenCTIApiClient:
                         node {
                             id
                             entity_type
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -2559,7 +2700,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 definition_type
                                 definition
                                 level
@@ -2574,7 +2715,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 source_name
                                 description
                                 url
@@ -2589,7 +2730,7 @@ class OpenCTIApiClient:
                         edges {
                             node {
                                 id
-                                stix_id
+                                stix_id_key
                                 entity_type
                             }
                         }
@@ -2598,7 +2739,7 @@ class OpenCTIApiClient:
                         edges {
                             node {
                                 id
-                                stix_id
+                                stix_id_key
                                 entity_type
                             }
                         }
@@ -2607,7 +2748,7 @@ class OpenCTIApiClient:
                         edges {
                             node {
                                 id
-                                stix_id
+                                stix_id_key
                             }
                         }
                     }
@@ -2625,7 +2766,7 @@ class OpenCTIApiClient:
                     edges {
                         node {
                             id
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -2641,7 +2782,7 @@ class OpenCTIApiClient:
                                 node {
                                     id
                                     entity_type
-                                    stix_id
+                                    stix_id_key
                                     stix_label
                                     name
                                     alias
@@ -2655,7 +2796,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         definition_type
                                         definition
                                         level
@@ -2670,7 +2811,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         source_name
                                         description
                                         url
@@ -2685,7 +2826,7 @@ class OpenCTIApiClient:
                                 edges {
                                     node {
                                         id
-                                        stix_id
+                                        stix_id_key
                                     }
                                 }
                             }
@@ -2693,7 +2834,7 @@ class OpenCTIApiClient:
                                 edges {
                                     node {
                                         id
-                                        stix_id
+                                        stix_id_key
                                     }
                                 }
                             }
@@ -2714,7 +2855,7 @@ class OpenCTIApiClient:
                       source_confidence_level=None,
                       graph_data=None,
                       id=None,
-                      stix_id=None,
+                      stix_id_key=None,
                       created=None,
                       modified=None
                       ):
@@ -2737,8 +2878,8 @@ class OpenCTIApiClient:
                 'object_status': object_status,
                 'source_confidence_level': source_confidence_level,
                 'graph_data': graph_data,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
@@ -2754,15 +2895,27 @@ class OpenCTIApiClient:
                                     source_confidence_level=None,
                                     graph_data=None,
                                     id=None,
-                                    stix_id=None,
+                                    stix_id_key=None,
                                     created=None,
-                                    modified=None
+                                    modified=None,
+                                    update=False
                                     ):
-        if stix_id is not None:
-            object_result = self.check_existing_report(stix_id, name, published)
+        if stix_id_key is not None:
+            object_result = self.check_existing_report(stix_id_key, name, published)
         else:
             object_result = None
         if object_result is not None:
+            if update:
+                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                object_result['name'] = name
+                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                object_result['description'] = description
+                if object_status is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'object_status', object_status)
+                    object_result['object_status'] = object_status
+                if source_confidence_level is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'source_confidence_level', source_confidence_level)
+                    object_result['source_confidence_level'] = source_confidence_level
             return object_result
         else:
             return self.create_report(
@@ -2774,7 +2927,7 @@ class OpenCTIApiClient:
                 source_confidence_level,
                 graph_data,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -2789,7 +2942,7 @@ class OpenCTIApiClient:
                                                             source_confidence_level=None,
                                                             graph_data=None,
                                                             id=None,
-                                                            stix_id=None,
+                                                            stix_id_key=None,
                                                             created=None,
                                                             modified=None
                                                             ):
@@ -2806,7 +2959,7 @@ class OpenCTIApiClient:
                 source_confidence_level,
                 graph_data,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -2819,7 +2972,7 @@ class OpenCTIApiClient:
             query StixObservable($id: String!) {
                 stixObservable(id: $id) {
                     id
-                    stix_id
+                    stix_id_key
                     entity_type
                     name
                     description
@@ -2830,7 +2983,7 @@ class OpenCTIApiClient:
                         node {
                             id
                             entity_type
-                            stix_id
+                            stix_id_key
                             stix_label
                             name
                             alias
@@ -2844,7 +2997,7 @@ class OpenCTIApiClient:
                             node {
                                 id
                                 entity_type
-                                stix_id
+                                stix_id_key
                                 definition_type
                                 definition
                                 level
@@ -2854,27 +3007,11 @@ class OpenCTIApiClient:
                             }
                         }
                     }
-                    externalReferences {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id
-                                source_name
-                                description
-                                url
-                                hash
-                                external_id
-                                created
-                                modified
-                            }
-                        }
-                    }
                     stixRelations {
                         edges {
                             node {
                                 id
-                                stix_id
+                                stix_id_key
                                 entity_type
                                 relationship_type
                                 description
@@ -2904,7 +3041,7 @@ class OpenCTIApiClient:
                     edges {
                         node {
                            id
-                            stix_id
+                            stix_id_key
                             entity_type
                             name
                             description
@@ -2915,7 +3052,7 @@ class OpenCTIApiClient:
                                 node {
                                     id
                                     entity_type
-                                    stix_id
+                                    stix_id_key
                                     stix_label
                                     name
                                     alias
@@ -2929,7 +3066,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         definition_type
                                         definition
                                         level
@@ -2943,7 +3080,7 @@ class OpenCTIApiClient:
                                 edges {
                                     node {
                                         id
-                                        stix_id
+                                        stix_id_key
                                         entity_type
                                         relationship_type
                                         description
@@ -2978,7 +3115,7 @@ class OpenCTIApiClient:
                     edges {
                         node {
                            id
-                            stix_id
+                            stix_id_key
                             entity_type
                             name
                             description
@@ -2989,7 +3126,7 @@ class OpenCTIApiClient:
                                 node {
                                     id
                                     entity_type
-                                    stix_id
+                                    stix_id_key
                                     stix_label
                                     name
                                     alias
@@ -3003,7 +3140,7 @@ class OpenCTIApiClient:
                                     node {
                                         id
                                         entity_type
-                                        stix_id
+                                        stix_id_key
                                         definition_type
                                         definition
                                         level
@@ -3017,7 +3154,7 @@ class OpenCTIApiClient:
                                 edges {
                                     node {
                                         id
-                                        stix_id
+                                        stix_id_key
                                         entity_type
                                         relationship_type
                                         description
@@ -3046,7 +3183,7 @@ class OpenCTIApiClient:
                                observable_value,
                                description,
                                id=None,
-                               stix_id=None,
+                               stix_id_key=None,
                                created=None,
                                modified=None
                                ):
@@ -3065,8 +3202,8 @@ class OpenCTIApiClient:
                 'type': type,
                 'observable_value': observable_value,
                 'description': description,
-                'internal_id': id,
-                'stix_id': stix_id,
+                'internal_id_key': id,
+                'stix_id_key': stix_id_key,
                 'created': created,
                 'modified': modified
             }
@@ -3078,12 +3215,16 @@ class OpenCTIApiClient:
                                              observable_value,
                                              description,
                                              id=None,
-                                             stix_id=None,
+                                             stix_id_key=None,
                                              created=None,
-                                             modified=None
+                                             modified=None,
+                                             update=False
                                              ):
         object_result = self.get_stix_observable_by_value(observable_value)
         if object_result is not None:
+            if update:
+                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                object_result['description'] = description
             return object_result
         else:
             return self.create_stix_observable(
@@ -3091,7 +3232,7 @@ class OpenCTIApiClient:
                 observable_value,
                 description,
                 id,
-                stix_id,
+                stix_id_key,
                 created,
                 modified
             )
@@ -3411,8 +3552,9 @@ class OpenCTIApiClient:
             return {'from_role': 'relate_from', 'to_role': 'relate_to'}
 
         relation_type = relation_type.lower()
-        from_type = from_type.lower()
-        to_type = to_type.lower()
+        from_type = from_type.lower() if not ObservableTypes.has_value(from_type) else 'observable'
+        to_type = to_type.lower() if not ObservableTypes.has_value(to_type) else 'observable'
+
         mapping = {
             'uses': {
                 'threat-actor': {
@@ -3525,6 +3667,16 @@ class OpenCTIApiClient:
                 }
             },
             'localization': {
+                'observable': {
+                    'region': {'from_role': 'localized', 'to_role': 'location'},
+                    'country': {'from_role': 'localized', 'to_role': 'location'},
+                    'city': {'from_role': 'localized', 'to_role': 'location'}
+                },
+                'relation': {
+                    'region': {'from_role': 'localized', 'to_role': 'location'},
+                    'country': {'from_role': 'localized', 'to_role': 'location'},
+                    'city': {'from_role': 'localized', 'to_role': 'location'}
+                },
                 'country': {
                     'region': {'from_role': 'localized', 'to_role': 'location'}
                 },
@@ -3559,7 +3711,9 @@ class OpenCTIApiClient:
         else:
             return None
 
-    def stix2_import_bundle_from_file(self, file_path, update=False, types=[]):
+    def stix2_import_bundle_from_file(self, file_path, update=False, types=None):
+        if types is None:
+            types = []
         if not os.path.isfile(file_path):
             logging.error('The bundle file does not exists')
             return None
@@ -3568,12 +3722,14 @@ class OpenCTIApiClient:
             data = json.load(file)
 
         stix2 = OpenCTIStix2(self, self.log_level)
-        stix2.import_bundle(data, update, types)
+        return stix2.import_bundle(data, update, types)
 
-    def stix2_import_bundle(self, json_data, update=False, types=[]):
+    def stix2_import_bundle(self, json_data, update=False, types=None) -> List:
+        if types is None:
+            types = []
         data = json.loads(json_data)
         stix2 = OpenCTIStix2(self, self.log_level)
-        stix2.import_bundle(data, update, types)
+        return stix2.import_bundle(data, update, types)
 
     def stix2_export_entity(self, entity_type, entity_id, mode='simple'):
         stix2 = OpenCTIStix2(self, self.log_level)
@@ -3585,9 +3741,11 @@ class OpenCTIApiClient:
         }
         if entity_type == 'report':
             bundle['objects'] = stix2.export_report(self.parse_stix(self.get_report(entity_id)), mode)
-        if entity_type == 'threat-actor':
+        elif entity_type == 'threat-actor':
             bundle['objects'] = stix2.export_threat_actor(self.parse_stix(self.get_threat_actor(entity_id)))
-
+        else:
+            raise Exception("Unsupported export type " + entity_type)
+        # TODO ADD MORE EXPORT TYPES
         return bundle
 
     def stix2_export_bundle(self, types=[]):
