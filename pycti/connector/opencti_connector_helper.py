@@ -16,9 +16,10 @@ from pycti.connector.opencti_connector import OpenCTIConnector
 
 
 class ListenQueue(threading.Thread):
-    def __init__(self, helper, queue_name, channel, callback):
+    def __init__(self, helper, connection, queue_name, channel, callback):
         threading.Thread.__init__(self)
         self.helper = helper
+        self.connection = connection
         self.channel = channel
         self.callback = callback
         self.queue_name = queue_name
@@ -26,6 +27,12 @@ class ListenQueue(threading.Thread):
     # noinspection PyUnusedLocal
     def _process_message(self, channel, method, properties, body):
         json_data = json.loads(body)
+        thread = threading.Thread(target=self._data_handler, args=[channel, method, json_data])
+        thread.start()
+        while thread.is_alive():  # Loop while the thread is processing
+            self.connection.sleep(1.0)
+
+    def _data_handler(self, channel, method, json_data):
         job_id = json_data['job_id'] if 'job_id' in json_data else None
         try:
             work_id = json_data['work_id']
@@ -46,9 +53,13 @@ class ListenQueue(threading.Thread):
             channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def run(self):
-        logging.info('Starting consuming listen queue')
-        self.channel.basic_consume(queue=self.queue_name, on_message_callback=self._process_message)
-        self.channel.start_consuming()
+        try:
+            logging.info('Starting consuming listen queue')
+            self.channel.basic_consume(queue=self.queue_name, on_message_callback=self._process_message)
+            self.channel.start_consuming()
+        except:
+            logging.error('Lost connection to the broker, reconnecting')
+            self.helper.connect()
 
 
 class PingAlive(threading.Thread):
@@ -110,9 +121,10 @@ class OpenCTIConnectorHelper:
         self.connector_id = connector_configuration['id']
         self.config = connector_configuration['config']
 
-        # Connect to the broker
-        self.pika_connection = pika.BlockingConnection(pika.URLParameters(self.config['uri']))
-        self.channel = self.pika_connection.channel()
+        # Connect the broker
+        self.pika_connection = None
+        self.channel = None
+        self.connect()
 
         # Start ping thread
         self.ping = PingAlive(self.connector.id, self.api)
@@ -122,8 +134,13 @@ class OpenCTIConnectorHelper:
         self.cache_index = {}
         self.cache_added = []
 
+    def connect(self):
+        # Connect to the broker
+        self.pika_connection = pika.BlockingConnection(pika.URLParameters(self.config['uri']))
+        self.channel = self.pika_connection.channel()
+
     def listen(self, message_callback: Callable[[Dict], List[str]]) -> None:
-        listen_queue = ListenQueue(self, self.config['listen'], self.channel, message_callback)
+        listen_queue = ListenQueue(self, self.config['listen'], self.pika_connection, self.channel, message_callback)
         listen_queue.start()
 
     def get_connector(self):
@@ -173,7 +190,7 @@ class OpenCTIConnectorHelper:
         # raise ValueError('The bundle is not a valid STIX2 JSON')
 
         # Prepare the message
-        #if self.current_work_id is None:
+        # if self.current_work_id is None:
         #    raise ValueError('The job id must be specified')
         message = {
             'job_id': job_id,
