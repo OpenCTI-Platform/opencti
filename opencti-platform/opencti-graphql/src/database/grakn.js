@@ -113,12 +113,6 @@ export const relationsToIndex = {
     }
   ]
 };
-
-const sleep = ms => {
-  return new Promise(resolve => {
-    setTimeout(resolve, ms);
-  });
-};
 // endregion
 
 // region client
