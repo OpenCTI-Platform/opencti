@@ -11,10 +11,10 @@ import json
 import uuid
 import logging
 
-from api.opencti_api_connector import OpenCTIApiConnector
-from api.opencti_api_job import OpenCTIApiJob
-from utils.constants import ObservableTypes
-from utils.opencti_stix2 import OpenCTIStix2
+from pycti.api.opencti_api_connector import OpenCTIApiConnector
+from pycti.api.opencti_api_job import OpenCTIApiJob
+from pycti.utils.constants import ObservableTypes
+from pycti.utils.opencti_stix2 import OpenCTIStix2
 
 
 class File:
