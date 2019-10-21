@@ -25,7 +25,7 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import { AspectRatio } from '@material-ui/icons';
-import { AutoFix } from 'mdi-material-ui';
+import { GraphOutline } from 'mdi-material-ui';
 import { debounce } from 'rxjs/operators/index';
 import { Subject, timer } from 'rxjs/index';
 import { commitMutation, fetchQuery } from '../../../relay/environment';
@@ -33,7 +33,7 @@ import inject18n from '../../../components/i18n';
 import EntityNodeModel from '../../../components/graph_node/EntityNodeModel';
 import GlobalLinkModel from '../../../components/graph_node/GlobalLinkModel';
 import RelationNodeModel from '../../../components/graph_node/RelationNodeModel';
-import { distributeElements } from '../../../utils/DagreHelper';
+import distributeElements from '../../../utils/DagreHelper';
 import { serializeGraph } from '../../../utils/GraphHelper';
 import { dateFormat } from '../../../utils/Time';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
@@ -237,6 +237,7 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   initialize() {
+    let autoDistribute = true;
     const model = new DiagramModel();
     // prepare nodes & relations
     const nodes = this.props.report.objectRefs.edges;
@@ -296,7 +297,7 @@ class ReportKnowledgeGraphComponent extends Component {
         const newNode = new RelationNodeModel({
           id: l.node.id,
           relationId: l.relation.id,
-          relationship_type: l.node.relationship_type,
+          type: l.node.relationship_type,
           first_seen: l.node.first_seen,
           last_seen: l.node.last_seen,
         });
@@ -309,6 +310,7 @@ class ReportKnowledgeGraphComponent extends Component {
           graphData,
         );
         if (position && position.x !== undefined && position.y !== undefined) {
+          autoDistribute = false;
           newNode.setPosition(position.x, position.y);
         }
         model.addNode(newNode);
@@ -364,7 +366,11 @@ class ReportKnowledgeGraphComponent extends Component {
       linksUpdated: this.handleLinksChange.bind(this),
     });
     this.props.engine.setDiagramModel(model);
-    this.props.engine.repaintCanvas();
+    if (autoDistribute) {
+      this.autoDistribute();
+    } else {
+      this.props.engine.repaintCanvas();
+    }
   }
 
   updateView() {
@@ -577,7 +583,7 @@ class ReportKnowledgeGraphComponent extends Component {
         const newNode = new RelationNodeModel({
           id: result.id,
           relationId: data.reportEdit.relationAdd.relation.id,
-          relationship_type: result.relationship_type,
+          type: result.relationship_type,
           first_seen: result.first_seen,
           last_seen: result.last_seen,
         });
@@ -662,7 +668,7 @@ class ReportKnowledgeGraphComponent extends Component {
         nodeObject.setExtras({
           id: currentNode.extras.id,
           relationId: currentNode.extras.relationId,
-          relationship_type: stixRelation.relationship_type,
+          type: stixRelation.relationship_type,
           first_seen: stixRelation.first_seen,
           last_seen: stixRelation.last_seen,
         });
@@ -692,14 +698,17 @@ class ReportKnowledgeGraphComponent extends Component {
     this.props.engine.repaintCanvas();
   }
 
-  autoDistribute() {
+  autoDistribute(rankdir) {
     const model = this.props.engine.getDiagramModel();
     const nodes = model.getNodes();
     map((node) => {
       node.setSelected(false);
     }, nodes);
     const serialized = model.serializeDiagram();
-    const distributedSerializedDiagram = distributeElements(serialized);
+    const distributedSerializedDiagram = distributeElements(
+      serialized,
+      rankdir,
+    );
     const distributedDeSerializedModel = new DiagramModel();
     distributedDeSerializedModel.deSerializeDiagram(
       distributedSerializedDiagram,
@@ -720,8 +729,9 @@ class ReportKnowledgeGraphComponent extends Component {
     this.props.engine.repaintCanvas();
   }
 
-  distribute() {
-    this.autoDistribute();
+  distribute(rankdir) {
+    this.autoDistribute(rankdir);
+    this.props.engine.zoomToFit();
     this.handleSaveGraph();
   }
 
@@ -756,10 +766,18 @@ class ReportKnowledgeGraphComponent extends Component {
         <IconButton
           color="primary"
           className={classes.icon}
-          onClick={this.distribute.bind(this)}
+          onClick={this.distribute.bind(this, 'TB')}
           style={{ left: 140 }}
         >
-          <AutoFix />
+          <GraphOutline />
+        </IconButton>
+        <IconButton
+          color="primary"
+          className={classes.icon}
+          onClick={this.distribute.bind(this, 'LR')}
+          style={{ left: 190 }}
+        >
+          <GraphOutline style={{ transform: 'rotate(-90deg)' }} />
         </IconButton>
         <DiagramWidget
           className={classes.canvas}

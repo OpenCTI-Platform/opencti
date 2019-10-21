@@ -187,6 +187,10 @@ define
   gather sub role;
   part_of sub role;
 
+  # drops
+  dropping sub role;
+  dropped sub role;
+
   # sighting
   sighting_of sub role;
   sighted_in sub role;
@@ -383,11 +387,11 @@ define
     has created_at_year,
     has updated_at,
     plays phase_belonging,
-    plays localized,
     plays so;
 
   # targets
   targets sub stix_relation,
+    plays localized,
     relates target,
     relates source;
 
@@ -444,6 +448,11 @@ define
   gathering sub parentship,
     relates gather,
     relates part_of;
+
+  # drops
+  drops sub parentship,
+    relates dropping,
+    relates dropped;
 
   ## ENTITIES
   # Migration entities
@@ -729,6 +738,8 @@ define
     plays problem,
     plays characterize,
     plays attribution,
+    plats dropping,
+    plays dropped,
     plays original;
 
   Report sub Stix-Domain-Entity,
@@ -748,6 +759,8 @@ define
     plays user,
     plays usage,
     plays problem,
+    plays dropping,
+    plays dropped,
     plays characterize;
 
   Vulnerability sub Stix-Domain-Entity,

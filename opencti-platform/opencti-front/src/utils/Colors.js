@@ -85,6 +85,22 @@ export const itemColor = (type, dark) => {
         return '#5d4037';
       }
       return '#795548';
+    case 'targets':
+    case 'uses':
+    case 'related-to':
+    case 'mitigates':
+    case 'impersonates':
+    case 'indicates':
+    case 'comes-after':
+    case 'attributed-to':
+    case 'variant-of':
+    case 'localization':
+    case 'gathering':
+    case 'drops':
+      if (dark) {
+        return '#616161';
+      }
+      return '#9e9e9e';
     case 'domain':
     case 'ipv4-addr':
     case 'ipv6-addr':

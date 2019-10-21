@@ -76,10 +76,10 @@ const styles = (theme) => ({
     position: 'absolute',
     width: 180,
     height: 80,
+    borderRadius: 10,
   },
   itemHeader: {
     padding: '10px 0 10px 0',
-    borderBottom: '1px solid #ffffff',
   },
   icon: {
     position: 'absolute',
@@ -317,26 +317,26 @@ class StixRelationCreation extends Component {
                 <div
                   className={classes.item}
                   style={{
-                    backgroundColor: itemColor(from.type, true),
+                    border: `2px solid ${itemColor(from.type)}`,
                     top: 10,
-                    left: 10,
+                    left: 0,
                   }}
                 >
-                  <div className={classes.itemHeader}>
+                  <div
+                    className={classes.itemHeader}
+                    style={{
+                      borderBottom: `1px solid ${itemColor(from.type)}`,
+                    }}
+                  >
                     <div className={classes.icon}>
                       <ItemIcon
                         type={from.type}
-                        color={itemColor(
-                          from.type ? from.type : 'stix_relation',
-                          false,
-                        )}
+                        color={itemColor(from.type)}
                         size="small"
                       />
                     </div>
                     <div className={classes.type}>
-                      {from.type
-                        ? t(`entity_${from.type}`)
-                        : t(`relation_${from.relationship_type}`)}
+                      {t(`entity_${from.type}`)}
                     </div>
                   </div>
                   <div className={classes.content}>
@@ -349,30 +349,25 @@ class StixRelationCreation extends Component {
                 <div
                   className={classes.item}
                   style={{
-                    backgroundColor: itemColor(
-                      to.type ? to.type : 'stix_relation',
-                      true,
-                    ),
+                    border: `2px solid ${itemColor(to.type)}`,
                     top: 10,
-                    right: 10,
+                    right: 0,
                   }}
                 >
-                  <div className={classes.itemHeader}>
+                  <div
+                    className={classes.itemHeader}
+                    style={{
+                      borderBottom: `1px solid ${itemColor(to.type)}`,
+                    }}
+                  >
                     <div className={classes.icon}>
                       <ItemIcon
                         type={to.type}
-                        color={itemColor(
-                          to.type ? to.type : 'stix_relation',
-                          false,
-                        )}
+                        color={itemColor(to.type)}
                         size="small"
                       />
                     </div>
-                    <div className={classes.type}>
-                      {to.type
-                        ? t(`entity_${to.type}`)
-                        : t(`relation_${to.relationship_type}`)}
-                    </div>
+                    <div className={classes.type}>{t(`entity_${to.type}`)}</div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>{to.name}</span>
@@ -506,19 +501,21 @@ class StixRelationCreation extends Component {
               <div
                 className={classes.item}
                 style={{
-                  backgroundColor: itemColor(
-                    from.type ? from.type : 'stix_relation',
-                    true,
-                  ),
+                  border: `2px solid ${itemColor(from.type)}`,
                   top: 10,
-                  left: 10,
+                  left: 0,
                 }}
               >
-                <div className={classes.itemHeader}>
+                <div
+                  className={classes.itemHeader}
+                  style={{
+                    borderBottom: `1px solid ${itemColor(from.type)}`,
+                  }}
+                >
                   <div className={classes.icon}>
                     <ItemIcon
                       type={from.type}
-                      color={itemColor(from.type, false)}
+                      color={itemColor(from.type)}
                       size="small"
                     />
                   </div>
@@ -556,16 +553,21 @@ class StixRelationCreation extends Component {
               <div
                 className={classes.item}
                 style={{
-                  backgroundColor: itemColor(to.type, true),
+                  border: `2px solid ${itemColor(to.type)}`,
                   top: 10,
-                  right: 10,
+                  right: 0,
                 }}
               >
-                <div className={classes.itemHeader}>
+                <div
+                  className={classes.itemHeader}
+                  style={{
+                    borderBottom: `1px solid ${itemColor(to.type)}`,
+                  }}
+                >
                   <div className={classes.icon}>
                     <ItemIcon
                       type={to.type}
-                      color={itemColor(to.type, false)}
+                      color={itemColor(to.type)}
                       size="small"
                     />
                   </div>
@@ -587,10 +589,15 @@ class StixRelationCreation extends Component {
               style={{
                 backgroundColor: '#607d8b',
                 top: 10,
-                left: 10,
+                left: 0,
               }}
             >
-              <div className={classes.itemHeader}>
+              <div
+                className={classes.itemHeader}
+                style={{
+                  borderBottom: `1px solid ${itemColor(from.type)}`,
+                }}
+              >
                 <div className={classes.icon}>
                   <ItemIcon type={from.type} color="#263238" size="small" />
                 </div>
@@ -620,10 +627,15 @@ class StixRelationCreation extends Component {
               style={{
                 backgroundColor: '#607d8b',
                 top: 10,
-                right: 10,
+                right: 0,
               }}
             >
-              <div className={classes.itemHeader}>
+              <div
+                className={classes.itemHeader}
+                style={{
+                  borderBottom: `1px solid ${itemColor(to.type)}`,
+                }}
+              >
                 <div className={classes.icon}>
                   <ItemIcon type={to.type} color="#263238" size="small" />
                 </div>

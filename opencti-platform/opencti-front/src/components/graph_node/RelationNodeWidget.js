@@ -13,12 +13,15 @@ const styles = () => ({
     position: 'relative',
     textAlign: 'center',
     width: 70,
-    height: 30,
-    lineHeight: '30px',
+    height: 25,
+    lineHeight: '25px',
     zIndex: 20,
     borderRadius: 10,
     fontSize: 11,
     backgroundColor: '#303030',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
   port: {
     position: 'absolute',
@@ -80,10 +83,10 @@ class RelationNodeWidget extends Component {
         <div
           className={classes.node}
           style={{
-            border: node.selected ? '2px solid #00c0ff' : '2px solid #ff3d00',
+            border: node.selected ? '2px solid #00c0ff' : '2px solid #9e9e9e',
           }}
         >
-          <strong>{t(`relation_${extras.relationship_type}`)}</strong>
+          <strong>{t(`relation_${extras.type}`)}</strong>
           <div
             className={classes.port}
             style={{ display: node.selected ? 'none' : 'block' }}

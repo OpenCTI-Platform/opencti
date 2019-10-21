@@ -101,6 +101,7 @@ class EntityNodeWidget extends Component {
               aria-label="edit"
               size="small"
               onClick={this.handleEdit.bind(this, node)}
+              disabled={extras.disabled === true}
             >
               <Edit fontSize="small" />
             </IconButton>
@@ -108,6 +109,7 @@ class EntityNodeWidget extends Component {
               aria-label="delete"
               size="small"
               onClick={this.handleRemove.bind(this, node)}
+              disabled={extras.disabled === true}
             >
               <Delete fontSize="small" />
             </IconButton>

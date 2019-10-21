@@ -21,7 +21,8 @@ import {
   CityVariant,
   Tag,
   ProgressWrench,
-  HexagonOutline
+  HexagonOutline,
+  VectorRadius,
 } from 'mdi-material-ui';
 
 const iconSelector = (type, variant, fontSize, color) => {
@@ -75,6 +76,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <BugReport style={style} fontSize={fontSize} />;
     case 'report':
       return <Description style={style} fontSize={fontSize} />;
+    case 'tag':
+      return <Tag style={style} fontSize={fontSize} />;
     case 'domain':
     case 'ipv4-addr':
     case 'ipv6-addr':
@@ -86,8 +89,19 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'file-sha1':
     case 'file-sha256':
       return <HexagonOutline style={style} fontSize={fontSize} />;
-    case 'stix_relation':
-      return <Tag style={style} fontSize={fontSize} />;
+    case 'targets':
+    case 'uses':
+    case 'related-to':
+    case 'mitigates':
+    case 'impersonates':
+    case 'indicates':
+    case 'comes-after':
+    case 'attributed-to':
+    case 'variant-of':
+    case 'localization':
+    case 'gathering':
+    case 'drops':
+      return <VectorRadius style={style} fontSize={fontSize} />;
     default:
       return <Help style={style} fontSize={fontSize} />;
   }

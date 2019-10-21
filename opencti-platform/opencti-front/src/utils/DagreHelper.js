@@ -6,8 +6,8 @@ function mapElements(model) {
   return model.nodes.map((node) => ({
     id: node.id,
     metadata: {
-      width: node.type === 'entity' ? 60 : 65,
-      height: node.type === 'entity' ? 60 : 48,
+      width: node.type === 'entity' ? 60 : 70,
+      height: node.type === 'entity' ? 60 : 25,
       id: node.id,
     },
   }));
@@ -27,11 +27,11 @@ function mapEdges(model) {
     );
 }
 
-export function distributeGraph(model) {
+function distributeGraph(model, rankdir) {
   const nodes = mapElements(model);
   const edges = mapEdges(model);
   const graph = new dagre.graphlib.Graph();
-  graph.setGraph({ ranker: 'network-simplex' });
+  graph.setGraph({ ranker: 'network-simplex', rankdir });
   graph.setDefaultEdgeLabel(() => ({}));
   // add elements to dagre graph
   nodes.forEach((node) => {
@@ -47,9 +47,9 @@ export function distributeGraph(model) {
   return graph.nodes().map((node) => graph.node(node));
 }
 
-export function distributeElements(model) {
+export default function distributeElements(model, rankdir = 'LR') {
   const clonedModel = _.cloneDeep(model);
-  const nodes = distributeGraph(clonedModel);
+  const nodes = distributeGraph(clonedModel, rankdir);
   nodes.forEach((node) => {
     const modelNode = clonedModel.nodes.find((item) => item.id === node.id);
     modelNode.x = node.x - node.width / 2;
