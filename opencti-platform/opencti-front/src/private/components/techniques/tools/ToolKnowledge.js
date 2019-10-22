@@ -36,7 +36,7 @@ class ToolKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/techniques/tools/:toolId/knowledge/relations/:relationId"
-          render={(routeProps) => (
+          render={routeProps => (
             <StixRelation
               entityId={tool.id}
               inversedRoles={inversedRoles}
@@ -47,7 +47,7 @@ class ToolKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/techniques/tools/:toolId/knowledge/overview"
-          render={(routeProps) => (
+          render={routeProps => (
             <StixDomainEntityKnowledge
               stixDomainEntityId={tool.id}
               stixDomainEntityType="tool"
@@ -58,7 +58,7 @@ class ToolKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/techniques/tools/:toolId/knowledge/intrusion_sets"
-          render={(routeProps) => (
+          render={routeProps => (
             <EntityStixRelations
               entityId={tool.id}
               relationType="uses"
@@ -72,7 +72,7 @@ class ToolKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/techniques/tools/:toolId/knowledge/campaigns"
-          render={(routeProps) => (
+          render={routeProps => (
             <EntityStixRelations
               entityId={tool.id}
               relationType="uses"
@@ -86,7 +86,7 @@ class ToolKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/techniques/tools/:toolId/knowledge/incidents"
-          render={(routeProps) => (
+          render={routeProps => (
             <EntityStixRelations
               entityId={tool.id}
               relationType="uses"
@@ -100,7 +100,7 @@ class ToolKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/techniques/tools/:toolId/knowledge/malwares"
-          render={(routeProps) => (
+          render={routeProps => (
             <EntityStixRelations
               entityId={tool.id}
               relationType="uses"

@@ -33,7 +33,8 @@ class ReportComponent extends Component {
         <Grid
           container={true}
           spacing={3}
-          classes={{ container: classes.gridContainer }}>
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={4}>
             <ReportOverview report={report} />
           </Grid>
@@ -48,7 +49,8 @@ class ReportComponent extends Component {
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 30 }}>
+          style={{ marginTop: 30 }}
+        >
           <Grid item={true} xs={4}>
             <EntityStixRelationsDonut
               entityId={report.id}

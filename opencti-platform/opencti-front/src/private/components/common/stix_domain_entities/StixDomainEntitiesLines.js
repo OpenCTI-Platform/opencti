@@ -268,18 +268,16 @@ const StixDomainEntitiesLines = createPaginationContainer(
               entity_type
               name
               description
-              ... on StixEntity {
-                tags {
-                  edges {
-                    node {
-                      id
-                      tag_type
-                      value
-                      color
-                    }
-                    relation {
-                      id
-                    }
+              tags {
+                edges {
+                  node {
+                    id
+                    tag_type
+                    value
+                    color
+                  }
+                  relation {
+                    id
                   }
                 }
               }

@@ -16,6 +16,7 @@ module.exports.up = async next => {
     `[MIGRATION] stix_id_to_keys > Starting the migration of all STIX_ID to keys... /!\\ This migration could take some time!`
   );
   const entities = [
+    'stix_relation_embedded',
     'stix_relation_observable_embedded',
     'stix_relation_observable_grouping',
     'stix_sighting',

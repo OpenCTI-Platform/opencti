@@ -7,7 +7,7 @@ import {
   getById,
   getObject,
   notify,
-  graknNow,
+  now,
   takeWriteTx,
   commitWriteTx,
   getGraknVersion
@@ -57,8 +57,8 @@ export const addSettings = async (user, settings) => {
     has platform_language "${escapeString(settings.platform_language)}",
     has platform_external_auth ${escape(settings.platform_external_auth)},
     has platform_registration ${escape(settings.platform_registration)},
-    has created_at ${graknNow()},
-    has updated_at ${graknNow()};
+    has created_at ${now()},
+    has updated_at ${now()};
   `);
 
   await commitWriteTx(wTx);

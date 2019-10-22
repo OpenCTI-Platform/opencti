@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   escapeString,
@@ -8,13 +8,12 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  graknNow,
+  now,
   takeWriteTx,
   commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'country', args));
@@ -26,37 +25,53 @@ export const addCountry = async (user, country) => {
   const internalId = country.internal_id_key
     ? escapeString(country.internal_id_key)
     : uuid();
-  const now = graknNow();
   const countryIterator = await wTx.tx.query(`insert $country isa Country,
     has internal_id_key "${internalId}",
     has entity_type "country",
     has stix_id_key "${
-      country.stix_id_key
-        ? escapeString(country.stix_id_key)
-        : `identity--${uuid()}`
+      country.stix_id_key ? escapeString(country.stix_id_key) : `identity--${uuid()}`
     }",
     has stix_label "",
     has alias "",
     has name "${escapeString(country.name)}",
     has description "${escapeString(country.description)}",
-    has created ${country.created ? prepareDate(country.created) : now},
-    has modified ${country.modified ? prepareDate(country.modified) : now},
+    has created ${country.created ? prepareDate(country.created) : now()},
+    has modified ${country.modified ? prepareDate(country.modified) : now()},
     has revoked false,
-    has created_at ${now},
-    has created_at_day "${dayFormat(now)}",
-    has created_at_month "${monthFormat(now)}",
-    has created_at_year "${yearFormat(now)}",
-    has updated_at ${now};
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}",
+    has updated_at ${now()};
   `);
   const createCountry = await countryIterator.next();
   const createdCountryId = await createCountry.map().get('country').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdCountryId, country.createdByRef);
-  await linkMarkingDef(wTx, createdCountryId, country.markingDefinitions);
+  if (country.createdByRef) {
+    await wTx.tx.query(
+      `match $from id ${createdCountryId};
+      $to has internal_id_key "${escapeString(country.createdByRef)}";
+      insert (so: $from, creator: $to)
+      isa created_by_ref, has internal_id_key "${uuid()}";`
+    );
+  }
 
-  // Commit everything and return the data
+  if (country.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.tx.query(
+        `match $from id ${createdCountryId};
+         $to has internal_id_key "${escapeString(markingDefinition)}"; 
+         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      country.markingDefinitions
+    );
+    await Promise.all(markingDefinitionsPromises);
+  }
+
   await commitWriteTx(wTx);
+
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

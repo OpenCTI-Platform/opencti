@@ -54,7 +54,6 @@ const graknStateStorage = {
       has title "${mig.title}",
       has timestamp ${mig.timestamp};`;
     logger.debug(`[MIGRATION] > ${q3}`);
-    // Attach the reference to the migration status.
     await wTx.tx.query(q3);
     // Attach the reference to the migration status.
     const q4 = `match $status isa MigrationStatus; 

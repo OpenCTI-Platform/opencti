@@ -20,8 +20,7 @@ const defaultIndexes = [
   'stix_domain_entities',
   'stix_relations',
   'stix_observables',
-  'external_references',
-  'work_jobs'
+  'external_references'
 ];
 
 const indexedRelations = ['tags', 'createdByRef', 'markingDefinitions'];
@@ -171,8 +170,8 @@ export const reindex = async indexMaps => {
 };
 
 export const index = async (indexName, documentBody, refresh = true) => {
-  const internalId = documentBody.internal_id_key;
-  const entityType = documentBody.entity_type ? documentBody.entity_type : '';
+  const internalId = documentBody.internal_id;
+  const entityType = documentBody.entity_type;
   logger.debug(
     `[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`
   );
@@ -183,25 +182,6 @@ export const index = async (indexName, documentBody, refresh = true) => {
     body: documentBody
   });
   return documentBody;
-};
-
-export const elUpdate = (indexName, documentId, documentBody) => {
-  return el.update({
-    id: documentId,
-    index: indexName,
-    body: documentBody
-  });
-};
-
-export const elDeleteByField = async (indexName, fieldName, value) => {
-  const query = {
-    match: { [fieldName]: value }
-  };
-  await el.deleteByQuery({
-    index: indexName,
-    body: { query }
-  });
-  return value;
 };
 
 export const deleteEntity = async (indexName, documentId) => {
@@ -292,8 +272,7 @@ export const paginate = async (indexName, options) => {
     isUser = null,
     search = null,
     orderBy = null,
-    orderMode = 'asc',
-    connectionFormat = true
+    orderMode = 'asc'
   } = options;
   const offset = after ? cursorToOffset(after) : 0;
   let must = [];
@@ -468,23 +447,21 @@ export const paginate = async (indexName, options) => {
   return el
     .search(query)
     .then(data => {
-      const dataWithIds = map(
-        n => assoc('id', n._source.internal_id_key, n._source),
+      const finalData = map(
+        n => ({
+          node: assoc('id', n._source.internal_id_key, n._source)
+        }),
         data.body.hits.hits
       );
-      if (connectionFormat) {
-        const nodeHits = map(n => ({ node: n }), dataWithIds);
-        return buildPagination(
-          first,
-          offset,
-          nodeHits,
-          data.body.hits.total.value
-        );
-      }
-      return dataWithIds;
+      return buildPagination(
+        first,
+        offset,
+        finalData,
+        data.body.hits.total.value
+      );
     })
     .catch(() => {
-      return connectionFormat ? buildPagination(first, offset, [], 0) : [];
+      return buildPagination(first, offset, [], 0);
     });
   /* eslint-enable no-underscore-dangle */
 };

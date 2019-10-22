@@ -1,20 +1,19 @@
-import { assoc } from 'ramda';
+import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  commitWriteTx,
-  dayFormat,
   escapeString,
-  getById,
-  graknNow,
-  monthFormat,
-  notify,
-  prepareDate,
   takeWriteTx,
-  yearFormat
+  getById,
+  notify,
+  now,
+  prepareDate,
+  dayFormat,
+  monthFormat,
+  yearFormat,
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'threat-actor', args));
@@ -26,14 +25,15 @@ export const addThreatActor = async (user, threatActor) => {
   const internalId = threatActor.internal_id_key
     ? escapeString(threatActor.internal_id_key)
     : uuid();
-  const stixId = threatActor.stix_id_key
-    ? escapeString(threatActor.stix_id_key)
-    : `threat-actor--${uuid()}`;
   const threatActorIterator = await wTx.tx
     .query(`insert $threatActor isa Threat-Actor,
     has internal_id_key "${internalId}",
     has entity_type "threat-actor",
-    has stix_id_key "${stixId}",
+    has stix_id_key "${
+      threatActor.stix_id_key
+        ? escapeString(threatActor.stix_id_key)
+        : `threat-actor--${uuid()}`
+    }",
     has stix_label "",
     has alias "",
     has name "${escapeString(threatActor.name)}", 
@@ -47,27 +47,48 @@ export const addThreatActor = async (user, threatActor) => {
     )}",
     has personal_motivation "${escapeString(threatActor.personal_motivation)}",
     has created ${
-      threatActor.created ? prepareDate(threatActor.created) : graknNow()
+      threatActor.created ? prepareDate(threatActor.created) : now()
     },
     has modified ${
-      threatActor.modified ? prepareDate(threatActor.modified) : graknNow()
+      threatActor.modified ? prepareDate(threatActor.modified) : now()
     },
     has revoked false,
-    has created_at ${graknNow()},
-    has created_at_day "${dayFormat(graknNow())}",
-    has created_at_month "${monthFormat(graknNow())}",
-    has created_at_year "${yearFormat(graknNow())}",        
-    has updated_at ${graknNow()};
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}",        
+    has updated_at ${now()};
   `);
   const txThreatActor = await threatActorIterator.next();
-  const createId = await txThreatActor.map().get('threatActor').id;
+  const createThreatActorId = await txThreatActor.map().get('threatActor').id;
+  // Create relation createdByRef
+  if (threatActor.createdByRef) {
+    await wTx.tx.query(
+      `match $from id ${createThreatActorId};
+      $to has internal_id_key "${escapeString(threatActor.createdByRef)}";
+      insert (so: $from, creator: $to)
+      isa created_by_ref, has internal_id_key "${uuid()}";`
+    );
+  }
+  // Create Marking definitions relations
+  if (threatActor.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.tx.query(
+        `match $from id ${createThreatActorId};
+        $to has internal_id_key "${escapeString(markingDefinition)}";
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      threatActor.markingDefinitions
+    );
+    await Promise.all(markingDefinitionsPromises);
+  }
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createId, threatActor.createdByRef);
-  await linkMarkingDef(wTx, createId, threatActor.markingDefinitions);
-
-  // Commit everything and return the data
+  // Finalize the transaction for all objects
   await commitWriteTx(wTx);
+
+  // Return the data created
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

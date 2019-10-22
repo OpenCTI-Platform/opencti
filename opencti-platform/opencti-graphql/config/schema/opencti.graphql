@@ -22,13 +22,13 @@ directive @constraint(
 scalar DateTime
 scalar ConstraintString
 scalar ConstraintNumber
-scalar Upload
-enum Status {
-  wait
-  progress
-  partial
-  complete
-  error
+
+### Upload
+input Upload {
+  name: String!
+  type: String!
+  size: Int!
+  base64: String!
 }
 
 ### Relations
@@ -36,14 +36,17 @@ type RelationEmbedded {
   id: ID!
   entity_type: String!
 }
+
 type RelationData {
   node: GlobalObject
   relation: RelationEmbedded
 }
+
 type createdByRef {
   node: Identity
   relation: RelationEmbedded
 }
+
 type ownedBy {
   node: User
   relation: RelationEmbedded
@@ -242,90 +245,14 @@ input TagAddInput {
   clientMutationId: String
 }
 
-### Connectors
-enum ConnectorType {
-  EXTERNAL_IMPORT
-  INTERNAL_IMPORT_FILE
-  INTERNAL_ENRICHMENT
-  INTERNAL_EXPORT_FILE
-}
-input RegisterConnectorInput {
+### Export
+type Export {
   id: ID!
-  name: String!
-  type: ConnectorType!
-  scope: [String!]
-}
-type ConnectorConfig {
-  uri: String!
-  listen: String!
-  listen_exchange: String!
-  push: String!
-  push_exchange: String!
-}
-type Connector {
-  id: ID!
-  internal_id_key: ID!
-  name: String!
-  active: Boolean
-  connector_type: String!
-  connector_scope: [String!]
-  updated_at: DateTime
+  description: String
+  object_status: Int
+  export_type: String
+  raw_data: String
   created_at: DateTime
-  config: ConnectorConfig
-}
-
-### Files
-type Job {
-  id: ID!
-  internal_id_key: ID!
-  messages: [String]
-  job_status: Status!
-  created_at: DateTime!
-  updated_at: DateTime!
-}
-type Work {
-  id: ID!
-  internal_id_key: ID!
-  jobs: [Job]
-  status: Status!
-  connector: Connector!
-  work_type: String!
-  created_at: DateTime!
-}
-type WorkEdge {
-  cursor: String!
-  node: Work!
-}
-type WorkConnection {
-  pageInfo: PageInfo!
-  edges: [WorkEdge]
-}
-enum FileCategory {
-  import
-  export
-}
-type FileMetadata {
-  category: FileCategory!
-  encoding: String
-  mimetype: String
-}
-type File {
-  id: ID!
-  name: String
-  size: Int
-  lastModified: DateTime
-  lastModifiedSinceMin: Int
-  metaData: FileMetadata
-  uploadStatus: Status!
-  works: [Work]
-}
-type FileEdge {
-  cursor: String!
-  node: File!
-}
-type FileConnection {
-  pageInfo: PageInfo!
-  edges: [FileEdge]
 }
 
 ### Global objects
@@ -344,10 +271,6 @@ interface StixEntity {
   parent_type: String!
   name: String!
   description: String
-  tags: TagConnection
-  reports: ReportConnection
-  editContext: [EditUserContext]
-  createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   stixRelations(
     first: Int
@@ -400,21 +323,44 @@ type StixDomainEntityEdge {
 }
 interface StixDomainEntity {
   id: ID!
-  name: String!
-  alias: [String]
-  stix_id_key: String!
   internal_id_key: String!
+  stix_id_key: String!
   entity_type: String!
   parent_type: String!
+  name: String!
   description: String
+  alias: [String]
   graph_data: String
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   tags: TagConnection
-  reports: ReportConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
+  exports(types: [String]!): [Export]
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    resolveInferences: Boolean
+    resolveRelationType: String
+    resolveRelationRole: String
+    resolveRelationToTypes: [String]
+    resolveViaTypes: [EntityRelation]
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    infrastructure: Boolean
+  ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -469,6 +415,7 @@ type StixObservable implements GlobalObject & StixEntity {
   markingDefinitions: MarkingDefinitionConnection
   tags: TagConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -494,8 +441,6 @@ type StixObservable implements GlobalObject & StixEntity {
     search: String
     infrastructure: Boolean
   ): StixRelationConnection
-  jobs(first: Int): [Work]
-  connectors(onlyAlive: Boolean): [Connector]
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -683,6 +628,7 @@ interface Identity {
   markingDefinitions: MarkingDefinitionConnection
   tags: TagConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -772,11 +718,10 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   tags: TagConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   token: String
   groups: GroupConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -879,10 +824,9 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -968,10 +912,9 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1053,10 +996,9 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1138,10 +1080,9 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1223,10 +1164,9 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1493,12 +1433,11 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   externalReferences: ExternalReferenceConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1583,10 +1522,9 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1673,10 +1611,9 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1770,10 +1707,9 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1867,10 +1803,9 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -1959,10 +1894,9 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -2046,11 +1980,10 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -2133,11 +2066,10 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -2220,10 +2152,9 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -2315,14 +2246,12 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  reports: ReportConnection
-  importFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
   tags: TagConnection
   externalReferences: ExternalReferenceConnection
   objectRefs: StixDomainEntityConnection
   observableRefs: StixObservableConnection
   relationRefs(relationType: String): StixRelationConnection
+  exports(types: [String]!): [Export]
   stixRelations(
     first: Int
     after: ID
@@ -2416,12 +2345,8 @@ type Query {
     search: String
   ): TagConnection @auth
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)
-  connectors: [Connector] @auth
-  connectorsForExport: [Connector] @auth
-  connectorsForImport: [Connector] @auth
-  importFiles(first: Int): FileConnection @auth
   # StixEntities
-  stixEntity(id: String, isStixId: Boolean): StixEntity @auth
+  stixEntity(id: String): StixEntity @auth
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(
@@ -2453,7 +2378,6 @@ type Query {
   stixObservables(
     first: Int
     after: ID
-    stix_id: String
     orderBy: StixObservablesOrdering
     orderMode: OrderingMode
     filters: StixObservablesFiltering
@@ -2870,11 +2794,11 @@ type StixDomainEntityEditMutations {
   contextPatch(input: EditContext): StixDomainEntity
   contextClean: StixDomainEntity
   relationAdd(input: RelationAddInput): RelationData
-  relationsAdd(input: RelationsAddInput): StixEntity
   relationDelete(relationId: ID!): RelationData
-  importPush(file: Upload!): File @auth
-  exportAsk(format: String!, exportType: String!): [File]
-  exportPush(file: Upload!): Boolean @auth(for: ROLE_ADMIN)
+  relationsAdd(input: RelationsAddInput): StixDomainEntity
+  refreshExport(entityType: String!, type: String!): StixDomainEntity
+  exportPush(exportId: String!, rawData: String!): Boolean
+    @auth(for: ROLE_ADMIN)
 }
 
 # StixObservable
@@ -2885,7 +2809,6 @@ type StixObservableEditMutations {
   contextClean: StixObservable
   relationAdd(input: RelationAddInput): RelationData
   relationDelete(relationId: ID!): RelationData
-  askEnrichment(connectorId: ID!): Work
 }
 
 # StixRelation
@@ -3130,19 +3053,11 @@ type Mutation {
   # Attribute
   attributeAdd(input: AttributeAddInput): Attribute @auth(for: ROLE_ADMIN)
   attributeEdit(id: ID!): AttributeEditMutations @auth(for: ROLE_ADMIN)
-  # Connector
-  pingConnector(id: ID!): Connector @auth(for: ROLE_ADMIN)
-  registerConnector(input: RegisterConnectorInput): Connector @auth(for: ROLE_ADMIN)
-  deleteWork(id: ID!): ID! @auth
-  initiateJob(workId: ID!): Job @auth
-  updateJob(jobId: ID!, status: Status!, messages: [String]): Job @auth
-  # File management
-  deleteImport(fileName: String): Boolean @auth
-  uploadImport(file: Upload!): File @auth
-  askJobImport(fileName: ID!): File @auth
   # Tag
   tagAdd(input: TagAddInput): Tag
   tagEdit(id: ID!): TagEditMutations @auth(for: ROLE_ADMIN)
+  # Import data
+  importData(type: String!, file: Upload!): Boolean @auth
   # StixDomainEntity
   stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth
   stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations @auth

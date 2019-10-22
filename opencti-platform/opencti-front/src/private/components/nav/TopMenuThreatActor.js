@@ -139,23 +139,6 @@ class TopMenuThreatActor extends Component {
         >
           {t('Observables')}
         </Button>
-        <Button
-            component={Link}
-            to={`/dashboard/threats/threat_actors/${threatActorId}/files`}
-            variant={
-                location.pathname === `/dashboard/threats/threat_actors/${threatActorId}/files`
-                  ? 'contained'
-                  : 'text'
-            }
-            size="small"
-            color={
-                location.pathname === `/dashboard/threats/threat_actors/${threatActorId}/files`
-                  ? 'primary'
-                  : 'inherit'
-            }
-            classes={{ root: classes.button }}>
-            {t('Files')}
-        </Button>
       </div>
     );
   }

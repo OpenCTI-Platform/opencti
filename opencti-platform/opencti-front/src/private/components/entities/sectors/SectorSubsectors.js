@@ -49,7 +49,7 @@ class SectorSubsectorsComponent extends Component {
                   component={Link}
                   to={`/dashboard/entities/sectors/${subsector.id}`}
                 >
-                  <ListItemIcon>
+                  <ListItemIcon classes={{ root: classes.itemIcon }}>
                     <Domain />
                   </ListItemIcon>
                   <ListItemText primary={subsector.name} />

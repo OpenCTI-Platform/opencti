@@ -41,7 +41,8 @@ class ThreatActorObservablesComponent extends Component {
           )
             ? classes.containerWithoutPadding
             : classes.container
-        }>
+        }
+      >
         <StixDomainEntityHeader
           stixDomainEntity={threatActor}
           PopoverComponent={<ThreatActorPopover />}
@@ -49,7 +50,7 @@ class ThreatActorObservablesComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/observables/relations/:relationId"
-          render={(routeProps) => (
+          render={routeProps => (
             <StixRelation
               entityId={threatActor.id}
               inversedRoles={[]}
@@ -61,7 +62,7 @@ class ThreatActorObservablesComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/observables"
-          render={(routeProps) => (
+          render={routeProps => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityStixObservables
                 entityId={threatActor.id}

@@ -17,6 +17,7 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../relay/environment';
+import StixDomainEntityExport from '../common/stix_domain_entities/StixDomainEntityExport';
 import { reportEditionQuery } from './ReportEdition';
 import ReportEditionContainer from './ReportEditionContainer';
 
@@ -104,6 +105,15 @@ class ReportPopover extends Component {
     this.setState({ displayEdit: false });
   }
 
+  handleOpenExport() {
+    this.setState({ displayExport: true });
+    this.handleClose();
+  }
+
+  handleCloseExport() {
+    this.setState({ displayExport: false });
+  }
+
   render() {
     const { classes, t, reportId } = this.props;
     return (
@@ -115,7 +125,11 @@ class ReportPopover extends Component {
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}>
+          style={{ marginTop: 50 }}
+        >
+          <MenuItem onClick={this.handleOpenExport.bind(this)}>
+            {t('Export')}
+          </MenuItem>
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
@@ -126,7 +140,8 @@ class ReportPopover extends Component {
         <Dialog
           open={this.state.displayDelete}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}>
+          onClose={this.handleCloseDelete.bind(this)}
+        >
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this report?')}
@@ -136,7 +151,8 @@ class ReportPopover extends Component {
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}>
+              disabled={this.state.deleting}
+            >
               {t('Cancel')}
             </Button>
             <Button
@@ -171,6 +187,12 @@ class ReportPopover extends Component {
             }}
           />
         </Drawer>
+        <StixDomainEntityExport
+          stixDomainEntityId={reportId}
+          stixDomainEntityType="report"
+          handleClose={this.handleCloseExport.bind(this)}
+          open={this.state.displayExport}
+        />
       </div>
     );
   }
