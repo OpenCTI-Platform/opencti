@@ -35,7 +35,7 @@ app.use(bodyParser.json({ limit: '100mb' }));
 
 // Static for generated fronted
 const extractTokenFromBearer = bearer =>
-    bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
+  bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
 const AppBasePath = nconf.get('app:base_path');
 const basePath =
   isEmpty(AppBasePath) || AppBasePath.startsWith('/')
