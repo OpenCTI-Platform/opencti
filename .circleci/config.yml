@@ -109,7 +109,7 @@ jobs:
           command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/
+          command: rsync -av ~/opencti/opencti-connectors/ ./opencti-connectors-enabled/
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A
@@ -143,7 +143,7 @@ jobs:
           command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/  
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/                
+          command: rsync -av ~/opencti/opencti-connectors/ ./opencti-connectors-enabled/          
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A
