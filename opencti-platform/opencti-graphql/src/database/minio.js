@@ -9,15 +9,15 @@ import {
   loadExportWorksAsProgressFiles
 } from '../domain/work';
 
-const bucketName = conf.get('minio:bucketName') || 'opencti-bucket';
-const bucketRegion = conf.get('minio:bucketRegion') || 'us-east-1';
+const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
+const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
 
 const minioClient = new Minio.Client({
   endPoint: conf.get('minio:endpoint'),
   port: conf.get('minio:port') || 9000,
-  useSSL: conf.get('minio:useSSL') || false,
-  accessKey: conf.get('minio:accessKey'),
-  secretKey: conf.get('minio:secretKey')
+  useSSL: conf.get('minio:use_ssl') || false,
+  accessKey: conf.get('minio:access_key'),
+  secretKey: conf.get('minio:secret_key')
 });
 
 export const isStorageAlive = () => {

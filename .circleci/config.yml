@@ -100,7 +100,7 @@ jobs:
           command: git clone ssh://opencti-fiqid45E@opencti.io:/~/opencti-fiqid45E.git .
       - run:
           working_directory: ~/opencti/deploy
-          command: git submodule update --remote          
+          command: git submodule init && git submodule update --remote          
       - run:
           working_directory: ~/opencti/deploy
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master
@@ -137,7 +137,7 @@ jobs:
           command: git clone ssh://opencti-b0gY5UHe@opencti.io:/~/opencti-b0gY5UHe.git .
       - run:
           working_directory: ~/opencti/deploy
-          command: git submodule update --remote          
+          command: git submodule init && git submodule update --remote          
       - run:
           working_directory: ~/opencti/deploy
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master          
