@@ -106,10 +106,7 @@ jobs:
           command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/      
-      - run:
-          working_directory: ~/opencti/deploy
-          command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker   
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/
       - run:
           working_directory: ~/opencti/deploy
           command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/
@@ -143,10 +140,7 @@ jobs:
           command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/
-      - run:
-          working_directory: ~/opencti/deploy
-          command: rsync -av ~/opencti/opencti-worker/src/ ./opencti-worker          
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/  
       - run:
           working_directory: ~/opencti/deploy
           command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/                
