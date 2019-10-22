@@ -205,7 +205,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
               tail(stixDomainEntity.alias)
             )
           )} has alias "${escapeString(head(stixDomainEntity.alias))}",`
-        : ''
+        : 'has alias "",'
     }
     has name "${escapeString(stixDomainEntity.name)}",
     has description "${escapeString(stixDomainEntity.description)}",

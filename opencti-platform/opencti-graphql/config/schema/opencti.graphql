@@ -718,6 +718,7 @@ input IdentityAddInput {
   stix_id_key: String
   name: String!
   description: String
+  alias: [String]
   type: String!
   markingDefinitions: [String]
   tags: [String]
@@ -818,6 +819,7 @@ input UserAddInput {
   lastname: String
   language: String
   grant: [UserRole]
+  alias: [String]
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -919,6 +921,7 @@ input OrganizationAddInput {
   name: String!
   description: String
   organization_class: String
+  alias: [String]
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -1007,6 +1010,7 @@ input SectorAddInput {
   stix_id_key: String
   name: String!
   description: String
+  alias: [String]
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -1092,6 +1096,7 @@ input CityAddInput {
   stix_id_key: String
   name: String!
   description: String
+  alias: [String]
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -1177,6 +1182,7 @@ input CountryAddInput {
   stix_id_key: String
   name: String!
   description: String
+  alias: [String]
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -1262,6 +1268,7 @@ input RegionAddInput {
   stix_id_key: String
   name: String!
   description: String
+  alias: [String]
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -1536,6 +1543,7 @@ input AttackPatternAddInput {
   description: String!
   platform: [String]
   required_permission: [String]
+  alias: [String]
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -1622,6 +1630,7 @@ input CourseOfActionAddInput {
   stix_id_key: String
   name: String!
   description: String!
+  alias: [String]
   markingDefinitions: [String]
   tags: [String]
   clientMutationId: String
@@ -1718,6 +1727,7 @@ input ThreatActorAddInput {
   primary_motivation: String
   secondary_motivation: String
   personal_motivation: String
+  alias: [String]
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -1817,6 +1827,7 @@ input IntrusionSetAddInput {
   primary_motivation: String
   secondary_motivation: String
   personal_motivation: String
+  alias: [String]
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -1909,6 +1920,7 @@ input CampaignAddInput {
   first_seen: DateTime
   last_seen: DateTime
   objective: String
+  alias: [String]
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -2001,6 +2013,7 @@ input IncidentAddInput {
   objective: String
   first_seen: DateTime
   last_seen: DateTime
+  alias: [String]
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -2086,6 +2099,7 @@ input MalwareAddInput {
   stix_id_key: String
   name: String!
   description: String!
+  alias: [String]
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -2174,6 +2188,7 @@ input ToolAddInput {
   name: String!
   description: String!
   tool_version: String
+  alias: [String]
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -2259,6 +2274,7 @@ input VulnerabilityAddInput {
   stix_id_key: String
   name: String!
   description: String!
+  alias: [String]
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
