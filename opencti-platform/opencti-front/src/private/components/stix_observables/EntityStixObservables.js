@@ -13,11 +13,11 @@ class EntityStixObservables extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      sortBy: 'first_seen',
+      sortBy: null,
       orderAsc: false,
       lastSeenStart: null,
       lastSeenStop: null,
-      targetEntityTypes: [],
+      targetEntityTypes: ['Stix-Observable'],
       view: 'lines',
     };
   }
@@ -29,11 +29,17 @@ class EntityStixObservables extends Component {
   handleToggle(type) {
     if (this.state.targetEntityTypes.includes(type)) {
       this.setState({
-        targetEntityTypes: filter(t => t !== type, this.state.targetEntityTypes),
+        targetEntityTypes:
+          filter((t) => t !== type, this.state.targetEntityTypes).length === 0
+            ? ['Stix-Observable']
+            : filter((t) => t !== type, this.state.targetEntityTypes),
       });
     } else {
       this.setState({
-        targetEntityTypes: append(type, this.state.targetEntityTypes),
+        targetEntityTypes: append(
+          type,
+          filter((t) => t !== 'Stix-Observable', this.state.targetEntityTypes),
+        ),
       });
     }
   }
@@ -113,6 +119,7 @@ class EntityStixObservables extends Component {
       lastSeenStop,
     } = this.state;
     const paginationOptions = {
+      inferred: true,
       toTypes: targetEntityTypes,
       fromId: entityId,
       relationType,

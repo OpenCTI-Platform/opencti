@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { Route, withRouter } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
-import IntrusionSetPopover from './IntrusionSetPopover';
+import inject18n from '../../../../components/i18n';
+import OrganizationPopover from './OrganizationPopover';
 import StixRelation from '../../common/stix_relations/StixRelation';
 import EntityStixObservables from '../../stix_observables/EntityStixObservables';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
@@ -28,30 +29,30 @@ const styles = () => ({
   },
 });
 
-class IntrusionSetObservablesComponent extends Component {
+class OrganizationObservablesComponent extends Component {
   render() {
-    const { classes, intrusionSet, location } = this.props;
-    const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/observables`;
+    const { classes, organization, location } = this.props;
+    const link = `/dashboard/entities/organizations/${organization.id}/observables`;
     return (
       <div
         className={
           location.pathname.includes(
-            `/dashboard/threats/intrusion_sets/${intrusionSet.id}/observables/relations/`,
+            `/dashboard/entities/organizations/${organization.id}/observables/relations/`,
           )
             ? classes.containerWithoutPadding
             : classes.container
         }
       >
         <StixDomainEntityHeader
-          stixDomainEntity={intrusionSet}
-          PopoverComponent={<IntrusionSetPopover />}
+          stixDomainEntity={organization}
+          PopoverComponent={<OrganizationPopover />}
         />
         <Route
           exact
-          path="/dashboard/threats/intrusion_sets/:intrusionSetId/observables/relations/:relationId"
+          path="/dashboard/entities/organizations/:organizationId/observables/relations/:relationId"
           render={(routeProps) => (
             <StixRelation
-              entityId={intrusionSet.id}
+              entityId={organization.id}
               inversedRoles={[]}
               observable={true}
               {...routeProps}
@@ -60,12 +61,12 @@ class IntrusionSetObservablesComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/intrusion_sets/:intrusionSetId/observables"
+          path="/dashboard/entities/organizations/:organizationId/observables"
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityStixObservables
-                entityId={intrusionSet.id}
-                relationType="indicates"
+                entityId={organization.id}
+                relationType="gathering"
                 entityLink={link}
                 {...routeProps}
               />
@@ -77,17 +78,18 @@ class IntrusionSetObservablesComponent extends Component {
   }
 }
 
-IntrusionSetObservablesComponent.propTypes = {
-  intrusionSet: PropTypes.object,
+OrganizationObservablesComponent.propTypes = {
+  organization: PropTypes.object,
   location: PropTypes.object,
   classes: PropTypes.object,
+  t: PropTypes.func,
 };
 
-const IntrusionSetObservables = createFragmentContainer(
-  IntrusionSetObservablesComponent,
+const OrganizationObservables = createFragmentContainer(
+  OrganizationObservablesComponent,
   {
-    intrusionSet: graphql`
-      fragment IntrusionSetObservables_intrusionSet on IntrusionSet {
+    organization: graphql`
+      fragment OrganizationObservables_organization on Organization {
         id
         name
         alias
@@ -97,6 +99,7 @@ const IntrusionSetObservables = createFragmentContainer(
 );
 
 export default compose(
+  inject18n,
   withRouter,
   withStyles(styles),
-)(IntrusionSetObservables);
+)(OrganizationObservables);

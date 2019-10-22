@@ -10,6 +10,7 @@ import TopBar from '../../nav/TopBar';
 import Organization from './Organization';
 import OrganizationReports from './OrganizationReports';
 import OrganizationKnowledge from './OrganizationKnowledge';
+import OrganizationObservables from './OrganizationObservables';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -30,6 +31,7 @@ const organizationQuery = graphql`
       ...OrganizationDetails_organization
       ...OrganizationReports_organization
       ...OrganizationKnowledge_organization
+      ...OrganizationObservables_organization
     }
   }
 `;
@@ -72,7 +74,7 @@ class RootOrganization extends Component {
                   <Route
                     exact
                     path="/dashboard/entities/organizations/:organizationId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <Organization
                         {...routeProps}
                         organization={props.organization}
@@ -82,7 +84,7 @@ class RootOrganization extends Component {
                   <Route
                     exact
                     path="/dashboard/entities/organizations/:organizationId/reports"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <OrganizationReports
                         {...routeProps}
                         organization={props.organization}
@@ -100,8 +102,17 @@ class RootOrganization extends Component {
                   />
                   <Route
                     path="/dashboard/entities/organizations/:organizationId/knowledge"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <OrganizationKnowledge
+                        {...routeProps}
+                        organization={props.organization}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/entities/organizations/:organizationId/observables"
+                    render={(routeProps) => (
+                      <OrganizationObservables
                         {...routeProps}
                         organization={props.organization}
                       />

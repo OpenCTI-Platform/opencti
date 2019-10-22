@@ -4,10 +4,11 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos, Description } from '@material-ui/icons';
+import { ArrowForwardIos } from '@material-ui/icons';
+import { HexagonOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -51,7 +52,7 @@ class TopMenuObservable extends Component {
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <Description className={classes.icon} fontSize="small" />
+          <HexagonOutline className={classes.icon} fontSize="small" />
           {t('Observables')}
         </Button>
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />

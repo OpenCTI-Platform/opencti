@@ -663,7 +663,8 @@ define
   Sector sub Identity;
 
   Organization sub Identity,
-    has organization_class;
+    has organization_class,
+    plays characterize;
 
   Threat-Actor sub Identity,
     has stix_role,
@@ -690,7 +691,8 @@ define
     plays author,
     plays owner,
     plays member,
-    plays allowed;
+    plays allowed,
+    plays characterize;
 
   Incident sub Stix-Domain-Entity,
     has objective,
@@ -765,7 +767,8 @@ define
 
   Vulnerability sub Stix-Domain-Entity,
     plays target,
-    plays problem;
+    plays problem,
+    plays characterize;
 
    Stix-Observable sub entity,
     abstract,

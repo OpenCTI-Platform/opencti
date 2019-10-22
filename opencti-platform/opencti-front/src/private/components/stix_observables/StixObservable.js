@@ -44,7 +44,7 @@ class StixObservableComponent extends Component {
         </Grid>
         <StixObservableEntities
           entityId={stixObservable.id}
-          relationType="localization"
+          relationType="indicates"
         />
         <StixObservableEdition stixObservableId={stixObservable.id} />
       </div>

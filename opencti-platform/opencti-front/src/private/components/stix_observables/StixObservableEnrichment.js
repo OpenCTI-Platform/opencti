@@ -1,46 +1,82 @@
 import React, { useEffect } from 'react';
 import { interval } from 'rxjs';
+import { compose, filter } from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Tooltip from '@material-ui/core/Tooltip';
 import IconButton from '@material-ui/core/IconButton';
 import {
-  CheckCircle, Warning, PlayCircleFilledWhite, Delete,
+  Refresh,
+  Extension,
+  Warning,
+  CheckCircle,
+  Delete,
 } from '@material-ui/icons';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { TEN_SECONDS } from '../../../utils/Time';
+import { withStyles } from '@material-ui/core';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import List from '@material-ui/core/List';
+import Paper from '@material-ui/core/Paper';
+import uuid from 'uuid/v4';
+import { FIVE_SECONDS } from '../../../utils/Time';
 import { commitMutation } from '../../../relay/environment';
+import inject18n from '../../../components/i18n';
+import StixObservableHeader from './StixObservableHeader';
+import StixObservableEnrichmentEntities from './StixObservableEnrichmentEntities';
 
-const interval$ = interval(TEN_SECONDS);
+const interval$ = interval(FIVE_SECONDS);
 
 const StixObservableEnrichmentQuery = graphql`
   query StixObservableEnrichmentQuery($id: String!) {
     stixObservable(id: $id) {
-        ...StixObservableEnrichment_stixObservable
+      ...StixObservableEnrichment_stixObservable
     }
   }
 `;
 
 const StixObservableEnrichmentDeleteMutation = graphql`
-    mutation StixObservableEnrichmentDeleteMutation($workId: ID!) {
-        deleteWork(id: $workId)
-    }
+  mutation StixObservableEnrichmentDeleteMutation($workId: ID!) {
+    deleteWork(id: $workId)
+  }
 `;
 
 const StixObservableEnrichmentAskEnrich = graphql`
-    mutation StixObservableEnrichmentMutation($id: ID!, $connectorId: ID!) {
-        stixObservableEdit(id: $id) {
-            askEnrichment(connectorId: $connectorId) {
-                id
-            }
-        }
+  mutation StixObservableEnrichmentMutation($id: ID!, $connectorId: ID!) {
+    stixObservableEdit(id: $id) {
+      askEnrichment(connectorId: $connectorId) {
+        id
+      }
     }
+  }
 `;
 
+const styles = (theme) => ({
+  container: {
+    margin: 0,
+  },
+  gridContainer: {
+    marginBottom: 20,
+  },
+  paper: {
+    minHeight: '100%',
+    margin: '10px 0 0 0',
+    padding: '10px 15px 10px 15px',
+    borderRadius: 6,
+  },
+  nested: {
+    paddingLeft: theme.spacing(4),
+  },
+});
+
 const StixObservableEnrichment = (props) => {
-  const { stixObservable, relay } = props;
+  const {
+    stixObservable, relay, classes, t, nsdt,
+  } = props;
   const { id } = stixObservable;
   const askEnrich = (connectorId) => {
     commitMutation({
@@ -58,49 +94,140 @@ const StixObservableEnrichment = (props) => {
   };
   useEffect(() => {
     const subscription = interval$.subscribe(() => {
-      relay.refetch({ id: stixObservable.id, entityType: stixObservable.entity_type });
+      relay.refetch({
+        id: stixObservable.id,
+        entityType: stixObservable.entity_type,
+      });
     });
     return function cleanup() {
       subscription.unsubscribe();
     };
   });
-  return <div>
-      <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6}>
-          {stixObservable.connectors.map((conn) => <React.Fragment key={conn.id}>
-                <div style={{ float: 'left' }}>
-                    <Typography variant="h2" style={{ paddingTop: 15 }} gutterBottom={true}>
-                        {conn.name}
-                    </Typography>
-                </div>
-                <div style={{ float: 'left' }}>
-                    <Tooltip title="Ask enrichment" aria-label="Ask enrichment">
-                        <IconButton disabled={!conn.active} onClick={() => askEnrich(conn.id)}
-                                    aria-haspopup="true" color="primary">
-                            <PlayCircleFilledWhite/>
-                        </IconButton>
-                    </Tooltip>
-                </div>
-            </React.Fragment>)}
-          </Grid>
+  return (
+    <div className={classes.container}>
+      <StixObservableHeader stixObservable={stixObservable} />
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+      >
+        <Grid item={true} xs={9}>
+          <StixObservableEnrichmentEntities entityId={stixObservable.id} />
+        </Grid>
+        <Grid item={true} xs={3}>
+          <Typography variant="h4" gutterBottom={true}>
+            {t('Enabled enrichment connectors')}
+          </Typography>
+          <Paper classes={{ root: classes.paper }} elevation={2}>
+            <List>
+              {stixObservable.connectors.map((connector) => {
+                const isRefreshing = filter(
+                  (node) => node.status !== 'complete',
+                  stixObservable.jobs,
+                ).length > 0;
+                return (
+                  <div key={connector.id}>
+                    <ListItem
+                      divider={true}
+                      classes={{ root: classes.item }}
+                      button={true}
+                    >
+                      <Tooltip
+                        title={
+                          connector.active
+                            ? t('This connector is active')
+                            : t('This connector is disconnected')
+                        }
+                      >
+                        <ListItemIcon
+                          style={{
+                            color: connector.active ? '#4caf50' : '#f44336',
+                          }}
+                        >
+                          <Extension />
+                        </ListItemIcon>
+                      </Tooltip>
+                      <ListItemText primary={connector.name} />
+                      <ListItemSecondaryAction>
+                        <Tooltip
+                          title={t(
+                            'Refresh the enrichment using this connector',
+                          )}
+                        >
+                          {isRefreshing ? (
+                            <CircularProgress
+                              size={25}
+                              thickness={2}
+                              style={{ marginRight: 10 }}
+                            />
+                          ) : (
+                            <IconButton
+                              disabled={!connector.active}
+                              onClick={() => askEnrich(connector.id)}
+                            >
+                              <Refresh />
+                            </IconButton>
+                          )}
+                        </Tooltip>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                    <List component="div" disablePadding={true}>
+                      {stixObservable.jobs
+                        && stixObservable.jobs.map((work) => (
+                          <ListItem
+                            key={uuid()}
+                            dense={true}
+                            button={true}
+                            divider={true}
+                            classes={{ root: classes.nested }}
+                          >
+                            <ListItemIcon>
+                              {(work.status === 'error'
+                                || work.status === 'partial') && (
+                                <Warning
+                                  style={{
+                                    fontSize: 15,
+                                    color: '#f44336',
+                                  }}
+                                />
+                              )}
+                              {work.status === 'complete' && (
+                                <CheckCircle
+                                  style={{
+                                    fontSize: 15,
+                                    color: '#4caf50',
+                                  }}
+                                />
+                              )}
+                              {work.status === 'progress' && (
+                                <CircularProgress
+                                  size={20}
+                                  thickness={2}
+                                  style={{ marginRight: 10 }}
+                                />
+                              )}
+                            </ListItemIcon>
+                            <ListItemText primary={nsdt(work.created_at)} />
+                            <ListItemSecondaryAction>
+                              <IconButton
+                                disabled={!connector.active}
+                                onClick={() => deleteWork(work.id)}
+                              >
+                                <Delete />
+                              </IconButton>
+                            </ListItemSecondaryAction>
+                          </ListItem>
+                        ))}
+                    </List>
+                  </div>
+                );
+              })}
+            </List>
+          </Paper>
+        </Grid>
       </Grid>
-      <div>
-          {stixObservable.jobs.map((node) => <div key={node.id}>
-                  <IconButton color="secondary" onClick={() => deleteWork(node.id)}>
-                      <Delete style={{ fontSize: 10 }} />
-                  </IconButton>
-                  <span>
-                      {(node.status === 'error' || node.status === 'partial')
-                      && <Warning style={{ fontSize: 10, marginRight: 10, color: 'red' }}/>}
-                      {node.status === 'complete'
-                      && <CheckCircle style={{ fontSize: 10, marginRight: 10, color: 'green' }}/>}
-                      {node.status === 'progress'
-                      && <CircularProgress size={10} thickness={2} style={{ marginRight: 10 }} />}
-                  </span>
-                {node.connector.name}
-            </div>)}
-      </div>
-  </div>;
+    </div>
+  );
 };
 
 const StixObservableEnrichmentFragment = createRefetchContainer(
@@ -108,24 +235,30 @@ const StixObservableEnrichmentFragment = createRefetchContainer(
   {
     stixObservable: graphql`
       fragment StixObservableEnrichment_stixObservable on StixObservable {
+        id
+        entity_type
+        jobs(first: 100) {
           id
-          entity_type
-          jobs(first: 100) {
-            id
-            connector {
-              name
-            }
-            status
+          created_at
+          connector {
+            name
           }
-          connectors(onlyAlive: false) {
-              id
-              name
-              active
-          }
+          status
         }
+        connectors(onlyAlive: false) {
+          id
+          name
+          active
+          updated_at
+        }
+        ...StixObservableHeader_stixObservable
+      }
     `,
   },
   StixObservableEnrichmentQuery,
 );
 
-export default StixObservableEnrichmentFragment;
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixObservableEnrichmentFragment);

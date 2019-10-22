@@ -10,18 +10,17 @@ import ListLines from '../../../components/list_lines/ListLines';
 import StixObservableEntitiesLines, {
   stixObservableEntitiesLinesQuery,
 } from './StixObservableEntitiesLines';
-import StixRelationCreationFromEntity from '../common/stix_relations/StixRelationCreationFromEntity';
 
 const styles = () => ({
   paper: {
     minHeight: '100%',
-    margin: '0 0 0 0',
+    margin: '10px 0 0 0',
     padding: '25px 15px 15px 15px',
     borderRadius: 6,
   },
 });
 
-class StixObservableEntities extends Component {
+class StixObservableEnrichmentEntities extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -43,6 +42,11 @@ class StixObservableEntities extends Component {
   renderLines(paginationOptions) {
     const { sortBy, orderAsc } = this.state;
     const dataColumns = {
+      relationship_type: {
+        label: 'Relation',
+        width: '15%',
+        isSortable: true,
+      },
       entity_type: {
         label: 'Entity type',
         width: '15%',
@@ -52,11 +56,6 @@ class StixObservableEntities extends Component {
         label: 'Name',
         width: '22%',
         isSortable: false,
-      },
-      role_played: {
-        label: 'Played role',
-        width: '15%',
-        isSortable: true,
       },
       first_seen: {
         label: 'First obs.',
@@ -93,6 +92,7 @@ class StixObservableEntities extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              displayRelation={true}
             />
           )}
         />
@@ -108,6 +108,7 @@ class StixObservableEntities extends Component {
       classes, t, entityId, relationType,
     } = this.props;
     const paginationOptions = {
+      inferred: true,
       fromId: entityId,
       relationType,
       search: searchTerm,
@@ -115,27 +116,10 @@ class StixObservableEntities extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div style={{ marginTop: 40 }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Context relations')}
+      <div>
+        <Typography variant="h4" gutterBottom={true}>
+          {t('Relations')}
         </Typography>
-        <StixRelationCreationFromEntity
-          paginationOptions={paginationOptions}
-          entityId={entityId}
-          variant="inLine"
-          isFrom={true}
-          currentType="indicates"
-          targetEntityTypes={[
-            'Threat-Actor',
-            'Intrusion-Set',
-            'Campaign',
-            'Incident',
-            'Malware',
-            'Tool',
-            'Vulnerability',
-          ]}
-        />
-        <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         </Paper>
@@ -144,7 +128,7 @@ class StixObservableEntities extends Component {
   }
 }
 
-StixObservableEntities.propTypes = {
+StixObservableEnrichmentEntities.propTypes = {
   entityId: PropTypes.string,
   relationType: PropTypes.string,
   classes: PropTypes.object,
@@ -155,4 +139,4 @@ StixObservableEntities.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixObservableEntities);
+)(StixObservableEnrichmentEntities);

@@ -67,6 +67,18 @@ const relationsTypesMapping = {
   targets_country: ['localization'],
   targets_city: ['localization'],
   targets_region: ['localization'],
+  'observable_threat-actor': ['indicates'],
+  'observable_intrusion-set': ['indicates'],
+  observable_campaign: ['indicates'],
+  observable_incident: ['indicates'],
+  observable_malware: ['indicates'],
+  observable_tool: ['indicates'],
+  observable_vulnerability: ['indicates'],
+  observable_organization: ['gathering'],
+  observable_person: ['gathering'],
+  observable_city: ['localization'],
+  observable_country: ['localization'],
+  observable_region: ['localization'],
 };
 
 export const resolveRelationsTypes = (fromType, toType) => (relationsTypesMapping[`${fromType}_${toType}`]
@@ -91,6 +103,10 @@ export const resolveRoles = (type) => {
       return { fromRole: 'localized', toRole: 'location' };
     case 'comes-after':
       return { fromRole: 'coming_from', toRole: 'coming_after' };
+    case 'drops':
+      return { fromRole: 'dropping', toRole: 'dropped' };
+    case 'indicates':
+      return { fromRole: 'indicator', toRole: 'characterize' };
     default:
       return { fromRole: '', toRole: '' };
   }

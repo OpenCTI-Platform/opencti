@@ -191,14 +191,19 @@ const i18n = {
       'The password has been updated': 'Le mot de passe a été modifié',
       'Settings have been updated': 'Les paramètres ont été mis à jour',
       'Export the entity': "Exporter l'entité",
-      'Display demo credentials': 'Afficher les identifiants de démo',
+      'Demo credentials': 'Identifiants de démo',
       'No connectors are enabled on this platform.':
         "Aucun connecteur n'est actif sur cette plateforme",
       'Enabled import connectors': "Connecteurs d'import activés",
+      'Enabled enrichment connectors': "Connecteur d'enrichissement activés",
       'No import connectors on this platform':
         "Aucun connecteur d'import sur cette plateforme",
+      'No enrichment connectors on this platform':
+        "Aucun connecteur d'enrichissement sur cette plateforme",
       'This connector is active': 'Ce connecteur est actif',
       'This connector is disconnected': 'Ce connecteur est déconnecté',
+      'Refresh the enrichment using this connector':
+        "Actualiser l'enrichissement en utilisant ce connecteur",
       // Menu
       Dashboard: 'Tableau de bord',
       Visualization: 'Visualisation',
@@ -464,6 +469,7 @@ const i18n = {
       URL: 'URL',
       'Confidence level': 'Niveau de confiance',
       Confidence: 'Confiance',
+      'Relation type': 'Type de relation',
       Low: 'Faible',
       Moderate: 'Modéré',
       Good: 'Bon',

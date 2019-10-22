@@ -3,7 +3,17 @@ import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  compose, map, pipe, head, assoc, pathOr, pluck,
+  compose,
+  map,
+  pipe,
+  head,
+  assoc,
+  pathOr,
+  pluck,
+  sortWith,
+  ascend,
+  path,
+  union,
 } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
@@ -44,8 +54,11 @@ import StixDomainEntityCreation from '../stix_domain_entities/StixDomainEntityCr
 import SearchInput from '../../../../components/SearchInput';
 import Autocomplete from '../../../../components/Autocomplete';
 import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
+import { truncate } from '../../../../utils/String';
+import { attributesQuery } from '../../settings/attributes/AttributesLines';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -97,10 +110,10 @@ const styles = theme => ({
     position: 'absolute',
     width: 180,
     height: 80,
+    borderRadius: 10,
   },
   itemHeader: {
     padding: '10px 0 10px 0',
-    borderBottom: '1px solid #ffffff',
   },
   icon: {
     position: 'absolute',
@@ -182,6 +195,10 @@ const stixRelationCreationFromEntityQuery = graphql`
       entity_type
       name
       description
+      parent_type
+      ... on StixObservable {
+        observable_value
+      }
     }
   }
 `;
@@ -196,7 +213,7 @@ const stixRelationCreationFromEntityMutation = graphql`
   }
 `;
 
-const stixRelationValidation = t => Yup.object().shape({
+const stixRelationValidation = (t) => Yup.object().shape({
   relationship_type: Yup.string().required(t('This field is required')),
   weight: Yup.number()
     .typeError(t('The value must be a number'))
@@ -229,7 +246,9 @@ class StixRelationCreationFromEntity extends Component {
       step: 0,
       targetEntity: null,
       search: '',
+      killChainPhases: [],
       markingDefinitions: [],
+      currentType: props.currentType ? props.currentType : null,
     };
   }
 
@@ -241,13 +260,31 @@ class StixRelationCreationFromEntity extends Component {
     this.setState({ step: 0, targetEntity: null, open: false });
   }
 
+  searchKillchainPhases(event) {
+    fetchQuery(killChainPhasesSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
+      const killChainPhases = pipe(
+        pathOr([], ['killChainPhases', 'edges']),
+        sortWith([ascend(path(['node', 'order']))]),
+        map((n) => ({
+          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+          value: n.node.id,
+        })),
+      )(data);
+      this.setState({
+        killChainPhases: union(this.state.killChainPhases, killChainPhases),
+      });
+    });
+  }
+
   searchMarkingDefinitions(event) {
     fetchQuery(markingDefinitionsSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({ markingDefinitions });
     });
@@ -264,6 +301,7 @@ class StixRelationCreationFromEntity extends Component {
       assoc('toRole', this.props.isFrom ? roles.toRole : roles.fromRole),
       assoc('first_seen', parse(values.first_seen).format()),
       assoc('last_seen', parse(values.last_seen).format()),
+      assoc('killChainPhases', pluck('value', values.killChainPhases)),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
     )(values);
     commitMutation({
@@ -333,7 +371,7 @@ class StixRelationCreationFromEntity extends Component {
           </div>
           <div className="clearfix" />
         </div>
-        <div className={classes.container}>
+        <div className={classes.containerList}>
           <QueryRenderer
             query={stixRelationCreationFromEntityLinesQuery}
             variables={{
@@ -395,7 +433,9 @@ class StixRelationCreationFromEntity extends Component {
       toEntity = sourceEntity;
     }
     const relationshipTypes = resolveRelationsTypes(
-      fromEntity.entity_type,
+      fromEntity.parent_type === 'Stix-Observable'
+        ? 'observable'
+        : fromEntity.entity_type,
       toEntity.entity_type,
     );
     const defaultRelationshipType = head(relationshipTypes)
@@ -404,185 +444,275 @@ class StixRelationCreationFromEntity extends Component {
     const initialValues = {
       relationship_type: defaultRelationshipType,
       weight: 1,
+      role_played: '',
       first_seen: new Date(),
       last_seen: new Date(),
       description: '',
+      killChainPhases: [],
       markingDefinitions: [],
     };
     return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={stixRelationValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
-        onReset={this.handleClose.bind(this)}
-        render={({ submitForm, handleReset, isSubmitting }) => (
-          <Form>
-            <div className={classes.header}>
-              <IconButton
-                aria-label="Close"
-                className={classes.closeButton}
-                onClick={this.handleClose.bind(this)}
-              >
-                <Close fontSize="small" />
-              </IconButton>
-              <Typography variant="h6">{t('Create a relationship')}</Typography>
-            </div>
-            <div className={classes.containerRelation}>
-              <div className={classes.relationCreate}>
-                <div
-                  className={classes.item}
-                  style={{
-                    backgroundColor: itemColor(fromEntity.entity_type, true),
-                    top: 10,
-                    left: 10,
-                  }}
-                >
-                  <div className={classes.itemHeader}>
-                    <div className={classes.icon}>
-                      <ItemIcon
-                        type={fromEntity.type}
-                        color={itemColor(fromEntity.entity_type, false)}
-                        size="small"
+      <QueryRenderer
+        query={attributesQuery}
+        variables={{ type: 'role_played' }}
+        render={({ props }) => {
+          if (props && props.attributes) {
+            const rolesPlayedEdges = props.attributes.edges;
+            return (
+              <Formik
+                enableReinitialize={true}
+                initialValues={initialValues}
+                validationSchema={stixRelationValidation(t)}
+                onSubmit={this.onSubmit.bind(this)}
+                onReset={this.handleClose.bind(this)}
+                render={({ submitForm, handleReset, isSubmitting }) => (
+                  <Form>
+                    <div className={classes.header}>
+                      <IconButton
+                        aria-label="Close"
+                        className={classes.closeButton}
+                        onClick={this.handleClose.bind(this)}
+                      >
+                        <Close fontSize="small" />
+                      </IconButton>
+                      <Typography variant="h6">
+                        {t('Create a relationship')}
+                      </Typography>
+                    </div>
+                    <div className={classes.containerRelation}>
+                      <div className={classes.relationCreate}>
+                        <div
+                          className={classes.item}
+                          style={{
+                            border: `2px solid ${itemColor(
+                              fromEntity.entity_type,
+                            )}`,
+                            top: 10,
+                            left: 0,
+                          }}
+                        >
+                          <div
+                            className={classes.itemHeader}
+                            style={{
+                              borderBottom: `1px solid ${itemColor(
+                                fromEntity.entity_type,
+                              )}`,
+                            }}
+                          >
+                            <div className={classes.icon}>
+                              <ItemIcon
+                                type={fromEntity.type}
+                                color={itemColor(fromEntity.entity_type)}
+                                size="small"
+                              />
+                            </div>
+                            <div className={classes.type}>
+                              {fromEntity.parent_type === 'Stix-Observable'
+                                ? t(`observable_${fromEntity.entity_type}`)
+                                : t(`entity_${fromEntity.entity_type}`)}
+                            </div>
+                          </div>
+                          <div className={classes.content}>
+                            <span className={classes.name}>
+                              {truncate(
+                                fromEntity.parent_type === 'Stix-Observable'
+                                  ? fromEntity.observable_value
+                                  : fromEntity.name,
+                                120,
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                        <div
+                          className={classes.middle}
+                          style={{ paddingTop: 25 }}
+                        >
+                          <ArrowRightAlt fontSize="large" />
+                        </div>
+                        <div
+                          className={classes.item}
+                          style={{
+                            border: `2px solid ${itemColor(
+                              toEntity.entity_type,
+                            )}`,
+                            top: 10,
+                            right: 0,
+                          }}
+                        >
+                          <div
+                            className={classes.itemHeader}
+                            style={{
+                              borderBottom: `1px solid ${itemColor(
+                                toEntity.entity_type,
+                              )}`,
+                            }}
+                          >
+                            <div className={classes.icon}>
+                              <ItemIcon
+                                type={toEntity.type}
+                                color={itemColor(toEntity.entity_type)}
+                                size="small"
+                              />
+                            </div>
+                            <div className={classes.type}>
+                              {toEntity.parent_type === 'Stix-Observable'
+                                ? t(`observable_${toEntity.entity_type}`)
+                                : t(`entity_${toEntity.entity_type}`)}
+                            </div>
+                          </div>
+                          <div className={classes.content}>
+                            <span className={classes.name}>
+                              {truncate(
+                                toEntity.parent_type === 'Stix-Observable'
+                                  ? toEntity.observable_value
+                                  : toEntity.name,
+                                120,
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <Field
+                        name="relationship_type"
+                        component={Select}
+                        label={t('Relationship type')}
+                        fullWidth={true}
+                        inputProps={{
+                          name: 'relationship_type',
+                          id: 'relationship_type',
+                        }}
+                        containerstyle={{ marginTop: 20, width: '100%' }}
+                        onChange={(name, value) => {
+                          this.setState({ currentType: value });
+                        }}
+                      >
+                        {map(
+                          (type) => (
+                            <MenuItem key={type} value={type}>
+                              {t(`relation_${type}`)}
+                            </MenuItem>
+                          ),
+                          relationshipTypes,
+                        )}
+                        <MenuItem value="related-to">
+                          {t('relation_related-to')}
+                        </MenuItem>
+                      </Field>
+                      <Field
+                        name="weight"
+                        component={Select}
+                        label={t('Confidence level')}
+                        fullWidth={true}
+                        inputProps={{
+                          name: 'weight',
+                          id: 'weight',
+                        }}
+                        containerstyle={{ marginTop: 20, width: '100%' }}
+                      >
+                        <MenuItem value={1}>{t('Low')}</MenuItem>
+                        <MenuItem value={2}>{t('Moderate')}</MenuItem>
+                        <MenuItem value={3}>{t('Good')}</MenuItem>
+                        <MenuItem value={4}>{t('Strong')}</MenuItem>
+                      </Field>
+                      {this.state.currentType === 'indicates' ? (
+                        <Field
+                          name="role_played"
+                          component={Select}
+                          label={t('Played role')}
+                          fullWidth={true}
+                          inputProps={{
+                            name: 'role_played',
+                            id: 'role_played',
+                          }}
+                          containerstyle={{ marginTop: 20, width: '100%' }}
+                        >
+                          {rolesPlayedEdges.map((rolePlayedEdge) => (
+                            <MenuItem
+                              key={rolePlayedEdge.node.value}
+                              value={rolePlayedEdge.node.value}
+                            >
+                              {rolePlayedEdge.node.value}
+                            </MenuItem>
+                          ))}
+                        </Field>
+                      ) : (
+                        ''
+                      )}
+                      <Field
+                        name="first_seen"
+                        component={DatePickerField}
+                        label={t('First seen')}
+                        fullWidth={true}
+                        style={{ marginTop: 20 }}
                       />
-                    </div>
-                    <div className={classes.type}>
-                      {t(`entity_${fromEntity.entity_type}`)}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>{fromEntity.name}</span>
-                  </div>
-                </div>
-                <div className={classes.middle} style={{ paddingTop: 25 }}>
-                  <ArrowRightAlt fontSize="large" />
-                </div>
-                <div
-                  className={classes.item}
-                  style={{
-                    backgroundColor: itemColor(toEntity.entity_type, true),
-                    top: 10,
-                    right: 10,
-                  }}
-                >
-                  <div className={classes.itemHeader}>
-                    <div className={classes.icon}>
-                      <ItemIcon
-                        type={toEntity.type}
-                        color={itemColor(toEntity.entity_type, false)}
-                        size="small"
+                      <Field
+                        name="last_seen"
+                        component={DatePickerField}
+                        label={t('Last seen')}
+                        fullWidth={true}
+                        style={{ marginTop: 20 }}
                       />
+                      <Field
+                        name="description"
+                        component={TextField}
+                        label={t('Description')}
+                        fullWidth={true}
+                        multiline={true}
+                        rows="4"
+                        style={{ marginTop: 20 }}
+                      />
+                      <Field
+                        name="killChainPhases"
+                        component={Autocomplete}
+                        multiple={true}
+                        label={t('Kill chain phases')}
+                        options={this.state.killChainPhases}
+                        onInputChange={this.searchKillchainPhases.bind(this)}
+                      />
+                      <Field
+                        name="markingDefinitions"
+                        component={Autocomplete}
+                        multiple={true}
+                        label={t('Marking')}
+                        options={this.state.markingDefinitions}
+                        onInputChange={this.searchMarkingDefinitions.bind(this)}
+                      />
+                      <div className={classes.buttonBack}>
+                        <Button
+                          variant="contained"
+                          onClick={this.handleResetSelection.bind(this)}
+                          disabled={isSubmitting}
+                        >
+                          {t('Back')}
+                        </Button>
+                      </div>
+                      <div className={classes.buttons}>
+                        <Button
+                          variant="contained"
+                          onClick={handleReset}
+                          disabled={isSubmitting}
+                          classes={{ root: classes.button }}
+                        >
+                          {t('Cancel')}
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={submitForm}
+                          disabled={isSubmitting}
+                          classes={{ root: classes.button }}
+                        >
+                          {t('Create')}
+                        </Button>
+                      </div>
                     </div>
-                    <div className={classes.type}>
-                      {t(`entity_${toEntity.entity_type}`)}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>{toEntity.name}</span>
-                  </div>
-                </div>
-              </div>
-              <Field
-                name="relationship_type"
-                component={Select}
-                label={t('Relationship type')}
-                fullWidth={true}
-                inputProps={{
-                  name: 'relationship_type',
-                  id: 'relationship_type',
-                }}
-                containerstyle={{ marginTop: 20, width: '100%' }}
-              >
-                {map(
-                  type => (
-                    <MenuItem key={type} value={type}>
-                      {t(`relation_${type}`)}
-                    </MenuItem>
-                  ),
-                  relationshipTypes,
+                  </Form>
                 )}
-                <MenuItem value="related-to">
-                  {t('relation_related-to')}
-                </MenuItem>
-              </Field>
-              <Field
-                name="weight"
-                component={Select}
-                label={t('Confidence level')}
-                fullWidth={true}
-                inputProps={{
-                  name: 'weight',
-                  id: 'weight',
-                }}
-                containerstyle={{ marginTop: 20, width: '100%' }}
-              >
-                <MenuItem value={1}>{t('Low')}</MenuItem>
-                <MenuItem value={2}>{t('Moderate')}</MenuItem>
-                <MenuItem value={3}>{t('Good')}</MenuItem>
-                <MenuItem value={4}>{t('Strong')}</MenuItem>
-              </Field>
-              <Field
-                name="first_seen"
-                component={DatePickerField}
-                label={t('First seen')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
               />
-              <Field
-                name="last_seen"
-                component={DatePickerField}
-                label={t('Last seen')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                name="description"
-                component={TextField}
-                label={t('Description')}
-                fullWidth={true}
-                multiline={true}
-                rows="4"
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                name="markingDefinitions"
-                component={Autocomplete}
-                multiple={true}
-                label={t('Marking')}
-                options={this.state.markingDefinitions}
-                onInputChange={this.searchMarkingDefinitions.bind(this)}
-              />
-              <div className={classes.buttonBack}>
-                <Button
-                  variant="contained"
-                  onClick={this.handleResetSelection.bind(this)}
-                  disabled={isSubmitting}
-                >
-                  {t('Back')}
-                </Button>
-              </div>
-              <div className={classes.buttons}>
-                <Button
-                  variant="contained"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Create')}
-                </Button>
-              </div>
-            </div>
-          </Form>
-        )}
+            );
+          }
+          return <div> &nbsp; </div>;
+        }}
       />
     );
   }
@@ -605,18 +735,29 @@ class StixRelationCreationFromEntity extends Component {
   }
 
   render() {
-    const { classes, entityId } = this.props;
+    const { classes, entityId, variant } = this.props;
     const { open, step } = this.state;
     return (
       <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
+        {variant === 'inLine' ? (
+          <IconButton
+            color="secondary"
+            aria-label="Tag"
+            onClick={this.handleOpen.bind(this)}
+            style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+          >
+            <Add fontSize="small" />
+          </IconButton>
+        ) : (
+          <Fab
+            onClick={this.handleOpen.bind(this)}
+            color="secondary"
+            aria-label="Add"
+            className={classes.createButton}
+          >
+            <Add />
+          </Fab>
+        )}
         <Drawer
           open={open}
           anchor="right"
@@ -652,6 +793,8 @@ StixRelationCreationFromEntity.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,
+  variant: PropTypes.string,
+  currentType: PropTypes.string,
 };
 
 export default compose(

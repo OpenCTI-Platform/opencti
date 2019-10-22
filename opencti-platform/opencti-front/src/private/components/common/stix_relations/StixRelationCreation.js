@@ -3,7 +3,17 @@ import * as PropTypes from 'prop-types';
 import { Formik, Field, Form } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  compose, map, pathOr, pipe, pluck, head, assoc, union,
+  compose,
+  map,
+  pathOr,
+  pipe,
+  pluck,
+  head,
+  assoc,
+  union,
+  sortWith,
+  ascend,
+  path,
 } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
@@ -29,6 +39,7 @@ import Select from '../../../../components/Select';
 import Autocomplete from '../../../../components/Autocomplete';
 import DatePickerField from '../../../../components/DatePickerField';
 import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -191,9 +202,28 @@ class StixRelationCreation extends Component {
     this.state = {
       step: 0,
       existingRelations: [],
+      killChainPhases: [],
       markingDefinitions: [],
       currentType: null,
     };
+  }
+
+  searchKillchainPhases(event) {
+    fetchQuery(killChainPhasesSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
+      const killChainPhases = pipe(
+        pathOr([], ['killChainPhases', 'edges']),
+        sortWith([ascend(path(['node', 'order']))]),
+        map((n) => ({
+          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+          value: n.node.id,
+        })),
+      )(data);
+      this.setState({
+        killChainPhases: union(this.state.killChainPhases, killChainPhases),
+      });
+    });
   }
 
   searchMarkingDefinitions(event) {
@@ -222,6 +252,7 @@ class StixRelationCreation extends Component {
       assoc('toRole', roles.toRole),
       assoc('first_seen', parse(values.first_seen).format()),
       assoc('last_seen', parse(values.last_seen).format()),
+      assoc('killChainPhases', pluck('value', values.killChainPhases)),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
     )(values);
     commitMutation({
@@ -291,6 +322,7 @@ class StixRelationCreation extends Component {
       first_seen: defaultFirstSeen,
       last_seen: defaultLastSeen,
       description: '',
+      killChainPhases: [],
       markingDefinitions: [],
     };
     return (
@@ -438,6 +470,14 @@ class StixRelationCreation extends Component {
                 multiline={true}
                 rows="4"
                 style={{ marginTop: 20 }}
+              />
+              <Field
+                  name="killChainPhases"
+                  component={Autocomplete}
+                  multiple={true}
+                  label={t('Kill chain phases')}
+                  options={this.state.killChainPhases}
+                  onInputChange={this.searchKillchainPhases.bind(this)}
               />
               <Field
                 name="markingDefinitions"
