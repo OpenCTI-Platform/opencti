@@ -547,6 +547,7 @@ class OpenCTIStix2:
             type,
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            stix_object[CustomProperties.ALIASES] if CustomProperties.ALIASES in stix_object else None,
             stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,

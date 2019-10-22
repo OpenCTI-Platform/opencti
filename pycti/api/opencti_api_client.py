@@ -1023,7 +1023,7 @@ class OpenCTIApiClient:
         result = self.query(query, {'first': limit})
         return self.parse_multiple(result['data']['identities'])
 
-    def create_identity(self, type, name, description, id=None, stix_id_key=None, created=None, modified=None):
+    def create_identity(self, type, name, description, alias=None, id=None, stix_id_key=None, created=None, modified=None):
         logging.info('Creating identity ' + name + '...')
         query = """
             mutation IdentityAdd($input: IdentityAddInput) {
@@ -1038,6 +1038,7 @@ class OpenCTIApiClient:
             'input': {
                 'name': name,
                 'description': description,
+                'alias': alias,
                 'type': type,
                 'internal_id_key': id,
                 'stix_id_key': stix_id_key,
@@ -1051,6 +1052,7 @@ class OpenCTIApiClient:
                                       type,
                                       name,
                                       description,
+                                      alias=None,
                                       id=None,
                                       stix_id_key=None,
                                       created=None,
@@ -1064,12 +1066,16 @@ class OpenCTIApiClient:
                 object_result['name'] = name
                 self.update_stix_domain_entity_field(object_result['id'], 'description', description)
                 object_result['description'] = description
+                if alias is not None:
+                    self.update_stix_domain_entity_field(object_result['id'], 'alias', alias)
+                    object_result['alias'] = alias
             return object_result
         else:
             return self.create_identity(
                 type,
                 name,
                 description,
+                alias,
                 id,
                 stix_id_key,
                 created,
