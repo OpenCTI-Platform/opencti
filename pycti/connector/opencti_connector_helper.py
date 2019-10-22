@@ -28,12 +28,14 @@ class ListenQueue(threading.Thread):
     # noinspection PyUnusedLocal
     def _process_message(self, channel, method, properties, body):
         json_data = json.loads(body)
-        thread = threading.Thread(target=self._data_handler, args=[channel, method, json_data])
+        thread = threading.Thread(target=self._data_handler, args=[json_data])
         thread.start()
         while thread.is_alive():  # Loop while the thread is processing
             self.pika_connection.sleep(1.0)
+        logging.info('Message (delivery_tag=' + str(method.delivery_tag) + ') processed, thread terminated')
+        channel.basic_ack(delivery_tag=method.delivery_tag)
 
-    def _data_handler(self, channel, method, json_data):
+    def _data_handler(self, json_data):
         job_id = json_data['job_id'] if 'job_id' in json_data else None
         try:
             work_id = json_data['work_id']
@@ -41,17 +43,12 @@ class ListenQueue(threading.Thread):
             self.helper.api.job.update_job(job_id, 'progress', ['Starting process'])
             messages = self.callback(json_data)
             self.helper.api.job.update_job(job_id, 'complete', messages)
-            channel.basic_ack(delivery_tag=method.delivery_tag)
-        except requests.exceptions.Timeout:
-            logging.warning('API call timeout, message remains in the queue')
         except Exception as e:
             logging.exception('Error in message processing, reporting error to API')
             try:
                 self.helper.api.job.update_job(job_id, 'error', [str(e)])
             except:
                 logging.error('Failing reporting the processing')
-            # We can assume that reprocessing will produce the same error, so ack the message
-            channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def run(self):
         while True:
