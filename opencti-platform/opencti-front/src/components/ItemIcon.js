@@ -20,6 +20,9 @@ import {
   Fire,
   CityVariant,
   Tag,
+  ProgressWrench,
+  HexagonOutline,
+  VectorRadius,
 } from 'mdi-material-ui';
 
 const iconSelector = (type, variant, fontSize, color) => {
@@ -63,6 +66,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <AccountBalance style={style} fontSize={fontSize} />;
     case 'attack-pattern':
       return <LockPattern style={style} fontSize={fontSize} />;
+    case 'course-of-action':
+      return <ProgressWrench style={style} fontSize={fontSize} />;
     case 'malware':
       return <Biohazard style={style} fontSize={fontSize} />;
     case 'tool':
@@ -71,6 +76,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <BugReport style={style} fontSize={fontSize} />;
     case 'report':
       return <Description style={style} fontSize={fontSize} />;
+    case 'tag':
+      return <Tag style={style} fontSize={fontSize} />;
     case 'domain':
     case 'ipv4-addr':
     case 'ipv6-addr':
@@ -81,7 +88,20 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'file-md5':
     case 'file-sha1':
     case 'file-sha256':
-      return <Tag style={style} fontSize={fontSize} />;
+      return <HexagonOutline style={style} fontSize={fontSize} />;
+    case 'targets':
+    case 'uses':
+    case 'related-to':
+    case 'mitigates':
+    case 'impersonates':
+    case 'indicates':
+    case 'comes-after':
+    case 'attributed-to':
+    case 'variant-of':
+    case 'localization':
+    case 'gathering':
+    case 'drops':
+      return <VectorRadius style={style} fontSize={fontSize} />;
     default:
       return <Help style={style} fontSize={fontSize} />;
   }

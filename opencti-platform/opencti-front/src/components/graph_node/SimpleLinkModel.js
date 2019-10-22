@@ -1,9 +1,9 @@
 import { LinkModel } from 'storm-react-diagrams';
 import { mergeRight } from 'ramda';
-import EntityLabelModel from './EntityLabelModel';
+import SimpleLabelModel from './SimpleLabelModel';
 
-export default class EntityLinkModel extends LinkModel {
-  constructor(type = 'entity') {
+export default class SimpleLinkModel extends LinkModel {
+  constructor(type = 'simple') {
     super(type);
     this.color = '#00bcd4';
     this.width = 3;
@@ -29,10 +29,10 @@ export default class EntityLinkModel extends LinkModel {
   }
 
   addLabel(label) {
-    if (label instanceof EntityLabelModel) {
+    if (label instanceof SimpleLabelModel) {
       return super.addLabel(label);
     }
-    const labelOb = new EntityLabelModel();
+    const labelOb = new SimpleLabelModel();
     labelOb.setLabel(label);
     return super.addLabel(labelOb);
   }
@@ -61,10 +61,10 @@ export default class EntityLinkModel extends LinkModel {
 
   setLabel(label) {
     this.labels = [];
-    if (label instanceof EntityLabelModel) {
+    if (label instanceof SimpleLabelModel) {
       return super.addLabel(label);
     }
-    const labelOb = new EntityLabelModel();
+    const labelOb = new SimpleLabelModel();
     labelOb.setLabel(label);
     return super.addLabel(labelOb);
   }

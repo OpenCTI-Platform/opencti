@@ -1,9 +1,9 @@
 import { LabelModel } from 'storm-react-diagrams';
 import { mergeRight } from 'ramda';
 
-export default class EntityLabelModel extends LabelModel {
+export default class SimpleLabelModel extends LabelModel {
   constructor() {
-    super('entity');
+    super('simple');
     this.offsetY = -23;
     this.selected = false;
     this.extras = null;

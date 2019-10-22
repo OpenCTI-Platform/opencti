@@ -5,14 +5,8 @@ import {
   findByCourseOfAction
 } from '../domain/attackPattern';
 import {
-  createdByRef,
   killChainPhases,
-  markingDefinitions,
-  tags,
   externalReferences,
-  reports,
-  exports,
-  stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
@@ -20,7 +14,6 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
-import { fetchEditContext } from '../database/redis';
 
 const attackPatternResolvers = {
   Query: {
@@ -33,19 +26,8 @@ const attackPatternResolvers = {
     }
   },
   AttackPattern: {
-    createdByRef: attackPattern => createdByRef(attackPattern.id),
-    markingDefinitions: (attackPattern, args) =>
-      markingDefinitions(attackPattern.id, args),
-    tags: (attackPattern, args) => tags(attackPattern.id, args),
-    externalReferences: (attackPattern, args) =>
-      externalReferences(attackPattern.id, args),
-    killChainPhases: (attackPattern, args) =>
-      killChainPhases(attackPattern.id, args),
-    reports: (attackPattern, args) => reports(attackPattern.id, args),
-    exports: (attackPattern, args) => exports(attackPattern.id, args),
-    stixRelations: (attackPattern, args) =>
-      stixRelations(attackPattern.id, args),
-    editContext: attackPattern => fetchEditContext(attackPattern.id)
+    externalReferences: (attPatt, args) => externalReferences(attPatt.id, args),
+    killChainPhases: (attPatt, args) => killChainPhases(attPatt.id, args)
   },
   Mutation: {
     attackPatternEdit: (_, { id }, { user }) => ({

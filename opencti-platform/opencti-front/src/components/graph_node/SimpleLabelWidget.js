@@ -21,7 +21,7 @@ const styles = () => ({
   },
 });
 
-class EntityLabelWidget extends Component {
+class SimpleLabelWidget extends Component {
   render() {
     const {
       t,
@@ -73,7 +73,7 @@ class EntityLabelWidget extends Component {
   }
 }
 
-EntityLabelWidget.propTypes = {
+SimpleLabelWidget.propTypes = {
   model: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -83,4 +83,4 @@ EntityLabelWidget.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityLabelWidget);
+)(SimpleLabelWidget);

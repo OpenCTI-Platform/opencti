@@ -10,10 +10,11 @@ import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
-import EntityLabelFactory from '../../../components/graph_node/EntityLabelFactory';
-import EntityLinkFactory from '../../../components/graph_node/EntityLinkFactory';
+import GlobalPortFactory from '../../../components/graph_node/GlobalPortFactory';
 import EntityNodeFactory from '../../../components/graph_node/EntityNodeFactory';
-import EntityPortFactory from '../../../components/graph_node/EntityPortFactory';
+import GlobalLinkFactory from '../../../components/graph_node/GlobalLinkFactory';
+import GlobalLabelFactory from '../../../components/graph_node/GlobalLabelFactory';
+import RelationNodeFactory from '../../../components/graph_node/RelationNodeFactory';
 import { SubscriptionAvatars } from '../../../components/Subscription';
 import ReportHeader from './ReportHeader';
 import ReportKnowledgeGraph, {
@@ -41,10 +42,11 @@ class ReportKnowledgeComponent extends Component {
     super(props);
     const engine = new DiagramEngine();
     engine.installDefaultFactories();
-    engine.registerPortFactory(new EntityPortFactory());
+    engine.registerPortFactory(new GlobalPortFactory());
+    engine.registerLabelFactory(new GlobalLabelFactory());
+    engine.registerLinkFactory(new GlobalLinkFactory());
     engine.registerNodeFactory(new EntityNodeFactory());
-    engine.registerLinkFactory(new EntityLinkFactory());
-    engine.registerLabelFactory(new EntityLabelFactory());
+    engine.registerNodeFactory(new RelationNodeFactory());
     this.state = { engine };
   }
 

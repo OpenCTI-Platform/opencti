@@ -8,7 +8,7 @@ import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainEntityEditionOverview from './StixDomainEntityEditionOverview';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '30%',
@@ -63,7 +63,11 @@ class StixDomainEntityEdition extends Component {
                     me={props.me}
                     stixDomainEntity={props.stixDomainEntity}
                     handleClose={handleClose.bind(this)}
-                    handleDelete={handleDelete.bind(this)}
+                    handleDelete={
+                      typeof handleDelete === 'function'
+                        ? handleDelete.bind(this)
+                        : null
+                    }
                   />
                 );
               }
@@ -71,7 +75,7 @@ class StixDomainEntityEdition extends Component {
             }}
           />
         ) : (
-          '&nbsp;'
+          <div> &nbsp; </div>
         )}
       </Drawer>
     );

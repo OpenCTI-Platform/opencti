@@ -23,10 +23,10 @@ import StixRelationEdition, {
   stixRelationEditionDeleteMutation,
 } from './StixRelationEdition';
 import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
-import EntityLabelFactory from '../../../../components/graph_node/EntityLabelFactory';
-import EntityLinkFactory from '../../../../components/graph_node/EntityLinkFactory';
+import SimpleLabelFactory from '../../../../components/graph_node/SimpleLabelFactory';
+import SimpleLinkFactory from '../../../../components/graph_node/SimpleLinkFactory';
 import EntityNodeFactory from '../../../../components/graph_node/EntityNodeFactory';
-import EntityPortFactory from '../../../../components/graph_node/EntityPortFactory';
+import GlobalPortFactory from '../../../../components/graph_node/GlobalPortFactory';
 import { stixRelationEditionFocus } from './StixRelationEditionOverview';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixRelationInferences from './StixRelationInferences';
@@ -53,7 +53,6 @@ const styles = () => ({
   },
   itemHeader: {
     padding: '10px 0 10px 0',
-    borderBottom: '1px solid #ffffff',
   },
   icon: {
     position: 'absolute',
@@ -109,10 +108,10 @@ class StixRelationContainer extends Component {
     super(props);
     const engine = new DiagramEngine();
     engine.installDefaultFactories();
-    engine.registerPortFactory(new EntityPortFactory());
+    engine.registerPortFactory(new GlobalPortFactory());
     engine.registerNodeFactory(new EntityNodeFactory());
-    engine.registerLinkFactory(new EntityLinkFactory());
-    engine.registerLabelFactory(new EntityLabelFactory());
+    engine.registerLinkFactory(new SimpleLinkFactory());
+    engine.registerLabelFactory(new SimpleLabelFactory());
     this.state = { openEdit: false, engine };
   }
 
@@ -188,16 +187,21 @@ class StixRelationContainer extends Component {
           <div
             className={classes.item}
             style={{
-              backgroundColor: itemColor(from.entity_type, true),
+              border: `2px solid ${itemColor(from.entity_type)}`,
               top: 10,
               left: 0,
             }}
           >
-            <div className={classes.itemHeader}>
+            <div
+              className={classes.itemHeader}
+              style={{
+                borderBottom: `1px solid ${itemColor(from.entity_type)}`,
+              }}
+            >
               <div className={classes.icon}>
                 <ItemIcon
                   type={from.entity_type}
-                  color={itemColor(from.entity_type, false)}
+                  color={itemColor(from.entity_type)}
                   size="small"
                 />
               </div>
@@ -257,16 +261,21 @@ class StixRelationContainer extends Component {
           <div
             className={classes.item}
             style={{
-              backgroundColor: itemColor(to.entity_type, true),
+              border: `2px solid ${itemColor(to.entity_type)}`,
               top: 10,
               right: 0,
             }}
           >
-            <div className={classes.itemHeader}>
+            <div
+              className={classes.itemHeader}
+              style={{
+                borderBottom: `1px solid ${itemColor(to.entity_type)}`,
+              }}
+            >
               <div className={classes.icon}>
                 <ItemIcon
                   type={to.entity_type}
-                  color={itemColor(to.entity_type, false)}
+                  color={itemColor(to.entity_type)}
                   size="small"
                 />
               </div>

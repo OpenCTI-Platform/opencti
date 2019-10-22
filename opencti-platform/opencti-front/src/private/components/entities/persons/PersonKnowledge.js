@@ -36,7 +36,7 @@ class PersonKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/persons/:personId/knowledge/relations/:relationId"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixRelation
               entityId={person.id}
               inversedRoles={inversedRoles}
@@ -47,7 +47,7 @@ class PersonKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/persons/:personId/knowledge/overview"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixDomainEntityKnowledge
               stixDomainEntityId={person.id}
               stixDomainEntityType="person"
@@ -58,10 +58,10 @@ class PersonKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/persons/:personId/knowledge/organizations"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               entityId={person.id}
-              relationType="belongs-to"
+              relationType="gathering"
               targetEntityTypes={['Organization']}
               entityLink={link}
               creationIsFrom={true}
@@ -72,7 +72,7 @@ class PersonKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/persons/:personId/knowledge/locations"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               entityId={person.id}
               relationType="localization"
@@ -86,7 +86,7 @@ class PersonKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/persons/:personId/knowledge/threats"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="localization"
               resolveRelationRole="location"

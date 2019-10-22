@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import windowDimensions from 'react-window-dimensions';
-import { compose } from 'ramda';
+import { compose, differenceWith } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer,
@@ -44,7 +44,12 @@ class ListCardsContent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.dataList.length !== prevProps.dataList.length) {
+    const diff = differenceWith(
+      (x, y) => x.node.id === y.node.id,
+      this.props.dataList,
+      prevProps.dataList,
+    );
+    if (diff.length > 0) {
       this.gridRef.forceUpdate();
     }
   }

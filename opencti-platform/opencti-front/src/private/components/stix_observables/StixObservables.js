@@ -8,6 +8,7 @@ import StixObservablesLines, {
   stixObservablesLinesQuery,
 } from './StixObservablesLines';
 import inject18n from '../../../components/i18n';
+import StixObservableCreation from './StixObservableCreation';
 import StixObservablesRightBar from './StixObservablesRightBar';
 
 const styles = () => ({
@@ -175,6 +176,7 @@ class StixObservables extends Component {
     return (
       <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        <StixObservableCreation paginationOptions={paginationOptions} />
         <StixObservablesRightBar
           types={types}
           handleToggle={this.handleToggle.bind(this)}

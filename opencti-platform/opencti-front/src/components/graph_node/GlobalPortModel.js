@@ -1,11 +1,12 @@
 import { PortModel } from 'storm-react-diagrams';
 import { mergeRight } from 'ramda';
-import EntityLinkModel from './EntityLinkModel';
+import GlobalLinkModel from './GlobalLinkModel';
 
-export default class EntityPortModel extends PortModel {
-  constructor(pos = 'top') {
-    super(pos, 'entity');
+export default class GlobalPortModel extends PortModel {
+  constructor(pos = 'top', locked = false) {
+    super(pos, 'global');
     this.position = pos;
+    this.locked = locked;
   }
 
   serialize() {
@@ -21,6 +22,6 @@ export default class EntityPortModel extends PortModel {
 
   // eslint-disable-next-line class-methods-use-this
   createLinkModel() {
-    return new EntityLinkModel();
+    return new GlobalLinkModel();
   }
 }

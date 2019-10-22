@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import { PortWidget } from 'storm-react-diagrams';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
-import { Info, OpenWith } from '@material-ui/icons';
-import { Link } from 'react-router-dom';
-import { truncate } from '../../utils/String';
+import { Edit, Delete, Info } from '@material-ui/icons';
 import { itemColor } from '../../utils/Colors';
 import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../ItemIcon';
@@ -13,41 +12,41 @@ import ItemIcon from '../ItemIcon';
 const styles = () => ({
   node: {
     position: 'relative',
-    width: 150,
+    width: 60,
     height: 60,
-    borderRadius: 10,
     zIndex: 20,
-    padding: '10px 0 10px 0',
+    borderRadius: '50%',
+    backgroundColor: '#303030',
+  },
+  icon: {
+    margin: '0 auto',
+    textAlign: 'center',
+    paddingTop: 12,
+  },
+  name: {
+    width: 120,
+    position: 'absolute',
+    left: -30,
+    marginTop: 15,
+    textAlign: 'center',
   },
   port: {
     position: 'absolute',
-    width: 180,
-    height: 80,
     top: 0,
     left: 0,
-    borderRadius: 10,
-  },
-  content: {
+    padding: 0,
     width: '100%',
-    color: '#ffffff',
-    textAlign: 'center',
+    height: '100%',
+    border: 1,
+    overflow: 'hidden',
   },
-  name: {
-    display: 'inline-block',
-    lineHeight: 1,
-    fontSize: 12,
-    verticalAlign: 'middle',
-  },
-  overlay: {
-    transition: 'opacity 600ms, visibility 600ms;',
+  actions: {
+    display: 'flex',
     position: 'absolute',
-    opacity: 0,
-    visibility: 'hidden',
-    top: 10,
-    left: -40,
-  },
-  button: {
-    padding: 5,
+    top: -25,
+    left: -10,
+    width: 80,
+    justifyContent: 'space-between',
   },
 });
 
@@ -57,14 +56,18 @@ class EntityNodeWidget extends Component {
     this.forceUpdate();
   }
 
-  handleExpand() {
-    this.props.node.setSelected(true, true);
+  handleEdit() {
+    this.props.node.setSelectedCustom(true, true);
+  }
+
+  handleRemove() {
+    this.props.node.setSelectedCustom(true, false, true);
   }
 
   render() {
     const {
       node,
-      node: { extras, expandable },
+      node: { extras },
       classes,
     } = this.props;
     const link = resolveLink(extras.type);
@@ -72,47 +75,19 @@ class EntityNodeWidget extends Component {
       <div
         className={classes.node}
         style={{
-          backgroundColor: itemColor(extras.type, true),
-          border: node.selected ? '2px solid #00c0ff' : '2px solid #333333',
-          display: node.hidden ? 'none' : 'block',
+          border: node.selected
+            ? '2px solid #00c0ff'
+            : `2px solid ${itemColor(extras.type, false)}`,
         }}
       >
-        <div className={classes.content}>
+        <div className={classes.icon}>
           <ItemIcon
             type={extras.type}
             color={itemColor(extras.type, false)}
             size="large"
           />
-          <br />
-          <span className={classes.name}>{truncate(extras.name, 30)}</span>
         </div>
-        <div
-          className={classes.overlay}
-          style={{
-            visibility: node.selected ? 'visible' : 'hidden',
-            opacity: node.selected ? 1 : 0,
-          }}
-        >
-          <IconButton
-            component={Link}
-            to={`${link}/${extras.id}`}
-            className={classes.button}
-            style={{ marginTop: expandable ? 0 : 15 }}
-          >
-            <Info fontSize="small" />
-          </IconButton>
-          <br />
-          {expandable ? (
-            <IconButton
-              onClick={this.handleExpand.bind(this)}
-              className={classes.button}
-            >
-              <OpenWith fontSize="small" />
-            </IconButton>
-          ) : (
-            ''
-          )}
-        </div>
+        <div className={classes.name}>{extras.name}</div>
         <div
           className={classes.port}
           onClick={this.setSelected.bind(this)}
@@ -120,6 +95,37 @@ class EntityNodeWidget extends Component {
         >
           <PortWidget name="main" node={node} />
         </div>
+        {node.selected ? (
+          <div className={classes.actions}>
+            <IconButton
+              aria-label="edit"
+              size="small"
+              onClick={this.handleEdit.bind(this, node)}
+              disabled={extras.disabled === true}
+            >
+              <Edit fontSize="small" />
+            </IconButton>
+            <IconButton
+              aria-label="delete"
+              size="small"
+              onClick={this.handleRemove.bind(this, node)}
+              disabled={extras.disabled === true}
+            >
+              <Delete fontSize="small" />
+            </IconButton>
+            <IconButton
+              aria-label="info"
+              size="small"
+              component={Link}
+              target="_blank"
+              to={`${link}/${extras.id}`}
+            >
+              <Info fontSize="small" />
+            </IconButton>
+          </div>
+        ) : (
+          ''
+        )}
       </div>
     );
   }

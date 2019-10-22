@@ -10,9 +10,9 @@ const relationsTypesMapping = {
   'threat-actor_tool': ['uses'],
   'threat-actor_vulnerability': ['targets'],
   'intrusion-set_attack-pattern': ['uses'],
-  'intrusion-set_region': ['targets', 'localization'],
-  'intrusion-set_country': ['targets', 'localization'],
-  'intrusion-set_city': ['targets', 'localization'],
+  'intrusion-set_region': ['targets'],
+  'intrusion-set_country': ['targets'],
+  'intrusion-set_city': ['targets'],
   'intrusion-set_sector': ['targets'],
   'intrusion-set_organization': ['targets'],
   'intrusion-set_threat-actor': ['attributed-to', 'targets'],
@@ -51,8 +51,8 @@ const relationsTypesMapping = {
   malware_sector: ['targets'],
   malware_user: ['targets'],
   malware_vulnerability: ['targets'],
-  malware_tool: ['uses'],
-  malware_malware: ['variant-of'],
+  malware_tool: ['uses', 'drops'],
+  malware_malware: ['variant-of', 'drops'],
   country_region: ['localization'],
   city_country: ['localization'],
   city_region: ['localization'],
@@ -64,6 +64,9 @@ const relationsTypesMapping = {
   user_organization: ['gathering'],
   user_country: ['localization'],
   user_city: ['localization'],
+  targets_country: ['localization'],
+  targets_city: ['localization'],
+  targets_region: ['localization'],
 };
 
 export const resolveRelationsTypes = (fromType, toType) => (relationsTypesMapping[`${fromType}_${toType}`]

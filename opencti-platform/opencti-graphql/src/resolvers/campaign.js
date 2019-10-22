@@ -6,12 +6,6 @@ import {
   campaignsTimeSeriesByEntity
 } from '../domain/campaign';
 import {
-  createdByRef,
-  markingDefinitions,
-  tags,
-  reports,
-  exports,
-  stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
@@ -19,7 +13,6 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
-import { fetchEditContext } from '../database/redis';
 
 const campaignResolvers = {
   Query: {
@@ -33,16 +26,6 @@ const campaignResolvers = {
       }
       return campaignsTimeSeries(args);
     }
-  },
-  Campaign: {
-    createdByRef: campaign => createdByRef(campaign.id),
-    markingDefinitions: (campaign, args) =>
-      markingDefinitions(campaign.id, args),
-    tags: (campaign, args) => tags(campaign.id, args),
-    reports: (campaign, args) => reports(campaign.id, args),
-    exports: (campaign, args) => exports(campaign.id, args),
-    stixRelations: (campaign, args) => stixRelations(campaign.id, args),
-    editContext: campaign => fetchEditContext(campaign.id)
   },
   Mutation: {
     campaignEdit: (_, { id }, { user }) => ({

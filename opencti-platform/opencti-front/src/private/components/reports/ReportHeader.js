@@ -40,8 +40,7 @@ class ReportHeaderComponent extends Component {
         <Typography
           variant="h1"
           gutterBottom={true}
-          classes={{ root: classes.title }}
-        >
+          classes={{ root: classes.title }}>
           {truncate(report.name, 80)}
         </Typography>
         <div className={classes.popover}>
@@ -50,7 +49,7 @@ class ReportHeaderComponent extends Component {
         {variant !== 'noMarking' ? (
           <div className={classes.marking}>
             {pathOr([], ['markingDefinitions', 'edges'], report).map(
-              markingDefinition => (
+              (markingDefinition) => (
                 <ItemMarking
                   key={markingDefinition.node.id}
                   label={markingDefinition.node.definition}

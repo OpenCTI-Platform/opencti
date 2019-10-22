@@ -195,13 +195,13 @@ class StixDomainEntityCreation extends Component {
           )}
         {targetEntityTypes === undefined
         || targetEntityTypes.includes('Threat-Actor') ? (
-          <MenuItem value="Threat-Actor">{t('Threat-Actor')}</MenuItem>
+          <MenuItem value="Threat-Actor">{t('Threat actor')}</MenuItem>
           ) : (
             ''
           )}
         {targetEntityTypes === undefined
         || targetEntityTypes.includes('Intrusion-Set') ? (
-          <MenuItem value="Intrusion-Set">{t('Intrusion-Set')}</MenuItem>
+          <MenuItem value="Intrusion-Set">{t('Intrusion set')}</MenuItem>
           ) : (
             ''
           )}
@@ -232,6 +232,12 @@ class StixDomainEntityCreation extends Component {
         {targetEntityTypes === undefined
         || targetEntityTypes.includes('Vulnerability') ? (
           <MenuItem value="Vulnerability">{t('Vulnerability')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Attack-Pattern') ? (
+          <MenuItem value="Attack-Pattern">{t('Attack pattern')}</MenuItem>
           ) : (
             ''
           )}

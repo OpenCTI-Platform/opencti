@@ -15,8 +15,8 @@ import { DiagramModel, DiagramWidget } from 'storm-react-diagrams';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import EntityNodeModel from '../../../../components/graph_node/EntityNodeModel';
-import EntityLinkModel from '../../../../components/graph_node/EntityLinkModel';
-import EntityLabelModel from '../../../../components/graph_node/EntityLabelModel';
+import SimpleLinkModel from '../../../../components/graph_node/SimpleLinkModel';
+import SimpleLabelModel from '../../../../components/graph_node/SimpleLabelModel';
 import { resolveLink } from '../../../../utils/Entity';
 
 const styles = () => ({
@@ -62,9 +62,10 @@ class StixRelationInferences extends Component {
               ? inference.from.observable_value
               : inference.from.name,
           type: inference.from.entity_type,
+          disabled: true,
         });
         if (inference.from.id === from.id) {
-          newNodeFrom.setPosition(30, 0);
+          newNodeFrom.setPosition(30, 20);
         } else if (inference.from.id === to.id) {
           newNodeFrom.setPosition(containerWidth - 170, 280);
         } else {
@@ -81,6 +82,7 @@ class StixRelationInferences extends Component {
               ? inference.to.observable_value
               : inference.to.name,
           type: inference.to.entity_type,
+          disabled: true,
         });
         if (inference.to.id === from.id) {
           newNodeTo.setPosition(30, 0);
@@ -97,7 +99,7 @@ class StixRelationInferences extends Component {
     const finalNodes = model.getNodes();
     const finalNodesObject = pipe(
       values,
-      map(n => ({ id: n.extras.id, node: n })),
+      map((n) => ({ id: n.extras.id, node: n })),
       indexBy(prop('id')),
     )(finalNodes);
 
@@ -111,7 +113,7 @@ class StixRelationInferences extends Component {
         const toPort = finalNodesObject[inference.to.id]
           ? finalNodesObject[inference.to.id].node.getPort('main')
           : null;
-        const newLink = new EntityLinkModel();
+        const newLink = new SimpleLinkModel();
         newLink.setExtras({
           relation: inference,
           link: `${resolveLink(inference.from.entity_type)}/${
@@ -120,7 +122,7 @@ class StixRelationInferences extends Component {
         });
         newLink.setSourcePort(fromPort);
         newLink.setTargetPort(toPort);
-        const label = new EntityLabelModel();
+        const label = new SimpleLabelModel();
         label.setExtras([
           {
             id: l.node.id,
@@ -145,7 +147,7 @@ class StixRelationInferences extends Component {
 
   handleSelection(event) {
     if (event.isSelected === true && event.openEdit === true) {
-      if (event.entity instanceof EntityLinkModel) {
+      if (event.entity instanceof SimpleLinkModel) {
         this.props.history.push(event.entity.extras.link);
       }
     }

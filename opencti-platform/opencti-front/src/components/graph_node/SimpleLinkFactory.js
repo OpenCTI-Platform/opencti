@@ -1,10 +1,10 @@
 import React from 'react';
 import * as SRD from 'storm-react-diagrams';
-import EntityLinkModel from './EntityLinkModel';
+import SimpleLinkModel from './SimpleLinkModel';
 
-export default class EntityLinkFactory extends SRD.AbstractLinkFactory {
+export default class SimpleLinkFactory extends SRD.AbstractLinkFactory {
   constructor() {
-    super('entity');
+    super('simple');
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -17,7 +17,7 @@ export default class EntityLinkFactory extends SRD.AbstractLinkFactory {
 
   // eslint-disable-next-line class-methods-use-this
   getNewInstance() {
-    return new EntityLinkModel();
+    return new SimpleLinkModel();
   }
 
   // eslint-disable-next-line class-methods-use-this
