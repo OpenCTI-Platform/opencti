@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, join, tail, head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   commitWriteTx,
@@ -40,7 +40,17 @@ export const addIntrusionSet = async (user, intrusionSet) => {
         : `intrusion-set--${uuid()}`
     }",
     has stix_label "",
-    has alias "",
+    ${
+      intrusionSet.alias
+        ? `${join(
+            ' ',
+            map(
+              val => `has alias "${escapeString(val)}",`,
+              tail(intrusionSet.alias)
+            )
+          )} has alias "${escapeString(head(intrusionSet.alias))}",`
+        : 'has alias "",'
+    }
     has name "${escapeString(intrusionSet.name)}",
     has description "${escapeString(intrusionSet.description)}",
     has first_seen ${

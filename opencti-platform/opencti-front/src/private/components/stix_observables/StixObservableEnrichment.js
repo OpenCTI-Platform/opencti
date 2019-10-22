@@ -148,7 +148,7 @@ const StixObservableEnrichment = (props) => {
                         </ListItemIcon>
                       </Tooltip>
                       <ListItemText primary={connector.name} />
-                      <ListItemSecondaryAction>
+                      <ListItemSecondaryAction style={{ right: 0 }}>
                         <Tooltip
                           title={t(
                             'Refresh the enrichment using this connector',
@@ -208,11 +208,8 @@ const StixObservableEnrichment = (props) => {
                               )}
                             </ListItemIcon>
                             <ListItemText primary={nsdt(work.created_at)} />
-                            <ListItemSecondaryAction>
-                              <IconButton
-                                disabled={!connector.active}
-                                onClick={() => deleteWork(work.id)}
-                              >
+                            <ListItemSecondaryAction style={{ right: 0 }}>
+                              <IconButton onClick={() => deleteWork(work.id)}>
                                 <Delete />
                               </IconButton>
                             </ListItemSecondaryAction>
