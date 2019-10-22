@@ -13,12 +13,13 @@ import {
   monthFormat,
   yearFormat,
   notify,
-  now,
+  graknNow,
   paginate,
   takeWriteTx,
   commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args =>
   paginate(
@@ -51,20 +52,12 @@ export const findByPhaseName = args =>
     false
   );
 
-export const markingDefinitions = (killChainPhaseId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    (marking:$marking, so:$k) isa object_marking_refs; 
-    $k has internal_id_key "${escapeString(killChainPhaseId)}"`,
-    args,
-    false
-  );
-
 export const addKillChainPhase = async (user, killChainPhase) => {
   const wTx = await takeWriteTx();
   const internalId = killChainPhase.internal_id_key
     ? escapeString(killChainPhase.internal_id_key)
     : uuid();
+  const now = graknNow();
   const killChainPhaseIterator = await wTx.tx
     .query(`insert $killChainPhase isa Kill-Chain-Phase,
     has internal_id_key "${internalId}",
@@ -78,34 +71,27 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     has phase_name "${escapeString(killChainPhase.phase_name)}",
     has phase_order ${escape(killChainPhase.phase_order)},
     has created ${
-      killChainPhase.created ? prepareDate(killChainPhase.created) : now()
+      killChainPhase.created ? prepareDate(killChainPhase.created) : now
     },
     has modified ${
-      killChainPhase.modified ? prepareDate(killChainPhase.modified) : now()
+      killChainPhase.modified ? prepareDate(killChainPhase.modified) : now
     },
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",       
-    has updated_at ${now()};
+    has created_at ${now},
+    has created_at_day "${dayFormat(now)}",
+    has created_at_month "${monthFormat(now)}",
+    has created_at_year "${yearFormat(now)}",       
+    has updated_at ${now};
   `);
   const createKillChainPhase = await killChainPhaseIterator.next();
-  const createdKillChainPhaseId = await createKillChainPhase
-    .map()
-    .get('killChainPhase').id;
+  const createdId = await createKillChainPhase.map().get('killChainPhase').id;
 
-  if (killChainPhase.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdKillChainPhaseId};
-      $to has internal_id_key "${escapeString(killChainPhase.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdId, killChainPhase.createdByRef);
+  await linkMarkingDef(wTx, createdId, killChainPhase.markingDefinitions);
 
+  // Commit everything and return the data
   await commitWriteTx(wTx);
-
   return getById(internalId).then(created =>
     notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created, user)
   );

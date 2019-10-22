@@ -125,9 +125,25 @@ class TopMenuReport extends Component {
               ? 'primary'
               : 'inherit'
           }
-          classes={{ root: classes.button }}
-        >
+          classes={{ root: classes.button }}>
           {t('Knowledge')}
+        </Button>
+        <Button
+            component={Link}
+            to={`/dashboard/reports/all/${reportId}/files`}
+            variant={
+                location.pathname === `/dashboard/reports/all/${reportId}/files`
+                  ? 'contained'
+                  : 'text'
+            }
+            size="small"
+            color={
+                location.pathname === `/dashboard/reports/all/${reportId}/files`
+                  ? 'primary'
+                  : 'inherit'
+            }
+            classes={{ root: classes.button }}>
+            {t('Files')}
         </Button>
       </div>
     );

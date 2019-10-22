@@ -31,8 +31,7 @@ class StixObservableComponent extends Component {
         <Grid
           container={true}
           spacing={3}
-          classes={{ container: classes.gridContainer }}
-        >
+          classes={{ container: classes.gridContainer }}>
           <Grid item={true} xs={3}>
             <StixObservableOverview stixObservable={stixObservable} />
           </Grid>
@@ -45,7 +44,7 @@ class StixObservableComponent extends Component {
         </Grid>
         <StixObservableEntities
           entityId={stixObservable.id}
-          relationType="indicates"
+          relationType="localization"
         />
         <StixObservableEdition stixObservableId={stixObservable.id} />
       </div>

@@ -35,8 +35,7 @@ import {
   getRelationById,
   getRelationInferredById,
   notify,
-  now,
-  paginate,
+  graknNow,
   paginateRelationships,
   prepareDate,
   dayFormat,
@@ -56,34 +55,37 @@ import { buildPagination } from '../database/utils';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { deleteEntity } from '../database/elasticSearch';
 
-const sumBy = attribute => vals =>
-  reduce(
+const sumBy = attribute => vals => {
+  return reduce(
     (current, val) => evolve({ [attribute]: add(val[attribute]) }, current),
     head(vals),
     tail(vals)
   );
+};
 
 const groupSumBy = curry((groupOn, sumOn, vals) =>
   values(map(sumBy(sumOn))(groupBy(prop(groupOn), vals)))
 );
 
-export const findAll = args =>
-  paginateRelationships(
+export const findAll = args => {
+  return paginateRelationships(
     `match $rel($from, $to) isa ${
       args.relationType ? escape(args.relationType) : 'stix_relation'
     }`,
     args
   );
+};
 
-export const findByStixId = args =>
-  paginateRelationships(
+export const findByStixId = args => {
+  return paginateRelationships(
     `match $rel($from, $to) isa relation; 
     $rel has stix_id_key "${escapeString(args.stix_id_key)}"`,
     args
   );
+};
 
-export const search = args =>
-  paginateRelationships(
+export const search = args => {
+  return paginateRelationships(
     `match $rel($from, $to) isa relation;
     $to has name $name;
     $to has description $desc;
@@ -91,6 +93,7 @@ export const search = args =>
     { $desc contains "${escapeString(args.search)}"; }`,
     args
   );
+};
 
 export const findAllWithInferences = async args => {
   const entities = await getObjects(
@@ -109,7 +112,7 @@ export const findAllWithInferences = async args => {
           )} { $x isa ${escape(head(args.resolveRelationToTypes))}; };`
         : ''
     } $from has internal_id_key "${escapeString(args.fromId)}";
-    get $x;`,
+    get;`,
     'x',
     null,
     true
@@ -207,8 +210,8 @@ export const findAllWithInferences = async args => {
   return resultPromise;
 };
 
-export const stixRelationsTimeSeries = args =>
-  timeSeries(
+export const stixRelationsTimeSeries = args => {
+  return timeSeries(
     `match $x($from, $to) isa ${
       args.relationType ? escape(args.relationType) : 'stix_relation'
     }; ${
@@ -225,6 +228,7 @@ export const stixRelationsTimeSeries = args =>
     }`,
     args
   );
+};
 
 export const stixRelationsTimeSeriesWithInferences = async args => {
   const entities = await getObjects(
@@ -241,7 +245,7 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
             )
           )} { $x isa ${escape(head(args.resolveRelationToTypes))}; };`
         : ''
-    } $from has internal_id_key "${escapeString(args.fromId)}"; get $x;`,
+    } $from has internal_id_key "${escapeString(args.fromId)}"; get;`,
     'x',
     null,
     true
@@ -379,7 +383,7 @@ export const stixRelationsDistributionWithInferences = async args => {
             )
           )} { $x isa ${escape(head(args.resolveRelationToTypes))}; };`
         : ''
-    } $from has internal_id_key "${escapeString(args.fromId)}"; get $x;`,
+    } $from has internal_id_key "${escapeString(args.fromId)}"; get;`,
     'x',
     null,
     true
@@ -505,54 +509,24 @@ export const stixRelationsNumber = args => ({
         : ''
     }
     ${args.fromId ? `$y has internal_id_key "${escapeString(args.fromId)}";` : ''}
-    get $x;
+    get;
     count;`,
     args.inferred ? args.inferred : false
   ),
   total: getSingleValueNumber(
     `match $x($y, $z) isa ${args.type ? escape(args.type) : 'stix_relation'};
     ${args.fromId ? `$y has internal_id_key "${escapeString(args.fromId)}";` : ''}
-    get $x;
+    get;
     count;`,
     args.inferred ? args.inferred : false
   )
 });
 
 export const findById = stixRelationId => getRelationById(stixRelationId);
-export const findByIdInferred = stixRelationId =>
-  getRelationInferredById(stixRelationId);
 
-export const markingDefinitions = (stixRelationId, args) =>
-  paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(marking:$marking, so:$stixRelation) isa object_marking_refs; 
-    $stixRelation has internal_id_key "${escapeString(stixRelationId)}"`,
-    args,
-    false,
-    null,
-    false,
-    false
-  );
-
-export const tags = (stixRelationId, args) =>
-  paginate(
-    `match $tag isa Tag; 
-    $rel(tagging:$tag, so:$stixRelation) isa tagged; 
-    $stixRelation has internal_id_key "${escapeString(stixRelationId)}"`,
-    args,
-    false,
-    null,
-    false,
-    false
-  );
-
-export const reports = (stixRelationId, args) =>
-  paginate(
-    `match $report isa Report; 
-    $rel(knowledge_aggregation:$report, so:$stixRelation) isa object_refs; 
-    $stixRelation has internal_id_key "${escapeString(stixRelationId)}"`,
-    args
-  );
+export const findByIdInferred = stixRelationId => {
+  return getRelationInferredById(stixRelationId);
+};
 
 export const addStixRelation = async (user, stixRelation) => {
   const wTx = await takeWriteTx();
@@ -584,7 +558,7 @@ export const addStixRelation = async (user, stixRelation) => {
         ? escapeString(stixRelation.role_played)
         : 'Unknown'
     }",
-    has weight ${escape(stixRelation.weight)},
+    has weight ${stixRelation.weight ? escape(stixRelation.weight) : 0},
     has score ${stixRelation.score ? escape(stixRelation.score) : 50},
     ${
       stixRelation.expiration
@@ -603,17 +577,17 @@ export const addStixRelation = async (user, stixRelation) => {
     has last_seen_month "${monthFormat(stixRelation.last_seen)}",
     has last_seen_year "${yearFormat(stixRelation.last_seen)}",
     has created ${
-      stixRelation.created ? prepareDate(stixRelation.created) : now()
+      stixRelation.created ? prepareDate(stixRelation.created) : graknNow()
     },
     has modified ${
-      stixRelation.modified ? prepareDate(stixRelation.modified) : now()
+      stixRelation.modified ? prepareDate(stixRelation.modified) : graknNow()
     },
     has revoked false,
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",        
-    has updated_at ${now()};
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",        
+    has updated_at ${graknNow()};
   `;
   logger.debug(`[GRAKN - infer: false] addStixRelation > ${query}`);
   const stixRelationIterator = await wTx.tx.query(query);
@@ -634,6 +608,19 @@ export const addStixRelation = async (user, stixRelation) => {
       stixRelation.markingDefinitions
     );
     await Promise.all(markingDefinitionsPromises);
+  }
+
+  if (stixRelation.locations) {
+    const createLocation = location =>
+      wTx.tx.query(
+        `match $from id ${createdStixRelationId};
+        $to has internal_id_key "${escapeString(location)}";
+        insert $rel(localized: $from, location: $to) isa localization, has internal_id_key "${uuid()}", 
+        has stix_id_key "relationship--${uuid()}", has relationship_type 'localization', 
+        has first_seen ${graknNow()}, has last_seen ${graknNow()}, has weight 3;`
+      );
+    const locationsPromises = map(createLocation, stixRelation.locations);
+    await Promise.all(locationsPromises);
   }
 
   await commitWriteTx(wTx);

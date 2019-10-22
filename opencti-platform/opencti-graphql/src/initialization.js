@@ -4,6 +4,7 @@ import { createIndexes, elasticIsAlive } from './database/elasticSearch';
 import { graknIsAlive, write } from './database/grakn';
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/security';
+import { isStorageAlive } from './database/minio';
 
 const fs = require('fs');
 
@@ -15,6 +16,9 @@ export const checkSystemDependencies = async () => {
   // Check if elasticsearch is available
   await elasticIsAlive();
   logger.info(`[PRE-CHECK] > Elasticsearch is alive`);
+  // Check if minio is here
+  await isStorageAlive();
+  logger.info(`[PRE-CHECK] > Minio is alive`);
 };
 
 // Initialize

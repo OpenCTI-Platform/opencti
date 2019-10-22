@@ -22,7 +22,7 @@ import {
   SubscriptionFocus,
 } from '../../../../components/Subscription';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',
@@ -96,7 +96,7 @@ export const stixDomainEntityEditionFocus = graphql`
   }
 `;
 
-const stixDomainEntityValidation = t => Yup.object().shape({
+const stixDomainEntityValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });
@@ -233,7 +233,7 @@ const StixDomainEntityEditionFragment = createFragmentContainer(
   StixDomainEntityEditionContainer,
   {
     stixDomainEntity: graphql`
-      fragment StixDomainEntityEditionOverview_stixDomainEntity on StixDomainEntity {
+      fragment StixDomainEntityEditionOverview_stixDomainEntity on StixEntity {
         id
         name
         description

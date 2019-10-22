@@ -1,36 +1,36 @@
-import { assoc, map, pipe, assocPath, dissoc } from 'ramda';
+import { assoc, assocPath, dissoc, map, pipe } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
-  escape,
-  escapeString,
+  commitWriteTx,
   createRelation,
+  dayFormat,
   deleteEntityById,
   deleteRelationById,
-  updateAttribute,
+  escape,
+  escapeString,
   getById,
-  dayFormat,
+  getId,
+  graknNow,
   monthFormat,
-  yearFormat,
   notify,
-  now,
   paginate,
   takeWriteTx,
   timeSeries,
-  getObject,
-  getId,
-  commitWriteTx
+  updateAttribute,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import {
-  findAll as relationFindAll,
-  search as relationSearch
-} from './stixRelation';
+import { findAll as relationFindAll } from './stixRelation';
 import {
   countEntities,
   deleteEntity,
   paginate as elPaginate
 } from '../database/elasticSearch';
+import { connectorsForEnrichment } from './connector';
+import { createWork } from './work';
+import { pushToConnector } from '../database/rabbitmq';
+import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args => {
   if (
@@ -61,166 +61,121 @@ export const findAll = args => {
 export const stixObservablesNumber = args => ({
   count: countEntities('stix_observables', args),
   total: countEntities('stix_observables', dissoc('endDate', args))
-  /* count: getSingleValueNumber(
-    `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
-    ${
-      args.endDate
-        ? `$x has created_at $date;
-    $date < ${prepareDate(args.endDate)};`
-        : ''
-    }
-    get $x;
-    count;`
-  ),
-  total: getSingleValueNumber(
-    `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
-    get $x;
-    count;`
-  ) */
 });
 
-export const stixObservablesTimeSeries = args =>
-  timeSeries(
+export const stixObservablesTimeSeries = args => {
+  return timeSeries(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'}`,
     args
   );
+};
 
 export const findById = stixObservableId => getById(stixObservableId);
 
-export const findByValue = args =>
-  paginate(
+export const findByStixId = args => {
+  return paginate(
+    `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
+    $x has stix_id_key "${escapeString(args.stix_id)}"`,
+    args,
+    false
+  );
+};
+
+export const findByValue = args => {
+  return paginate(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
     $x has observable_value "${escapeString(args.observableValue)}"`,
     args,
     false
   );
+};
 
 export const search = args => elPaginate('stix_observables', args);
-/*
-  paginate(
-    `match $x isa ${args.type ? args.type : 'Stix-Observable'};
-    $x has observable_value $value;
-    $x has name $name;
-    { $value contains "${escapeString(args.search)}"; } or
-    { $name contains "${escapeString(args.search)}"; }`,
-    args,
-    false
-  );
-*/
 
-export const createdByRef = stixObservableId =>
-  getObject(
-    `match $i isa Identity;
-    $rel(creator:$i, so:$x) isa created_by_ref; 
-    $x has internal_id_key "${escapeString(stixObservableId)}"; 
-    get $i, $rel; 
-    offset 0; 
-    limit 1;`,
-    'i',
-    'rel'
-  );
-
-export const markingDefinitions = (stixObservableId, args) =>
-  paginate(
-    `match $m isa Marking-Definition;
-    $rel(marking:$m, so:$x) isa object_marking_refs; 
-    $x has internal_id_key "${escapeString(stixObservableId)}"`,
-    args,
-    false,
-    null,
-    false,
-    false
-  );
-
-export const tags = (stixObservableId, args) =>
-  paginate(
-    `match $t isa Tag; 
-    $rel(tagging:$t, so:$x) isa tagged; 
-    $x has internal_id_key "${escapeString(stixObservableId)}"`,
-    args,
-    false,
-    null,
-    false,
-    false
-  );
-
-export const reports = (stixObservableId, args) =>
-  paginate(
-    `match $r isa Report; 
-    $rel(knowledge_aggregation:$r, so:$x) isa object_refs; 
-    $x has internal_id_key "${escapeString(stixObservableId)}"`,
-    args
-  );
-
-export const reportsTimeSeries = (stixObservableId, args) =>
-  timeSeries(
+export const reportsTimeSeries = (stixObservableId, args) => {
+  return timeSeries(
     `match $x isa Report; 
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs;
     $so has internal_id_key "${escapeString(stixObservableId)}"`,
     args
   );
+};
 
-export const stixRelations = (stixObservableId, args) => {
-  const finalArgs = assoc('fromId', stixObservableId, args);
-  if (finalArgs.search && finalArgs.search.length > 0) {
-    return relationSearch(finalArgs);
-  }
-  return relationFindAll(finalArgs);
+const askEnrich = async (observableId, scope) => {
+  const targetConnectors = await connectorsForEnrichment(scope, true);
+  // Create job for
+  const workList = await Promise.all(
+    map(
+      connector =>
+        createWork(connector, observableId).then(({ job, work }) => ({
+          connector,
+          job,
+          work
+        })),
+      targetConnectors
+    )
+  );
+  // Send message to all correct connectors queues
+  await Promise.all(
+    map(data => {
+      const { connector, work, job } = data;
+      const message = {
+        work_id: work.internal_id_key,
+        job_id: job.internal_id_key,
+        entity_id: observableId
+      };
+      return pushToConnector(connector, message);
+    }, workList)
+  );
+  return workList;
+};
+
+export const stixObservableAskEnrichment = async (id, connectorId) => {
+  const connector = await getById(connectorId);
+  const { job, work } = await createWork(connector, id);
+  const message = {
+    work_id: work.internal_id_key,
+    job_id: job.internal_id_key,
+    entity_id: id
+  };
+  await pushToConnector(connector, message);
+  return work;
 };
 
 export const addStixObservable = async (user, stixObservable) => {
   const wTx = await takeWriteTx();
+  const stixId = stixObservable.stix_id_key;
+  const observableValue = stixObservable.observable_value;
   const internalId = stixObservable.internal_id_key
     ? escapeString(stixObservable.internal_id_key)
     : uuid();
   const query = `insert $stixObservable isa ${escape(stixObservable.type)},
     has internal_id_key "${internalId}",
-    has stix_id_key "${
-      stixObservable.stix_id_key
-        ? escapeString(stixObservable.stix_id_key)
-        : `observable--${uuid()}`
-    }",
+    has stix_id_key "${stixId ? escapeString(stixId) : `indicator--${uuid()}`}",
     has entity_type "${escapeString(stixObservable.type.toLowerCase())}",
     has name "",
     has description "${escapeString(stixObservable.description)}",
-    has observable_value "${escapeString(stixObservable.observable_value)}",
-    has created_at ${now()},
-    has created_at_day "${dayFormat(now())}",
-    has created_at_month "${monthFormat(now())}",
-    has created_at_year "${yearFormat(now())}",      
-    has updated_at ${now()};
+    has observable_value "${escapeString(observableValue)}",
+    has created_at ${graknNow()},
+    has created_at_day "${dayFormat(graknNow())}",
+    has created_at_month "${monthFormat(graknNow())}",
+    has created_at_year "${yearFormat(graknNow())}",      
+    has updated_at ${graknNow()};
   `;
   logger.debug(`[GRAKN - infer: false] addStixObservable > ${query}`);
   const stixObservableIterator = await wTx.tx.query(query);
   const createStixObservable = await stixObservableIterator.next();
-  const createdStixObservableId = await createStixObservable
-    .map()
-    .get('stixObservable').id;
+  const createdId = await createStixObservable.map().get('stixObservable').id;
 
-  if (stixObservable.createdByRef) {
-    await wTx.tx.query(
-      `match $from id ${createdStixObservableId};
-      $to has internal_id_key "${escapeString(stixObservable.createdByRef)}";
-      insert (so: $from, creator: $to)
-      isa created_by_ref, has internal_id_key "${uuid()}";`
-    );
-  }
+  // Create associated relations
+  await linkCreatedByRef(wTx, createdId, stixObservable.createdByRef);
+  await linkMarkingDef(wTx, createdId, stixObservable.markingDefinitions);
 
-  if (stixObservable.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdStixObservableId}; 
-        $to has internal_id_key "${escapeString(markingDefinition)}"; 
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-      );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      stixObservable.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
+  // Commit everything
   await commitWriteTx(wTx);
+
+  // Enqueue enrich job
+  await askEnrich(internalId, stixObservable.type);
 
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
@@ -233,21 +188,23 @@ export const stixObservableDelete = async stixObservableId => {
   return deleteEntityById(stixObservableId);
 };
 
-export const stixObservableAddRelation = (user, stixObservableId, input) =>
-  createRelation(stixObservableId, input).then(relationData => {
+export const stixObservableAddRelation = (user, stixObservableId, input) => {
+  return createRelation(stixObservableId, input).then(relationData => {
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
+};
 
 export const stixObservableDeleteRelation = (
   user,
   stixObservableId,
   relationId
-) =>
-  deleteRelationById(stixObservableId, relationId).then(relationData => {
+) => {
+  return deleteRelationById(stixObservableId, relationId).then(relationData => {
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
+};
 
 export const stixObservableCleanContext = (user, stixObservableId) => {
   delEditContext(user, stixObservableId);
@@ -263,7 +220,8 @@ export const stixObservableEditContext = (user, stixObservableId, input) => {
   );
 };
 
-export const stixObservableEditField = (user, stixObservableId, input) =>
-  updateAttribute(stixObservableId, input).then(stixObservable => {
+export const stixObservableEditField = (user, stixObservableId, input) => {
+  return updateAttribute(stixObservableId, input).then(stixObservable => {
     return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user);
   });
+};

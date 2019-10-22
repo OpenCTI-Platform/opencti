@@ -2,30 +2,33 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixDomainEntity,
-  stixDomainEntityDelete,
   findAll,
-  findById,
-  findByStixId,
-  findByName,
   findByExternalReference,
-  markingDefinitions,
-  tags,
-  stixDomainEntitiesTimeSeries,
+  findById,
+  findByName,
+  findByStixId,
   stixDomainEntitiesNumber,
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
+  stixDomainEntitiesTimeSeries,
   stixDomainEntityAddRelation,
-  stixDomainEntityAddRelations,
+  stixDomainEntityExportAsk,
+  stixDomainEntityCleanContext,
+  stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityRefreshExport,
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField,
   stixDomainEntityExportPush,
-  exports,
-  stixRelations,
-  createdByRef
+  stixDomainEntityImportPush,
+  stixDomainEntityAddRelations
 } from '../domain/stixDomainEntity';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
+import { filesListing } from '../database/minio';
+import {
+  createdByRef,
+  markingDefinitions,
+  reports,
+  tags
+} from '../domain/stixEntity';
 
 const stixDomainEntityResolvers = {
   Query: {
@@ -56,14 +59,13 @@ const stixDomainEntityResolvers = {
       }
       return 'Unknown';
     },
-    createdByRef: stixDomainEntity => createdByRef(stixDomainEntity.id),
-    markingDefinitions: (stixDomainEntity, args) =>
-      markingDefinitions(stixDomainEntity.id, args),
-    tags: (stixDomainEntity, args) => tags(stixDomainEntity.id, args),
-    stixRelations: (stixDomainEntity, args) =>
-      stixRelations(stixDomainEntity.id, args),
-    exports: (stixDomainEntity, args) => exports(stixDomainEntity.id, args),
-    editContext: stixDomainEntity => fetchEditContext(stixDomainEntity.id)
+    importFiles: (entity, { first }) => filesListing(first, 'import', entity),
+    exportFiles: (entity, { first }) => filesListing(first, 'export', entity),
+    createdByRef: entity => createdByRef(entity.id),
+    editContext: entity => fetchEditContext(entity.id),
+    tags: (entity, args) => tags(entity.id, args),
+    reports: (entity, args) => reports(entity.id, args),
+    markingDefinitions: (entity, args) => markingDefinitions(entity.id, args)
   },
   Mutation: {
     stixDomainEntityEdit: (_, { id }, { user }) => ({
@@ -76,10 +78,10 @@ const stixDomainEntityResolvers = {
         stixDomainEntityAddRelations(user, id, input),
       relationDelete: ({ relationId }) =>
         stixDomainEntityDeleteRelation(user, id, relationId),
-      refreshExport: ({ entityType, type }) =>
-        stixDomainEntityRefreshExport(id, entityType, type),
-      exportPush: ({ exportId, rawData }) =>
-        stixDomainEntityExportPush(user, id, exportId, rawData)
+      importPush: ({ file }) => stixDomainEntityImportPush(user, id, file),
+      exportAsk: ({ format, exportType }) =>
+        stixDomainEntityExportAsk(id, format, exportType),
+      exportPush: ({ file }) => stixDomainEntityExportPush(user, id, file)
     }),
     stixDomainEntityAdd: (_, { input }, { user }) =>
       addStixDomainEntity(user, input)

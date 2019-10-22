@@ -7,8 +7,10 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import { AccountCircle } from '@material-ui/icons';
+import { UploadNetworkOutline } from 'mdi-material-ui';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import Tooltip from '@material-ui/core/Tooltip';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import logo from '../../../resources/images/logo.png';
@@ -47,7 +49,7 @@ import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
 import { commitMutation } from '../../../relay/environment';
 
-const styles = theme => ({
+const styles = (theme) => ({
   appBar: {
     width: '100%',
     zIndex: theme.zIndex.drawer + 1,
@@ -73,13 +75,18 @@ const styles = theme => ({
   },
   searchContainer: {
     position: 'absolute',
-    right: 80,
+    right: 125,
     top: 15,
+  },
+  button: {
+    position: 'absolute',
+    right: 55,
+    top: 2,
   },
   menuButton: {
     position: 'absolute',
     right: 5,
-    top: 0,
+    top: 2,
   },
 });
 
@@ -138,7 +145,8 @@ class TopBar extends Component {
           </IconButton>
           <div className={classes.menuContainer}>
             {location.pathname === '/dashboard'
-            || location.pathname === '/dashboard/entities' ? (
+            || location.pathname === '/dashboard/entities'
+            || location.pathname === '/dashboard/import' ? (
               <TopMenuDashboard />
               ) : (
                 ''
@@ -316,6 +324,23 @@ class TopBar extends Component {
               keyword={keyword}
             />
           </div>
+          <Tooltip title={t('Data import')}>
+            <IconButton
+              component={Link}
+              to="/dashboard/import"
+              variant={
+                location.pathname === '/dashboard/import' ? 'contained' : 'text'
+              }
+              color={
+                location.pathname === '/dashboard/import'
+                  ? 'primary'
+                  : 'inherit'
+              }
+              classes={{ root: classes.button }}
+            >
+              <UploadNetworkOutline fontSize="large" />
+            </IconButton>
+          </Tooltip>
           <IconButton
             size="medium"
             classes={{ root: classes.menuButton }}
@@ -324,7 +349,7 @@ class TopBar extends Component {
             onClick={this.handleOpenMenu.bind(this)}
             color="inherit"
           >
-            <AccountCircle color="inherit" style={{ fontSize: 35 }} />
+            <AccountCircle fontSize="large" />
           </IconButton>
           <Menu
             id="menu-appbar"
