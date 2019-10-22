@@ -226,7 +226,7 @@ ListLines.propTypes = {
   displayImport: PropTypes.bool,
   keyword: PropTypes.string,
   filters: PropTypes.object,
-  sortBy: PropTypes.string.isRequired,
+  sortBy: PropTypes.string,
   orderAsc: PropTypes.bool.isRequired,
   dataColumns: PropTypes.object.isRequired,
   secondaryAction: PropTypes.bool,

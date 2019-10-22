@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types'
+import * as PropTypes from 'prop-types';
 import uuid from 'uuid/v4';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -39,18 +39,14 @@ class FileWorkComponent extends Component {
             >
               <ListItemIcon>
                 {(work.status === 'error' || work.status === 'partial') && (
-                  <Warning
-                    style={{ fontSize: 10, marginRight: 10, color: 'red' }}
-                  />
+                  <Warning style={{ fontSize: 15, color: '#f44336' }} />
                 )}
                 {work.status === 'complete' && (
-                  <CheckCircle
-                    style={{ fontSize: 10, marginRight: 10, color: 'green' }}
-                  />
+                  <CheckCircle style={{ fontSize: 15, color: '#4caf50' }} />
                 )}
                 {work.status === 'progress' && (
                   <CircularProgress
-                    size={25}
+                    size={20}
                     thickness={2}
                     style={{ marginRight: 10 }}
                   />

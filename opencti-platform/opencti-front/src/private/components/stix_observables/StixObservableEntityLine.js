@@ -9,12 +9,12 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert } from '@material-ui/icons';
-import { HexagonOutline } from 'mdi-material-ui';
+import { Help, MoreVert } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
 import StixRelationPopover from '../common/stix_relations/StixRelationPopover';
 import { resolveLink } from '../../../utils/Entity';
+import ItemIcon from '../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -56,6 +56,7 @@ class StixObservableEntityLineComponent extends Component {
       dataColumns,
       node,
       paginationOptions,
+      displayRelation,
     } = this.props;
     const link = `${resolveLink(node.to.entity_type)}/${
       node.to.id
@@ -69,11 +70,21 @@ class StixObservableEntityLineComponent extends Component {
         to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <HexagonOutline />
+          <ItemIcon type={node.to.entity_type} />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
+              {displayRelation ? (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.relationship_type.width }}
+                >
+                  {t(`relation_${node.relationship_type}`)}
+                </div>
+              ) : (
+                ''
+              )}
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
@@ -86,17 +97,21 @@ class StixObservableEntityLineComponent extends Component {
               >
                 {node.to.name}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.role_played.width }}
-              >
-                {/* eslint-disable-next-line no-nested-ternary */}
-                {node.inferred
-                  ? '-'
-                  : node.role_played
-                    ? t(node.role_played)
-                    : t('Unknown')}
-              </div>
+              {!displayRelation ? (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.role_played.width }}
+                >
+                  {/* eslint-disable-next-line no-nested-ternary */}
+                  {node.inferred
+                    ? '-'
+                    : node.role_played
+                      ? t(node.role_played)
+                      : t('Unknown')}
+                </div>
+              ) : (
+                ''
+              )}
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_seen.width }}
@@ -134,12 +149,13 @@ class StixObservableEntityLineComponent extends Component {
 }
 
 StixObservableEntityLineComponent.propTypes = {
-  dataColumns: PropTypes.object,
   paginationOptions: PropTypes.object,
+  dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,
+  displayRelation: PropTypes.bool,
 };
 
 const StixObservableEntityLineFragment = createFragmentContainer(
@@ -148,6 +164,7 @@ const StixObservableEntityLineFragment = createFragmentContainer(
     node: graphql`
       fragment StixObservableEntityLine_node on StixRelation {
         id
+        relationship_type
         weight
         first_seen
         last_seen
@@ -176,15 +193,25 @@ export const StixObservableEntityLine = compose(
 
 class StixObservableEntityLineDummyComponent extends Component {
   render() {
-    const { classes, dataColumns } = this.props;
+    const { classes, dataColumns, displayRelation } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <HexagonOutline />
+          <Help />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
+              {displayRelation ? (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.relationship_type.width }}
+                >
+                  <div className="fakeItem" style={{ width: '80%' }} />
+                </div>
+              ) : (
+                ''
+              )}
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
@@ -197,12 +224,16 @@ class StixObservableEntityLineDummyComponent extends Component {
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.role_played.width }}
-              >
-                <div className="fakeItem" style={{ width: '80%' }} />
-              </div>
+              {!displayRelation ? (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.role_played.width }}
+                >
+                  <div className="fakeItem" style={{ width: '80%' }} />
+                </div>
+              ) : (
+                ''
+              )}
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_seen.width }}
@@ -235,6 +266,7 @@ class StixObservableEntityLineDummyComponent extends Component {
 StixObservableEntityLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
+  displayRelation: PropTypes.bool,
 };
 
 export const StixObservableEntityLineDummy = compose(

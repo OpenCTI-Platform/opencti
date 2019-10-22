@@ -1,17 +1,27 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { interval } from 'rxjs';
+import { pathOr } from 'ramda';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import {
   StixObservableEntityLine,
   StixObservableEntityLineDummy,
 } from './StixObservableEntityLine';
+import { TEN_SECONDS } from '../../../utils/Time';
+
+const interval$ = interval(TEN_SECONDS);
 
 const nbOfRowsToLoad = 25;
 
 class StixObservableEntitysLines extends Component {
+  componentDidMount() {
+    this.subscription = interval$.subscribe(() => {
+      this.props.relay.refetchConnection(25);
+    });
+  }
+
   render() {
     const {
       initialLoading,
@@ -19,6 +29,7 @@ class StixObservableEntitysLines extends Component {
       relay,
       entityLink,
       paginationOptions,
+      displayRelation,
     } = this.props;
     return (
       <ListLinesContent
@@ -32,8 +43,12 @@ class StixObservableEntitysLines extends Component {
           ['stixRelations', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        LineComponent={<StixObservableEntityLine />}
-        DummyLineComponent={<StixObservableEntityLineDummy />}
+        LineComponent={
+          <StixObservableEntityLine displayRelation={displayRelation} />
+        }
+        DummyLineComponent={
+          <StixObservableEntityLineDummy displayRelation={displayRelation} />
+        }
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
@@ -52,6 +67,7 @@ StixObservableEntitysLines.propTypes = {
   stixRelations: PropTypes.object,
   initialLoading: PropTypes.bool,
   entityLink: PropTypes.string,
+  displayRelation: PropTypes.bool,
 };
 
 export const stixObservableEntitiesLinesQuery = graphql`
@@ -121,8 +137,8 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixRelationsOrdering", defaultValue: "first_seen" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderBy: { type: "StixRelationsOrdering" }
+          orderMode: { type: "OrderingMode" }
         ) {
         stixRelations(
           fromId: $fromId

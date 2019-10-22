@@ -268,7 +268,7 @@ class Settings extends Component {
                             <Field
                               name="platform_demo"
                               component={Switch}
-                              label={t('Display demo credentials')}
+                              label={t('Demo credentials')}
                               onChange={this.handleSubmitField.bind(this, id)}
                             />
                           </Paper>

@@ -176,7 +176,7 @@ class ImportComponent extends Component {
                 </List>
               ) : (
                 <div style={{ padding: 10 }}>
-                  {t('No import connectors on this platform')}
+                  {t('No enrichment connectors on this platform')}
                 </div>
               )}
             </Paper>

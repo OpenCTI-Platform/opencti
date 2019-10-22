@@ -573,7 +573,9 @@ export const find = async (
             const rolesPromise = new Promise(resRoles => {
               const rolesPromises = map(async roleItem => {
                 // eslint-disable-next-line prettier/prettier
-                const { id } = last(roleItem).values().next().value;
+                const { id } = last(roleItem)
+                  .values()
+                  .next().value;
                 const conceptFromMap = fetchingConceptsMap.get(id);
                 return conceptFromMap
                   ? head(roleItem)
@@ -687,10 +689,11 @@ export const getRelationById = async id => {
   const query = `match $rel ($from, $to) isa relation; $rel has internal_id_key "${eid}"; get;`;
   const relation = await load(query, ['rel']);
   if (isInversed(relation.relationship_type, relation.fromRole)) {
-    const { toRole } = relation;
-    const { fromRole } = relation;
+    const { fromId, fromRole, toId, toRole } = relation;
     return pipe(
+      assoc('fromId', toId),
       assoc('fromRole', toRole),
+      assoc('toId', fromId),
       assoc('toRole', fromRole)
     )(relation);
   }
@@ -791,7 +794,10 @@ export const updateAttribute = async (id, input, tx = null) => {
     const labelIterator = await wTx.tx.query(labelTypeQuery);
     const labelAnswer = await labelIterator.next();
     // eslint-disable-next-line prettier/prettier
-    const attrType = await labelAnswer.map().get('x').dataType();
+    const attrType = await labelAnswer
+      .map()
+      .get('x')
+      .dataType();
     const typedValues = map(v => {
       if (attrType === String) return `"${escapeString(v)}"`;
       if (attrType === Date) return prepareDate(v);
@@ -803,7 +809,9 @@ export const updateAttribute = async (id, input, tx = null) => {
       id
     )}", has ${escapedKey} $del via $d; delete $d;`;
     // eslint-disable-next-line prettier/prettier
-    logger.debug(`[GRAKN - infer: false] updateAttribute - delete > ${deleteQuery}`);
+    logger.debug(
+      `[GRAKN - infer: false] updateAttribute - delete > ${deleteQuery}`
+    );
     await wTx.tx.query(deleteQuery);
 
     let graknValues;

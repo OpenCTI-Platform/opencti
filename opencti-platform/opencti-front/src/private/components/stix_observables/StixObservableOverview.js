@@ -8,6 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
+import ItemCreator from '../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
@@ -56,7 +57,9 @@ class StixObservableOverviewComponent extends Component {
           >
             {t('Creator')}
           </Typography>
-          {pathOr('-', ['createdByRef', 'node', 'name'], stixObservable)}
+          <ItemCreator
+              createdByRef={pathOr(null, ['createdByRef', 'node'], stixObservable)}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}
