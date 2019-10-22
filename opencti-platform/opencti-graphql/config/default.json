@@ -28,9 +28,9 @@
   "minio": {
     "endpoint": "localhost",
     "port": 9000,
-    "useSSL": false,
-    "accessKey": "ChangeMe",
-    "secretKey": "ChangeMe"
+    "use_ssl": false,
+    "access_key": "ChangeMe",
+    "secret_key": "ChangeMe"
   },
   "rabbitmq": {
     "hostname": "localhost",

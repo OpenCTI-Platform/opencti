@@ -34,6 +34,8 @@ app.use(helmet());
 app.use(bodyParser.json({ limit: '100mb' }));
 
 // Static for generated fronted
+const extractTokenFromBearer = bearer =>
+    bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
 const AppBasePath = nconf.get('app:base_path');
 const basePath =
   isEmpty(AppBasePath) || AppBasePath.startsWith('/')
@@ -53,7 +55,10 @@ app.use('/static/css/*', (req, res) => {
 app.use('/static', express.static(path.join(__dirname, '../public/static')));
 // -- File download
 app.use('/storage/get/:file(*)', async (req, res) => {
-  // TODO Add Authentication
+  let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
+  token = token || extractTokenFromBearer(req.headers.authorization);
+  const auth = await authentication(token);
+  if (!auth) res.sendStatus(403);
   const { file } = req.params;
   const stream = await downloadFile(file);
   res.attachment(file);
@@ -61,7 +66,10 @@ app.use('/storage/get/:file(*)', async (req, res) => {
 });
 // -- File view
 app.use('/storage/view/:file(*)', async (req, res) => {
-  // TODO Add Authentication
+  let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
+  token = token || extractTokenFromBearer(req.headers.authorization);
+  const auth = await authentication(token);
+  if (!auth) res.sendStatus(403);
   const { file } = req.params;
   const data = await loadFile(file);
   res.setHeader('Content-disposition', `inline; filename="${data.name}"`);
@@ -88,9 +96,6 @@ app.get(
     })(req, res, next);
   }
 );
-
-const extractTokenFromBearer = bearer =>
-  bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
 // endregion
 
 const server = new ApolloServer({
