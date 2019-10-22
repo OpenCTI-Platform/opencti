@@ -97,7 +97,10 @@ jobs:
       - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
       - run:
           working_directory: ~/opencti/deploy
-          command: git clone ssh://opencti-fiqid45E@opencti.io:/~/opencti-fiqid45E.git . && git submodule update --remote
+          command: git clone ssh://opencti-fiqid45E@opencti.io:/~/opencti-fiqid45E.git .
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git submodule update --remote          
       - run:
           working_directory: ~/opencti/deploy
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master
@@ -109,7 +112,7 @@ jobs:
           command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av ~/opencti/opencti-connectors/ ./opencti-connectors-enabled/
+          command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A
@@ -131,7 +134,10 @@ jobs:
       - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
       - run:
           working_directory: ~/opencti/deploy
-          command: git clone ssh://opencti-b0gY5UHe@opencti.io:/~/opencti-b0gY5UHe.git . && git submodule update --remote
+          command: git clone ssh://opencti-b0gY5UHe@opencti.io:/~/opencti-b0gY5UHe.git .
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git submodule update --remote          
       - run:
           working_directory: ~/opencti/deploy
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master          
@@ -143,7 +149,7 @@ jobs:
           command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/  
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av ~/opencti/opencti-connectors/ ./opencti-connectors-enabled/          
+          command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/                
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A
