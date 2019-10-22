@@ -36,8 +36,7 @@ const styles = () => ({
   },
   paper: {
     minHeight: '100%',
-    margin: '10px 0 0 0',
-    padding: '15px',
+    padding: '10px 15px 10px 15px',
     borderRadius: 6,
   },
   item: {
@@ -74,12 +73,15 @@ class ImportComponent extends Component {
 
   render() {
     const {
-      classes, t, importFiles, connectorsImport, relay,
+      classes,
+      t,
+      nsdt,
+      importFiles,
+      connectorsImport,
+      relay,
     } = this.props;
-    console.log(connectorsImport);
     const { edges } = importFiles;
     const importConnsPerFormat = scopesConn(connectorsImport);
-    console.log(importConnsPerFormat);
 
     return (
       <div className={classes.container}>
@@ -95,7 +97,7 @@ class ImportComponent extends Component {
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 15 }}
+          style={{ marginTop: 10 }}
         >
           <Grid item={true} xs={8}>
             <div style={{ height: '100%' }} className="break">
@@ -113,7 +115,6 @@ class ImportComponent extends Component {
               <Paper
                 classes={{ root: classes.paper }}
                 elevation={2}
-                style={{ marginTop: -7 }}
               >
                 {edges.length ? (
                   <List>
@@ -128,7 +129,7 @@ class ImportComponent extends Component {
                     ))}
                   </List>
                 ) : (
-                  <div style={{ padding: 10 }}>No file</div>
+                  <div style={{ padding: 10 }}>{t('No file for the moment')}</div>
                 )}
               </Paper>
             </div>
@@ -137,7 +138,7 @@ class ImportComponent extends Component {
             <Typography variant="h4" gutterBottom={true}>
               {t('Enabled import connectors')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
+            <Paper classes={{ root: classes.paper }} elevation={2} style={{ marginTop: 15 }}>
               {connectorsImport.length ? (
                 <List>
                   {connectorsImport.map((connector) => (
@@ -168,9 +169,7 @@ class ImportComponent extends Component {
                         secondary={join(',', connector.connector_scope)}
                       />
                       <ListItemSecondaryAction>
-                        <ListItemIcon>
-                          <Extension />
-                        </ListItemIcon>
+                        <ListItemText primary={nsdt(connector.updated_at)} />
                       </ListItemSecondaryAction>
                     </ListItem>
                   ))}
@@ -193,7 +192,7 @@ ImportComponent.propTypes = {
   importFiles: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  nsdt: PropTypes.func,
 };
 
 const Import = createRefetchContainer(

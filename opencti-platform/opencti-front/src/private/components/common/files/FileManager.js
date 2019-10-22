@@ -2,24 +2,32 @@ import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  compose, filter, flatten, fromPairs, head, includes, map, uniq, zip,
+  compose,
+  filter,
+  flatten,
+  fromPairs,
+  includes,
+  map,
+  uniq,
+  zip,
 } from 'ramda';
+import * as Yup from 'yup';
 import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
 import { withStyles } from '@material-ui/core';
-import IconButton from '@material-ui/core/IconButton';
-import { DonutLarge, DonutSmall } from '@material-ui/icons';
 import { ConnectionHandler } from 'relay-runtime';
-import Tooltip from '@material-ui/core/Tooltip';
 import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
-import Badge from '@material-ui/core/Badge';
 import { createFragmentContainer } from 'react-relay';
-import inject18n from '../../../../components/i18n';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import FileImportViewer from './FileImportViewer';
+import { Field, Form, Formik } from 'formik';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
 import FileExportViewer from './FileExportViewer';
+import FileImportViewer from './FileImportViewer';
+import Select from '../../../../components/Select';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import inject18n from '../../../../components/i18n';
 
 const styles = () => ({
   container: {
@@ -37,48 +45,71 @@ const styles = () => ({
 });
 
 export const FileManagerExportMutation = graphql`
-    mutation FileManagerExportMutation($id: ID!, $format: String!, $exportType: String!) {
-        stixDomainEntityEdit(id: $id) {
-            exportAsk(format: $format, exportType: $exportType) {
-                id
-                name
-                uploadStatus
-                lastModifiedSinceMin
-            }
-        }
+  mutation FileManagerExportMutation(
+    $id: ID!
+    $format: String!
+    $exportType: String!
+  ) {
+    stixDomainEntityEdit(id: $id) {
+      exportAsk(format: $format, exportType: $exportType) {
+        id
+        name
+        uploadStatus
+        lastModifiedSinceMin
+      }
     }
+  }
 `;
 
 export const scopesConn = (exportConnectors) => {
   const scopes = uniq(flatten(map((c) => c.connector_scope, exportConnectors)));
   const connectors = map((s) => {
-    const filteredConnectors = filter((e) => includes(s, e.connector_scope), exportConnectors);
-    return map((x) => ({ data: { name: x.name, active: x.active } }), filteredConnectors);
+    const filteredConnectors = filter(
+      (e) => includes(s, e.connector_scope),
+      exportConnectors,
+    );
+    return map(
+      (x) => ({ data: { name: x.name, active: x.active } }),
+      filteredConnectors,
+    );
   }, scopes);
   const zipped = zip(scopes, connectors);
   return fromPairs(zipped);
 };
 
+const exportValidation = (t) => Yup.object().shape({
+  format: Yup.string().required(t('This field is required')),
+  type: Yup.string().required(t('This field is required')),
+});
+
 const FileManager = ({
   id, entity, t, classes, connectorsExport,
 }) => {
-  const exportScopes = uniq(flatten(map((c) => c.connector_scope, connectorsExport)));
+  const [openExport, setOpenExport] = useState(false);
+  const exportScopes = uniq(
+    flatten(map((c) => c.connector_scope, connectorsExport)),
+  );
   const exportConnsPerFormat = scopesConn(connectorsExport);
-  const [format, setFormat] = useState(head(exportScopes));
-  const exportConnsTooltip = () => {
-    const data = map((x) => (`${x.data.name} (${x.data.active ? 'active)' : 'disconnected)'}`), exportConnsPerFormat[format]);
-    return data.join(', ');
-  };
-  const isExportActive = () => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
-  const askExport = (exportType) => {
+  const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
+  const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
+  const handleOpenExport = () => setOpenExport(true);
+  const handleCloseExport = () => setOpenExport(false);
+
+  const onSubmit = (values, { setSubmitting, resetForm }) => {
     commitMutation({
       mutation: FileManagerExportMutation,
-      variables: { id, format, exportType },
+      variables: { id, format: values.format, exportType: values.type },
       updater: (store) => {
         const root = store.getRootField('stixDomainEntityEdit');
-        const payloads = root.getLinkedRecords('exportAsk', { format, exportType });
+        const payloads = root.getLinkedRecords('exportAsk', {
+          format: values.format,
+          exportType: values.type,
+        });
         const entityPage = store.get(id);
-        const conn = ConnectionHandler.getConnection(entityPage, 'Pagination_exportFiles');
+        const conn = ConnectionHandler.getConnection(
+          entityPage,
+          'Pagination_exportFiles',
+        );
         for (let index = 0; index < payloads.length; index += 1) {
           const payload = payloads[index];
           const newEdge = payload.setLinkedRecord(payload, 'node');
@@ -86,53 +117,111 @@ const FileManager = ({
         }
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess('Export successfully started');
+        setSubmitting(false);
+        resetForm();
+        handleCloseExport();
+        MESSAGING$.notifySuccess(t('Export successfully started'));
       },
     });
   };
-  const exportPartial = () => askExport('simple');
-  const exportComplete = () => askExport('full');
-  return <div>
-        <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
-            <FileImportViewer entity={entity} />
-            <Grid item={true} xs={6}>
-                <div style={{ float: 'left' }}>
-                    <Typography variant="h2" style={{ paddingTop: 15 }} gutterBottom={true}>
-                        {t('Export generated files')}
-                    </Typography>
-                </div>
-                <div style={{ float: 'right' }}>
-                    { format ? <React.Fragment>
-                        <Tooltip title={exportConnsTooltip()} aria-label={exportConnsTooltip()}>
-                            <Badge color={isExportActive() ? 'primary' : 'secondary'}
-                                badgeContent={exportConnsPerFormat[format].length}
-                                anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
-                                style={{ marginRight: 15 }}>
-                                <Select value={format} onChange={(e) => setFormat(e.target.value)}>
-                                    {exportScopes.map((value, i) => <MenuItem key={i} value={value}>
-                                        {value}</MenuItem>)}
-                                </Select>
-                            </Badge>
-                        </Tooltip>
-                        <Tooltip title="Simple export" aria-label="Simple export">
-                            <IconButton disabled={!isExportActive()} onClick={exportPartial} aria-haspopup="true" color="primary">
-                                <DonutLarge/>
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Complete export" aria-label="Complete export">
-                            <IconButton disabled={!isExportActive()} onClick={exportComplete} aria-haspopup="true" color="primary">
-                                <DonutSmall/>
-                            </IconButton>
-                        </Tooltip>
-                    </React.Fragment> : <span>No exporter available</span> }
-                </div>
-                <div className="clearfix" />
-                <Paper classes={{ root: classes.paper }} elevation={2}>
-                    <FileExportViewer entity={entity} />
-                </Paper>
-            </Grid>
-        </Grid>
-    </div>;
+
+  return (
+    <div className={classes.container}>
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+      >
+        <FileImportViewer entity={entity} />
+        <FileExportViewer
+          entity={entity}
+          handleOpenExport={handleOpenExport}
+          isExportPossible={isExportPossible}
+        />
+      </Grid>
+      <div>
+        <Formik
+          enableReinitialize={true}
+          initialValues={{
+            type: '',
+            mode: '',
+          }}
+          validationSchema={exportValidation(t)}
+          onSubmit={onSubmit}
+          onReset={handleCloseExport}
+          render={({ submitForm, handleReset, isSubmitting }) => (
+            <Form style={{ margin: '0 0 20px 0' }}>
+              <Dialog
+                open={openExport}
+                onClose={handleCloseExport}
+                fullWidth={true}
+              >
+                <DialogTitle>{t('Generate an export')}</DialogTitle>
+                <DialogContent>
+                  <Field
+                    name="format"
+                    component={Select}
+                    label={t('Export format')}
+                    fullWidth={true}
+                    inputProps={{
+                      name: 'format',
+                      id: 'format',
+                    }}
+                    containerstyle={{ width: '100%' }}
+                  >
+                    {exportScopes.map((value, i) => (
+                      <MenuItem
+                        key={i}
+                        value={value}
+                        disabled={!isExportActive(value)}
+                      >
+                        {value}
+                      </MenuItem>
+                    ))}
+                  </Field>
+                  <Field
+                    name="type"
+                    component={Select}
+                    label={t('Export type')}
+                    fullWidth={true}
+                    inputProps={{
+                      name: 'type',
+                      id: 'type',
+                    }}
+                    containerstyle={{ marginTop: 20, width: '100%' }}
+                  >
+                    <MenuItem value="simple">
+                      {t('Simple export (just the entity)')}
+                    </MenuItem>
+                    <MenuItem value="full">
+                      {t('Full export (entity and first neighbours)')}
+                    </MenuItem>
+                  </Field>
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    color="primary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Create')}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </Form>
+          )}
+        />
+      </div>
+    </div>
+  );
 };
 
 FileManager.propTypes = {
@@ -144,14 +233,14 @@ FileManager.propTypes = {
 
 const FileManagerFragment = createFragmentContainer(FileManager, {
   connectorsExport: graphql`
-        fragment FileManager_connectorsExport on Connector @relay(plural: true) {
-            id
-            name
-            active
-            connector_scope
-            updated_at
-        }
-    `,
+    fragment FileManager_connectorsExport on Connector @relay(plural: true) {
+      id
+      name
+      active
+      connector_scope
+      updated_at
+    }
+  `,
 });
 
 export default compose(

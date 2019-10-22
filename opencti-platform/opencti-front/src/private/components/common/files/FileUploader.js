@@ -6,6 +6,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import inject18n from '../../../../components/i18n';
 
 const FileUploaderGlobalMutation = graphql`
   mutation FileUploaderEntityMutation($file: Upload!) {
@@ -26,7 +27,7 @@ const FileUploaderEntityMutation = graphql`
 `;
 
 const FileUploader = (props) => {
-  const { entityId, onUploadSuccess } = props;
+  const { entityId, onUploadSuccess, t } = props;
   const uploadRef = useRef(null);
   const [upload, setUpload] = useState(null);
   const handleOpenUpload = () => uploadRef.current.click();
@@ -73,7 +74,7 @@ const FileUploader = (props) => {
           </IconButton>
         </Tooltip>
       ) : (
-        <Tooltip title="Select your file" aria-label="Select your file">
+        <Tooltip title={t('Select your file')} aria-label="Select your file">
           <IconButton
             onClick={handleOpenUpload}
             aria-haspopup="true"
@@ -92,4 +93,4 @@ FileUploader.propTypes = {
   onUploadSuccess: PropTypes.func.isRequired,
 };
 
-export default FileUploader;
+export default inject18n(FileUploader);

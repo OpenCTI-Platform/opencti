@@ -6,30 +6,28 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
-import { FileOutline } from 'mdi-material-ui';
-import {
-  Delete,
-  GetApp,
-  Warning,
-  SlowMotionVideo,
-  Domain,
-} from '@material-ui/icons';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import { FileOutline, ProgressUpload } from 'mdi-material-ui';
+import { Delete, GetApp } from '@material-ui/icons';
 import Tooltip from '@material-ui/core/Tooltip';
-import Badge from '@material-ui/core/Badge';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { Link } from 'react-router-dom';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import FileWork from './FileWork';
 import inject18n from '../../../../components/i18n';
+import FileWork from './FileWork';
 
 const styles = () => ({
   item: {
     paddingLeft: 10,
     height: 50,
+  },
+  itemText: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
 });
 
@@ -59,7 +57,7 @@ class FileLineComponent extends Component {
       mutation: FileLineImportAskJobMutation,
       variables: { fileName: this.props.file.id },
       onCompleted: () => {
-        MESSAGING$.notifySuccess('Import successfully asked');
+        MESSAGING$.notifySuccess(this.props.t('Import successfully asked'));
       },
     });
   }
@@ -79,7 +77,7 @@ class FileLineComponent extends Component {
         fileStore.setValue('progress', 'uploadStatus');
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess('File successfully removed');
+        MESSAGING$.notifySuccess(this.props.t('File successfully removed'));
       },
     });
   }
@@ -94,70 +92,112 @@ class FileLineComponent extends Component {
 
   render() {
     const {
-      classes, fld, file, connectors,
+      classes,
+      t,
+      fld,
+      file,
+      connectors,
+      dense,
+      disableImport,
     } = this.props;
     const { lastModifiedSinceMin, uploadStatus } = file;
     const isFail = uploadStatus === 'error' || uploadStatus === 'partial';
     const isProgress = uploadStatus === 'progress';
     const isOutdated = isProgress && lastModifiedSinceMin > 5;
     const isImportActive = () => connectors && filter((x) => x.data.active, connectors).length > 0;
-
     return (
-      <ListItem
-        dense={true}
-        divider={true}
-        classes={{ root: classes.item }}
-        button={true}
-        component={Link}
-        disabled={isProgress}
-        to={`/storage/view/${file.id}`}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <ListItemIcon>
-          <FileOutline />
-        </ListItemIcon>
-        <ListItemText
-          primary={file.name}
-          secondary={file.lastModified ? fld(file.lastModified) : fld(moment())}
-        />
-        <ListItemSecondaryAction>
-          <IconButton
-            disabled={isProgress}
-            href={`/storage/get/${file.id}`}
-            aria-haspopup="true"
-            color="primary"
-          >
-            <GetApp />
-          </IconButton>
-          {isFail || isOutdated ? (
-            <IconButton
-              disabled={isProgress}
-              color="secondary"
-              onClick={this.handleRemoveJob.bind(this, file.id)}
-            >
-              <Delete />
-            </IconButton>
-          ) : (
-            <IconButton
-              disabled={isProgress}
-              color="primary"
-              onClick={this.handleRemoveFile.bind(this, file.id)}
-            >
-              <Delete />
-            </IconButton>
-          )}
-        </ListItemSecondaryAction>
-      </ListItem>
+      <div>
+        <ListItem
+          divider={true}
+          dense={dense === true}
+          classes={{ root: classes.item }}
+          button={true}
+          component={Link}
+          disabled={isProgress}
+          to={`/storage/view/${file.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <ListItemIcon>
+            <FileOutline />
+          </ListItemIcon>
+          <ListItemText
+            classes={{ root: classes.itemText }}
+            primary={file.name}
+            secondary={
+              file.lastModified ? fld(file.lastModified) : fld(moment())
+            }
+          />
+          <ListItemSecondaryAction>
+            {!disableImport ? (
+              <Tooltip title={t('Launch an import of this file')}>
+                <span>
+                  <IconButton
+                    disabled={isProgress || !isImportActive()}
+                    onClick={this.askForImportJob.bind(this)}
+                    aria-haspopup="true"
+                    color="primary"
+                  >
+                    <ProgressUpload />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            ) : (
+              ''
+            )}
+            <Tooltip title={t('Download this file')}>
+              <span>
+                <IconButton
+                  disabled={isProgress}
+                  href={`/storage/get/${file.id}`}
+                  aria-haspopup="true"
+                  color="primary"
+                >
+                  <GetApp />
+                </IconButton>
+              </span>
+            </Tooltip>
+            {isFail || isOutdated ? (
+              <Tooltip title={t('Delete this file')}>
+                <span>
+                  <IconButton
+                    disabled={isProgress}
+                    color="secondary"
+                    onClick={this.handleRemoveJob.bind(this, file.id)}
+                  >
+                    <Delete />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            ) : (
+              <Tooltip title={t('Delete this file')}>
+                <span>
+                  <IconButton
+                    disabled={isProgress}
+                    color="primary"
+                    onClick={this.handleRemoveFile.bind(this, file.id)}
+                  >
+                    <Delete />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
+          </ListItemSecondaryAction>
+        </ListItem>
+        <FileWork file={file} />
+      </div>
     );
   }
 }
 
 FileLineComponent.propTypes = {
-  classes: PropTypes.object,
+  t: PropTypes.func,
   fld: PropTypes.func,
+  classes: PropTypes.object,
   file: PropTypes.object.isRequired,
   connectors: PropTypes.array,
+  dense: PropTypes.bool,
+  disableImport: PropTypes.bool,
 };
 
 const FileLine = createFragmentContainer(FileLineComponent, {
