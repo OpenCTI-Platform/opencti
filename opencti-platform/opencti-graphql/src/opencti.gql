@@ -34,6 +34,9 @@ define
   workspace_data sub attribute, datatype string;
   workspace_type sub attribute, datatype string;
   object_status sub attribute, datatype long;
+  export_type sub attribute, datatype string;
+  export_mode sub attribute, datatype string;
+  raw_data sub attribute, datatype string;
   score sub attribute, datatype long;
   tag_type sub attribute, datatype string;
 
@@ -58,8 +61,6 @@ define
   expiration_year sub attribute, datatype string;
   name sub attribute, datatype string;
   description sub attribute, datatype string;
-  connector_type sub attribute, datatype string;
-  connector_scope sub attribute, datatype string;
 
   # STIX SDO
   alias sub attribute, datatype string;
@@ -114,6 +115,10 @@ define
   # Migration
   status sub role;
   state sub role;
+
+  # Export
+  exported sub role;
+  export sub role;
 
   # OpenCTI roles
   author sub role;
@@ -205,6 +210,12 @@ define
     relates status,
     relates state;
 
+  # Export relationship
+  exports sub relation,
+    key internal_id_key,
+    relates export,
+    relates exported;
+
   # Group membership relationships
   membership sub relation,
     key internal_id_key,
@@ -244,7 +255,8 @@ define
   # STIX embeded relationships
   stix_relation_embedded sub relation,
     abstract,
-    key internal_id_key;
+    key internal_id_key,
+    key stix_id_key;
 
   created_by_ref sub stix_relation_embedded,
     relates creator,
@@ -488,13 +500,18 @@ define
     has updated_at,
     plays tagging;
 
-  Connector sub entity,
+  Export sub entity,
     key internal_id_key,
-    has name,
-    has connector_type,
-    has connector_scope,
+    has description,
+    has export_type,
+    has object_status,
+    has raw_data,
     has created_at,
-    has updated_at;
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
+    has updated_at,
+    plays export;
 
   Group sub entity,
     key internal_id_key,
@@ -559,7 +576,8 @@ define
     has updated_at,
     plays relate_from,
     plays relate_to,
-    plays so;
+    plays so,
+    plays exported;
 
   Stix-Domain-Entity sub Stix-Domain,
     abstract,
@@ -771,17 +789,16 @@ define
     plays so,
     plays soo,
     plays indicator,
+    plays exported,
     plays observable_group,
     plays observable_part_of;
 
     Domain sub Stix-Observable;
 
     IPv4-Addr sub Stix-Observable,
-    plays localized,
     plays resolves_to;
 
     IPv6-Addr sub Stix-Observable,
-    plays localized,
     plays resolves_to;
 
     URL sub Stix-Observable;

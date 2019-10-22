@@ -7,13 +7,13 @@ import {
   findByEntity,
   findById,
   findByPhaseName,
+  markingDefinitions,
   killChainPhaseEditContext,
   killChainPhaseEditField,
   killChainPhaseAddRelation,
   killChainPhaseDeleteRelation,
   killChainPhaseCleanContext
 } from '../domain/killChainPhase';
-import { markingDefinitions } from '../domain/stixEntity';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 

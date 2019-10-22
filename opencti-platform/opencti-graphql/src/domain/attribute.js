@@ -72,7 +72,9 @@ export const attributeUpdate = async (id, input) => {
   // region Reindex all entities using this attribute
   const rTx = await takeReadTx();
   try {
-    const readQuery = `match $x isa entity, has ${escape(input.type)} $a; $a "${escapeString(input.newValue)}"; get;`;
+    const readQuery = `match $x isa entity, has ${escape(
+      input.type
+    )} $a; $a "${escapeString(input.newValue)}"; get $x;`;
     logger.debug(`[GRAKN - infer: false] attributeUpdate > ${readQuery}`);
     const iterator = await rTx.tx.query(readQuery);
     const answers = await iterator.collect();

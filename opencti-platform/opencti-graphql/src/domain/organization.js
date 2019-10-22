@@ -1,20 +1,19 @@
-import { assoc } from 'ramda';
+import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  commitWriteTx,
-  dayFormat,
   escapeString,
   getById,
-  graknNow,
-  monthFormat,
-  notify,
   prepareDate,
+  dayFormat,
+  monthFormat,
+  yearFormat,
+  notify,
+  now,
   takeWriteTx,
-  yearFormat
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'organization', args));
@@ -45,27 +44,48 @@ export const addOrganization = async (user, organization) => {
         : 'other'
     }",
     has created ${
-      organization.created ? prepareDate(organization.created) : graknNow()
+      organization.created ? prepareDate(organization.created) : now()
     },
     has modified ${
-      organization.modified ? prepareDate(organization.modified) : graknNow()
+      organization.modified ? prepareDate(organization.modified) : now()
     },
     has revoked false,
-    has created_at ${graknNow()},
-    has created_at_day "${dayFormat(graknNow())}",
-    has created_at_month "${monthFormat(graknNow())}",
-    has created_at_year "${yearFormat(graknNow())}",         
-    has updated_at ${graknNow()};
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}",         
+    has updated_at ${now()};
   `);
-  const createOrga = await organizationIterator.next();
-  const createdId = await createOrga.map().get('organization').id;
+  const createOrganization = await organizationIterator.next();
+  const createdOrganizationId = await createOrganization
+    .map()
+    .get('organization').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdId, organization.createdByRef);
-  await linkMarkingDef(wTx, createdId, organization.markingDefinitions);
+  if (organization.createdByRef) {
+    await wTx.tx.query(
+      `match $from id ${createdOrganizationId};
+      $to has internal_id_key "${escapeString(organization.createdByRef)}";
+      insert (so: $from, creator: $to)
+      isa created_by_ref, has internal_id_key "${uuid()}";`
+    );
+  }
 
-  // Commit everything and return the data
+  if (organization.markingDefinitions) {
+    const createMarkingDefinition = markingDefinition =>
+      wTx.tx.query(
+        `match $from id ${createdOrganizationId}; 
+        $to has internal_id_key "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
+      );
+    const markingDefinitionsPromises = map(
+      createMarkingDefinition,
+      organization.markingDefinitions
+    );
+    await Promise.all(markingDefinitionsPromises);
+  }
+
   await commitWriteTx(wTx);
+
   return getById(internalId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });

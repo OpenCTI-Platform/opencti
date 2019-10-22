@@ -24,7 +24,6 @@ import { authentication, setAuthenticationCookie } from './domain/user';
 import schema from './schema/schema';
 import { buildValidationError, TYPE_AUTH, Unknown } from './config/errors';
 import init from './initialization';
-import { downloadFile, loadFile } from './database/minio';
 
 // Init the http server
 const app = express();
@@ -49,26 +48,9 @@ app.use('/static/css/*', (req, res) => {
   res.header('Content-Type', 'text/css');
   return res.send(withBasePath);
 });
-// -- Render other statics in standard way
+// -- render other statics in standard way
 app.use('/static', express.static(path.join(__dirname, '../public/static')));
-// -- File download
-app.use('/storage/get/:file(*)', async (req, res) => {
-  // TODO Add Authentication
-  const { file } = req.params;
-  const stream = await downloadFile(file);
-  res.attachment(file);
-  stream.pipe(res);
-});
-// -- File view
-app.use('/storage/view/:file(*)', async (req, res) => {
-  // TODO Add Authentication
-  const { file } = req.params;
-  const data = await loadFile(file);
-  res.setHeader('Content-disposition', `inline; filename="${data.name}"`);
-  res.setHeader('Content-type', data.metaData.mimetype);
-  const stream = await downloadFile(file);
-  stream.pipe(res);
-});
+
 // region Login
 const urlencodedParser = bodyParser.urlencoded({ extended: true });
 app.get('/auth/:provider', (req, res, next) => {

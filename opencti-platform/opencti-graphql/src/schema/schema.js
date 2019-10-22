@@ -36,8 +36,6 @@ import toolResolvers from '../resolvers/tool';
 import vulnerabilityResolvers from '../resolvers/vulnerability';
 import reportResolvers from '../resolvers/report';
 import AuthDirectives, { AUTH_DIRECTIVE } from './authDirective';
-import connectorResolvers from '../resolvers/connector';
-import fileResolvers from '../resolvers/File';
 
 const globalResolvers = {
   DateTime: GraphQLDateTime
@@ -52,8 +50,6 @@ const resolvers = mergeResolvers([
   attributeResolvers,
   tagResolvers,
   rabbitmqMetricsResolvers,
-  connectorResolvers,
-  fileResolvers,
   globalObjectResolvers,
   stixEntityResolvers,
   stixDomainEntityResolvers,
@@ -89,8 +85,7 @@ const schema = makeExecutableSchema({
   schemaDirectives: {
     [AUTH_DIRECTIVE]: AuthDirectives,
     constraint: ConstraintDirective
-  },
-  inheritResolversFromInterfaces: true
+  }
 });
 
 export default schema;

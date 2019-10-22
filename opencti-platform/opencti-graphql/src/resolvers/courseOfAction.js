@@ -5,6 +5,12 @@ import {
   findById
 } from '../domain/courseOfAction';
 import {
+  createdByRef,
+  markingDefinitions,
+  tags,
+  reports,
+  exports,
+  stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
@@ -12,6 +18,7 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
+import { fetchEditContext } from '../database/redis';
 
 const courseOfActionResolvers = {
   Query: {
@@ -22,6 +29,17 @@ const courseOfActionResolvers = {
       }
       return findAll(args);
     }
+  },
+  CourseOfAction: {
+    createdByRef: courseOfAction => createdByRef(courseOfAction.id),
+    markingDefinitions: (courseOfAction, args) =>
+      markingDefinitions(courseOfAction.id, args),
+    tags: (courseOfAction, args) => tags(courseOfAction.id, args),
+    reports: (courseOfAction, args) => reports(courseOfAction.id, args),
+    exports: (courseOfAction, args) => exports(courseOfAction.id, args),
+    stixRelations: (courseOfAction, args) =>
+      stixRelations(courseOfAction.id, args),
+    editContext: courseOfAction => fetchEditContext(courseOfAction.id)
   },
   Mutation: {
     courseOfActionEdit: (_, { id }, { user }) => ({

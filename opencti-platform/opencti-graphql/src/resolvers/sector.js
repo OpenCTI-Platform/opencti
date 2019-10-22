@@ -1,11 +1,11 @@
+import { addSector, findAll, findById, subsectors, isSubsector } from '../domain/sector';
 import {
-  addSector,
-  findAll,
-  findById,
-  subsectors,
-  isSubsector
-} from '../domain/sector';
-import {
+  createdByRef,
+  markingDefinitions,
+  tags,
+  reports,
+  exports,
+  stixRelations,
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
   stixDomainEntityEditField,
@@ -14,6 +14,8 @@ import {
   stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
 
+import { fetchEditContext } from '../database/redis';
+
 const sectorResolvers = {
   Query: {
     sector: (_, { id }) => findById(id),
@@ -21,7 +23,14 @@ const sectorResolvers = {
   },
   Sector: {
     subsectors: (sector, args) => subsectors(sector.id, args),
-    isSubsector: (sector, args) => isSubsector(sector.id, args)
+    isSubsector: (sector, args) => isSubsector(sector.id, args),
+    createdByRef: sector => createdByRef(sector.id),
+    markingDefinitions: (sector, args) => markingDefinitions(sector.id, args),
+    tags: (sector, args) => tags(sector.id, args),
+    reports: (sector, args) => reports(sector.id, args),
+    exports: (sector, args) => exports(sector.id, args),
+    stixRelations: (campaign, args) => stixRelations(campaign.id, args),
+    editContext: sector => fetchEditContext(sector.id)
   },
   Mutation: {
     sectorEdit: (_, { id }, { user }) => ({

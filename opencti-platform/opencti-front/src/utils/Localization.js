@@ -192,11 +192,6 @@ const i18n = {
       'Display demo credentials': 'Afficher les identifiants de démo',
       'No connectors are enabled on this platform.':
         "Aucun connecteur n'est actif sur cette plateforme",
-      'Enabled import connectors': "Connecteurs d'import activés",
-      'No import connectors on this platform':
-        "Aucun connecteur d'import sur cette plateforme",
-      'This connector is active': 'Ce connecteur est actif',
-      'This connector is disconnected': 'Ce connecteur est déconnecté',
       // Menu
       Dashboard: 'Tableau de bord',
       Visualization: 'Visualisation',
@@ -361,7 +356,6 @@ const i18n = {
       'Generation in progress...': 'Génération en cours...',
       'STIX2 - Simple export': 'STIX2 - Export simple',
       'STIX2 - Full export': 'STIX2 - Export complet',
-      'Uploaded files': 'Fichiers uploadés',
       Download: 'Télécharger',
       'Inference explanation': "Explication de l'inférence",
       entity: 'entité',

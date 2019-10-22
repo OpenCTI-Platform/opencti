@@ -5,26 +5,23 @@ import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import StixObservable from './StixObservable';
-import StixObservableEnrichment from './StixObservableEnrichment';
 
 const subscription = graphql`
   subscription RootStixObservableSubscription($id: ID!) {
     stixObservable(id: $id) {
       ...StixObservable_stixObservable
       ...StixObservableEditionContainer_stixObservable
-      ...StixObservableEnrichment_stixObservable
     }
   }
 `;
 
 const stixObservableQuery = graphql`
-  query RootStixObservableQuery($id: String!) {
+  query RootStixObservableQuery($id: String!, $relationType: String) {
     stixObservable(id: $id) {
       ...StixObservable_stixObservable
       ...StixObservableHeader_stixObservable
       ...StixObservableOverview_stixObservable
       ...StixObservableAverages_stixObservable
-      ...StixObservableEnrichment_stixObservable
     }
   }
 `;
@@ -64,20 +61,16 @@ class RootStixObservable extends Component {
             if (props && props.stixObservable) {
               return (
                 <div>
-                  <Route exact path="/dashboard/observables/all/:observableId"
+                  <Route
+                    exact
+                    path="/dashboard/observables/all/:observableId"
                     render={routeProps => (
                       <StixObservable
                         {...routeProps}
                         stixObservable={props.stixObservable}
                       />
-                    )}/>
-                  <Route exact path="/dashboard/observables/all/:observableId/enrichment"
-                    render={routeProps => (
-                        <StixObservableEnrichment
-                            {...routeProps}
-                            stixObservable={props.stixObservable}
-                        />
-                    )}/>
+                    )}
+                  />
                 </div>
               );
             }

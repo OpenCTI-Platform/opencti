@@ -11,10 +11,10 @@ import {
   monthFormat,
   yearFormat,
   notify,
+  now,
   paginate,
   takeWriteTx,
-  commitWriteTx,
-  graknNow
+  commitWriteTx
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -56,20 +56,17 @@ export const findById = tagId => getById(tagId);
 
 export const addTag = async (user, tag) => {
   const wTx = await takeWriteTx();
-  const internalId = tag.internal_id_key
-    ? escapeString(tag.internal_id_key)
-    : uuid();
-  const now = graknNow();
+  const internalId = tag.internal_id_key ? escapeString(tag.internal_id_key) : uuid();
   await wTx.tx.query(`insert $tag isa Tag,
     has internal_id_key "${internalId}",
     has tag_type "${escapeString(tag.tag_type)}",
     has value "${escapeString(tag.value)}",
     has color "${escapeString(tag.color)}",
-    has created_at ${now},
-    has created_at_day "${dayFormat(now)}",
-    has created_at_month "${monthFormat(now)}",
-    has created_at_year "${yearFormat(now)}",       
-    has updated_at ${now};
+    has created_at ${now()},
+    has created_at_day "${dayFormat(now())}",
+    has created_at_month "${monthFormat(now())}",
+    has created_at_year "${yearFormat(now())}",       
+    has updated_at ${now()};
   `);
   await commitWriteTx(wTx);
 
