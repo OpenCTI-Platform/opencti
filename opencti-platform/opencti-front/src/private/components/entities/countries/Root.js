@@ -10,6 +10,7 @@ import TopBar from '../../nav/TopBar';
 import Country from './Country';
 import CountryReports from './CountryReports';
 import CountryKnowledge from './CountryKnowledge';
+import CountryObservables from './CountryObservables';
 
 const subscription = graphql`
   subscription RootCountriesSubscription($id: ID!) {
@@ -29,6 +30,7 @@ const countryQuery = graphql`
       ...CountryOverview_country
       ...CountryReports_country
       ...CountryKnowledge_country
+      ...CountryObservables_country
     }
   }
 `;
@@ -71,14 +73,14 @@ class RootCountry extends Component {
                   <Route
                     exact
                     path="/dashboard/entities/countries/:countryId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <Country {...routeProps} country={props.country} />
                     )}
                   />
                   <Route
                     exact
                     path="/dashboard/entities/countries/:countryId/reports"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <CountryReports {...routeProps} country={props.country} />
                     )}
                   />
@@ -93,8 +95,17 @@ class RootCountry extends Component {
                   />
                   <Route
                     path="/dashboard/entities/countries/:countryId/knowledge"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <CountryKnowledge
+                        {...routeProps}
+                        country={props.country}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/entities/countries/:countryId/observables"
+                    render={(routeProps) => (
+                      <CountryObservables
                         {...routeProps}
                         country={props.country}
                       />

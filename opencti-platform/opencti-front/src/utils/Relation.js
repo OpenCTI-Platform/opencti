@@ -72,8 +72,13 @@ const relationsTypesMapping = {
   observable_campaign: ['indicates'],
   observable_incident: ['indicates'],
   observable_malware: ['indicates'],
-  observable_organization: ['indicates'],
-  observable_person: ['indicates'],
+  observable_tool: ['indicates'],
+  observable_vulnerability: ['indicates'],
+  observable_organization: ['gathering'],
+  observable_person: ['gathering'],
+  observable_city: ['localization'],
+  observable_country: ['localization'],
+  observable_region: ['localization'],
 };
 
 export const resolveRelationsTypes = (fromType, toType) => (relationsTypesMapping[`${fromType}_${toType}`]

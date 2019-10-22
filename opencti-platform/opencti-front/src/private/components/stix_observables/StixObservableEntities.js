@@ -124,15 +124,15 @@ class StixObservableEntities extends Component {
           entityId={entityId}
           variant="inLine"
           isFrom={true}
-          currentType='indicates'
+          currentType="indicates"
           targetEntityTypes={[
             'Threat-Actor',
             'Intrusion-Set',
             'Campaign',
             'Incident',
             'Malware',
-            'Organization',
-            'Person',
+            'Tool',
+            'Vulnerability',
           ]}
         />
         <div className="clearfix" />

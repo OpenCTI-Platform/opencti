@@ -7,7 +7,7 @@ import Button from '@material-ui/core/Button';
 import { Flag, ArrowForwardIos } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -114,6 +114,28 @@ class TopMenuCountry extends Component {
           classes={{ root: classes.button }}
         >
           {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/countries/${countryId}/observables`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/entities/countries/${countryId}/observables`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/entities/countries/${countryId}/observables`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Observables')}
         </Button>
       </div>
     );

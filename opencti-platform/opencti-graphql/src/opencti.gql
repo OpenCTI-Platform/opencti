@@ -767,7 +767,8 @@ define
 
   Vulnerability sub Stix-Domain-Entity,
     plays target,
-    plays problem;
+    plays problem,
+    plays characterize;
 
    Stix-Observable sub entity,
     abstract,

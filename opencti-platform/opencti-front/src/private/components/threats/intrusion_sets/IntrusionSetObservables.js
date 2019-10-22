@@ -49,7 +49,7 @@ class IntrusionSetObservablesComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/observables/relations/:relationId"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixRelation
               entityId={intrusionSet.id}
               inversedRoles={[]}
@@ -61,7 +61,7 @@ class IntrusionSetObservablesComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/observables"
-          render={routeProps => (
+          render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityStixObservables
                 entityId={intrusionSet.id}

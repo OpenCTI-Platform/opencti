@@ -7,7 +7,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import OrganizationPopover from './OrganizationPopover';
+import CountryPopover from './CountryPopover';
 import StixRelation from '../../common/stix_relations/StixRelation';
 import EntityStixObservables from '../../stix_observables/EntityStixObservables';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
@@ -29,30 +29,30 @@ const styles = () => ({
   },
 });
 
-class OrganizationObservablesComponent extends Component {
+class CountryObservablesComponent extends Component {
   render() {
-    const { classes, organization, location } = this.props;
-    const link = `/dashboard/entities/organizations/${organization.id}/observables`;
+    const { classes, country, location } = this.props;
+    const link = `/dashboard/entities/countries/${country.id}/observables`;
     return (
       <div
         className={
           location.pathname.includes(
-            `/dashboard/entities/organizations/${organization.id}/observables/relations/`,
+            `/dashboard/entities/countries/${country.id}/observables/relations/`,
           )
             ? classes.containerWithoutPadding
             : classes.container
         }
       >
         <StixDomainEntityHeader
-          stixDomainEntity={organization}
-          PopoverComponent={<OrganizationPopover />}
+          stixDomainEntity={country}
+          PopoverComponent={<CountryPopover />}
         />
         <Route
           exact
-          path="/dashboard/entities/organizations/:organizationId/observables/relations/:relationId"
+          path="/dashboard/entities/countries/:countryId/observables/relations/:relationId"
           render={(routeProps) => (
             <StixRelation
-              entityId={organization.id}
+              entityId={country.id}
               inversedRoles={[]}
               observable={true}
               {...routeProps}
@@ -61,12 +61,12 @@ class OrganizationObservablesComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/entities/organizations/:organizationId/observables"
+          path="/dashboard/entities/countries/:countryId/observables"
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityStixObservables
-                entityId={organization.id}
-                relationType="gathering"
+                entityId={country.id}
+                relationType="localization"
                 entityLink={link}
                 {...routeProps}
               />
@@ -78,18 +78,18 @@ class OrganizationObservablesComponent extends Component {
   }
 }
 
-OrganizationObservablesComponent.propTypes = {
-  organization: PropTypes.object,
+CountryObservablesComponent.propTypes = {
+  country: PropTypes.object,
   location: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const OrganizationObservables = createFragmentContainer(
-  OrganizationObservablesComponent,
+const CountryObservables = createFragmentContainer(
+  CountryObservablesComponent,
   {
-    organization: graphql`
-      fragment OrganizationObservables_organization on Organization {
+    country: graphql`
+      fragment CountryObservables_country on Country {
         id
         name
         alias
@@ -102,4 +102,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(OrganizationObservables);
+)(CountryObservables);
