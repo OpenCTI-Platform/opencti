@@ -16,13 +16,14 @@ from pycti.connector.opencti_connector import OpenCTIConnector
 
 
 class ListenQueue(threading.Thread):
-    def __init__(self, helper, connection, queue_name, channel, callback):
+    def __init__(self, helper, config, callback):
         threading.Thread.__init__(self)
+        self.pika_connection = None
+        self.channel = None
         self.helper = helper
-        self.connection = connection
-        self.channel = channel
         self.callback = callback
-        self.queue_name = queue_name
+        self.uri = config['uri']
+        self.queue_name = config['listen']
 
     # noinspection PyUnusedLocal
     def _process_message(self, channel, method, properties, body):
@@ -30,7 +31,7 @@ class ListenQueue(threading.Thread):
         thread = threading.Thread(target=self._data_handler, args=[channel, method, json_data])
         thread.start()
         while thread.is_alive():  # Loop while the thread is processing
-            self.connection.sleep(1.0)
+            self.pika_connection.sleep(1.0)
 
     def _data_handler(self, channel, method, json_data):
         job_id = json_data['job_id'] if 'job_id' in json_data else None
@@ -53,13 +54,19 @@ class ListenQueue(threading.Thread):
             channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def run(self):
-        try:
-            logging.info('Starting consuming listen queue')
-            self.channel.basic_consume(queue=self.queue_name, on_message_callback=self._process_message)
-            self.channel.start_consuming()
-        except:
-            logging.error('Lost connection to the broker, reconnecting')
-            self.helper.connect()
+        while True:
+            try:
+                # Connect the broker
+                self.pika_connection = pika.BlockingConnection(pika.URLParameters(self.uri))
+                self.channel = self.pika_connection.channel()
+                self.channel.basic_consume(queue=self.queue_name, on_message_callback=self._process_message)
+                self.channel.start_consuming()
+            except (KeyboardInterrupt, SystemExit):
+                self.helper.log_info('Connector stop')
+                exit(0)
+            except Exception as e:
+                self.helper.log_error(str(e))
+                time.sleep(10)
 
 
 class PingAlive(threading.Thread):
@@ -121,11 +128,6 @@ class OpenCTIConnectorHelper:
         self.connector_id = connector_configuration['id']
         self.config = connector_configuration['config']
 
-        # Connect the broker
-        self.pika_connection = None
-        self.channel = None
-        self.connect()
-
         # Start ping thread
         self.ping = PingAlive(self.connector.id, self.api)
         self.ping.start()
@@ -134,13 +136,8 @@ class OpenCTIConnectorHelper:
         self.cache_index = {}
         self.cache_added = []
 
-    def connect(self):
-        # Connect to the broker
-        self.pika_connection = pika.BlockingConnection(pika.URLParameters(self.config['uri']))
-        self.channel = self.pika_connection.channel()
-
     def listen(self, message_callback: Callable[[Dict], List[str]]) -> None:
-        listen_queue = ListenQueue(self, self.config['listen'], self.pika_connection, self.channel, message_callback)
+        listen_queue = ListenQueue(self, self.config, message_callback)
         listen_queue.start()
 
     def get_connector(self):
@@ -162,11 +159,14 @@ class OpenCTIConnectorHelper:
         bundles = self.split_stix2_bundle(bundle)
         if len(bundles) == 0:
             raise ValueError('Nothing to import')
+        pika_connection = pika.BlockingConnection(pika.URLParameters(self.config['uri']))
+        channel = pika_connection.channel()
         for bundle in bundles:
-            self._send_bundle(bundle, entities_types)
+            self._send_bundle(channel, bundle, entities_types)
+        channel.close()
         return bundles
 
-    def _send_bundle(self, bundle, entities_types=None):
+    def _send_bundle(self, channel, bundle, entities_types=None):
         """
             This method send a STIX2 bundle to RabbitMQ to be consumed by workers
             :param bundle: A valid STIX2 bundle
@@ -180,9 +180,6 @@ class OpenCTIConnectorHelper:
             job_id = self.api.job.initiate_job(self.current_work_id)
         else:
             job_id = None
-
-        if self.channel is None or not self.channel.is_open:
-            self.channel = self.pika_connection.channel()
 
         # Validate the STIX 2 bundle
         # validation = validate_string(bundle)
@@ -201,7 +198,7 @@ class OpenCTIConnectorHelper:
         # Send the message
         try:
             routing_key = 'push_routing_' + self.connector_id
-            self.channel.basic_publish(self.config['push_exchange'], routing_key, json.dumps(message))
+            channel.basic_publish(self.config['push_exchange'], routing_key, json.dumps(message))
             logging.info('Bundle has been sent')
         except (UnroutableError, NackError) as e:
             logging.error('Unable to send bundle, retry...', e)
