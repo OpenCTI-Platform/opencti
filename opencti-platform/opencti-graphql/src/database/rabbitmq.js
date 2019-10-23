@@ -1,5 +1,6 @@
 import amqp from 'amqplib';
 import axios from 'axios';
+import { filter, includes, pipe, map, reduce, add, divide } from 'ramda';
 import conf from '../config/conf';
 
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
@@ -82,7 +83,19 @@ export const metrics = async () => {
     .then(response => {
       return response.data;
     });
-  return { overview, queues };
+  // Compute number of push queues
+  const pushQueues = filter(q => includes('push_', q.name), queues);
+  const nbPushQueues = pushQueues.length;
+  const nbConsumers = pipe(
+    map(q => q.consumers),
+    reduce(add, 0)
+  )(pushQueues);
+  let finalCount = 0;
+  if (nbConsumers > 0 && nbPushQueues > 0) {
+    // Because worker connect to every queue.
+    finalCount = divide(nbConsumers, nbPushQueues);
+  }
+  return { overview, consumers: Math.round(finalCount), queues };
 };
 
 export const connectorConfig = id => ({

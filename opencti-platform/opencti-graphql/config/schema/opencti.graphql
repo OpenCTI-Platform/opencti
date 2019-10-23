@@ -133,6 +133,7 @@ type OverviewMetrics {
   message_stats: MessagesStats
 }
 type RabbitMQMetrics {
+  consumers: Int
   queues: [QueueMetrics]
   overview: OverviewMetrics
 }

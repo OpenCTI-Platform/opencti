@@ -46,11 +46,6 @@ const styles = (theme) => ({
 });
 
 class WorkersStatusComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { expanded: {}, messages: {} };
-  }
-
   componentDidMount() {
     this.subscription = interval$.subscribe(() => {
       this.props.relay.refetch();
@@ -61,7 +56,7 @@ class WorkersStatusComponent extends Component {
     const {
       classes, t, n, data,
     } = this.props;
-    const overviewMetrics = data.rabbitMQMetrics.overview;
+    const { consumers, overview } = data.rabbitMQMetrics;
     return (
       <Card
         raised={true}
@@ -82,7 +77,7 @@ class WorkersStatusComponent extends Component {
             <Grid item={true} xs={3} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>
-                  {n(overviewMetrics.object_totals.consumers)}
+                  {n(consumers)}
                 </div>
                 <div className={classes.title}>{t('Connected workers')}</div>
               </div>
@@ -90,7 +85,7 @@ class WorkersStatusComponent extends Component {
             <Grid item={true} xs={3} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>
-                  {n(overviewMetrics.queue_totals.messages_ready)}
+                  {n(overview.queue_totals.messages_ready)}
                 </div>
                 <div className={classes.title}>{t('Queued messages')}</div>
               </div>
@@ -101,7 +96,7 @@ class WorkersStatusComponent extends Component {
                   {pathOr(
                     0,
                     ['message_stats', 'ack_details', 'rate'],
-                    overviewMetrics,
+                    overview,
                   )}
                   /s
                 </div>
@@ -111,7 +106,7 @@ class WorkersStatusComponent extends Component {
             <Grid item={true} xs={3} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>
-                  {n(pathOr(0, ['message_stats', 'ack'], overviewMetrics))}
+                  {n(pathOr(0, ['message_stats', 'ack'], overview))}
                 </div>
                 <div className={classes.title}>
                   {t('Total processed messages')}
@@ -146,32 +141,10 @@ const WorkersStatus = createRefetchContainer(
       fragment WorkersStatus_data on Query
         @argumentDefinitions(prefix: { type: "String" }) {
         rabbitMQMetrics(prefix: $prefix) {
+          consumers
           overview {
             queue_totals {
-              messages
               messages_ready
-            }
-            object_totals {
-              consumers
-              queues
-            }
-            message_stats {
-              ack
-              ack_details {
-                rate
-              }
-            }
-            node
-          }
-          queues {
-            name
-            messages
-            messages_ready
-            messages_unacknowledged
-            consumers
-            idle_since
-            arguments {
-              config
             }
             message_stats {
               ack
