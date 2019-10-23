@@ -155,20 +155,12 @@ const StixObservableEnrichment = (props) => {
                               'Refresh the enrichment using this connector',
                             )}
                           >
-                            {isRefreshing ? (
-                              <CircularProgress
-                                size={25}
-                                thickness={2}
-                                style={{ marginRight: 10 }}
-                              />
-                            ) : (
-                              <IconButton
-                                disabled={!connector.active}
-                                onClick={() => askEnrich(connector.id)}
-                              >
-                                <Refresh />
-                              </IconButton>
-                            )}
+                            <IconButton
+                              disabled={!connector.active || isRefreshing}
+                              onClick={() => askEnrich(connector.id)}
+                            >
+                              <Refresh />
+                            </IconButton>
                           </Tooltip>
                         </ListItemSecondaryAction>
                       </ListItem>
@@ -221,9 +213,7 @@ const StixObservableEnrichment = (props) => {
                   );
                 })
               ) : (
-                <div>
-                  {t('No connectors for this type of observable')}
-                </div>
+                <div>{t('No connectors for this type of observable')}</div>
               )}
             </List>
           </Paper>

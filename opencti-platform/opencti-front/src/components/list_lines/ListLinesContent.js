@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, differenceWith } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer,
@@ -32,10 +32,12 @@ class ListLinesContent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (
-      this.props.initialLoading !== prevProps.initialLoading
-      || this.props.dataList.length !== prevProps.dataList.length
-    ) {
+    const diff = differenceWith(
+      (x, y) => x.node.id === y.node.id,
+      this.props.dataList,
+      prevProps.dataList,
+    );
+    if (diff.length > 0) {
       this.listRef.forceUpdateGrid();
     }
   }
