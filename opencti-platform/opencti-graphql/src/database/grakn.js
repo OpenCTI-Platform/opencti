@@ -736,8 +736,8 @@ export const getSingleValueNumber = async (query, infer = false) => {
  * @param input
  */
 export const createRelation = async (id, input) => {
-  const wTx = await takeWriteTx();
   try {
+    const wTx = await takeWriteTx();
     const query = `match $from has internal_id_key "${escapeString(id)}";
       $to has internal_id_key "${escapeString(input.toId)}"; 
       insert $rel(${escape(input.fromRole)}: $from, ${escape(
@@ -771,7 +771,6 @@ export const createRelation = async (id, input) => {
     return { node, relation };
   } catch (err) {
     logger.error('[GRAKN] createRelation error > ', err);
-    await closeWriteTx(wTx);
     return null;
   }
 };
@@ -784,8 +783,8 @@ export const createRelation = async (id, input) => {
  * @returns the complete instance
  */
 export const updateAttribute = async (id, input, tx = null) => {
-  const wTx = tx === null ? await takeWriteTx() : tx;
   try {
+    const wTx = tx === null ? await takeWriteTx() : tx;
     const { key, value } = input; // value can be multi valued
     // --- 01 Get the current attribute types
     const escapedKey = escape(key);
@@ -813,22 +812,24 @@ export const updateAttribute = async (id, input, tx = null) => {
     );
     await wTx.tx.query(deleteQuery);
 
-    let graknValues;
-    if (typedValues.length === 1) {
-      graknValues = `has ${escapedKey} ${head(typedValues)}`;
-    } else {
-      graknValues = `${join(
-        ' ',
-        map(val => `has ${escapedKey} ${val},`, tail(typedValues))
-      )} has ${escapedKey} ${head(typedValues)}`;
+    if (typedValues.length > 0) {
+      let graknValues;
+      if (typedValues.length === 1) {
+        graknValues = `has ${escapedKey} ${head(typedValues)}`;
+      } else {
+        graknValues = `${join(
+          ' ',
+          map(val => `has ${escapedKey} ${val},`, tail(typedValues))
+        )} has ${escapedKey} ${head(typedValues)}`;
+      }
+      const createQuery = `match $m has internal_id_key "${escapeString(
+        id
+      )}"; insert $m ${graknValues};`;
+      logger.debug(
+        `[GRAKN - infer: false] updateAttribute - insert > ${createQuery}`
+      );
+      await wTx.tx.query(createQuery);
     }
-    const createQuery = `match $m has internal_id_key "${escapeString(
-      id
-    )}"; insert $m ${graknValues};`;
-    logger.debug(
-      `[GRAKN - infer: false] updateAttribute - insert > ${createQuery}`
-    );
-    await wTx.tx.query(createQuery);
     // Adding dates elements
     if (includes(key, statsDateAttributes)) {
       const dayValue = dayFormat(head(value));
@@ -849,7 +850,6 @@ export const updateAttribute = async (id, input, tx = null) => {
     return await getById(id, true);
   } catch (err) {
     logger.error('[GRAKN] updateAttribute error > ', err);
-    await closeWriteTx(wTx);
     return null;
   }
 };

@@ -38,6 +38,10 @@ export const rolesMap = {
   belonging: {
     part_of: 'from',
     gather: 'to'
+  },
+  drops: {
+    dropping: 'from',
+    dropped: 'to'
   }
 };
 
