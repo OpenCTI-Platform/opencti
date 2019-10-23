@@ -1,5 +1,6 @@
 import * as Minio from 'minio';
 import { assoc, isEmpty, concat, map, isNil, sort } from 'ramda';
+import querystring from 'querystring';
 import mime from 'mime-types';
 import conf, { logger } from '../config/conf';
 import { getById, now, sinceNowInMinutes } from './grakn';
@@ -74,7 +75,7 @@ export const loadFile = async filename => {
   const stat = await minioClient.statObject(bucketName, filename);
   return {
     id: filename,
-    name: stat.metaData.filename,
+    name: querystring.unescape(stat.metaData.filename),
     size: stat.size,
     information: '',
     lastModified: stat.lastModified,
@@ -107,17 +108,19 @@ export const filesListing = async (first, category, entity = null) => {
     const inExport = await loadExportWorksAsProgressFiles(entity.id);
     allFiles = concat(inExport, files);
   }
-  const sortedFiles = sort(
-    (a, b) => b.lastModified - a.lastModified,
-    allFiles
-  );
+  const sortedFiles = sort((a, b) => b.lastModified - a.lastModified, allFiles);
   const fileNodes = map(f => ({ node: f }), sortedFiles);
   return buildPagination(first, 0, fileNodes, allFiles.length);
 };
 
 export const upload = async (user, category, file, entityId = null) => {
   const { createReadStream, filename, mimetype, encoding } = await file;
-  const metadata = { filename, category, mimetype, encoding };
+  const metadata = {
+    filename: querystring.escape(filename),
+    category,
+    mimetype,
+    encoding
+  };
   let entityType = null;
   if (entityId) {
     const entity = await getById(entityId);
@@ -131,15 +134,15 @@ export const upload = async (user, category, file, entityId = null) => {
   logger.debug(`FileManager > upload file ${filename} by ${user.email}`);
   // Upload the file in the storage
   return new Promise((resolve, reject) => {
-    minioClient.putObject(
+    return minioClient.putObject(
       bucketName,
       fileDirName,
       createReadStream(),
       null,
       metadata,
       err => {
-        if (err) reject(err);
-        resolve(loadFile(fileDirName));
+        if (err) return reject(err);
+        return resolve(loadFile(fileDirName));
       }
     );
   });
