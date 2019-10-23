@@ -189,18 +189,19 @@ const i18n = {
       'Add entities': 'Ajouter des entités',
       'Add observable': 'Ajouter un observable',
       'The password has been updated': 'Le mot de passe a été modifié',
+      'The alias has been added': "L'alias a bien été ajouté",
       'Settings have been updated': 'Les paramètres ont été mis à jour',
       'Export the entity': "Exporter l'entité",
       'Demo credentials': 'Identifiants de démo',
       'No connectors are enabled on this platform.':
         "Aucun connecteur n'est actif sur cette plateforme",
       'Enabled import connectors': "Connecteurs d'import activés",
-      'Enabled enrichment connectors': "Connecteur d'enrichissement activés",
+      'Enrichment connectors': "Connecteurs d'enrichissement",
       'Registered connectors': 'Connecteurs enregistrés',
       'No import connectors on this platform':
         "Aucun connecteur d'import sur cette plateforme",
-      'No enrichment connectors on this platform':
-        "Aucun connecteur d'enrichissement sur cette plateforme",
+      'No connectors for this type of observable':
+        "Aucun connecteur pour ce type d'observable",
       'This connector is active': 'Ce connecteur est actif',
       'This connector is disconnected': 'Ce connecteur est déconnecté',
       'Refresh the enrichment using this connector':

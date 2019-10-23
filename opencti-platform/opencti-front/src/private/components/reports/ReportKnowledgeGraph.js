@@ -237,7 +237,6 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   initialize() {
-    let autoDistribute = true;
     const model = new DiagramModel();
     // prepare nodes & relations
     const nodes = this.props.report.objectRefs.edges;
@@ -310,7 +309,6 @@ class ReportKnowledgeGraphComponent extends Component {
           graphData,
         );
         if (position && position.x !== undefined && position.y !== undefined) {
-          autoDistribute = false;
           newNode.setPosition(position.x, position.y);
         }
         model.addNode(newNode);
@@ -366,11 +364,7 @@ class ReportKnowledgeGraphComponent extends Component {
       linksUpdated: this.handleLinksChange.bind(this),
     });
     this.props.engine.setDiagramModel(model);
-    if (autoDistribute) {
-      this.autoDistribute();
-    } else {
-      this.props.engine.repaintCanvas();
-    }
+    this.props.engine.repaintCanvas();
   }
 
   updateView() {

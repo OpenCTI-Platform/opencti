@@ -116,7 +116,7 @@ const StixObservableEnrichment = (props) => {
         </Grid>
         <Grid item={true} xs={3}>
           <Typography variant="h4" gutterBottom={true}>
-            {t('Enabled enrichment connectors')}
+            {t('Enrichment connectors')}
           </Typography>
           <Paper classes={{ root: classes.paper }} elevation={2}>
             <List>
@@ -222,7 +222,7 @@ const StixObservableEnrichment = (props) => {
                 })
               ) : (
                 <div>
-                  {t('No enrichment connectors on this platform')}
+                  {t('No connectors for this type of observable')}
                 </div>
               )}
             </List>

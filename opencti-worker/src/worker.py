@@ -85,7 +85,7 @@ class Worker:
 
         # Get configuration
         config_file_path = os.path.dirname(os.path.abspath(__file__)) + '/config.yml'
-        config = yaml.load(open(config_file_path), Loader=yaml.FullLoader)
+        config = yaml.load(open(config_file_path), Loader=yaml.FullLoader) if os.path.isfile(config_file_path) else {}
         self.log_level = os.getenv('WORKER_LOG_LEVEL') or config['worker']['log_level']
         self.opencti_url = os.getenv('OPENCTI_URL') or config['opencti']['url']
         self.opencti_token = os.getenv('OPENCTI_TOKEN') or config['opencti']['token']
