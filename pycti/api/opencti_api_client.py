@@ -102,10 +102,12 @@ class OpenCTIApiClient:
                     multipart_files.append((str(file_index), (files.name, io.BytesIO(files.data.encode()))))
                     file_index += 1
             # Send the multipart request
-            r = requests.post(self.api_url, data=multipart_data, files=multipart_files, headers=self.request_headers, verify=self.ssl_verify)
+            r = requests.post(self.api_url, data=multipart_data, files=multipart_files, headers=self.request_headers,
+                              verify=self.ssl_verify)
         # If no
         else:
-            r = requests.post(self.api_url, json={'query': query, 'variables': variables}, headers=self.request_headers, verify=self.ssl_verify)
+            r = requests.post(self.api_url, json={'query': query, 'variables': variables}, headers=self.request_headers,
+                              verify=self.ssl_verify)
         # Build response
         if r.status_code == requests.codes.ok:
             result = r.json()
@@ -1023,7 +1025,8 @@ class OpenCTIApiClient:
         result = self.query(query, {'first': limit})
         return self.parse_multiple(result['data']['identities'])
 
-    def create_identity(self, type, name, description, alias=None, id=None, stix_id_key=None, created=None, modified=None):
+    def create_identity(self, type, name, description, alias=None, id=None, stix_id_key=None, created=None,
+                        modified=None):
         logging.info('Creating identity ' + name + '...')
         query = """
             mutation IdentityAdd($input: IdentityAddInput) {
@@ -2281,7 +2284,8 @@ class OpenCTIApiClient:
         })
         return result['data']['vulnerabilityAdd']
 
-    def create_vulnerability_if_not_exists(self, name, description, id=None, stix_id_key=None, created=None, modified=None,
+    def create_vulnerability_if_not_exists(self, name, description, id=None, stix_id_key=None, created=None,
+                                           modified=None,
                                            update=False):
         object_result = self.check_existing_stix_domain_entity(stix_id_key, name, 'Vulnerability')
         if object_result is not None:
@@ -2920,7 +2924,8 @@ class OpenCTIApiClient:
                     self.update_stix_domain_entity_field(object_result['id'], 'object_status', object_status)
                     object_result['object_status'] = object_status
                 if source_confidence_level is not None:
-                    self.update_stix_domain_entity_field(object_result['id'], 'source_confidence_level', source_confidence_level)
+                    self.update_stix_domain_entity_field(object_result['id'], 'source_confidence_level',
+                                                         source_confidence_level)
                     object_result['source_confidence_level'] = source_confidence_level
             return object_result
         else:
@@ -3708,6 +3713,23 @@ class OpenCTIApiClient:
                 'sector': {
                     'sector': {'from_role': 'gather', 'to_role': 'part_of'},
                     'organization': {'from_role': 'gather', 'to_role': 'part_of'},
+                },
+                'organization': {
+                    'sector': {'from_role': 'gather', 'to_role': 'part_of'},
+                },
+                'observable': {
+                    'organization': {'from_role': 'gather', 'to_role': 'part_of'},
+                    'person': {'from_role': 'gather', 'to_role': 'part_of'},
+                },
+            },
+            'drops': {
+                'malware': {
+                    'malware': {'from_role': 'dropping', 'to_role': 'dropped'},
+                    'tool': {'from_role': 'dropping', 'to_role': 'dropped'},
+                },
+                'tool': {
+                    'malware': {'from_role': 'dropping', 'to_role': 'dropped'},
+                    'tool': {'from_role': 'dropping', 'to_role': 'dropped'},
                 }
             }
         }
