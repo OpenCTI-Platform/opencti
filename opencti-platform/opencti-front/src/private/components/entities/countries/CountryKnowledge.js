@@ -36,7 +36,7 @@ class CountryKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/relations/:relationId"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixRelation
               entityId={country.id}
               inversedRoles={inversedRoles}
@@ -47,7 +47,7 @@ class CountryKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/overview"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixDomainEntityKnowledge
               stixDomainEntityId={country.id}
               stixDomainEntityType="country"
@@ -58,7 +58,7 @@ class CountryKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/cities"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               entityId={country.id}
               relationType="localization"
@@ -72,7 +72,7 @@ class CountryKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/organizations"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="localization"
               resolveRelationRole="location"
@@ -88,7 +88,7 @@ class CountryKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/threats"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="localization"
               resolveRelationRole="location"

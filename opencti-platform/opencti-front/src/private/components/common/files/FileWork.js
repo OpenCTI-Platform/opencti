@@ -9,9 +9,12 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { CheckCircle, Warning } from '@material-ui/icons';
+import { CheckCircle, Delete, Warning } from '@material-ui/icons';
 import { compose } from 'ramda';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import IconButton from '@material-ui/core/IconButton';
 import inject18n from '../../../../components/i18n';
+import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   nested: {
@@ -19,7 +22,20 @@ const styles = (theme) => ({
   },
 });
 
+const fileWorkDeleteMutation = graphql`
+  mutation FileWorkDeleteMutation($workId: ID!) {
+    deleteWork(id: $workId)
+  }
+`;
+
 class FileWorkComponent extends Component {
+  deleteWork(workId) {
+    commitMutation({
+      mutation: fileWorkDeleteMutation,
+      variables: { workId },
+    });
+  }
+
   render() {
     const {
       t,
@@ -56,6 +72,11 @@ class FileWorkComponent extends Component {
                 primary={work.connector.name}
                 secondary={t(work.status)}
               />
+              <ListItemSecondaryAction style={{ right: 0 }}>
+                <IconButton onClick={this.deleteWork.bind(this, work.id)}>
+                  <Delete color="primary" />
+                </IconButton>
+              </ListItemSecondaryAction>
             </ListItem>
           ))}
       </List>
@@ -73,6 +94,7 @@ const FileWork = createFragmentContainer(FileWorkComponent, {
     fragment FileWork_file on File {
       id
       works {
+        id
         connector {
           name
         }

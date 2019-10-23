@@ -334,6 +334,7 @@ define
     relates observable_part_of;
 
   # STIX SRO relationships
+
   stix_sighting sub relation,
     key internal_id_key,
     key stix_id_key,
@@ -786,6 +787,7 @@ define
     plays so,
     plays soo,
     plays indicator,
+    plays part_of,
     plays observable_group,
     plays observable_part_of;
 

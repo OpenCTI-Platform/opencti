@@ -18,7 +18,6 @@ module.exports.up = async next => {
   const entities = [
     'authorize',
     'migrate',
-    'exports',
     'membership',
     'permission',
     'user_permission',
@@ -31,7 +30,6 @@ module.exports.up = async next => {
     'MigrationStatus',
     'MigrationReference',
     'Settings',
-    'Export',
     'Group',
     'Workspace',
     'Token',
@@ -62,7 +60,7 @@ module.exports.up = async next => {
             answers2.map(async answer => {
               const concept = await answer.map().get('x');
               const types = await conceptTypes(concept);
-              const getIndex = await inferIndexFromConceptTypes(types);
+              const getIndex = inferIndexFromConceptTypes(types);
               const conceptId = await concept.id;
               let entityInternalId = await answer
                 .map()
@@ -97,24 +95,26 @@ module.exports.up = async next => {
                 logger.info(
                   `[MIGRATION] internal_id_to_keys > ${action.graknQuery}`
                 );
-                await wTx.tx.query(action.graknQuery);
                 if (action.elasticQuery !== null) {
                   logger.info(
                     `[MIGRATION] internal_id_to_keys > Reindex ${action.id}`
                   );
                   await index(
                     action.elasticQuery.index,
-                    action.elasticQuery.data
+                    action.elasticQuery.data,
+                    true
                   );
                 }
+                return wTx.tx.query(action.graknQuery);
               })
             );
           }
           logger.info(
             `[MIGRATION] internal_id_to_keys > Writing ${entity} new key attributes...`
           );
-          await commitWriteTx(wTx);
+          return commitWriteTx(wTx);
         }
+        return false;
       })
     );
   }

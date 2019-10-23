@@ -36,7 +36,7 @@ class CampaignKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/campaigns/:campaignId/knowledge/relations/:relationId"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixRelation
               entityId={campaign.id}
               inversedRoles={inversedRoles}
@@ -47,7 +47,7 @@ class CampaignKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/campaigns/:campaignId/knowledge/overview"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixDomainEntityKnowledge
               stixDomainEntityId={campaign.id}
               stixDomainEntityType="campaign"
@@ -58,7 +58,7 @@ class CampaignKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/campaigns/:campaignId/knowledge/attribution"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               entityId={campaign.id}
               relationType="attributed-to"
@@ -72,7 +72,7 @@ class CampaignKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/campaigns/:campaignId/knowledge/incidents"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               entityId={campaign.id}
               relationType="attributed-to"
@@ -86,7 +86,7 @@ class CampaignKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/campaigns/:campaignId/knowledge/malwares"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
@@ -102,7 +102,7 @@ class CampaignKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/campaigns/:campaignId/knowledge/victimology"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
@@ -142,7 +142,7 @@ class CampaignKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/campaigns/:campaignId/knowledge/ttp"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
@@ -159,7 +159,7 @@ class CampaignKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/campaigns/:campaignId/knowledge/tools"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
@@ -175,7 +175,7 @@ class CampaignKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/campaigns/:campaignId/knowledge/vulnerabilities"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"

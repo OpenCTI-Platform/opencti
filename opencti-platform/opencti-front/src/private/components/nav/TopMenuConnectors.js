@@ -25,21 +25,21 @@ class TopMenuConnectors extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/connectors/import"
+          to="/dashboard/connectors"
           variant={
-            location.pathname === '/dashboard/connectors/import'
+            location.pathname === '/dashboard/connectors'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/connectors/import'
+            location.pathname === '/dashboard/connectors'
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Data import')}
+          {t('Connectors & workers')}
         </Button>
       </div>
     );
