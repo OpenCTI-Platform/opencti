@@ -15,22 +15,6 @@ class ElasticIndexer:
         # Initialize ElasticSearch client
         self.elasticsearch = Elasticsearch([{'host': 'localhost', 'port': 9200}], timeout=30)
 
-        # Delete current indexes
-        self.elasticsearch.indices.delete(index='stix-observables', ignore=[400, 404])
-        self.elasticsearch.indices.delete(index='external-references', ignore=[400, 404])
-        self.elasticsearch.indices.delete(index='stix-domain-entities', ignore=[400, 404])
-        self.elasticsearch.indices.delete(index='stix-relations', ignore=[400, 404])
-
-        # Create new indexes
-        self.elasticsearch.indices.create(index='stix-observables', ignore=400,
-                                          body={'settings': {'index': {'max_result_window': 100000}}})
-        self.elasticsearch.indices.create(index='external-references', ignore=400,
-                                          body={'settings': {'index': {'max_result_window': 100000}}})
-        self.elasticsearch.indices.create(index='stix-domain-entities', ignore=400,
-                                          body={'settings': {'index': {'max_result_window': 100000}}})
-        self.elasticsearch.indices.create(index='stix-relations', ignore=400,
-                                          body={'settings': {'index': {'max_result_window': 100000}}})
-
     def get_attributes(self, entity):
         attributes = {'id': entity.id}
         attributes_iterator = entity.attributes()
@@ -57,9 +41,8 @@ class ElasticIndexer:
             entity = answer.map().get('x')
             entity_data = self.get_attributes(entity)
             self.elasticsearch.index(
-                index='stix-domain-entities',
+                index='stix_domain_entities',
                 id=entity_data['id'],
-                doc_type='stix_domain_entity',
                 body=entity_data,
             )
 
@@ -70,9 +53,8 @@ class ElasticIndexer:
             entity = answer.map().get('x')
             entity_data = self.get_attributes(entity)
             self.elasticsearch.index(
-                index='stix-observables',
+                index='stix_observables',
                 id=entity_data['id'],
-                doc_type='stix_observable',
                 body=entity_data,
             )
 
@@ -83,9 +65,8 @@ class ElasticIndexer:
             entity = answer.map().get('x')
             entity_data = self.get_attributes(entity)
             self.elasticsearch.index(
-                index='external-references',
+                index='external_references',
                 id=entity_data['id'],
-                doc_type='external_reference',
                 body=entity_data,
             )
 
@@ -96,9 +77,8 @@ class ElasticIndexer:
             entity = answer.map().get('x')
             entity_data = self.get_attributes(entity)
             self.elasticsearch.index(
-                index='stix-relations',
+                index='stix_relations',
                 id=entity_data['id'],
-                doc_type='stix_relation',
                 body=entity_data,
             )
 
