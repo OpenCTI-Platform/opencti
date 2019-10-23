@@ -144,7 +144,8 @@ export const updateJob = async (jobId, status, messages) => {
   const job = await getAttributes(WORK_INDEX, jobId);
   const updatedJob = pipe(
     assoc('job_status', status),
-    assoc('messages', messages)
+    assoc('messages', messages),
+    assoc('updated_at', now())
   )(job);
   await index(WORK_INDEX, updatedJob);
   return updatedJob;
