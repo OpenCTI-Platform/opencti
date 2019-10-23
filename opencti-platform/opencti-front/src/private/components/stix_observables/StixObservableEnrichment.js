@@ -64,7 +64,7 @@ const styles = (theme) => ({
   },
   paper: {
     minHeight: '100%',
-    margin: '10px 0 0 0',
+    margin: '13px 0 0 0',
     padding: '10px 15px 10px 15px',
     borderRadius: 6,
   },
@@ -120,105 +120,111 @@ const StixObservableEnrichment = (props) => {
           </Typography>
           <Paper classes={{ root: classes.paper }} elevation={2}>
             <List>
-              {stixObservable.connectors.map((connector) => {
-                const isRefreshing = filter(
-                  (node) => node.status !== 'complete',
-                  stixObservable.jobs,
-                ).length > 0;
-                return (
-                  <div key={connector.id}>
-                    <ListItem
-                      divider={true}
-                      classes={{ root: classes.item }}
-                      button={true}
-                    >
-                      <Tooltip
-                        title={
-                          connector.active
-                            ? t('This connector is active')
-                            : t('This connector is disconnected')
-                        }
+              {stixObservable.connectors.length > 0 ? (
+                stixObservable.connectors.map((connector) => {
+                  const isRefreshing = filter(
+                    (node) => node.status !== 'complete',
+                    stixObservable.jobs,
+                  ).length > 0;
+                  return (
+                    <div key={connector.id}>
+                      <ListItem
+                        divider={true}
+                        classes={{ root: classes.item }}
+                        button={true}
                       >
-                        <ListItemIcon
-                          style={{
-                            color: connector.active ? '#4caf50' : '#f44336',
-                          }}
-                        >
-                          <Extension />
-                        </ListItemIcon>
-                      </Tooltip>
-                      <ListItemText primary={connector.name} />
-                      <ListItemSecondaryAction style={{ right: 0 }}>
                         <Tooltip
-                          title={t(
-                            'Refresh the enrichment using this connector',
-                          )}
+                          title={
+                            connector.active
+                              ? t('This connector is active')
+                              : t('This connector is disconnected')
+                          }
                         >
-                          {isRefreshing ? (
-                            <CircularProgress
-                              size={25}
-                              thickness={2}
-                              style={{ marginRight: 10 }}
-                            />
-                          ) : (
-                            <IconButton
-                              disabled={!connector.active}
-                              onClick={() => askEnrich(connector.id)}
-                            >
-                              <Refresh />
-                            </IconButton>
-                          )}
-                        </Tooltip>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                    <List component="div" disablePadding={true}>
-                      {stixObservable.jobs
-                        && stixObservable.jobs.map((work) => (
-                          <ListItem
-                            key={uuid()}
-                            dense={true}
-                            button={true}
-                            divider={true}
-                            classes={{ root: classes.nested }}
+                          <ListItemIcon
+                            style={{
+                              color: connector.active ? '#4caf50' : '#f44336',
+                            }}
                           >
-                            <ListItemIcon>
-                              {(work.status === 'error'
-                                || work.status === 'partial') && (
-                                <Warning
-                                  style={{
-                                    fontSize: 15,
-                                    color: '#f44336',
-                                  }}
-                                />
-                              )}
-                              {work.status === 'complete' && (
-                                <CheckCircle
-                                  style={{
-                                    fontSize: 15,
-                                    color: '#4caf50',
-                                  }}
-                                />
-                              )}
-                              {work.status === 'progress' && (
-                                <CircularProgress
-                                  size={20}
-                                  thickness={2}
-                                  style={{ marginRight: 10 }}
-                                />
-                              )}
-                            </ListItemIcon>
-                            <ListItemText primary={nsdt(work.created_at)} />
-                            <ListItemSecondaryAction style={{ right: 0 }}>
-                              <IconButton onClick={() => deleteWork(work.id)}>
-                                <Delete />
+                            <Extension />
+                          </ListItemIcon>
+                        </Tooltip>
+                        <ListItemText primary={connector.name} />
+                        <ListItemSecondaryAction style={{ right: 0 }}>
+                          <Tooltip
+                            title={t(
+                              'Refresh the enrichment using this connector',
+                            )}
+                          >
+                            {isRefreshing ? (
+                              <CircularProgress
+                                size={25}
+                                thickness={2}
+                                style={{ marginRight: 10 }}
+                              />
+                            ) : (
+                              <IconButton
+                                disabled={!connector.active}
+                                onClick={() => askEnrich(connector.id)}
+                              >
+                                <Refresh />
                               </IconButton>
-                            </ListItemSecondaryAction>
-                          </ListItem>
-                        ))}
-                    </List>
-                  </div>
-                );
-              })}
+                            )}
+                          </Tooltip>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                      <List component="div" disablePadding={true}>
+                        {stixObservable.jobs
+                          && stixObservable.jobs.map((work) => (
+                            <ListItem
+                              key={uuid()}
+                              dense={true}
+                              button={true}
+                              divider={true}
+                              classes={{ root: classes.nested }}
+                            >
+                              <ListItemIcon>
+                                {(work.status === 'error'
+                                  || work.status === 'partial') && (
+                                  <Warning
+                                    style={{
+                                      fontSize: 15,
+                                      color: '#f44336',
+                                    }}
+                                  />
+                                )}
+                                {work.status === 'complete' && (
+                                  <CheckCircle
+                                    style={{
+                                      fontSize: 15,
+                                      color: '#4caf50',
+                                    }}
+                                  />
+                                )}
+                                {work.status === 'progress' && (
+                                  <CircularProgress
+                                    size={20}
+                                    thickness={2}
+                                    style={{ marginRight: 10 }}
+                                  />
+                                )}
+                              </ListItemIcon>
+                              <ListItemText primary={nsdt(work.created_at)} />
+                              <ListItemSecondaryAction style={{ right: 0 }}>
+                                <IconButton onClick={() => deleteWork(work.id)}>
+                                  <Delete />
+                                </IconButton>
+                              </ListItemSecondaryAction>
+                            </ListItem>
+                          ))}
+                      </List>
+                    </div>
+                  );
+                })
+              ) : (
+                <div>
+                  {t('No enrichment connectors on this platform')}
+                </div>
+              )}
             </List>
           </Paper>
         </Grid>

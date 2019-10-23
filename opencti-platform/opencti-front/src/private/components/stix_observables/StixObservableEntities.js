@@ -117,7 +117,7 @@ class StixObservableEntities extends Component {
     return (
       <div style={{ marginTop: 40 }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Context relations')}
+          {t('Indicators relations to threats')}
         </Typography>
         <StixRelationCreationFromEntity
           paginationOptions={paginationOptions}

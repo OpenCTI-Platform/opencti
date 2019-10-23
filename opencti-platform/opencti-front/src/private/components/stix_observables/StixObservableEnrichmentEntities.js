@@ -10,11 +10,12 @@ import ListLines from '../../../components/list_lines/ListLines';
 import StixObservableEntitiesLines, {
   stixObservableEntitiesLinesQuery,
 } from './StixObservableEntitiesLines';
+import StixRelationCreationFromEntity from '../common/stix_relations/StixRelationCreationFromEntity';
 
 const styles = () => ({
   paper: {
     minHeight: '100%',
-    margin: '10px 0 0 0',
+    margin: '0 0 0 0',
     padding: '25px 15px 15px 15px',
     borderRadius: 6,
   },
@@ -117,9 +118,23 @@ class StixObservableEnrichmentEntities extends Component {
     };
     return (
       <div>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Relations')}
         </Typography>
+        <StixRelationCreationFromEntity
+          paginationOptions={paginationOptions}
+          entityId={entityId}
+          variant="inLine"
+          isFrom={true}
+          targetEntityTypes={[
+            'Region',
+            'Country',
+            'City',
+            'Organization',
+            'Person',
+          ]}
+        />
+        <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         </Paper>

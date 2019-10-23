@@ -125,7 +125,7 @@ let session = null;
 export const getGraknVersion = async () => {
   // TODO: It seems that Grakn server does not expose its version yet:
   // https://github.com/graknlabs/client-nodejs/issues/47
-  return '1.5.9';
+  return '1.5.8';
 };
 
 // region basic commands
@@ -256,16 +256,15 @@ const extractQueryVars = query => {
 /**
  * Compute the index related to concept types
  * @param types
- * @returns {Promise<string|null>}
+ * @returns {String}
  */
-export const inferIndexFromConceptTypes = async types => {
+export const inferIndexFromConceptTypes = types => {
   // Stix indexes
   if (includes('Stix-Observable', types)) return 'stix_observables';
   if (includes('Stix-Domain-Entity', types)) return 'stix_domain_entities';
   if (includes('External-Reference', types)) return 'external_references';
   if (includes('stix_relation', types)) return 'stix_relations';
   // OpenCTI technical indexes
-  if (includes('Work', types)) return 'opencti_work';
   if (includes('Connector', types)) return 'opencti_connector';
   return undefined;
 };
@@ -421,7 +420,7 @@ const getRelationsValuesToIndex = async (type, id) => {
 export const getAttributes = async (concept, forceReindex = false) => {
   const { id } = concept;
   const types = await conceptTypes(concept);
-  const getIndex = await inferIndexFromConceptTypes(types);
+  const getIndex = inferIndexFromConceptTypes(types);
   const parentTypeLabel = last(types);
   let shouldBeReindex = forceReindex && getIndex !== undefined;
   // 01. If data need to be requested from the index cache system

@@ -128,7 +128,7 @@ class FileLineComponent extends Component {
               file.lastModified ? fld(file.lastModified) : fld(moment())
             }
           />
-          <ListItemSecondaryAction>
+          <ListItemSecondaryAction style={{ right: 0 }}>
             {!disableImport ? (
               <Tooltip title={t('Launch an import of this file')}>
                 <span>
