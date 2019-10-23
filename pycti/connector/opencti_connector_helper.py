@@ -83,7 +83,7 @@ class PingAlive(threading.Thread):
             except Exception:
                 self.in_error = True
                 logging.info('Error pinging the API')
-            time.sleep(10)
+            time.sleep(40)
 
     def run(self):
         logging.info('Starting ping alive thread')
