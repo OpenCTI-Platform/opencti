@@ -76,12 +76,6 @@ const inlineStylesHeaders = {
     fontSize: 12,
     fontWeight: '700',
   },
-  active: {
-    float: 'left',
-    width: '10%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
   connector_type: {
     float: 'left',
     width: '15%',
@@ -90,7 +84,7 @@ const inlineStylesHeaders = {
   },
   connector_scope: {
     float: 'left',
-    width: '40%',
+    width: '45%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -105,14 +99,6 @@ const inlineStyles = {
   name: {
     float: 'left',
     width: '25%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  active: {
-    float: 'left',
-    width: '10%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -227,7 +213,6 @@ class ConnectorsStatusComponent extends Component {
                 primary={
                   <div>
                     {this.SortHeader('name', 'Name', true)}
-                    {this.SortHeader('active', 'Status', true)}
                     {this.SortHeader('connector_type', 'Type', true)}
                     {this.SortHeader('connector_scope', 'Scope', true)}
                     {this.SortHeader('updated_at', 'Last seen', true)}
@@ -257,12 +242,6 @@ class ConnectorsStatusComponent extends Component {
                         style={inlineStyles.name}
                       >
                         {connector.name}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.active}
-                      >
-                        {connector.active ? t('Connected') : t('Disconnected')}
                       </div>
                       <div
                         className={classes.bodyItem}

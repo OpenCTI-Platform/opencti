@@ -189,6 +189,7 @@ const i18n = {
       'Add entities': 'Ajouter des entités',
       'Add observable': 'Ajouter un observable',
       'The password has been updated': 'Le mot de passe a été modifié',
+      'The alias has been added': "L'alias a bien été ajouté",
       'Settings have been updated': 'Les paramètres ont été mis à jour',
       'Export the entity': "Exporter l'entité",
       'Demo credentials': 'Identifiants de démo',

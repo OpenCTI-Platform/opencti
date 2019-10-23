@@ -97,7 +97,7 @@ class StixDomainEntityHeader extends Component {
             value: append(data.new_alias, this.props.stixDomainEntity.alias),
           },
         },
-        onCompleted: () => MESSAGING$.notifySuccess('The alias has been added'),
+        onCompleted: () => MESSAGING$.notifySuccess(this.props.t('The alias has been added')),
       });
     }
     this.setState({ openAlias: false });
