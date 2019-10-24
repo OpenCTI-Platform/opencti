@@ -6,15 +6,38 @@ sidebar_label: Enable connectors
 
 ## Introduction
 
-Connectors are standalone processes that are independant of the rest of the platform. They are using RabbitMQ to push data to OpenCTI, through a dedicated queue for each instance of connector. Depending on your deployment, you can enable connectors by using the connectors Docker images or launch them manually. 
+Connectors are standalone processes that are independant of the rest of the platform. They are using RabbitMQ to consume or push data to OpenCTI, through a dedicated queue for each instance of connector. Depending on your deployment, you can enable connectors by using the connectors Docker images or launch them manually. 
 
 ## Connector configurations
 
-All connectors have 2 mandatory configuration parameters, the `name` and the `confidence_level`. The `name` is the name of the instance of the connector. For instance, for the MISP connector, you can launch as many MISP connectors as you need, if you need to pull data from multiple MISP instances. 
+All connectors have to be able to access to the OpenCTI API. To allow this connection, they have 2 mandatory configuration parameters, the `OPENCTI_URL` and the `OPENCTI_TOKEN`. In addition of these 2 parameters, connectors have 5 other mandatory parameters that need to be set in order to get them work. 
 
-> The `name` of each instance of connector must be unique.
+```
+- CONNECTOR_ID=ChangeMe
+- CONNECTOR_TYPE=INTERNAL_EXPORT_FILE
+- CONNECTOR_NAME=ExportFileStix2
+- CONNECTOR_SCOPE=application/json
+- CONNECTOR_CONFIDENCE_LEVEL=3
+- CONNECTOR_LOG_LEVEL=info
+```
 
-> The `confidence_level` of the connector will be used to set the `confidence_level` of the relationships created by the connector. If a connector needs to create a relationship that already exists, it will check the current `confidence_level` and if it is lower than its own, it will update the relationship with the new information. If it is higher, it will do nothing and keep the existing relationship.
+> The `CONNECTOR_ID` must be a valid UUIDv4
+
+> The `CONNECTOR_TYPE` must be a valid type, the possible types are:
+> - EXTERNAL_IMPORT: from remote sources to OpenCTI stix2
+> - INTERNAL_IMPORT_FILE: from OpenCTI file system to OpenCTI stix2
+> - INTERNAL_ENRICHMENT: from OpenCTI stix2 to OpenCTI stix2
+> - INTERNAL_EXPORT_FILE: from OpenCTI stix2 to OpenCTI file system
+
+> The `CONNECTOR_NAME` is an arbitrary name
+
+> The `CONNECTOR_SCOPE` is the scope handled by the connector:
+> - EXTERNAL_IMPORT: entity types that have to be imported by the connectors, if the connector provide more, they will be ignored
+> - INTERNAL_IMPORT_FILE: files mime types to support (application/json, ...)
+> - INTERNAL_ENRICHMENT: entity types to support (Report, Hash, ...)
+> - INTERNAL_EXPORT_FILE: files mime types to generate (application/pdf, ...)
+
+> The `CONNECTOR_CONFIDENCE_LEVEL` of the connector will be used to set the `CONNECTOR_CONFIDENCE_LEVEL` of the relationships created by the connector. If a connector needs to create a relationship that already exists, it will check the current `CONNECTOR_CONFIDENCE_LEVEL` and if it is lower than its own, it will update the relationship with the new information. If it is higher, it will do nothing and keep the existing relationship.
 
 ## Docker activation
 
@@ -26,21 +49,23 @@ For instance, to enable the MISP connector, you can add a new service to your `d
 
 ```
   connector-misp:
-    image: opencti/connector-misp:{RELEASE_VERSION}
+    image: opencti/connector-misp:2.0.0
     environment:
-      - RABBITMQ_HOSTNAME=localhost
-      - RABBITMQ_PORT=5672 
-      - RABBITMQ_USERNAME=guest
-      - RABBITMQ_PASSWORD=guest
-      - MISP_NAME=MISP\ Circle
-      - MISP_CONFIDENCE_LEVEL=3
-      - MISP_URL=http://localhost
-      - MISP_KEY=ChangeMe
-      - MISP_TAG=OpenCTI:\ Import
-      - MISP_UNTAG_EVENT=true
-      - MISP_IMPORTED_TAG=OpenCTI:\ Imported
+      - OPENCTI_URL=http://localhost
+      - OPENCTI_TOKEN=ChangeMe
+      - CONNECTOR_ID=ChangeMe
+      - CONNECTOR_TYPE=EXTERNAL_IMPORT
+      - CONNECTOR_NAME=MISP
+      - CONNECTOR_SCOPE=misp
+      - CONNECTOR_CONFIDENCE_LEVEL=3
+      - CONNECTOR_LOG_LEVEL=info
+      - MISP_URL=http://localhost # Required
+      - MISP_KEY=ChangeMe # Required
+      - MISP_TAG=OpenCTI:\ Import # Optional, tags of events to be ingested (if not provided, import all!)
+      - MISP_UNTAG_EVENT=true # Optional, remove the tag after import
+      - MISP_IMPORTED_TAG=OpenCTI:\ Imported # Required, tag event after import
+      - MISP_FILTER_ON_IMPORTED_TAG=true # Required, use imported tag to know which events to not ingest
       - MISP_INTERVAL=1 # Minutes
-      - MISP_LOG_LEVEL=info
     restart: always
  ```
 
