@@ -7,11 +7,11 @@ sidebar_label: Manual deployment
 ## Prerequisites
 
 - Node.JS (>= 10)
-- Grakn (>= 1.5.7)
+- Grakn (>= 1.5.78
 - Redis (>= 3.0)
 - ElasticSearch (>= 7.x)
+- Minio (>= 20191012)
 - RabbitMQ (>= 3.7)
-
 
 ## Prepare the installation
 
@@ -65,49 +65,19 @@ $ node dist/server.js &
 
 The default username and password are those you put in the `config/production.json` file.
 
-## Install the workers
+## Install the worker
 
-2 different workers must be configured to allow the platform to import and export data. One is for import and the other for export.
+The OpenCTI worker is used to write the data coming from the RabbitMQ messages broker.
 
-### Install the import worker
-
-#### Configure the import worker
-
-Just copy the worker directory to a new one, named `worker-import`.
+#### Configure the worker
 
 ```bash
-$ cp -a worker worker-import
-$ cd worker-import
+$ cd worker
 $ pip3 install -r requirements.txt
 $ cp config.yml.sample config.yml
 ```
 
-Change the *config.yml* file according to your OpenCTI token and RabbitMQ configuration.
-
-> The worker type must be set to "import"
-
-#### Start as many workers as you need
-```bash
-$ python3 worker.py &
-$ python3 worker.py &
-```
-
-### Install the export worker
-
-#### Configure the export worker
-
-Just copy the worker directory to a new one, named `worker-export`.
-
-```bash
-$ cd ..
-$ cp -a worker worker-export
-$ cd worker-export
-$ cp config.yml.sample config.yml
-```
-
-Change the *config.yml* file according to your OpenCTI token and RabbitMQ configuration.
-
-> The worker type must be set to "export"
+Change the *config.yml* file according to your OpenCTI token.
 
 #### Start as many workers as you need
 ```bash

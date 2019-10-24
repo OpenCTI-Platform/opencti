@@ -48,7 +48,7 @@ $ cd opencti
 ### Install the API dependencies
 
 ```bash
-$ cd opencti-graphql
+$ cd opencti-platform/sopencti-graphql
 $ yarn install
 ```
 
@@ -61,12 +61,7 @@ $ yarn install
 ### Install the worker dependencies
 
 ```bash
-$ pip3 install -r requirements.txt
-```
-
-### Install the integration dependencies
-
-```bash
+$ cd ../../opencti-worker
 $ pip3 install -r requirements.txt
 ```
 
@@ -111,24 +106,7 @@ Change the *config.yml* file according to your <admin token>
 #### Start
 
 ```bash
-$ python3 worker_export.py &
-$ python3 worker_import.py &
-```
-
-### Integration
-
-#### Configure
-
-```bash
-$ cd opencti-integration
-$ cp config.yml.sample config.yml
-```
-Change the *config.yml* file according to your <admin token>
-
-#### Start
-
-```bash
-$ python3 connectors_scheduler.py
+$ python3 worker.py &
 ```
 
 ### Frontend
