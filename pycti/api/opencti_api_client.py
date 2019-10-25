@@ -351,6 +351,27 @@ class OpenCTIApiClient:
             }
         })
 
+    def update_stix_observable_field(self, id, key, value):
+        logging.info('Updating field ' + key + ' of ' + id + '...')
+        query = """
+            mutation StixObservableEdit($id: ID!, $input: EditInput!) {
+                stixObservableEdit(id: $id) {
+                    fieldPatch(input: $input) {
+                        id
+                        observable_value
+                        entity_type
+                    }
+                }
+            }
+        """
+        self.query(query, {
+            'id': id,
+            'input': {
+                'key': key,
+                'value': value
+            }
+        })
+
     def update_stix_relation_field(self, id, key, value):
         logging.info('Updating field ' + key + ' of ' + id + '...')
         query = """
@@ -3234,7 +3255,7 @@ class OpenCTIApiClient:
         object_result = self.get_stix_observable_by_value(observable_value)
         if object_result is not None:
             if update:
-                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                self.update_stix_observable_field(object_result['id'], 'description', description)
                 object_result['description'] = description
             return object_result
         else:
