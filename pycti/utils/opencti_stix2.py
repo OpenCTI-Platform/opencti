@@ -981,7 +981,7 @@ class OpenCTIStix2:
         stix_relation[CustomProperties.ID] = entity['id']
         return self.prepare_export(entity, stix_relation)
 
-    def import_relationship(self, stix_relation, update=False):
+    def import_relationship(self, stix_relation, update=False, types=None):
         # Check relation
         stix_relation_result = self.opencti.get_stix_relation_by_stix_id_key(stix_relation['id'])
         if stix_relation_result is not None:
@@ -1087,48 +1087,49 @@ class OpenCTIStix2:
 
                 # Add a corresponding report
                 # Extract date
-                if 'description' in external_reference:
-                    matches = list(datefinder.find_dates(external_reference['description']))
-                else:
-                    matches = list(datefinder.find_dates(source_name))
-                if len(matches) > 0:
-                    published = matches[0].strftime('%Y-%m-%dT%H:%M:%SZ')
-                else:
-                    published = datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
+                if types is None or 'report' in types:
+                    if 'description' in external_reference:
+                        matches = list(datefinder.find_dates(external_reference['description']))
+                    else:
+                        matches = list(datefinder.find_dates(source_name))
+                    if len(matches) > 0:
+                        published = matches[0].strftime('%Y-%m-%dT%H:%M:%SZ')
+                    else:
+                        published = datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
 
-                title = source_name
-                if 'external_id' in external_reference:
-                    title = title + ' (' + external_reference['external_id'] + ')'
-                report_id = self.opencti.create_report_if_not_exists_from_external_reference(
-                    external_reference_id,
-                    title,
-                    external_reference['description'] if 'description' in external_reference else None,
-                    published,
-                    'Threat Report',
-                    2
-                )['id']
+                    title = source_name
+                    if 'external_id' in external_reference:
+                        title = title + ' (' + external_reference['external_id'] + ')'
+                    report_id = self.opencti.create_report_if_not_exists_from_external_reference(
+                        external_reference_id,
+                        title,
+                        external_reference['description'] if 'description' in external_reference else None,
+                        published,
+                        'Threat Report',
+                        2
+                    )['id']
 
-                # Resolve author
-                author_id = self.resolve_author(title)
-                if author_id is not None:
-                    self.opencti.update_stix_domain_entity_created_by_ref(report_id, author_id)
+                    # Resolve author
+                    author_id = self.resolve_author(title)
+                    if author_id is not None:
+                        self.opencti.update_stix_domain_entity_created_by_ref(report_id, author_id)
 
-                # Add marking
-                if 'marking_tlpwhite' in self.mapping_cache:
-                    object_marking_ref_result = self.mapping_cache['marking_tlpwhite']
-                else:
-                    object_marking_ref_result = self.opencti.get_marking_definition_by_definition('TLP', 'TLP:WHITE')
-                if object_marking_ref_result is not None:
-                    self.mapping_cache['marking_tlpwhite'] = {'id': object_marking_ref_result['id']}
-                    self.opencti.add_marking_definition_if_not_exists(report_id, object_marking_ref_result['id'])
+                    # Add marking
+                    if 'marking_tlpwhite' in self.mapping_cache:
+                        object_marking_ref_result = self.mapping_cache['marking_tlpwhite']
+                    else:
+                        object_marking_ref_result = self.opencti.get_marking_definition_by_definition('TLP', 'TLP:WHITE')
+                    if object_marking_ref_result is not None:
+                        self.mapping_cache['marking_tlpwhite'] = {'id': object_marking_ref_result['id']}
+                        self.opencti.add_marking_definition_if_not_exists(report_id, object_marking_ref_result['id'])
 
-                # Add external reference to report
-                self.opencti.add_external_reference_if_not_exists(report_id, external_reference_id)
+                    # Add external reference to report
+                    self.opencti.add_external_reference_if_not_exists(report_id, external_reference_id)
 
-                # Add refs to report
-                self.opencti.add_object_ref_to_report_if_not_exists(report_id, source_id)
-                self.opencti.add_object_ref_to_report_if_not_exists(report_id, target_id)
-                self.opencti.add_object_ref_to_report_if_not_exists(report_id, stix_relation_result_id)
+                    # Add refs to report
+                    self.opencti.add_object_ref_to_report_if_not_exists(report_id, source_id)
+                    self.opencti.add_object_ref_to_report_if_not_exists(report_id, target_id)
+                    self.opencti.add_object_ref_to_report_if_not_exists(report_id, stix_relation_result_id)
 
     def resolve_author(self, title):
         if 'fireeye' in title.lower() or 'mandiant' in title.lower():
