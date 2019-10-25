@@ -133,6 +133,37 @@ class OpenCTIApiClient:
             return False
         return False
 
+    def get_key_value(self, key):
+        query = """
+            query KeyValue($key: String!) {
+                keyValue(key: $key) {
+                    key
+                    value
+                }
+            }
+        """
+        result = self.query(query, {'key': key})
+        return result['data']['keyValue']
+
+    def set_key_value(self, key, value, timeout=None):
+        logging.info('Setting KeyValue ' + key + ': ' + value + '...')
+        query = """
+            mutation KeyValueAdd($input: KeyValueAddInput) {
+                keyValueAdd(input: $input) {
+                   key
+                   value
+                }
+            }
+        """
+        result = self.query(query, {
+            'input': {
+                'key': key,
+                'value': value,
+                'timeout': timeout
+            }
+        })
+        return result['data']['keyValueAdd']
+
     def parse_stix(self, data):
         if 'createdByRef' in data and data['createdByRef'] is not None and 'node' in data['createdByRef']:
             data['createdByRef'] = data['createdByRef']['node']
