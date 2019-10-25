@@ -21,7 +21,6 @@ class Consumer(threading.Thread):
         self.queue_name = connector['config']['push']
         self.pika_connection = pika.BlockingConnection(pika.URLParameters(connector['config']['uri']))
         self.push_channel = self.pika_connection.channel()
-        self.push_channel.basic_qos(prefetch_count=1)
 
     def get_id(self):
         if hasattr(self, '_thread_id'):
