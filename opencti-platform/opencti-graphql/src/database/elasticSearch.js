@@ -1,6 +1,6 @@
 import { Client } from '@elastic/elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import { map, append, assoc, mapObjIndexed } from 'ramda';
+import { map, append, assoc, mapObjIndexed, pipe, split, join } from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
 
@@ -306,10 +306,14 @@ export const paginate = async (indexName, options) => {
       finalSearch = `"*${trimedSearch.replace('http://', '')}*"`;
     } else if (trimedSearch.startsWith('https://')) {
       finalSearch = `"*${trimedSearch.replace('https://', '')}*"`;
-    } else if (!trimedSearch.startsWith('"')) {
-      finalSearch = `*${trimedSearch}*`;
-    } else {
+    } else if (trimedSearch.startsWith('"')) {
       finalSearch = `${trimedSearch}`;
+    } else {
+      finalSearch = pipe(
+        split(' '),
+        map(n => `*${n}*`),
+        join(' ')
+      )(trimedSearch);
     }
     must = append(
       {
