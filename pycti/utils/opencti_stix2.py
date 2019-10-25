@@ -280,7 +280,7 @@ class OpenCTIStix2:
 
         return result
 
-    def import_object(self, stix_object, update=False):
+    def import_object(self, stix_object, update=False, types=None):
         logging.info('Importing a ' + stix_object['type'] + ' (id: ' + stix_object['id'] + ')')
         # Reports
         reports = {}
@@ -335,7 +335,8 @@ class OpenCTIStix2:
                 self.mapping_cache[url] = {'id': external_reference_id}
                 external_references_ids.append(external_reference_id)
 
-                if stix_object['type'] in ['threat-actor', 'intrusion-set', 'campaign', 'incident', 'malware']:
+                if stix_object['type'] in ['threat-actor', 'intrusion-set', 'campaign', 'incident', 'malware'] and (
+                        types is None or 'report' in types):
                     # Add a corresponding report
                     # Extract date
                     if 'description' in external_reference:
@@ -1228,7 +1229,7 @@ class OpenCTIStix2:
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'marking-definition':
-                self.import_object(item, update)
+                self.import_object(item, update, types)
                 imported_elements.append({'id': item['id'], 'type': item['type']})
         end_time = time.time()
         logging.info("Marking definitions imported in: %ssecs" % round(end_time - start_time))
@@ -1237,7 +1238,7 @@ class OpenCTIStix2:
         for item in stix_bundle['objects']:
             if item['type'] == 'identity' and (len(types) == 0 or 'identity' in types or (
                     CustomProperties.IDENTITY_TYPE in item and item[CustomProperties.IDENTITY_TYPE] in types)):
-                self.import_object(item, update)
+                self.import_object(item, update, types)
                 imported_elements.append({'id': item['id'], 'type': item['type']})
         end_time = time.time()
         logging.info("Identities imported in: %ssecs" % round(end_time - start_time))
@@ -1246,7 +1247,7 @@ class OpenCTIStix2:
         for item in stix_bundle['objects']:
             if item['type'] != 'relationship' and item['type'] != 'report' and (
                     len(types) == 0 or item['type'] in types):
-                self.import_object(item, update)
+                self.import_object(item, update, types)
                 imported_elements.append({'id': item['id'], 'type': item['type']})
         end_time = time.time()
         logging.info("Objects imported in: %ssecs" % round(end_time - start_time))
@@ -1254,7 +1255,7 @@ class OpenCTIStix2:
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'relationship':
-                self.import_relationship(item, update)
+                self.import_relationship(item, update, types)
                 imported_elements.append({'id': item['id'], 'type': item['type']})
         end_time = time.time()
         logging.info("Relationships imported in: %ssecs" % round(end_time - start_time))
@@ -1262,7 +1263,7 @@ class OpenCTIStix2:
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'report' and (len(types) == 0 or 'report' in types):
-                self.import_object(item, update)
+                self.import_object(item, update, types)
                 imported_elements.append({'id': item['id'], 'type': item['type']})
         end_time = time.time()
         logging.info("Reports imported in: %ssecs" % round(end_time - start_time))
