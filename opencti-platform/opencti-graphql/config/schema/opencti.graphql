@@ -94,6 +94,7 @@ type KeyValue {
 input KeyValueAddInput {
   key: String!
   value: String!
+  timeout: Int
 }
 
 ### Info
@@ -2882,7 +2883,6 @@ type SettingsEditMutations {
 # KeyValue
 type KeyValueEditMutations {
   delete: ID
-  update(value: String): KeyValue
 }
 # Attribute
 type AttributeEditMutations {

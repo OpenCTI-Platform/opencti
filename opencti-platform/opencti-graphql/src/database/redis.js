@@ -133,15 +133,20 @@ export const getKeyValue = key => {
 
 /**
  * Store a key/value
- * @param key
- * @param value
+ * @param input
  * @returns {Promise<any>}
  */
-export const storeKeyValue = async (key, value) => {
+export const storeKeyValue = async input => {
   if (isActive()) {
-    logger.debug(`[REDIS] set > { ${key}: ${value} }`);
-    await client.set(key, value);
-    return Promise.resolve({ key, value });
+    logger.debug(
+      `[REDIS] set > { ${input.key}: ${input.value} } (timeout: ${input.timeout})`
+    );
+    if (input.timeout) {
+      await client.set(input.key, input.value, 'ex', input.timeout);
+    } else {
+      await client.set(input.key, input.value);
+    }
+    return Promise.resolve(input);
   }
   return Promise.resolve(null);
 };
