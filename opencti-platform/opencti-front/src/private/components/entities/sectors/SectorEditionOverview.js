@@ -323,6 +323,7 @@ class SectorEditionOverviewComponent extends Component {
             first_seen: now(),
             last_seen: now(),
             weight: 4,
+            stix_id_key: 'create',
           },
         },
       });
