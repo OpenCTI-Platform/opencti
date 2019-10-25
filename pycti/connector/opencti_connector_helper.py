@@ -149,6 +149,12 @@ class OpenCTIConnectorHelper:
     def date_now(self):
         return datetime.datetime.utcnow().replace(microsecond=0, tzinfo=datetime.timezone.utc).isoformat()
 
+    def set_key_value(self, key, value, timeout=None):
+        return self.api.set_key_value(key, value, timeout)
+
+    def get_key_value(self, key):
+        return self.api.get_key_value(key)['value']
+
     # Push Stix2 helper
     def send_stix2_bundle(self, bundle, entities_types=None):
         if entities_types is None:
