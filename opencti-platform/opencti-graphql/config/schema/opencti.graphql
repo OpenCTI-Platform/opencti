@@ -85,6 +85,17 @@ type EditUserContext {
   focusOn: String # Field name
 }
 
+## Key/value store
+type KeyValue {
+  key: String!
+  value: String
+}
+
+input KeyValueAddInput {
+  key: String!
+  value: String!
+}
+
 ### Info
 type DependencyVersion {
   name: String!
@@ -2413,6 +2424,7 @@ type Query {
   # Technical
   about: AppInfo @auth
   settings: Settings
+  keyValue(key: String!): KeyValue @auth
   attribute(id: String): Attribute @auth
   attributes(
     first: Int
@@ -2867,6 +2879,11 @@ type SettingsEditMutations {
   contextPatch(input: EditContext): Settings
   contextClean: Settings
 }
+# KeyValue
+type KeyValueEditMutations {
+  delete: ID
+  update(value: String): KeyValue
+}
 # Attribute
 type AttributeEditMutations {
   delete: ID
@@ -3143,6 +3160,9 @@ type ReportEditMutations {
 type Mutation {
   # Login
   token(input: UserLoginInput): String
+  # KeyValue
+  keyValueAdd(input: KeyValueAddInput): KeyValue @auth(for: ROLE_ADMIN)
+  keyValueEdit(id: ID!): KeyValueEditMutations @auth(for: ROLE_ADMIN)
   # Settings
   settingsAdd(input: SettingsAddInput): Settings @auth(for: ROLE_ADMIN)
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: ROLE_ADMIN)

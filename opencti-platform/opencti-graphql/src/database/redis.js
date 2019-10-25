@@ -117,3 +117,45 @@ export const fetchEditContext = instanceId =>
         });
       })
     : Promise.resolve([]);
+
+/**
+ * Get a key/value
+ * @param key
+ * @returns {Promise}
+ */
+export const getKeyValue = key => {
+  if (isActive()) {
+    logger.debug(`[REDIS] get > ${key}`);
+    return Promise.resolve({ key, value: client.get(key) });
+  }
+  return Promise.resolve(null);
+};
+
+/**
+ * Store a key/value
+ * @param key
+ * @param value
+ * @returns {Promise<any>}
+ */
+export const storeKeyValue = async (key, value) => {
+  if (isActive()) {
+    logger.debug(`[REDIS] set > { ${key}: ${value} }`);
+    await client.set(key, value);
+    return Promise.resolve({ key, value });
+  }
+  return Promise.resolve(null);
+};
+
+/**
+ * Delete a key/value
+ * @param key
+ * @returns {Promise<any>}
+ */
+export const deleteKeyValue = async key => {
+  if (isActive()) {
+    logger.debug(`[REDIS] delete > ${key}`);
+    await client.delete(key);
+    return Promise.resolve(true);
+  }
+  return Promise.resolve(null);
+};
