@@ -27,7 +27,7 @@ const connectorResolvers = {
   },
   Mutation: {
     registerConnector: (_, { input }) => registerConnector(input),
-    pingConnector: (_, { id }) => pingConnector(id),
+    pingConnector: (_, { id, state }) => pingConnector(id, state),
     initiateJob: (_, { workId }) => initiateJob(workId),
     updateJob: (_, { jobId, status, messages }) =>
       updateJob(jobId, status, messages),

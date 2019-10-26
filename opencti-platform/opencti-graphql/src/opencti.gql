@@ -60,6 +60,7 @@ define
   description sub attribute, datatype string;
   connector_type sub attribute, datatype string;
   connector_scope sub attribute, datatype string;
+  connector_state sub attribute, datatype string;
 
   # STIX SDO
   alias sub attribute, datatype string;
@@ -502,6 +503,7 @@ define
     has name,
     has connector_type,
     has connector_scope,
+    has connector_state,
     has created_at,
     has updated_at;
 
