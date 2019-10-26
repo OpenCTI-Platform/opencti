@@ -7,7 +7,6 @@ import time
 import base64
 import uuid
 import os
-import requests
 
 from typing import Callable, Dict, List
 from pika.exceptions import UnroutableError, NackError
@@ -67,16 +66,17 @@ class ListenQueue(threading.Thread):
 
 
 class PingAlive(threading.Thread):
-    def __init__(self, connector_id, api):
+    def __init__(self, connector_id, api, get_state):
         threading.Thread.__init__(self)
         self.connector_id = connector_id
         self.in_error = False
         self.api = api
+        self.get_state = get_state
 
     def ping(self):
         while True:
             try:
-                self.api.connector.ping(self.connector_id)
+                self.api.connector.ping(self.connector_id, self.get_state())
                 if self.in_error:
                     self.in_error = False
                     logging.info('API Ping back to normal')
@@ -95,7 +95,6 @@ class OpenCTIConnectorHelper:
         Python API for OpenCTI connector
         :param config: Dict standard config
     """
-
     def __init__(self, config: dict):
         # Load API config
         self.opencti_url = os.getenv('OPENCTI_URL') or config['opencti']['url']
@@ -123,15 +122,22 @@ class OpenCTIConnectorHelper:
         self.connector = OpenCTIConnector(self.connect_id, self.connect_name, self.connect_type, self.connect_scope)
         connector_configuration = self.api.connector.register(self.connector)
         self.connector_id = connector_configuration['id']
+        self.connector_state = connector_configuration['connector_state']
         self.config = connector_configuration['config']
 
         # Start ping thread
-        self.ping = PingAlive(self.connector.id, self.api)
+        self.ping = PingAlive(self.connector.id, self.api, self.get_state)
         self.ping.start()
 
         # Initialize caching
         self.cache_index = {}
         self.cache_added = []
+
+    def set_state(self, state) -> None:
+        self.connector_state = json.dumps(state)
+
+    def get_state(self):
+        return None if self.connector_state is None else json.loads(self.connector_state)
 
     def listen(self, message_callback: Callable[[Dict], List[str]]) -> None:
         listen_queue = ListenQueue(self, self.config, message_callback)
@@ -148,12 +154,6 @@ class OpenCTIConnectorHelper:
 
     def date_now(self):
         return datetime.datetime.utcnow().replace(microsecond=0, tzinfo=datetime.timezone.utc).isoformat()
-
-    def set_key_value(self, key, value, timeout=None):
-        return self.api.set_key_value(key, value, timeout)
-
-    def get_key_value(self, key):
-        return self.api.get_key_value(key)['value']
 
     # Push Stix2 helper
     def send_stix2_bundle(self, bundle, entities_types=None):
