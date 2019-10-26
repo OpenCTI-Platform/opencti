@@ -85,18 +85,6 @@ type EditUserContext {
   focusOn: String # Field name
 }
 
-## Key/value store
-type KeyValue {
-  key: String!
-  value: String
-}
-
-input KeyValueAddInput {
-  key: String!
-  value: String!
-  timeout: Int
-}
-
 ### Info
 type DependencyVersion {
   name: String!
@@ -2879,10 +2867,6 @@ type SettingsEditMutations {
   fieldPatch(input: EditInput): Settings
   contextPatch(input: EditContext): Settings
   contextClean: Settings
-}
-# KeyValue
-type KeyValueEditMutations {
-  delete: ID
 }
 # Attribute
 type AttributeEditMutations {

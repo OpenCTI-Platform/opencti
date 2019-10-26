@@ -1,4 +1,4 @@
-import { assoc, head, isNil, join, map, pathOr } from 'ramda';
+import { assoc, head, isNil, join, map, pathOr, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
@@ -119,7 +119,14 @@ export const addPerson = async (user, newUser) => {
         : `identity--${uuid()}`
     }",
     has stix_label "",
-    has alias "",
+    ${
+      newUser.alias
+        ? `${join(
+            ' ',
+            map(val => `has alias "${escapeString(val)}",`, tail(newUser.alias))
+          )} has alias "${escapeString(head(newUser.alias))}",`
+        : 'has alias "",'
+    }
     has name "${escapeString(newUser.name)}",
     has description "${escapeString(newUser.description)}",
     has created ${newUser.created ? prepareDate(newUser.created) : graknNow()},

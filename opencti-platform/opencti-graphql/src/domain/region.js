@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, join, tail, head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   commitWriteTx,
@@ -35,7 +35,14 @@ export const addRegion = async (user, region) => {
         : `identity--${uuid()}`
     }",
     has stix_label "",
-    has alias "",
+    ${
+      region.alias
+        ? `${join(
+            ' ',
+            map(val => `has alias "${escapeString(val)}",`, tail(region.alias))
+          )} has alias "${escapeString(head(region.alias))}",`
+        : 'has alias "",'
+    }
     has name "${escapeString(region.name)}",
     has description "${escapeString(region.description)}",
     has created ${region.created ? prepareDate(region.created) : graknNow()},

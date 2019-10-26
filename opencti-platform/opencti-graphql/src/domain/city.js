@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, join, tail, head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   escapeString,
@@ -33,7 +33,14 @@ export const addCity = async (user, city) => {
       city.stix_id_key ? escapeString(city.stix_id_key) : `identity--${uuid()}`
     }",
     has stix_label "",
-    has alias "",
+    ${
+      city.alias
+        ? `${join(
+            ' ',
+            map(val => `has alias "${escapeString(val)}",`, tail(city.alias))
+          )} has alias "${escapeString(head(city.alias))}",`
+        : 'has alias "",'
+    }
     has name "${escapeString(city.name)}",
     has description "${escapeString(city.description)}",
     has created ${city.created ? prepareDate(city.created) : graknNow()},

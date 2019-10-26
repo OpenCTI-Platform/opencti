@@ -24,10 +24,10 @@ All connectors have to be able to access to the OpenCTI API. To allow this conne
 > The `CONNECTOR_ID` must be a valid UUIDv4
 
 > The `CONNECTOR_TYPE` must be a valid type, the possible types are:
-> - EXTERNAL_IMPORT: from remote sources to OpenCTI stix2
-> - INTERNAL_IMPORT_FILE: from OpenCTI file system to OpenCTI stix2
-> - INTERNAL_ENRICHMENT: from OpenCTI stix2 to OpenCTI stix2
-> - INTERNAL_EXPORT_FILE: from OpenCTI stix2 to OpenCTI file system
+> - EXTERNAL_IMPORT: from remote sources to OpenCTI STIX2 (ie. MITRE, MISP, CVE, etc.)
+> - INTERNAL_IMPORT_FILE: from OpenCTI file system to OpenCTI STIX (ie. Extraction of observables from PDFs, STIX2 import, etc.)
+> - INTERNAL_ENRICHMENT: from OpenCTI STIX2 to OpenCTI STIX2 (ie. Enrichment of observables though external servies, entities updates, etc.)
+> - INTERNAL_EXPORT_FILE: from OpenCTI STIX2 to OpenCTI file system (ie. STIX2 export, PDF export, CSV list generation, etc.)
 
 > The `CONNECTOR_NAME` is an arbitrary name
 

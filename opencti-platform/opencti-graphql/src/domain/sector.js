@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, join, tail, head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   commitWriteTx,
@@ -66,7 +66,15 @@ export const addSector = async (user, sector) => {
         : `identity--${uuid()}`
     }",
     has stix_label "",
-    has alias "",
+    has stix_label "",
+    ${
+      sector.alias
+        ? `${join(
+            ' ',
+            map(val => `has alias "${escapeString(val)}",`, tail(sector.alias))
+          )} has alias "${escapeString(head(sector.alias))}",`
+        : 'has alias "",'
+    }
     has name "${escapeString(sector.name)}",
     has description "${escapeString(sector.description)}",
     has created ${sector.created ? prepareDate(sector.created) : graknNow()},
