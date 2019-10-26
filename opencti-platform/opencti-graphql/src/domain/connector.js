@@ -36,7 +36,14 @@ export const connectorsFor = async (type, scope, onlyAlive = false) => {
     filter(c => c.connector_type === type),
     filter(c => (onlyAlive ? c.active === true : true)),
     // eslint-disable-next-line prettier/prettier
-    filter(c => scope ? includes(scope.toLowerCase(), map(s => s.toLowerCase(), c.connector_scope)) : true)
+    filter(c =>
+      scope
+        ? includes(
+            scope.toLowerCase(),
+            map(s => s.toLowerCase(), c.connector_scope)
+          )
+        : true
+    )
   )(connects);
 };
 
@@ -57,7 +64,7 @@ export const pingConnector = async (id, state) => {
   const stateInput = { key: 'connector_state', value: [state] };
   await updateAttribute(id, stateInput, wTx);
   await commitWriteTx(wTx);
-  return getById(id).then(data => completeConnector(data));
+  return getById(id, true).then(data => completeConnector(data));
 };
 
 export const registerConnector = async ({ id, name, type, scope }) => {
