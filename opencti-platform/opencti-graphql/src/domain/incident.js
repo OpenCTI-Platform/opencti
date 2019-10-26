@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, join, tail, head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   commitWriteTx,
@@ -61,7 +61,17 @@ export const addIncident = async (user, incident) => {
         : `x-opencti-incident--${uuid()}`
     }",
     has stix_label "",
-    has alias "",
+    ${
+      incident.alias
+        ? `${join(
+            ' ',
+            map(
+              val => `has alias "${escapeString(val)}",`,
+              tail(incident.alias)
+            )
+          )} has alias "${escapeString(head(incident.alias))}",`
+        : 'has alias "",'
+    }
     has name "${escapeString(incident.name)}",
     has description "${escapeString(incident.description)}",
     has first_seen ${

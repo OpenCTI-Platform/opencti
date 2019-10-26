@@ -1,4 +1,4 @@
-import { assoc, map, join } from 'ramda';
+import { assoc, join, tail, head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   escapeString,
@@ -59,7 +59,17 @@ export const addAttackPattern = async (user, attackPattern) => {
         : `attack-pattern--${uuid()}`
     }",
     has stix_label "",
-    has alias "",
+    ${
+      attackPattern.alias
+        ? `${join(
+            ' ',
+            map(
+              val => `has alias "${escapeString(val)}",`,
+              tail(attackPattern.alias)
+            )
+          )} has alias "${escapeString(head(attackPattern.alias))}",`
+        : 'has alias "",'
+    }
     has name "${escapeString(attackPattern.name)}",
     has description "${escapeString(attackPattern.description)}",
     ${

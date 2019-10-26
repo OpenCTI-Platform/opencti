@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, join, tail, head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   commitWriteTx,
@@ -36,7 +36,17 @@ export const addOrganization = async (user, organization) => {
         : `identity--${uuid()}`
     }",
     has stix_label "",
-    has alias "",
+    ${
+      organization.alias
+        ? `${join(
+            ' ',
+            map(
+              val => `has alias "${escapeString(val)}",`,
+              tail(organization.alias)
+            )
+          )} has alias "${escapeString(head(organization.alias))}",`
+        : 'has alias "",'
+    }
     has name "${escapeString(organization.name)}",
     has description "${escapeString(organization.description)}",
     has organization_class "${

@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, join, tail, head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   escapeString,
@@ -36,7 +36,14 @@ export const addCountry = async (user, country) => {
         : `identity--${uuid()}`
     }",
     has stix_label "",
-    has alias "",
+    ${
+      country.alias
+        ? `${join(
+            ' ',
+            map(val => `has alias "${escapeString(val)}",`, tail(country.alias))
+          )} has alias "${escapeString(head(country.alias))}",`
+        : 'has alias "",'
+    }
     has name "${escapeString(country.name)}",
     has description "${escapeString(country.description)}",
     has created ${country.created ? prepareDate(country.created) : now},
