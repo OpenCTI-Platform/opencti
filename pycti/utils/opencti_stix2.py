@@ -67,7 +67,7 @@ class OpenCTIStix2:
         elif 'x_mitre_aliases' in stix_object:
             return stix_object['x_mitre_aliases']
         elif 'aliases' in stix_object:
-            return stix_object['alias']
+            return stix_object['aliases']
         return None
 
     def prepare_export(self, entity, stix_object, mode='simple'):
