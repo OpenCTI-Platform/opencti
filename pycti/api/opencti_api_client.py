@@ -2376,8 +2376,7 @@ class OpenCTIApiClient:
         return result['data']['vulnerabilityAdd']
 
     def create_vulnerability_if_not_exists(self, name, description, alias=None, id=None, stix_id_key=None, created=None,
-                                           modified=None,
-                                           update=False):
+                                           modified=None, update=False):
         object_result = self.check_existing_stix_domain_entity(stix_id_key, name, 'Vulnerability')
         if object_result is not None:
             if update:
