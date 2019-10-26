@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, join, tail, head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   commitWriteTx,
@@ -35,7 +35,17 @@ export const addThreatActor = async (user, threatActor) => {
     has entity_type "threat-actor",
     has stix_id_key "${stixId}",
     has stix_label "",
-    has alias "",
+    ${
+      threatActor.alias
+        ? `${join(
+            ' ',
+            map(
+              val => `has alias "${escapeString(val)}",`,
+              tail(threatActor.alias)
+            )
+          )} has alias "${escapeString(head(threatActor.alias))}",`
+        : 'has alias "",'
+    }
     has name "${escapeString(threatActor.name)}", 
     has description "${escapeString(threatActor.description)}",
     has goal "${escapeString(threatActor.goal)}",

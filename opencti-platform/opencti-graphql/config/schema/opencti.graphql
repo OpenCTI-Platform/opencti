@@ -85,18 +85,6 @@ type EditUserContext {
   focusOn: String # Field name
 }
 
-## Key/value store
-type KeyValue {
-  key: String!
-  value: String
-}
-
-input KeyValueAddInput {
-  key: String!
-  value: String!
-  timeout: Int
-}
-
 ### Info
 type DependencyVersion {
   name: String!
@@ -280,7 +268,8 @@ type Connector {
   internal_id_key: ID!
   name: String!
   active: Boolean
-  connector_type: String!
+  connector_type: String
+  connector_state: String
   connector_scope: [String!]
   updated_at: DateTime
   created_at: DateTime
@@ -2425,7 +2414,6 @@ type Query {
   # Technical
   about: AppInfo @auth
   settings: Settings
-  keyValue(key: String!): KeyValue @auth
   attribute(id: String): Attribute @auth
   attributes(
     first: Int
@@ -2880,10 +2868,6 @@ type SettingsEditMutations {
   contextPatch(input: EditContext): Settings
   contextClean: Settings
 }
-# KeyValue
-type KeyValueEditMutations {
-  delete: ID
-}
 # Attribute
 type AttributeEditMutations {
   delete: ID
@@ -3160,9 +3144,6 @@ type ReportEditMutations {
 type Mutation {
   # Login
   token(input: UserLoginInput): String
-  # KeyValue
-  keyValueAdd(input: KeyValueAddInput): KeyValue @auth(for: ROLE_ADMIN)
-  keyValueEdit(id: ID!): KeyValueEditMutations @auth(for: ROLE_ADMIN)
   # Settings
   settingsAdd(input: SettingsAddInput): Settings @auth(for: ROLE_ADMIN)
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: ROLE_ADMIN)
@@ -3170,7 +3151,7 @@ type Mutation {
   attributeAdd(input: AttributeAddInput): Attribute @auth(for: ROLE_ADMIN)
   attributeEdit(id: ID!): AttributeEditMutations @auth(for: ROLE_ADMIN)
   # Connector
-  pingConnector(id: ID!): Connector @auth(for: ROLE_ADMIN)
+  pingConnector(id: ID!, state: String): Connector @auth(for: ROLE_ADMIN)
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: ROLE_ADMIN)
   deleteWork(id: ID!): ID! @auth
   initiateJob(workId: ID!): Job @auth

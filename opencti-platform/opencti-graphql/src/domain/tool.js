@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, join, tail, head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   commitWriteTx,
@@ -34,7 +34,14 @@ export const addTool = async (user, tool) => {
       tool.stix_id_key ? escapeString(tool.stix_id_key) : `tool--${uuid()}`
     }",
     has stix_label "",
-    has alias "",
+    ${
+      tool.alias
+        ? `${join(
+            ' ',
+            map(val => `has alias "${escapeString(val)}",`, tail(tool.alias))
+          )} has alias "${escapeString(head(tool.alias))}",`
+        : 'has alias "",'
+    }
     has name "${escapeString(tool.name)}",
     has description "${escapeString(tool.description)}",
     has created ${tool.created ? prepareDate(tool.created) : graknNow()},

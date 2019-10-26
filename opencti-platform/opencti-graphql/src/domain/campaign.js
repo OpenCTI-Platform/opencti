@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, join, tail, head, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   commitWriteTx,
@@ -57,7 +57,17 @@ export const addCampaign = async (user, campaign) => {
         : `campaign--${uuid()}`
     }",
     has stix_label "",
-    has alias "",
+    ${
+      campaign.alias
+        ? `${join(
+            ' ',
+            map(
+              val => `has alias "${escapeString(val)}",`,
+              tail(campaign.alias)
+            )
+          )} has alias "${escapeString(head(campaign.alias))}",`
+        : 'has alias "",'
+    }
     has name "${escapeString(campaign.name)}",
     has description "${escapeString(campaign.description)}",
     has objective "${escapeString(campaign.objective)}",

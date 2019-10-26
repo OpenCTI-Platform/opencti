@@ -49,14 +49,15 @@ export const connectorsForExport = async (scope, onlyAlive = false) =>
 export const connectorsForImport = async (scope, onlyAlive = false) =>
   connectorsFor(CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive);
 
-export const pingConnector = async id => {
+export const pingConnector = async (id, state) => {
   const creation = now();
-  return updateAttribute(id, {
-    key: 'updated_at',
-    value: [creation]
-  }).then(data => {
-    return assoc('config', connectorConfig(id), data);
-  });
+  const wTx = await takeWriteTx();
+  const updateInput = { key: 'updated_at', value: [creation] };
+  await updateAttribute(id, updateInput, wTx);
+  const stateInput = { key: 'connector_state', value: [state] };
+  await updateAttribute(id, stateInput, wTx);
+  await commitWriteTx(wTx);
+  return getById(id).then(data => completeConnector(data));
 };
 
 export const registerConnector = async ({ id, name, type, scope }) => {
