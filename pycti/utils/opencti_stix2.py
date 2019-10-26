@@ -60,6 +60,16 @@ class OpenCTIStix2:
                     result.append(object)
         return result
 
+    def pick_aliases(self, stix_object):
+        # Add aliases
+        if CustomProperties.ALIASES in stix_object:
+            return stix_object[CustomProperties.ALIASES]
+        elif 'x_mitre_aliases' in stix_object:
+            return stix_object['x_mitre_aliases']
+        elif 'aliases' in stix_object:
+            return stix_object['alias']
+        return None
+
     def prepare_export(self, entity, stix_object, mode='simple'):
         result = []
         objects_to_get = []
@@ -446,19 +456,6 @@ class OpenCTIStix2:
             else:
                 stix_object_result_type = stix_object_result['entity_type']
             self.mapping_cache[stix_object['id']] = {'id': stix_object_result['id'], 'type': stix_object_result_type}
-            # Add aliases
-            if 'aliases' in stix_object:
-                new_aliases = stix_object_result['alias'] + list(
-                    set(stix_object['aliases']) - set(stix_object_result['alias']))
-                self.opencti.update_stix_domain_entity_field(stix_object_result['id'], 'alias', new_aliases)
-            elif 'x_mitre_aliases' in stix_object:
-                new_aliases = stix_object_result['alias'] + list(
-                    set(stix_object['x_mitre_aliases']) - set(stix_object_result['alias']))
-                self.opencti.update_stix_domain_entity_field(stix_object_result['id'], 'alias', new_aliases)
-            elif CustomProperties.ALIASES in stix_object:
-                new_aliases = stix_object_result['alias'] + list(
-                    set(stix_object[CustomProperties.ALIASES]) - set(stix_object_result['alias']))
-                self.opencti.update_stix_domain_entity_field(stix_object_result['id'], 'alias', new_aliases)
 
             # Update created by ref
             if created_by_ref_id is not None and stix_object['type'] != 'marking-definition':
@@ -544,11 +541,12 @@ class OpenCTIStix2:
                 type = 'Sector'
             else:
                 return None
+
         return self.opencti.create_identity_if_not_exists(
             type,
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
-            stix_object[CustomProperties.ALIASES] if CustomProperties.ALIASES in stix_object else None,
+            self.pick_aliases(stix_object),
             stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
@@ -583,6 +581,7 @@ class OpenCTIStix2:
         return self.opencti.create_threat_actor_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            self.pick_aliases(stix_object),
             stix_object['goals'] if 'goals' in stix_object else None,
             stix_object['sophistication'] if 'sophistication' in stix_object else None,
             stix_object['resource_level'] if 'resource_level' in stix_object else None,
@@ -627,6 +626,7 @@ class OpenCTIStix2:
         return self.opencti.create_intrusion_set_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            self.pick_aliases(stix_object),
             stix_object[CustomProperties.FIRST_SEEN] if CustomProperties.FIRST_SEEN in stix_object else None,
             stix_object[CustomProperties.LAST_SEEN] if CustomProperties.LAST_SEEN in stix_object else None,
             stix_object['goals'] if 'goals' in stix_object else None,
@@ -666,6 +666,7 @@ class OpenCTIStix2:
         return self.opencti.create_campaign_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            self.pick_aliases(stix_object),
             stix_object['objective'] if 'objective' in stix_object else None,
             stix_object[CustomProperties.FIRST_SEEN] if CustomProperties.FIRST_SEEN in stix_object else None,
             stix_object[CustomProperties.LAST_SEEN] if CustomProperties.LAST_SEEN in stix_object else None,
@@ -699,6 +700,7 @@ class OpenCTIStix2:
         return self.opencti.create_incident_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            self.pick_aliases(stix_object),
             stix_object['objective'] if 'objective' in stix_object else None,
             stix_object['first_seen'] if 'first_seen' in stix_object else None,
             stix_object['last_seen'] if 'last_seen' in stix_object else None,
@@ -730,6 +732,7 @@ class OpenCTIStix2:
         return self.opencti.create_malware_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            self.pick_aliases(stix_object),
             stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
@@ -758,6 +761,7 @@ class OpenCTIStix2:
         return self.opencti.create_tool_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            self.pick_aliases(stix_object),
             stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
@@ -785,6 +789,7 @@ class OpenCTIStix2:
         return self.opencti.create_vulnerability_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            self.pick_aliases(stix_object),
             stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
@@ -815,6 +820,7 @@ class OpenCTIStix2:
         return self.opencti.create_attack_pattern_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            self.pick_aliases(stix_object),
             stix_object['x_mitre_platforms'] if 'x_mitre_platforms' in stix_object else None,
             stix_object['x_mitre_permissions_required'] if 'x_mitre_permissions_required' in stix_object else None,
             stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
@@ -844,6 +850,7 @@ class OpenCTIStix2:
         return self.opencti.create_course_of_action_if_not_exists(
             stix_object['name'],
             self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            self.pick_aliases(stix_object),
             stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
             stix_object['id'] if 'id' in stix_object else None,
             stix_object['created'] if 'created' in stix_object else None,
@@ -1118,7 +1125,8 @@ class OpenCTIStix2:
                     if 'marking_tlpwhite' in self.mapping_cache:
                         object_marking_ref_result = self.mapping_cache['marking_tlpwhite']
                     else:
-                        object_marking_ref_result = self.opencti.get_marking_definition_by_definition('TLP', 'TLP:WHITE')
+                        object_marking_ref_result = self.opencti.get_marking_definition_by_definition('TLP',
+                                                                                                      'TLP:WHITE')
                     if object_marking_ref_result is not None:
                         self.mapping_cache['marking_tlpwhite'] = {'id': object_marking_ref_result['id']}
                         self.opencti.add_marking_definition_if_not_exists(report_id, object_marking_ref_result['id'])
