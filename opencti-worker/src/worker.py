@@ -20,7 +20,8 @@ class Consumer(threading.Thread):
         self.api = api
         self.queue_name = connector['config']['push']
         self.pika_connection = pika.BlockingConnection(pika.URLParameters(connector['config']['uri']))
-        self.push_channel = self.pika_connection.channel()
+        self.channel = self.pika_connection.channel()
+        self.channel.basic_qos(prefetch_count=1)
 
     def get_id(self):
         if hasattr(self, '_thread_id'):
@@ -46,7 +47,7 @@ class Consumer(threading.Thread):
         while thread.is_alive():  # Loop while the thread is processing
             self.pika_connection.sleep(1.0)
         logging.info('Message (delivery_tag=' + str(method.delivery_tag) + ') processed, thread terminated')
-        self.push_channel.basic_ack(delivery_tag=method.delivery_tag)
+        self.channel.basic_ack(delivery_tag=method.delivery_tag)
 
     # Data handling
     def data_handler(self, data):
@@ -71,10 +72,10 @@ class Consumer(threading.Thread):
         try:
             # Consume the queue
             logging.info('Thread for queue ' + self.queue_name + ' started')
-            self.push_channel.basic_consume(queue=self.queue_name, on_message_callback=self._process_message)
-            self.push_channel.start_consuming()
+            self.channel.basic_consume(queue=self.queue_name, on_message_callback=self._process_message)
+            self.channel.start_consuming()
         finally:
-            self.push_channel.stop_consuming()
+            self.channel.stop_consuming()
             logging.info('Thread for queue ' + self.queue_name + ' terminated')
 
 
@@ -92,20 +93,24 @@ class Worker:
         # Check if openCTI is available
         self.api = OpenCTIApiClient(self.opencti_url, self.opencti_token)
 
-        # Fetch queue configuration from API
-        self.connectors = self.api.connector.list()
-        self.queues = list(map(lambda x: x['config']['push'], self.connectors))
-
         # Configure logger
         numeric_level = getattr(logging, self.log_level.upper(), None)
         if not isinstance(numeric_level, int):
             raise ValueError('Invalid log level: ' + self.log_level)
         logging.basicConfig(level=numeric_level)
 
+        # Initialize variables
+        self.connectors = []
+        self.queues = []
+
     # Start the main loop
     def start(self):
         try:
             while True:
+                # Fetch queue configuration from API
+                self.connectors = self.api.connector.list()
+                self.queues = list(map(lambda x: x['config']['push'], self.connectors))
+
                 # Check if all queues are consumed
                 for connector in self.connectors:
                     queue = connector['config']['push']
@@ -127,7 +132,7 @@ class Worker:
                         except:
                             logging.info('Unable to kill the thread for queue '
                                          + thread + ', an operation is running, keep trying...')
-                time.sleep(5)
+                time.sleep(60)
         except KeyboardInterrupt:
             # Graceful stop
             for thread in self.consumer_threads.keys():
