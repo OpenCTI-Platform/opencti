@@ -3481,10 +3481,10 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.2.tgz#6f0952605d0140c1cfdb138ed005775b92d67b02"
   integrity sha512-IItsdsea19BoLC7ELy13q1iJFNmd7ofZH5+X/pJr90/nRoPEX0DJo1dHDbgtYWOhJhcCgMDTOw84RZ72q6lB+Q==
 
-grakn-client@^1.5.5:
-  version "1.5.5"
-  resolved "https://registry.yarnpkg.com/grakn-client/-/grakn-client-1.5.5.tgz#176551271ec5f7af06a40962a6dfbd25800a3b6a"
-  integrity sha512-Yl1EMzcBK9wMutBg+v7tIdNUH3uGDOK4hdXvFDnd8jVU6GMa2sHQ1tWKb6YFcpzRTsS+Qh5GPXaAHUFl5d7Dyw==
+grakn-client@^1.5.6:
+  version "1.5.6"
+  resolved "https://registry.yarnpkg.com/grakn-client/-/grakn-client-1.5.6.tgz#9154b61cf19590d1d35598168ceb83ad6d65fa99"
+  integrity sha512-TDxXrBBw19fNUvHRWSGFcU1tFAfPBaoBHKG54u/SUCJEw328Ol0TiGQxzcvXQRdZ6ecGuD9Pdvz2hLClCBIPDw==
   dependencies:
     google-protobuf "^3.6.0"
     grpc "^1.22.2"

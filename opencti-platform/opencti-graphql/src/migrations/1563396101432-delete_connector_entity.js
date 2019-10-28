@@ -1,8 +1,9 @@
 import {
   takeWriteTx,
   commitWriteTx,
-  closeWriteTx
+  closeTx
 } from '../database/grakn';
+import { logger } from '../config/conf';
 
 module.exports.up = async next => {
   const wTx = await takeWriteTx();
@@ -15,7 +16,8 @@ module.exports.up = async next => {
     await wTx.tx.query('undefine connector_config sub attribute;');
     await commitWriteTx(wTx);
   } catch (err) {
-    closeWriteTx(wTx).catch(() => next());
+    await closeTx(wTx);
+    logger.info('[MIGRATION] Skipped delete Connector entity');
   }
   next();
 };
