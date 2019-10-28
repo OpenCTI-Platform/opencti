@@ -2,7 +2,7 @@ import uuid from 'uuid/v4';
 import { isEmpty, head, map, filter } from 'ramda';
 import migrate from 'migrate';
 import path from 'path';
-import { commitWriteTx, find, takeWriteTx, write } from './grakn';
+import { closeTx, commitWriteTx, find, takeWriteTx, write } from './grakn';
 import { logger } from '../config/conf';
 
 // noinspection JSUnusedGlobalSymbols
@@ -38,33 +38,38 @@ const graknStateStorage = {
   },
   async save(set, fn) {
     const wTx = await takeWriteTx();
-    // Get current done migration
-    const mig = head(filter(m => m.title === set.lastRun, set.migrations));
-    // We have only one instance of migration status.
-    const q1 = `match $x isa MigrationStatus, has lastRun $run; delete $run;`;
-    logger.debug(`[MIGRATION] > ${q1}`);
-    await wTx.tx.query(q1);
-    const q2 = `match $x isa MigrationStatus; insert $x has lastRun "${set.lastRun}";`;
-    logger.debug(`[MIGRATION] > ${q2}`);
-    await wTx.tx.query(q2);
+    try {
+      // Get current done migration
+      const mig = head(filter(m => m.title === set.lastRun, set.migrations));
+      // We have only one instance of migration status.
+      const q1 = `match $x isa MigrationStatus, has lastRun $run; delete $run;`;
+      logger.debug(`[MIGRATION] > ${q1}`);
+      await wTx.tx.query(q1);
+      const q2 = `match $x isa MigrationStatus; insert $x has lastRun "${set.lastRun}";`;
+      logger.debug(`[MIGRATION] > ${q2}`);
+      await wTx.tx.query(q2);
 
-    // Insert the migration reference
-    const q3 = `insert $x isa MigrationReference,
+      // Insert the migration reference
+      const q3 = `insert $x isa MigrationReference,
       has internal_id_key "${uuid()}",
       has title "${mig.title}",
       has timestamp ${mig.timestamp};`;
-    logger.debug(`[MIGRATION] > ${q3}`);
-    // Attach the reference to the migration status.
-    await wTx.tx.query(q3);
-    // Attach the reference to the migration status.
-    const q4 = `match $status isa MigrationStatus; 
+      logger.debug(`[MIGRATION] > ${q3}`);
+      // Attach the reference to the migration status.
+      await wTx.tx.query(q3);
+      // Attach the reference to the migration status.
+      const q4 = `match $status isa MigrationStatus; 
       $ref isa MigrationReference, has title "${mig.title}"; 
       insert (status: $status, state: $ref) isa migrate, has internal_id_key "${uuid()}";`;
-    logger.debug(`[MIGRATION] > ${q4}`);
-    await wTx.tx.query(q4);
-    logger.info(`[MIGRATION] > Saving current configuration, ${mig.title}`);
-    await commitWriteTx(wTx);
-    return fn();
+      logger.debug(`[MIGRATION] > ${q4}`);
+      await wTx.tx.query(q4);
+      logger.info(`[MIGRATION] > Saving current configuration, ${mig.title}`);
+      await commitWriteTx(wTx);
+      return fn();
+    } catch (err) {
+      await closeTx(wTx);
+      return fn();
+    }
   }
 };
 

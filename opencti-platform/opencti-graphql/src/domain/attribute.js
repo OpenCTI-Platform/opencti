@@ -5,10 +5,9 @@ import {
   deleteAttributeById,
   takeWriteTx,
   commitWriteTx,
-  closeWriteTx,
   getAttributes,
   takeReadTx,
-  closeReadTx
+  closeTx
 } from '../database/grakn';
 import { logger } from '../config/conf';
 
@@ -33,8 +32,8 @@ export const addAttribute = async attribute => {
       value: attribute.value
     };
   } catch (err) {
+    await closeTx(wTx);
     logger.error('[GRAKN] addAttribute error > ', err);
-    await closeWriteTx(wTx);
     return {};
   }
 };
@@ -49,8 +48,8 @@ export const attributeUpdate = async (id, input) => {
     type: input.type,
     value: input.newValue
   });
-  // region Link new attribute to every entities
   const wTx = await takeWriteTx();
+  // region Link new attribute to every entities
   try {
     const writeQuery = `match $e isa entity, has ${escape(
       input.type
@@ -61,8 +60,8 @@ export const attributeUpdate = async (id, input) => {
     await wTx.tx.query(writeQuery);
     await commitWriteTx(wTx);
   } catch (err) {
+    await closeTx(wTx);
     logger.error('[GRAKN] attributeUpdate error > ', err);
-    await closeWriteTx(wTx);
   }
   // endregion
 
@@ -72,7 +71,9 @@ export const attributeUpdate = async (id, input) => {
   // region Reindex all entities using this attribute
   const rTx = await takeReadTx();
   try {
-    const readQuery = `match $x isa entity, has ${escape(input.type)} $a; $a "${escapeString(input.newValue)}"; get;`;
+    const readQuery = `match $x isa entity, has ${escape(
+      input.type
+    )} $a; $a "${escapeString(input.newValue)}"; get;`;
     logger.debug(`[GRAKN - infer: false] attributeUpdate > ${readQuery}`);
     const iterator = await rTx.tx.query(readQuery);
     const answers = await iterator.collect();
@@ -82,10 +83,10 @@ export const attributeUpdate = async (id, input) => {
         return getAttributes(entity, true);
       })
     );
-    await closeReadTx(rTx);
+    await closeTx(rTx);
   } catch (err) {
+    await closeTx(rTx);
     logger.error('[GRAKN] attributeUpdate error > ', err);
-    await closeReadTx(rTx);
   }
   // endregion
 
