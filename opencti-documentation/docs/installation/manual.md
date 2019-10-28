@@ -46,18 +46,9 @@ $ cp config/default.json config/production.json
 
 Change the *config/production.json* file according to your configuration of Grakn, Redis, ElasticSearch, RabbitMQ and default credentials (the `ADMIN_TOKEN` must be a [valid UUID](https://www.uuidgenerator.net/)).
 
-### Database schema and initial data
-
-After the configuration, you can create your database schema and add initial data.
-
-```bash
-$ npm run schema
-$ npm run migrate
-```
-
 ### Start the application
 
-The application is just a NodeJS process.
+The application is just a NodeJS process, the creation of the database schema and the migration will be done at starting.
 
 ```bash
 $ node dist/server.js &

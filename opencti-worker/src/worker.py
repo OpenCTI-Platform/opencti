@@ -55,7 +55,7 @@ class Consumer(threading.Thread):
         try:
             content = base64.b64decode(data['content']).decode('utf-8')
             types = data['entities_types'] if 'entities_types' in data else []
-            imported_data = self.api.stix2_import_bundle(content, True, types)
+            imported_data = self.api.stix2_import_bundle(content, True, types, True)
             if job_id is not None:
                 messages = []
                 by_types = groupby(imported_data, key=lambda x: x['type'])

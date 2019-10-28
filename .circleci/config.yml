@@ -157,6 +157,43 @@ jobs:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
+  deploy_testing:
+    working_directory: ~/opencti
+    docker:
+      - image: circleci/node:11-stretch
+    steps:
+      - attach_workspace:
+          at: ~/
+      - add_ssh_keys
+      - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts    
+      - run: sudo apt-get update -qq && sudo apt install rsync
+      - run: mkdir -p deploy
+      - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git clone ssh://opencti-M234WEu2@opencti.io:/~/opencti-M234WEu2.git .
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git submodule init && git submodule update --remote          
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master          
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/  
+      - run:
+          working_directory: ~/opencti/deploy
+          command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/                
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git add -A
+      - run:
+          working_directory: ~/opencti/deploy
+          command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
+
   deploy_documentation:
     working_directory: ~/opencti
     docker:
@@ -257,6 +294,14 @@ workflows:
             branches:
               only:
                 - master
+      - deploy_testing:
+          requires:
+            - build
+            - test
+          filters:
+            branches:
+              only:
+                - master                
       - deploy_documentation:
           filters:
             branches:
