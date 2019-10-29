@@ -65,7 +65,7 @@ class CityEditionContainer extends Component {
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update an city')}
+            {t('Update a city')}
           </Typography>
           <SubscriptionAvatars users={editUsers} />
           <div className="clearfix" />
