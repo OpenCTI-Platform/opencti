@@ -8,7 +8,7 @@
     "start": "babel-node --max_old_space_size=8192 -r node_modules/dotenv/config ./src/server.js --e development",
     "build": "babel --out-dir ./dist ./src",
     "serv": "node dist/server.js",
-    "migrate:add": "migrate create",
+    "migrate:add": "migrate create --migrations-dir=./src/migrations",
     "lint": "eslint .",
     "test": "yarn build && jest --coverage --e test",
     "clean": "babel-node ./src/database/clean.js"
