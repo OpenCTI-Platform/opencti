@@ -1,12 +1,11 @@
 import { assoc, filter, includes, map, pipe } from 'ramda';
 import {
-  commitWriteTx,
+  executeWrite,
   find,
   getById,
   graknNow,
   now,
   sinceNowInMinutes,
-  takeWriteTx,
   updateAttribute
 } from '../database/grakn';
 import { connectorConfig, registerConnectorQueues } from '../database/rabbitmq';
@@ -58,12 +57,12 @@ export const connectorsForImport = async (scope, onlyAlive = false) =>
 
 export const pingConnector = async (id, state) => {
   const creation = now();
-  const wTx = await takeWriteTx();
-  const updateInput = { key: 'updated_at', value: [creation] };
-  await updateAttribute(id, updateInput, wTx);
-  const stateInput = { key: 'connector_state', value: [state] };
-  await updateAttribute(id, stateInput, wTx);
-  await commitWriteTx(wTx);
+  await executeWrite(async wTx => {
+    const updateInput = { key: 'updated_at', value: [creation] };
+    await updateAttribute(id, updateInput, wTx);
+    const stateInput = { key: 'connector_state', value: [state] };
+    await updateAttribute(id, stateInput, wTx);
+  });
   return getById(id, true).then(data => completeConnector(data));
 };
 
@@ -73,29 +72,28 @@ export const registerConnector = async ({ id, name, type, scope }) => {
   await registerConnectorQueues(id, name, type, scope);
   if (connector) {
     // Simple connector update
-    const wTx = await takeWriteTx();
-    const inputName = { key: 'name', value: [name] };
-    await updateAttribute(id, inputName, wTx);
-    const updatedInput = { key: 'updated_at', value: [now()] };
-    await updateAttribute(id, updatedInput, wTx);
-    const scopeInput = { key: 'connector_scope', value: [scope.join(',')] };
-    await updateAttribute(id, scopeInput, wTx);
-    await commitWriteTx(wTx);
+    await executeWrite(async wTx => {
+      const inputName = { key: 'name', value: [name] };
+      await updateAttribute(id, inputName, wTx);
+      const updatedInput = { key: 'updated_at', value: [now()] };
+      await updateAttribute(id, updatedInput, wTx);
+      const scopeInput = { key: 'connector_scope', value: [scope.join(',')] };
+      await updateAttribute(id, scopeInput, wTx);
+    });
   } else {
     // Need to create the connector
     // 01. Insert the connector
     const creation = graknNow();
-    const wTx = await takeWriteTx();
-    const query = `insert $connector isa Connector, 
+    await executeWrite(async wTx => {
+      const query = `insert $connector isa Connector, 
           has internal_id_key "${id}",
           has name "${name}",
           has connector_type "${type}",
           has connector_scope "${scope.join(',')}",
           has created_at ${creation},
           has updated_at ${creation};`;
-    await wTx.tx.query(query);
-    // 03. Finalize the registration
-    await commitWriteTx(wTx);
+      await wTx.tx.query(query);
+    });
   }
   return getById(id, true).then(data => completeConnector(data));
 };

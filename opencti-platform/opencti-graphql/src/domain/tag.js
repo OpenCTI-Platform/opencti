@@ -1,20 +1,19 @@
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
-  escapeString,
   createRelation,
+  dayFormat,
   deleteEntityById,
   deleteRelationById,
-  updateAttribute,
+  escapeString,
+  executeWrite,
   getById,
-  dayFormat,
+  graknNow,
   monthFormat,
-  yearFormat,
   notify,
   paginate,
-  takeWriteTx,
-  commitWriteTx,
-  graknNow
+  updateAttribute,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -55,12 +54,12 @@ export const findByValue = args =>
 export const findById = tagId => getById(tagId);
 
 export const addTag = async (user, tag) => {
-  const wTx = await takeWriteTx();
-  const internalId = tag.internal_id_key
-    ? escapeString(tag.internal_id_key)
-    : uuid();
-  const now = graknNow();
-  await wTx.tx.query(`insert $tag isa Tag,
+  const tagId = await executeWrite(async wTx => {
+    const internalId = tag.internal_id_key
+      ? escapeString(tag.internal_id_key)
+      : uuid();
+    const now = graknNow();
+    await wTx.tx.query(`insert $tag isa Tag,
     has internal_id_key "${internalId}",
     has tag_type "${escapeString(tag.tag_type)}",
     has value "${escapeString(tag.value)}",
@@ -71,9 +70,9 @@ export const addTag = async (user, tag) => {
     has created_at_year "${yearFormat(now)}",       
     has updated_at ${now};
   `);
-  await commitWriteTx(wTx);
-
-  return getById(internalId).then(created =>
+    return internalId;
+  });
+  return getById(tagId).then(created =>
     notify(BUS_TOPICS.Tag.ADDED_TOPIC, created, user)
   );
 };

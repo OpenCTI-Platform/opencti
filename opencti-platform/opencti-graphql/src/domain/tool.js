@@ -1,15 +1,14 @@
-import { assoc, join, tail, head, map } from 'ramda';
+import { assoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  commitWriteTx,
   dayFormat,
   escapeString,
+  executeWrite,
   getById,
   graknNow,
   monthFormat,
   notify,
   prepareDate,
-  takeWriteTx,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -23,11 +22,11 @@ export const findAll = args => {
 export const findById = toolId => getById(toolId);
 
 export const addTool = async (user, tool) => {
-  const wTx = await takeWriteTx();
-  const internalId = tool.internal_id_key
-    ? escapeString(tool.internal_id_key)
-    : uuid();
-  const toolIterator = await wTx.tx.query(`insert $tool isa Tool,
+  const toolId = await executeWrite(async wTx => {
+    const internalId = tool.internal_id_key
+      ? escapeString(tool.internal_id_key)
+      : uuid();
+    const toolIterator = await wTx.tx.query(`insert $tool isa Tool,
     has internal_id_key "${internalId}",
     has entity_type "tool",
     has stix_id_key "${
@@ -53,17 +52,16 @@ export const addTool = async (user, tool) => {
     has created_at_year "${yearFormat(graknNow())}",      
     has updated_at ${graknNow()};
   `);
-  const createTool = await toolIterator.next();
-  const createdToolId = await createTool.map().get('tool').id;
+    const createTool = await toolIterator.next();
+    const createdToolId = await createTool.map().get('tool').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdToolId, tool.createdByRef);
-  await linkMarkingDef(wTx, createdToolId, tool.markingDefinitions);
-  await linkKillChains(wTx, createdToolId, tool.killChainPhases);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdToolId, tool.createdByRef);
+    await linkMarkingDef(wTx, createdToolId, tool.markingDefinitions);
+    await linkKillChains(wTx, createdToolId, tool.killChainPhases);
+    return internalId;
+  });
+  return getById(toolId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

@@ -1,9 +1,9 @@
-import { assoc, join, tail, head, map } from 'ramda';
+import { assoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  commitWriteTx,
   dayFormat,
   escapeString,
+  executeWrite,
   getById,
   getSingleValueNumber,
   graknNow,
@@ -11,7 +11,6 @@ import {
   notify,
   paginate,
   prepareDate,
-  takeWriteTx,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -53,11 +52,11 @@ export const isSubsector = async (sectorId, args) => {
 };
 
 export const addSector = async (user, sector) => {
-  const wTx = await takeWriteTx();
-  const internalId = sector.internal_id_key
-    ? escapeString(sector.internal_id_key)
-    : uuid();
-  const sectorIterator = await wTx.tx.query(`insert $sector isa Sector,
+  const sectorId = await executeWrite(async wTx => {
+    const internalId = sector.internal_id_key
+      ? escapeString(sector.internal_id_key)
+      : uuid();
+    const sectorIterator = await wTx.tx.query(`insert $sector isa Sector,
     has internal_id_key "${internalId}",
     has entity_type "sector",
     has stix_id_key "${
@@ -86,16 +85,15 @@ export const addSector = async (user, sector) => {
     has created_at_year "${yearFormat(graknNow())}",       
     has updated_at ${graknNow()};
   `);
-  const createSector = await sectorIterator.next();
-  const createdSectorId = await createSector.map().get('sector').id;
+    const createSector = await sectorIterator.next();
+    const createdSectorId = await createSector.map().get('sector').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdSectorId, sector.createdByRef);
-  await linkMarkingDef(wTx, createdSectorId, sector.markingDefinitions);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdSectorId, sector.createdByRef);
+    await linkMarkingDef(wTx, createdSectorId, sector.markingDefinitions);
+    return internalId;
+  });
+  return getById(sectorId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
