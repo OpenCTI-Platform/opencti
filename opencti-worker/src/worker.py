@@ -13,6 +13,22 @@ import ctypes
 from itertools import groupby
 from pycti import OpenCTIApiClient
 
+opencti_api_status = False
+
+class HealthCheck(threading.Thread):
+    def __init__(self, api):
+        self.api = api
+
+    def run(self):
+        global opencti_api_status
+        logging.info('HealthCheck thread started')
+        while True:
+            opencti_api_status = self.api.health_check()
+            if opencti_api_status:
+                logging.info('OpenCTI is up, consuming messages...')
+            else:
+                logging.info('OpenCTI is down, stopping consuming messages...')
+            time.sleep(30)
 
 class Consumer(threading.Thread):
     def __init__(self, connector, api):
