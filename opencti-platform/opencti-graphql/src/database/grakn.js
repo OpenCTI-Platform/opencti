@@ -178,10 +178,25 @@ const commitWriteTx = async wTx => {
     logger.error('[GRAKN] CommitWriteTx error > ', err);
   }
 };
+// TODO remove export
 export const executeWrite = async executeFunction => {
   const wTx = await takeWriteTx();
   try {
     const result = await executeFunction(wTx);
+    await commitWriteTx(wTx);
+    return result;
+  } catch (err) {
+    logger.error('[API] executeWrite error > ', err);
+    throw err;
+  } finally {
+    await closeTx(wTx);
+  }
+};
+
+export const executeWrite = async executeFunction => {
+  const wTx = await takeWriteTx();
+  try {
+    const result = executeFunction(wTx);
     await commitWriteTx(wTx);
     return result;
   } catch (err) {
