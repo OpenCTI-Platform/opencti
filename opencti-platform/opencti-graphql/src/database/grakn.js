@@ -146,6 +146,7 @@ export const takeReadTx = async (retry = false) => {
   }
 };
 
+// TODO remove export
 export const takeWriteTx = async (retry = false) => {
   if (session === null) {
     session = await client.session('grakn');
@@ -163,6 +164,7 @@ export const takeWriteTx = async (retry = false) => {
   }
 };
 
+// TODO remove export
 export const commitWriteTx = async wTx => {
   try {
     await wTx.tx.commit();
@@ -171,6 +173,7 @@ export const commitWriteTx = async wTx => {
   }
 };
 
+// TODO remove export
 export const closeTx = async gTx => {
   try {
     if (gTx.tx.isOpen()) {
@@ -178,6 +181,20 @@ export const closeTx = async gTx => {
     }
   } catch (err) {
     logger.error('[GRAKN] CloseReadTx error > ', err);
+  }
+};
+
+export const executeWrite = async executeFunction => {
+  const wTx = await takeWriteTx();
+  try {
+    const result = executeFunction(wTx);
+    await commitWriteTx(wTx);
+    return result;
+  } catch (err) {
+    logger.error('[API] executeWrite error > ', err);
+    throw err;
+  } finally {
+    await closeTx(wTx);
   }
 };
 
@@ -196,25 +213,15 @@ export const notify = (topic, instance, user, context) => {
   return instance;
 };
 
-export const read = async query => {
-  const rTx = await takeReadTx();
-  try {
-    await rTx.tx.query(query);
-    await closeTx(rTx);
-  } catch (err) {
-    await closeTx(rTx);
-    logger.error('[GRAKN] Read error > ', err);
-  }
-};
-
 export const write = async query => {
   const wTx = await takeWriteTx();
   try {
     await wTx.tx.query(query);
     await commitWriteTx(wTx);
   } catch (err) {
-    await closeTx(wTx);
     logger.error('[GRAKN] Write error > ', err);
+  } finally {
+    await closeTx(wTx);
   }
 };
 

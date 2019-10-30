@@ -1,55 +1,54 @@
 import {
+  add,
+  append,
+  ascend,
+  assoc,
+  concat,
+  curry,
+  descend,
+  dropRepeats,
+  evolve,
+  forEach,
+  groupBy,
   head,
   join,
   map,
-  append,
   omit,
-  concat,
-  sum,
   pluck,
-  forEach,
-  assoc,
-  evolve,
-  tail,
-  curry,
-  values,
   prop,
-  groupBy,
   reduce,
-  add,
-  take,
   sortWith,
-  descend,
-  ascend,
-  dropRepeats
+  sum,
+  tail,
+  take,
+  values
 } from 'ramda';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
+  createRelation,
+  dayFormat,
+  deleteById,
+  deleteRelationById,
+  distribution,
   escape,
   escapeString,
-  deleteById,
-  updateAttribute,
+  executeWrite,
   getById,
+  getId,
+  getObjects,
   getRelationById,
   getRelationInferredById,
-  notify,
+  getSingleValueNumber,
   graknNow,
+  monthFormat,
+  notify,
   paginateRelationships,
   prepareDate,
-  dayFormat,
-  monthFormat,
-  yearFormat,
   timeSeries,
-  distribution,
-  takeWriteTx,
-  getObjects,
-  getId,
-  getSingleValueNumber,
-  commitWriteTx,
-  createRelation,
-  deleteRelationById
+  updateAttribute,
+  yearFormat
 } from '../database/grakn';
 import { buildPagination } from '../database/utils';
 import { BUS_TOPICS, logger } from '../config/conf';
@@ -545,17 +544,17 @@ export const findByIdInferred = stixRelationId => {
 };
 
 export const addStixRelation = async (user, stixRelation) => {
-  const wTx = await takeWriteTx();
-  const internalId = stixRelation.internal_id_key
-    ? escapeString(stixRelation.internal_id_key)
-    : uuid();
-  const query = `match $from has internal_id_key "${escapeString(
-    stixRelation.fromId
-  )}"; 
+  const stixRelationId = await executeWrite(async wTx => {
+    const internalId = stixRelation.internal_id_key
+      ? escapeString(stixRelation.internal_id_key)
+      : uuid();
+    const query = `match $from has internal_id_key "${escapeString(
+      stixRelation.fromId
+    )}"; 
     $to has internal_id_key "${escapeString(stixRelation.toId)}"; 
     insert $stixRelation(${escape(stixRelation.fromRole)}: $from, ${escape(
-    stixRelation.toRole
-  )}: $to) 
+      stixRelation.toRole
+    )}: $to) 
     isa ${escape(stixRelation.relationship_type)}, 
     has internal_id_key "${internalId}",
     has relationship_type "${escapeString(
@@ -605,44 +604,39 @@ export const addStixRelation = async (user, stixRelation) => {
     has created_at_year "${yearFormat(graknNow())}",        
     has updated_at ${graknNow()};
   `;
-  logger.debug(`[GRAKN - infer: false] addStixRelation > ${query}`);
-  const stixRelationIterator = await wTx.tx.query(query);
-  const createStixRelation = await stixRelationIterator.next();
-  const createdStixRelationId = await createStixRelation
-    .map()
-    .get('stixRelation').id;
-
-  if (stixRelation.markingDefinitions) {
-    const createMarkingDefinition = markingDefinition =>
-      wTx.tx.query(
-        `match $from id ${createdStixRelationId};
+    logger.debug(`[GRAKN - infer: false] addStixRelation > ${query}`);
+    const stixRelationIterator = await wTx.tx.query(query);
+    const createStixRelation = await stixRelationIterator.next();
+    const createdId = await createStixRelation.map().get('stixRelation').id;
+    if (stixRelation.markingDefinitions) {
+      const createMarkingDefinition = markingDefinition =>
+        wTx.tx.query(
+          `match $from id ${createdId};
         $to has internal_id_key "${escapeString(markingDefinition)}";
         insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
+        );
+      const markingDefinitionsPromises = map(
+        createMarkingDefinition,
+        stixRelation.markingDefinitions
       );
-    const markingDefinitionsPromises = map(
-      createMarkingDefinition,
-      stixRelation.markingDefinitions
-    );
-    await Promise.all(markingDefinitionsPromises);
-  }
-
-  if (stixRelation.killChainPhases) {
-    const createKillChainPhase = killChainPhase =>
-      wTx.tx.query(
-        `match $from id ${createdStixRelationId};
+      await Promise.all(markingDefinitionsPromises);
+    }
+    if (stixRelation.killChainPhases) {
+      const createKillChainPhase = killChainPhase =>
+        wTx.tx.query(
+          `match $from id ${createdId};
         $to has internal_id_key "${escapeString(killChainPhase)}";
         insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id_key "${uuid()}";`
+        );
+      const killChainPhasesPromises = map(
+        createKillChainPhase,
+        stixRelation.killChainPhases
       );
-    const killChainPhasesPromises = map(
-      createKillChainPhase,
-      stixRelation.killChainPhases
-    );
-    await Promise.all(killChainPhasesPromises);
-  }
-
-  await commitWriteTx(wTx);
-
-  return getRelationById(internalId).then(created => {
+      await Promise.all(killChainPhasesPromises);
+    }
+    return internalId;
+  });
+  return getRelationById(stixRelationId).then(created => {
     return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
   });
 };
