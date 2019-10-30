@@ -1,15 +1,14 @@
-import { assoc, join, tail, head, map } from 'ramda';
+import { assoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  commitWriteTx,
   dayFormat,
   escapeString,
+  executeWrite,
   getById,
   graknNow,
   monthFormat,
   notify,
   prepareDate,
-  takeWriteTx,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -22,11 +21,11 @@ export const findAll = args =>
 export const findById = regionId => getById(regionId);
 
 export const addRegion = async (user, region) => {
-  const wTx = await takeWriteTx();
-  const internalId = region.internal_id_key
-    ? escapeString(region.internal_id_key)
-    : uuid();
-  const regionIterator = await wTx.tx.query(`insert $region isa Region,
+  const regionId = await executeWrite(async wTx => {
+    const internalId = region.internal_id_key
+      ? escapeString(region.internal_id_key)
+      : uuid();
+    const regionIterator = await wTx.tx.query(`insert $region isa Region,
     has internal_id_key "${internalId}",
     has entity_type "region",
     has stix_id_key "${
@@ -54,16 +53,15 @@ export const addRegion = async (user, region) => {
     has created_at_year "${yearFormat(graknNow())}",
     has updated_at ${graknNow()};
   `);
-  const createRegion = await regionIterator.next();
-  const createdRegionId = await createRegion.map().get('region').id;
+    const createRegion = await regionIterator.next();
+    const createdRegionId = await createRegion.map().get('region').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdRegionId, region.createdByRef);
-  await linkMarkingDef(wTx, createdRegionId, region.markingDefinitions);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdRegionId, region.createdByRef);
+    await linkMarkingDef(wTx, createdRegionId, region.markingDefinitions);
+    return internalId;
+  });
+  return getById(regionId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

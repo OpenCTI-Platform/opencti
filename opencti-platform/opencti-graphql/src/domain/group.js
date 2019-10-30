@@ -1,15 +1,14 @@
 import uuid from 'uuid/v4';
 import {
-  commitWriteTx,
   dayFormat,
   deleteEntityById,
   escapeString,
+  executeWrite,
   getById,
   graknNow,
   monthFormat,
   notify,
   paginate,
-  takeWriteTx,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -50,11 +49,11 @@ export const permissions = (groupId, args) => {
 };
 
 export const addGroup = async (user, group) => {
-  const wTx = await takeWriteTx();
-  const internalId = group.internal_id_key
-    ? escapeString(group.internal_id_key)
-    : uuid();
-  const groupIterator = await wTx.tx.query(`insert $group isa Group,
+  const groupId = await executeWrite(async wTx => {
+    const internalId = group.internal_id_key
+      ? escapeString(group.internal_id_key)
+      : uuid();
+    const groupIterator = await wTx.tx.query(`insert $group isa Group,
     has internal_id_key "${internalId}",
     has entity_type "group",
     has name "${escapeString(group.name)}",
@@ -65,16 +64,15 @@ export const addGroup = async (user, group) => {
     has created_at_year "${yearFormat(graknNow())}",  
     has updated_at ${graknNow()};
   `);
-  const createGroup = await groupIterator.next();
-  const createdGroupId = await createGroup.map().get('group').id;
+    const createGroup = await groupIterator.next();
+    const createdGroupId = await createGroup.map().get('group').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdGroupId, group.createdByRef);
-  await linkMarkingDef(wTx, createdGroupId, group.markingDefinitions);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created =>
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdGroupId, group.createdByRef);
+    await linkMarkingDef(wTx, createdGroupId, group.markingDefinitions);
+    return internalId;
+  });
+  return getById(groupId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };

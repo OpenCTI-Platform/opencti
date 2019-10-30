@@ -1,16 +1,15 @@
-import { assoc, join, tail, head, map } from 'ramda';
+import { assoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escapeString,
-  getById,
-  prepareDate,
   dayFormat,
-  monthFormat,
-  yearFormat,
-  notify,
+  escapeString,
+  executeWrite,
+  getById,
   graknNow,
-  takeWriteTx,
-  commitWriteTx
+  monthFormat,
+  notify,
+  prepareDate,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
@@ -22,11 +21,11 @@ export const findAll = args =>
 export const findById = cityId => getById(cityId);
 
 export const addCity = async (user, city) => {
-  const wTx = await takeWriteTx();
-  const internalId = city.internal_id_key
-    ? escapeString(city.internal_id_key)
-    : uuid();
-  const cityIterator = await wTx.tx.query(`insert $city isa City,
+  const cityId = await executeWrite(async wTx => {
+    const internalId = city.internal_id_key
+      ? escapeString(city.internal_id_key)
+      : uuid();
+    const cityIterator = await wTx.tx.query(`insert $city isa City,
     has internal_id_key "${internalId}",
     has entity_type "city",
     has stix_id_key "${
@@ -52,16 +51,14 @@ export const addCity = async (user, city) => {
     has created_at_year "${yearFormat(graknNow())}",
     has updated_at ${graknNow()};
   `);
-  const createCity = await cityIterator.next();
-  const createdCityId = await createCity.map().get('city').id;
-
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdCityId, city.createdByRef);
-  await linkMarkingDef(wTx, createdCityId, city.markingDefinitions);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    const createCity = await cityIterator.next();
+    const createdCityId = await createCity.map().get('city').id;
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdCityId, city.createdByRef);
+    await linkMarkingDef(wTx, createdCityId, city.markingDefinitions);
+    return internalId;
+  });
+  return getById(cityId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

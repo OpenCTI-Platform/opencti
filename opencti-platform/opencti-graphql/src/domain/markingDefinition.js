@@ -1,24 +1,23 @@
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
-  escapeString,
   createRelation,
+  dayFormat,
   deleteEntityById,
   deleteRelationById,
-  updateAttribute,
+  escapeString,
+  executeWrite,
   getById,
-  prepareDate,
-  dayFormat,
-  monthFormat,
-  yearFormat,
-  notify,
   graknNow,
+  monthFormat,
+  notify,
   paginate,
-  takeWriteTx,
-  commitWriteTx
+  prepareDate,
+  updateAttribute,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import {linkCreatedByRef} from "./stixEntity";
+import { linkCreatedByRef } from './stixEntity';
 
 export const findAll = args => {
   return paginate(
@@ -69,13 +68,13 @@ export const findByStixId = args => {
 export const findById = markingDefinitionId => getById(markingDefinitionId);
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
-  const wTx = await takeWriteTx();
-  const internalId = markingDefinition.internal_id_key
-    ? escapeString(markingDefinition.internal_id_key)
-    : uuid();
-  const now = graknNow();
-  const markingDefinitionIterator = await wTx.tx
-    .query(`insert $markingDefinition isa Marking-Definition,
+  const markingId = await executeWrite(async wTx => {
+    const internalId = markingDefinition.internal_id_key
+      ? escapeString(markingDefinition.internal_id_key)
+      : uuid();
+    const now = graknNow();
+    const markingDefinitionIterator = await wTx.tx
+      .query(`insert $markingDefinition isa Marking-Definition,
     has internal_id_key "${internalId}",
     has entity_type "marking-definition",
     has stix_id_key "${
@@ -100,15 +99,13 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
     has created_at_year "${yearFormat(now)}",       
     has updated_at ${now};
   `);
-  const createMarkingDef = await markingDefinitionIterator.next();
-  const createdId = await createMarkingDef.map().get('markingDefinition').id;
-
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdId, markingDefinition.createdByRef);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created =>
+    const createMarkingDef = await markingDefinitionIterator.next();
+    const createdId = await createMarkingDef.map().get('markingDefinition').id;
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdId, markingDefinition.createdByRef);
+    return internalId;
+  });
+  return getById(markingId).then(created =>
     notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created, user)
   );
 };

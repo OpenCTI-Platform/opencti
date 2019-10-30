@@ -1,16 +1,15 @@
-import { assoc, join, tail, head, map } from 'ramda';
+import { assoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escapeString,
-  getById,
-  prepareDate,
   dayFormat,
-  monthFormat,
-  yearFormat,
-  notify,
+  escapeString,
+  executeWrite,
+  getById,
   graknNow,
-  takeWriteTx,
-  commitWriteTx
+  monthFormat,
+  notify,
+  prepareDate,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
@@ -22,12 +21,12 @@ export const findAll = args =>
 export const findById = countryId => getById(countryId);
 
 export const addCountry = async (user, country) => {
-  const wTx = await takeWriteTx();
-  const internalId = country.internal_id_key
-    ? escapeString(country.internal_id_key)
-    : uuid();
-  const now = graknNow();
-  const countryIterator = await wTx.tx.query(`insert $country isa Country,
+  const countryId = await executeWrite(async wTx => {
+    const internalId = country.internal_id_key
+      ? escapeString(country.internal_id_key)
+      : uuid();
+    const now = graknNow();
+    const countryIterator = await wTx.tx.query(`insert $country isa Country,
     has internal_id_key "${internalId}",
     has entity_type "country",
     has stix_id_key "${
@@ -55,16 +54,15 @@ export const addCountry = async (user, country) => {
     has created_at_year "${yearFormat(now)}",
     has updated_at ${now};
   `);
-  const createCountry = await countryIterator.next();
-  const createdCountryId = await createCountry.map().get('country').id;
+    const createCountry = await countryIterator.next();
+    const createdCountryId = await createCountry.map().get('country').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdCountryId, country.createdByRef);
-  await linkMarkingDef(wTx, createdCountryId, country.markingDefinitions);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdCountryId, country.createdByRef);
+    await linkMarkingDef(wTx, createdCountryId, country.markingDefinitions);
+    return internalId;
+  });
+  return getById(countryId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

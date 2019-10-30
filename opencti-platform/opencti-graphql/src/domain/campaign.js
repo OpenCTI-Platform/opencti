@@ -1,16 +1,15 @@
-import { assoc, join, tail, head, map } from 'ramda';
+import { assoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  commitWriteTx,
   dayFormat,
   escapeString,
+  executeWrite,
   getById,
   graknNow,
   monthFormat,
   notify,
   paginate,
   prepareDate,
-  takeWriteTx,
   timeSeries,
   yearFormat
 } from '../database/grakn';
@@ -43,12 +42,12 @@ export const campaignsTimeSeriesByEntity = args =>
 export const findById = campaignId => getById(campaignId);
 
 export const addCampaign = async (user, campaign) => {
-  const wTx = await takeWriteTx();
-  const internalId = campaign.internal_id_key
-    ? escapeString(campaign.internal_id_key)
-    : uuid();
-  const now = graknNow();
-  const query = `insert $campaign isa Campaign,
+  const campaignId = await executeWrite(async wTx => {
+    const internalId = campaign.internal_id_key
+      ? escapeString(campaign.internal_id_key)
+      : uuid();
+    const now = graknNow();
+    const query = `insert $campaign isa Campaign,
     has internal_id_key "${internalId}",
     has entity_type "campaign",
     has stix_id_key "${
@@ -102,18 +101,17 @@ export const addCampaign = async (user, campaign) => {
     has created_at_year "${yearFormat(now)}",
     has updated_at ${now};
   `;
-  logger.debug(`[GRAKN - infer: false] addCampaign > ${query}`);
-  const campaignIterator = await wTx.tx.query(query);
-  const createCampaign = await campaignIterator.next();
-  const createdCampaignId = await createCampaign.map().get('campaign').id;
+    logger.debug(`[GRAKN - infer: false] addCampaign > ${query}`);
+    const campaignIterator = await wTx.tx.query(query);
+    const createCampaign = await campaignIterator.next();
+    const createdCampaignId = await createCampaign.map().get('campaign').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdCampaignId, campaign.createdByRef);
-  await linkMarkingDef(wTx, createdCampaignId, campaign.markingDefinitions);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdCampaignId, campaign.createdByRef);
+    await linkMarkingDef(wTx, createdCampaignId, campaign.markingDefinitions);
+    return internalId;
+  });
+  return getById(campaignId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

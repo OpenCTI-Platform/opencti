@@ -1,16 +1,15 @@
-import { assoc, join, tail, head, map } from 'ramda';
+import { assoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  commitWriteTx,
   dayFormat,
   escapeString,
+  executeWrite,
   getById,
   graknNow,
   monthFormat,
   notify,
   paginate,
   prepareDate,
-  takeWriteTx,
   timeSeries,
   yearFormat
 } from '../database/grakn';
@@ -47,12 +46,12 @@ export const incidentsTimeSeriesByEntity = args => {
 export const findById = incidentId => getById(incidentId);
 
 export const addIncident = async (user, incident) => {
-  const wTx = await takeWriteTx();
-  const internalId = incident.internal_id_key
-    ? escapeString(incident.internal_id_key)
-    : uuid();
-  const now = graknNow();
-  const query = `insert $incident isa Incident,
+  const incidentId = await executeWrite(async wTx => {
+    const internalId = incident.internal_id_key
+      ? escapeString(incident.internal_id_key)
+      : uuid();
+    const now = graknNow();
+    const query = `insert $incident isa Incident,
     has internal_id_key "${internalId}",
     has entity_type "incident",
     has stix_id_key "${
@@ -105,18 +104,17 @@ export const addIncident = async (user, incident) => {
     has created_at_year "${yearFormat(now)}", 
     has updated_at ${now};
   `;
-  logger.debug(`[GRAKN - infer: false] addIncident > ${query}`);
-  const incidentIterator = await wTx.tx.query(query);
-  const createdIncident = await incidentIterator.next();
-  const createdIncidentId = await createdIncident.map().get('incident').id;
+    logger.debug(`[GRAKN - infer: false] addIncident > ${query}`);
+    const incidentIterator = await wTx.tx.query(query);
+    const createdIncident = await incidentIterator.next();
+    const createdIncidentId = await createdIncident.map().get('incident').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdIncidentId, incident.createdByRef);
-  await linkMarkingDef(wTx, createdIncidentId, incident.markingDefinitions);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdIncidentId, incident.createdByRef);
+    await linkMarkingDef(wTx, createdIncidentId, incident.markingDefinitions);
+    return internalId;
+  });
+  return getById(incidentId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

@@ -129,7 +129,7 @@ export const getGraknVersion = async () => {
 };
 
 // region basic commands
-export const takeReadTx = async (retry = false) => {
+const takeReadTx = async (retry = false) => {
   if (session === null) {
     session = await client.session('grakn');
   }
@@ -145,9 +145,17 @@ export const takeReadTx = async (retry = false) => {
     return null;
   }
 };
+const closeTx = async gTx => {
+  try {
+    if (gTx.tx.isOpen()) {
+      await gTx.tx.close();
+    }
+  } catch (err) {
+    logger.error('[GRAKN] CloseReadTx error > ', err);
+  }
+};
 
-// TODO remove export
-export const takeWriteTx = async (retry = false) => {
+const takeWriteTx = async (retry = false) => {
   if (session === null) {
     session = await client.session('grakn');
   }
@@ -163,31 +171,17 @@ export const takeWriteTx = async (retry = false) => {
     return null;
   }
 };
-
-// TODO remove export
-export const commitWriteTx = async wTx => {
+const commitWriteTx = async wTx => {
   try {
     await wTx.tx.commit();
   } catch (err) {
     logger.error('[GRAKN] CommitWriteTx error > ', err);
   }
 };
-
-// TODO remove export
-export const closeTx = async gTx => {
-  try {
-    if (gTx.tx.isOpen()) {
-      await gTx.tx.close();
-    }
-  } catch (err) {
-    logger.error('[GRAKN] CloseReadTx error > ', err);
-  }
-};
-
 export const executeWrite = async executeFunction => {
   const wTx = await takeWriteTx();
   try {
-    const result = executeFunction(wTx);
+    const result = await executeFunction(wTx);
     await commitWriteTx(wTx);
     return result;
   } catch (err) {
@@ -362,18 +356,12 @@ export const queryAttributeValueById = async id => {
  * @returns {Promise<any[] | never>}
  */
 export const deleteAttributeById = async id => {
-  const wTx = await takeWriteTx();
-  try {
+  return executeWrite(async wTx => {
     const query = `match $x id ${escape(id)}; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteAttributeById > ${query}`);
     await wTx.tx.query(query, { infer: false });
-    await commitWriteTx(wTx);
     return id;
-  } catch (err) {
-    await closeTx(wTx);
-    logger.error('[GRAKN] deleteAttributeById error > ', err);
-    return null;
-  }
+  });
 };
 
 /**
@@ -519,6 +507,28 @@ export const getAttributes = async (concept, forceReindex = false) => {
       }
       return data;
     });
+};
+
+export const reindexEntityForAttribute = async (type, value) => {
+  const rTx = await takeReadTx();
+  try {
+    const readQuery = `match $x isa entity, has ${escape(
+      type
+    )} $a; $a "${escapeString(value)}"; get;`;
+    logger.debug(`[GRAKN - infer: false] attributeUpdate > ${readQuery}`);
+    const iterator = await rTx.tx.query(readQuery);
+    const answers = await iterator.collect();
+    await Promise.all(
+      answers.map(answer => {
+        const entity = answer.map().get('x');
+        return getAttributes(entity, true);
+      })
+    );
+    await closeTx(rTx);
+  } catch (err) {
+    await closeTx(rTx);
+    logger.error('[GRAKN] attributeUpdate error > ', err);
+  }
 };
 
 /**
@@ -746,8 +756,7 @@ export const getSingleValueNumber = async (query, infer = false) => {
  * @param input
  */
 export const createRelation = async (id, input) => {
-  const wTx = await takeWriteTx();
-  try {
+  return executeWrite(async wTx => {
     const query = `match $from has internal_id_key "${escapeString(id)}";
       $to has internal_id_key "${escapeString(input.toId)}"; 
       insert $rel(${escape(input.fromRole)}: $from, ${escape(
@@ -777,13 +786,8 @@ export const createRelation = async (id, input) => {
     const answer = await iterator.next();
     const createdRelation = await answer.map().get('rel');
     const relation = await getAttributes(createdRelation);
-    await commitWriteTx(wTx);
     return { node, relation };
-  } catch (err) {
-    await closeTx(wTx);
-    logger.error('[GRAKN] createRelation error > ', err);
-    return null;
-  }
+  });
 };
 
 /**
@@ -872,57 +876,39 @@ export const updateAttribute = async (id, input, tx = null) => {
  * @returns {Promise<any[] | never>}
  */
 export const deleteEntityById = async id => {
-  const wTx = await takeWriteTx();
-  try {
+  return executeWrite(async wTx => {
     const query = `match $x has internal_id_key "${escapeString(
       id
     )}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteEntityById > ${query}`);
     await wTx.tx.query(query, { infer: false });
-    await commitWriteTx(wTx);
     return id;
-  } catch (err) {
-    await closeTx(wTx);
-    logger.error('[GRAKN] deleteEntityById error > ', err);
-    return null;
-  }
+  });
 };
 
 export const deleteById = async id => {
-  const wTx = await takeWriteTx();
-  try {
+  return executeWrite(async wTx => {
     const query = `match $x has internal_id_key "${escapeString(
       id
     )}"; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteById > ${query}`);
     await wTx.tx.query(query, { infer: false });
-    await commitWriteTx(wTx);
     return id;
-  } catch (err) {
-    await closeTx(wTx);
-    logger.error('[GRAKN] deleteById error > ', err);
-    return null;
-  }
+  });
 };
 
 export const deleteRelationById = async (id, relationId) => {
-  const wTx = await takeWriteTx();
-  try {
+  return executeWrite(async wTx => {
     const query = `match $x has internal_id_key "${escapeString(
       relationId
     )}"; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
     await wTx.tx.query(query, { infer: false });
-    await commitWriteTx(wTx);
     return getById(id).then(data => ({
       node: data,
       relation: { id: relationId }
     }));
-  } catch (err) {
-    await closeTx(wTx);
-    logger.error('[GRAKN] deleteRelationById error > ', err);
-    return null;
-  }
+  });
 };
 
 export const timeSeries = async (query, options) => {

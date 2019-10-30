@@ -2,20 +2,19 @@ import { assoc, assocPath, dissoc, map, pipe } from 'ramda';
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
-  commitWriteTx,
   createRelation,
   dayFormat,
   deleteEntityById,
   deleteRelationById,
   escape,
   escapeString,
+  executeWrite,
   getById,
   getId,
   graknNow,
   monthFormat,
   notify,
   paginate,
-  takeWriteTx,
   timeSeries,
   updateAttribute,
   yearFormat
@@ -143,13 +142,13 @@ export const stixObservableAskEnrichment = async (id, connectorId) => {
 };
 
 export const addStixObservable = async (user, stixObservable) => {
-  const wTx = await takeWriteTx();
-  const stixId = stixObservable.stix_id_key;
-  const observableValue = stixObservable.observable_value;
-  const internalId = stixObservable.internal_id_key
-    ? escapeString(stixObservable.internal_id_key)
-    : uuid();
-  const query = `insert $stixObservable isa ${escape(stixObservable.type)},
+  const observableId = await executeWrite(async wTx => {
+    const stixId = stixObservable.stix_id_key;
+    const observableValue = stixObservable.observable_value;
+    const internalId = stixObservable.internal_id_key
+      ? escapeString(stixObservable.internal_id_key)
+      : uuid();
+    const query = `insert $stixObservable isa ${escape(stixObservable.type)},
     has internal_id_key "${internalId}",
     has stix_id_key "${stixId ? escapeString(stixId) : `indicator--${uuid()}`}",
     has entity_type "${escapeString(stixObservable.type.toLowerCase())}",
@@ -162,22 +161,19 @@ export const addStixObservable = async (user, stixObservable) => {
     has created_at_year "${yearFormat(graknNow())}",      
     has updated_at ${graknNow()};
   `;
-  logger.debug(`[GRAKN - infer: false] addStixObservable > ${query}`);
-  const stixObservableIterator = await wTx.tx.query(query);
-  const createStixObservable = await stixObservableIterator.next();
-  const createdId = await createStixObservable.map().get('stixObservable').id;
+    logger.debug(`[GRAKN - infer: false] addStixObservable > ${query}`);
+    const stixObservableIterator = await wTx.tx.query(query);
+    const createStixObservable = await stixObservableIterator.next();
+    const createdId = await createStixObservable.map().get('stixObservable').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdId, stixObservable.createdByRef);
-  await linkMarkingDef(wTx, createdId, stixObservable.markingDefinitions);
-
-  // Commit everything
-  await commitWriteTx(wTx);
-
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdId, stixObservable.createdByRef);
+    await linkMarkingDef(wTx, createdId, stixObservable.markingDefinitions);
+    return internalId;
+  });
   // Enqueue enrich job
-  await askEnrich(internalId, stixObservable.type);
-
-  return getById(internalId).then(created => {
+  await askEnrich(observableId, stixObservable.type);
+  return getById(observableId).then(created => {
     return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
   });
 };

@@ -1,17 +1,16 @@
 import { assoc } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escapeString,
-  getById,
-  prepareDate,
   dayFormat,
-  monthFormat,
-  yearFormat,
-  notify,
+  escapeString,
+  executeWrite,
+  getById,
   graknNow,
-  takeWriteTx,
-  commitWriteTx,
-  paginate
+  monthFormat,
+  notify,
+  paginate,
+  prepareDate,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
@@ -31,13 +30,13 @@ export const findByEntity = args =>
 export const findById = courseOfActionId => getById(courseOfActionId);
 
 export const addCourseOfAction = async (user, courseOfAction) => {
-  const wTx = await takeWriteTx();
-  const internalId = courseOfAction.internal_id_key
-    ? escapeString(courseOfAction.internal_id_key)
-    : uuid();
-  const now = graknNow();
-  const courseOfActionIterator = await wTx.tx
-    .query(`insert $courseOfAction isa Course-Of-Action,
+  const courseId = await executeWrite(async wTx => {
+    const internalId = courseOfAction.internal_id_key
+      ? escapeString(courseOfAction.internal_id_key)
+      : uuid();
+    const now = graknNow();
+    const courseOfActionIterator = await wTx.tx
+      .query(`insert $courseOfAction isa Course-Of-Action,
     has internal_id_key "${internalId}",
     has entity_type "course-of-action",
     has stix_id_key "${
@@ -62,17 +61,16 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     has created_at_year "${yearFormat(now)}",  
     has updated_at ${now};
   `);
-  const createCourseOfAction = await courseOfActionIterator.next();
-  const createdId = await createCourseOfAction.map().get('courseOfAction').id;
+    const createCourseOfAction = await courseOfActionIterator.next();
+    const createdId = await createCourseOfAction.map().get('courseOfAction').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdId, courseOfAction.createdByRef);
-  await linkMarkingDef(wTx, createdId, courseOfAction.markingDefinitions);
-  await linkKillChains(wTx, createdId, courseOfAction.killChainPhases);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdId, courseOfAction.createdByRef);
+    await linkMarkingDef(wTx, createdId, courseOfAction.markingDefinitions);
+    await linkKillChains(wTx, createdId, courseOfAction.killChainPhases);
+    return internalId;
+  });
+  return getById(courseId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
