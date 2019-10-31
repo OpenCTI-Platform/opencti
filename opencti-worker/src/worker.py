@@ -11,6 +11,7 @@ import base64
 import threading
 import ctypes
 
+from requests.exceptions import RequestException
 from itertools import groupby
 from pycti import OpenCTIApiClient
 
@@ -38,7 +39,7 @@ class Consumer(threading.Thread):
             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
             logging.info('Unable to kill the thread')
 
-    def ack_message(channel, delivery_tag):
+    def ack_message(self, channel, delivery_tag):
         if channel.is_open:
             logging.info('Message (delivery_tag=' + str(delivery_tag) + ') acknowledged')
             channel.basic_ack(delivery_tag)
@@ -46,11 +47,16 @@ class Consumer(threading.Thread):
             logging.info('Message (delivery_tag=' + str(delivery_tag) + ') NOT acknowledged (channel closed)')
             pass
 
+    def stop_consume(self, channel):
+        if channel.is_open:
+            channel.stop_consuming()
+
     # Callable for consuming a message
     def _process_message(self, channel, method, properties, body):
         data = json.loads(body)
         logging.info('Processing a new message (delivery_tag=' + str(method.delivery_tag) + '), launching a thread...')
-        thread = threading.Thread(target=self.data_handler, args=[method, data])
+        thread = threading.Thread(target=self.data_handler,
+                                  args=[self.pika_connection, channel, method.delivery_tag, data])
         thread.start()
 
         while thread.is_alive():  # Loop while the thread is processing
@@ -73,11 +79,17 @@ class Consumer(threading.Thread):
                 for key, grp in by_types:
                     messages.append(str(len(list(grp))) + ' imported ' + key)
                 self.api.job.update_job(job_id, 'complete', messages)
-        except Exception as handlerError:
-            logging.error('An unexpected error occurred: { ' + str(handlerError) + ' }, message (delivery_tag=' + str(
-                delivery_tag) + ') NOT acknowledged')
+        except RequestException as re:
+            logging.error('A connection error occurred: { ' + str(re) + ' }')
+            logging.info('Message (delivery_tag=' + str(delivery_tag) + ') NOT acknowledged')
+            cb = functools.partial(self.stop_consume, channel)
+            connection.add_callback_threadsafe(cb)
+        except Exception as e:
+            logging.error('An unexpected error occurred: { ' + str(e) + ' }')
+            cb = functools.partial(self.ack_message, channel, delivery_tag)
+            connection.add_callback_threadsafe(cb)
             if job_id is not None:
-                self.api.job.update_job(job_id, 'error', [str(handlerError)])
+                self.api.job.update_job(job_id, 'error', [str(e)])
             return False
 
     def run(self):
@@ -117,8 +129,8 @@ class Worker:
 
     # Start the main loop
     def start(self):
-        try:
-            while True:
+        while True:
+            try:
                 # Fetch queue configuration from API
                 self.connectors = self.api.connector.list()
                 self.queues = list(map(lambda x: x['config']['push'], self.connectors))
@@ -145,12 +157,15 @@ class Worker:
                             logging.info('Unable to kill the thread for queue '
                                          + thread + ', an operation is running, keep trying...')
                 time.sleep(60)
-        except KeyboardInterrupt:
-            # Graceful stop
-            for thread in self.consumer_threads.keys():
-                if thread not in self.queues:
-                    self.consumer_threads[thread].terminate()
-            exit(0)
+            except KeyboardInterrupt:
+                # Graceful stop
+                for thread in self.consumer_threads.keys():
+                    if thread not in self.queues:
+                        self.consumer_threads[thread].terminate()
+                exit(0)
+            except Exception as e:
+                logging.error(e)
+                time.sleep(60)
 
 
 if __name__ == '__main__':
