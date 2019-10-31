@@ -3798,6 +3798,11 @@ class OpenCTIApiClient:
                 }
             },
             'localization': {
+                'threat-actor': {
+                    'region': {'from_role': 'localized', 'to_role': 'location'},
+                    'country': {'from_role': 'localized', 'to_role': 'location'},
+                    'city': {'from_role': 'localized', 'to_role': 'location'}
+                },
                 'observable': {
                     'region': {'from_role': 'localized', 'to_role': 'location'},
                     'country': {'from_role': 'localized', 'to_role': 'location'},
