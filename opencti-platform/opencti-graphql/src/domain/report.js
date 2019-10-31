@@ -1,11 +1,11 @@
 import { ascend, assoc, descend, prop, sortWith, take } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  commitWriteTx,
   dayFormat,
   distribution,
   escape,
   escapeString,
+  executeWrite,
   getById,
   getSingleValueNumber,
   graknNow,
@@ -14,7 +14,6 @@ import {
   paginate,
   paginateRelationships,
   prepareDate,
-  takeWriteTx,
   timeSeries,
   yearFormat
 } from '../database/grakn';
@@ -260,11 +259,11 @@ export const relationRefs = (reportId, args) =>
   );
 
 export const addReport = async (user, report) => {
-  const wTx = await takeWriteTx();
-  const internalId = report.internal_id_key
-    ? escapeString(report.internal_id_key)
-    : uuid();
-  const reportIterator = await wTx.tx.query(`insert $report isa Report,
+  const reportId = await executeWrite(async wTx => {
+    const internalId = report.internal_id_key
+      ? escapeString(report.internal_id_key)
+      : uuid();
+    const reportIterator = await wTx.tx.query(`insert $report isa Report,
     has internal_id_key "${internalId}",
     has entity_type "report",
     has stix_id_key "${
@@ -297,16 +296,15 @@ export const addReport = async (user, report) => {
     has created_at_year "${yearFormat(graknNow())}",        
     has updated_at ${graknNow()};
   `);
-  const createdReport = await reportIterator.next();
-  const createdReportId = await createdReport.map().get('report').id;
+    const createdReport = await reportIterator.next();
+    const createdReportId = await createdReport.map().get('report').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdReportId, report.createdByRef);
-  await linkMarkingDef(wTx, createdReportId, report.markingDefinitions);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdReportId, report.createdByRef);
+    await linkMarkingDef(wTx, createdReportId, report.markingDefinitions);
+    return internalId;
+  });
+  return getById(reportId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

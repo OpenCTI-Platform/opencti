@@ -1,15 +1,15 @@
 import { dissoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
-import { logger, BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logger } from '../config/conf';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
-  commitWriteTx,
   createRelation,
   dayFormat,
   deleteEntityById,
   deleteRelationById,
   escape,
   escapeString,
+  executeWrite,
   getById,
   getId,
   graknNow,
@@ -17,7 +17,6 @@ import {
   notify,
   paginate,
   prepareDate,
-  takeWriteTx,
   timeSeries,
   updateAttribute,
   yearFormat
@@ -183,11 +182,13 @@ export const stixDomainEntityExportPush = async (user, entityId, file) => {
 };
 
 export const addStixDomainEntity = async (user, stixDomainEntity) => {
-  const wTx = await takeWriteTx();
-  const internalId = stixDomainEntity.internal_id_key
-    ? escapeString(stixDomainEntity.internal_id_key)
-    : uuid();
-  const query = `insert $stixDomainEntity isa ${escape(stixDomainEntity.type)},
+  const domainId = await executeWrite(async wTx => {
+    const internalId = stixDomainEntity.internal_id_key
+      ? escapeString(stixDomainEntity.internal_id_key)
+      : uuid();
+    const query = `insert $stixDomainEntity isa ${escape(
+      stixDomainEntity.type
+    )},
     has internal_id_key "${internalId}",
     has entity_type "${escapeString(stixDomainEntity.type.toLowerCase())}",
     has stix_id_key "${
@@ -226,18 +227,17 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     has created_at_year "${yearFormat(graknNow())}",      
     has updated_at ${graknNow()};
   `;
-  logger.debug(`[GRAKN - infer: false] addStixDomainEntity > ${query}`);
-  const stixDomainEntityIterator = await wTx.tx.query(query);
-  const createSDO = await stixDomainEntityIterator.next();
-  const createdId = await createSDO.map().get('stixDomainEntity').id;
+    logger.debug(`[GRAKN - infer: false] addStixDomainEntity > ${query}`);
+    const stixDomainEntityIterator = await wTx.tx.query(query);
+    const createSDO = await stixDomainEntityIterator.next();
+    const createdId = await createSDO.map().get('stixDomainEntity').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdId, stixDomainEntity.createdByRef);
-  await linkMarkingDef(wTx, createdId, stixDomainEntity.markingDefinitions);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdId, stixDomainEntity.createdByRef);
+    await linkMarkingDef(wTx, createdId, stixDomainEntity.markingDefinitions);
+    return internalId;
+  });
+  return getById(domainId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
@@ -269,14 +269,10 @@ export const stixDomainEntityAddRelations = async (
     input.toIds
   );
 
-  const wTx = await takeWriteTx();
   const createRelationPromise = relationInput =>
     createRelation(stixDomainEntityId, relationInput);
   const relationsPromises = map(createRelationPromise, finalInput);
   await Promise.all(relationsPromises);
-
-  await commitWriteTx(wTx);
-
   return getById(stixDomainEntityId, true).then(stixDomainEntity =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, stixDomainEntity, user)
   );

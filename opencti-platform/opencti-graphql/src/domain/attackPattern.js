@@ -1,17 +1,16 @@
-import { assoc, join, tail, head, map } from 'ramda';
+import { assoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  escapeString,
-  getById,
-  prepareDate,
   dayFormat,
-  monthFormat,
-  yearFormat,
-  notify,
+  escapeString,
+  executeWrite,
+  getById,
   graknNow,
+  monthFormat,
+  notify,
   paginate,
-  takeWriteTx,
-  commitWriteTx
+  prepareDate,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
@@ -46,11 +45,11 @@ export const findByCourseOfAction = args => {
 export const findById = attackPatternId => getById(attackPatternId);
 
 export const addAttackPattern = async (user, attackPattern) => {
-  const wTx = await takeWriteTx();
-  const internalId = attackPattern.internal_id_key
-    ? escapeString(attackPattern.internal_id_key)
-    : uuid();
-  const query = `insert $attackPattern isa Attack-Pattern,
+  const patternId = await executeWrite(async wTx => {
+    const internalId = attackPattern.internal_id_key
+      ? escapeString(attackPattern.internal_id_key)
+      : uuid();
+    const query = `insert $attackPattern isa Attack-Pattern,
     has internal_id_key "${internalId}",
     has entity_type "attack-pattern",
     has stix_id_key "${
@@ -110,19 +109,22 @@ export const addAttackPattern = async (user, attackPattern) => {
     has created_at_year "${yearFormat(graknNow())}",
     has updated_at ${graknNow()};
   `;
-  logger.debug(`[GRAKN - infer: false] addAttackPattern > ${query}`);
-  const attackPatternIterator = await wTx.tx.query(query);
-  const createAttack = await attackPatternIterator.next();
-  const attackPatternId = await createAttack.map().get('attackPattern').id;
+    logger.debug(`[GRAKN - infer: false] addAttackPattern > ${query}`);
+    const attackPatternIterator = await wTx.tx.query(query);
+    const createAttack = await attackPatternIterator.next();
+    const attackPatternId = await createAttack.map().get('attackPattern').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, attackPatternId, attackPattern.createdByRef);
-  await linkMarkingDef(wTx, attackPatternId, attackPattern.markingDefinitions);
-  await linkKillChains(wTx, attackPatternId, attackPattern.killChainPhases);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    // Create associated relations
+    await linkCreatedByRef(wTx, attackPatternId, attackPattern.createdByRef);
+    await linkMarkingDef(
+      wTx,
+      attackPatternId,
+      attackPattern.markingDefinitions
+    );
+    await linkKillChains(wTx, attackPatternId, attackPattern.killChainPhases);
+    return internalId;
+  });
+  return getById(patternId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

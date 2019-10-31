@@ -1,15 +1,14 @@
-import { assoc, join, tail, head, map } from 'ramda';
+import { assoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  commitWriteTx,
   dayFormat,
   escapeString,
+  executeWrite,
   getById,
   graknNow,
   monthFormat,
   notify,
   prepareDate,
-  takeWriteTx,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -22,15 +21,15 @@ export const findAll = args =>
 export const findById = threatActorId => getById(threatActorId);
 
 export const addThreatActor = async (user, threatActor) => {
-  const wTx = await takeWriteTx();
-  const internalId = threatActor.internal_id_key
-    ? escapeString(threatActor.internal_id_key)
-    : uuid();
-  const stixId = threatActor.stix_id_key
-    ? escapeString(threatActor.stix_id_key)
-    : `threat-actor--${uuid()}`;
-  const threatActorIterator = await wTx.tx
-    .query(`insert $threatActor isa Threat-Actor,
+  const actorId = await executeWrite(async wTx => {
+    const internalId = threatActor.internal_id_key
+      ? escapeString(threatActor.internal_id_key)
+      : uuid();
+    const stixId = threatActor.stix_id_key
+      ? escapeString(threatActor.stix_id_key)
+      : `threat-actor--${uuid()}`;
+    const threatActorIterator = await wTx.tx
+      .query(`insert $threatActor isa Threat-Actor,
     has internal_id_key "${internalId}",
     has entity_type "threat-actor",
     has stix_id_key "${stixId}",
@@ -69,16 +68,15 @@ export const addThreatActor = async (user, threatActor) => {
     has created_at_year "${yearFormat(graknNow())}",        
     has updated_at ${graknNow()};
   `);
-  const txThreatActor = await threatActorIterator.next();
-  const createId = await txThreatActor.map().get('threatActor').id;
+    const txThreatActor = await threatActorIterator.next();
+    const createId = await txThreatActor.map().get('threatActor').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createId, threatActor.createdByRef);
-  await linkMarkingDef(wTx, createId, threatActor.markingDefinitions);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    // Create associated relations
+    await linkCreatedByRef(wTx, createId, threatActor.createdByRef);
+    await linkMarkingDef(wTx, createId, threatActor.markingDefinitions);
+    return internalId;
+  });
+  return getById(actorId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

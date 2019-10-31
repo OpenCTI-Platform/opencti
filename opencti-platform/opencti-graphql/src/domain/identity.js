@@ -1,15 +1,14 @@
-import { assoc, map, join, tail, head } from 'ramda';
+import { assoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  commitWriteTx,
   dayFormat,
   escapeString,
+  executeWrite,
   getById,
   graknNow,
   monthFormat,
   notify,
   prepareDate,
-  takeWriteTx,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
@@ -26,12 +25,12 @@ export const findAll = args => {
 export const findById = identityId => getById(identityId);
 
 export const addIdentity = async (user, identity) => {
-  const wTx = await takeWriteTx();
-  const internalId = identity.internal_id_key
-    ? escapeString(identity.internal_id_key)
-    : uuid();
-  const now = graknNow();
-  const query = `insert $identity isa ${identity.type},
+  const identId = await executeWrite(async wTx => {
+    const internalId = identity.internal_id_key
+      ? escapeString(identity.internal_id_key)
+      : uuid();
+    const now = graknNow();
+    const query = `insert $identity isa ${identity.type},
     has internal_id_key "${internalId}",
     has entity_type "${identity.type.toLowerCase()}",
     has stix_id_key "${
@@ -62,18 +61,17 @@ export const addIdentity = async (user, identity) => {
     has created_at_year "${yearFormat(now)}", 
     has updated_at ${now};
   `;
-  const identityIterator = await wTx.tx.query(query);
-  logger.debug(`[GRAKN - infer: false] addIdentity > ${query}`);
-  const createIdentity = await identityIterator.next();
-  const createdIdentityId = await createIdentity.map().get('identity').id;
+    const identityIterator = await wTx.tx.query(query);
+    logger.debug(`[GRAKN - infer: false] addIdentity > ${query}`);
+    const createIdentity = await identityIterator.next();
+    const createdIdentityId = await createIdentity.map().get('identity').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdIdentityId, identity.createdByRef);
-  await linkMarkingDef(wTx, createdIdentityId, identity.markingDefinitions);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdIdentityId, identity.createdByRef);
+    await linkMarkingDef(wTx, createdIdentityId, identity.markingDefinitions);
+    return internalId;
+  });
+  return getById(identId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

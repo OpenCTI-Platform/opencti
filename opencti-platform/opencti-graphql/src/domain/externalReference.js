@@ -1,12 +1,12 @@
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
-  commitWriteTx,
   createRelation,
   dayFormat,
   deleteEntityById,
   deleteRelationById,
   escapeString,
+  executeWrite,
   getById,
   getId,
   graknNow,
@@ -14,7 +14,6 @@ import {
   notify,
   paginate,
   prepareDate,
-  takeWriteTx,
   updateAttribute,
   yearFormat
 } from '../database/grakn';
@@ -39,12 +38,12 @@ export const findByEntity = args => {
 export const findById = externalReferenceId => getById(externalReferenceId);
 
 export const addExternalReference = async (user, externalReference) => {
-  const wTx = await takeWriteTx();
-  const internalId = externalReference.internal_id_key
-    ? escapeString(externalReference.internal_id_key)
-    : uuid();
-  const now = graknNow();
-  const query = `insert $externalReference isa External-Reference,
+  const externalId = await executeWrite(async wTx => {
+    const internalId = externalReference.internal_id_key
+      ? escapeString(externalReference.internal_id_key)
+      : uuid();
+    const now = graknNow();
+    const query = `insert $externalReference isa External-Reference,
     has internal_id_key "${internalId}",
     has entity_type "external-reference",
     has stix_id_key "${
@@ -72,18 +71,17 @@ export const addExternalReference = async (user, externalReference) => {
     has created_at_year "${yearFormat(now)}",  
     has updated_at ${now};
   `;
-  logger.debug(`[GRAKN - infer: false] addExternalReference > ${query}`);
-  const externalReferenceIterator = await wTx.tx.query(query);
-  const createExternalRef = await externalReferenceIterator.next();
-  const createdId = await createExternalRef.map().get('externalReference').id;
+    logger.debug(`[GRAKN - infer: false] addExternalReference > ${query}`);
+    const externalReferenceIterator = await wTx.tx.query(query);
+    const createExternalRef = await externalReferenceIterator.next();
+    const createdId = await createExternalRef.map().get('externalReference').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdId, externalReference.createdByRef);
-  await linkMarkingDef(wTx, createdId, externalReference.markingDefinitions);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdId, externalReference.createdByRef);
+    await linkMarkingDef(wTx, createdId, externalReference.markingDefinitions);
+    return internalId;
+  });
+  return getById(externalId).then(created => {
     return notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user);
   });
 };

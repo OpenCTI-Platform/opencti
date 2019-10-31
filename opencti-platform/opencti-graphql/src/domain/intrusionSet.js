@@ -1,15 +1,14 @@
-import { assoc, join, tail, head, map } from 'ramda';
+import { assoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import {
-  commitWriteTx,
   dayFormat,
   escapeString,
+  executeWrite,
   getById,
   graknNow,
   monthFormat,
   notify,
   prepareDate,
-  takeWriteTx,
   yearFormat
 } from '../database/grakn';
 import { paginate as elPaginate } from '../database/elasticSearch';
@@ -26,12 +25,12 @@ export const findAll = args => {
 export const findById = intrusionSetId => getById(intrusionSetId);
 
 export const addIntrusionSet = async (user, intrusionSet) => {
-  const wTx = await takeWriteTx();
-  const internalId = intrusionSet.internal_id_key
-    ? escapeString(intrusionSet.internal_id_key)
-    : uuid();
-  const now = graknNow();
-  const query = `insert $intrusionSet isa Intrusion-Set,
+  const intrusionId = await executeWrite(async wTx => {
+    const internalId = intrusionSet.internal_id_key
+      ? escapeString(intrusionSet.internal_id_key)
+      : uuid();
+    const now = graknNow();
+    const query = `insert $intrusionSet isa Intrusion-Set,
     has internal_id_key "${internalId}",
     has entity_type "intrusion-set",
     has stix_id_key "${
@@ -109,18 +108,17 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     has created_at_year "${yearFormat(now)}",       
     has updated_at ${now};
   `;
-  logger.debug(`[GRAKN - infer: false] addIntrusionSet > ${query}`);
-  const intrusionSetIterator = await wTx.tx.query(query);
-  const createIntrusionSet = await intrusionSetIterator.next();
-  const createdId = await createIntrusionSet.map().get('intrusionSet').id;
+    logger.debug(`[GRAKN - infer: false] addIntrusionSet > ${query}`);
+    const intrusionSetIterator = await wTx.tx.query(query);
+    const createIntrusionSet = await intrusionSetIterator.next();
+    const createdId = await createIntrusionSet.map().get('intrusionSet').id;
 
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdId, intrusionSet.createdByRef);
-  await linkMarkingDef(wTx, createdId, intrusionSet.markingDefinitions);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created => {
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdId, intrusionSet.createdByRef);
+    await linkMarkingDef(wTx, createdId, intrusionSet.markingDefinitions);
+    return internalId;
+  });
+  return getById(intrusionId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

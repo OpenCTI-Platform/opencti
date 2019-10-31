@@ -1,22 +1,21 @@
 import uuid from 'uuid/v4';
 import { delEditContext, setEditContext } from '../database/redis';
 import {
-  escape,
-  escapeString,
   createRelation,
+  dayFormat,
   deleteEntityById,
   deleteRelationById,
-  updateAttribute,
+  escape,
+  escapeString,
+  executeWrite,
   getById,
-  prepareDate,
-  dayFormat,
-  monthFormat,
-  yearFormat,
-  notify,
   graknNow,
+  monthFormat,
+  notify,
   paginate,
-  takeWriteTx,
-  commitWriteTx
+  prepareDate,
+  updateAttribute,
+  yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
@@ -53,13 +52,13 @@ export const findByPhaseName = args =>
   );
 
 export const addKillChainPhase = async (user, killChainPhase) => {
-  const wTx = await takeWriteTx();
-  const internalId = killChainPhase.internal_id_key
-    ? escapeString(killChainPhase.internal_id_key)
-    : uuid();
-  const now = graknNow();
-  const killChainPhaseIterator = await wTx.tx
-    .query(`insert $killChainPhase isa Kill-Chain-Phase,
+  const killId = await executeWrite(async wTx => {
+    const internalId = killChainPhase.internal_id_key
+      ? escapeString(killChainPhase.internal_id_key)
+      : uuid();
+    const now = graknNow();
+    const killChainPhaseIterator = await wTx.tx
+      .query(`insert $killChainPhase isa Kill-Chain-Phase,
     has internal_id_key "${internalId}",
     has entity_type "kill-chain-phase",
     has stix_id_key "${
@@ -83,16 +82,14 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     has created_at_year "${yearFormat(now)}",       
     has updated_at ${now};
   `);
-  const createKillChainPhase = await killChainPhaseIterator.next();
-  const createdId = await createKillChainPhase.map().get('killChainPhase').id;
-
-  // Create associated relations
-  await linkCreatedByRef(wTx, createdId, killChainPhase.createdByRef);
-  await linkMarkingDef(wTx, createdId, killChainPhase.markingDefinitions);
-
-  // Commit everything and return the data
-  await commitWriteTx(wTx);
-  return getById(internalId).then(created =>
+    const createKillChainPhase = await killChainPhaseIterator.next();
+    const createdId = await createKillChainPhase.map().get('killChainPhase').id;
+    // Create associated relations
+    await linkCreatedByRef(wTx, createdId, killChainPhase.createdByRef);
+    await linkMarkingDef(wTx, createdId, killChainPhase.markingDefinitions);
+    return internalId;
+  });
+  return getById(killId).then(created =>
     notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created, user)
   );
 };
