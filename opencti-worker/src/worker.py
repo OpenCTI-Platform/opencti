@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import logging
+import functools
 import yaml
 import pika
 import os
@@ -13,22 +14,6 @@ import ctypes
 from itertools import groupby
 from pycti import OpenCTIApiClient
 
-opencti_api_status = False
-
-class HealthCheck(threading.Thread):
-    def __init__(self, api):
-        self.api = api
-
-    def run(self):
-        global opencti_api_status
-        logging.info('HealthCheck thread started')
-        while True:
-            opencti_api_status = self.api.health_check()
-            if opencti_api_status:
-                logging.info('OpenCTI is up, consuming messages...')
-            else:
-                logging.info('OpenCTI is down, stopping consuming messages...')
-            time.sleep(30)
 
 class Consumer(threading.Thread):
     def __init__(self, connector, api):
@@ -53,25 +38,35 @@ class Consumer(threading.Thread):
             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
             logging.info('Unable to kill the thread')
 
+    def ack_message(channel, delivery_tag):
+        if channel.is_open:
+            logging.info('Message (delivery_tag=' + str(delivery_tag) + ') acknowledged')
+            channel.basic_ack(delivery_tag)
+        else:
+            logging.info('Message (delivery_tag=' + str(delivery_tag) + ') NOT acknowledged (channel closed)')
+            pass
+
     # Callable for consuming a message
     def _process_message(self, channel, method, properties, body):
         data = json.loads(body)
         logging.info('Processing a new message (delivery_tag=' + str(method.delivery_tag) + '), launching a thread...')
-        thread = threading.Thread(target=self.data_handler, args=[data])
+        thread = threading.Thread(target=self.data_handler, args=[method, data])
         thread.start()
 
         while thread.is_alive():  # Loop while the thread is processing
             self.pika_connection.sleep(1.0)
-        logging.info('Message (delivery_tag=' + str(method.delivery_tag) + ') processed, thread terminated')
-        self.channel.basic_ack(delivery_tag=method.delivery_tag)
+        logging.info('Message processed, thread terminated')
 
     # Data handling
-    def data_handler(self, data):
+    def data_handler(self, connection, channel, delivery_tag, data):
         job_id = data['job_id']
         try:
             content = base64.b64decode(data['content']).decode('utf-8')
             types = data['entities_types'] if 'entities_types' in data else []
             imported_data = self.api.stix2_import_bundle(content, True, types)
+            cb = functools.partial(self.ack_message, channel, delivery_tag)
+            connection.add_callback_threadsafe(cb)
+
             if job_id is not None:
                 messages = []
                 by_types = groupby(imported_data, key=lambda x: x['type'])
@@ -79,7 +74,8 @@ class Consumer(threading.Thread):
                     messages.append(str(len(list(grp))) + ' imported ' + key)
                 self.api.job.update_job(job_id, 'complete', messages)
         except Exception as handlerError:
-            logging.error('An unexpected error occurred: { ' + str(handlerError) + ' }')
+            logging.error('An unexpected error occurred: { ' + str(handlerError) + ' }, message (delivery_tag=' + str(
+                delivery_tag) + ') NOT acknowledged')
             if job_id is not None:
                 self.api.job.update_job(job_id, 'error', [str(handlerError)])
             return False
