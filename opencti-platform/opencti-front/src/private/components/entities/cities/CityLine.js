@@ -1,23 +1,21 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert } from '@material-ui/icons';
+import { KeyboardArrowRight } from '@material-ui/icons';
 import { CityVariant } from 'mdi-material-ui';
+import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
-import CityPopover from './CityPopover';
 
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-    cursor: 'default',
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -48,10 +46,16 @@ const styles = (theme) => ({
 class CityLineComponent extends Component {
   render() {
     const {
-      fd, classes, dataColumns, node, paginationOptions,
+      fd, classes, dataColumns, node,
     } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} button={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        component={Link}
+        to={`/dashboard/entities/cities/${node.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <CityVariant />
         </ListItemIcon>
@@ -79,9 +83,9 @@ class CityLineComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction>
-          <CityPopover cityId={node.id} paginationOptions={paginationOptions} />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRight />
+        </ListItemIcon>
       </ListItem>
     );
   }
@@ -90,8 +94,6 @@ class CityLineComponent extends Component {
 CityLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
-  paginationOptions: PropTypes.object,
-  me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
@@ -133,20 +135,20 @@ class CityLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}
               >
-                <div className="fakeItem" style={{ width: 80 }} />
+                <div className="fakeItem" style={{ width: 140 }} />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.modified.width }}
               >
-                <div className="fakeItem" style={{ width: 80 }} />
+                <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRight />
+        </ListItemIcon>
       </ListItem>
     );
   }

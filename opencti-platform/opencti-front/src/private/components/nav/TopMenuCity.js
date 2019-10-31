@@ -8,7 +8,7 @@ import { ArrowForwardIos } from '@material-ui/icons';
 import { CityVariant } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -78,13 +78,15 @@ class TopMenuCity extends Component {
           component={Link}
           to={`/dashboard/entities/cities/${cityId}/reports`}
           variant={
-            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
+            location.pathname
+            === `/dashboard/entities/cities/${cityId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
+            location.pathname
+            === `/dashboard/entities/cities/${cityId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -113,6 +115,28 @@ class TopMenuCity extends Component {
           classes={{ root: classes.button }}
         >
           {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/cities/${cityId}/observables`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/entities/cities/${cityId}/observables`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/entities/cities/${cityId}/observables`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Observables')}
         </Button>
       </div>
     );

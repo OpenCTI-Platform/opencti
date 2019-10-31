@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
@@ -8,7 +8,6 @@ import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { Flag } from '@material-ui/icons';
 import { Gauge, TargetVariant } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
@@ -27,10 +26,10 @@ const styles = (theme) => ({
   toolbar: theme.mixins.toolbar,
 });
 
-class RegionKnowledgeBar extends Component {
+class CityKnowledgeBar extends Component {
   render() {
     const {
-      t, location, classes, regionId,
+      t, location, classes, cityId,
     } = this.props;
     return (
       <Drawer
@@ -42,10 +41,10 @@ class RegionKnowledgeBar extends Component {
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to={`/dashboard/entities/regions/${regionId}/knowledge/overview`}
+            to={`/dashboard/entities/cities/${cityId}/knowledge/overview`}
             selected={
               location.pathname
-              === `/dashboard/entities/regions/${regionId}/knowledge/overview`
+              === `/dashboard/entities/cities/${cityId}/knowledge/overview`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -57,28 +56,10 @@ class RegionKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/entities/regions/${regionId}/knowledge/countries`}
+            to={`/dashboard/entities/cities/${cityId}/knowledge/threats`}
             selected={
               location.pathname
-              === `/dashboard/entities/regions/${regionId}/knowledge/countries`
-            }
-            dense={false}
-            classes={{ root: classes.item }}
-          >
-            <ListItemIcon>
-              <Flag />
-            </ListItemIcon>
-            <ListItemText
-              primary={t('Countries')}
-              secondary={t('Localized in this region')}
-            />
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to={`/dashboard/entities/regions/${regionId}/knowledge/threats`}
-            selected={
-              location.pathname
-              === `/dashboard/entities/regions/${regionId}/knowledge/threats`
+              === `/dashboard/entities/cities/${cityId}/knowledge/threats`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -88,7 +69,7 @@ class RegionKnowledgeBar extends Component {
             </ListItemIcon>
             <ListItemText
               primary={t('Threats')}
-              secondary={t('Targeting this region')}
+              secondary={t('Targeting this city')}
             />
           </MenuItem>
         </MenuList>
@@ -97,8 +78,8 @@ class RegionKnowledgeBar extends Component {
   }
 }
 
-RegionKnowledgeBar.propTypes = {
-  regionId: PropTypes.string,
+CityKnowledgeBar.propTypes = {
+  cityId: PropTypes.string,
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,
@@ -108,4 +89,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(RegionKnowledgeBar);
+)(CityKnowledgeBar);

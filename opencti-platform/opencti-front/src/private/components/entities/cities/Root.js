@@ -7,44 +7,44 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
-import Region from './Region';
-import RegionReports from './RegionReports';
-import RegionKnowledge from './RegionKnowledge';
-import RegionObservables from './RegionObservables';
+import City from './City';
+import CityReports from './CityReports';
+import CityKnowledge from './CityKnowledge';
+import CityObservables from './CityObservables';
 
 const subscription = graphql`
-  subscription RootRegionsSubscription($id: ID!) {
+  subscription RootCitiesSubscription($id: ID!) {
     stixDomainEntity(id: $id) {
-      ... on Region {
-        ...Region_region
-        ...RegionEditionContainer_region
+      ... on City {
+        ...City_city
+        ...CityEditionContainer_city
       }
     }
   }
 `;
 
-const regionQuery = graphql`
-  query RootRegionQuery($id: String!) {
-    region(id: $id) {
-      ...Region_region
-      ...RegionOverview_region
-      ...RegionReports_region
-      ...RegionKnowledge_region
-      ...RegionObservables_region
+const cityQuery = graphql`
+  query RootCityQuery($id: String!) {
+    city(id: $id) {
+      ...City_city
+      ...CityOverview_city
+      ...CityReports_city
+      ...CityKnowledge_city
+      ...CityObservables_city
     }
   }
 `;
 
-class RootRegion extends Component {
+class RootCity extends Component {
   componentDidMount() {
     const {
       match: {
-        params: { regionId },
+        params: { cityId },
       },
     } = this.props;
     const sub = requestSubscription({
       subscription,
-      variables: { id: regionId },
+      variables: { id: cityId },
     });
     this.setState({ sub });
   }
@@ -57,54 +57,54 @@ class RootRegion extends Component {
     const {
       me,
       match: {
-        params: { regionId },
+        params: { cityId },
       },
     } = this.props;
     return (
       <div>
         <TopBar me={me || null} />
         <QueryRenderer
-          query={regionQuery}
-          variables={{ id: regionId }}
+          query={cityQuery}
+          variables={{ id: cityId }}
           render={({ props }) => {
-            if (props && props.region) {
+            if (props && props.city) {
               return (
                 <div>
                   <Route
                     exact
-                    path="/dashboard/entities/regions/:regionId"
+                    path="/dashboard/entities/cities/:cityId"
                     render={(routeProps) => (
-                      <Region {...routeProps} region={props.region} />
+                      <City {...routeProps} city={props.city} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/entities/regions/:regionId/reports"
+                    path="/dashboard/entities/cities/:cityId/reports"
                     render={(routeProps) => (
-                      <RegionReports {...routeProps} region={props.region} />
+                      <CityReports {...routeProps} city={props.city} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/entities/regions/:regionId/knowledge"
+                    path="/dashboard/entities/cities/:cityId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/entities/regions/${regionId}/knowledge/overview`}
+                        to={`/dashboard/entities/cities/${cityId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/entities/regions/:regionId/knowledge"
+                    path="/dashboard/entities/cities/:cityId/knowledge"
                     render={(routeProps) => (
-                      <RegionKnowledge {...routeProps} region={props.region} />
+                      <CityKnowledge {...routeProps} city={props.city} />
                     )}
                   />
                   <Route
-                    path="/dashboard/entities/regions/:regionId/observables"
+                    path="/dashboard/entities/cities/:cityId/observables"
                     render={(routeProps) => (
-                      <RegionObservables
+                      <CityObservables
                         {...routeProps}
-                        region={props.region}
+                        city={props.city}
                       />
                     )}
                   />
@@ -119,10 +119,10 @@ class RootRegion extends Component {
   }
 }
 
-RootRegion.propTypes = {
+RootCity.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
   me: PropTypes.object,
 };
 
-export default withRouter(RootRegion);
+export default withRouter(RootCity);
