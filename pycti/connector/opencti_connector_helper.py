@@ -95,6 +95,7 @@ class OpenCTIConnectorHelper:
         Python API for OpenCTI connector
         :param config: Dict standard config
     """
+
     def __init__(self, config: dict):
         # Load API config
         self.opencti_url = os.getenv('OPENCTI_URL') or config['opencti']['url']
@@ -103,12 +104,12 @@ class OpenCTIConnectorHelper:
         self.connect_id = os.getenv('CONNECTOR_ID') or config['connector']['id']
         self.connect_type = os.getenv('CONNECTOR_TYPE') or config['connector']['type']
         self.connect_name = os.getenv('CONNECTOR_NAME') or config['connector']['name']
-        self.connect_confidence_level = os.getenv('CONNECTOR_CONFIDENCE_LEVEL') or \
-                                        config['connector']['confidence_level']
+        self.connect_confidence_level = int(os.getenv('CONNECTOR_CONFIDENCE_LEVEL')) or config['connector'][
+            'confidence_level'] or 2
         self.connect_scope = os.getenv('CONNECTOR_SCOPE') or config['connector']['scope']
-        self.log_level = os.getenv('CONNECTOR_LOG_LEVEL') or config['connector']['log_level']
+        self.log_level = os.getenv('CONNECTOR_LOG_LEVEL') or config['connector']['log_level'] or 'info'
 
-        # Configure logger
+        # Configure logger²
         numeric_level = getattr(logging, self.log_level.upper(), None)
         if not isinstance(numeric_level, int):
             raise ValueError('Invalid log level: ' + self.log_level)

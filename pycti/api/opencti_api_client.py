@@ -459,6 +459,48 @@ class OpenCTIApiClient:
                         id
                         stix_id_key
                     }
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                    }
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                        }
+                    }
+                    killChainPhases {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                kill_chain_name
+                                phase_name
+                                phase_order
+                                created
+                                modified
+                            }
+                        }
+                    }
                 }
             }
         """
@@ -509,6 +551,48 @@ class OpenCTIApiClient:
                             to {
                                 id
                                 stix_id_key
+                            }
+                            createdByRef {
+                                node {
+                                    id
+                                    entity_type
+                                    stix_id_key
+                                    stix_label
+                                    name
+                                    alias
+                                    description
+                                    created
+                                    modified
+                                }
+                            }
+                            markingDefinitions {
+                                edges {
+                                    node {
+                                        id
+                                        entity_type
+                                        stix_id_key
+                                        definition_type
+                                        definition
+                                        level
+                                        color
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                            killChainPhases {
+                                edges {
+                                    node {
+                                        id
+                                        entity_type
+                                        stix_id_key
+                                        kill_chain_name
+                                        phase_name
+                                        phase_order
+                                        created
+                                        modified
+                                    }
+                                }
                             }
                         }
                     }
