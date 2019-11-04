@@ -23,6 +23,7 @@ import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
+import TagAutocompleteField from '../../common/form/TagAutocompleteField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -155,6 +156,7 @@ class PersonCreation extends Component {
     const finalValues = pipe(
       assoc('createdByRef', values.createdByRef.value),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+      assoc('tags', pluck('value', values.tags)),
     )(values);
     commitMutation({
       mutation: personMutation,
@@ -220,6 +222,7 @@ class PersonCreation extends Component {
                 description: '',
                 createdByRef: '',
                 markingDefinitions: [],
+                tags: [],
               }}
               validationSchema={personValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -264,6 +267,7 @@ class PersonCreation extends Component {
                       options={this.state.markingDefinitions}
                       onInputChange={this.searchMarkingDefinitions.bind(this)}
                     />
+                    <TagAutocompleteField />
                     <div className={classes.buttons}>
                       <Button
                         variant="contained"
