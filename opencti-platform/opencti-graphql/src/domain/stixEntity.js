@@ -100,6 +100,19 @@ export const linkKillChains = async (wTx, fromId, killChains) => {
   }
 };
 
+export const linkTags = async (wTx, fromId, tagsList) => {
+  if (tagsList) {
+    const createTagLink = tag => {
+      return wTx.tx.query(
+        `match $from id ${fromId};
+        $to has internal_id_key "${escapeString(tag)}";
+        insert (so: $from, tagging: $to) isa tagged, has internal_id_key "${uuid()}";`
+      );
+    };
+    await Promise.all(map(createTagLink, tagsList));
+  }
+};
+
 export const reports = (stixEntityId, args) => {
   return paginate(
     `match $r isa Report; 

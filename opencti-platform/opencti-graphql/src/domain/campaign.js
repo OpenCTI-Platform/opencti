@@ -15,7 +15,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { linkCreatedByRef, linkMarkingDef, linkTags } from './stixEntity';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'campaign', args));
@@ -109,6 +109,7 @@ export const addCampaign = async (user, campaign) => {
     // Create associated relations
     await linkCreatedByRef(wTx, createdCampaignId, campaign.createdByRef);
     await linkMarkingDef(wTx, createdCampaignId, campaign.markingDefinitions);
+    await linkTags(wTx, createdCampaignId, campaign.tags);
     return internalId;
   });
   return getById(campaignId).then(created => {

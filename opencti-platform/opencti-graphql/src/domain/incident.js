@@ -15,7 +15,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { linkCreatedByRef, linkMarkingDef, linkTags } from './stixEntity';
 
 export const findAll = args => {
   return elPaginate('stix_domain_entities', assoc('type', 'incident', args));
@@ -112,6 +112,7 @@ export const addIncident = async (user, incident) => {
     // Create associated relations
     await linkCreatedByRef(wTx, createdIncidentId, incident.createdByRef);
     await linkMarkingDef(wTx, createdIncidentId, incident.markingDefinitions);
+    await linkTags(wTx, createdIncidentId, incident.tags);
     return internalId;
   });
   return getById(incidentId).then(created => {

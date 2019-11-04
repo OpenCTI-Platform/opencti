@@ -13,7 +13,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { linkCreatedByRef, linkMarkingDef, linkTags } from './stixEntity';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'threat-actor', args));
@@ -74,6 +74,7 @@ export const addThreatActor = async (user, threatActor) => {
     // Create associated relations
     await linkCreatedByRef(wTx, createId, threatActor.createdByRef);
     await linkMarkingDef(wTx, createId, threatActor.markingDefinitions);
+    await linkTags(wTx, createId, threatActor.tags);
     return internalId;
   });
   return getById(actorId).then(created => {

@@ -13,7 +13,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { linkCreatedByRef, linkMarkingDef, linkTags } from './stixEntity';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'organization', args));
@@ -71,6 +71,7 @@ export const addOrganization = async (user, organization) => {
     // Create associated relations
     await linkCreatedByRef(wTx, createdId, organization.createdByRef);
     await linkMarkingDef(wTx, createdId, organization.markingDefinitions);
+    await linkTags(wTx, createdId, organization.tags);
     return internalId;
   });
   return getById(orgaId).then(created => {

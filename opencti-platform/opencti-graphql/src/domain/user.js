@@ -30,7 +30,7 @@ import {
 } from '../database/grakn';
 import { paginate as elPaginate } from '../database/elasticSearch';
 import { stixDomainEntityDelete } from './stixDomainEntity';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { linkCreatedByRef, linkMarkingDef, linkTags } from './stixEntity';
 
 // Security related
 export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
@@ -147,6 +147,7 @@ export const addPerson = async (user, newUser) => {
     // Create associated relations
     await linkCreatedByRef(wTx, createdUserId, newUser.createdByRef);
     await linkMarkingDef(wTx, createdUserId, newUser.markingDefinitions);
+    await linkTags(wTx, createdUserId, newUser.tags);
     return internalId;
   });
   return getById(personId).then(created => {

@@ -14,7 +14,12 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkKillChains, linkMarkingDef } from './stixEntity';
+import {
+  linkCreatedByRef,
+  linkKillChains,
+  linkMarkingDef,
+  linkTags
+} from './stixEntity';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'course-of-action', args));
@@ -68,6 +73,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     await linkCreatedByRef(wTx, createdId, courseOfAction.createdByRef);
     await linkMarkingDef(wTx, createdId, courseOfAction.markingDefinitions);
     await linkKillChains(wTx, createdId, courseOfAction.killChainPhases);
+    await linkTags(wTx, createdId, courseOfAction.tags);
     return internalId;
   });
   return getById(courseId).then(created => {

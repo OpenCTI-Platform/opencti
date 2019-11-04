@@ -13,7 +13,12 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkKillChains, linkMarkingDef } from './stixEntity';
+import {
+  linkCreatedByRef,
+  linkKillChains,
+  linkMarkingDef,
+  linkTags
+} from './stixEntity';
 
 export const findAll = args => {
   return elPaginate('stix_domain_entities', assoc('type', 'tool', args));
@@ -59,6 +64,7 @@ export const addTool = async (user, tool) => {
     await linkCreatedByRef(wTx, createdToolId, tool.createdByRef);
     await linkMarkingDef(wTx, createdToolId, tool.markingDefinitions);
     await linkKillChains(wTx, createdToolId, tool.killChainPhases);
+    await linkTags(wTx, createdToolId, tool.tags);
     return internalId;
   });
   return getById(toolId).then(created => {

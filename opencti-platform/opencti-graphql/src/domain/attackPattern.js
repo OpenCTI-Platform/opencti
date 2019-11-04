@@ -14,7 +14,12 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { paginate as elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkKillChains, linkMarkingDef } from './stixEntity';
+import {
+  linkCreatedByRef,
+  linkKillChains,
+  linkMarkingDef,
+  linkTags
+} from './stixEntity';
 
 export const findAll = args => {
   if (args.orderBy === 'killChainPhases') {
@@ -122,6 +127,7 @@ export const addAttackPattern = async (user, attackPattern) => {
       attackPattern.markingDefinitions
     );
     await linkKillChains(wTx, attackPatternId, attackPattern.killChainPhases);
+    await linkTags(wTx, attackPatternId, attackPattern.tags);
     return internalId;
   });
   return getById(patternId).then(created => {

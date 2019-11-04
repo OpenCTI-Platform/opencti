@@ -13,7 +13,7 @@ import {
 } from '../database/grakn';
 import { paginate as elPaginate } from '../database/elasticSearch';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { linkCreatedByRef, linkMarkingDef, linkTags } from './stixEntity';
 
 export const findAll = args => {
   return elPaginate(
@@ -116,6 +116,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     // Create associated relations
     await linkCreatedByRef(wTx, createdId, intrusionSet.createdByRef);
     await linkMarkingDef(wTx, createdId, intrusionSet.markingDefinitions);
+    await linkTags(wTx, createdId, intrusionSet.tags);
     return internalId;
   });
   return getById(intrusionId).then(created => {
