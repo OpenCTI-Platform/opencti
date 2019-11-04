@@ -4,7 +4,7 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -42,7 +42,7 @@ export const findByCourseOfAction = args => {
   );
 };
 
-export const findById = attackPatternId => getById(attackPatternId);
+export const findById = attackPatternId => refetchEntityById(attackPatternId);
 
 export const addAttackPattern = async (user, attackPattern) => {
   const patternId = await executeWrite(async wTx => {
@@ -124,7 +124,7 @@ export const addAttackPattern = async (user, attackPattern) => {
     await linkKillChains(wTx, attackPatternId, attackPattern.killChainPhases);
     return internalId;
   });
-  return getById(patternId).then(created => {
+  return refetchEntityById(patternId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

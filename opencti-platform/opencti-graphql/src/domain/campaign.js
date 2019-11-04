@@ -4,7 +4,7 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -39,7 +39,7 @@ export const campaignsTimeSeriesByEntity = args =>
     args
   );
 
-export const findById = campaignId => getById(campaignId);
+export const findById = campaignId => refetchEntityById(campaignId);
 
 export const addCampaign = async (user, campaign) => {
   const campaignId = await executeWrite(async wTx => {
@@ -111,7 +111,7 @@ export const addCampaign = async (user, campaign) => {
     await linkMarkingDef(wTx, createdCampaignId, campaign.markingDefinitions);
     return internalId;
   });
-  return getById(campaignId).then(created => {
+  return refetchEntityById(campaignId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

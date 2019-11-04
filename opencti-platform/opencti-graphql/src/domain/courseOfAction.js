@@ -4,7 +4,7 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -27,7 +27,7 @@ export const findByEntity = args =>
     args
   );
 
-export const findById = courseOfActionId => getById(courseOfActionId);
+export const findById = courseOfActionId => refetchEntityById(courseOfActionId);
 
 export const addCourseOfAction = async (user, courseOfAction) => {
   const courseId = await executeWrite(async wTx => {
@@ -70,7 +70,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
     await linkKillChains(wTx, createdId, courseOfAction.killChainPhases);
     return internalId;
   });
-  return getById(courseId).then(created => {
+  return refetchEntityById(courseId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

@@ -4,7 +4,7 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -22,7 +22,7 @@ export const findAll = args => {
   );
 };
 
-export const findById = intrusionSetId => getById(intrusionSetId);
+export const findById = intrusionSetId => refetchEntityById(intrusionSetId);
 
 export const addIntrusionSet = async (user, intrusionSet) => {
   const intrusionId = await executeWrite(async wTx => {
@@ -118,7 +118,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     await linkMarkingDef(wTx, createdId, intrusionSet.markingDefinitions);
     return internalId;
   });
-  return getById(intrusionId).then(created => {
+  return refetchEntityById(intrusionId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

@@ -1,6 +1,17 @@
+/* eslint-disable no-underscore-dangle */
 import { Client } from '@elastic/elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import { map, append, assoc, mapObjIndexed, pipe, split, join } from 'ramda';
+import {
+  map,
+  dissoc,
+  append,
+  assoc,
+  mapObjIndexed,
+  pipe,
+  split,
+  join,
+  head
+} from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
 
@@ -16,10 +27,11 @@ const dateFields = [
 
 const numberFields = ['object_status'];
 
-const defaultIndexes = [
+export const INDEX_STIX_OBSERVABLE = 'stix_observables';
+export const defaultIndexes = [
   'stix_domain_entities',
   'stix_relations',
-  'stix_observables',
+  INDEX_STIX_OBSERVABLE,
   'external_references',
   'work_jobs'
 ];
@@ -180,7 +192,7 @@ export const index = async (indexName, documentBody, refresh = true) => {
     index: indexName,
     id: documentBody.grakn_id,
     refresh,
-    body: documentBody
+    body: dissoc('_index', documentBody)
   });
   return documentBody;
 };
@@ -189,7 +201,10 @@ export const elUpdate = (indexName, documentId, documentBody) => {
   return el.update({
     id: documentId,
     index: indexName,
-    body: documentBody
+    refresh: true,
+    body: {
+      doc: documentBody
+    }
   });
 };
 
@@ -453,7 +468,6 @@ export const paginate = async (indexName, options) => {
     ordering = append(order, ordering);
   }
 
-  /* eslint-disable no-underscore-dangle */
   const query = {
     index: indexName,
     body: {
@@ -490,15 +504,88 @@ export const paginate = async (indexName, options) => {
     .catch(() => {
       return connectionFormat ? buildPagination(first, offset, [], 0) : [];
     });
-  /* eslint-enable no-underscore-dangle */
 };
 
+export const loadByTerms = async (terms, indices = defaultIndexes) => {
+  const query = {
+    index: indices,
+    body: {
+      query: {
+        bool: {
+          should: map(x => ({ term: x }), terms)
+        }
+      }
+    }
+  };
+  const data = await el.search(query);
+  const total = data.body.hits.total.value;
+  const response = total > 0 ? head(data.body.hits.hits) : undefined;
+  if (!response) return response;
+  return assoc('_index', response._index, response._source);
+};
+/**
+ *   // 01. If data need to be requested from the index cache system
+ if (getIndex) {
+    try {
+      // eslint-disable-next-line prettier/prettier
+      logger.debug(`[ELASTICSEARCH] refetchByConcept get > ${head(types)} ${id} on ${getIndex}`);
+      const fromCache = await loadByGraknId(id, getIndex);
+      return pipe(
+        mapObjIndexed((value, key) =>
+          Array.isArray(value) && !includes(key, multipleAttributes)
+            ? head(value)
+            : value
+        ),
+        assoc('id', elAttributes.internal_id_key),
+        assoc('parent_type', parentTypeLabel)
+      )(elAttributes);
+    } catch (e) {
+      // eslint-disable-next-line prettier/prettier
+      logger.debug(`[ELASTICSEARCH] refetchByConcept missing > ${head(types)} ${id} on ${getIndex}`);
+    }
+  }
+ */
+
+export const loadById = (id, indices = defaultIndexes) => {
+  return loadByTerms([{ 'internal_id_key.keyword': id }], indices);
+};
+export const loadByStixId = (id, indices = defaultIndexes) => {
+  return loadByTerms([{ 'stix_id_key.keyword': id }], indices);
+};
+export const loadByGraknId = (id, indices = defaultIndexes) => {
+  return loadByTerms([{ 'grakn_id.keyword': id }], indices);
+};
+
+export const findByTerms = async (terms, indices = defaultIndexes) => {
+  const query = {
+    index: indices,
+    body: {
+      query: {
+        bool: {
+          should: map(x => ({ term: x }), terms)
+        }
+      }
+    }
+  };
+  return el.search(query).then(data => {
+    return {
+      edges: map(
+        x => ({ node: assoc('_index', x._index, x._source) }),
+        data.body.hits.hits
+      ),
+      pageInfo: {
+        globalCount: data.body.hits.total.value
+      }
+    };
+  });
+};
+
+/*
 export const getAttributes = (indexName, id) => {
   return el
     .get({ id, index: indexName })
     .then(data => {
-      // eslint-disable-next-line no-underscore-dangle
-      return data.body._source;
+      return assoc('_index', indexName, data.body._source);
     })
     .catch(e => {
       if (e.meta.statusCode !== 404) {
@@ -508,3 +595,4 @@ export const getAttributes = (indexName, id) => {
       return null;
     });
 };
+*/

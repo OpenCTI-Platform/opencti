@@ -9,12 +9,11 @@ import {
   escape,
   escapeString,
   executeWrite,
-  getById,
-  getId,
+  getGraknId,
   graknNow,
   monthFormat,
   notify,
-  paginate,
+  refetchEntityById,
   timeSeries,
   updateAttribute,
   yearFormat
@@ -24,6 +23,10 @@ import { findAll as relationFindAll } from './stixRelation';
 import {
   countEntities,
   deleteEntity,
+  INDEX_STIX_OBSERVABLE,
+  loadById,
+  loadByStixId,
+  loadByTerms,
   paginate as elPaginate
 } from '../database/elasticSearch';
 import { connectorsForEnrichment } from './connector';
@@ -69,25 +72,19 @@ export const stixObservablesTimeSeries = args => {
   );
 };
 
-export const findById = stixObservableId => getById(stixObservableId);
+export const findById = stixObservableId => {
+  return loadById(stixObservableId, [INDEX_STIX_OBSERVABLE]);
+};
 
 export const findByStixId = args => {
-  return paginate(
-    `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
-    $x has stix_id_key "${escapeString(args.stix_id)}"`,
-    args,
-    false
-  );
+  return loadByStixId(args.stix_id, [INDEX_STIX_OBSERVABLE]);
 };
 
-export const findByValue = args => {
-  return paginate(
-    `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
-    $x has observable_value "${escapeString(args.observableValue)}"`,
-    args,
-    false
+export const findByValue = args =>
+  loadByTerms(
+    [{ 'observable_value.keyword': args.observableValue }],
+    [INDEX_STIX_OBSERVABLE]
   );
-};
 
 export const search = args => elPaginate('stix_observables', args);
 
@@ -130,7 +127,7 @@ const askEnrich = async (observableId, scope) => {
 };
 
 export const stixObservableAskEnrichment = async (id, connectorId) => {
-  const connector = await getById(connectorId);
+  const connector = await refetchEntityById(connectorId);
   const { job, work } = await createWork(connector, id);
   const message = {
     work_id: work.internal_id_key,
@@ -173,13 +170,13 @@ export const addStixObservable = async (user, stixObservable) => {
   });
   // Enqueue enrich job
   await askEnrich(observableId, stixObservable.type);
-  return getById(observableId).then(created => {
+  return refetchEntityById(observableId).then(created => {
     return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
   });
 };
 
 export const stixObservableDelete = async stixObservableId => {
-  const graknId = await getId(stixObservableId);
+  const graknId = await getGraknId(stixObservableId);
   await deleteEntity('stix_observables', graknId);
   return deleteEntityById(stixObservableId);
 };
@@ -204,20 +201,23 @@ export const stixObservableDeleteRelation = (
 
 export const stixObservableCleanContext = (user, stixObservableId) => {
   delEditContext(user, stixObservableId);
-  return getById(stixObservableId).then(stixObservable =>
+  return refetchEntityById(stixObservableId).then(stixObservable =>
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user)
   );
 };
 
 export const stixObservableEditContext = (user, stixObservableId, input) => {
   setEditContext(user, stixObservableId, input);
-  return getById(stixObservableId).then(stixObservable =>
+  return refetchEntityById(stixObservableId).then(stixObservable =>
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user)
   );
 };
 
 export const stixObservableEditField = (user, stixObservableId, input) => {
-  return updateAttribute(stixObservableId, input).then(stixObservable => {
+  return executeWrite(wTx => {
+    return updateAttribute(stixObservableId, input, wTx);
+  }).then(async () => {
+    const stixObservable = await loadById(stixObservableId);
     return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user);
   });
 };

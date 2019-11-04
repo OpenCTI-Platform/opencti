@@ -4,7 +4,7 @@ import {
   escape,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   getGraknVersion,
   getObject,
   graknNow,
@@ -18,7 +18,7 @@ import {
   setEditContext
 } from '../database/redis';
 
-import { getElasticVersion } from '../database/elasticSearch';
+import { getElasticVersion, loadById } from '../database/elasticSearch';
 
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { version } from '../../package.json';
@@ -61,7 +61,7 @@ export const addSettings = async (user, settings) => {
   `);
     return internalId;
   });
-  return getById(settingId).then(created =>
+  return refetchEntityById(settingId).then(created =>
     notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user)
   );
 };
@@ -70,19 +70,23 @@ export const settingsDelete = settingsId => deleteEntityById(settingsId);
 
 export const settingsCleanContext = (user, settingsId) => {
   delEditContext(user, settingsId);
-  return getById(settingsId).then(settings =>
+  return refetchEntityById(settingsId).then(settings =>
     notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
   );
 };
 
 export const settingsEditContext = (user, settingsId, input) => {
   setEditContext(user, settingsId, input);
-  return getById(settingsId).then(settings =>
+  return refetchEntityById(settingsId).then(settings =>
     notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
   );
 };
 
-export const settingsEditField = (user, settingsId, input) =>
-  updateAttribute(settingsId, input).then(settings =>
-    notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
-  );
+export const settingsEditField = (user, settingsId, input) => {
+  return executeWrite(wTx => {
+    return updateAttribute(settingsId, input, wTx);
+  }).then(async () => {
+    const settings = await loadById(settingsId);
+    return notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user);
+  });
+};

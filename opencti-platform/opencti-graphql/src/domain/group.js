@@ -4,7 +4,7 @@ import {
   deleteEntityById,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -28,7 +28,7 @@ export const findAll = args => {
   );
 };
 
-export const findById = groupId => getById(groupId);
+export const findById = groupId => refetchEntityById(groupId);
 
 export const members = (groupId, args) => {
   return paginate(
@@ -72,7 +72,7 @@ export const addGroup = async (user, group) => {
     await linkMarkingDef(wTx, createdGroupId, group.markingDefinitions);
     return internalId;
   });
-  return getById(groupId).then(created =>
+  return refetchEntityById(groupId).then(created =>
     notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
   );
 };

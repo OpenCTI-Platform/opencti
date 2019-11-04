@@ -3,7 +3,7 @@ import { assoc, isEmpty, concat, map, isNil, sort } from 'ramda';
 import querystring from 'querystring';
 import mime from 'mime-types';
 import conf, { logger } from '../config/conf';
-import { getById, now, sinceNowInMinutes } from './grakn';
+import { refetchEntityById, now, sinceNowInMinutes } from './grakn';
 import { buildPagination } from './utils';
 import {
   deleteWorkForFile,
@@ -123,7 +123,7 @@ export const upload = async (user, category, file, entityId = null) => {
   };
   let entityType = null;
   if (entityId) {
-    const entity = await getById(entityId);
+    const entity = await refetchEntityById(entityId);
     entityType = entity.entity_type;
   }
   const fileDirName = `${category}/${extractName(

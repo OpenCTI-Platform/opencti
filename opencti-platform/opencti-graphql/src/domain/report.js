@@ -6,7 +6,7 @@ import {
   escape,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   getSingleValueNumber,
   graknNow,
   monthFormat,
@@ -229,7 +229,7 @@ export const reportsDistributionByEntity = args => {
   });
 };
 
-export const findById = reportId => getById(reportId);
+export const findById = reportId => refetchEntityById(reportId);
 
 export const objectRefs = (reportId, args) =>
   paginate(
@@ -304,7 +304,7 @@ export const addReport = async (user, report) => {
     await linkMarkingDef(wTx, createdReportId, report.markingDefinitions);
     return internalId;
   });
-  return getById(reportId).then(created => {
+  return refetchEntityById(reportId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

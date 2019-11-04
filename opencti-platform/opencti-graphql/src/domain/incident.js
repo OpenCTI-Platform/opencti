@@ -4,7 +4,7 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -43,7 +43,7 @@ export const incidentsTimeSeriesByEntity = args => {
   );
 };
 
-export const findById = incidentId => getById(incidentId);
+export const findById = incidentId => refetchEntityById(incidentId);
 
 export const addIncident = async (user, incident) => {
   const incidentId = await executeWrite(async wTx => {
@@ -114,7 +114,7 @@ export const addIncident = async (user, incident) => {
     await linkMarkingDef(wTx, createdIncidentId, incident.markingDefinitions);
     return internalId;
   });
-  return getById(incidentId).then(created => {
+  return refetchEntityById(incidentId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

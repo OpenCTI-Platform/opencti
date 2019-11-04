@@ -8,7 +8,7 @@ import {
   deleteRelationById,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   getObject,
   getSingleValueNumber,
   graknNow,
@@ -20,6 +20,7 @@ import {
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import { loadById } from '../database/elasticSearch';
 
 export const findAll = args => {
   return paginate(
@@ -40,7 +41,7 @@ export const findAll = args => {
   );
 };
 
-export const findById = workspaceId => getById(workspaceId);
+export const findById = workspaceId => refetchEntityById(workspaceId);
 
 export const workspacesNumber = args => {
   return {
@@ -116,7 +117,7 @@ export const addWorkspace = async (user, workspace) => {
     }
     return internalId;
   });
-  return getById(workId).then(created =>
+  return refetchEntityById(workId).then(created =>
     notify(BUS_TOPICS.Workspace.ADDED_TOPIC, created, user)
   );
 };
@@ -152,7 +153,7 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
     await Promise.all(relationsPromises);
   });
 
-  return getById(workspaceId).then(workspace =>
+  return refetchEntityById(workspaceId).then(workspace =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };
@@ -165,19 +166,23 @@ export const workspaceDeleteRelation = (user, workspaceId, relationId) =>
 
 export const workspaceCleanContext = (user, workspaceId) => {
   delEditContext(user, workspaceId);
-  return getById(workspaceId).then(workspace =>
+  return refetchEntityById(workspaceId).then(workspace =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };
 
 export const workspaceEditContext = (user, workspaceId, input) => {
   setEditContext(user, workspaceId, input);
-  return getById(workspaceId).then(workspace =>
+  return refetchEntityById(workspaceId).then(workspace =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };
 
-export const workspaceEditField = (user, workspaceId, input) =>
-  updateAttribute(workspaceId, input).then(workspace =>
-    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
-  );
+export const workspaceEditField = (user, workspaceId, input) => {
+  return executeWrite(wTx => {
+    return updateAttribute(workspaceId, input, wTx);
+  }).then(async () => {
+    const workspace = await loadById(workspaceId);
+    return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user);
+  });
+};

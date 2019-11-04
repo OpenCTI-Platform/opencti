@@ -2,7 +2,11 @@ import { assoc, head, isNil, join, map, pathOr, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
-import { delUserContext } from '../database/redis';
+import {
+  delUserContext,
+  getAccessCache,
+  storeAccessCache
+} from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess } from '../config/errors';
 import conf, {
   BUS_TOPICS,
@@ -17,7 +21,7 @@ import {
   deleteEntityById,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   getObject,
   graknNow,
   load,
@@ -58,7 +62,7 @@ export const setAuthenticationCookie = (token, res) => {
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'user', args));
 
-export const findById = userId => getById(userId);
+export const findById = userId => refetchEntityById(userId);
 
 export const findByEmail = async userEmail => {
   const result = await load(
@@ -149,7 +153,7 @@ export const addPerson = async (user, newUser) => {
     await linkMarkingDef(wTx, createdUserId, newUser.markingDefinitions);
     return internalId;
   });
-  return getById(personId).then(created => {
+  return refetchEntityById(personId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
@@ -235,7 +239,7 @@ export const addUser = async (
 
     return internalId;
   });
-  return getById(userId).then(created => {
+  return refetchEntityById(userId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
@@ -316,7 +320,7 @@ export const userRenewToken = async (
     insert (client: $user, authorization: $token) isa authorize, has internal_id_key "${uuid()}";`
     );
   });
-  return getById(userId);
+  return refetchEntityById(userId);
 };
 
 export const userEditField = (user, userId, input) => {
@@ -326,7 +330,10 @@ export const userEditField = (user, userId, input) => {
       ? [bcrypt.hashSync(head(input.value).toString(), 10)]
       : input.value;
   const finalInput = { key, value };
-  return updateAttribute(userId, finalInput).then(userToEdit => {
+  return executeWrite(wTx => {
+    return updateAttribute(userId, finalInput, wTx);
+  }).then(async () => {
+    const userToEdit = await refetchEntityById(userId);
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
   });
 };
@@ -336,14 +343,7 @@ export const meEditField = (user, userId, input) => {
   if (key === 'grant') {
     throw new ForbiddenAccess();
   }
-  const value =
-    key === 'password'
-      ? [bcrypt.hashSync(head(input.value).toString(), 10)]
-      : input.value;
-  const finalInput = { key, value };
-  return updateAttribute(userId, finalInput).then(userToEdit => {
-    return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
-  });
+  return userEditField(user, userId, input);
 };
 
 export const userDelete = async userId => {
@@ -356,16 +356,19 @@ export const userDelete = async userId => {
 
 // Token related
 export const findByTokenUUID = async tokenValue => {
-  const result = await load(
-    `match $token isa Token,
+  let result = await getAccessCache(tokenValue);
+  if (!result) {
+    result = await load(
+      `match $token isa Token,
     has uuid "${escapeString(tokenValue)}",
     has revoked false;
     (authorization:$token, client:$client); get;`,
-    ['client', 'token']
-  );
-  if (isNil(result)) {
-    return undefined;
+      ['client', 'token']
+    );
+    console.log(`Setting cache access for ${tokenValue}`);
+    await storeAccessCache(tokenValue, result);
   }
+  if (isNil(result)) return undefined;
   const { created } = result.token;
   const maxDuration = moment.duration(result.token.duration);
   const currentDuration = moment.duration(moment().diff(created));

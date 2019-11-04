@@ -1,4 +1,4 @@
-import { find, getById } from '../database/grakn';
+import { find, refetchEntityById } from '../database/grakn';
 import { logger } from '../config/conf';
 
 module.exports.up = async next => {
@@ -7,7 +7,7 @@ module.exports.up = async next => {
   logger.info('[MIGRATION] reindex_users > Persons loaded');
   await Promise.all(
     entities.map(entity => {
-      return getById(entity.x.id, true);
+      return refetchEntityById(entity.x.id);
     })
   );
   logger.info('[MIGRATION] reindex_users > Migration complete');

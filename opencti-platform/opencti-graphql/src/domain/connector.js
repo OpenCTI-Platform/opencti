@@ -2,7 +2,7 @@ import { assoc, filter, includes, map, pipe } from 'ramda';
 import {
   executeWrite,
   find,
-  getById,
+  refetchEntityById,
   graknNow,
   now,
   sinceNowInMinutes,
@@ -63,11 +63,11 @@ export const pingConnector = async (id, state) => {
     const stateInput = { key: 'connector_state', value: [state] };
     await updateAttribute(id, stateInput, wTx);
   });
-  return getById(id, true).then(data => completeConnector(data));
+  return refetchEntityById(id).then(data => completeConnector(data));
 };
 
 export const registerConnector = async ({ id, name, type, scope }) => {
-  const connector = await getById(id);
+  const connector = await refetchEntityById(id);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
   if (connector) {
@@ -82,7 +82,6 @@ export const registerConnector = async ({ id, name, type, scope }) => {
     });
   } else {
     // Need to create the connector
-    // 01. Insert the connector
     const creation = graknNow();
     await executeWrite(async wTx => {
       const query = `insert $connector isa Connector, 
@@ -95,5 +94,6 @@ export const registerConnector = async ({ id, name, type, scope }) => {
       await wTx.tx.query(query);
     });
   }
-  return getById(id, true).then(data => completeConnector(data));
+  // Return the connector
+  return refetchEntityById(id).then(data => completeConnector(data));
 };

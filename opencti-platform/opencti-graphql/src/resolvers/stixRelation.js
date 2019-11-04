@@ -22,7 +22,7 @@ import {
 } from '../domain/stixRelation';
 import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
-import { getByGraknId } from '../database/grakn';
+import { refetchEntityByGraknId } from '../database/grakn';
 import { killChainPhases } from '../domain/stixDomainEntity';
 
 const stixRelationResolvers = {
@@ -73,8 +73,8 @@ const stixRelationResolvers = {
   },
   StixRelation: {
     killChainPhases: (rel, args) => killChainPhases(rel.id, args),
-    from: rel => rel.from || getByGraknId(rel.fromId),
-    to: rel => rel.to || getByGraknId(rel.toId)
+    from: rel => refetchEntityByGraknId(rel.fromId),
+    to: rel => refetchEntityByGraknId(rel.toId)
   },
   Mutation: {
     stixRelationEdit: (_, { id }, { user }) => ({

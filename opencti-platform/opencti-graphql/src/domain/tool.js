@@ -4,7 +4,7 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -19,7 +19,7 @@ export const findAll = args => {
   return elPaginate('stix_domain_entities', assoc('type', 'tool', args));
 };
 
-export const findById = toolId => getById(toolId);
+export const findById = toolId => refetchEntityById(toolId);
 
 export const addTool = async (user, tool) => {
   const toolId = await executeWrite(async wTx => {
@@ -61,7 +61,7 @@ export const addTool = async (user, tool) => {
     await linkKillChains(wTx, createdToolId, tool.killChainPhases);
     return internalId;
   });
-  return getById(toolId).then(created => {
+  return refetchEntityById(toolId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

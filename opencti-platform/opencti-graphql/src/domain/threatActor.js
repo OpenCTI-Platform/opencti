@@ -4,7 +4,7 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -18,7 +18,7 @@ import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'threat-actor', args));
 
-export const findById = threatActorId => getById(threatActorId);
+export const findById = threatActorId => refetchEntityById(threatActorId);
 
 export const addThreatActor = async (user, threatActor) => {
   const actorId = await executeWrite(async wTx => {
@@ -76,7 +76,7 @@ export const addThreatActor = async (user, threatActor) => {
     await linkMarkingDef(wTx, createId, threatActor.markingDefinitions);
     return internalId;
   });
-  return getById(actorId).then(created => {
+  return refetchEntityById(actorId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

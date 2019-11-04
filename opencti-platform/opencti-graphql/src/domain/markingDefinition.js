@@ -7,17 +7,18 @@ import {
   deleteRelationById,
   escapeString,
   executeWrite,
-  getById,
   graknNow,
   monthFormat,
   notify,
   paginate,
   prepareDate,
+  refetchEntityById,
   updateAttribute,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { linkCreatedByRef } from './stixEntity';
+import { loadById } from '../database/elasticSearch';
 
 export const findAll = args => {
   return paginate(
@@ -65,7 +66,8 @@ export const findByStixId = args => {
   );
 };
 
-export const findById = markingDefinitionId => getById(markingDefinitionId);
+export const findById = markingDefinitionId =>
+  refetchEntityById(markingDefinitionId);
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
   const markingId = await executeWrite(async wTx => {
@@ -105,7 +107,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
     await linkCreatedByRef(wTx, createdId, markingDefinition.createdByRef);
     return internalId;
   });
-  return getById(markingId).then(created =>
+  return refetchEntityById(markingId).then(created =>
     notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created, user)
   );
 };
@@ -135,7 +137,7 @@ export const markingDefinitionDeleteRelation = (
 
 export const markingDefinitionCleanContext = (user, markingDefinitionId) => {
   delEditContext(user, markingDefinitionId);
-  return getById(markingDefinitionId).then(markingDefinition =>
+  return refetchEntityById(markingDefinitionId).then(markingDefinition =>
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );
 };
@@ -146,12 +148,24 @@ export const markingDefinitionEditContext = (
   input
 ) => {
   setEditContext(user, markingDefinitionId, input);
-  return getById(markingDefinitionId).then(markingDefinition =>
+  return refetchEntityById(markingDefinitionId).then(markingDefinition =>
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );
 };
 
-export const markingDefinitionEditField = (user, markingDefinitionId, input) =>
-  updateAttribute(markingDefinitionId, input).then(markingDefinition =>
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
-  );
+export const markingDefinitionEditField = (
+  user,
+  markingDefinitionId,
+  input
+) => {
+  return executeWrite(wTx => {
+    return updateAttribute(markingDefinitionId, input, wTx);
+  }).then(async () => {
+    const markingDefinition = await loadById(markingDefinitionId);
+    return notify(
+      BUS_TOPICS.MarkingDefinition.EDIT_TOPIC,
+      markingDefinition,
+      user
+    );
+  });
+};

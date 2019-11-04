@@ -1,11 +1,11 @@
 import uuid from 'uuid/v4';
 import { assoc, pipe, splitEvery } from 'ramda';
 import {
-  attributeExists,
-  conceptTypes,
-  executeWrite,
-  getAttributes,
-  inferIndexFromConceptTypes
+    attributeExists,
+    conceptTypes,
+    executeWrite,
+    refetchByConcept,
+    inferIndexFromConceptTypes, refetchEntityByGraknId
 } from '../database/grakn';
 import { logger } from '../config/conf';
 import { index } from '../database/elasticSearch';
@@ -58,7 +58,7 @@ module.exports.up = async next => {
                 let elasticQuery = null;
                 // reindex if necessary
                 if (getIndex) {
-                  const attributes = await getAttributes(concept);
+                  const attributes = await refetchEntityByGraknId(concept.id);
                   const finalAttributes = pipe(
                     assoc('id', entityStixId),
                     assoc('stix_id_key', entityStixId)

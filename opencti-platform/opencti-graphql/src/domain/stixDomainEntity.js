@@ -10,13 +10,13 @@ import {
   escape,
   escapeString,
   executeWrite,
-  getById,
-  getId,
+  getGraknId,
   graknNow,
   monthFormat,
   notify,
   paginate,
   prepareDate,
+  refetchEntityById,
   timeSeries,
   updateAttribute,
   yearFormat
@@ -24,6 +24,8 @@ import {
 import {
   countEntities,
   deleteEntity,
+  loadById,
+  loadByStixId,
   paginate as elPaginate
 } from '../database/elasticSearch';
 
@@ -47,18 +49,19 @@ export const stixDomainEntitiesNumber = args => ({
   total: countEntities('stix_domain_entities', dissoc('endDate', args))
 });
 
-export const findById = stixDomainEntityId => getById(stixDomainEntityId);
+export const findById = stixDomainEntityId => loadById(stixDomainEntityId);
 
-export const findByStixId = args => {
-  return paginate(
-    `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
-    $x has stix_id_key "${escapeString(args.stix_id_key)}"`,
-    args,
-    false
-  );
-};
+export const findByStixId = args => loadByStixId(args.stix_id_key);
 
 export const findByName = args => {
+  // const index = inferIndexFromConceptTypes(['Stix-Domain-Entity']);
+  // return findByTerms(
+  //     [
+  //       { 'name.keyword': escapeString(args.name) },
+  //       { 'alias.keyword': escapeString(args.name) }
+  //     ],
+  //     index
+  // );
   return paginate(
     `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
    $x has name $name;
@@ -166,7 +169,7 @@ export const stixDomainEntityExportAsk = async (
   format,
   exportType
 ) => {
-  const entity = await getById(domainEntityId);
+  const entity = await refetchEntityById(domainEntityId);
   const workList = await askJobExports(entity, format, exportType);
   // Return the work list to do
   return map(w => workToExportFile(w.work), workList);
@@ -175,7 +178,7 @@ export const stixDomainEntityExportAsk = async (
 export const stixDomainEntityExportPush = async (user, entityId, file) => {
   // Upload the document in minio
   await upload(user, 'export', file, entityId);
-  return getById(entityId).then(stixDomainEntity => {
+  return refetchEntityById(entityId).then(stixDomainEntity => {
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user);
     return true;
   });
@@ -237,13 +240,13 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     await linkMarkingDef(wTx, createdId, stixDomainEntity.markingDefinitions);
     return internalId;
   });
-  return getById(domainId).then(created => {
+  return refetchEntityById(domainId, true).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
 
 export const stixDomainEntityDelete = async stixDomainEntityId => {
-  const graknId = await getId(stixDomainEntityId);
+  const graknId = await getGraknId(stixDomainEntityId);
   await deleteEntity('stix_domain_entities', graknId);
   return deleteEntityById(stixDomainEntityId);
 };
@@ -268,12 +271,11 @@ export const stixDomainEntityAddRelations = async (
     }),
     input.toIds
   );
-
   const createRelationPromise = relationInput =>
     createRelation(stixDomainEntityId, relationInput);
   const relationsPromises = map(createRelationPromise, finalInput);
   await Promise.all(relationsPromises);
-  return getById(stixDomainEntityId, true).then(stixDomainEntity =>
+  return refetchEntityById(stixDomainEntityId).then(stixDomainEntity =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, stixDomainEntity, user)
   );
 };
@@ -290,7 +292,7 @@ export const stixDomainEntityDeleteRelation = (
 
 export const stixDomainEntityCleanContext = (user, stixDomainEntityId) => {
   delEditContext(user, stixDomainEntityId);
-  return getById(stixDomainEntityId).then(stixDomainEntity =>
+  return loadById(stixDomainEntityId).then(stixDomainEntity =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user)
   );
 };
@@ -301,16 +303,20 @@ export const stixDomainEntityEditContext = (
   input
 ) => {
   setEditContext(user, stixDomainEntityId, input);
-  return getById(stixDomainEntityId).then(stixDomainEntity =>
+  return loadById(stixDomainEntityId).then(stixDomainEntity =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user)
   );
 };
 
-export const stixDomainEntityEditField = (user, stixDomainEntityId, input) =>
-  updateAttribute(stixDomainEntityId, input).then(stixDomainEntity => {
-    return notify(
-      BUS_TOPICS.StixDomainEntity.EDIT_TOPIC,
-      stixDomainEntity,
-      user
-    );
+export const stixDomainEntityEditField = async (
+  user,
+  stixDomainEntityId,
+  input
+) => {
+  return executeWrite(wTx => {
+    return updateAttribute(stixDomainEntityId, input, wTx);
+  }).then(async () => {
+    const stixDomain = await loadById(stixDomainEntityId);
+    return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomain, user);
   });
+};

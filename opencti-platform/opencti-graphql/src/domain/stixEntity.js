@@ -2,9 +2,9 @@ import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
 import {
   escapeString,
-  getById,
+  refetchEntityById,
+  refetchEntityByStixId,
   getObject,
-  load,
   paginate
 } from '../database/grakn';
 import {
@@ -12,17 +12,11 @@ import {
   search as relationSearch
 } from './stixRelation';
 
-const findByStixId = stixId => {
-  const query = `match $x isa entity;
-   { $x isa Stix-Domain; } or { $x isa Stix-Observable; } or { $x isa stix_relation; };
-   $x has stix_id_key "${escapeString(stixId)}"; get;`;
-  return load(query, ['x']).then(data => {
-    return data && data.x;
-  });
-};
+// eslint-disable-next-line no-undef
+const findByStixId = async stixId => refetchEntityByStixId(stixId);
 
 export const findById = (id, isStixId) => {
-  return isStixId ? findByStixId(id) : getById(id);
+  return isStixId ? findByStixId(id) : refetchEntityById(id);
 };
 
 export const markingDefinitions = (stixEntityId, args) => {

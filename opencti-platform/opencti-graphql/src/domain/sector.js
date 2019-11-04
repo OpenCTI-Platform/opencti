@@ -4,7 +4,7 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   getSingleValueNumber,
   graknNow,
   monthFormat,
@@ -21,7 +21,7 @@ export const findAll = args => {
   return elPaginate('stix_domain_entities', assoc('type', 'sector', args));
 };
 
-export const findById = sectorId => getById(sectorId);
+export const findById = sectorId => refetchEntityById(sectorId);
 
 export const markingDefinitions = (sectorId, args) => {
   return paginate(
@@ -93,7 +93,7 @@ export const addSector = async (user, sector) => {
     await linkMarkingDef(wTx, createdSectorId, sector.markingDefinitions);
     return internalId;
   });
-  return getById(sectorId).then(created => {
+  return refetchEntityById(sectorId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

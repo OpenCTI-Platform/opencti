@@ -1,11 +1,11 @@
 import uuid from 'uuid/v4';
 import { assoc, map, filter, pipe } from 'ramda';
 import moment from 'moment';
-import { getById, now, sinceNowInMinutes } from '../database/grakn';
+import { refetchEntityById, now, sinceNowInMinutes } from '../database/grakn';
 import {
   elDeleteByField,
-  getAttributes,
   index,
+  loadByGraknId,
   paginate
 } from '../database/elasticSearch';
 
@@ -26,8 +26,8 @@ export const workToExportFile = work => {
 };
 
 export const connectorForWork = async id => {
-  const work = await getAttributes(WORK_INDEX, id);
-  if (work) return getById(work.connector_id);
+  const work = await loadByGraknId(id, WORK_INDEX);
+  if (work) return refetchEntityById(work.connector_id);
   return null;
 };
 
@@ -141,7 +141,7 @@ export const createWork = async (connector, entityId = null, fileId = null) => {
 };
 
 export const updateJob = async (jobId, status, messages) => {
-  const job = await getAttributes(WORK_INDEX, jobId);
+  const job = await loadByGraknId(jobId, WORK_INDEX);
   const updatedJob = pipe(
     assoc('job_status', status),
     assoc('messages', messages),

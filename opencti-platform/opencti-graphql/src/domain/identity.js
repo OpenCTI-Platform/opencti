@@ -4,7 +4,7 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -22,7 +22,7 @@ export const findAll = args => {
   );
 };
 
-export const findById = identityId => getById(identityId);
+export const findById = identityId => refetchEntityById(identityId);
 
 export const addIdentity = async (user, identity) => {
   const identId = await executeWrite(async wTx => {
@@ -71,7 +71,7 @@ export const addIdentity = async (user, identity) => {
     await linkMarkingDef(wTx, createdIdentityId, identity.markingDefinitions);
     return internalId;
   });
-  return getById(identId).then(created => {
+  return refetchEntityById(identId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

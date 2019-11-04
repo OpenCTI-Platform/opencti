@@ -4,7 +4,7 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  getById,
+  refetchEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -18,7 +18,7 @@ import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'region', args));
 
-export const findById = regionId => getById(regionId);
+export const findById = regionId => refetchEntityById(regionId);
 
 export const addRegion = async (user, region) => {
   const regionId = await executeWrite(async wTx => {
@@ -61,7 +61,7 @@ export const addRegion = async (user, region) => {
     await linkMarkingDef(wTx, createdRegionId, region.markingDefinitions);
     return internalId;
   });
-  return getById(regionId).then(created => {
+  return refetchEntityById(regionId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
