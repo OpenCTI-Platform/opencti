@@ -46,7 +46,7 @@ export const rolesMap = {
 };
 
 export const isInversed = (relationType, fromRole) => {
-  if (fromRole) {
+  if (relationType && fromRole) {
     if (rolesMap[relationType]) {
       if (rolesMap[relationType][fromRole] === 'from') {
         return false;

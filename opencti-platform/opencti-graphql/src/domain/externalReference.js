@@ -7,21 +7,17 @@ import {
   deleteRelationById,
   escapeString,
   executeWrite,
-  refetchEntityById,
-  getGraknId,
   graknNow,
   monthFormat,
   notify,
   paginate,
   prepareDate,
+  refetchEntityById,
   updateAttribute,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import {
-  deleteEntity, loadById,
-  paginate as elPaginate
-} from '../database/elasticSearch';
+import { loadById, paginate as elPaginate } from '../database/elasticSearch';
 import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args => elPaginate('external_references', args);
@@ -88,8 +84,6 @@ export const addExternalReference = async (user, externalReference) => {
 };
 
 export const externalReferenceDelete = async externalReferenceId => {
-  const graknId = await getGraknId(externalReferenceId);
-  await deleteEntity('external_references', graknId);
   return deleteEntityById(externalReferenceId);
 };
 

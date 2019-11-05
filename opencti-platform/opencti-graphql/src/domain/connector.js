@@ -9,6 +9,7 @@ import {
   updateAttribute
 } from '../database/grakn';
 import { connectorConfig, registerConnectorQueues } from '../database/rabbitmq';
+import { loadById } from '../database/elasticSearch';
 
 export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
 export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
@@ -63,7 +64,7 @@ export const pingConnector = async (id, state) => {
     const stateInput = { key: 'connector_state', value: [state] };
     await updateAttribute(id, stateInput, wTx);
   });
-  return refetchEntityById(id).then(data => completeConnector(data));
+  return loadById(id).then(data => completeConnector(data));
 };
 
 export const registerConnector = async ({ id, name, type, scope }) => {
@@ -80,20 +81,20 @@ export const registerConnector = async ({ id, name, type, scope }) => {
       const scopeInput = { key: 'connector_scope', value: [scope.join(',')] };
       await updateAttribute(id, scopeInput, wTx);
     });
-  } else {
-    // Need to create the connector
-    const creation = graknNow();
-    await executeWrite(async wTx => {
-      const query = `insert $connector isa Connector, 
+    return loadById(id).then(data => completeConnector(data));
+  }
+  // Need to create the connector
+  const creation = graknNow();
+  await executeWrite(async wTx => {
+    const query = `insert $connector isa Connector, 
           has internal_id_key "${id}",
           has name "${name}",
           has connector_type "${type}",
           has connector_scope "${scope.join(',')}",
           has created_at ${creation},
           has updated_at ${creation};`;
-      await wTx.tx.query(query);
-    });
-  }
+    await wTx.tx.query(query);
+  });
   // Return the connector
   return refetchEntityById(id).then(data => completeConnector(data));
 };

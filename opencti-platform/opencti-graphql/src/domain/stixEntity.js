@@ -1,22 +1,14 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
-import {
-  escapeString,
-  refetchEntityById,
-  refetchEntityByStixId,
-  getObject,
-  paginate
-} from '../database/grakn';
+import { escapeString, getObject, paginate } from '../database/grakn';
 import {
   findAll as relationFindAll,
   search as relationSearch
 } from './stixRelation';
-
-// eslint-disable-next-line no-undef
-const findByStixId = async stixId => refetchEntityByStixId(stixId);
+import { loadById, loadByStixId } from '../database/elasticSearch';
 
 export const findById = (id, isStixId) => {
-  return isStixId ? findByStixId(id) : refetchEntityById(id);
+  return isStixId ? loadByStixId(id) : loadById(id);
 };
 
 export const markingDefinitions = (stixEntityId, args) => {

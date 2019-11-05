@@ -9,7 +9,6 @@ import {
   escape,
   escapeString,
   executeWrite,
-  getGraknId,
   graknNow,
   monthFormat,
   notify,
@@ -22,7 +21,6 @@ import { BUS_TOPICS, logger } from '../config/conf';
 import { findAll as relationFindAll } from './stixRelation';
 import {
   countEntities,
-  deleteEntity,
   INDEX_STIX_OBSERVABLE,
   loadById,
   loadByStixId,
@@ -176,8 +174,6 @@ export const addStixObservable = async (user, stixObservable) => {
 };
 
 export const stixObservableDelete = async stixObservableId => {
-  const graknId = await getGraknId(stixObservableId);
-  await deleteEntity('stix_observables', graknId);
   return deleteEntityById(stixObservableId);
 };
 

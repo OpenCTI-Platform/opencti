@@ -1,6 +1,7 @@
 import uuid from 'uuid/v4';
 import {
   assoc,
+  append,
   chain,
   equals,
   filter,
@@ -20,9 +21,11 @@ import {
   mergeRight,
   pipe,
   pluck,
+  sort,
   tail,
   toPairs,
   uniq,
+  uniqBy,
   uniqWith
 } from 'ramda';
 import moment from 'moment';
@@ -32,7 +35,18 @@ import conf, { logger } from '../config/conf';
 import { pubsub } from './redis';
 import { buildPagination, fillTimeSeries, randomKey } from './utils';
 import { isInversed } from './graknRoles';
-import { elUpdate, index, loadByGraknId } from './elasticSearch';
+import {
+  elDeleteInstanceIds,
+  elUpdate,
+  index,
+  INDEX_CONNECTORS,
+  INDEX_EXT_REFERENCES,
+  INDEX_STIX_ENTITIES,
+  INDEX_STIX_OBSERVABLE,
+  INDEX_STIX_RELATIONS,
+  loadByGraknId,
+  loadById
+} from './elasticSearch';
 
 // region global variables
 const indexableTypes = [
@@ -272,12 +286,11 @@ const extractQueryVars = query => {
  */
 export const inferIndexFromConceptTypes = types => {
   // Stix indexes
-  if (includes('Stix-Observable', types)) return 'stix_observables';
-  if (includes('Stix-Domain-Entity', types)) return 'stix_domain_entities';
-  if (includes('External-Reference', types)) return 'external_references';
-  if (includes('stix_relation', types)) return 'stix_relations';
-  // OpenCTI technical indexes
-  if (includes('Connector', types)) return 'opencti_connector';
+  if (includes('Stix-Observable', types)) return INDEX_STIX_OBSERVABLE;
+  if (includes('Stix-Domain-Entity', types)) return INDEX_STIX_ENTITIES;
+  if (includes('External-Reference', types)) return INDEX_EXT_REFERENCES;
+  if (includes('stix_relation', types)) return INDEX_STIX_RELATIONS;
+  if (includes('Connector', types)) return INDEX_CONNECTORS;
   return undefined;
 };
 // endregion
@@ -398,6 +411,28 @@ const getRelationsValuesToIndex = async (type, id) => {
   });
 };
 
+const fixReverseConceptRelation = elem => {
+  const isInv = isInversed(elem.relationship_type, elem.fromRole);
+  return !isInv
+    ? elem
+    : pipe(
+        assoc('fromId', elem.toId),
+        assoc('fromRole', elem.toRole),
+        assoc('toId', elem.fromId),
+        assoc('toRole', elem.fromRole)
+      )(elem);
+};
+
+const fixReverseConceptRelations = result => {
+  return map(elem => {
+    const pathConcepts = {};
+    Object.entries(elem).forEach(([key, value]) => {
+      pathConcepts[key] = fixReverseConceptRelation(value);
+    });
+    return pathConcepts;
+  }, result);
+};
+
 /**
  * Load any grakn instance with internal grakn ID.
  * @param concept the concept to get attributes from
@@ -409,12 +444,13 @@ export const refetchByConcept = async (concept, relQueryMap = new Map()) => {
   const conceptType = concept.baseType;
   const types = await conceptTypes(concept);
   const getIndex = inferIndexFromConceptTypes(types);
-  // 00. Try to get from cache first (Listing use case)
+  // 00. Try to get from cache first
   if (getIndex) {
     const cachedConcept = await loadByGraknId(id, [getIndex]);
+    // Cache can be empty for listing or inferred relationship
     if (cachedConcept) return cachedConcept;
   }
-  // If not found continue the process.
+  // 01. If not found continue the process.
   const parentTypeLabel = last(types);
   logger.debug(`[GRAKN - infer: false] getAttributes > ${head(types)} ${id}`);
   const attributesIterator = await concept.attributes();
@@ -459,6 +495,7 @@ export const refetchByConcept = async (concept, relQueryMap = new Map()) => {
       )(attributesData);
       return pipe(
         assoc('id', transform.internal_id_key),
+        assoc('inferred', false),
         assoc('grakn_id', concept.id),
         assoc('parent_type', parentTypeLabel)
       )(transform);
@@ -482,7 +519,7 @@ export const refetchByConcept = async (concept, relQueryMap = new Map()) => {
                   return {
                     [`${conceptFromMap.entity}Id`]: roleId,
                     [`${conceptFromMap.entity}Role`]: roleLabel,
-                    [conceptFromMap.entity]: null // With be use lazy
+                    [conceptFromMap.entity]: null // With be use lazily
                   };
                 })
             : {};
@@ -490,18 +527,21 @@ export const refetchByConcept = async (concept, relQueryMap = new Map()) => {
       );
       // Wait for all promises before building the result
       const proms = [isInferredPromise, relationTypePromise, rolesPromises];
-      return Promise.all(proms).then(([isInferred, relationType, roles]) => {
-        const relType = relationType || entityData.relationship_type;
-        return pipe(
-          assoc('id', isInferred ? uuid() : entityData.id),
-          assoc('inferred', isInferred),
-          assoc('relationship_type', relType),
-          mergeRight(mergeAll(roles))
-        )(entityData);
-      });
+      return Promise.all(proms)
+        .then(([isInferred, relationType, roles]) => {
+          const relType = relationType || entityData.relationship_type;
+          return pipe(
+            assoc('id', isInferred ? uuid() : entityData.id),
+            assoc('inferred', isInferred),
+            assoc('relationship_type', relType),
+            mergeRight(mergeAll(roles))
+          )(entityData);
+        })
+        .then(rel => fixReverseConceptRelation(rel));
     })
     .then(async data => {
-      if (!getIndex) return data;
+      // If data is not indexed or inferred, just return it
+      if (!getIndex || data.inferred) return data;
       const rels = await getRelationsValuesToIndex(parentTypeLabel, data.id);
       const finalData = mergeLeft(data, rels);
       return index(getIndex, finalData);
@@ -529,10 +569,12 @@ export const find = async (query, context, infer = false) => {
       map(answer => {
         return conceptQueryVars.map(entity => {
           const concept = answer.map().get(entity);
+          if (!concept) return undefined; // If specific attributes are used for filtering, ordering, ...
           return { id: concept.id, data: { concept, entity } };
         });
       }),
       flatten,
+      filter(e => e !== undefined),
       uniqWith((x, y) => x.id === y.id)
     )(answers);
     const fetchingConceptsPairs = map(x => [x.id, x.data], uniqConcepts);
@@ -551,7 +593,7 @@ export const find = async (query, context, infer = false) => {
     // 04. Create map from concepts
     const conceptCache = new Map(map(c => [c.grakn_id, c], resolvedConcepts));
     // 05. Bind all row to data entities
-    return answers.map(answer => {
+    const result = answers.map(answer => {
       const dataPerEntities = entities.map(entity => {
         const concept = answer.map().get(entity);
         const conceptData = conceptCache.get(concept.id);
@@ -559,6 +601,21 @@ export const find = async (query, context, infer = false) => {
       });
       return fromPairs(dataPerEntities);
     });
+    // 06. Filter every relation not in "openCTI path"
+    // Grakn can respond with twice the relations (browse in 2 directions)
+    const uniqResult = uniqBy(u => {
+      return pipe(
+        map(i => i.grakn_id),
+        sort((a, b) => a.localeCompare(b))
+      )(Object.values(u));
+    }, result);
+    // It's a special tricks for from/to relations
+    const uniqPathResult = fixReverseConceptRelations(uniqResult);
+    // test
+    if (uniqPathResult.length !== result.length) {
+      console.log('DEDUP');
+    }
+    return uniqPathResult;
   });
 };
 
@@ -605,17 +662,8 @@ export const refetchEntityByGraknId = async graknId => {
 export const refetchRelationById = async id => {
   const eid = escapeString(id);
   const query = `match $rel ($from, $to) isa relation; $rel has internal_id_key "${eid}"; get;`;
-  const relation = await load(query, ['rel']);
-  if (isInversed(relation.relationship_type, relation.fromRole)) {
-    const { fromId, fromRole, toId, toRole } = relation;
-    return pipe(
-      assoc('fromId', toId),
-      assoc('fromRole', toRole),
-      assoc('toId', fromId),
-      assoc('toRole', fromRole)
-    )(relation);
-  }
-  return relation.rel;
+  const element = await load(query, ['rel']);
+  return element ? element.rel : null;
 };
 
 /**
@@ -655,7 +703,8 @@ export const createRelation = async (id, input) => {
       $to has internal_id_key "${escapeString(input.toId)}"; 
       insert $rel(${escape(input.fromRole)}: $from, ${escape(
       input.toRole
-    )}: $to) isa ${input.through}, has internal_id_key "${relationId}" ${
+    )}: $to) 
+      isa ${input.through}, has internal_id_key "${relationId}" ${
       input.stix_id_key
         ? `, has relationship_type "${escapeString(input.through)}"`
         : ''
@@ -667,17 +716,22 @@ export const createRelation = async (id, input) => {
               ? `, has stix_id_key "relationship--${uuid()}"`
               : `, has stix_id_key "${escapeString(input.stix_id_key)}"`
             : ''
-        } ${
-      input.first_seen
-        ? `, has first_seen ${prepareDate(input.first_seen)}`
-        : ''
-    } ${
-      input.last_seen ? `, has last_seen ${prepareDate(input.last_seen)}` : ''
-    } ${input.weight ? `, has weight ${escape(input.weight)}` : ''};`;
+        } 
+        ${
+          input.first_seen
+            ? `, has first_seen ${prepareDate(input.first_seen)}`
+            : ''
+        } 
+        ${
+          input.last_seen
+            ? `, has last_seen ${prepareDate(input.last_seen)}`
+            : ''
+        } 
+        ${input.weight ? `, has weight ${escape(input.weight)}` : ''};`;
     logger.debug(`[GRAKN - infer: false] createRelation > ${query}`);
     await wTx.tx.query(query);
   });
-  const node = await refetchEntityById(input.toId);
+  const node = await loadById(input.toId);
   const relation = await refetchRelationById(relationId);
   return { node, relation };
 };
@@ -766,28 +820,13 @@ export const updateAttribute = async (id, input, wTx) => {
   return id;
 };
 
-/**
- * Grakn generic function to delete an instance (and orphan relationships)
- * @param id
- * @returns {Promise<any[] | never>}
- */
-export const deleteEntityById = async id => {
-  return executeWrite(async wTx => {
-    const query = `match $x has internal_id_key "${escapeString(
-      id
-    )}"; $z($x, $y); delete $z, $x;`;
-    logger.debug(`[GRAKN - infer: false] deleteEntityById > ${query}`);
-    await wTx.tx.query(query, { infer: false });
-    return id;
-  });
-};
-
 export const deleteById = async id => {
   return executeWrite(async wTx => {
     const query = `match $x has internal_id_key "${escapeString(
       id
     )}"; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteById > ${query}`);
+    await elDeleteInstanceIds([id]);
     await wTx.tx.query(query, { infer: false });
     return id;
   });
@@ -872,6 +911,26 @@ export const getGraknId = async internalId => {
     const answer = await iterator.next();
     const concept = answer.map().get('x');
     return concept.id;
+  });
+};
+
+/**
+ * Grakn generic function to delete an instance (and orphan relationships)
+ * @param id
+ * @returns {Promise<any[] | never>}
+ */
+export const deleteEntityById = async id => {
+  // 00. Load everything we need to remove in elastic
+  const eid = escapeString(id);
+  const read = `match $x has internal_id_key "${eid}"; $y isa entity; $rel($x, $y); get;`;
+  const relationsToUnindex = await find(read, ['rel']);
+  const relationsIds = map(r => r.rel.id, relationsToUnindex);
+  return executeWrite(async wTx => {
+    const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
+    logger.debug(`[GRAKN - infer: false] deleteEntityById > ${query}`);
+    await elDeleteInstanceIds(append(id, relationsIds));
+    await wTx.tx.query(query, { infer: false });
+    return id;
   });
 };
 
@@ -1317,13 +1376,14 @@ export const paginateRelationships = (
             map(toType => `{ $to isa ${toType}; } or`, tail(toTypes))
           )} { $to isa ${head(toTypes)}; };`
         : ''
-    } ${firstSeenStart || firstSeenStop ? `$rel has first_seen $fs; ` : ''} ${
-      firstSeenStart ? `$fs > ${prepareDate(firstSeenStart)}; ` : ''
-    } ${firstSeenStop ? `$fs < ${prepareDate(firstSeenStop)}; ` : ''} ${
-      lastSeenStart || lastSeenStop ? `$rel has last_seen $ls; ` : ''
-    } ${lastSeenStart ? `$ls > ${prepareDate(lastSeenStart)}; ` : ''} ${
-      lastSeenStop ? `$ls < ${prepareDate(lastSeenStop)}; ` : ''
-    } ${
+    } 
+    ${firstSeenStart || firstSeenStop ? `$rel has first_seen $fs; ` : ''} 
+    ${firstSeenStart ? `$fs > ${prepareDate(firstSeenStart)}; ` : ''} 
+    ${firstSeenStop ? `$fs < ${prepareDate(firstSeenStop)}; ` : ''} 
+    ${lastSeenStart || lastSeenStop ? `$rel has last_seen $ls; ` : ''} 
+    ${lastSeenStart ? `$ls > ${prepareDate(lastSeenStart)}; ` : ''} 
+    ${lastSeenStop ? `$ls < ${prepareDate(lastSeenStop)}; ` : ''} 
+    ${
       weights
         ? `$rel has weight $weight; ${join(
             ' ',

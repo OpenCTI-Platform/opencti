@@ -35,7 +35,6 @@ import {
   escape,
   escapeString,
   executeWrite,
-  getGraknId,
   getObjects,
   getRelationInferredById,
   getSingleValueNumber,
@@ -52,12 +51,7 @@ import {
 } from '../database/grakn';
 import { buildPagination } from '../database/utils';
 import { BUS_TOPICS, logger } from '../config/conf';
-import {
-  deleteEntity,
-  findByTerms,
-  loadById,
-  loadByStixId
-} from '../database/elasticSearch';
+import { findAndTerms, findOrTerms, loadById } from '../database/elasticSearch';
 
 const sumBy = attribute => vals => {
   return reduce(
@@ -72,39 +66,68 @@ const groupSumBy = curry((groupOn, sumOn, vals) =>
 );
 
 export const findAll = async args => {
-  const test = await paginateRelationships(
+  const { inferred } = args;
+  if (!inferred) {
+    const {
+      fromId,
+      toId,
+      relationType,
+      firstSeenStart,
+      firstSeenStop,
+      lastSeenStart,
+      lastSeenStop
+    } = args;
+    const terms = [];
+    const ranges = [];
+    if (fromId) {
+      const from = await loadById(fromId).then(d => d.grakn_id);
+      terms.push({ 'fromId.keyword': from });
+    }
+    if (toId) {
+      const to = await loadById(toId).then(d => d.grakn_id);
+      terms.push({ 'toId.keyword': to });
+    }
+    if (relationType) {
+      terms.push({ 'relationship_type.keyword': relationType });
+    }
+    if (firstSeenStart) {
+      ranges.push({ first_seen: { gt: args.firstSeenStart.toISOString() } });
+    }
+    if (firstSeenStop) {
+      ranges.push({ first_seen: { lt: args.firstSeenStop.toISOString() } });
+    }
+    if (lastSeenStart) {
+      ranges.push({ last_seen: { gt: args.lastSeenStart.toISOString() } });
+    }
+    if (lastSeenStop) {
+      ranges.push({ last_seen: { lt: args.lastSeenStop.toISOString() } });
+    }
+    return findAndTerms({ terms, ranges });
+  }
+  // If inferred option, ask grakn
+  return paginateRelationships(
     `match $rel($from, $to) isa ${
       args.relationType ? escape(args.relationType) : 'stix_relation'
     }`,
     args
   );
-  return test;
 };
 
-export const findByStixId = async args => {
-  const compare = await findByTerms([{ 'stix_id_key.keyword': args.stix_id_key }]);
-  const test = await paginateRelationships(
-    `match $rel($from, $to) isa relation; 
-    $rel has stix_id_key "${escapeString(args.stix_id_key)}"`,
-    args
-  );
-  return test;
+export const findById = stixRelationId => loadById(stixRelationId);
+
+export const findByIdInferred = stixRelationId => {
+  return getRelationInferredById(stixRelationId);
 };
 
-export const search = async args => {
-  const test = await findByTerms([
+export const findByStixId = args => {
+  return findOrTerms([{ 'stix_id_key.keyword': args.stix_id_key }]);
+};
+
+export const search = args => {
+  return findOrTerms([
     { 'name.keyword': escapeString(args.search) },
     { 'desc.keyword': escapeString(args.search) }
   ]);
-  // const test2 = await paginateRelationships(
-  //   `match $rel($from, $to) isa relation;
-  //   $to has name $name;
-  //   $to has description $desc;
-  //   { $name contains "${escapeString(args.search)}"; } or
-  //   { $desc contains "${escapeString(args.search)}"; }`,
-  //   args
-  // );
-  return test;
 };
 
 export const findAllWithInferences = async args => {
@@ -550,12 +573,6 @@ export const stixRelationsNumber = args => ({
   )
 });
 
-export const findById = stixRelationId => loadById(stixRelationId);
-
-export const findByIdInferred = stixRelationId => {
-  return getRelationInferredById(stixRelationId);
-};
-
 export const addStixRelation = async (user, stixRelation) => {
   const stixRelationId = await executeWrite(async wTx => {
     const internalId = stixRelation.internal_id_key
@@ -655,8 +672,6 @@ export const addStixRelation = async (user, stixRelation) => {
 };
 
 export const stixRelationDelete = async stixRelationId => {
-  const graknId = await getGraknId(stixRelationId);
-  await deleteEntity('stix_relations', graknId);
   return deleteById(stixRelationId);
 };
 
@@ -683,14 +698,20 @@ export const stixRelationEditField = (user, stixRelationId, input) => {
   });
 };
 
-export const stixRelationAddRelation = (user, stixRelationId, input) =>
-  createRelation(stixRelationId, input).then(relationData => {
+export const stixRelationAddRelation = (user, stixRelationId, input) => {
+  return createRelation(stixRelationId, input).then(relationData => {
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
+};
 
-export const stixRelationDeleteRelation = (user, stixRelationId, relationId) =>
-  deleteRelationById(stixRelationId, relationId).then(relationData => {
+export const stixRelationDeleteRelation = (
+  user,
+  stixRelationId,
+  relationId
+) => {
+  return deleteRelationById(stixRelationId, relationId).then(relationData => {
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
+};

@@ -4,11 +4,11 @@ import {
   escape,
   escapeString,
   executeWrite,
-  refetchEntityById,
   getGraknVersion,
   getObject,
   graknNow,
   notify,
+  refetchEntityById,
   updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';

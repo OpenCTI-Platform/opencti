@@ -10,7 +10,6 @@ import {
   escape,
   escapeString,
   executeWrite,
-  getGraknId,
   graknNow,
   monthFormat,
   notify,
@@ -23,7 +22,8 @@ import {
 } from '../database/grakn';
 import {
   countEntities,
-  deleteEntity,
+  findOrTerms,
+  INDEX_STIX_ENTITIES,
   loadById,
   loadByStixId,
   paginate as elPaginate
@@ -54,22 +54,12 @@ export const findById = stixDomainEntityId => loadById(stixDomainEntityId);
 export const findByStixId = args => loadByStixId(args.stix_id_key);
 
 export const findByName = args => {
-  // const index = inferIndexFromConceptTypes(['Stix-Domain-Entity']);
-  // return findByTerms(
-  //     [
-  //       { 'name.keyword': escapeString(args.name) },
-  //       { 'alias.keyword': escapeString(args.name) }
-  //     ],
-  //     index
-  // );
-  return paginate(
-    `match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
-   $x has name $name;
-   $x has alias $alias;
-   { $name "${escapeString(args.name)}"; } or
-   { $alias "${escapeString(args.name)}"; }`,
-    args,
-    false
+  return findOrTerms(
+    [
+      { 'name.keyword': escapeString(args.name) },
+      { 'alias.keyword': escapeString(args.name) }
+    ],
+    [INDEX_STIX_ENTITIES]
   );
 };
 
@@ -246,8 +236,6 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
 };
 
 export const stixDomainEntityDelete = async stixDomainEntityId => {
-  const graknId = await getGraknId(stixDomainEntityId);
-  await deleteEntity('stix_domain_entities', graknId);
   return deleteEntityById(stixDomainEntityId);
 };
 

@@ -3,6 +3,7 @@ import { Client } from '@elastic/elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import {
   map,
+  concat,
   dissoc,
   append,
   assoc,
@@ -28,12 +29,24 @@ const dateFields = [
 const numberFields = ['object_status'];
 
 export const INDEX_STIX_OBSERVABLE = 'stix_observables';
-export const defaultIndexes = [
-  'stix_domain_entities',
-  'stix_relations',
+export const INDEX_STIX_ENTITIES = 'stix_domain_entities';
+export const INDEX_STIX_RELATIONS = 'stix_relations';
+export const INDEX_EXT_REFERENCES = 'external_references';
+export const INDEX_WORK_JOBS = 'work_jobs_index';
+export const INDEX_CONNECTORS = 'opencti_connector';
+export const PLATFORM_INDICES = [
+  INDEX_STIX_ENTITIES,
+  INDEX_STIX_RELATIONS,
   INDEX_STIX_OBSERVABLE,
-  'external_references',
-  'work_jobs'
+  INDEX_EXT_REFERENCES,
+  INDEX_WORK_JOBS,
+  INDEX_CONNECTORS
+];
+export const INDICES_TO_CREATE = [
+  INDEX_STIX_ENTITIES,
+  INDEX_STIX_RELATIONS,
+  INDEX_STIX_OBSERVABLE,
+  INDEX_EXT_REFERENCES
 ];
 
 const indexedRelations = ['tags', 'createdByRef', 'markingDefinitions'];
@@ -64,7 +77,7 @@ export const getElasticVersion = () => {
 
 export const createIndexes = async () => {
   return Promise.all(
-    defaultIndexes.map(index => {
+    INDICES_TO_CREATE.map(index => {
       return el.indices.exists({ index }).then(result => {
         if (result.body === false) {
           return el.indices.create({
@@ -146,11 +159,7 @@ export const createIndexes = async () => {
   );
 };
 
-export const deleteIndexes = async (indexes = null) => {
-  let indexesToDelete = defaultIndexes;
-  if (indexes !== null) {
-    indexesToDelete = indexes;
-  }
+export const deleteIndexes = async (indexesToDelete = INDICES_TO_CREATE) => {
   return Promise.all(
     indexesToDelete.map(index => {
       return el.indices.delete({ index }).catch(() => {
@@ -219,19 +228,25 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   return value;
 };
 
-export const deleteEntity = async (indexName, documentId) => {
-  logger.debug(`[ELASTICSEARCH] deleteEntity > ${documentId} on ${indexName}`);
-  // noinspection UnnecessaryLocalVariableJS
-  const deletePromise = await el
-    .delete({
-      index: indexName,
-      id: documentId,
-      refresh: true
+export const elDeleteInstanceIds = async ids => {
+  logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds > ${ids}`);
+  const terms = map(id => ({ term: { 'internal_id_key.keyword': id } }), ids);
+  return el
+    .deleteByQuery({
+      index: PLATFORM_INDICES,
+      refresh: true,
+      body: {
+        query: {
+          bool: {
+            should: terms
+          }
+        }
+      }
     })
-    .catch(() => {
+    .catch(err => {
+      logger.error(`[ELASTICSEARCH] elDeleteInstanceIds > ${err}`);
       return false;
     });
-  return deletePromise;
 };
 
 export const countEntities = (indexName, options) => {
@@ -506,7 +521,7 @@ export const paginate = async (indexName, options) => {
     });
 };
 
-export const loadByTerms = async (terms, indices = defaultIndexes) => {
+export const loadByTerms = async (terms, indices = PLATFORM_INDICES) => {
   const query = {
     index: indices,
     body: {
@@ -546,53 +561,45 @@ export const loadByTerms = async (terms, indices = defaultIndexes) => {
   }
  */
 
-export const loadById = (id, indices = defaultIndexes) => {
+export const loadById = (id, indices = PLATFORM_INDICES) => {
   return loadByTerms([{ 'internal_id_key.keyword': id }], indices);
 };
-export const loadByStixId = (id, indices = defaultIndexes) => {
+export const loadByStixId = (id, indices = PLATFORM_INDICES) => {
   return loadByTerms([{ 'stix_id_key.keyword': id }], indices);
 };
-export const loadByGraknId = (id, indices = defaultIndexes) => {
+export const loadByGraknId = (id, indices = PLATFORM_INDICES) => {
   return loadByTerms([{ 'grakn_id.keyword': id }], indices);
 };
 
-export const findByTerms = async (terms, indices = defaultIndexes) => {
+const findTerms = ({ terms, ranges }, type = 'should', indices) => {
+  const mappedTerms = terms ? map(x => ({ term: x }), terms) : [];
+  const mappedRanges = ranges ? map(x => ({ range: x }), ranges) : [];
   const query = {
     index: indices,
     body: {
       query: {
         bool: {
-          should: map(x => ({ term: x }), terms)
+          [type]: concat(mappedTerms, mappedRanges)
         }
       }
     }
   };
   return el.search(query).then(data => {
-    return {
-      edges: map(
-        x => ({ node: assoc('_index', x._index, x._source) }),
-        data.body.hits.hits
-      ),
-      pageInfo: {
-        globalCount: data.body.hits.total.value
-      }
-    };
+    const nodeHits = map(
+      x => ({ node: assoc('_index', x._index, x._source) }),
+      data.body.hits.hits
+    );
+    return buildPagination(0, 0, nodeHits, data.body.hits.total.value);
   });
 };
 
-/*
-export const getAttributes = (indexName, id) => {
-  return el
-    .get({ id, index: indexName })
-    .then(data => {
-      return assoc('_index', indexName, data.body._source);
-    })
-    .catch(e => {
-      if (e.meta.statusCode !== 404) {
-        // If another error than not found.
-        logger.error(`[ELASTICSEARCH] getAttributes > error getting ${id}`, e);
-      }
-      return null;
-    });
+export const findOrTerms = async (terms, indices = PLATFORM_INDICES) => {
+  return findTerms({ terms }, 'should', indices);
 };
-*/
+
+export const findAndTerms = async (
+  { terms, ranges },
+  indices = PLATFORM_INDICES
+) => {
+  return findTerms({ terms, ranges }, 'must', indices);
+};
