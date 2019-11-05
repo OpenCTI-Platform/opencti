@@ -29,12 +29,12 @@ import {
   uniqWith
 } from 'ramda';
 import moment from 'moment';
-import {cursorToOffset} from 'graphql-relay/lib/connection/arrayconnection';
+import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
-import conf, {logger} from '../config/conf';
-import {pubsub} from './redis';
-import {buildPagination, fillTimeSeries, randomKey} from './utils';
-import {isInversed} from './graknRoles';
+import conf, { logger } from '../config/conf';
+import { pubsub } from './redis';
+import { buildPagination, fillTimeSeries, randomKey } from './utils';
+import { isInversed } from './graknRoles';
 import {
   elDeleteInstanceIds,
   elUpdate,
