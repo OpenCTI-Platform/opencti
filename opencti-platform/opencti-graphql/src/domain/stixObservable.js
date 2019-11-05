@@ -166,9 +166,9 @@ export const addStixObservable = async (user, stixObservable) => {
     await linkMarkingDef(wTx, createdId, stixObservable.markingDefinitions);
     return internalId;
   });
-  // Enqueue enrich job
-  await askEnrich(observableId, stixObservable.type);
-  return refetchEntityById(observableId).then(created => {
+  return refetchEntityById(observableId).then(async created => {
+    // Enqueue enrich job
+    await askEnrich(observableId, stixObservable.type);
     return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
   });
 };
