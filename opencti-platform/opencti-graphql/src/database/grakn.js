@@ -1,7 +1,7 @@
 import uuid from 'uuid/v4';
 import {
-  assoc,
   append,
+  assoc,
   chain,
   equals,
   filter,
@@ -29,12 +29,12 @@ import {
   uniqWith
 } from 'ramda';
 import moment from 'moment';
-import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
+import {cursorToOffset} from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
-import conf, { logger } from '../config/conf';
-import { pubsub } from './redis';
-import { buildPagination, fillTimeSeries, randomKey } from './utils';
-import { isInversed } from './graknRoles';
+import conf, {logger} from '../config/conf';
+import {pubsub} from './redis';
+import {buildPagination, fillTimeSeries, randomKey} from './utils';
+import {isInversed} from './graknRoles';
 import {
   elDeleteInstanceIds,
   elUpdate,
@@ -610,12 +610,7 @@ export const find = async (query, context, infer = false) => {
       )(Object.values(u));
     }, result);
     // It's a special tricks for from/to relations
-    const uniqPathResult = fixReverseConceptRelations(uniqResult);
-    // test
-    if (uniqPathResult.length !== result.length) {
-      console.log('DEDUP');
-    }
-    return uniqPathResult;
+    return fixReverseConceptRelations(uniqResult);
   });
 };
 
