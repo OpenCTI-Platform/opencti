@@ -4,14 +4,14 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  refetchEntityById,
+  loadEntityById,
   graknNow,
   monthFormat,
   notify,
   prepareDate,
   yearFormat
 } from '../database/grakn';
-import { paginate as elPaginate } from '../database/elasticSearch';
+import { elPaginate } from '../database/elasticSearch';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
@@ -22,7 +22,7 @@ export const findAll = args => {
   );
 };
 
-export const findById = intrusionSetId => refetchEntityById(intrusionSetId);
+export const findById = intrusionSetId => loadEntityById(intrusionSetId);
 
 export const addIntrusionSet = async (user, intrusionSet) => {
   const intrusionId = await executeWrite(async wTx => {
@@ -118,7 +118,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     await linkMarkingDef(wTx, createdId, intrusionSet.markingDefinitions);
     return internalId;
   });
-  return refetchEntityById(intrusionId).then(created => {
+  return loadEntityById(intrusionId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

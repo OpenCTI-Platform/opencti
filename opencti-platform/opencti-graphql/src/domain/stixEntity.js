@@ -1,14 +1,14 @@
 import { assoc, map } from 'ramda';
 import uuid from 'uuid/v4';
-import { escapeString, getObject, paginate } from '../database/grakn';
+import { escapeString, loadWithConnectedRelations, paginate } from '../database/grakn';
 import {
   findAll as relationFindAll,
   search as relationSearch
 } from './stixRelation';
-import { loadById, loadByStixId } from '../database/elasticSearch';
+import { elLoadById, elLoadByStixId } from '../database/elasticSearch';
 
 export const findById = (id, isStixId) => {
-  return isStixId ? loadByStixId(id) : loadById(id);
+  return isStixId ? elLoadByStixId(id) : elLoadById(id);
 };
 
 export const markingDefinitions = (stixEntityId, args) => {
@@ -38,7 +38,7 @@ export const tags = (stixEntityId, args) => {
 };
 
 export const createdByRef = stixEntityId => {
-  return getObject(
+  return loadWithConnectedRelations(
     `match $i isa Identity;
     $rel(creator:$i, so:$x) isa created_by_ref; 
     $x has internal_id_key "${escapeString(stixEntityId)}"; 

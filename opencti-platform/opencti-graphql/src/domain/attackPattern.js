@@ -4,7 +4,7 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  refetchEntityById,
+  loadEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -13,7 +13,7 @@ import {
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { paginate as elPaginate } from '../database/elasticSearch';
+import { elPaginate } from '../database/elasticSearch';
 import { linkCreatedByRef, linkKillChains, linkMarkingDef } from './stixEntity';
 
 export const findAll = args => {
@@ -42,7 +42,7 @@ export const findByCourseOfAction = args => {
   );
 };
 
-export const findById = attackPatternId => refetchEntityById(attackPatternId);
+export const findById = attackPatternId => loadEntityById(attackPatternId);
 
 export const addAttackPattern = async (user, attackPattern) => {
   const patternId = await executeWrite(async wTx => {
@@ -124,7 +124,7 @@ export const addAttackPattern = async (user, attackPattern) => {
     await linkKillChains(wTx, attackPatternId, attackPattern.killChainPhases);
     return internalId;
   });
-  return refetchEntityById(patternId).then(created => {
+  return loadEntityById(patternId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

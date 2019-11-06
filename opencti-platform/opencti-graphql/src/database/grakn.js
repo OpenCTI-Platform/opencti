@@ -38,14 +38,14 @@ import { isInversed } from './graknRoles';
 import {
   elDeleteInstanceIds,
   elUpdate,
-  index,
+  elIndex,
   INDEX_CONNECTORS,
   INDEX_EXT_REFERENCES,
   INDEX_STIX_ENTITIES,
   INDEX_STIX_OBSERVABLE,
   INDEX_STIX_RELATIONS,
-  loadByGraknId,
-  loadById
+  elLoadByGraknId,
+  elLoadById
 } from './elasticSearch';
 
 // region global variables
@@ -411,9 +411,10 @@ const getRelationsValuesToIndex = async (type, id) => {
   });
 };
 
-const fixReverseConceptRelation = elem => {
+const fixConceptRelation = elem => {
+  // 01. First fix the direction of the relation
   const isInv = isInversed(elem.relationship_type, elem.fromRole);
-  return !isInv
+  const invElem = !isInv
     ? elem
     : pipe(
         assoc('fromId', elem.toId),
@@ -421,32 +422,31 @@ const fixReverseConceptRelation = elem => {
         assoc('toId', elem.fromId),
         assoc('toRole', elem.fromRole)
       )(elem);
+  // 02. Then change the id if relation is inferred
+  if (invElem.inferred) {
+    const queryPattern = `{ $rel(${invElem.fromRole}: $from, ${invElem.toRole}: $to) isa ${invElem.relationship_type}; $from id ${invElem.fromId}; $to id ${invElem.toId}; };`;
+    return assoc('id', Buffer.from(queryPattern).toString('base64'), invElem);
+  }
+  return elem;
 };
 
-const fixReverseConceptRelations = result => {
-  return map(elem => {
-    const pathConcepts = {};
-    Object.entries(elem).forEach(([key, value]) => {
-      pathConcepts[key] = fixReverseConceptRelation(value);
-    });
-    return pathConcepts;
-  }, result);
-};
-
+const conceptOpts = { relationsMap: new Map(), reIndex: true };
 /**
  * Load any grakn instance with internal grakn ID.
  * @param concept the concept to get attributes from
- * @param relQueryMap
+ * @param relationsMap
+ * @param reIndex
  * @returns {Promise}
  */
-export const refetchByConcept = async (concept, relQueryMap = new Map()) => {
+// eslint-disable-next-line prettier/prettier
+const loadConcept = async (concept, { relationsMap, reIndex } = conceptOpts) => {
   const { id } = concept;
   const conceptType = concept.baseType;
   const types = await conceptTypes(concept);
-  const getIndex = inferIndexFromConceptTypes(types);
+  const resolveIndex = inferIndexFromConceptTypes(types);
   // 00. Try to get from cache first
-  if (getIndex) {
-    const cachedConcept = await loadByGraknId(id, [getIndex]);
+  if (!reIndex && resolveIndex) {
+    const cachedConcept = await elLoadByGraknId(id, [resolveIndex]);
     // Cache can be empty for listing or inferred relationship
     if (cachedConcept) return cachedConcept;
   }
@@ -511,7 +511,7 @@ export const refetchByConcept = async (concept, relQueryMap = new Map()) => {
           const roleId = last(roleItem)
             .values()
             .next().value.id;
-          const conceptFromMap = relQueryMap.get(roleId);
+          const conceptFromMap = relationsMap.get(roleId);
           return conceptFromMap
             ? head(roleItem)
                 .label()
@@ -537,27 +537,30 @@ export const refetchByConcept = async (concept, relQueryMap = new Map()) => {
             mergeRight(mergeAll(roles))
           )(entityData);
         })
-        .then(rel => fixReverseConceptRelation(rel));
+        .then(rel => fixConceptRelation(rel));
     })
     .then(async data => {
       // If data is not indexed or inferred, just return it
-      if (!getIndex || data.inferred) return data;
+      if (!resolveIndex || data.inferred) return data;
       const rels = await getRelationsValuesToIndex(parentTypeLabel, data.id);
       const finalData = mergeLeft(data, rels);
-      return index(getIndex, finalData);
+      return elIndex(resolveIndex, finalData);
     });
 };
 
+const findOpts = { infer: false, reIndex: true };
 /**
  * Query and get entities or relations
  * @param query
- * @param context
+ * @param entities
  * @param infer
+ * @param reIndex
  * @returns {Promise}
  */
-export const find = async (query, context, infer = false) => {
+// eslint-disable-next-line prettier/prettier
+export const find = async (query, entities, { infer, reIndex } = findOpts) => {
   // Remove empty values from entities
-  const entities = filter(e => !isEmpty(e) && !isNil(e), context);
+  const plainEntities = filter(e => !isEmpty(e) && !isNil(e), entities);
   return executeRead(async rTx => {
     const conceptQueryVars = extractQueryVars(query);
     logger.debug(`[GRAKN - infer: ${infer}] Find > ${query}`);
@@ -578,23 +581,23 @@ export const find = async (query, context, infer = false) => {
       uniqWith((x, y) => x.id === y.id)
     )(answers);
     const fetchingConceptsPairs = map(x => [x.id, x.data], uniqConcepts);
-    const fetchingConceptsMap = new Map(fetchingConceptsPairs);
+    const relationsMap = new Map(fetchingConceptsPairs);
     // 02. Filter concepts to create a unique list
     const fetchingConcepts = filter(
-      u => includes(u.data.entity, entities),
+      u => includes(u.data.entity, plainEntities),
       uniqConcepts
     );
     // 03. Query concepts and rebind the data
     const queryConcepts = map(item => {
       const { concept } = item.data;
-      return refetchByConcept(concept, fetchingConceptsMap);
+      return loadConcept(concept, { relationsMap, reIndex });
     }, fetchingConcepts);
     const resolvedConcepts = await Promise.all(queryConcepts);
     // 04. Create map from concepts
     const conceptCache = new Map(map(c => [c.grakn_id, c], resolvedConcepts));
     // 05. Bind all row to data entities
     const result = answers.map(answer => {
-      const dataPerEntities = entities.map(entity => {
+      const dataPerEntities = plainEntities.map(entity => {
         const concept = answer.map().get(entity);
         const conceptData = conceptCache.get(concept.id);
         return [entity, conceptData];
@@ -603,35 +606,41 @@ export const find = async (query, context, infer = false) => {
     });
     // 06. Filter every relation not in "openCTI path"
     // Grakn can respond with twice the relations (browse in 2 directions)
-    const uniqResult = uniqBy(u => {
+    return uniqBy(u => {
       return pipe(
         map(i => i.grakn_id),
         sort((a, b) => a.localeCompare(b))
       )(Object.values(u));
     }, result);
     // It's a special tricks for from/to relations
-    return fixReverseConceptRelations(uniqResult);
+    // return fixReverseConceptRelations(uniqResult);
   });
 };
-
 /**
  * Query and get entities of the first row
  * @param query
  * @param entities
- * @param withInference
+ * @param infer
+ * @param reIndex
  * @returns {Promise<any[] | never>}
  */
-export const load = async (query, entities, withInference = false) => {
-  const data = await find(query, entities, withInference);
+// eslint-disable-next-line prettier/prettier
+export const load = async (query, entities, { infer, reIndex } = findOpts) => {
+  const data = await find(query, entities, { infer, reIndex });
   return head(data);
 };
 
-export const reindexEntityForAttribute = async (type, value) => {
+// Reindex functions
+export const reindexByAttribute = async (type, value) => {
   const eType = escape(type);
   const eVal = escapeString(value);
   const readQuery = `match $x isa entity, has ${eType} $a; $a "${eVal}"; get;`;
   logger.debug(`[GRAKN - infer: false] attributeUpdate > ${readQuery}`);
-  await find(readQuery, ['x']);
+  await find(readQuery, ['x'], { reIndex: true });
+};
+export const reindexByQuery = async (query, entities) => {
+  const data = await find(query, entities, { reIndex: true });
+  return data.length;
 };
 
 /**
@@ -639,22 +648,22 @@ export const reindexEntityForAttribute = async (type, value) => {
  * @param id element id to get
  * @returns {Promise}
  */
-export const refetchEntityById = async id => {
+export const loadEntityById = async id => {
   const query = `match $x has internal_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x']);
   return element ? element.x : null;
 };
-export const refetchEntityByStixId = async id => {
+export const loadEntityByStixId = async id => {
   const query = `match $x has stix_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x']);
   return element ? element.x : null;
 };
-export const refetchEntityByGraknId = async graknId => {
+export const loadEntityByGraknId = async graknId => {
   const query = `match $x id ${escapeString(graknId)}; get;`;
   const element = await load(query, ['x']);
   return element.x;
 };
-export const refetchRelationById = async id => {
+export const loadRelationById = async id => {
   const eid = escapeString(id);
   const query = `match $rel ($from, $to) isa relation; $rel has internal_id_key "${eid}"; get;`;
   const element = await load(query, ['rel']);
@@ -726,8 +735,8 @@ export const createRelation = async (id, input) => {
     logger.debug(`[GRAKN - infer: false] createRelation > ${query}`);
     await wTx.tx.query(query);
   });
-  const node = await loadById(input.toId);
-  const relation = await refetchRelationById(relationId);
+  const node = await elLoadById(input.toId);
+  const relation = await loadRelationById(relationId);
   return { node, relation };
 };
 
@@ -742,7 +751,7 @@ export const updateAttribute = async (id, input, wTx) => {
   const { key, value } = input; // value can be multi valued
   // --- 00 Need update?
   const val = includes(key, multipleAttributes) ? value : head(value);
-  const currentInstanceData = await refetchEntityById(id);
+  const currentInstanceData = await elLoadById(id);
   if (equals(currentInstanceData[key], val)) {
     return id;
   }
@@ -834,7 +843,7 @@ export const deleteRelationById = async (id, relationId) => {
     )}"; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
     await wTx.tx.query(query, { infer: false });
-    return refetchEntityById(id).then(data => ({
+    return loadEntityById(id).then(data => ({
       node: data,
       relation: { id: relationId }
     }));
@@ -887,39 +896,13 @@ export const distribution = async (query, options) => {
     );
   });
 };
-// endregion
 
-// region please refactor to use stable commands
-/**
- * Get the Grakn ID from internal id -> Use to remove elasticsearch data.
- * @param internalId
- * @returns {Promise<any[] | never>}
- * TODO WHY WE NEED THIS? WE SHOULD NOT USE GRAKN INTERNAL ID IN ELASTIC
- */
-export const getGraknId = async internalId => {
-  return executeRead(async rTx => {
-    const query = `match $x has internal_id_key "${escapeString(
-      internalId
-    )}"; get;`;
-    logger.debug(`[GRAKN - infer: false] getGraknId > ${query}`);
-    const iterator = await rTx.tx.query(query);
-    const answer = await iterator.next();
-    const concept = answer.map().get('x');
-    return concept.id;
-  });
-};
-
-/**
- * Grakn generic function to delete an instance (and orphan relationships)
- * @param id
- * @returns {Promise<any[] | never>}
- */
 export const deleteEntityById = async id => {
   // 00. Load everything we need to remove in elastic
   const eid = escapeString(id);
   const read = `match $x has internal_id_key "${eid}"; $y isa entity; $rel($x, $y); get;`;
-  const relationsToUnindex = await find(read, ['rel']);
-  const relationsIds = map(r => r.rel.id, relationsToUnindex);
+  const relationsToDeIndex = await find(read, ['rel']);
+  const relationsIds = map(r => r.rel.id, relationsToDeIndex);
   return executeWrite(async wTx => {
     const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteEntityById > ${query}`);
@@ -929,6 +912,37 @@ export const deleteEntityById = async id => {
   });
 };
 
+/**
+ * Grakn query that generate json objects for relations
+ * @param query the query to process
+ * @param key the instance key to get id from.
+ * @param extraRelKey the key of the relation pointing the relation
+ * @param infer (get inferred relationships)
+ * @returns {Promise<any[] | never>}
+ */
+// eslint-disable-next-line prettier/prettier
+export const findWithConnectedRelations = async (query, key, extraRelKey = null, infer = false) => {
+  const dataFind = await find(query, [key, extraRelKey], { infer });
+  return map(t => ({ node: t[key], relation: t[extraRelKey] }), dataFind);
+};
+
+/**
+ * Grakn query that generate a json object for GraphQL
+ * @param query the query to process
+ * @param key the instance key to get id from.
+ * @param relationKey the key to bind relation result.
+ * @param infer
+ * @returns {Promise<any[] | never>}
+ */
+// eslint-disable-next-line prettier/prettier
+export const loadWithConnectedRelations = (query, key, relationKey = null, infer = false) => {
+  return findWithConnectedRelations(query, key, relationKey, infer).then(
+    result => head(result)
+  );
+};
+// endregion
+
+// region please refactor to use stable commands
 /**
  * Load any grakn relation with base64 id containing the query pattern.
  * @param id
@@ -965,8 +979,8 @@ export const getRelationInferredById = async id => {
       relationship_type: relationTypeValue,
       inferred: true
     };
-    const fromPromise = refetchByConcept(fromObject);
-    const toPromise = refetchByConcept(toObject);
+    const fromPromise = loadConcept(fromObject);
+    const toPromise = loadConcept(toObject);
     const explanation = answer.explanation();
     const explanationAnswers = explanation.answers();
     const inferences = explanationAnswers.map(explanationAnswer => {
@@ -1058,13 +1072,13 @@ export const getRelationInferredById = async id => {
             .replace(regexToType, '');
           inferenceId = Buffer.from(finalInferenceQuery).toString('base64');
         } else {
-          const inferenceAttributes = await refetchByConcept(
+          const inferenceAttributes = await loadConcept(
             inferencesAnswer.map().get(inference.relationKey)
           );
           inferenceId = inferenceAttributes.internal_id_key;
         }
-        const fromAttributes = await refetchByConcept(inferenceFrom);
-        const toAttributes = await refetchByConcept(inferenceTo);
+        const fromAttributes = await loadConcept(inferenceFrom);
+        const toAttributes = await loadConcept(inferenceTo);
         return {
           node: {
             id: inferenceId,
@@ -1100,72 +1114,6 @@ export const getRelationInferredById = async id => {
 };
 
 /**
- * Grakn query that generate json objects
- * @param query the query to process
- * @param key the instance key to get id from.
- * @param relationKey the key to bind relation result.
- * @param infer
- * @returns {Promise}
- */
-export const getObjects = async (
-  query,
-  key = 'x',
-  relationKey = null,
-  infer = false
-) => {
-  const dataResult = await find(query, [key, relationKey], infer);
-  return map(t => ({ node: t[key], relation: t[relationKey] }), dataResult);
-  // const compare = await executeRead(async rTx => {
-  //   const iterator = await rTx.tx.query(query, { infer });
-  //   const answers = await iterator.collect();
-  //   logger.debug(
-  //     `[GRAKN - infer: ${infer}] ${answers.length} GetObjects > ${query}`
-  //   );
-  //   return Promise.all(
-  //     answers.map(async answer => {
-  //       let relation = null;
-  //       const node = await refetchByConcept(answer.map().get(key));
-  //       if (relationKey) {
-  //         const inferred = await answer
-  //           .map()
-  //           .get(relationKey)
-  //           .isInferred();
-  //         if (inferred) {
-  //           const relationType = await answer
-  //             .map()
-  //             .get(relationKey)
-  //             .type();
-  //           relation = {
-  //             id: uuid(),
-  //             entity_type: 'stix_relation',
-  //             relationship_type: relationType.label(),
-  //             inferred: true
-  //           };
-  //         } else {
-  //           relation = await refetchByConcept(answer.map().get(relationKey)).then(
-  //             data => assoc('inferred', false, data)
-  //           );
-  //         }
-  //       }
-  //       return { node, relation };
-  //     })
-  //   );
-  // });
-  // return compare;
-};
-
-/**
- * Grakn query that generate a json object for GraphQL
- * @param query the query to process
- * @param key the instance key to get id from.
- * @param relationKey the key to bind relation result.
- * @param infer
- * @returns {Promise<any[] | never>}
- */
-export const getObject = (query, key = 'x', relationKey, infer = false) =>
-  getObjects(query, key, relationKey, infer).then(result => head(result));
-
-/**
  * Grakn generic pagination query.
  * @param query
  * @param options
@@ -1175,14 +1123,8 @@ export const getObject = (query, key = 'x', relationKey, infer = false) =>
  * @param computeCount
  * @returns {Promise<any[] | never>}
  */
-export const paginate = (
-  query,
-  options,
-  ordered = true,
-  relationOrderingKey = null,
-  infer = false,
-  computeCount = true
-) => {
+// eslint-disable-next-line prettier/prettier
+export const paginate = (query, options, ordered = true, relationOrderingKey = null, infer = false, computeCount = true) => {
   try {
     const { first = 200, after, orderBy = null, orderMode = 'asc' } = options;
     const offset = after ? cursorToOffset(after) : 0;
@@ -1202,7 +1144,7 @@ export const paginate = (
         infer
       );
     }
-    const elements = getObjects(
+    const elements = findWithConnectedRelations(
       `${query}; ${ordered && orderBy ? orderingKey : ''} get; ${
         ordered && orderBy ? `sort $o ${orderMode};` : ''
       } offset ${offset}; limit ${first};`,
@@ -1216,110 +1158,9 @@ export const paginate = (
       return buildPagination(first, offset, instances, globalCount);
     });
   } catch (err) {
-    logger.error('[GRAKN] paginate error > ', err);
+    logger.error('[GRAKN] elPaginate error > ', err);
     return Promise.resolve(null);
   }
-};
-
-/**
- * Grakn query that generate json objects for relations
- * @param query the query to process
- * @param key the instance key to get id from.
- * @param extraRelKey the key of the relation pointing the relation
- * @param infer (get inferred relationships)
- * @returns {Promise<any[] | never>}
- */
-export const getRelations = async (
-  query,
-  key = 'rel',
-  extraRelKey,
-  infer = false
-) => {
-  // const test = await executeRead(async rTx => {
-  //   logger.debug(`[GRAKN - infer: ${infer}] getRelations > ${query}`);
-  //   const iterator = await rTx.tx.query(query, { infer });
-  //   const answers = await iterator.collect();
-  //   return Promise.all(
-  //     answers.map(async answer => {
-  //       const relationObject = answer.map().get(key);
-  //       const relationType = await relationObject.type();
-  //       const relationTypeLabel = await relationType.label();
-  //       const rolePlayersMap = await relationObject.rolePlayersMap();
-  //       const roles = rolePlayersMap.keys();
-  //       const fromRole = roles.next().value;
-  //       const fromObject = rolePlayersMap
-  //         .get(fromRole)
-  //         .values()
-  //         .next().value;
-  //       const fromRoleLabel = await fromRole.label();
-  //       const toRole = roles.next().value;
-  //       const toObject = rolePlayersMap
-  //         .get(toRole)
-  //         .values()
-  //         .next().value;
-  //       const toRoleLabel = await toRole.label();
-  //       const relationIsInferred = await relationObject.isInferred();
-  //       let relationPromise = null;
-  //       if (relationIsInferred) {
-  //         const queryPattern = `{ $rel(${fromRoleLabel}: $from, ${toRoleLabel}: $to) isa ${relationTypeLabel}; $from id ${fromObject.id}; $to id ${toObject.id}; };`;
-  //         relationPromise = Promise.resolve({
-  //           id: Buffer.from(queryPattern).toString('base64'),
-  //           entity_type: 'stix_relation',
-  //           relationship_type: relationTypeLabel,
-  //           inferred: true
-  //         });
-  //       } else {
-  //         relationPromise = Promise.resolve(
-  //           refetchByConcept(answer.map().get(key)).then(data =>
-  //             assoc('inferred', false, data)
-  //           )
-  //         );
-  //       }
-  //       const fromPromise = refetchByConcept(
-  //         enforceDirection ? fromObject : answer.map().get(fromKey)
-  //       );
-  //       const toPromise = refetchByConcept(
-  //         enforceDirection ? toObject : answer.map().get(toKey)
-  //       );
-  //       const extraRelationPromise = !extraRelKey
-  //         ? Promise.resolve(null)
-  //         : refetchByConcept(answer.map().get(extraRelKey));
-  //
-  //       return Promise.all([
-  //         relationPromise,
-  //         fromPromise,
-  //         toPromise,
-  //         extraRelationPromise
-  //       ]).then(([node, from, to, relation]) => {
-  //         if (
-  //           enforceDirection &&
-  //           isInversed(node.relationship_type, fromRoleLabel)
-  //         ) {
-  //           return {
-  //             node: pipe(
-  //               assoc('from', to),
-  //               assoc('fromRole', toRoleLabel),
-  //               assoc('to', from),
-  //               assoc('toRole', fromRoleLabel)
-  //             )(node),
-  //             relation
-  //           };
-  //         }
-  //         return {
-  //           node: pipe(
-  //             assoc('from', from),
-  //             assoc('fromRole', fromRoleLabel),
-  //             assoc('to', to),
-  //             assoc('toRole', toRoleLabel)
-  //           )(node),
-  //           relation
-  //         };
-  //       });
-  //     })
-  //   );
-  // });
-  const dataFind = await find(query, [key, extraRelKey], infer);
-  return map(t => ({ node: t[key], relation: t[extraRelKey] }), dataFind);
 };
 
 /**
@@ -1330,12 +1171,8 @@ export const getRelations = async (
  * @param pagination
  * @returns Promise
  */
-export const paginateRelationships = (
-  query,
-  options,
-  extraRel = null,
-  pagination = true
-) => {
+// eslint-disable-next-line prettier/prettier
+export const paginateRelationships = (query, options, extraRel = null, pagination = true) => {
   try {
     const {
       fromId,
@@ -1393,7 +1230,7 @@ export const paginateRelationships = (
       }${orderBy ? ', $o' : ''}; count;`,
       inferred
     );
-    const elements = getRelations(
+    const elements = findWithConnectedRelations(
       `${finalQuery} ${orderingKey} get $rel, $from, $to${
         extraRel ? `, $${extraRel}` : ''
       }${orderBy ? ', $o' : ''}; ${

@@ -8,7 +8,7 @@ import {
   escape,
   escapeString,
   executeWrite,
-  refetchEntityById,
+  loadEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -19,7 +19,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
-import { loadById } from '../database/elasticSearch';
+import { elLoadById } from '../database/elasticSearch';
 
 export const findAll = args =>
   paginate(
@@ -42,7 +42,7 @@ export const findByEntity = args =>
     args
   );
 
-export const findById = killChainPhaseId => refetchEntityById(killChainPhaseId);
+export const findById = killChainPhaseId => loadEntityById(killChainPhaseId);
 
 export const findByPhaseName = args =>
   paginate(
@@ -90,7 +90,7 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     await linkMarkingDef(wTx, createdId, killChainPhase.markingDefinitions);
     return internalId;
   });
-  return refetchEntityById(killId).then(created =>
+  return loadEntityById(killId).then(created =>
     notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created, user)
   );
 };
@@ -116,14 +116,14 @@ export const killChainPhaseDeleteRelation = (
 
 export const killChainPhaseCleanContext = (user, killChainPhaseId) => {
   delEditContext(user, killChainPhaseId);
-  return refetchEntityById(killChainPhaseId).then(killChainPhase =>
+  return loadEntityById(killChainPhaseId).then(killChainPhase =>
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );
 };
 
 export const killChainPhaseEditContext = (user, killChainPhaseId, input) => {
   setEditContext(user, killChainPhaseId, input);
-  return refetchEntityById(killChainPhaseId).then(killChainPhase =>
+  return loadEntityById(killChainPhaseId).then(killChainPhase =>
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );
 };
@@ -132,7 +132,7 @@ export const killChainPhaseEditField = (user, killChainPhaseId, input) => {
   return executeWrite(wTx => {
     return updateAttribute(killChainPhaseId, input, wTx);
   }).then(async () => {
-    const killChainPhase = await loadById(killChainPhaseId);
+    const killChainPhase = await elLoadById(killChainPhaseId);
     return notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user);
   });
 };

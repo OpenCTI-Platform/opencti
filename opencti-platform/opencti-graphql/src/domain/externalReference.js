@@ -12,12 +12,12 @@ import {
   notify,
   paginate,
   prepareDate,
-  refetchEntityById,
+  loadEntityById,
   updateAttribute,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { loadById, paginate as elPaginate } from '../database/elasticSearch';
+import { elLoadById, elPaginate as elPaginate } from '../database/elasticSearch';
 import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args => elPaginate('external_references', args);
@@ -32,7 +32,7 @@ export const findByEntity = args => {
 };
 
 export const findById = externalReferenceId =>
-  refetchEntityById(externalReferenceId);
+  loadEntityById(externalReferenceId);
 
 export const addExternalReference = async (user, externalReference) => {
   const externalId = await executeWrite(async wTx => {
@@ -78,7 +78,7 @@ export const addExternalReference = async (user, externalReference) => {
     await linkMarkingDef(wTx, createdId, externalReference.markingDefinitions);
     return internalId;
   });
-  return refetchEntityById(externalId).then(created => {
+  return loadEntityById(externalId).then(created => {
     return notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user);
   });
 };
@@ -109,7 +109,7 @@ export const externalReferenceDeleteRelation = (
 
 export const externalReferenceCleanContext = (user, externalReferenceId) => {
   delEditContext(user, externalReferenceId);
-  return refetchEntityById(externalReferenceId).then(externalReference =>
+  return loadEntityById(externalReferenceId).then(externalReference =>
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
   );
 };
@@ -120,7 +120,7 @@ export const externalReferenceEditContext = (
   input
 ) => {
   setEditContext(user, externalReferenceId, input);
-  return refetchEntityById(externalReferenceId).then(externalReference =>
+  return loadEntityById(externalReferenceId).then(externalReference =>
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
   );
 };
@@ -133,7 +133,7 @@ export const externalReferenceEditField = (
   return executeWrite(wTx => {
     return updateAttribute(externalReferenceId, input, wTx);
   }).then(async () => {
-    const externalReference = await loadById(externalReferenceId);
+    const externalReference = await elLoadById(externalReferenceId);
     return notify(
       BUS_TOPICS.ExternalReference.EDIT_TOPIC,
       externalReference,

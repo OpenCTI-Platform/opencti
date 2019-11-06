@@ -1,13 +1,13 @@
 import uuid from 'uuid/v4';
 import { assoc, filter, map, pipe } from 'ramda';
 import moment from 'moment';
-import { now, refetchEntityById, sinceNowInMinutes } from '../database/grakn';
+import { now, loadEntityById, sinceNowInMinutes } from '../database/grakn';
 import {
   elDeleteByField,
-  index,
+  elIndex,
   INDEX_WORK_JOBS,
-  loadById,
-  paginate
+  elLoadById,
+  elPaginate
 } from '../database/elasticSearch';
 
 export const workToExportFile = work => {
@@ -25,13 +25,13 @@ export const workToExportFile = work => {
 };
 
 export const connectorForWork = async id => {
-  const work = await loadById(id, INDEX_WORK_JOBS);
-  if (work) return refetchEntityById(work.connector_id);
+  const work = await elLoadById(id, INDEX_WORK_JOBS);
+  if (work) return loadEntityById(work.connector_id);
   return null;
 };
 
 export const jobsForWork = async id => {
-  return paginate(INDEX_WORK_JOBS, {
+  return elPaginate(INDEX_WORK_JOBS, {
     type: 'Job',
     connectionFormat: false,
     orderBy: 'created_at',
@@ -57,7 +57,7 @@ export const computeWorkStatus = async id => {
 };
 
 export const workForEntity = async (entityId, args) => {
-  return paginate(INDEX_WORK_JOBS, {
+  return elPaginate(INDEX_WORK_JOBS, {
     type: 'Work',
     connectionFormat: false,
     first: args.first,
@@ -68,7 +68,7 @@ export const workForEntity = async (entityId, args) => {
 };
 
 export const loadFileWorks = async fileId => {
-  return paginate(INDEX_WORK_JOBS, {
+  return elPaginate(INDEX_WORK_JOBS, {
     type: 'Work',
     connectionFormat: false,
     filters: {
@@ -106,7 +106,7 @@ export const deleteWorkForFile = async fileId => {
 
 export const initiateJob = workId => {
   const jobInternalId = uuid();
-  return index(INDEX_WORK_JOBS, {
+  return elIndex(INDEX_WORK_JOBS, {
     id: jobInternalId,
     internal_id_key: jobInternalId,
     grakn_id: jobInternalId,
@@ -122,7 +122,7 @@ export const initiateJob = workId => {
 export const createWork = async (connector, entityId = null, fileId = null) => {
   // Create the work and a initial job
   const workInternalId = uuid();
-  const createdWork = await index(INDEX_WORK_JOBS, {
+  const createdWork = await elIndex(INDEX_WORK_JOBS, {
     id: workInternalId,
     internal_id_key: workInternalId,
     grakn_id: workInternalId,
@@ -140,12 +140,12 @@ export const createWork = async (connector, entityId = null, fileId = null) => {
 };
 
 export const updateJob = async (jobId, status, messages) => {
-  const job = await loadById(jobId, INDEX_WORK_JOBS);
+  const job = await elLoadById(jobId, INDEX_WORK_JOBS);
   const updatedJob = pipe(
     assoc('job_status', status),
     assoc('messages', messages),
     assoc('updated_at', now())
   )(job);
-  await index(INDEX_WORK_JOBS, updatedJob);
+  await elIndex(INDEX_WORK_JOBS, updatedJob);
   return updatedJob;
 };

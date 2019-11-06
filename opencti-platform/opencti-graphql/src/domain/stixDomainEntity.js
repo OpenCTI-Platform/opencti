@@ -15,18 +15,18 @@ import {
   notify,
   paginate,
   prepareDate,
-  refetchEntityById,
+  loadEntityById,
   timeSeries,
   updateAttribute,
   yearFormat
 } from '../database/grakn';
 import {
-  countEntities,
-  findOrTerms,
+  elCount,
+  elFindTermsOr,
   INDEX_STIX_ENTITIES,
-  loadById,
-  loadByStixId,
-  paginate as elPaginate
+  elLoadById,
+  elLoadByStixId,
+  elPaginate as elPaginate
 } from '../database/elasticSearch';
 
 import { generateFileExportName, upload } from '../database/minio';
@@ -45,16 +45,16 @@ export const stixDomainEntitiesTimeSeries = args => {
 };
 
 export const stixDomainEntitiesNumber = args => ({
-  count: countEntities('stix_domain_entities', args),
-  total: countEntities('stix_domain_entities', dissoc('endDate', args))
+  count: elCount('stix_domain_entities', args),
+  total: elCount('stix_domain_entities', dissoc('endDate', args))
 });
 
-export const findById = stixDomainEntityId => loadById(stixDomainEntityId);
+export const findById = stixDomainEntityId => elLoadById(stixDomainEntityId);
 
-export const findByStixId = args => loadByStixId(args.stix_id_key);
+export const findByStixId = args => elLoadByStixId(args.stix_id_key);
 
 export const findByName = args => {
-  return findOrTerms(
+  return elFindTermsOr(
     [
       { 'name.keyword': escapeString(args.name) },
       { 'alias.keyword': escapeString(args.name) }
@@ -159,7 +159,7 @@ export const stixDomainEntityExportAsk = async (
   format,
   exportType
 ) => {
-  const entity = await refetchEntityById(domainEntityId);
+  const entity = await loadEntityById(domainEntityId);
   const workList = await askJobExports(entity, format, exportType);
   // Return the work list to do
   return map(w => workToExportFile(w.work), workList);
@@ -168,7 +168,7 @@ export const stixDomainEntityExportAsk = async (
 export const stixDomainEntityExportPush = async (user, entityId, file) => {
   // Upload the document in minio
   await upload(user, 'export', file, entityId);
-  return refetchEntityById(entityId).then(stixDomainEntity => {
+  return loadEntityById(entityId).then(stixDomainEntity => {
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user);
     return true;
   });
@@ -230,7 +230,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
     await linkMarkingDef(wTx, createdId, stixDomainEntity.markingDefinitions);
     return internalId;
   });
-  return refetchEntityById(domainId, true).then(created => {
+  return loadEntityById(domainId, true).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
@@ -263,7 +263,7 @@ export const stixDomainEntityAddRelations = async (
     createRelation(stixDomainEntityId, relationInput);
   const relationsPromises = map(createRelationPromise, finalInput);
   await Promise.all(relationsPromises);
-  return refetchEntityById(stixDomainEntityId).then(stixDomainEntity =>
+  return loadEntityById(stixDomainEntityId).then(stixDomainEntity =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, stixDomainEntity, user)
   );
 };
@@ -280,7 +280,7 @@ export const stixDomainEntityDeleteRelation = (
 
 export const stixDomainEntityCleanContext = (user, stixDomainEntityId) => {
   delEditContext(user, stixDomainEntityId);
-  return loadById(stixDomainEntityId).then(stixDomainEntity =>
+  return elLoadById(stixDomainEntityId).then(stixDomainEntity =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user)
   );
 };
@@ -291,7 +291,7 @@ export const stixDomainEntityEditContext = (
   input
 ) => {
   setEditContext(user, stixDomainEntityId, input);
-  return loadById(stixDomainEntityId).then(stixDomainEntity =>
+  return elLoadById(stixDomainEntityId).then(stixDomainEntity =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user)
   );
 };
@@ -304,7 +304,7 @@ export const stixDomainEntityEditField = async (
   return executeWrite(wTx => {
     return updateAttribute(stixDomainEntityId, input, wTx);
   }).then(async () => {
-    const stixDomain = await loadById(stixDomainEntityId);
+    const stixDomain = await elLoadById(stixDomainEntityId);
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomain, user);
   });
 };

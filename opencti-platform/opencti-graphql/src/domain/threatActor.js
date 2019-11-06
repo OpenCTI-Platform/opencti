@@ -4,7 +4,7 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  refetchEntityById,
+  loadEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -12,13 +12,13 @@ import {
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { paginate as elPaginate } from '../database/elasticSearch';
+import { elPaginate } from '../database/elasticSearch';
 import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'threat-actor', args));
 
-export const findById = threatActorId => refetchEntityById(threatActorId);
+export const findById = threatActorId => loadEntityById(threatActorId);
 
 export const addThreatActor = async (user, threatActor) => {
   const actorId = await executeWrite(async wTx => {
@@ -76,7 +76,7 @@ export const addThreatActor = async (user, threatActor) => {
     await linkMarkingDef(wTx, createId, threatActor.markingDefinitions);
     return internalId;
   });
-  return refetchEntityById(actorId).then(created => {
+  return loadEntityById(actorId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

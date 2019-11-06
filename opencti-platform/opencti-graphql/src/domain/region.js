@@ -4,7 +4,7 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  refetchEntityById,
+  loadEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -12,13 +12,13 @@ import {
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { paginate as elPaginate } from '../database/elasticSearch';
+import { elPaginate } from '../database/elasticSearch';
 import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'region', args));
 
-export const findById = regionId => refetchEntityById(regionId);
+export const findById = regionId => loadEntityById(regionId);
 
 export const addRegion = async (user, region) => {
   const regionId = await executeWrite(async wTx => {
@@ -61,7 +61,7 @@ export const addRegion = async (user, region) => {
     await linkMarkingDef(wTx, createdRegionId, region.markingDefinitions);
     return internalId;
   });
-  return refetchEntityById(regionId).then(created => {
+  return loadEntityById(regionId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };

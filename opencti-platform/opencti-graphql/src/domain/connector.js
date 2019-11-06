@@ -2,14 +2,14 @@ import { assoc, filter, includes, map, pipe } from 'ramda';
 import {
   executeWrite,
   find,
-  refetchEntityById,
+  loadEntityById,
   graknNow,
   now,
   sinceNowInMinutes,
   updateAttribute
 } from '../database/grakn';
 import { connectorConfig, registerConnectorQueues } from '../database/rabbitmq';
-import { loadById } from '../database/elasticSearch';
+import { elLoadById } from '../database/elasticSearch';
 
 export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
 export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
@@ -64,11 +64,11 @@ export const pingConnector = async (id, state) => {
     const stateInput = { key: 'connector_state', value: [state] };
     await updateAttribute(id, stateInput, wTx);
   });
-  return loadById(id).then(data => completeConnector(data));
+  return elLoadById(id).then(data => completeConnector(data));
 };
 
 export const registerConnector = async ({ id, name, type, scope }) => {
-  const connector = await refetchEntityById(id);
+  const connector = await loadEntityById(id);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
   if (connector) {
@@ -81,7 +81,7 @@ export const registerConnector = async ({ id, name, type, scope }) => {
       const scopeInput = { key: 'connector_scope', value: [scope.join(',')] };
       await updateAttribute(id, scopeInput, wTx);
     });
-    return loadById(id).then(data => completeConnector(data));
+    return elLoadById(id).then(data => completeConnector(data));
   }
   // Need to create the connector
   const creation = graknNow();
@@ -96,5 +96,5 @@ export const registerConnector = async ({ id, name, type, scope }) => {
     await wTx.tx.query(query);
   });
   // Return the connector
-  return refetchEntityById(id).then(data => completeConnector(data));
+  return loadEntityById(id).then(data => completeConnector(data));
 };

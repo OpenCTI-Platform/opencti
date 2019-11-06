@@ -21,8 +21,8 @@ import {
   deleteEntityById,
   escapeString,
   executeWrite,
-  refetchEntityById,
-  getObject,
+  loadEntityById,
+  loadWithConnectedRelations,
   graknNow,
   load,
   monthFormat,
@@ -32,7 +32,7 @@ import {
   updateAttribute,
   yearFormat
 } from '../database/grakn';
-import { paginate as elPaginate } from '../database/elasticSearch';
+import { elPaginate } from '../database/elasticSearch';
 import { stixDomainEntityDelete } from './stixDomainEntity';
 import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
@@ -62,7 +62,7 @@ export const setAuthenticationCookie = (token, res) => {
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'user', args));
 
-export const findById = userId => refetchEntityById(userId);
+export const findById = userId => loadEntityById(userId);
 
 export const findByEmail = async userEmail => {
   const result = await load(
@@ -85,7 +85,7 @@ export const token = (userId, args, context) => {
   if (userId !== context.user.id) {
     throw new ForbiddenAccess();
   }
-  return getObject(
+  return loadWithConnectedRelations(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
     $client has internal_id_key "${escapeString(
@@ -97,7 +97,7 @@ export const token = (userId, args, context) => {
 };
 
 export const getTokenId = userId => {
-  return getObject(
+  return loadWithConnectedRelations(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
     $client has internal_id_key "${escapeString(
@@ -153,7 +153,7 @@ export const addPerson = async (user, newUser) => {
     await linkMarkingDef(wTx, createdUserId, newUser.markingDefinitions);
     return internalId;
   });
-  return refetchEntityById(personId).then(created => {
+  return loadEntityById(personId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
@@ -239,7 +239,7 @@ export const addUser = async (
 
     return internalId;
   });
-  return refetchEntityById(userId).then(created => {
+  return loadEntityById(userId).then(created => {
     return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
   });
 };
@@ -320,7 +320,7 @@ export const userRenewToken = async (
     insert (client: $user, authorization: $token) isa authorize, has internal_id_key "${uuid()}";`
     );
   });
-  return refetchEntityById(userId);
+  return loadEntityById(userId);
 };
 
 export const userEditField = (user, userId, input) => {
@@ -333,7 +333,7 @@ export const userEditField = (user, userId, input) => {
   return executeWrite(wTx => {
     return updateAttribute(userId, finalInput, wTx);
   }).then(async () => {
-    const userToEdit = await refetchEntityById(userId);
+    const userToEdit = await loadEntityById(userId);
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
   });
 };

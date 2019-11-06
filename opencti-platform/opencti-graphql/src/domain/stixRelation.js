@@ -35,7 +35,6 @@ import {
   escape,
   escapeString,
   executeWrite,
-  getObjects,
   getRelationInferredById,
   getSingleValueNumber,
   graknNow,
@@ -43,15 +42,20 @@ import {
   notify,
   paginateRelationships,
   prepareDate,
-  refetchEntityById,
-  refetchRelationById,
+  loadEntityById,
+  loadRelationById,
   timeSeries,
   updateAttribute,
-  yearFormat
+  yearFormat,
+  findWithConnectedRelations
 } from '../database/grakn';
 import { buildPagination } from '../database/utils';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { findAndTerms, findOrTerms, loadById } from '../database/elasticSearch';
+import {
+  elFindTermsAnd,
+  elFindTermsOr,
+  elLoadById
+} from '../database/elasticSearch';
 
 const sumBy = attribute => vals => {
   return reduce(
@@ -80,11 +84,11 @@ export const findAll = async args => {
     const terms = [];
     const ranges = [];
     if (fromId) {
-      const from = await loadById(fromId).then(d => d.grakn_id);
+      const from = await elLoadById(fromId).then(d => d.grakn_id);
       terms.push({ 'fromId.keyword': from });
     }
     if (toId) {
-      const to = await loadById(toId).then(d => d.grakn_id);
+      const to = await elLoadById(toId).then(d => d.grakn_id);
       terms.push({ 'toId.keyword': to });
     }
     if (relationType) {
@@ -102,7 +106,7 @@ export const findAll = async args => {
     if (lastSeenStop) {
       ranges.push({ last_seen: { lt: args.lastSeenStop.toISOString() } });
     }
-    return findAndTerms({ terms, ranges });
+    return elFindTermsAnd({ terms, ranges });
   }
   // If inferred option, ask grakn
   return paginateRelationships(
@@ -113,25 +117,25 @@ export const findAll = async args => {
   );
 };
 
-export const findById = stixRelationId => loadById(stixRelationId);
+export const findById = stixRelationId => elLoadById(stixRelationId);
 
 export const findByIdInferred = stixRelationId => {
   return getRelationInferredById(stixRelationId);
 };
 
 export const findByStixId = args => {
-  return findOrTerms([{ 'stix_id_key.keyword': args.stix_id_key }]);
+  return elFindTermsOr([{ 'stix_id_key.keyword': args.stix_id_key }]);
 };
 
 export const search = args => {
-  return findOrTerms([
+  return elFindTermsOr([
     { 'name.keyword': escapeString(args.search) },
     { 'desc.keyword': escapeString(args.search) }
   ]);
 };
 
 export const findAllWithInferences = async args => {
-  const entities = await getObjects(
+  const entities = await findWithConnectedRelations(
     `match $x isa entity; (${args.resolveRelationRole}: $from, $x) isa ${escape(
       args.resolveRelationType
     )};
@@ -268,7 +272,7 @@ export const stixRelationsTimeSeries = args => {
 };
 
 export const stixRelationsTimeSeriesWithInferences = async args => {
-  const entities = await getObjects(
+  const entities = await findWithConnectedRelations(
     `match $x isa entity; (${escape(
       args.resolveRelationRole
     )}: $from, $x) isa ${escape(args.resolveRelationType)}; ${
@@ -410,7 +414,7 @@ export const stixRelationsDistribution = args => {
 
 export const stixRelationsDistributionWithInferences = async args => {
   const { limit = 10 } = args;
-  const entities = await getObjects(
+  const entities = await findWithConnectedRelations(
     `match $x isa entity; (${escape(
       args.resolveRelationRole
     )}: $from, $x) isa ${escape(args.resolveRelationType)}; ${
@@ -666,7 +670,7 @@ export const addStixRelation = async (user, stixRelation) => {
     }
     return internalId;
   });
-  return refetchRelationById(stixRelationId).then(created => {
+  return loadRelationById(stixRelationId).then(created => {
     return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
   });
 };
@@ -677,14 +681,14 @@ export const stixRelationDelete = async stixRelationId => {
 
 export const stixRelationCleanContext = (user, stixRelationId) => {
   delEditContext(user, stixRelationId);
-  return refetchEntityById(stixRelationId).then(stixRelation =>
+  return loadEntityById(stixRelationId).then(stixRelation =>
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user)
   );
 };
 
 export const stixRelationEditContext = (user, stixRelationId, input) => {
   setEditContext(user, stixRelationId, input);
-  return refetchEntityById(stixRelationId).then(stixRelation =>
+  return loadEntityById(stixRelationId).then(stixRelation =>
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user)
   );
 };
@@ -693,7 +697,7 @@ export const stixRelationEditField = (user, stixRelationId, input) => {
   return executeWrite(wTx => {
     return updateAttribute(stixRelationId, input, wTx);
   }).then(async () => {
-    const stixRelation = await loadById(stixRelationId);
+    const stixRelation = await elLoadById(stixRelationId);
     return notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user);
   });
 };

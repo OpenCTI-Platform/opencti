@@ -2,28 +2,28 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixRelation,
-  stixRelationDelete,
   findAll,
-  findByStixId,
+  findAllWithInferences,
   findById,
   findByIdInferred,
-  findAllWithInferences,
-  stixRelationsTimeSeries,
-  stixRelationsTimeSeriesWithInferences,
+  findByStixId,
+  search,
+  stixRelationAddRelation,
+  stixRelationCleanContext,
+  stixRelationDelete,
+  stixRelationDeleteRelation,
+  stixRelationEditContext,
+  stixRelationEditField,
   stixRelationsDistribution,
   stixRelationsDistributionWithInferences,
   stixRelationsNumber,
-  search,
-  stixRelationEditContext,
-  stixRelationCleanContext,
-  stixRelationEditField,
-  stixRelationAddRelation,
-  stixRelationDeleteRelation
+  stixRelationsTimeSeries,
+  stixRelationsTimeSeriesWithInferences
 } from '../domain/stixRelation';
 import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
-import { refetchEntityByGraknId } from '../database/grakn';
 import { killChainPhases } from '../domain/stixDomainEntity';
+import { elLoadByGraknId } from '../database/elasticSearch';
 
 const stixRelationResolvers = {
   Query: {
@@ -73,8 +73,8 @@ const stixRelationResolvers = {
   },
   StixRelation: {
     killChainPhases: (rel, args) => killChainPhases(rel.id, args),
-    from: rel => refetchEntityByGraknId(rel.fromId),
-    to: rel => refetchEntityByGraknId(rel.toId)
+    from: rel => rel.from || elLoadByGraknId(rel.fromId),
+    to: rel => rel.to || elLoadByGraknId(rel.toId)
   },
   Mutation: {
     stixRelationEdit: (_, { id }, { user }) => ({

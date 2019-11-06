@@ -5,10 +5,10 @@ import {
   escapeString,
   executeWrite,
   getGraknVersion,
-  getObject,
+  loadWithConnectedRelations,
   graknNow,
   notify,
-  refetchEntityById,
+  loadEntityById,
   updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -18,7 +18,7 @@ import {
   setEditContext
 } from '../database/redis';
 
-import { getElasticVersion, loadById } from '../database/elasticSearch';
+import { elVersion, elLoadById } from '../database/elasticSearch';
 
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { version } from '../../package.json';
@@ -27,20 +27,22 @@ export const getApplicationInfo = () => ({
   version,
   dependencies: [
     { name: 'Grakn', version: getGraknVersion() },
-    { name: 'Elasticsearch', version: getElasticVersion() },
+    { name: 'Elasticsearch', version: elVersion() },
     { name: 'RabbitMQ', version: getRabbitMQVersion() },
     { name: 'Redis', version: getRedisVersion() }
     // TODO Add Minio
   ]
 });
 
-export const getSettings = () =>
-  getObject(
+export const getSettings = () => {
+  return loadWithConnectedRelations(
     `match $x isa Settings; 
     get; 
     offset 0; 
-    limit 1;`
+    limit 1;`,
+    'x'
   ).then(result => result.node);
+};
 
 export const addSettings = async (user, settings) => {
   const settingId = await executeWrite(async wTx => {
@@ -61,7 +63,7 @@ export const addSettings = async (user, settings) => {
   `);
     return internalId;
   });
-  return refetchEntityById(settingId).then(created =>
+  return loadEntityById(settingId).then(created =>
     notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user)
   );
 };
@@ -70,14 +72,14 @@ export const settingsDelete = settingsId => deleteEntityById(settingsId);
 
 export const settingsCleanContext = (user, settingsId) => {
   delEditContext(user, settingsId);
-  return refetchEntityById(settingsId).then(settings =>
+  return loadEntityById(settingsId).then(settings =>
     notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
   );
 };
 
 export const settingsEditContext = (user, settingsId, input) => {
   setEditContext(user, settingsId, input);
-  return refetchEntityById(settingsId).then(settings =>
+  return loadEntityById(settingsId).then(settings =>
     notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
   );
 };
@@ -86,7 +88,7 @@ export const settingsEditField = (user, settingsId, input) => {
   return executeWrite(wTx => {
     return updateAttribute(settingsId, input, wTx);
   }).then(async () => {
-    const settings = await loadById(settingsId);
+    const settings = await elLoadById(settingsId);
     return notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user);
   });
 };

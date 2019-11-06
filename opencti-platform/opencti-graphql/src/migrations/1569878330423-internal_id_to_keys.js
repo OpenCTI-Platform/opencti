@@ -1,14 +1,14 @@
 import uuid from 'uuid/v4';
 import { assoc, pipe, splitEvery } from 'ramda';
 import {
-    attributeExists,
-    conceptTypes,
-    executeWrite,
-    refetchByConcept,
-    inferIndexFromConceptTypes, refetchEntityByGraknId
+  attributeExists,
+  conceptTypes,
+  executeWrite,
+  inferIndexFromConceptTypes,
+  loadEntityByGraknId
 } from '../database/grakn';
 import { logger } from '../config/conf';
-import { index } from '../database/elasticSearch';
+import { elIndex } from '../database/elasticSearch';
 
 module.exports.up = async next => {
   logger.info(
@@ -74,9 +74,9 @@ module.exports.up = async next => {
                 internalIds.push(entityInternalId);
                 const graknQuery = `match $x id ${conceptId}; insert $x has internal_id_key "${entityInternalId}";`;
                 let elasticQuery = null;
-                // reindex if necessary
+                // elReindex if necessary
                 if (getIndex) {
-                  const attributes = await refetchEntityByGraknId(concept.id);
+                  const attributes = await loadEntityByGraknId(concept.id);
                   const finalAttributes = pipe(
                     assoc('id', entityInternalId),
                     assoc('internal_id_key', entityInternalId)
@@ -97,7 +97,7 @@ module.exports.up = async next => {
                     logger.info(
                       `[MIGRATION] internal_id_to_keys > Reindex ${action.id}`
                     );
-                    await index(
+                    await elIndex(
                       action.elasticQuery.index,
                       action.elasticQuery.data,
                       true

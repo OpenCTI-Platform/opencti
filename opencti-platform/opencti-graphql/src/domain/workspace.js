@@ -8,8 +8,8 @@ import {
   deleteRelationById,
   escapeString,
   executeWrite,
-  refetchEntityById,
-  getObject,
+  loadEntityById,
+  loadWithConnectedRelations,
   getSingleValueNumber,
   graknNow,
   monthFormat,
@@ -20,7 +20,7 @@ import {
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { loadById } from '../database/elasticSearch';
+import { elLoadById } from '../database/elasticSearch';
 
 export const findAll = args => {
   return paginate(
@@ -41,7 +41,7 @@ export const findAll = args => {
   );
 };
 
-export const findById = workspaceId => refetchEntityById(workspaceId);
+export const findById = workspaceId => loadEntityById(workspaceId);
 
 export const workspacesNumber = args => {
   return {
@@ -56,8 +56,8 @@ export const workspacesNumber = args => {
   };
 };
 
-export const ownedBy = workspaceId =>
-  getObject(
+export const ownedBy = workspaceId => {
+  return loadWithConnectedRelations(
     `match $x isa User; 
     $rel(owner:$x, to:$workspace) isa owned_by; 
     $workspace has internal_id_key "${escapeString(
@@ -66,6 +66,7 @@ export const ownedBy = workspaceId =>
     'x',
     'rel'
   );
+};
 
 export const objectRefs = (workspaceId, args) =>
   paginate(
@@ -117,7 +118,7 @@ export const addWorkspace = async (user, workspace) => {
     }
     return internalId;
   });
-  return refetchEntityById(workId).then(created =>
+  return loadEntityById(workId).then(created =>
     notify(BUS_TOPICS.Workspace.ADDED_TOPIC, created, user)
   );
 };
@@ -153,7 +154,7 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
     await Promise.all(relationsPromises);
   });
 
-  return refetchEntityById(workspaceId).then(workspace =>
+  return loadEntityById(workspaceId).then(workspace =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };
@@ -166,14 +167,14 @@ export const workspaceDeleteRelation = (user, workspaceId, relationId) =>
 
 export const workspaceCleanContext = (user, workspaceId) => {
   delEditContext(user, workspaceId);
-  return refetchEntityById(workspaceId).then(workspace =>
+  return loadEntityById(workspaceId).then(workspace =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };
 
 export const workspaceEditContext = (user, workspaceId, input) => {
   setEditContext(user, workspaceId, input);
-  return refetchEntityById(workspaceId).then(workspace =>
+  return loadEntityById(workspaceId).then(workspace =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };
@@ -182,7 +183,7 @@ export const workspaceEditField = (user, workspaceId, input) => {
   return executeWrite(wTx => {
     return updateAttribute(workspaceId, input, wTx);
   }).then(async () => {
-    const workspace = await loadById(workspaceId);
+    const workspace = await elLoadById(workspaceId);
     return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user);
   });
 };

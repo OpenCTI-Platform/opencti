@@ -4,7 +4,7 @@ import {
   executeWrite,
   queryAttributeValueById,
   queryAttributeValues,
-  reindexEntityForAttribute
+  reindexByAttribute
 } from '../database/grakn';
 import { logger } from '../config/conf';
 
@@ -52,7 +52,7 @@ export const attributeUpdate = async (id, input) => {
   // Delete old attribute
   await deleteAttributeById(id);
   // Reindex all entities using this attribute
-  await reindexEntityForAttribute(input.type, input.newValue);
+  await reindexByAttribute(input.type, input.newValue);
   // Return the new attribute
   return newAttribute;
 };

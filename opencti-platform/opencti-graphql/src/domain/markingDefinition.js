@@ -12,13 +12,13 @@ import {
   notify,
   paginate,
   prepareDate,
-  refetchEntityById,
+  loadEntityById,
   updateAttribute,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { linkCreatedByRef } from './stixEntity';
-import { loadById } from '../database/elasticSearch';
+import { elLoadById } from '../database/elasticSearch';
 
 export const findAll = args => {
   return paginate(
@@ -67,7 +67,7 @@ export const findByStixId = args => {
 };
 
 export const findById = markingDefinitionId =>
-  refetchEntityById(markingDefinitionId);
+  loadEntityById(markingDefinitionId);
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
   const markingId = await executeWrite(async wTx => {
@@ -107,7 +107,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
     await linkCreatedByRef(wTx, createdId, markingDefinition.createdByRef);
     return internalId;
   });
-  return refetchEntityById(markingId).then(created =>
+  return loadEntityById(markingId).then(created =>
     notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created, user)
   );
 };
@@ -137,7 +137,7 @@ export const markingDefinitionDeleteRelation = (
 
 export const markingDefinitionCleanContext = (user, markingDefinitionId) => {
   delEditContext(user, markingDefinitionId);
-  return refetchEntityById(markingDefinitionId).then(markingDefinition =>
+  return loadEntityById(markingDefinitionId).then(markingDefinition =>
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );
 };
@@ -148,7 +148,7 @@ export const markingDefinitionEditContext = (
   input
 ) => {
   setEditContext(user, markingDefinitionId, input);
-  return refetchEntityById(markingDefinitionId).then(markingDefinition =>
+  return loadEntityById(markingDefinitionId).then(markingDefinition =>
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );
 };
@@ -161,7 +161,7 @@ export const markingDefinitionEditField = (
   return executeWrite(wTx => {
     return updateAttribute(markingDefinitionId, input, wTx);
   }).then(async () => {
-    const markingDefinition = await loadById(markingDefinitionId);
+    const markingDefinition = await elLoadById(markingDefinitionId);
     return notify(
       BUS_TOPICS.MarkingDefinition.EDIT_TOPIC,
       markingDefinition,

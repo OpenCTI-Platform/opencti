@@ -7,7 +7,7 @@ import {
   deleteRelationById,
   escapeString,
   executeWrite,
-  refetchEntityById,
+  loadEntityById,
   graknNow,
   monthFormat,
   notify,
@@ -16,7 +16,7 @@ import {
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { loadById } from '../database/elasticSearch';
+import { elLoadById } from '../database/elasticSearch';
 
 export const findAll = args =>
   paginate(
@@ -52,7 +52,7 @@ export const findByValue = args =>
     false
   );
 
-export const findById = tagId => refetchEntityById(tagId);
+export const findById = tagId => loadEntityById(tagId);
 
 export const addTag = async (user, tag) => {
   const tagId = await executeWrite(async wTx => {
@@ -73,7 +73,7 @@ export const addTag = async (user, tag) => {
   `);
     return internalId;
   });
-  return refetchEntityById(tagId).then(created =>
+  return loadEntityById(tagId).then(created =>
     notify(BUS_TOPICS.Tag.ADDED_TOPIC, created, user)
   );
 };
@@ -94,14 +94,14 @@ export const tagDeleteRelation = (user, tagId, relationId) =>
 
 export const tagCleanContext = (user, tagId) => {
   delEditContext(user, tagId);
-  return refetchEntityById(tagId).then(tag =>
+  return loadEntityById(tagId).then(tag =>
     notify(BUS_TOPICS.Tag.EDIT_TOPIC, tag, user)
   );
 };
 
 export const tagEditContext = (user, tagId, input) => {
   setEditContext(user, tagId, input);
-  return refetchEntityById(tagId).then(tag =>
+  return loadEntityById(tagId).then(tag =>
     notify(BUS_TOPICS.Tag.EDIT_TOPIC, tag, user)
   );
 };
@@ -110,7 +110,7 @@ export const tagEditField = (user, tagId, input) => {
   return executeWrite(wTx => {
     return updateAttribute(tagId, input, wTx);
   }).then(async () => {
-    const tag = await loadById(tagId);
+    const tag = await elLoadById(tagId);
     return notify(BUS_TOPICS.Tag.EDIT_TOPIC, tag, user);
   });
 };
