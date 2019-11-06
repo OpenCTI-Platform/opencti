@@ -7,13 +7,13 @@ import {
   loadEntityById,
   graknNow,
   monthFormat,
-  notify,
   prepareDate,
   yearFormat
 } from '../database/grakn';
 import { elPaginate } from '../database/elasticSearch';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { notify } from '../database/redis';
 
 export const findAll = args => {
   return elPaginate(

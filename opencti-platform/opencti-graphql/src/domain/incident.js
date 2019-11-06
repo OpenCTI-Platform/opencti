@@ -7,7 +7,6 @@ import {
   loadEntityById,
   graknNow,
   monthFormat,
-  notify,
   paginate,
   prepareDate,
   timeSeries,
@@ -16,6 +15,7 @@ import {
 import { BUS_TOPICS, logger } from '../config/conf';
 import { elPaginate } from '../database/elasticSearch';
 import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { notify } from '../database/redis';
 
 export const findAll = args => {
   return elPaginate('stix_domain_entities', assoc('type', 'incident', args));

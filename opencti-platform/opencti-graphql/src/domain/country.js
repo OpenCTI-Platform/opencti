@@ -7,13 +7,13 @@ import {
   loadEntityById,
   graknNow,
   monthFormat,
-  notify,
   prepareDate,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { elPaginate } from '../database/elasticSearch';
 import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { notify } from '../database/redis';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'country', args));

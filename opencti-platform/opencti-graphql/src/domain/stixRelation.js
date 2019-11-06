@@ -25,7 +25,7 @@ import {
 } from 'ramda';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
+import {delEditContext, notify, setEditContext} from '../database/redis';
 import {
   createRelation,
   dayFormat,
@@ -39,7 +39,6 @@ import {
   getSingleValueNumber,
   graknNow,
   monthFormat,
-  notify,
   paginateRelationships,
   prepareDate,
   loadEntityById,

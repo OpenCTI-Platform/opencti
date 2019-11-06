@@ -4,7 +4,7 @@ import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import {
   delUserContext,
-  getAccessCache,
+  getAccessCache, notify,
   storeAccessCache
 } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess } from '../config/errors';
@@ -26,7 +26,6 @@ import {
   graknNow,
   load,
   monthFormat,
-  notify,
   paginate,
   prepareDate,
   updateAttribute,

@@ -31,6 +31,11 @@ export const getRedisVersion = () => {
   return 'Disconnected';
 };
 
+export const notify = (topic, instance, user, context) => {
+  if (pubsub) pubsub.publish(topic, { instance, user, context });
+  return instance;
+};
+
 /**
  * Delete the user context for a specific edition
  * @param user the user

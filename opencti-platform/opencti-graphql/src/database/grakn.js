@@ -32,20 +32,19 @@ import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
 import conf, { logger } from '../config/conf';
-import { pubsub } from './redis';
 import { buildPagination, fillTimeSeries, randomKey } from './utils';
 import { isInversed } from './graknRoles';
 import {
   elDeleteInstanceIds,
-  elUpdate,
   elIndex,
+  elLoadByGraknId,
+  elLoadById,
+  elUpdate,
   INDEX_CONNECTORS,
   INDEX_EXT_REFERENCES,
   INDEX_STIX_ENTITIES,
   INDEX_STIX_OBSERVABLE,
-  INDEX_STIX_RELATIONS,
-  elLoadByGraknId,
-  elLoadById
+  INDEX_STIX_RELATIONS
 } from './elasticSearch';
 
 // region global variables
@@ -139,12 +138,6 @@ const client = new Grakn(
 let session = null;
 // endregion
 
-export const getGraknVersion = async () => {
-  // TODO: It seems that Grakn server does not expose its version yet:
-  // https://github.com/graknlabs/client-nodejs/issues/47
-  return '1.5.9';
-};
-
 // region basic commands
 const closeTx = async gTx => {
   try {
@@ -220,22 +213,6 @@ export const executeWrite = async executeFunction => {
     throw err;
   }
 };
-
-export const graknIsAlive = async () => {
-  try {
-    // Just try to take a read transaction
-    await executeRead(() => {});
-  } catch (e) {
-    logger.error(`[GRAKN] Seems down`);
-    throw new Error('Grakn seems down');
-  }
-};
-
-export const notify = (topic, instance, user, context) => {
-  if (pubsub) pubsub.publish(topic, { instance, user, context });
-  return instance;
-};
-
 export const write = async query => {
   const wTx = await takeWriteTx();
   try {
@@ -246,6 +223,21 @@ export const write = async query => {
   } finally {
     await closeTx(wTx);
   }
+};
+
+export const graknIsAlive = async () => {
+  try {
+    // Just try to take a read transaction
+    await executeRead(() => {});
+  } catch (e) {
+    logger.error(`[GRAKN] Seems down`);
+    throw new Error('Grakn seems down');
+  }
+};
+export const getGraknVersion = async () => {
+  // TODO: It seems that Grakn server does not expose its version yet:
+  // https://github.com/graknlabs/client-nodejs/issues/47
+  return '1.5.9';
 };
 
 /**

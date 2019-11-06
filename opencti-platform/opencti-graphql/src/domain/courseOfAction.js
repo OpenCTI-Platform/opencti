@@ -7,7 +7,6 @@ import {
   loadEntityById,
   graknNow,
   monthFormat,
-  notify,
   paginate,
   prepareDate,
   yearFormat
@@ -15,6 +14,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { elPaginate } from '../database/elasticSearch';
 import { linkCreatedByRef, linkKillChains, linkMarkingDef } from './stixEntity';
+import { notify } from '../database/redis';
 
 export const findAll = args =>
   elPaginate('stix_domain_entities', assoc('type', 'course-of-action', args));

@@ -10,7 +10,6 @@ import {
   getSingleValueNumber,
   graknNow,
   monthFormat,
-  notify,
   paginate,
   paginateRelationships,
   prepareDate,
@@ -20,6 +19,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { elPaginate } from '../database/elasticSearch';
 import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { notify } from '../database/redis';
 
 export const findAll = args => {
   if (args.orderBy === 'createdByRef') {

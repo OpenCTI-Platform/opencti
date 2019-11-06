@@ -1,5 +1,5 @@
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
+import {delEditContext, notify, setEditContext} from '../database/redis';
 import {
   createRelation,
   dayFormat,
@@ -9,7 +9,6 @@ import {
   executeWrite,
   graknNow,
   monthFormat,
-  notify,
   paginate,
   prepareDate,
   loadEntityById,

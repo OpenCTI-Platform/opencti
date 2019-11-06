@@ -1,6 +1,6 @@
 import uuid from 'uuid/v4';
 import { map } from 'ramda';
-import { delEditContext, setEditContext } from '../database/redis';
+import {delEditContext, notify, setEditContext} from '../database/redis';
 import {
   createRelation,
   dayFormat,
@@ -13,7 +13,6 @@ import {
   getSingleValueNumber,
   graknNow,
   monthFormat,
-  notify,
   paginate,
   prepareDate,
   updateAttribute,

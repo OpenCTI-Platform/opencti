@@ -7,14 +7,13 @@ import {
   getGraknVersion,
   loadWithConnectedRelations,
   graknNow,
-  notify,
   loadEntityById,
   updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import {
   delEditContext,
-  getRedisVersion,
+  getRedisVersion, notify,
   setEditContext
 } from '../database/redis';
 

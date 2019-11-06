@@ -1,7 +1,7 @@
 import { dissoc, head, join, map, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { delEditContext, setEditContext } from '../database/redis';
+import {delEditContext, notify, setEditContext} from '../database/redis';
 import {
   createRelation,
   dayFormat,
@@ -12,7 +12,6 @@ import {
   executeWrite,
   graknNow,
   monthFormat,
-  notify,
   paginate,
   prepareDate,
   loadEntityById,

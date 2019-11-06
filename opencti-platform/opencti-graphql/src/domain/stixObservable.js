@@ -1,6 +1,6 @@
 import { assoc, assocPath, dissoc, map, pipe } from 'ramda';
 import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
+import {delEditContext, notify, setEditContext} from '../database/redis';
 import {
   createRelation,
   dayFormat,
@@ -11,7 +11,6 @@ import {
   executeWrite,
   graknNow,
   monthFormat,
-  notify,
   loadEntityById,
   timeSeries,
   updateAttribute,

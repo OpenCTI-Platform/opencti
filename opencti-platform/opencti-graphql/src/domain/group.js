@@ -7,12 +7,12 @@ import {
   loadEntityById,
   graknNow,
   monthFormat,
-  notify,
   paginate,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { notify } from '../database/redis';
 
 export const findAll = args => {
   return paginate(
