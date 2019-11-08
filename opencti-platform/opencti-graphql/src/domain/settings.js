@@ -17,10 +17,9 @@ import {
   getRedisVersion,
   setEditContext
 } from '../database/redis';
-
 import { getElasticVersion } from '../database/elasticSearch';
-
 import { getRabbitMQVersion } from '../database/rabbitmq';
+import { getMinIOVersion } from '../database/minio';
 import { version } from '../../package.json';
 
 export const getApplicationInfo = () => ({
@@ -29,8 +28,8 @@ export const getApplicationInfo = () => ({
     { name: 'Grakn', version: getGraknVersion() },
     { name: 'Elasticsearch', version: getElasticVersion() },
     { name: 'RabbitMQ', version: getRabbitMQVersion() },
-    { name: 'Redis', version: getRedisVersion() }
-    // TODO Add Minio
+    { name: 'Redis', version: getRedisVersion() },
+    { name: 'MinIO', version: getMinIOVersion() }
   ]
 });
 
