@@ -45,11 +45,7 @@ const threatActorQuery = graphql`
       ...FileExportViewer_entity
     }
     connectorsForExport {
-        id
-        name
-        active
-        connector_scope
-        updated_at
+        ...FileManager_connectorsExport
     }
   }
 `;
@@ -136,16 +132,22 @@ class RootThreatActor extends Component {
                       />
                     )}
                   />
-                  <Route exact path="/dashboard/threats/threat_actors/:threatActorId/files"
+                  <Route
+                    exact
+                    path="/dashboard/threats/threat_actors/:threatActorId/files"
                     render={(routeProps) => (
-                       <React.Fragment>
-                           <StixDomainEntityHeader
-                               stixDomainEntity={props.threatActor}
-                               PopoverComponent={<ThreatActorPopover />}/>
-                           <FileManager {...routeProps} id={threatActorId}
-                                        connectorsExport={props.connectorsForExport}
-                                        entity={props.threatActor}/>
-                       </React.Fragment>
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.threatActor}
+                          PopoverComponent={<ThreatActorPopover />}
+                        />
+                        <FileManager
+                          {...routeProps}
+                          id={threatActorId}
+                          connectorsExport={props.connectorsForExport}
+                          entity={props.threatActor}
+                        />
+                      </React.Fragment>
                     )}
                   />
                 </div>

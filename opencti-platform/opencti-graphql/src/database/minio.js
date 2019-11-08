@@ -47,6 +47,7 @@ const extractName = (entityId, entityType, filename = '') => {
  * @param format mime type like application/json
  * @param connector the connector for the export
  * @param exportType the export type simple or full
+ * @param maxMarkingDefinitionEntity the marking definition entity
  * @param entity the target entity of the export
  * @returns {string}
  */
@@ -54,12 +55,17 @@ export const generateFileExportName = (
   format,
   connector,
   exportType,
+  maxMarkingDefinitionEntity,
   entity
 ) => {
   const creation = now();
   const fileExt = mime.extension(format);
   const entityInFile = `${entity.entity_type}-${entity.name}`;
-  return `${creation}_(${connector.name})_${entityInFile}_${exportType}.${fileExt}`;
+  return `${creation}${
+    maxMarkingDefinitionEntity
+      ? `_${maxMarkingDefinitionEntity.definition}`
+      : ''
+  }_(${connector.name})_${entityInFile}_${exportType}.${fileExt}`;
 };
 
 export const deleteFile = async (id, user) => {

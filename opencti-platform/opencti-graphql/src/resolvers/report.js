@@ -2,6 +2,7 @@ import {
   addReport,
   findAll,
   findByEntity,
+  findByEntityStixId,
   findByAuthor,
   reportsTimeSeries,
   reportsTimeSeriesByEntity,
@@ -30,6 +31,9 @@ const reportResolvers = {
     reports: (_, args) => {
       if (args.objectId && args.objectId.length > 0) {
         return findByEntity(args);
+      }
+      if (args.objectStixId && args.objectStixId.length > 0) {
+        return findByEntityStixId(args);
       }
       if (args.authorId && args.authorId.length > 0) {
         return findByAuthor(args);

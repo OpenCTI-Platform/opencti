@@ -26,6 +26,7 @@ import {
   deleteEntity,
   paginate as elPaginate
 } from '../database/elasticSearch';
+import { findById as findMarkingDefintionById } from './markingDefinition';
 
 import { generateFileExportName, upload } from '../database/minio';
 import { connectorsForExport } from './connector';
@@ -112,15 +113,25 @@ export const externalReferences = (stixDomainEntityId, args) => {
   );
 };
 
-const askJobExports = async (entity, format, exportType) => {
+const askJobExports = async (
+  entity,
+  format,
+  exportType,
+  maxMarkingDefinition
+) => {
   const connectors = await connectorsForExport(format, true);
   // Create job for every connectors
+  const maxMarkingDefinitionEntity =
+    maxMarkingDefinition && maxMarkingDefinition.length > 0
+      ? await findMarkingDefintionById(maxMarkingDefinition)
+      : null;
   const workList = await Promise.all(
     map(connector => {
       const fileName = generateFileExportName(
         format,
         connector,
         exportType,
+        maxMarkingDefinitionEntity,
         entity
       );
       return createWork(connector, entity.id, fileName).then(
@@ -139,6 +150,10 @@ const askJobExports = async (entity, format, exportType) => {
       const message = {
         work_id: work.internal_id_key, // work(id)
         job_id: job.internal_id_key, // job(id)
+        max_marking_definition:
+          maxMarkingDefinition && maxMarkingDefinition.length > 0
+            ? maxMarkingDefinition
+            : null, // markingDefinition(id)
         export_type: exportType, // simple or full
         entity_type: entity.entity_type, // report, threat, ...
         entity_id: entity.id, // report(id), thread(id), ...
@@ -164,10 +179,16 @@ export const stixDomainEntityImportPush = (user, entityId, file) => {
 export const stixDomainEntityExportAsk = async (
   domainEntityId,
   format,
-  exportType
+  exportType,
+  maxMarkingDefinition
 ) => {
   const entity = await getById(domainEntityId);
-  const workList = await askJobExports(entity, format, exportType);
+  const workList = await askJobExports(
+    entity,
+    format,
+    exportType,
+    maxMarkingDefinition
+  );
   // Return the work list to do
   return map(w => workToExportFile(w.work), workList);
 };

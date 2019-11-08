@@ -57,7 +57,7 @@ class FileLineComponent extends Component {
       mutation: FileLineImportAskJobMutation,
       variables: { fileName: this.props.file.id },
       onCompleted: () => {
-        MESSAGING$.notifySuccess(this.props.t('Import successfully asked'));
+        MESSAGING$.notifySuccess('Import successfully asked');
       },
     });
   }
@@ -77,7 +77,7 @@ class FileLineComponent extends Component {
         fileStore.setValue('progress', 'uploadStatus');
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess(this.props.t('File successfully removed'));
+        MESSAGING$.notifySuccess('File successfully removed');
       },
     });
   }

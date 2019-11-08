@@ -8,7 +8,7 @@ import { ArrowForwardIos } from '@material-ui/icons';
 import { ChessKnight } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -137,6 +137,26 @@ class TopMenuCampaign extends Component {
           classes={{ root: classes.button }}
         >
           {t('Observables')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/threats/campaigns/${campaignId}/files`}
+          variant={
+            location.pathname
+            === `/dashboard/threats/campaigns/${campaignId}/files`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/threats/campaigns/${campaignId}/files`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Files')}
         </Button>
       </div>
     );

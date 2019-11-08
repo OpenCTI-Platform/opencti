@@ -2817,6 +2817,7 @@ type Query {
     filters: ReportsFiltering
     filterMode: FilterMode
     objectId: String
+    objectStixId: String
     authorId: String
     reportClass: String
     search: String
@@ -2893,7 +2894,7 @@ type StixDomainEntityEditMutations {
   relationsAdd(input: RelationsAddInput): StixEntity
   relationDelete(relationId: ID!): RelationData
   importPush(file: Upload!): File @auth
-  exportAsk(format: String!, exportType: String!): [File]
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
   exportPush(file: Upload!): Boolean @auth(for: ROLE_ADMIN)
 }
 

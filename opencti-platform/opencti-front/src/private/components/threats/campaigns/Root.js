@@ -11,6 +11,9 @@ import Campaign from './Campaign';
 import CampaignReports from './CampaignReports';
 import CampaignKnowledge from './CampaignKnowledge';
 import CampaignObservables from './CampaignObservables';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import FileManager from '../../common/files/FileManager';
+import CampaignPopover from './CampaignPopover';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -19,6 +22,8 @@ const subscription = graphql`
         ...Campaign_campaign
         ...CampaignEditionContainer_campaign
       }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
     }
   }
 `;
@@ -26,12 +31,20 @@ const subscription = graphql`
 const campaignQuery = graphql`
   query RootCampaignQuery($id: String!) {
     campaign(id: $id) {
+      id
+      name
+      alias
       ...Campaign_campaign
       ...CampaignOverview_campaign
       ...CampaignDetails_campaign
       ...CampaignReports_campaign
       ...CampaignKnowledge_campaign
       ...CampaignObservables_campaign
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+    }
+    connectorsForExport {
+      ...FileManager_connectorsExport
     }
   }
 `;
@@ -74,14 +87,14 @@ class RootCampaign extends Component {
                   <Route
                     exact
                     path="/dashboard/threats/campaigns/:campaignId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <Campaign {...routeProps} campaign={props.campaign} />
                     )}
                   />
                   <Route
                     exact
                     path="/dashboard/threats/campaigns/:campaignId/reports"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <CampaignReports
                         {...routeProps}
                         campaign={props.campaign}
@@ -99,7 +112,7 @@ class RootCampaign extends Component {
                   />
                   <Route
                     path="/dashboard/threats/campaigns/:campaignId/knowledge"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <CampaignKnowledge
                         {...routeProps}
                         campaign={props.campaign}
@@ -108,11 +121,29 @@ class RootCampaign extends Component {
                   />
                   <Route
                     path="/dashboard/threats/campaigns/:campaignId/observables"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <CampaignObservables
                         {...routeProps}
                         campaign={props.campaign}
                       />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/threats/intrusion_sets/:intrusionSetId/files"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.campaign}
+                          PopoverComponent={<CampaignPopover />}
+                        />
+                        <FileManager
+                          {...routeProps}
+                          id={campaignId}
+                          connectorsExport={props.connectorsForExport}
+                          entity={props.campaign}
+                        />
+                      </React.Fragment>
                     )}
                   />
                 </div>

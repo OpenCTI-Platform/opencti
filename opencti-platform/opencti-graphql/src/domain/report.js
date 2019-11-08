@@ -138,6 +138,55 @@ export const findByEntity = args => {
   );
 };
 
+export const findByEntityStixId = args => {
+  if (args.orderBy === 'createdByRef') {
+    const finalArgs = assoc('orderBy', 'name', args);
+    return paginate(
+      `match $r isa Report; 
+      ${
+        args.reportClass
+          ? `$r has report_class "${escapeString(args.reportClass)};"`
+          : ''
+      }
+      ${
+        args.search
+          ? `$r has name $name; $r has description $desc; { $name contains "${escapeString(
+              args.search
+            )}"; } or { $desc contains "${escapeString(args.search)}"; };`
+          : ''
+      }
+      $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
+      $so has stix_id_key "${escapeString(args.objectStixId)}";
+      $relCreatedByRef(creator:$x, so:$r) isa created_by_ref`,
+      finalArgs,
+      true,
+      'x',
+      true
+    );
+  }
+  return paginate(
+    `match $r isa Report; 
+    ${
+      args.reportClass
+        ? `$r has report_class "${escapeString(args.reportClass)}";`
+        : ''
+    }
+    ${
+      args.search
+        ? `$r has name $name; $r has description $desc; { $name contains "${escapeString(
+            args.search
+          )}"; } or { $desc contains "${escapeString(args.search)}"; };`
+        : ''
+    }
+    $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
+    $so has stix_id_key "${escapeString(args.objectStixId)}"`,
+    args,
+    true,
+    null,
+    true
+  );
+};
+
 export const findByAuthor = args => {
   return paginate(
     `match $r isa Report; 
