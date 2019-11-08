@@ -130,7 +130,7 @@ class RootCampaign extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/threats/intrusion_sets/:intrusionSetId/files"
+                    path="/dashboard/threats/campaigns/:campaignId/files"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainEntityHeader
